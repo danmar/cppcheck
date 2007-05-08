@@ -1098,7 +1098,7 @@ void WarningRedundantCode()
         if (err)
         {
             std::ostringstream ostr;
-            ostr << FileLine(tok) << ": Redundant condition. It is allowed to deallocate a NULL pointer, so it is safe to remove the 'if(..)'.";
+            ostr << FileLine(tok) << ": Redundant condition. It is safe to deallocate a NULL pointer";
             ReportErr(ostr.str());
         }
     }
