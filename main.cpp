@@ -59,16 +59,18 @@ int main(int argc, char* argv[])
     tokens = tokens_back = NULL;
     Tokenize(argv[argc - 1]);
 
-    std::ofstream f("tokens.txt");
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-        f << tok->linenr << ":" << tok->str << '\n';
-    f.close();
+    //std::ofstream f("tokens.txt");
+    //for (TOKEN *tok = tokens; tok; tok = tok->next)
+    //    f << tok->linenr << ":" << tok->str << '\n';
+    //f.close();
 
     // Check that all class constructors are ok.
-    CheckConstructors();
+    // Temporarily inactivated to avoid any false positives
+    //CheckConstructors();
 
     // Check that all private functions are called.
-    CheckUnusedPrivateFunctions();
+    // Temporarily inactivated to avoid any false positives
+    //CheckUnusedPrivateFunctions();
 
     // Check that the memsets are valid.
     // This function can do dangerous things if used wrong.
@@ -85,7 +87,7 @@ int main(int argc, char* argv[])
     // Including header
     //WarningIncludeHeader();
 
-    // 
+    // if (a) delete a;
     WarningRedundantCode();
 
     return 0;
