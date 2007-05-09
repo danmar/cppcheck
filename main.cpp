@@ -48,6 +48,8 @@ void WarningRedundantCode();
 
 //---------------------------------------------------------------------------
 
+static void CppCheck(const char FileName[]);
+
 int main(int argc, char* argv[])
 {
     if (argc != 2)
@@ -56,8 +58,16 @@ int main(int argc, char* argv[])
         return 0;
     }
 
+    CppCheck(argv[argc - 1]);
+
+    return 0;
+}
+
+static void CppCheck(const char FileName[])
+{
     tokens = tokens_back = NULL;
-    Tokenize(argv[argc - 1]);
+    Files.clear();
+    Tokenize(FileName);
 
     //std::ofstream f("tokens.txt");
     //for (TOKEN *tok = tokens; tok; tok = tok->next)
@@ -90,7 +100,14 @@ int main(int argc, char* argv[])
     // if (a) delete a;
     WarningRedundantCode();
 
-    return 0;
+    // Clean up tokens..
+    while (tokens)
+    {
+        TOKEN *next = tokens->next;
+        free(tokens->str);
+        delete tokens;
+        tokens = next;
+    }
 }
 //---------------------------------------------------------------------------
 
@@ -810,7 +827,13 @@ void CheckMemset()
         else if (match(tok, "memset ( & var , num , sizeof ( struct type ) )"))
             type = getstr(tok, 10);
 
+        // No type defined => The tokens didn't match
         if (!(type && type[0]))
+            continue;
+
+        // It will be assumed that memset can be used upon 'this'.
+        // Todo: Check this too
+        if (strcmp(getstr(tok,2),"this") == 0)
             continue;
 
         // Warn if type is a class..
