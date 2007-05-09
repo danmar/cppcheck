@@ -29,6 +29,7 @@ void Tokenize(const char FileName[]);
 void CheckConstructors();
 void CheckUnusedPrivateFunctions();
 void CheckMemset();
+void CheckOperatorEq1();    // Warning upon "void operator=(.."
 
 // Function
 void CheckMovableVariableDeclaration();
@@ -86,7 +87,11 @@ static void CppCheck(const char FileName[])
     // This function can do dangerous things if used wrong.
     CheckMemset();
 
-    WarningHeaderWithImplementation();
+    CheckOperatorEq1();
+
+    // Found implementation in header
+    // Since this is not a bug I am not enabling it right now
+    //WarningHeaderWithImplementation();
 
     // Warning upon c-style pointer casts
     WarningOldStylePointerCast();
@@ -865,6 +870,23 @@ void CheckMemset()
     }
 }
 
+
+
+
+//---------------------------------------------------------------------------
+// Class: "void operator=("
+//---------------------------------------------------------------------------
+
+void CheckOperatorEq1()
+{
+    const char *pattern[] = {"void", "operator", "=", "(", NULL};
+    if (TOKEN *tok = findtoken(tokens,pattern))
+    {
+        std::ostringstream ostr;
+        ostr << FileLine(tok) << ": 'operator=' should return something";
+        ReportErr(ostr.str());
+    }
+}
 
 
 
