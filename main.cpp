@@ -94,7 +94,9 @@ static void CppCheck(const char FileName[])
     //WarningHeaderWithImplementation();
 
     // Warning upon c-style pointer casts
-    WarningOldStylePointerCast();
+    const char *ext = strrchr(FileName, '.');
+    if (ext && stricmp(ext,".c"))
+        WarningOldStylePointerCast();
 
     // Use standard functions instead
     WarningIsDigit();
@@ -159,6 +161,13 @@ void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
 
 void Tokenize(const char FileName[])
 {
+    // Has this file been tokenized already?
+    for (unsigned int i = 0; i < Files.size(); i++)
+    {
+        if ( stricmp(Files[i].c_str(), FileName) == 0 )
+            return;
+    }
+
     std::ifstream fin(FileName);
     if (!fin.is_open())
         return;
@@ -1106,6 +1115,13 @@ void WarningIncludeHeader()
 }
 //---------------------------------------------------------------------------
 
+
+
+
+//---------------------------------------------------------------------------
+// Redundant code..
+//---------------------------------------------------------------------------
+
 void WarningRedundantCode()
 {
     for (TOKEN *tok = tokens; tok; tok = tok->next)
@@ -1148,4 +1164,6 @@ void WarningRedundantCode()
         }
     }
 }
+
+
 
