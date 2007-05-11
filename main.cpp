@@ -72,7 +72,7 @@ static void CppCheck(const char FileName[])
 
     //std::ofstream f("tokens.txt");
     //for (TOKEN *tok = tokens; tok; tok = tok->next)
-    //    f << tok->linenr << ":" << tok->str << '\n';
+    //    f << "[" << Files[tok->FileIndex] << ":" << tok->linenr << "]:" << tok->str << '\n';
     //f.close();
 
     // Check that all class constructors are ok.
@@ -81,7 +81,7 @@ static void CppCheck(const char FileName[])
 
     // Check that all private functions are called.
     // Temporarily inactivated to avoid any false positives
-    //CheckUnusedPrivateFunctions();
+    CheckUnusedPrivateFunctions();
 
     // Check that the memsets are valid.
     // This function can do dangerous things if used wrong.
@@ -735,6 +735,13 @@ void CheckUnusedPrivateFunctions()
     {
         const char *classname = tok1->next->str;
 
+        // The class implementation must be available..
+        const char *pattern_classconstructor[] = {"","::","",NULL};
+        pattern_classconstructor[0] = classname;
+        pattern_classconstructor[2] = classname;
+        if (!findtoken(tokens,pattern_classconstructor))
+            continue;
+
         // Get private functions..
         std::list<std::string> FuncList;
         FuncList.clear();
@@ -742,6 +749,13 @@ void CheckUnusedPrivateFunctions()
         unsigned int indent_level = 0;
         for (TOKEN *tok = tok1; tok; tok = tok->next)
         {
+            if (match(tok,"friend class"))
+            {
+                // Todo: Handle friend classes
+                FuncList.clear();
+                break;
+            }
+
             if (tok->str[0] == '{')
                 indent_level++;
             if (tok->str[0] == '}')
@@ -760,8 +774,12 @@ void CheckUnusedPrivateFunctions()
                 priv = false;
             else if (priv && indent_level == 1)
             {
-                if (isalpha(tok->str[0]) && tok->next->str[0]=='(')
+                if (isalpha(tok->str[0]) &&
+                    tok->next->str[0]=='(' &&
+                    strcmp(tok->str,classname) != 0)
+                {
                     FuncList.push_back(tok->str);
+                }
             }
         }
 
@@ -811,9 +829,25 @@ void CheckUnusedPrivateFunctions()
 
         while (HasFuncImpl && !FuncList.empty())
         {
-            std::ostringstream ostr;
-            ostr << "Class '" << classname << "', unused private function: '" << FuncList.front() << "'";
-            ReportErr(ostr.str());
+            bool fp = false;
+
+            // Final check; check if the function pointer is used somewhere..
+            const char *_pattern[] = {"=","",NULL};
+            _pattern[1] = FuncList.front().c_str();
+            fp |= (findtoken(tokens, _pattern) != NULL);
+            _pattern[0] = "(";
+            fp |= (findtoken(tokens, _pattern) != NULL);
+            _pattern[0] = ")";
+            fp |= (findtoken(tokens, _pattern) != NULL);
+            _pattern[0] = ",";
+            fp |= (findtoken(tokens, _pattern) != NULL);
+
+            if (!fp)
+            {
+                std::ostringstream ostr;
+                ostr << "Class '" << classname << "', unused private function: '" << FuncList.front() << "'";
+                ReportErr(ostr.str());
+            }
             FuncList.pop_front();
         }
     }
