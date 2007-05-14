@@ -25,7 +25,7 @@ void Tokenize(const char FileName[]);
 std::vector<std::string> VariableNames;
 struct STATEMENT
 {
-    enum etype {OBRACE, EBRACE, DECL, ASSIGN, USE};
+    enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY};
     etype Type;
     unsigned int VarIndex;
 };
@@ -594,8 +594,35 @@ void CreateStatementList()
                     break;
 
                 if (match(tok2,"var ="))
-                    AppendStatement(STATEMENT::ASSIGN, tok2->str);
+                {
+                    TOKEN *rs = tok2->next->next;
+
+                    if ( match(rs,"new type ;") )
+                        AppendStatement(STATEMENT::NEW, tok2->str);
+
+                    else if ( match(rs, "new type (") )
+                        AppendStatement(STATEMENT::NEW, tok2->str);
+
+                    else if ( match(rs, "new type [") )
+                        AppendStatement(STATEMENT::NEWARRAY, tok2->str);
+
+                    else
+                        AppendStatement(STATEMENT::ASSIGN, tok2->str);
+                }
             }
+
+            // Delete..
+            for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
+            {
+                if (tok2->str[0]==';')
+                    break;
+
+                if (match(tok2,"delete var ;"))
+                    AppendStatement(STATEMENT::DELETE, getstr(tok2,1));
+                if (match(tok2,"delete [ ] var ;"))
+                    AppendStatement(STATEMENT::DELETEARRAY, getstr(tok2,3));
+            }
+
         }
     }
 
@@ -628,6 +655,24 @@ void CreateStatementList()
                 case STATEMENT::ASSIGN:
                     std::cout << "assign " << VariableNames[s.VarIndex] << "\n";
                     break;
+
+                case STATEMENT::NEW:
+                    std::cout << "new " << VariableNames[s.VarIndex] << "\n";
+                    break;
+
+                case STATEMENT::NEWARRAY:
+                    std::cout << "new[] " << VariableNames[s.VarIndex] << "\n";
+                    break;
+
+                case STATEMENT::DELETE:
+                    std::cout << "delete " << VariableNames[s.VarIndex] << "\n";
+                    break;
+
+                case STATEMENT::DELETEARRAY:
+                    std::cout << "delete[] " << VariableNames[s.VarIndex] << "\n";
+                    break;
+
+
             };
         }
 //    }
