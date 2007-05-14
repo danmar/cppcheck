@@ -10,9 +10,8 @@
 #include <string.h>
 
 //---------------------------------------------------------------------------
-
 std::vector<std::string> Files;
-
+//---------------------------------------------------------------------------
 struct TOKEN
 {
     unsigned int FileIndex;
@@ -21,9 +20,18 @@ struct TOKEN
     struct TOKEN *next;
 };
 struct TOKEN *tokens, *tokens_back;
-//---------------------------------------------------------------------------
-
 void Tokenize(const char FileName[]);
+//---------------------------------------------------------------------------
+std::vector<std::string> VariableNames;
+struct STATEMENT
+{
+    enum etype {OBRACE, EBRACE, DECL, ASSIGN, USE};
+    etype Type;
+    unsigned int VarIndex;
+};
+std::list<STATEMENT> Statements;
+void CreateStatementList();
+//---------------------------------------------------------------------------
 
 // Class
 void CheckConstructors();
@@ -69,6 +77,8 @@ static void CppCheck(const char FileName[])
     tokens = tokens_back = NULL;
     Files.clear();
     Tokenize(FileName);
+
+    CreateStatementList();
 
     //std::ofstream f("tokens.txt");
     //for (TOKEN *tok = tokens; tok; tok = tok->next)
@@ -440,7 +450,7 @@ static bool match(TOKEN *tok, const std::string pattern)
         else if (strcmp(str, tok->str) != 0)
             return false;
 
-        tok = tok->next; 
+        tok = tok->next;
         if (!tok)
             return false;
     }
@@ -472,6 +482,161 @@ std::string FileLine(TOKEN *tok)
     return ostr.str();
 }
 //---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// Create statement list
+//---------------------------------------------------------------------------
+
+void AppendStatement(STATEMENT::etype Type, std::string Var="")
+{
+    STATEMENT NewStatement;
+    NewStatement.Type = Type;
+    if (Var.empty())
+    {
+        NewStatement.VarIndex = 0;
+    }
+    else
+    {
+        bool Found = false;
+        for (unsigned int i = 0; i < VariableNames.size(); i++)
+        {
+            if (VariableNames[i] == Var)
+            {
+                Found = true;
+                NewStatement.VarIndex = i;
+                break;
+            }
+        }
+
+        if ( ! Found )
+        {
+            NewStatement.VarIndex = VariableNames.size();
+            VariableNames.push_back(Var);
+        }
+    }
+    Statements.push_back(NewStatement);
+}
+
+TOKEN *GotoNextStatement(TOKEN *tok)
+{
+    if (tok && (tok->str[0]=='{' || tok->str[0]=='}'))
+        return tok->next;
+
+    if (tok)
+        tok = tok->next;
+    int parlevel = 0;
+    for (; tok; tok = tok->next)
+    {
+        if (tok->str[0] == '(')
+            parlevel++;
+        else if (tok->str[0] == ')')
+            parlevel--;
+        if (strchr("{}", tok->str[0]))
+            break;
+        if (tok->str[0] == ';')
+        {
+            while (tok && tok->str[0] == ';')
+                tok = tok->next;
+            break;
+        }
+    }
+    return tok;
+}
+
+void CreateStatementList()
+{
+    // Clear lists..
+    VariableNames.clear();
+    Statements.clear();
+
+    int indentlevel = 0;
+    for (TOKEN *tok = tokens; tok; tok = GotoNextStatement(tok))
+    {
+        if (tok->str[0] == '{')
+        {
+            AppendStatement(STATEMENT::OBRACE);
+            indentlevel++;
+        }
+        else if (tok->str[0] == '}')
+        {
+            AppendStatement(STATEMENT::EBRACE);
+            indentlevel--;
+        }
+        else if (indentlevel >= 1)
+        {
+            // Declaring variables..
+            if (IsName(tok->str))
+            {
+                for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
+                {
+                    if (tok2->str[0] == ';')
+                        break;
+
+                    const char *str1 = getstr(tok2, 1);
+                    if (IsName(tok2->str) && strchr("[=,;",str1[0]))
+                    {
+                        AppendStatement(STATEMENT::DECL, tok2->str);
+                        while (tok2 && !strchr(",;", tok2->str[0]))
+                            tok2 = tok2->next;
+                        if (tok2->str[0] == ';')
+                            break;
+                    }
+                }
+            }
+
+
+            // Assign..
+            for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
+            {
+                if (tok2->str[0]==';')
+                    break;
+
+                if (match(tok2,"var ="))
+                    AppendStatement(STATEMENT::ASSIGN, tok2->str);
+            }
+        }
+    }
+
+/*
+    char fname[1000];
+    strcpy(fname, Files[0].c_str());
+    if (strchr(fname,'.'))
+    {
+        strcpy(strrchr(fname,'.'), ".s");
+        std::ofstream f(fname);
+*/
+        std::list<STATEMENT>::const_iterator it;
+        for (it = Statements.begin(); it != Statements.end(); it++)
+        {
+            STATEMENT s = *it;
+            switch (s.Type)
+            {
+                case STATEMENT::OBRACE:
+                    std::cout << "{\n";
+                    break;
+
+                case STATEMENT::EBRACE:
+                    std::cout << "}\n";
+                    break;
+
+                case STATEMENT::DECL:
+                    std::cout << "decl " << VariableNames[s.VarIndex] << "\n";
+                    break;
+
+                case STATEMENT::ASSIGN:
+                    std::cout << "assign " << VariableNames[s.VarIndex] << "\n";
+                    break;
+            };
+        }
+//    }
+}
+//---------------------------------------------------------------------------
+
+
+
+
 
 
 struct VAR
@@ -1198,6 +1363,7 @@ void WarningRedundantCode()
         }
     }
 }
+//---------------------------------------------------------------------------
 
 
 
