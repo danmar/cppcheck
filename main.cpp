@@ -11,6 +11,7 @@
 
 //---------------------------------------------------------------------------
 std::vector<std::string> Files;
+static bool Debug = false;
 //---------------------------------------------------------------------------
 struct TOKEN
 {
@@ -61,7 +62,9 @@ static void CppCheck(const char FileName[]);
 
 int main(int argc, char* argv[])
 {
-    if (argc != 2)
+    Debug = (argc == 3 && strcmp(argv[1], "--debug")==0);
+
+    if (argc == 1 || argc > 3)
     {
         std::cout << "Syntax:\n    checkcode filename\n";
         return 0;
@@ -659,14 +662,8 @@ void CreateStatementList()
         }
     }
 
-/*
-    char fname[1000];
-    strcpy(fname, Files[0].c_str());
-    if (strchr(fname,'.'))
+    if (Debug)
     {
-        strcpy(strrchr(fname,'.'), ".s");
-        std::ofstream f(fname);
-*/
         std::list<STATEMENT>::const_iterator it;
         for (it = Statements.begin(); it != Statements.end(); it++)
         {
@@ -706,9 +703,9 @@ void CreateStatementList()
                     break;
 
 
-            };
+            }
         }
-//    }
+    }
 }
 //---------------------------------------------------------------------------
 
