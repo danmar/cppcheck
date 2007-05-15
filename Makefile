@@ -1,2 +1,2 @@
-checkcode.exe:	main.cpp
-	gxx -Wall -pedantic -g -o checkcode.exe main.cpp
+cppcheck.exe:	main.cpp
+	gxx -Wall -pedantic -o cppcheck.exe main.cpp
