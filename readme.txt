@@ -9,10 +9,10 @@ Compiling
   There are no dependencies.
 
   Linux:
-      g++ -o cppcheck cppcheck.cpp
+      g++ -o cppcheck main.cpp
 
   Windows:
-      gxx -o cppcheck cppcheck.cpp
+      gxx -o cppcheck main.cpp
 
 
 
