@@ -1,0 +1,11 @@
+{
+decl a
+decl b
+decl c
+decl d
+assign b
+assign d
+decl e
+assign e
+decl str
+}

@@ -1,0 +1,6 @@
+{
+assign a
+assign b[2]
+assign c[4][5].min
+assign d.min
+}
