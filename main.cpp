@@ -569,9 +569,11 @@ void CreateStatementList()
             // Declaring variables..
             if (IsName(tok->str))
             {
-                for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
+                const char *str1 = getstr(tok, 1);
+                bool decl = IsName(str1) || str1[0]=='*';
+                for (TOKEN *tok2 = decl ? tok->next : NULL; tok2; tok2 = tok2->next)
                 {
-                    if (tok2->str[0] == ';')
+                    if (tok2->str[0] == ';' || tok2->str[0] == '.')
                         break;
 
                     const char *str1 = getstr(tok2, 1);
@@ -593,21 +595,52 @@ void CreateStatementList()
                 if (tok2->str[0]==';')
                     break;
 
-                if (match(tok2,"var ="))
+                if (!IsName(tok2->str))
+                    continue;
+
+
+                // Get variable name..
+                std::ostringstream varname;
+                varname << tok2->str;
+                bool isname = true;
+                TOKEN *eq = NULL;
+                for (TOKEN *tok3 = tok2->next; tok3; tok3 = tok3->next)
                 {
-                    TOKEN *rs = tok2->next->next;
+                    if (tok3->str[0]==';' || tok3->str[0]=='*' || tok3->str[0]==',')
+                        break;
+
+                    if (strcmp(tok3->str,"=")==0)
+                    {
+                        eq = tok3;
+                        break;
+                    }
+
+                    if (isname && IsName(tok3->str))
+                        break;
+                    isname = IsName(tok3->str);
+
+                    varname << tok3->str;
+                }
+
+
+                // Equal with..
+                if (eq != NULL)
+                {
+                    TOKEN *rs = eq->next;
 
                     if ( match(rs,"new type ;") )
-                        AppendStatement(STATEMENT::NEW, tok2->str);
+                        AppendStatement(STATEMENT::NEW, varname.str());
 
                     else if ( match(rs, "new type (") )
-                        AppendStatement(STATEMENT::NEW, tok2->str);
+                        AppendStatement(STATEMENT::NEW, varname.str());
 
                     else if ( match(rs, "new type [") )
-                        AppendStatement(STATEMENT::NEWARRAY, tok2->str);
+                        AppendStatement(STATEMENT::NEWARRAY, varname.str());
 
                     else
-                        AppendStatement(STATEMENT::ASSIGN, tok2->str);
+                        AppendStatement(STATEMENT::ASSIGN, varname.str());
+
+                    tok2 = eq;
                 }
             }
 
