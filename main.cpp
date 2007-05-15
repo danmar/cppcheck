@@ -29,19 +29,20 @@ struct STATEMENT
     enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY};
     etype Type;
     unsigned int VarIndex;
+    TOKEN *Token;
 };
 std::list<STATEMENT> Statements;
 void CreateStatementList();
 //---------------------------------------------------------------------------
+
+// Memory leak..
+void CheckMemoryLeak();
 
 // Class
 void CheckConstructors();
 void CheckUnusedPrivateFunctions();
 void CheckMemset();
 void CheckOperatorEq1();    // Warning upon "void operator=(.."
-
-// Function
-void CheckMovableVariableDeclaration();
 
 // Casting
 void WarningOldStylePointerCast();
@@ -82,6 +83,11 @@ static void CppCheck(const char FileName[])
     Tokenize(FileName);
 
     CreateStatementList();
+
+
+    // Memory leak
+    CheckMemoryLeak();
+
 
     //std::ofstream f("tokens.txt");
     //for (TOKEN *tok = tokens; tok; tok = tok->next)
@@ -492,10 +498,11 @@ std::string FileLine(TOKEN *tok)
 // Create statement list
 //---------------------------------------------------------------------------
 
-void AppendStatement(STATEMENT::etype Type, std::string Var="")
+void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="")
 {
     STATEMENT NewStatement;
     NewStatement.Type = Type;
+    NewStatement.Token = tok;
     if (Var.empty())
     {
         NewStatement.VarIndex = 0;
@@ -559,12 +566,12 @@ void CreateStatementList()
     {
         if (tok->str[0] == '{')
         {
-            AppendStatement(STATEMENT::OBRACE);
+            AppendStatement(STATEMENT::OBRACE, tok);
             indentlevel++;
         }
         else if (tok->str[0] == '}')
         {
-            AppendStatement(STATEMENT::EBRACE);
+            AppendStatement(STATEMENT::EBRACE, tok);
             indentlevel--;
         }
         else if (indentlevel >= 1)
@@ -582,7 +589,7 @@ void CreateStatementList()
                     const char *str1 = getstr(tok2, 1);
                     if (IsName(tok2->str) && strchr("[=,;",str1[0]))
                     {
-                        AppendStatement(STATEMENT::DECL, tok2->str);
+                        AppendStatement(STATEMENT::DECL, tok2, tok2->str);
                         while (tok2 && !strchr(",;", tok2->str[0]))
                             tok2 = tok2->next;
                         if (tok2->str[0] == ';')
@@ -632,16 +639,16 @@ void CreateStatementList()
                     TOKEN *rs = eq->next;
 
                     if ( match(rs,"new type ;") )
-                        AppendStatement(STATEMENT::NEW, varname.str());
+                        AppendStatement(STATEMENT::NEW, tok2, varname.str());
 
                     else if ( match(rs, "new type (") )
-                        AppendStatement(STATEMENT::NEW, varname.str());
+                        AppendStatement(STATEMENT::NEW, tok2, varname.str());
 
                     else if ( match(rs, "new type [") )
-                        AppendStatement(STATEMENT::NEWARRAY, varname.str());
+                        AppendStatement(STATEMENT::NEWARRAY, tok2, varname.str());
 
                     else
-                        AppendStatement(STATEMENT::ASSIGN, varname.str());
+                        AppendStatement(STATEMENT::ASSIGN, tok2, varname.str());
 
                     tok2 = eq;
                 }
@@ -654,9 +661,9 @@ void CreateStatementList()
                     break;
 
                 if (match(tok2,"delete var ;"))
-                    AppendStatement(STATEMENT::DELETE, getstr(tok2,1));
+                    AppendStatement(STATEMENT::DELETE, tok2, getstr(tok2,1));
                 if (match(tok2,"delete [ ] var ;"))
-                    AppendStatement(STATEMENT::DELETEARRAY, getstr(tok2,3));
+                    AppendStatement(STATEMENT::DELETEARRAY, tok2, getstr(tok2,3));
             }
 
         }
@@ -905,6 +912,126 @@ TOKEN * ClassChecking_VarList_RemoveAssigned(TOKEN *_tokens, struct VAR *varlist
 
     return ftok;
 }
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// Memory leak..
+//---------------------------------------------------------------------------
+
+void CheckMemoryLeak()
+{
+    struct _variable
+    {
+        int indentlevel;
+        unsigned int varindex;
+        enum {Any, Data, New, NewA} value;
+    };
+    std::vector<_variable *> varlist;
+
+
+    // Parse the statement list and locate memory leaks..
+    int indentlevel = 0;
+    std::list<STATEMENT>::const_iterator it;
+    for (it = Statements.begin(); it != Statements.end(); it++)
+    {
+        switch (it->Type)
+        {
+            case STATEMENT::OBRACE:
+                indentlevel++;
+                break;
+
+            case STATEMENT::EBRACE:
+                // Check if any variables go out of scope..
+                if (indentlevel >= 1)
+                {
+                    for (unsigned int i = 0; i < varlist.size(); i++)
+                    {
+                        if (varlist[i]->indentlevel != indentlevel)
+                            continue;
+
+                        // This is highly inaccurate at the moment
+                        if (Debug)
+                        {
+                            if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
+                            {
+                                std::ostringstream ostr;
+                                ostr << "Memory leak:" << VariableNames[varlist[i]->varindex];
+                                ReportErr(ostr.str());
+                            }
+                        }
+
+                        // Delete this instance..
+                        delete varlist[i];
+                        varlist.erase(varlist.begin()+i);
+                    }
+                }
+                indentlevel--;
+                break;
+
+            case STATEMENT::DECL:
+                if (indentlevel > 0)
+                {
+                    _variable *NewVar = new _variable;
+                    NewVar->indentlevel = indentlevel;
+                    NewVar->varindex = it->VarIndex;
+                    varlist.push_back(NewVar);
+                }
+                break;
+
+            case STATEMENT::NEW:
+            case STATEMENT::NEWARRAY:
+            case STATEMENT::DELETE:
+            case STATEMENT::DELETEARRAY:
+                for (unsigned int i = 0; i < varlist.size(); i++)
+                {
+                    if ( varlist[i]->varindex == it->VarIndex )
+                    {
+                        bool isalloc = (varlist[i]->value==_variable::New || varlist[i]->value==_variable::NewA);
+                        bool alloc = (it->Type==STATEMENT::NEW || it->Type==STATEMENT::NEWARRAY);
+
+                        // Already allocated and then allocated again..
+                        //bool err = (isalloc & alloc);
+
+                        if (isalloc && !alloc)
+                        {
+                            // Check that the deallocation matches..
+                            bool a1 = (varlist[i]->value == _variable::NewA);
+                            bool a2 = (it->Type == STATEMENT::DELETEARRAY);
+
+                            if (a1 != a2)
+                            {
+                                std::ostringstream ostr;
+                                ostr << FileLine(it->Token) << ": Mismatching allocation and deallocation";
+                                ReportErr(ostr.str());
+                            }
+                        }
+
+                        if ( it->Type == STATEMENT::NEW )
+                            varlist[i]->value = _variable::New;
+
+                        if ( it->Type == STATEMENT::NEWARRAY )
+                            varlist[i]->value = _variable::NewA;
+
+                        if ( it->Type == STATEMENT::DELETE )
+                            varlist[i]->value = _variable::Any;
+
+                        if ( it->Type == STATEMENT::DELETEARRAY )
+                            varlist[i]->value = _variable::Any;
+
+                        break;
+                    }
+                }
+                break;
+        }
+    }
+}
+
+
+
 
 
 
