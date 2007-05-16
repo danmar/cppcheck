@@ -1008,11 +1008,14 @@ void CheckMemoryLeak()
                             continue;
 
                         // This is highly inaccurate at the moment
-                        if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
+                        if (Debug)
                         {
-                            std::ostringstream ostr;
-                            ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
-                            ReportErr(ostr.str());
+                            if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
+                            {
+                                std::ostringstream ostr;
+                                ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
+                                ReportErr(ostr.str());
+                            }
                         }
 
                         // Delete this instance..
