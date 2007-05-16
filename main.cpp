@@ -26,7 +26,7 @@ void Tokenize(const char FileName[]);
 std::vector<std::string> VariableNames;
 struct STATEMENT
 {
-    enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY};
+    enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY, USE};
     etype Type;
     unsigned int VarIndex;
     TOKEN *Token;
@@ -555,6 +555,51 @@ TOKEN *GotoNextStatement(TOKEN *tok)
     return tok;
 }
 
+
+void GetVariableName(TOKEN * &Token, std::string &varname)
+{
+    varname = "";
+
+    if (Token == NULL)
+        return;
+
+    if (!IsName(Token->str))
+        return;
+
+    // Get variable name..
+    std::ostringstream ostr;
+    bool array = false;
+    bool name  = false;
+    for (TOKEN *tok = Token; tok; tok = tok->next)
+    {
+        const char *str = tok->str;
+
+        if ((array) || (str[0]=='['))
+        {
+            ostr << str;
+            array = (str[0] != ']');
+        }
+
+        else
+        {
+            if (name && IsName(str))
+                return;
+            name = IsName(str);
+            if (!name && strcmp(str,".") && strcmp(str,"->") && strcmp(str,"::"))
+            {
+                if (str[0] == '(')
+                    return;
+                Token = tok;
+                break;
+            }
+            ostr << str;
+        }
+    }
+
+    varname = ostr.str();
+}
+
+
 void CreateStatementList()
 {
     // Clear lists..
@@ -605,50 +650,26 @@ void CreateStatementList()
                 if (tok2->str[0]==';')
                     break;
 
-                if (!IsName(tok2->str))
-                    continue;
-
-
-                // Get variable name..
-                std::ostringstream varname;
-                varname << tok2->str;
-                bool isname = true;
-                TOKEN *eq = NULL;
-                for (TOKEN *tok3 = tok2->next; tok3; tok3 = tok3->next)
-                {
-                    if (tok3->str[0]==';' || tok3->str[0]=='*' || tok3->str[0]==',')
-                        break;
-
-                    if (strcmp(tok3->str,"=")==0)
-                    {
-                        eq = tok3;
-                        break;
-                    }
-
-                    if (isname && IsName(tok3->str))
-                        break;
-                    isname = IsName(tok3->str);
-
-                    varname << tok3->str;
-                }
-
+                TOKEN *eq = tok2;
+                std::string varname = "";
+                GetVariableName(eq, varname);
 
                 // Equal with..
-                if (eq != NULL)
+                if (eq && strcmp(eq->str,"=")==0 && !varname.empty())
                 {
                     TOKEN *rs = eq->next;
 
                     if ( match(rs,"new type ;") )
-                        AppendStatement(STATEMENT::NEW, tok2, varname.str());
+                        AppendStatement(STATEMENT::NEW, tok2, varname);
 
                     else if ( match(rs, "new type (") )
-                        AppendStatement(STATEMENT::NEW, tok2, varname.str());
+                        AppendStatement(STATEMENT::NEW, tok2, varname);
 
                     else if ( match(rs, "new type [") )
-                        AppendStatement(STATEMENT::NEWARRAY, tok2, varname.str());
+                        AppendStatement(STATEMENT::NEWARRAY, tok2, varname);
 
                     else
-                        AppendStatement(STATEMENT::ASSIGN, tok2, varname.str());
+                        AppendStatement(STATEMENT::ASSIGN, tok2, varname);
 
                     tok2 = eq;
                 }
@@ -666,6 +687,35 @@ void CreateStatementList()
                     AppendStatement(STATEMENT::DELETEARRAY, tok2, getstr(tok2,3));
             }
 
+            // Use..
+            bool UseVar = false;
+            int parlevel = 0;
+            for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
+            {
+                if (tok2->str[0]==';')
+                    break;
+
+                if (tok2->str[0] == '(')
+                    parlevel++;
+                if (tok2->str[0] == ')')
+                    parlevel--;
+                if (parlevel == 0 && tok2->str[0] == ',')
+                    UseVar = false;
+
+                else if (tok2->str[0]=='=' || tok2->str[0]=='(')
+                    UseVar = true;
+
+                else if (UseVar && IsName(tok2->str))
+                {
+                    std::string varname = "";
+                    GetVariableName(tok2, varname);
+                    if (!varname.empty())
+                        AppendStatement(STATEMENT::USE, tok2, varname);
+
+                    if (tok2->str[0]==';')
+                        break;
+                }
+            }
         }
     }
 
@@ -675,6 +725,7 @@ void CreateStatementList()
         for (it = Statements.begin(); it != Statements.end(); it++)
         {
             STATEMENT s = *it;
+            //std::cout << it->Token->linenr << " : ";
             switch (s.Type)
             {
                 case STATEMENT::OBRACE:
@@ -709,7 +760,9 @@ void CreateStatementList()
                     std::cout << "delete[] " << VariableNames[s.VarIndex] << "\n";
                     break;
 
-
+                case STATEMENT::USE:
+                    std::cout << "use " << VariableNames[s.VarIndex] << "\n";
+                    break;
             }
         }
     }
@@ -922,14 +975,15 @@ TOKEN * ClassChecking_VarList_RemoveAssigned(TOKEN *_tokens, struct VAR *varlist
 // Memory leak..
 //---------------------------------------------------------------------------
 
+struct _variable
+{
+    int indentlevel;
+    unsigned int varindex;
+    enum {Any, Data, New, NewA} value;
+};
+
 void CheckMemoryLeak()
 {
-    struct _variable
-    {
-        int indentlevel;
-        unsigned int varindex;
-        enum {Any, Data, New, NewA} value;
-    };
     std::vector<_variable *> varlist;
 
 
@@ -954,14 +1008,11 @@ void CheckMemoryLeak()
                             continue;
 
                         // This is highly inaccurate at the moment
-                        if (Debug)
+                        if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
                         {
-                            if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
-                            {
-                                std::ostringstream ostr;
-                                ostr << "Memory leak:" << VariableNames[varlist[i]->varindex];
-                                ReportErr(ostr.str());
-                            }
+                            std::ostringstream ostr;
+                            ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
+                            ReportErr(ostr.str());
                         }
 
                         // Delete this instance..
@@ -1025,6 +1076,10 @@ void CheckMemoryLeak()
                         break;
                     }
                 }
+                break;
+
+            case STATEMENT::ASSIGN:
+            case STATEMENT::USE:
                 break;
         }
     }
