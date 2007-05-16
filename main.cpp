@@ -1,4 +1,7 @@
 
+
+// Todo: Output progress? Using commandline option "--progress"?
+
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -81,6 +84,7 @@ static void CppCheck(const char FileName[])
     tokens = tokens_back = NULL;
     Files.clear();
     Tokenize(FileName);
+
 
     CreateStatementList();
 
@@ -168,7 +172,7 @@ void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
 
     free(tok->str);
     free(tok->next->str);
-    tok->str = static_cast<char *>(malloc(strlen(str1)+strlen(str2)+1));
+    tok->str = (char *)malloc(strlen(str1)+strlen(str2)+1);
     strcpy(tok->str, str1);
     strcat(tok->str, str2);
 
@@ -195,7 +199,7 @@ void Tokenize(const char FileName[])
     Files.push_back(FileName);
 
     unsigned int lineno = 1;
-    char CurrentToken[100];
+    char CurrentToken[1000];
     memset(CurrentToken, 0, sizeof(CurrentToken));
     char *pToken = CurrentToken;
     for (char ch = (char)fin.get(); !fin.eof(); ch = (char)fin.get())
@@ -725,7 +729,7 @@ void CreateStatementList()
         for (it = Statements.begin(); it != Statements.end(); it++)
         {
             STATEMENT s = *it;
-            //std::cout << it->Token->linenr << " : ";
+            std::cout << it->Token->linenr << " : ";
             switch (s.Type)
             {
                 case STATEMENT::OBRACE:
@@ -1008,15 +1012,15 @@ void CheckMemoryLeak()
                             continue;
 
                         // This is highly inaccurate at the moment
-                        if (Debug)
-                        {
-                            if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
-                            {
-                                std::ostringstream ostr;
-                                ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
-                                ReportErr(ostr.str());
-                            }
-                        }
+                        //if (Debug)
+                        //{
+                        //    if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
+                        //    {
+                        //        std::ostringstream ostr;
+                        //        ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
+                        //        ReportErr(ostr.str());
+                        //    }
+                        //}
 
                         // Delete this instance..
                         delete varlist[i];
@@ -1030,6 +1034,7 @@ void CheckMemoryLeak()
                 if (indentlevel > 0)
                 {
                     _variable *NewVar = new _variable;
+                    memset(NewVar, 0, sizeof(_variable));
                     NewVar->indentlevel = indentlevel;
                     NewVar->varindex = it->VarIndex;
                     varlist.push_back(NewVar);
@@ -1056,10 +1061,13 @@ void CheckMemoryLeak()
                             bool a1 = (varlist[i]->value == _variable::NewA);
                             bool a2 = (it->Type == STATEMENT::DELETEARRAY);
 
-                            if (a1 != a2)
+                            if (a1 ^ a2)
                             {
+                                std::cout << (a1 ? "new[]" : "new") << "\n";
+                                std::cout << (a2 ? "delete[]" : "delete") << "\n";
+
                                 std::ostringstream ostr;
-                                ostr << FileLine(it->Token) << ": Mismatching allocation and deallocation";
+                                ostr << FileLine(it->Token) << ": Mismatching allocation and deallocation '" << VariableNames[varlist[i]->varindex] << "'";
                                 ReportErr(ostr.str());
                             }
                         }
@@ -1583,6 +1591,8 @@ void WarningIncludeHeader()
 
 void WarningRedundantCode()
 {
+
+    // if (p) delete p
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (strcmp(tok->str,"if"))
@@ -1610,6 +1620,10 @@ void WarningRedundantCode()
             err = (strcmp(getstr(tok2,1),varname1)==0);
         else if (match(tok2,"{ delete var ; }"))
             err = (strcmp(getstr(tok2,2),varname1)==0);
+        else if (match(tok2,"delete [ ] var ;"))
+            err = (strcmp(getstr(tok2,1),varname1)==0);
+        else if (match(tok2,"{ delete [ ] var ; }"))
+            err = (strcmp(getstr(tok2,2),varname1)==0);
         else if (match(tok2,"free ( var )"))
             err = (strcmp(getstr(tok2,2),varname1)==0);
         else if (match(tok2,"{ free ( var ) ; }"))
@@ -1622,6 +1636,12 @@ void WarningRedundantCode()
             ReportErr(ostr.str());
         }
     }
+
+
+    // TODO
+    // if (haystack.find(needle) != haystack.end())
+    //    haystack.remove(needle); 
+
 }
 //---------------------------------------------------------------------------
 
