@@ -1,7 +1,7 @@
-{
-assign a
-use b
-assign c
-use d
-use e
-}
+3 : {
+4 : assign a
+4 : use b
+5 : assign c
+5 : use d
+5 : use e
+6 : }

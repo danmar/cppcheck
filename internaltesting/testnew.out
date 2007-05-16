@@ -1,5 +1,7 @@
-{
-new[] a
-new fred
-new fred
-}
+4 : {
+5 : new[] a
+5 : use char[10]
+6 : new fred
+6 : use Fred
+7 : new fred
+8 : }

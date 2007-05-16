@@ -1,11 +1,14 @@
-{
-decl a
-decl b
-decl c
-decl d
-assign b
-assign d
-decl e
-assign e
-decl str
-}
+4 : {
+5 : decl a
+6 : decl b
+6 : decl c
+6 : decl d
+6 : assign b
+6 : assign d
+6 : use NULL
+7 : decl e
+7 : assign e
+7 : use p1
+7 : use p2
+8 : decl str
+9 : }
