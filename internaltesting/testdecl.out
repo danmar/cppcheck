@@ -11,4 +11,6 @@
 7 : use p1
 7 : use p2
 8 : decl str
-9 : }
+10 : return a
+11 : delete a
+12 : }
