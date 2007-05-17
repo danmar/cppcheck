@@ -29,7 +29,7 @@ void Tokenize(const char FileName[]);
 std::vector<std::string> VariableNames;
 struct STATEMENT
 {
-    enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY, USE};
+    enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY, USE, RETURN};
     etype Type;
     unsigned int VarIndex;
     TOKEN *Token;
@@ -626,7 +626,7 @@ void CreateStatementList()
         else if (indentlevel >= 1)
         {
             // Declaring variables..
-            if (IsName(tok->str))
+            if (IsName(tok->str) && strcmp(tok->str,"delete") && strcmp(tok->str,"return"))
             {
                 const char *str1 = getstr(tok, 1);
                 bool decl = IsName(str1) || str1[0]=='*';
@@ -720,6 +720,20 @@ void CreateStatementList()
                         break;
                 }
             }
+
+            // Return..
+            for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
+            {
+                if (strcmp(tok2->str,";")==0)
+                    break;
+
+                if (strcmp(tok2->str,"return")==0 &&
+                    IsName(getstr(tok2,1)) &&
+                    strcmp(getstr(tok2,2),";")==0)
+                {
+                    AppendStatement(STATEMENT::RETURN, tok2, getstr(tok2,1));
+                }
+            }
         }
     }
 
@@ -733,41 +747,50 @@ void CreateStatementList()
             switch (s.Type)
             {
                 case STATEMENT::OBRACE:
-                    std::cout << "{\n";
+                    std::cout << "{";
                     break;
 
                 case STATEMENT::EBRACE:
-                    std::cout << "}\n";
+                    std::cout << "}";
                     break;
 
                 case STATEMENT::DECL:
-                    std::cout << "decl " << VariableNames[s.VarIndex] << "\n";
+                    std::cout << "decl " << VariableNames[s.VarIndex];
                     break;
 
                 case STATEMENT::ASSIGN:
-                    std::cout << "assign " << VariableNames[s.VarIndex] << "\n";
+                    std::cout << "assign " << VariableNames[s.VarIndex];
                     break;
 
                 case STATEMENT::NEW:
-                    std::cout << "new " << VariableNames[s.VarIndex] << "\n";
+                    std::cout << "new " << VariableNames[s.VarIndex];
                     break;
 
                 case STATEMENT::NEWARRAY:
-                    std::cout << "new[] " << VariableNames[s.VarIndex] << "\n";
+                    std::cout << "new[] " << VariableNames[s.VarIndex];
                     break;
 
                 case STATEMENT::DELETE:
-                    std::cout << "delete " << VariableNames[s.VarIndex] << "\n";
+                    std::cout << "delete " << VariableNames[s.VarIndex];
                     break;
 
                 case STATEMENT::DELETEARRAY:
-                    std::cout << "delete[] " << VariableNames[s.VarIndex] << "\n";
+                    std::cout << "delete[] " << VariableNames[s.VarIndex];
                     break;
 
                 case STATEMENT::USE:
-                    std::cout << "use " << VariableNames[s.VarIndex] << "\n";
+                    std::cout << "use " << VariableNames[s.VarIndex];
+                    break;
+
+                case STATEMENT::RETURN:
+                    std::cout << "return " << VariableNames[s.VarIndex];
+                    break;
+
+                default:
+                    std::cout << "ERROR. Unknown code!!";
                     break;
             }
+            std::cout << "\n";
         }
     }
 }
@@ -1011,23 +1034,25 @@ void CheckMemoryLeak()
                         if (varlist[i]->indentlevel != indentlevel)
                             continue;
 
-                        // This is highly inaccurate at the moment
-                        //if (Debug)
-                        //{
-                        //    if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
-                        //    {
-                        //        std::ostringstream ostr;
-                        //        ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
-                        //        ReportErr(ostr.str());
-                        //    }
-                        //}
+                        if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
+                        {
+                            std::ostringstream ostr;
+                            ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
+                            ReportErr(ostr.str());
+                        }
 
                         // Delete this instance..
                         delete varlist[i];
                         varlist.erase(varlist.begin()+i);
                     }
                 }
-                indentlevel--;
+
+                // Make sure the varlist is empty..
+                if (indentlevel <= 1)
+                    varlist.clear();
+
+                if (indentlevel > 0)
+                    indentlevel--;
                 break;
 
             case STATEMENT::DECL:
@@ -1063,8 +1088,8 @@ void CheckMemoryLeak()
 
                             if (a1 ^ a2)
                             {
-                                std::cout << (a1 ? "new[]" : "new") << "\n";
-                                std::cout << (a2 ? "delete[]" : "delete") << "\n";
+                                //std::cout << (a1 ? "new[]" : "new") << "\n";
+                                //std::cout << (a2 ? "delete[]" : "delete") << "\n";
 
                                 std::ostringstream ostr;
                                 ostr << FileLine(it->Token) << ": Mismatching allocation and deallocation '" << VariableNames[varlist[i]->varindex] << "'";
@@ -1091,6 +1116,34 @@ void CheckMemoryLeak()
 
             case STATEMENT::ASSIGN:
             case STATEMENT::USE:
+                for (unsigned int i = 0; i < varlist.size(); i++)
+                {
+                    if ( varlist[i]->varindex == it->VarIndex )
+                    {
+                        varlist[i]->value = _variable::Data;
+                        break;
+                    }
+                }
+                break;
+
+            case STATEMENT::RETURN:
+                for (unsigned int i = 0; i < varlist.size(); i++)
+                {
+                    if ( varlist[i]->varindex == it->VarIndex )
+                    {
+                        varlist[i]->value = _variable::Any;
+                    }
+
+                    else if (varlist[i]->value==_variable::New ||
+                             varlist[i]->value==_variable::NewA )
+                    {
+                        std::ostringstream ostr;
+                        ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
+                        ReportErr(ostr.str());
+                        varlist[i]->value = _variable::Any;
+                        break;
+                    }
+                }
                 break;
         }
     }
