@@ -29,7 +29,7 @@ void Tokenize(const char FileName[]);
 std::vector<std::string> VariableNames;
 struct STATEMENT
 {
-    enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY, USE, RETURN};
+    enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY, USE, RETURN, IF, ELSE, ELSEIF};
     etype Type;
     unsigned int VarIndex;
     TOKEN *Token;
@@ -625,6 +625,16 @@ void CreateStatementList()
         }
         else if (indentlevel >= 1)
         {
+            if (strcmp(tok->str,"if")==0)
+                AppendStatement(STATEMENT::IF, tok);
+            else if (strcmp(tok->str,"else")==0)
+            {
+                if (strcmp(getstr(tok,1),"if")==0)
+                    AppendStatement(STATEMENT::ELSEIF, tok);
+                else
+                    AppendStatement(STATEMENT::ELSE, tok);
+            }
+
             // Declaring variables..
             if (IsName(tok->str) && strcmp(tok->str,"delete") && strcmp(tok->str,"return"))
             {
