@@ -29,7 +29,7 @@ void Tokenize(const char FileName[]);
 std::vector<std::string> VariableNames;
 struct STATEMENT
 {
-    enum etype {OBRACE, EBRACE, DECL, ASSIGN, NEW, DELETE, NEWARRAY, DELETEARRAY, USE, RETURN, IF, ELSE, ELSEIF};
+    enum etype {OBRACE, EBRACE, DECL, ASSIGN, MALLOC, FREE, NEW, DELETE, NEWARRAY, DELETEARRAY, USE, RETURN, IF, ELSE, ELSEIF};
     etype Type;
     unsigned int VarIndex;
     TOKEN *Token;
@@ -110,6 +110,10 @@ static void CppCheck(const char FileName[])
     // This function can do dangerous things if used wrong.
     CheckMemset();
 
+
+    // Warnings (Inactivated for now)
+    /*
+
     CheckOperatorEq1();
 
     // Found implementation in header
@@ -117,6 +121,7 @@ static void CppCheck(const char FileName[])
     //WarningHeaderWithImplementation();
 
     // Warning upon c-style pointer casts
+    // This is not very interesting. It should only be shown upon "-Wall" or similar
     const char *ext = strrchr(FileName, '.');
     if (ext && stricmp(ext,".c"))
         WarningOldStylePointerCast();
@@ -126,6 +131,8 @@ static void CppCheck(const char FileName[])
 
     // Including header
     //WarningIncludeHeader();
+
+    */
 
     // if (a) delete a;
     WarningRedundantCode();
@@ -673,6 +680,19 @@ void CreateStatementList()
                 {
                     TOKEN *rs = eq->next;
 
+                    bool ismalloc = false;
+                    if ( rs->str[0] == '(' )
+                    {
+                        ismalloc |= match(rs, "strdup (");
+                        ismalloc |= match(rs, "( type * ) malloc (");
+                        ismalloc |= match(rs, "( type * * ) malloc (");
+                        ismalloc |= match(rs, "( type type * ) malloc (");
+                        ismalloc |= match(rs, "( type type * * ) malloc (");
+                    }
+
+                    if ( ismalloc )
+                        AppendStatement(STATEMENT::MALLOC, tok2, varname);
+
                     if ( match(rs,"new type ;") )
                         AppendStatement(STATEMENT::NEW, tok2, varname);
 
@@ -695,9 +715,13 @@ void CreateStatementList()
                 if (tok2->str[0]==';')
                     break;
 
-                if (match(tok2,"delete var ;"))
+                if (match(tok2, "free ( var ) ;"))
+                    AppendStatement(STATEMENT::FREE, tok2, getstr(tok2, 2));
+
+                if (match(tok2, "delete var ;"))
                     AppendStatement(STATEMENT::DELETE, tok2, getstr(tok2,1));
-                if (match(tok2,"delete [ ] var ;"))
+
+                if (match(tok2, "delete [ ] var ;"))
                     AppendStatement(STATEMENT::DELETEARRAY, tok2, getstr(tok2,3));
             }
 
@@ -1016,7 +1040,7 @@ struct _variable
 {
     int indentlevel;
     unsigned int varindex;
-    enum {Any, Data, New, NewA} value;
+    enum {Any, Data, Malloc, New, NewA} value;
 };
 
 void CheckMemoryLeak()
@@ -1076,16 +1100,18 @@ void CheckMemoryLeak()
                 }
                 break;
 
+            case STATEMENT::MALLOC:
             case STATEMENT::NEW:
             case STATEMENT::NEWARRAY:
+            case STATEMENT::FREE:
             case STATEMENT::DELETE:
             case STATEMENT::DELETEARRAY:
                 for (unsigned int i = 0; i < varlist.size(); i++)
                 {
                     if ( varlist[i]->varindex == it->VarIndex )
                     {
-                        bool isalloc = (varlist[i]->value==_variable::New || varlist[i]->value==_variable::NewA);
-                        bool alloc = (it->Type==STATEMENT::NEW || it->Type==STATEMENT::NEWARRAY);
+                        bool isalloc = (varlist[i]->value==_variable::Malloc || varlist[i]->value==_variable::New || varlist[i]->value==_variable::NewA);
+                        bool alloc = (it->Type==STATEMENT::MALLOC || it->Type==STATEMENT::NEW || it->Type==STATEMENT::NEWARRAY);
 
                         // Already allocated and then allocated again..
                         //bool err = (isalloc & alloc);
@@ -1093,30 +1119,36 @@ void CheckMemoryLeak()
                         if (isalloc && !alloc)
                         {
                             // Check that the deallocation matches..
-                            bool a1 = (varlist[i]->value == _variable::NewA);
-                            bool a2 = (it->Type == STATEMENT::DELETEARRAY);
+                            bool err = false;
 
-                            if (a1 ^ a2)
+                            err |= (varlist[i]->value==_variable::Malloc && it->Type!=STATEMENT::FREE);
+                            err |= (varlist[i]->value==_variable::New    && it->Type!=STATEMENT::DELETE);
+                            err |= (varlist[i]->value==_variable::NewA   && it->Type!=STATEMENT::DELETEARRAY);
+
+                            if (err)
                             {
-                                //std::cout << (a1 ? "new[]" : "new") << "\n";
-                                //std::cout << (a2 ? "delete[]" : "delete") << "\n";
-
                                 std::ostringstream ostr;
                                 ostr << FileLine(it->Token) << ": Mismatching allocation and deallocation '" << VariableNames[varlist[i]->varindex] << "'";
                                 ReportErr(ostr.str());
                             }
                         }
 
-                        if ( it->Type == STATEMENT::NEW )
-                            varlist[i]->value = _variable::New;
+                        if ( it->Type == STATEMENT::MALLOC )
+                            varlist[i]->value = _variable::Malloc;
 
-                        if ( it->Type == STATEMENT::NEWARRAY )
-                            varlist[i]->value = _variable::NewA;
-
-                        if ( it->Type == STATEMENT::DELETE )
+                        else if ( it->Type == STATEMENT::FREE )
                             varlist[i]->value = _variable::Any;
 
-                        if ( it->Type == STATEMENT::DELETEARRAY )
+                        else if ( it->Type == STATEMENT::NEW )
+                            varlist[i]->value = _variable::New;
+
+                        else if ( it->Type == STATEMENT::NEWARRAY )
+                            varlist[i]->value = _variable::NewA;
+
+                        else if ( it->Type == STATEMENT::DELETE )
+                            varlist[i]->value = _variable::Any;
+
+                        else if ( it->Type == STATEMENT::DELETEARRAY )
                             varlist[i]->value = _variable::Any;
 
                         break;
