@@ -649,7 +649,7 @@ void CreateStatementList()
                 bool decl = IsName(str1) || str1[0]=='*';
                 for (TOKEN *tok2 = decl ? tok->next : NULL; tok2; tok2 = tok2->next)
                 {
-                    if (tok2->str[0] == ';' || tok2->str[0] == '.')
+                    if (strchr("{};.", tok2->str[0]))
                         break;
 
                     const char *str1 = getstr(tok2, 1);
@@ -668,7 +668,7 @@ void CreateStatementList()
             // Assign..
             for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
             {
-                if (tok2->str[0]==';')
+                if (strchr("{};", tok2->str[0]))
                     break;
 
                 TOKEN *eq = tok2;
@@ -712,7 +712,7 @@ void CreateStatementList()
             // Delete..
             for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
             {
-                if (tok2->str[0]==';')
+                if (strchr("{};", tok2->str[0]))
                     break;
 
                 if (match(tok2, "free ( var ) ;"))
@@ -730,7 +730,7 @@ void CreateStatementList()
             int parlevel = 0;
             for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
             {
-                if (tok2->str[0]==';')
+                if (strchr("{};", tok2->str[0]))
                     break;
 
                 if (tok2->str[0] == '(')
@@ -758,7 +758,7 @@ void CreateStatementList()
             // Return..
             for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
             {
-                if (strcmp(tok2->str,";")==0)
+                if (strchr("{};", tok2->str[0]))
                     break;
 
                 if (strcmp(tok2->str,"return")==0 &&
@@ -796,6 +796,14 @@ void CreateStatementList()
                     std::cout << "assign " << VariableNames[s.VarIndex];
                     break;
 
+                case STATEMENT::MALLOC:
+                    std::cout << "malloc " << VariableNames[s.VarIndex];
+                    break;
+
+                case STATEMENT::FREE:
+                    std::cout << "free " << VariableNames[s.VarIndex];
+                    break;
+
                 case STATEMENT::NEW:
                     std::cout << "new " << VariableNames[s.VarIndex];
                     break;
@@ -819,6 +827,19 @@ void CreateStatementList()
                 case STATEMENT::RETURN:
                     std::cout << "return " << VariableNames[s.VarIndex];
                     break;
+
+                case STATEMENT::IF:
+                    std::cout << "if";
+                    break;
+
+                case STATEMENT::ELSEIF:
+                    std::cout << "elseif";
+                    break;
+
+                case STATEMENT::ELSE:
+                    std::cout << "else";
+                    break;
+
 
                 default:
                     std::cout << "ERROR. Unknown code!!";
