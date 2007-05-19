@@ -34,7 +34,7 @@ struct STATEMENT
                 MALLOC, FREE,
                 NEW, DELETE,
                 NEWARRAY, DELETEARRAY,
-                IF, ELSE, ELSEIF,
+                IF, ELSE, ELSEIF, ENDIF,
                 RETURN, CONTINUE, BREAK};
     etype Type;
     unsigned int VarIndex;
@@ -638,10 +638,16 @@ void CreateStatementList()
         }
         else if (indentlevel >= 1)
         {
+            bool hasif = false;
+
             if (strcmp(tok->str,"if")==0)
+            {
+                hasif = true;
                 AppendStatement(STATEMENT::IF, tok);
+            }
             else if (strcmp(tok->str,"else")==0)
             {
+                hasif = true;
                 if (strcmp(getstr(tok,1),"if")==0)
                     AppendStatement(STATEMENT::ELSEIF, tok);
                 else
@@ -799,6 +805,11 @@ void CreateStatementList()
                     break;
                 }
             }
+
+            if (hasif)
+            {
+                AppendStatement(STATEMENT::ENDIF, tok);
+            }
         }
     }
 
@@ -867,6 +878,9 @@ void CreateStatementList()
                     std::cout << "else";
                     break;
 
+                case STATEMENT::ENDIF:
+                    std::cout << "endif";
+                    break;
 
                 case STATEMENT::RETURN:
                     std::cout << "return " << VariableNames[s.VarIndex];
