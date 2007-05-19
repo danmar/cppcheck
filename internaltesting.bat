@@ -15,3 +15,8 @@ hydfc internaltesting\testuse.out internaltesting\testuse.msg
 
 cppcheck --debug internaltesting\testif.cpp > internaltesting\testif.msg
 hydfc internaltesting\testif.out internaltesting\testif.msg
+
+cppcheck --debug internaltesting\testloop.cpp > internaltesting\testloop.msg
+hydfc internaltesting\testloop.out internaltesting\testloop.msg
+
+

@@ -1,0 +1,13 @@
+4 : {
+5 : assign i
+5 : use i
+5 : use i
+5 : use j
+5 : use i
+6 : {
+7 : if
+7 : use condition
+8 : continue
+10 : break
+11 : }
+12 : }

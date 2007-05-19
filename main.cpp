@@ -29,7 +29,13 @@ void Tokenize(const char FileName[]);
 std::vector<std::string> VariableNames;
 struct STATEMENT
 {
-    enum etype {OBRACE, EBRACE, DECL, ASSIGN, MALLOC, FREE, NEW, DELETE, NEWARRAY, DELETEARRAY, USE, RETURN, IF, ELSE, ELSEIF};
+    enum etype {OBRACE, EBRACE,
+                DECL, ASSIGN, USE,
+                MALLOC, FREE,
+                NEW, DELETE,
+                NEWARRAY, DELETEARRAY,
+                IF, ELSE, ELSEIF,
+                RETURN, CONTINUE, BREAK};
     etype Type;
     unsigned int VarIndex;
     TOKEN *Token;
@@ -556,7 +562,7 @@ TOKEN *GotoNextStatement(TOKEN *tok)
             parlevel--;
         if (strchr("{}", tok->str[0]))
             break;
-        if (tok->str[0] == ';')
+        if (parlevel==0 && tok->str[0] == ';')
         {
             while (tok && tok->str[0] == ';')
                 tok = tok->next;
@@ -730,7 +736,7 @@ void CreateStatementList()
             int parlevel = 0;
             for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
             {
-                if (strchr("{};", tok2->str[0]))
+                if (parlevel==0 && strchr("{};", tok2->str[0]))
                     break;
 
                 if (tok2->str[0] == '(')
@@ -747,25 +753,50 @@ void CreateStatementList()
                 {
                     std::string varname = "";
                     GetVariableName(tok2, varname);
-                    if (!varname.empty())
-                        AppendStatement(STATEMENT::USE, tok2, varname);
 
-                    if (tok2->str[0]==';')
+                    if (!varname.empty() &&
+                        varname!="continue" &&
+                        varname!="break" &&
+                        varname!="return")
+                    {
+                        AppendStatement(STATEMENT::USE, tok2, varname);
+                    }
+
+                    if (tok2->str[0] == ')')
+                        parlevel--;
+
+                    if (parlevel==0 && tok2->str[0]==';')
                         break;
                 }
             }
 
-            // Return..
+            // Return, continue, break..
             for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
             {
                 if (strchr("{};", tok2->str[0]))
                     break;
 
-                if (strcmp(tok2->str,"return")==0 &&
-                    IsName(getstr(tok2,1)) &&
-                    strcmp(getstr(tok2,2),";")==0)
+                if (strcmp(tok2->str,"continue")==0)
                 {
-                    AppendStatement(STATEMENT::RETURN, tok2, getstr(tok2,1));
+                    AppendStatement(STATEMENT::CONTINUE, tok2);
+                    break;
+                }
+
+                if (strcmp(tok2->str,"break")==0)
+                {
+                    AppendStatement(STATEMENT::BREAK, tok2);
+                    break;
+                }
+
+                if (strcmp(tok2->str,"return")==0)
+                {
+                    if (IsName(getstr(tok2,1)) && strcmp(getstr(tok2,2),";")==0)
+                        AppendStatement(STATEMENT::RETURN, tok2, getstr(tok2,1));
+
+                    else
+                        AppendStatement(STATEMENT::RETURN, tok2, ";");
+
+                    break;
                 }
             }
         }
@@ -824,10 +855,6 @@ void CreateStatementList()
                     std::cout << "use " << VariableNames[s.VarIndex];
                     break;
 
-                case STATEMENT::RETURN:
-                    std::cout << "return " << VariableNames[s.VarIndex];
-                    break;
-
                 case STATEMENT::IF:
                     std::cout << "if";
                     break;
@@ -840,6 +867,18 @@ void CreateStatementList()
                     std::cout << "else";
                     break;
 
+
+                case STATEMENT::RETURN:
+                    std::cout << "return " << VariableNames[s.VarIndex];
+                    break;
+
+                case STATEMENT::CONTINUE:
+                    std::cout << "continue";
+                    break;
+
+                case STATEMENT::BREAK:
+                    std::cout << "break";
+                    break;
 
                 default:
                     std::cout << "ERROR. Unknown code!!";
