@@ -687,9 +687,9 @@ void CreateStatementList()
                     TOKEN *rs = eq->next;
 
                     bool ismalloc = false;
-                    if ( rs->str[0] == '(' )
+                    ismalloc |= match(rs, "strdup (");
+                    if (rs->str[0]=='(' && IsName(getstr(rs,1)))
                     {
-                        ismalloc |= match(rs, "strdup (");
                         ismalloc |= match(rs, "( type * ) malloc (");
                         ismalloc |= match(rs, "( type * * ) malloc (");
                         ismalloc |= match(rs, "( type type * ) malloc (");
