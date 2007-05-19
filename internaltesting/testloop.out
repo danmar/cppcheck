@@ -1,9 +1,11 @@
 4 : {
+5 : loop
 5 : assign i
 5 : use i
 5 : use i
 5 : use j
 5 : use i
+5 : endloop
 6 : {
 7 : if
 7 : use condition
