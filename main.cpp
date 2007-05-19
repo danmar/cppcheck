@@ -34,6 +34,7 @@ struct STATEMENT
                 MALLOC, FREE,
                 NEW, DELETE,
                 NEWARRAY, DELETEARRAY,
+                LOOP, ENDLOOP,
                 IF, ELSE, ELSEIF, ENDIF,
                 RETURN, CONTINUE, BREAK};
     etype Type;
@@ -65,6 +66,9 @@ void WarningIsDigit();
 
 // Redundant code
 void WarningRedundantCode();
+
+// Warning upon: if (condition);
+void WarningIf();
 
 //---------------------------------------------------------------------------
 
@@ -142,6 +146,9 @@ static void CppCheck(const char FileName[])
 
     // if (a) delete a;
     WarningRedundantCode();
+
+    // if (condition);
+    WarningIf();
 
     // Clean up tokens..
     while (tokens)
@@ -638,7 +645,7 @@ void CreateStatementList()
         }
         else if (indentlevel >= 1)
         {
-            bool hasif = false;
+            bool hasif = false, hasloop = false;
 
             if (strcmp(tok->str,"if")==0)
             {
@@ -652,6 +659,14 @@ void CreateStatementList()
                     AppendStatement(STATEMENT::ELSEIF, tok);
                 else
                     AppendStatement(STATEMENT::ELSE, tok);
+            }
+
+            else if (strcmp(tok->str,"do")==0 ||
+                     strcmp(tok->str,"while")==0 ||
+                     strcmp(tok->str,"for")==0)
+            {
+                AppendStatement(STATEMENT::LOOP, tok);
+                hasloop = true;
             }
 
             // Declaring variables..
@@ -809,6 +824,10 @@ void CreateStatementList()
             if (hasif)
             {
                 AppendStatement(STATEMENT::ENDIF, tok);
+            }
+            else if (hasloop)
+            {
+                AppendStatement(STATEMENT::ENDLOOP, tok);
             }
         }
     }
@@ -1189,6 +1208,11 @@ void CheckMemoryLeak()
             case STATEMENT::ELSEIF:
             case STATEMENT::ELSE:
                 // Conditional statements..
+                iflevel++;
+                break;
+
+            case STATEMENT::ENDIF:
+                iflevel--;
                 break;
 
             case STATEMENT::MALLOC:
@@ -1838,4 +1862,39 @@ void WarningRedundantCode()
 //---------------------------------------------------------------------------
 
 
+
+
+//---------------------------------------------------------------------------
+// if (condition);
+//---------------------------------------------------------------------------
+
+void WarningIf()
+{
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (strcmp(tok->str,"if")==0)
+        {
+            int parlevel = 0;
+            for (;tok;tok=tok->next)
+            {
+                if (tok->str[0]=='(')
+                    parlevel++;
+                else if (tok->str[0]==')')
+                {
+                    parlevel--;
+                    if (parlevel<=0)
+                    {
+                        if (strcmp(getstr(tok,1), ";") == 0)
+                        { 
+                            std::ostringstream ostr;
+                            ostr << FileLine(tok) << ": Found \"if (condition);\"";
+                            ReportErr(ostr.str());
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
 
