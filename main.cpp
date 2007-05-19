@@ -1121,6 +1121,9 @@ void CheckMemoryLeak()
 {
     std::vector<_variable *> varlist;
 
+    int iflevel = 0;
+    bool endif = false;
+    std::vector<bool> iflist;
 
     // Parse the statement list and locate memory leaks..
     int indentlevel = 0;
@@ -1131,6 +1134,9 @@ void CheckMemoryLeak()
         {
             case STATEMENT::OBRACE:
                 indentlevel++;
+                iflist.push_back(endif);
+                if (endif)
+                    iflevel++;
                 break;
 
             case STATEMENT::EBRACE:
@@ -1155,6 +1161,11 @@ void CheckMemoryLeak()
                     }
                 }
 
+                // if level..
+                if (iflist.back())
+                    iflevel--;
+                iflist.pop_back();
+
                 // Make sure the varlist is empty..
                 if (indentlevel <= 1)
                     varlist.clear();
@@ -1174,12 +1185,22 @@ void CheckMemoryLeak()
                 }
                 break;
 
+            case STATEMENT::IF:
+            case STATEMENT::ELSEIF:
+            case STATEMENT::ELSE:
+                // Conditional statements..
+                break;
+
             case STATEMENT::MALLOC:
             case STATEMENT::NEW:
             case STATEMENT::NEWARRAY:
             case STATEMENT::FREE:
             case STATEMENT::DELETE:
             case STATEMENT::DELETEARRAY:
+                // Don't handle conditional allocation at the moment..
+                if (iflevel>0 && (it->Type==STATEMENT::MALLOC || it->Type==STATEMENT::NEW || it->Type==STATEMENT::NEWARRAY))
+                    break;
+
                 for (unsigned int i = 0; i < varlist.size(); i++)
                 {
                     if ( varlist[i]->varindex == it->VarIndex )
@@ -1262,6 +1283,8 @@ void CheckMemoryLeak()
                 }
                 break;
         }
+
+        endif = (it->Type == STATEMENT::ENDIF);
     }
 }
 
