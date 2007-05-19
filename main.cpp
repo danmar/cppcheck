@@ -699,7 +699,7 @@ void CreateStatementList()
                     if ( ismalloc )
                         AppendStatement(STATEMENT::MALLOC, tok2, varname);
 
-                    if ( match(rs,"new type ;") )
+                    else if ( match(rs,"new type ;") )
                         AppendStatement(STATEMENT::NEW, tok2, varname);
 
                     else if ( match(rs, "new type (") )
@@ -1128,7 +1128,7 @@ void CheckMemoryLeak()
                         if (varlist[i]->indentlevel != indentlevel)
                             continue;
 
-                        if (varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
+                        if (varlist[i]->value == _variable::Malloc || varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
                         {
                             std::ostringstream ostr;
                             ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
