@@ -885,6 +885,16 @@ void CreateStatementList()
                     std::cout << "use " << VariableNames[s.VarIndex];
                     break;
 
+
+                case STATEMENT::LOOP:
+                    std::cout << "loop";
+                    break;
+
+                case STATEMENT::ENDLOOP:
+                    std::cout << "endloop";
+                    break;
+
+
                 case STATEMENT::IF:
                     std::cout << "if";
                     break;
