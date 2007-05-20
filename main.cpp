@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
 
 //---------------------------------------------------------------------------
@@ -48,6 +49,9 @@ void CreateStatementList();
 
 // Memory leak..
 void CheckMemoryLeak();
+
+// Buffer overrun..
+void CheckBufferOverrun();
 
 // Class
 void CheckConstructors();
@@ -105,6 +109,9 @@ static void CppCheck(const char FileName[])
 
     // Memory leak
     CheckMemoryLeak();
+
+    // Buffer overruns..
+    CheckBufferOverrun();
 
 
     //std::ofstream f("tokens.txt");
@@ -432,6 +439,11 @@ void ReportErr(const std::string errmsg)
 bool IsName(const char str[])
 {
     return (str[0]=='_' || isalpha(str[0]));
+}
+
+bool IsNumber(const char str[])
+{
+    return isdigit(str[0]);
 }
 
 TOKEN *findtoken(TOKEN *tok1, const char *tokenstr[])
@@ -1278,6 +1290,13 @@ void CheckMemoryLeak()
                 iflevel--;
                 break;
 
+            // Not very interested in these..
+            case STATEMENT::LOOP:
+            case STATEMENT::ENDLOOP:
+            case STATEMENT::SWITCH:
+            case STATEMENT::ENDSWITCH:
+                break;
+
             case STATEMENT::MALLOC:
             case STATEMENT::NEW:
             case STATEMENT::NEWARRAY:
@@ -1414,7 +1433,70 @@ void CheckMemoryLeak()
         endswitch = (it->Type == STATEMENT::ENDSWITCH);
     }
 }
+//---------------------------------------------------------------------------
 
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// Buffer overrun..
+//---------------------------------------------------------------------------
+
+void CheckBufferOverrun()
+{
+    int indentlevel = 0;
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (tok->str[0]=='{')
+            indentlevel++;
+
+        else if (tok->str[0]=='}')
+            indentlevel--;
+
+        else if (indentlevel > 0)
+        {
+            // Declaring array..
+            if (match(tok, "type var [ num ] ;"))
+            {
+                const char *varname = getstr(tok,1);
+                unsigned int size = strtoul(getstr(tok,3), NULL, 10);
+                int _indentlevel = indentlevel;
+                for (TOKEN *tok2 = gettok(tok,5); tok2; tok2 = tok2->next)
+                {
+                    if (tok2->str[0]=='{')
+                    {
+                        _indentlevel++;
+                    }
+                    else if (tok2->str[0]=='}')
+                    {
+                        _indentlevel--;
+                        if (_indentlevel <= 0)
+                            break;
+                    }
+                    else
+                    {
+                        if (strcmp(tok2->str,varname)==0 &&
+                            strcmp(getstr(tok2,1),"[")==0 &&
+                            IsNumber(getstr(tok2,2)) &&
+                            strcmp(getstr(tok2,3),"]")==0 )
+                        {
+                            if (strtoul(getstr(tok,3), NULL, 10) >= size)
+                            {
+                                std::ostringstream ostr;
+                                ostr << FileLine(tok2) << ": Array index out of bounds";
+                                ReportErr(ostr.str());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+//---------------------------------------------------------------------------
 
 
 
@@ -2012,6 +2094,9 @@ void WarningIf()
 
 void WarningDangerousFunctions()
 {
+    char str[10];
+    str[20] = 0;
+
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (match(tok, "gets ("))
