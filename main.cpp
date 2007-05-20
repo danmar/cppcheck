@@ -36,6 +36,7 @@ struct STATEMENT
                 NEWARRAY, DELETEARRAY,
                 LOOP, ENDLOOP,
                 IF, ELSE, ELSEIF, ENDIF,
+                SWITCH, ENDSWITCH,
                 RETURN, CONTINUE, BREAK};
     etype Type;
     unsigned int VarIndex;
@@ -645,7 +646,7 @@ void CreateStatementList()
         }
         else if (indentlevel >= 1)
         {
-            bool hasif = false, hasloop = false;
+            bool hasif = false, hasloop = false, hasswitch = false;
 
             if (strcmp(tok->str,"if")==0)
             {
@@ -667,6 +668,12 @@ void CreateStatementList()
             {
                 AppendStatement(STATEMENT::LOOP, tok);
                 hasloop = true;
+            }
+
+            else if (strcmp(tok->str,"switch")==0)
+            {
+                AppendStatement(STATEMENT::SWITCH, tok);
+                hasswitch = true;
             }
 
             // Declaring variables..
@@ -829,6 +836,10 @@ void CreateStatementList()
             {
                 AppendStatement(STATEMENT::ENDLOOP, tok);
             }
+            else if (hasswitch)
+            {
+                AppendStatement(STATEMENT::ENDSWITCH, tok);
+            }
         }
     }
 
@@ -892,6 +903,15 @@ void CreateStatementList()
 
                 case STATEMENT::ENDLOOP:
                     std::cout << "endloop";
+                    break;
+
+
+                case STATEMENT::SWITCH:
+                    std::cout << "switch";
+                    break;
+
+                case STATEMENT::ENDSWITCH:
+                    std::cout << "endswitch";
                     break;
 
 
@@ -1160,6 +1180,11 @@ void CheckMemoryLeak()
     bool endloop = false;
     std::vector<bool> looplist;
 
+    // switch
+    int switchlevel = 0;
+    bool endswitch = false;
+    std::vector<bool> switchlist;
+
     // Parse the statement list and locate memory leaks..
     int indentlevel = 0;
     std::list<STATEMENT>::const_iterator it;
@@ -1175,6 +1200,9 @@ void CheckMemoryLeak()
                 looplist.push_back(endloop);
                 if (endloop)
                     looplevel++;
+                switchlist.push_back(endswitch);
+                if (endswitch)
+                    switchlevel++;
                 break;
 
             case STATEMENT::EBRACE:
@@ -1208,6 +1236,11 @@ void CheckMemoryLeak()
                 if (looplist.back())
                     looplevel--;
                 looplist.pop_back();
+
+                // switch level..
+                if (switchlist.back())
+                    switchlevel--;
+                switchlist.pop_back();
 
                 // Make sure the varlist is empty..
                 if (indentlevel <= 1)
@@ -1339,6 +1372,9 @@ void CheckMemoryLeak()
                     // Find the last loop..
                     for (int i = looplist.size() - 1; i >= 0; i--)
                     {
+                        if (switchlist[i])
+                            break;
+
                         if (!looplist[i])
                             continue;
 
@@ -1369,6 +1405,7 @@ void CheckMemoryLeak()
 
         endif = (it->Type == STATEMENT::ENDIF);
         endloop = (it->Type == STATEMENT::ENDLOOP);
+        endswitch = (it->Type == STATEMENT::ENDSWITCH);
     }
 }
 
