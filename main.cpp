@@ -71,6 +71,9 @@ void WarningRedundantCode();
 // Warning upon: if (condition);
 void WarningIf();
 
+// Using dangerous functions
+void WarningDangerousFunctions();
+
 //---------------------------------------------------------------------------
 
 static void CppCheck(const char FileName[]);
@@ -150,6 +153,9 @@ static void CppCheck(const char FileName[])
 
     // if (condition);
     WarningIf();
+
+    // Dangerous functions, such as 'gets' and 'scanf'
+    WarningDangerousFunctions();
 
     // Clean up tokens..
     while (tokens)
@@ -1994,4 +2000,32 @@ void WarningIf()
         }
     }
 }
+//---------------------------------------------------------------------------
 
+
+
+
+
+//---------------------------------------------------------------------------
+// Dangerous functions
+//---------------------------------------------------------------------------
+
+void WarningDangerousFunctions()
+{
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (match(tok, "gets ("))
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tok) << ": Found 'gets'. You should use 'fgets' instead";
+            ReportErr(ostr.str());
+        }
+
+        else if (match(tok, "scanf (") && strcmp(getstr(tok,2),"\"%s\"") == 0)
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";
+            ReportErr(ostr.str());
+        }
+    }
+}
