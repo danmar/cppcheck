@@ -1885,16 +1885,16 @@ void WarningIf()
         if (strcmp(tok->str,"if")==0)
         {
             int parlevel = 0;
-            for (;tok;tok=tok->next)
+            for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
             {
-                if (tok->str[0]=='(')
+                if (tok2->str[0]=='(')
                     parlevel++;
-                else if (tok->str[0]==')')
+                else if (tok2->str[0]==')')
                 {
                     parlevel--;
                     if (parlevel<=0)
                     {
-                        if (strcmp(getstr(tok,1), ";") == 0)
+                        if (strcmp(getstr(tok2,1), ";") == 0)
                         { 
                             std::ostringstream ostr;
                             ostr << FileLine(tok) << ": Found \"if (condition);\"";
