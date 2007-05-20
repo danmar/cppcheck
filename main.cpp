@@ -1150,9 +1150,15 @@ void CheckMemoryLeak()
 {
     std::vector<_variable *> varlist;
 
+    // if
     int iflevel = 0;
     bool endif = false;
     std::vector<bool> iflist;
+
+    // loop
+    int looplevel = 0;
+    bool endloop = false;
+    std::vector<bool> looplist;
 
     // Parse the statement list and locate memory leaks..
     int indentlevel = 0;
@@ -1166,6 +1172,9 @@ void CheckMemoryLeak()
                 iflist.push_back(endif);
                 if (endif)
                     iflevel++;
+                looplist.push_back(endloop);
+                if (endloop)
+                    looplevel++;
                 break;
 
             case STATEMENT::EBRACE:
@@ -1194,6 +1203,11 @@ void CheckMemoryLeak()
                 if (iflist.back())
                     iflevel--;
                 iflist.pop_back();
+
+                // loop level..
+                if (looplist.back())
+                    looplevel--;
+                looplist.pop_back();
 
                 // Make sure the varlist is empty..
                 if (indentlevel <= 1)
@@ -1316,9 +1330,45 @@ void CheckMemoryLeak()
                     }
                 }
                 break;
+
+            case STATEMENT::CONTINUE:
+            case STATEMENT::BREAK:
+                // Memory leak if variable is allocated..
+                if (looplevel>0)
+                {
+                    // Find the last loop..
+                    for (int i = looplist.size() - 1; i >= 0; i--)
+                    {
+                        if (!looplist[i])
+                            continue;
+
+                        int loop_indentlevel = i + 1;
+
+                        for (i = 0; i < (int)varlist.size(); i++)
+                        {
+                            if (varlist[i]->indentlevel < loop_indentlevel)
+                                continue;
+
+                            if (varlist[i]->value==_variable::Malloc ||
+                                varlist[i]->value==_variable::New ||
+                                varlist[i]->value==_variable::NewA )
+                            {
+                                std::ostringstream ostr;
+                                ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
+                                ReportErr(ostr.str());
+                            }
+
+                            break;
+                        }
+
+                        break;
+                    }
+                }
+                break;
         }
 
         endif = (it->Type == STATEMENT::ENDIF);
+        endloop = (it->Type == STATEMENT::ENDLOOP);
     }
 }
 
