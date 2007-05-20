@@ -1,1 +1,1 @@
-[testmemcheck4\testmemcheck4.cpp:10]: Memory leak:str
+[testmemcheck4\testmemcheck4.cpp:9]: Memory leak:str

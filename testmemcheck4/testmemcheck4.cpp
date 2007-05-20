@@ -7,6 +7,7 @@ void f()
         char *str = strdup("hello");
         if (condition)
             continue;
+        free(str);
     }
 }
 
