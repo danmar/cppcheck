@@ -1,1 +1,1 @@
-[testbufferoverrun1\testbufferoverrun1.cpp:6]: Array index out of bounds
+[testbufferoverrun1\testbufferoverrun1.cpp:7]: Array index out of bounds
