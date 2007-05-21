@@ -16,6 +16,7 @@
 //---------------------------------------------------------------------------
 std::vector<std::string> Files;
 static bool Debug = false;
+static bool ShowWarnings = false;
 //---------------------------------------------------------------------------
 struct TOKEN
 {
@@ -84,15 +85,27 @@ static void CppCheck(const char FileName[]);
 
 int main(int argc, char* argv[])
 {
-    Debug = (argc == 3 && strcmp(argv[1], "--debug")==0);
-
-    if (argc == 1 || argc > 3)
+    const char *fname = NULL;
+    for (int i = 1; i < argc; i++)
     {
-        std::cout << "Syntax:\n    checkcode filename\n";
+        if (stricmp(argv[i],"--debug") == 0)
+            Debug = true;
+
+        else if (stricmp(argv[i],"-w") == 0)
+            ShowWarnings = true;
+
+        else
+            fname = argv[i];
+    }
+
+    if (!fname)
+    {
+        std::cout << "checkcode [-w] filename\n";
+        std::cout << "-w : enables extra warnings\n";
         return 0;
     }
 
-    CppCheck(argv[argc - 1]);
+    CppCheck(fname);
 
     return 0;
 }
@@ -119,10 +132,6 @@ static void CppCheck(const char FileName[])
     //    f << "[" << Files[tok->FileIndex] << ":" << tok->linenr << "]:" << tok->str << '\n';
     //f.close();
 
-    // Check that all class constructors are ok.
-    // Temporarily inactivated to avoid any false positives
-    //CheckConstructors();
-
     // Check that all private functions are called.
     // Temporarily inactivated to avoid any false positives
     CheckUnusedPrivateFunctions();
@@ -132,28 +141,32 @@ static void CppCheck(const char FileName[])
     CheckMemset();
 
 
-    // Warnings (Inactivated for now)
-    /*
+    // Warnings
+    if (ShowWarnings)
+    {
+        // Found implementation in header
+        WarningHeaderWithImplementation();
 
-    CheckOperatorEq1();
+        // Warning upon c-style pointer casts
+        const char *ext = strrchr(FileName, '.');
+        if (ext && stricmp(ext,".c"))
+            WarningOldStylePointerCast();
 
-    // Found implementation in header
-    // Since this is not a bug I am not enabling it right now
-    //WarningHeaderWithImplementation();
+        // Use standard functions instead
+        WarningIsDigit();
 
-    // Warning upon c-style pointer casts
-    // This is not very interesting. It should only be shown upon "-Wall" or similar
-    const char *ext = strrchr(FileName, '.');
-    if (ext && stricmp(ext,".c"))
-        WarningOldStylePointerCast();
+        // Including header
+        //WarningIncludeHeader();
 
-    // Use standard functions instead
-    WarningIsDigit();
+        CheckOperatorEq1();
 
-    // Including header
-    //WarningIncludeHeader();
+        // Check that all class constructors are ok.
+        // Temporarily inactivated to avoid any false positives
+        //CheckConstructors();
+    }
 
-    */
+
+
 
     // if (a) delete a;
     WarningRedundantCode();
@@ -1510,7 +1523,22 @@ void CheckBufferOverrun()
                             strindex = getstr(tok2,2);
                             value = atoi(getstr(tok2,8));
                         }
-                        if (strindex && value>size)
+                        else if (match(tok2,"for ( var = 0 ; var <= num ; var + + )"))
+                        {
+                            strindex = getstr(tok2,2);
+                            value = 1 + atoi(getstr(tok2,8));
+                        }
+                        else if (match(tok2,"for ( var = 0 ; var < num ; + + var )"))
+                        {
+                            strindex = getstr(tok2,2);
+                            value = atoi(getstr(tok2,8));
+                        }
+                        else if (match(tok2,"for ( var = 0 ; var <= num ; + + var )"))
+                        {
+                            strindex = getstr(tok2,2);
+                            value = 1 + atoi(getstr(tok2,8));
+                        }
+                        if (strindex && value>(int)size)
                         {
                             TOKEN *tok3 = tok2;
                             while (tok3 && strcmp(tok3->str,")"))
@@ -1534,7 +1562,33 @@ void CheckBufferOverrun()
                                 }
                                 tok3 = tok3->next;
                             }
+                        }
 
+
+                        // Writing data into array..
+                        if (match(tok2,"strcpy ( var , "))
+                        {
+                            int len = 0;
+                            if (strcmp(getstr(tok2, 2), varname) == 0)
+                            {
+                                const char *str = getstr(tok2, 4);
+                                if (str[0] == '\"')
+                                {
+                                    while (*str)
+                                    {
+                                        if (*str=='\\')
+                                            str++;
+                                        str++;
+                                        len++;
+                                    }
+                                }
+                            }
+                            if (len > 2 && len >= (int)size + 2)
+                            {
+                                std::ostringstream ostr;
+                                ostr << FileLine(tok2) << ": Buffer overrun";
+                                ReportErr(ostr.str());
+                            }
                         }
                     }
                 }
@@ -2140,9 +2194,6 @@ void WarningIf()
 
 void WarningDangerousFunctions()
 {
-    char str[10];
-    str[20] = 0;
-
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (match(tok, "gets ("))
@@ -2160,3 +2211,6 @@ void WarningDangerousFunctions()
         }
     }
 }
+
+
+
