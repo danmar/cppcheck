@@ -2,6 +2,7 @@
 
 void f()
 {
-    char str[10];
-    str[10] = 0;
+    char str[0x10];
+    str[15] = 0;
+    str[16] = 0;
 }
