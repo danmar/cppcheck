@@ -180,9 +180,18 @@ void addtoken(const char str[], const unsigned int lineno, const unsigned int fi
     if (str[0] == 0)
         return;
 
+    // Replace hexadecimal value with decimal
+    char str2[50];
+    memset(str2, 0, sizeof(str2));
+    if (strncmp(str,"0x",2)==0)
+    {
+        unsigned int value = strtoul(str+2, NULL, 16);
+        itoa(value, str2, 10);
+    }
+
     TOKEN *newtoken  = new TOKEN;
     memset(newtoken, 0, sizeof(TOKEN));
-    newtoken->str    = strdup(str);
+    newtoken->str    = strdup(str2[0] ? str2 : str);
     newtoken->linenr = lineno;
     newtoken->FileIndex = fileno;
     if (tokens_back)
@@ -1473,22 +1482,59 @@ void CheckBufferOverrun()
                     else if (tok2->str[0]=='}')
                     {
                         _indentlevel--;
-                        if (_indentlevel <= 0)
+                        if (_indentlevel < indentlevel)
                             break;
                     }
                     else
                     {
+                        // Array index..
                         if (strcmp(tok2->str,varname)==0 &&
                             strcmp(getstr(tok2,1),"[")==0 &&
                             IsNumber(getstr(tok2,2)) &&
                             strcmp(getstr(tok2,3),"]")==0 )
                         {
-                            if (strtoul(getstr(tok,3), NULL, 10) >= size)
+                            const char *str = getstr(tok2, 2);
+                            if (strtoul(str, NULL, 10) >= size)
                             {
                                 std::ostringstream ostr;
                                 ostr << FileLine(tok2) << ": Array index out of bounds";
                                 ReportErr(ostr.str());
                             }
+                        }
+
+                        // Loop..
+                        const char *strindex = 0;
+                        int value = 0;
+                        if (match(tok2,"for ( var = 0 ; var < num ; var + + )"))
+                        {
+                            strindex = getstr(tok2,2);
+                            value = atoi(getstr(tok2,8));
+                        }
+                        if (strindex && value>size)
+                        {
+                            TOKEN *tok3 = tok2;
+                            while (tok3 && strcmp(tok3->str,")"))
+                                tok3 = tok3->next;
+                            if (!tok3)
+                                break;
+                            tok3 = tok3->next;
+                            if (tok3->str[0] == '{')
+                                tok3 = tok3->next;
+                            while (tok3 && !strchr(";}",tok3->str[0]))
+                            {
+                                if (strcmp(tok3->str,varname)==0 &&
+                                    strcmp(getstr(tok3,1),"[")==0 &&
+                                    strcmp(getstr(tok3,2),strindex)==0 &&
+                                    strcmp(getstr(tok3,3),"]")==0 )
+                                {
+                                    std::ostringstream ostr;
+                                    ostr << FileLine(tok3) << ": Buffer overrun";
+                                    ReportErr(ostr.str());
+                                    break;
+                                }
+                                tok3 = tok3->next;
+                            }
+
                         }
                     }
                 }
