@@ -2,7 +2,7 @@
 
 void f()
 {
-    char str[50];
+    int val[50];
     for (i = 0; i < 100; i++)
-        str[i] = 0;
+        sum += val[i];
 }
