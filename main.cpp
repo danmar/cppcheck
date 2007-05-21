@@ -237,6 +237,10 @@ void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
     delete toknext;
 }
 //---------------------------------------------------------------------------
+                  
+static bool match(TOKEN *tok, const std::string pattern);
+TOKEN *gettok(TOKEN *tok, int index);
+const char *getstr(TOKEN *tok, int index);
 
 void Tokenize(const char FileName[])
 {
@@ -443,6 +447,39 @@ void Tokenize(const char FileName[])
         combine_2tokens(tok, "protected", ":");
         combine_2tokens(tok, "public", ":");
     }
+
+    
+    // Replace constants..
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (strcmp(tok->str,"const"))
+            continue;
+
+        const char *sym=NULL, *num=NULL;
+        if (match(tok,"const int var = num ;"))
+        {
+            sym = getstr(tok,2);
+            num = getstr(tok,4);
+        }
+        else if (match(tok,"const unsigned int var = num ;"))
+        {
+            sym = getstr(tok,3);
+            num = getstr(tok,5);
+        }
+        if (sym && num)
+        {
+            for (TOKEN *tok2 = gettok(tok,6); tok2; tok2 = tok2->next)
+            {
+                if (strcmp(tok2->str,sym) == 0)
+                {
+                    free(tok2->str);
+                    tok2->str = strdup(num);
+                }
+            }
+        }
+
+    }
+
 }
 //---------------------------------------------------------------------------
 
