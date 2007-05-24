@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="cppcheck.exe"/>
-    <OBJFILES value="main.obj"/>
+    <OBJFILES value="main.obj tokenize.obj"/>
     <RESFILES value="cppcheck.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -53,6 +53,7 @@
       <FILE FILENAME="cppcheck.res" FORMNAME="" UNITNAME="cppcheck.res" CONTAINERID="ResTool" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="cppcheck.bpf" FORMNAME="" UNITNAME="cppcheck" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="main.cpp" FORMNAME="" UNITNAME="main" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="tokenize.cpp" FORMNAME="" UNITNAME="tokenize" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
@@ -105,7 +106,7 @@ Item0=_DEBUG
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=testdelete1\testdelete1.cpp
+RunParams=testbufferoverrun5\testbufferoverrun5.cpp
 Launcher=
 UseLauncher=0
 DebugCWD=
