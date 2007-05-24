@@ -11,12 +11,7 @@
 std::vector<std::string> Files;
 struct TOKEN *tokens, *tokens_back;
 
-// These functions are in "main.cpp"
-bool match(struct TOKEN *tok, const std::string pattern);
-TOKEN *gettok(struct TOKEN *tok, int index);
-const char *getstr(struct TOKEN *tok, int index);
-
-
+extern bool IsName(const char str[]);
 
 struct DefineSymbol
 {
@@ -406,5 +401,97 @@ void Tokenize(const char FileName[])
 }
 //---------------------------------------------------------------------------
 
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// Helper functions for handling the tokens list
+//---------------------------------------------------------------------------
+
+TOKEN *findtoken(TOKEN *tok1, const char *tokenstr[])
+{
+    for (TOKEN *ret = tok1; ret; ret = ret->next)
+    {
+        unsigned int i = 0;
+        TOKEN *tok = ret;
+        while (tokenstr[i])
+        {
+            if (!tok)
+                return NULL;
+            if (*(tokenstr[i]) && strcmp(tokenstr[i],tok->str))
+                break;
+            tok = tok->next;
+            i++;
+        }
+        if (!tokenstr[i])
+            return ret;
+    }
+    return NULL;
+}
+//---------------------------------------------------------------------------
+
+bool match(TOKEN *tok, const std::string pattern)
+{
+    if (!tok)
+        return false;
+
+    const char *p = pattern.c_str();
+    while (*p)
+    {
+        char str[50];
+        char *s = str;
+        while (*p==' ')
+            p++;
+        while (*p && *p!=' ')
+        {
+            *s = *p;
+            s++;
+            p++;
+        }
+        *s = 0;
+        if (str[0] == 0)
+            return true;
+
+        if (strcmp(str,"var")==0 || strcmp(str,"type")==0)
+        {
+            if (!IsName(tok->str))
+                return false;
+        }
+        else if (strcmp(str,"num")==0)
+        {
+            if (!std::isdigit(tok->str[0]))
+                return false;
+        }
+        else if (strcmp(str, tok->str) != 0)
+            return false;
+
+        tok = tok->next;
+        if (!tok)
+            return false;
+    }
+    return true;
+}
+//---------------------------------------------------------------------------
+
+TOKEN *gettok(TOKEN *tok, int index)
+{
+    while (tok && index>0)
+    {
+        tok = tok->next;
+        index--;
+    }
+    return tok;
+}
+//---------------------------------------------------------------------------
+
+const char *getstr(TOKEN *tok, int index)
+{
+    tok = gettok(tok, index);
+    return tok ? tok->str : "";
+}
+//---------------------------------------------------------------------------
 
 

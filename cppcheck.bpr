@@ -4,7 +4,8 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="cppcheck.exe"/>
-    <OBJFILES value="main.obj tokenize.obj"/>
+    <OBJFILES value="main.obj tokenize.obj CheckMemoryLeak.obj CommonCheck.obj Statements.obj 
+      CheckBufferOverrun.obj CheckClass.obj CheckHeaders.obj"/>
     <RESFILES value="cppcheck.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -54,6 +55,12 @@
       <FILE FILENAME="cppcheck.bpf" FORMNAME="" UNITNAME="cppcheck" CONTAINERID="BPF" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="main.cpp" FORMNAME="" UNITNAME="main" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="tokenize.cpp" FORMNAME="" UNITNAME="tokenize" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CheckMemoryLeak.cpp" FORMNAME="" UNITNAME="CheckMemoryLeak.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CommonCheck.cpp" FORMNAME="" UNITNAME="CommonCheck.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="Statements.cpp" FORMNAME="" UNITNAME="Statements.cpp" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CheckBufferOverrun.cpp" FORMNAME="" UNITNAME="CheckBufferOverrun" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CheckClass.cpp" FORMNAME="" UNITNAME="CheckClass" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CheckHeaders.cpp" FORMNAME="" UNITNAME="CheckHeaders" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
