@@ -11,5 +11,9 @@ std::string FileLine(TOKEN *tok);
 
 void ReportErr(const std::string errmsg);
 
+
+bool IsName(const char str[]);
+bool IsNumber(const char str[]);
+
 //---------------------------------------------------------------------------
 #endif
