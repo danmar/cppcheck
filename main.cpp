@@ -8,40 +8,23 @@
 #include "tokenize.h"   // <- Tokenizer
 #include "statements.h" // <- Statement list
 
-#include "CommonCheck.h"
-
 #include "CheckMemoryLeak.h"
 #include "CheckBufferOverrun.h"
 #include "CheckClass.h"
 #include "CheckHeaders.h"
+#include "CheckOther.h"
 
 //---------------------------------------------------------------------------
 bool Debug = false;
 static bool ShowWarnings = false;
 //---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-
-
-
-// Casting
-void WarningOldStylePointerCast();
-
-// Use standard functions instead
-void WarningIsDigit();
-
-// Redundant code
-void WarningRedundantCode();
-
-// Warning upon: if (condition);
-void WarningIf();
-
-// Using dangerous functions
-void WarningDangerousFunctions();
-
-//---------------------------------------------------------------------------
-
 static void CppCheck(const char FileName[]);
+
+
+//---------------------------------------------------------------------------
+// Main function of cppcheck
+//---------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
@@ -70,13 +53,18 @@ int main(int argc, char* argv[])
     return 0;
 }
 
+//---------------------------------------------------------------------------
+// CppCheck - A function that checks a specified file
+//---------------------------------------------------------------------------
+
 static void CppCheck(const char FileName[])
 {
+    // Tokenize the file
     tokens = tokens_back = NULL;
     Files.clear();
     Tokenize(FileName);
 
-
+    // Create a statement list. It's used by for example 'CheckMemoryLeak'
     CreateStatementList();
 
 
@@ -153,17 +141,6 @@ static void CppCheck(const char FileName[])
 
 
 
-bool IsName(const char str[])
-{
-    return (str[0]=='_' || std::isalpha(str[0]));
-}
-
-bool IsNumber(const char str[])
-{
-    return std::isdigit(str[0]);
-}
-
-//---------------------------------------------------------------------------
 
 
 
@@ -174,184 +151,6 @@ bool IsNumber(const char str[])
 
 
 
-
-
-//---------------------------------------------------------------------------
-// Warning on C-Style casts.. p = (kalle *)foo;
-//---------------------------------------------------------------------------
-
-void WarningOldStylePointerCast()
-{
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        // Old style pointer casting..
-        if (!match(tok, "( type * ) var"))
-            continue;
-
-        // Is "type" a class?
-        const char *pattern[] = {"class","",NULL};
-        pattern[1] = getstr(tok, 1);
-        if (!findtoken(tokens, pattern))
-            continue;
-
-        std::ostringstream ostr;
-        ostr << FileLine(tok) << ": C-style pointer casting";
-        ReportErr(ostr.str());
-    }
-}
-
-
-
-
-//---------------------------------------------------------------------------
-// Use standard function "isdigit" instead
-//---------------------------------------------------------------------------
-
-void WarningIsDigit()
-{
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        bool err = false;
-        err |= match(tok, "var >= '0' && var <= '9'");
-        err |= match(tok, "* var >= '0' && * var <= '9'");
-        err |= match(tok, "( var >= '0' ) && ( var <= '9' )");
-        err |= match(tok, "( * var >= '0' ) && ( * var <= '9' )");
-        if (err)
-        {
-            std::ostringstream ostr;
-            ostr << FileLine(tok) << ": The condition can be simplified; use 'isdigit'";
-            ReportErr(ostr.str());
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
-
-//---------------------------------------------------------------------------
-// Redundant code..
-//---------------------------------------------------------------------------
-
-void WarningRedundantCode()
-{
-
-    // if (p) delete p
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        if (strcmp(tok->str,"if"))
-            continue;
-
-        const char *varname1 = NULL;
-        TOKEN *tok2 = NULL;
-
-        if (match(tok,"if ( var )"))
-        {
-            varname1 = getstr(tok, 2);
-            tok2 = gettok(tok, 4);
-        }
-        else if (match(tok,"if ( var != NULL )"))
-        {
-            varname1 = getstr(tok, 2);
-            tok2 = gettok(tok, 6);
-        }
-
-        if (varname1==NULL || tok2==NULL)
-            continue;
-
-        bool err = false;
-        if (match(tok2,"delete var ;"))
-            err = (strcmp(getstr(tok2,1),varname1)==0);
-        else if (match(tok2,"{ delete var ; }"))
-            err = (strcmp(getstr(tok2,2),varname1)==0);
-        else if (match(tok2,"delete [ ] var ;"))
-            err = (strcmp(getstr(tok2,1),varname1)==0);
-        else if (match(tok2,"{ delete [ ] var ; }"))
-            err = (strcmp(getstr(tok2,2),varname1)==0);
-        else if (match(tok2,"free ( var )"))
-            err = (strcmp(getstr(tok2,2),varname1)==0);
-        else if (match(tok2,"{ free ( var ) ; }"))
-            err = (strcmp(getstr(tok2,3),varname1)==0);
-
-        if (err)
-        {
-            std::ostringstream ostr;
-            ostr << FileLine(tok) << ": Redundant condition. It is safe to deallocate a NULL pointer";
-            ReportErr(ostr.str());
-        }
-    }
-
-
-    // TODO
-    // if (haystack.find(needle) != haystack.end())
-    //    haystack.remove(needle); 
-
-}
-//---------------------------------------------------------------------------
-
-
-
-
-//---------------------------------------------------------------------------
-// if (condition);
-//---------------------------------------------------------------------------
-
-void WarningIf()
-{
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        if (strcmp(tok->str,"if")==0)
-        {
-            int parlevel = 0;
-            for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
-            {
-                if (tok2->str[0]=='(')
-                    parlevel++;
-                else if (tok2->str[0]==')')
-                {
-                    parlevel--;
-                    if (parlevel<=0)
-                    {
-                        if (strcmp(getstr(tok2,1), ";") == 0)
-                        { 
-                            std::ostringstream ostr;
-                            ostr << FileLine(tok) << ": Found \"if (condition);\"";
-                            ReportErr(ostr.str());
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
-
-
-
-
-//---------------------------------------------------------------------------
-// Dangerous functions
-//---------------------------------------------------------------------------
-
-void WarningDangerousFunctions()
-{
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        if (match(tok, "gets ("))
-        {
-            std::ostringstream ostr;
-            ostr << FileLine(tok) << ": Found 'gets'. You should use 'fgets' instead";
-            ReportErr(ostr.str());
-        }
-
-        else if (match(tok, "scanf (") && strcmp(getstr(tok,2),"\"%s\"") == 0)
-        {
-            std::ostringstream ostr;
-            ostr << FileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";
-            ReportErr(ostr.str());
-        }
-    }
-}
 
 
 
