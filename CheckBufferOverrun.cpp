@@ -7,8 +7,6 @@
 
 #include <stdlib.h>     // <- strtoul
 
-extern bool IsNumber(const char str[]);
-
 //---------------------------------------------------------------------------
 
 
@@ -152,6 +150,34 @@ void CheckBufferOverrun()
 
 
 
+
+
+
+
+//---------------------------------------------------------------------------
+// Dangerous functions
+//---------------------------------------------------------------------------
+
+void WarningDangerousFunctions()
+{
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (match(tok, "gets ("))
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tok) << ": Found 'gets'. You should use 'fgets' instead";
+            ReportErr(ostr.str());
+        }
+
+        else if (match(tok, "scanf (") && strcmp(getstr(tok,2),"\"%s\"") == 0)
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";
+            ReportErr(ostr.str());
+        }
+    }
+}
+//---------------------------------------------------------------------------
 
 
 
