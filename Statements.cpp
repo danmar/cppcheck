@@ -2,6 +2,8 @@
 #include "Statements.h"
 #include "tokenize.h"
 
+#include "CommonCheck.h"    // <- IsName
+
 #include <iostream>
 #include <sstream>
 
@@ -9,8 +11,6 @@ std::vector<std::string> VariableNames;
 std::list<STATEMENT> Statements;
 
 extern bool Debug;
-
-extern bool IsName(const char str[]);
 
 
 
