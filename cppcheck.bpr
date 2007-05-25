@@ -5,7 +5,7 @@
     <VERSION value="BCB.06.00"/>
     <PROJECT value="cppcheck.exe"/>
     <OBJFILES value="main.obj tokenize.obj CheckMemoryLeak.obj CommonCheck.obj Statements.obj 
-      CheckBufferOverrun.obj CheckClass.obj CheckHeaders.obj"/>
+      CheckBufferOverrun.obj CheckClass.obj CheckHeaders.obj CheckOther.obj"/>
     <RESFILES value="cppcheck.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -61,6 +61,7 @@
       <FILE FILENAME="CheckBufferOverrun.cpp" FORMNAME="" UNITNAME="CheckBufferOverrun" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="CheckClass.cpp" FORMNAME="" UNITNAME="CheckClass" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
       <FILE FILENAME="CheckHeaders.cpp" FORMNAME="" UNITNAME="CheckHeaders" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
+      <FILE FILENAME="CheckOther.cpp" FORMNAME="" UNITNAME="CheckOther" CONTAINERID="CCompiler" DESIGNCLASS="" LOCALCOMMAND=""/>
   </FILELIST>
   <BUILDTOOLS>
   </BUILDTOOLS>
