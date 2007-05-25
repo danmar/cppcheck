@@ -1,5 +1,6 @@
 //---------------------------------------------------------------------------
 #include "tokenize.h"
+#include "CommonCheck.h"    // <- IsName
 //---------------------------------------------------------------------------
 
 #include <locale>
@@ -10,8 +11,6 @@
 
 std::vector<std::string> Files;
 struct TOKEN *tokens, *tokens_back;
-
-extern bool IsName(const char str[]);
 
 struct DefineSymbol
 {
@@ -396,7 +395,64 @@ void Tokenize(const char FileName[])
                 }
             }
         }
+    }
 
+    // Replace 'sizeof'..
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (strcmp(tok->str,"sizeof") != 0)
+            continue;
+
+        if (match(tok, "sizeof ( unsigned"))
+        {
+            TOKEN *tok1 = tok->next;
+            TOKEN *tok2 = tok1->next;
+            tok1->next = tok2->next;
+            free(tok2->str);
+            delete tok2;
+        }
+
+
+        if (match(tok, "sizeof ( type * )"))
+        {
+            free(tok->str);
+            char str[10];
+            tok->str = strdup(itoa(sizeof(char *), str, 10));
+
+            for (int i = 0; i < 4; i++)
+            {
+                TOKEN *next = tok->next;
+                tok->next = next->next;
+                free(next->str);
+                delete next;
+            }
+        }
+
+        else if (match(tok, "sizeof ( type )"))
+        {
+            int size = -1;
+            const char *type = getstr(tok, 2);
+            if (strcmp(type,"char")==0)
+                size = sizeof(char);
+            if (strcmp(type,"double")==0)
+                size = sizeof(char);
+            if (strcmp(type,"int")==0)
+                size = sizeof(int);
+            if (size < 0)
+                continue;
+
+            free(tok->str);
+            char str[10];
+            tok->str = strdup(itoa(size, str, 10));
+
+            for (int i = 0; i < 3; i++)
+            {
+                TOKEN *next = tok->next;
+                tok->next = next->next;
+                free(next->str);
+                delete next;
+            }
+        }
     }
 }
 //---------------------------------------------------------------------------
