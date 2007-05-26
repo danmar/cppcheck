@@ -33,6 +33,13 @@ void CheckBufferOverrun()
             {
                 const char *varname = getstr(tok,1);
                 unsigned int size = strtoul(getstr(tok,3), NULL, 10);
+                int total_size = 0;
+                if (strcmp(tok->str,"char") == 0)
+                    total_size = size * sizeof(char);
+                else if (strcmp(tok->str,"int") == 0)
+                    total_size = size * sizeof(int);
+                else if (strcmp(tok->str,"double") == 0)
+                    total_size = size * sizeof(double);
                 int _indentlevel = indentlevel;
                 for (TOKEN *tok2 = gettok(tok,5); tok2; tok2 = tok2->next)
                 {
@@ -62,6 +69,31 @@ void CheckBufferOverrun()
                                 ReportErr(ostr.str());
                             }
                         }
+
+                        if (total_size > 0)
+                        {
+
+                            // memset, memcmp, memcpy, strncpy, fgets..
+                            if (strcmp(tok2->str,"memset")==0 ||
+                                strcmp(tok2->str,"memcpy")==0 ||
+                                strcmp(tok2->str,"memcmp")==0 ||
+                                strcmp(tok2->str,"strncpy")==0 ||
+                                strcmp(tok2->str,"fgets")==0 )
+                            {
+                                if (match(tok2->next,"( var , num , num )") ||
+                                    match(tok2->next,"( var , var , num )") )
+                                {
+                                    if (strcmp(getstr(tok2,2),varname)==0 &&
+                                        atoi(getstr(tok2,6))>total_size)
+                                    {
+                                        std::ostringstream ostr;
+                                        ostr << FileLine(tok2) << ": Buffer overrun";
+                                        ReportErr(ostr.str());
+                                    }
+                                }
+                            }
+                        }
+
 
                         // Loop..
                         const char *strindex = 0;
