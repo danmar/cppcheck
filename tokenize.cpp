@@ -454,6 +454,119 @@ void Tokenize(const char FileName[])
             }
         }
     }
+
+    // Replace more sizeof(var)
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        // type array [ 100 ] ;
+        if ( ! match(tok, "type var [ num ] ;") )
+            continue;
+
+        // Get size..
+        int size = -1;
+        if (strcmp(tok->str,"char") == 0)
+            size = sizeof(char);
+        if (strcmp(tok->str,"double") == 0)
+            size = sizeof(double);
+        if (strcmp(tok->str,"int") == 0)
+            size = sizeof(int);
+        if (size <= 0)
+            continue;
+
+        const char *varname = getstr(tok, 1);
+        int total_size = size * atoi( getstr(tok, 3) );
+
+        // Replace 'sizeof(var)' with number
+        int indentlevel = 0;
+        for ( TOKEN *tok2 = gettok(tok,5); tok2; tok2 = tok2->next )
+        {
+            if (tok2->str[0] == '{')
+            {
+                indentlevel++;
+            }
+
+            else if (tok2->str[0] == '}')
+            {
+                indentlevel--;
+                if (indentlevel < 0)
+                    break;
+            }
+
+            else if (match(tok2, "sizeof ( var )"))
+            {
+                if (strcmp(getstr(tok2,2), varname) == 0)
+                {
+                    free(tok2->str);
+                    char str[20];
+                    tok2->str = strdup(itoa(total_size, str, 10));
+
+                    // Delete the other tokens..
+                    for (int i = 0; i < 3; i++)
+                    {
+                        TOKEN *next = tok2->next;
+                        tok2->next = next->next;
+                        free(next->str);
+                        delete next;
+                    }
+                }
+            }
+        }
+    }
+
+
+    // Simple calculations..
+
+    bool done = false;
+    while (!done)
+    {
+        done = true;
+
+        for (TOKEN *tok = tokens; tok; tok = tok->next)
+        {
+            if (match(tok->next, "* 1") || match(tok->next, "1 *"))
+            {
+                TOKEN *next = tok->next;
+                tok->next = tok->next->next->next;
+                free(next->next->str);
+                delete next->next;
+                free(next->str);
+                delete next;
+                done = false;
+            }
+
+            // (1-2)
+            if (strchr("[,(=<>",tok->str[0]) &&
+                IsNumber(getstr(tok,1))   &&
+                strchr("+-*/",*(getstr(tok,2))) &&
+                IsNumber(getstr(tok,3))   &&
+                strchr("],);=<>",*(getstr(tok,4))) )
+            {
+                done = false;
+
+                int i1 = atoi(getstr(tok,1));
+                int i2 = atoi(getstr(tok,3));
+                switch (*(getstr(tok,2)))
+                {
+                    case '+': i1 += i2; break;
+                    case '-': i1 -= i2; break;
+                    case '*': i1 *= i2; break;
+                    case '/': i1 /= i2; break;
+                }
+                tok = tok->next;
+                free(tok->str);
+                char str[10];
+                tok->str = strdup(itoa(i1,str,10));
+                for (int i = 0; i < 2; i++)
+                {
+                    TOKEN *next = tok->next;
+                    tok->next = next->next;
+                    free(next->str);
+                    delete next;
+                }
+            }
+        }
+    }
+
 }
 //---------------------------------------------------------------------------
 
