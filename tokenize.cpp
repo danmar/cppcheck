@@ -636,6 +636,35 @@ void Tokenize(const char FileName[])
             }
         }
     }
+
+
+    // Replace "*(str + num)" => "str[num]"
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if ( ! strchr(";{}(=<>", tok->str[0]) )
+            continue;
+
+        TOKEN *next = tok->next;
+        if ( ! next )
+            break;
+
+        if (match(next, "* ( var + num )"))
+        {
+            const char *str[4] = {"var","[","num","]"};
+            str[0] = getstr(tok,3);
+            str[2] = getstr(tok,5);
+
+            for (int i = 0; i < 4; i++)
+            {
+                tok = tok->next;
+                free(tok->str);
+                tok->str = strdup(str[i]);
+            }
+
+            DeleteNextToken(tok);
+            DeleteNextToken(tok);
+        }
+    }
 }
 //---------------------------------------------------------------------------
 
