@@ -6,11 +6,39 @@
 #include <locale>
 #include <fstream>
 
+#include <map>
+#include <string>
+
 #include <stdlib.h>     // <- strtoul
 
+//---------------------------------------------------------------------------
+
+// Helper functions..
+
+static void Define(const char Name[], const char Value[]);
+
+static void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
+
+static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[]);
+
+static int SizeOfType(const char type[]);
+
+static void DeleteNextToken(TOKEN *tok);
+
+//---------------------------------------------------------------------------
 
 std::vector<std::string> Files;
 struct TOKEN *tokens, *tokens_back;
+
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// Defined symbols.
+// "#define abc 123" will create a defined symbol "abc" with the value 123
+//---------------------------------------------------------------------------
 
 struct DefineSymbol
 {
@@ -59,11 +87,26 @@ static void Define(const char Name[], const char Value[])
     NewSym->next = dsymlist;
     dsymlist = NewSym;
 }
+//---------------------------------------------------------------------------
 
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// addtoken
+// add a token. Used by 'Tokenizer'
+//---------------------------------------------------------------------------
 
 static void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno)
 {
     if (str[0] == 0)
+        return;
+
+    // The keyword 'unsigned' can be skipped for now.
+    if (strcmp(str,"unsigned")==0)
         return;
 
     // Replace hexadecimal value with decimal
@@ -103,6 +146,17 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
 }
 //---------------------------------------------------------------------------
 
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// combine_2tokens
+// Combine two tokens that belong to each other. Ex: "<" and "=" may become "<="
+//---------------------------------------------------------------------------
+
 static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
 {
     if (!(tok && tok->next))
@@ -111,15 +165,57 @@ static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
         return;
 
     free(tok->str);
-    free(tok->next->str);
     tok->str = (char *)malloc(strlen(str1)+strlen(str2)+1);
     strcpy(tok->str, str1);
     strcat(tok->str, str2);
 
-    TOKEN *toknext = tok->next;
-    tok->next = toknext->next;
-    delete toknext;
+    DeleteNextToken(tok);
 }
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// SizeOfType - gives the size of a type
+//---------------------------------------------------------------------------
+
+std::map<std::string, unsigned int> TypeSize;
+
+static int SizeOfType(const char type[])
+{
+    if (!type)
+        return 0;
+
+    return TypeSize[type];
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// DeleteNextToken. Unlink and delete next token.
+//---------------------------------------------------------------------------
+
+static void DeleteNextToken(TOKEN *tok)
+{
+    TOKEN *next = tok->next;
+    tok->next = next->next;
+    free(next->str);
+    delete next;
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
 void Tokenize(const char FileName[])
@@ -370,22 +466,11 @@ void Tokenize(const char FileName[])
     // Replace constants..
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (strcmp(tok->str,"const"))
-            continue;
+        if (match(tok,"const type var = num ;"))
+        {
+            const char *sym = getstr(tok,2);
+            const char *num = getstr(tok,4);
 
-        const char *sym=NULL, *num=NULL;
-        if (match(tok,"const int var = num ;"))
-        {
-            sym = getstr(tok,2);
-            num = getstr(tok,4);
-        }
-        else if (match(tok,"const unsigned int var = num ;"))
-        {
-            sym = getstr(tok,3);
-            num = getstr(tok,5);
-        }
-        if (sym && num)
-        {
             for (TOKEN *tok2 = gettok(tok,6); tok2; tok2 = tok2->next)
             {
                 if (strcmp(tok2->str,sym) == 0)
@@ -397,79 +482,74 @@ void Tokenize(const char FileName[])
         }
     }
 
-    // Replace 'sizeof'..
+
+    // Fill the map TypeSize..
+    TypeSize.clear();
+    TypeSize["char"] = sizeof(char);
+    TypeSize["short"] = sizeof(short);
+    TypeSize["int"] = sizeof(int);
+    TypeSize["long"] = sizeof(long);
+    TypeSize["float"] = sizeof(float);
+    TypeSize["double"] = sizeof(double);
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (match(tok,"class type"))
+        {
+            TypeSize[getstr(tok,1)] = 11;
+        }
+
+        else if (match(tok, "struct type"))
+        {
+            TypeSize[getstr(tok,1)] = 13;
+        }
+    }
+
+
+    // Replace 'sizeof(type)'..
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (strcmp(tok->str,"sizeof") != 0)
             continue;
 
-        if (match(tok, "sizeof ( unsigned"))
-        {
-            TOKEN *tok1 = tok->next;
-            TOKEN *tok2 = tok1->next;
-            tok1->next = tok2->next;
-            free(tok2->str);
-            delete tok2;
-        }
-
-
         if (match(tok, "sizeof ( type * )"))
         {
             free(tok->str);
             char str[10];
+            // 'sizeof(type *)' has the same size as 'sizeof(char *)'
             tok->str = strdup(itoa(sizeof(char *), str, 10));
 
             for (int i = 0; i < 4; i++)
             {
-                TOKEN *next = tok->next;
-                tok->next = next->next;
-                free(next->str);
-                delete next;
+                DeleteNextToken(tok);
             }
         }
 
         else if (match(tok, "sizeof ( type )"))
         {
-            int size = -1;
             const char *type = getstr(tok, 2);
-            if (strcmp(type,"char")==0)
-                size = sizeof(char);
-            if (strcmp(type,"double")==0)
-                size = sizeof(char);
-            if (strcmp(type,"int")==0)
-                size = sizeof(int);
-            if (size < 0)
-                continue;
-
-            free(tok->str);
-            char str[10];
-            tok->str = strdup(itoa(size, str, 10));
-
-            for (int i = 0; i < 3; i++)
+            int size = SizeOfType(type);
+            if (size > 0)
             {
-                TOKEN *next = tok->next;
-                tok->next = next->next;
-                free(next->str);
-                delete next;
+                free(tok->str);
+                char str[10];
+                tok->str = strdup(itoa(size, str, 10));
+
+                for (int i = 0; i < 3; i++)
+                {
+                    DeleteNextToken(tok);
+                }
             }
         }
     }
 
-    // Replace more sizeof(var)
+    // Replace 'sizeof(var)'
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        // type array [ 100 ] ;
+        // type array [ num ] ;
         if ( ! match(tok, "type var [ num ] ;") )
             continue;
 
-        // Get size..
-        int size = -1;
-        if (strcmp(tok->str,"char") == 0)
-            size = sizeof(char);
-        if (strcmp(tok->str,"double") == 0)
-            size = sizeof(double);
-        if (strcmp(tok->str,"int") == 0)
-            size = sizeof(int);
+        int size = SizeOfType(tok->str);
         if (size <= 0)
             continue;
 
@@ -503,10 +583,7 @@ void Tokenize(const char FileName[])
                     // Delete the other tokens..
                     for (int i = 0; i < 3; i++)
                     {
-                        TOKEN *next = tok2->next;
-                        tok2->next = next->next;
-                        free(next->str);
-                        delete next;
+                        DeleteNextToken(tok2);
                     }
                 }
             }
@@ -525,12 +602,8 @@ void Tokenize(const char FileName[])
         {
             if (match(tok->next, "* 1") || match(tok->next, "1 *"))
             {
-                TOKEN *next = tok->next;
-                tok->next = tok->next->next->next;
-                free(next->next->str);
-                delete next->next;
-                free(next->str);
-                delete next;
+                for (int i = 0; i < 2; i++)
+                    DeleteNextToken(tok);
                 done = false;
             }
 
@@ -558,15 +631,11 @@ void Tokenize(const char FileName[])
                 tok->str = strdup(itoa(i1,str,10));
                 for (int i = 0; i < 2; i++)
                 {
-                    TOKEN *next = tok->next;
-                    tok->next = next->next;
-                    free(next->str);
-                    delete next;
+                    DeleteNextToken(tok);
                 }
             }
         }
     }
-
 }
 //---------------------------------------------------------------------------
 
