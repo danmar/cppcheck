@@ -525,6 +525,68 @@ void SimplifyTokenList()
 
 
 
+    // typedefs..
+    TOKEN *prev = NULL;
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (!prev)
+            tok = tokens;
+
+        if ( strcmp(tok->str, "typedef") == 0 )
+        {
+            TOKEN *type0 = tok->next;
+            int len = 1;
+            while ( strcmp(getstr(type0, len+1), ";") != 0)
+                len++;
+
+            const char *typestr = getstr(type0, len);
+            if (typestr[0] != ')')  // Function pointer
+            {
+                // Replace tokens..
+                for ( TOKEN *tok2 = gettok(type0, len+1); tok2; tok2 = tok2->next )
+                {
+                    if (strcmp(tok2->str,"typedef")==0)
+                    {
+                        while (tok2->next->str[0] != ';')
+                            tok2 = tok2->next;
+                        continue;
+                    }
+
+                    TOKEN *next = tok2->next;
+                    if (next && strcmp(next->str, typestr) == 0)
+                    {
+                        DeleteNextToken(tok2);
+                        InsertTokens( tok2, type0, len );
+                    }
+                }
+            }
+
+            // Delete typedef..
+            if (!prev)
+            {
+                while ( tokens && tokens->str[0] != ';' )
+                {
+                    TOKEN *next = tokens->next;
+                    free(tokens->str);
+                    delete tokens;
+                    tokens = next;
+                }
+                tok = tokens;
+                prev = NULL;
+                continue;
+            }
+            else
+            {
+                while ( prev->next->str[0] != ';' )
+                    DeleteNextToken(prev);
+                tok = prev;
+            }
+        }
+        prev = tok;
+    }
+
+
+
     // Fill the map TypeSize..
     TypeSize.clear();
     TypeSize["char"] = sizeof(char);
@@ -732,7 +794,7 @@ void SimplifyTokenList()
         else if ( match(type0, "type * var ,") )
         {
             tok2 = gettok(type0, 3);    // The ',' token
-            typelen = 2;
+            typelen = 1;
         }
 
         else if ( match(type0, "type var [ num ] ,") )
@@ -744,6 +806,18 @@ void SimplifyTokenList()
         else if ( match(type0, "type * var [ num ] ,") )
         {
             tok2 = gettok(type0, 6);    // The ',' token
+            typelen = 1;
+        }
+
+        else if ( match(type0, "struct type var ,") )
+        {
+            tok2 = gettok(type0, 3);
+            typelen = 2;
+        }
+
+        else if ( match(type0, "struct type * var ,") )
+        {
+            tok2 = gettok(type0, 4);
             typelen = 2;
         }
 
@@ -757,6 +831,12 @@ void SimplifyTokenList()
         else if ( match(type0, "type * var =") )
         {
             tok2 = gettok(type0, 3);
+            typelen = 1;
+        }
+
+        else if ( match(type0, "struct type * var =") )
+        {
+            tok2 = gettok(type0, 4);
             typelen = 2;
         }
 
@@ -791,7 +871,10 @@ void SimplifyTokenList()
                     else if ( parlevel==0 && strchr(";,",tok2->str[0]) )
                     {
                         // "type var ="   =>   "type var; var ="
-                        InsertTokens(eq, gettok(type0,typelen), 2);
+                        TOKEN *VarTok = gettok(type0,typelen);
+                        if (VarTok->str[0]=='*')
+                            VarTok = VarTok->next;
+                        InsertTokens(eq, VarTok, 2);
                         free(eq->str);
                         eq->str = strdup(";");
 
@@ -912,5 +995,26 @@ const char *getstr(TOKEN *tok, int index)
 
 
 
+// Deallocate lists..
+void DeallocateTokens()
+{
+    while (tokens)
+    {
+        TOKEN *next = tokens->next;
+        free(tokens->str);
+        delete tokens;
+        tokens = next;
+    }
+    tokens_back = tokens;
+
+    while (dsymlist)
+    {
+        struct DefineSymbol *next = dsymlist->next;
+        free(dsymlist->name);
+        free(dsymlist->value);
+        delete dsymlist;
+        dsymlist = next;        
+    }
+}
 
 

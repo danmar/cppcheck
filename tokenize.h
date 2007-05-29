@@ -25,6 +25,10 @@ void Tokenize(const char FileName[]);
 void SimplifyTokenList();
 
 
+// Deallocate lists..
+void DeallocateTokens();
+
+
 // Helper functions for handling the tokens list..
 TOKEN *findtoken(TOKEN *tok1, const char *tokenstr[]);
 bool match(TOKEN *tok, const std::string pattern);
