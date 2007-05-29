@@ -20,6 +20,10 @@ extern struct TOKEN *tokens, *tokens_back;
 
 void Tokenize(const char FileName[]);
 
+// Simplify tokenlist
+// -----------------------------
+void SimplifyTokenList();
+
 
 // Helper functions for handling the tokens list..
 TOKEN *findtoken(TOKEN *tok1, const char *tokenstr[]);

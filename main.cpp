@@ -64,6 +64,16 @@ static void CppCheck(const char FileName[])
     Files.clear();
     Tokenize(FileName);
 
+
+    // Check that the memsets are valid.
+    // This function can do dangerous things if used wrong.
+    // Important: The checking doesn't work on simplified tokens list.
+    CheckMemset();
+
+
+    SimplifyTokenList();
+
+
     // Create a statement list. It's used by for example 'CheckMemoryLeak'
     CreateStatementList();
 
@@ -75,18 +85,9 @@ static void CppCheck(const char FileName[])
     CheckBufferOverrun();
 
 
-    //std::ofstream f("tokens.txt");
-    //for (TOKEN *tok = tokens; tok; tok = tok->next)
-    //    f << "[" << Files[tok->FileIndex] << ":" << tok->linenr << "]:" << tok->str << '\n';
-    //f.close();
-
     // Check that all private functions are called.
     // Temporarily inactivated to avoid any false positives
     CheckUnusedPrivateFunctions();
-
-    // Check that the memsets are valid.
-    // This function can do dangerous things if used wrong.
-    CheckMemset();
 
 
     // Warnings

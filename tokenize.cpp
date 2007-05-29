@@ -215,6 +215,33 @@ static void DeleteNextToken(TOKEN *tok)
 
 
 //---------------------------------------------------------------------------
+// InsertTokens - Copy and insert tokens
+//---------------------------------------------------------------------------
+
+void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
+{
+    while (n > 0)
+    {
+        TOKEN *NewToken = new TOKEN;
+        NewToken->FileIndex = src->FileIndex;
+        NewToken->linenr = src->linenr;
+        NewToken->str = strdup(src->str);
+
+        NewToken->next = dest->next;
+        dest->next = NewToken;
+
+        dest = dest->next;
+        src  = src->next;
+        n--;
+    }
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
@@ -461,8 +488,22 @@ void Tokenize(const char FileName[])
         combine_2tokens(tok, "protected", ":");
         combine_2tokens(tok, "public", ":");
     }
+}
+//---------------------------------------------------------------------------
 
-    
+
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// Simplify token list
+//---------------------------------------------------------------------------
+
+void SimplifyTokenList()
+{
     // Replace constants..
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -481,6 +522,7 @@ void Tokenize(const char FileName[])
             }
         }
     }
+
 
 
     // Fill the map TypeSize..
@@ -591,6 +633,8 @@ void Tokenize(const char FileName[])
     }
 
 
+
+
     // Simple calculations..
 
     bool done = false;
@@ -665,8 +709,113 @@ void Tokenize(const char FileName[])
             DeleteNextToken(tok);
         }
     }
+
+
+
+    // Split up variable declarations if possible..
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if ( ! strchr("{};", tok->str[0]) )
+            continue;
+
+        TOKEN *type0 = tok->next;
+
+        TOKEN *tok2 = NULL;
+        unsigned int typelen = 0;
+
+        if ( match(type0, "type var ,") )
+        {
+            tok2 = gettok(type0, 2);    // The ',' token
+            typelen = 1;
+        }
+
+        else if ( match(type0, "type * var ,") )
+        {
+            tok2 = gettok(type0, 3);    // The ',' token
+            typelen = 2;
+        }
+
+        else if ( match(type0, "type var [ num ] ,") )
+        {
+            tok2 = gettok(type0, 5);    // The ',' token
+            typelen = 1;
+        }
+
+        else if ( match(type0, "type * var [ num ] ,") )
+        {
+            tok2 = gettok(type0, 6);    // The ',' token
+            typelen = 2;
+        }
+
+
+        else if ( match(type0, "type var =") )
+        {
+            tok2 = gettok(type0, 2);
+            typelen = 1;
+        }
+
+        else if ( match(type0, "type * var =") )
+        {
+            tok2 = gettok(type0, 3);
+            typelen = 2;
+        }
+
+        if (tok2)
+        {
+            if (tok2->str[0] == ',')
+            {
+                free(tok2->str);
+                tok2->str = strdup(";");
+                InsertTokens(tok2, type0, typelen);
+            }
+
+            else
+            {
+                TOKEN *eq = tok2;
+
+                int parlevel = 0;
+                while (tok2)
+                {
+                    if ( strchr("{(", tok2->str[0]) )
+                    {
+                        parlevel++;
+                    }
+
+                    else if ( strchr("})", tok2->str[0]) )
+                    {
+                        if (parlevel<0)
+                            break;
+                        parlevel--;
+                    }
+
+                    else if ( parlevel==0 && strchr(";,",tok2->str[0]) )
+                    {
+                        // "type var ="   =>   "type var; var ="
+                        InsertTokens(eq, gettok(type0,typelen), 2);
+                        free(eq->str);
+                        eq->str = strdup(";");
+
+                        // "= x, "   =>   "= x; type "
+                        if (tok2->str[0] == ',')
+                        {
+                            free(tok2->str);
+                            tok2->str = strdup(";");
+                            InsertTokens( tok2, type0, typelen );
+                        }
+                        break;
+                    }
+
+                    tok2 = tok2->next;
+                }
+            }
+        }
+    }
 }
 //---------------------------------------------------------------------------
+
+
+
+
 
 
 
@@ -760,5 +909,8 @@ const char *getstr(TOKEN *tok, int index)
     return tok ? tok->str : "";
 }
 //---------------------------------------------------------------------------
+
+
+
 
 

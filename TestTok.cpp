@@ -14,6 +14,7 @@ int main(int argc, char* argv[])
 
     tokens = tokens_back = NULL;
     Tokenize(argv[1]);
+    SimplifyTokenList();
 
     unsigned int linenr = 0;
     for (TOKEN *tok = tokens; tok; tok = tok->next)

@@ -164,7 +164,7 @@ Item6=bjornb.cod bjornb.920
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=testbufferoverrun6\testbufferoverrun6.cpp
+RunParams=test.cpp
 Launcher=
 UseLauncher=0
 DebugCWD=
