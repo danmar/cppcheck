@@ -4,7 +4,7 @@
   <MACROS>
     <VERSION value="BCB.06.00"/>
     <PROJECT value="tok.exe"/>
-    <OBJFILES value="TestTok.obj tokenize.obj CommonCheck.obj"/>
+    <OBJFILES value="tokobj\TestTok.obj tokobj\tokenize.obj tokobj\CommonCheck.obj"/>
     <RESFILES value="tok.res"/>
     <IDLFILES value=""/>
     <DEFFILE value=""/>
@@ -12,7 +12,7 @@
     <LIBFILES value=""/>
     <LIBRARIES value=""/>
     <SPARELIBS value=""/>
-    <PACKAGES value=""/>
+    <PACKAGES value="vcl.bpi rtl.bpi vclx.bpi"/>
     <PATHCPP value=".;"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
@@ -34,10 +34,10 @@
       -Vx -Ve -Tkh30000 -X- -r- -a8 -b- -k -y -v -vi- -tWC -tWM- -c"/>
     <CFLAG2 value=""/>
     <CFLAG3 value=""/>
-    <PFLAGS value="-$YD -$W -$O- -$A8 -v -M -JPHNE"/>
+    <PFLAGS value="-N2tokobj -N0tokobj -$YD -$W -$O- -$A8 -v -M -JPHNE"/>
     <RFLAGS value=""/>
     <AFLAGS value="/mx /w2 /zd"/>
-    <LFLAGS value="-D&quot;&quot; -ap -Tpe -x -Gn -v"/>
+    <LFLAGS value="-Itokobj -D&quot;&quot; -ap -Tpe -x -Gn -v"/>
     <IFLAGS value=""/>
     <OTHERFILES value=""/>
   </OPTIONS>
@@ -128,19 +128,21 @@ c:\program files\borland\cbuilder6\PROJECTS\BPL\Iocomp65clx.bpl=Iocomp Package C
 c:\program files\borland\cbuilder6\Bin\dclite60.bpl=Borland Integrated Translation Environment
 
 [HistoryLists\hlIncludePath]
-Count=3
-Item0=C:\Program Files\Borland\CBuilder6\Projects;S:\test\prjman;$(BCB)\include;$(BCB)\include\vcl
-Item1=$(BCB)\include;$(BCB)\include\vcl
-Item2=e:\minadok\kod\bcb\components;e:\minadok\kod\bcb\clientserver;$(BCB)\include;$(BCB)\include\vcl
+Count=4
+Item0=S:\test\cppcheck;C:\Program Files\Borland\CBuilder6\Projects;S:\test\prjman;$(BCB)\include;$(BCB)\include\vcl
+Item1=C:\Program Files\Borland\CBuilder6\Projects;S:\test\prjman;$(BCB)\include;$(BCB)\include\vcl
+Item2=$(BCB)\include;$(BCB)\include\vcl
+Item3=e:\minadok\kod\bcb\components;e:\minadok\kod\bcb\clientserver;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=6
-Item0=C:\Program Files\Borland\CBuilder6\Projects;S:\test\prjman;$(BCB)\lib\obj;$(BCB)\lib
-Item1=$(BCB)\lib\obj;$(BCB)\lib
-Item2=..\..\..\..\..\program\borland\cbuilder3\lib;$(BCB)\lib\obj;$(BCB)\lib;d:\minadok\kod\bcb\components
-Item3=..\..\..\..\..\program\borland\cbuilder3\lib;$(BCB)\lib\obj;$(BCB)\lib
-Item4=e:\minadok\kod\bcb\components;e:\minadok\kod\bcb\clientserver;..\..\bokf\components;..\bokf\components;$(BCB)\lib\obj;$(BCB)\lib
-Item5=..\..\bokf\components;..\bokf\components;$(BCB)\lib\obj;$(BCB)\lib
+Count=7
+Item0=S:\test\cppcheck;$(BCB)\lib\obj;$(BCB)\lib
+Item1=C:\Program Files\Borland\CBuilder6\Projects;S:\test\prjman;$(BCB)\lib\obj;$(BCB)\lib
+Item2=$(BCB)\lib\obj;$(BCB)\lib
+Item3=..\..\..\..\..\program\borland\cbuilder3\lib;$(BCB)\lib\obj;$(BCB)\lib;d:\minadok\kod\bcb\components
+Item4=..\..\..\..\..\program\borland\cbuilder3\lib;$(BCB)\lib\obj;$(BCB)\lib
+Item5=e:\minadok\kod\bcb\components;e:\minadok\kod\bcb\clientserver;..\..\bokf\components;..\bokf\components;$(BCB)\lib\obj;$(BCB)\lib
+Item6=..\..\bokf\components;..\bokf\components;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=1
@@ -149,6 +151,10 @@ Item0=$(BCB)\source\vcl
 [HistoryLists\hlConditionals]
 Count=1
 Item0=_RTLDLL;USEPACKAGES
+
+[HistoryLists\hlIntOutputDir]
+Count=1
+Item0=tokobj
 
 [HistoryLists\hlRunParameters]
 Count=7
@@ -164,7 +170,7 @@ Item6=bjornb.cod bjornb.920
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=test.cpp
+RunParams=pctool\createmenu_script.cpp
 Launcher=
 UseLauncher=0
 DebugCWD=

@@ -127,13 +127,7 @@ static void CppCheck(const char FileName[])
     WarningDangerousFunctions();
 
     // Clean up tokens..
-    while (tokens)
-    {
-        TOKEN *next = tokens->next;
-        free(tokens->str);
-        delete tokens;
-        tokens = next;
-    }
+    DeallocateTokens();
 }
 //---------------------------------------------------------------------------
 

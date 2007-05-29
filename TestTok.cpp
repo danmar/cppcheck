@@ -32,13 +32,7 @@ int main(int argc, char* argv[])
 
 
     // Delete all tokens..
-    while (tokens)
-    {
-        TOKEN *next = tokens->next;
-        free(tokens->str);
-        delete tokens;
-        tokens = next;
-    }
+    DeallocateTokens();
 
     return 0;
 }
