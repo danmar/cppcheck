@@ -183,7 +183,7 @@ static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
 
 std::map<std::string, unsigned int> TypeSize;
 
-static int SizeOfType(const char type[])
+int SizeOfType(const char type[])
 {
     if (!type)
         return 0;
@@ -416,8 +416,11 @@ void Tokenize(const char FileName[])
             do
             {
                 // Append token..
-                *pToken = c;
-                pToken++;
+                if ( pToken < &CurrentToken[sizeof(CurrentToken)-10] )
+                {
+                    *pToken = c;
+                    pToken++;
+                }
 
                 // Special sequence '\.'
                 if (special)
@@ -526,6 +529,7 @@ void SimplifyTokenList()
 
 
     // typedefs..
+    /*
     TOKEN *prev = NULL;
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -557,6 +561,7 @@ void SimplifyTokenList()
                     {
                         DeleteNextToken(tok2);
                         InsertTokens( tok2, type0, len );
+                        tok2 = gettok(tok2, len);
                     }
                 }
             }
@@ -584,7 +589,7 @@ void SimplifyTokenList()
         }
         prev = tok;
     }
-
+    */
 
 
     // Fill the map TypeSize..

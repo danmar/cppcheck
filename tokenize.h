@@ -20,6 +20,9 @@ extern struct TOKEN *tokens, *tokens_back;
 
 void Tokenize(const char FileName[]);
 
+// Return size.
+int SizeOfType(const char type[]);
+
 // Simplify tokenlist
 // -----------------------------
 void SimplifyTokenList();
