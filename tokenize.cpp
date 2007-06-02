@@ -21,8 +21,6 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
 
 static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[]);
 
-static int SizeOfType(const char type[]);
-
 static void DeleteNextToken(TOKEN *tok);
 
 //---------------------------------------------------------------------------
@@ -332,6 +330,12 @@ void Tokenize(const char FileName[])
                 free(strId);
             }
 
+            else
+            {
+                addtoken("#", lineno, CurrentFile);
+                addtoken(";", lineno, CurrentFile);
+            }
+
             lineno++;
             continue;
         }
@@ -529,7 +533,6 @@ void SimplifyTokenList()
 
 
     // typedefs..
-    /*
     TOKEN *prev = NULL;
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -539,9 +542,17 @@ void SimplifyTokenList()
         if ( strcmp(tok->str, "typedef") == 0 )
         {
             TOKEN *type0 = tok->next;
-            int len = 1;
-            while ( strcmp(getstr(type0, len+1), ";") != 0)
+            int len = 0, parlevel = 0;
+            for ( TOKEN *tok2 = gettok(type0,1); tok2; tok2 = tok2->next)
+            {
+                if (strchr("{(", tok2->str[0]))
+                    parlevel++;
+                else if (strchr("})", tok2->str[0]))
+                    parlevel--;
+                else if (parlevel==0 && tok2->str[0]==';')
+                    break;
                 len++;
+            }
 
             const char *typestr = getstr(type0, len);
             if (typestr[0] != ')')  // Function pointer
@@ -589,7 +600,6 @@ void SimplifyTokenList()
         }
         prev = tok;
     }
-    */
 
 
     // Fill the map TypeSize..
@@ -786,6 +796,10 @@ void SimplifyTokenList()
             continue;
 
         TOKEN *type0 = tok->next;
+        if (!type0)
+            break;
+        if (strcmp(type0->str, "else") == 0)
+            continue;
 
         TOKEN *tok2 = NULL;
         unsigned int typelen = 0;
