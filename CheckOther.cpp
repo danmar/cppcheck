@@ -128,6 +128,8 @@ void WarningRedundantCode()
 
 void WarningIf()
 {
+
+    // Search for 'if (condition);'
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (strcmp(tok->str,"if")==0)
@@ -142,7 +144,8 @@ void WarningIf()
                     parlevel--;
                     if (parlevel<=0)
                     {
-                        if (strcmp(getstr(tok2,1), ";") == 0)
+                        if (strcmp(getstr(tok2,1), ";") == 0 &&
+                            strcmp(getstr(tok2,2), "else") != 0)
                         {
                             std::ostringstream ostr;
                             ostr << FileLine(tok) << ": Found \"if (condition);\"";
@@ -153,6 +156,56 @@ void WarningIf()
                 }
             }
         }
+    }
+
+    // Search for 'a=b; if (a==b)'
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        // Begin statement?
+        if ( ! strchr(";{}", tok->str[0]) )
+            continue;
+        tok = tok->next;
+        if ( ! tok )
+            break;
+
+        if (!match(tok,"var = var ; if ( var"))
+            continue;
+
+        if ( strcmp(getstr(tok, 9), ")") != 0 )
+            continue;
+
+        // var1 = var2 ; if ( var3 cond var4 )
+        const char *var1 = tok->str;
+        const char *var2 = getstr(tok, 2);
+        const char *var3 = getstr(tok, 6);
+        const char *cond = getstr(tok, 7);
+        const char *var4 = getstr(tok, 8);
+
+        // Check that var3 is equal with either var1 or var2
+        if (strcmp(var1,var3) && strcmp(var2,var3))
+            continue;
+
+        // Check that var4 is equal with either var1 or var2
+        if (strcmp(var1,var4) && strcmp(var2,var4))
+            continue;
+
+        // Check that there is a condition..
+        const char *p[6] = {"==","<=",">=","!=","<",">"};
+        bool iscond = false;
+        for (int i = 0; i < 6; i++)
+            iscond |= (strcmp(cond, p[i]) == 0);
+        if (!iscond)
+            break;
+
+        // we found the error. Report.
+        std::ostringstream ostr;
+        ostr << FileLine(gettok(tok,4)) << ": The condition is always ";
+        for (int i = 0; i < 6; i++)
+        {
+            if (strcmp(cond, p[i]) == 0)
+                ostr << (i < 3 ? "True" : "False");
+        }
+        ReportErr(ostr.str());
     }
 }
 //---------------------------------------------------------------------------
