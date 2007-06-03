@@ -84,19 +84,28 @@ void CheckMemoryLeak()
                 }
 
                 // if level..
-                if (iflist.back())
-                    iflevel--;
-                iflist.pop_back();
+                if ( ! iflist.empty() )
+                {
+                    if (iflist.back())
+                        iflevel--;
+                    iflist.pop_back();
+                }
 
                 // loop level..
-                if (looplist.back())
-                    looplevel--;
-                looplist.pop_back();
+                if ( ! looplist.empty() )
+                {
+                    if (looplist.back())
+                        looplevel--;
+                    looplist.pop_back();
+                }
 
                 // switch level..
-                if (switchlist.back())
-                    switchlevel--;
-                switchlist.pop_back();
+                if ( ! switchlist.empty() )
+                {
+                    if (switchlist.back())
+                        switchlevel--;
+                    switchlist.pop_back();
+                }
 
                 // Make sure the varlist is empty..
                 if (indentlevel <= 1)
