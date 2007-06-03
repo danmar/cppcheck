@@ -562,8 +562,18 @@ void SimplifyTokenList()
                 {
                     if (strcmp(tok2->str,"typedef")==0)
                     {
-                        while (tok2->next->str[0] != ';')
+                        int parlevel = 0;
+                        while (parlevel > 0 || tok2->next->str[0] != ';')
+                        {
+                            if (tok2->str[0] == '{')
+                                parlevel++;
+                            else if (tok2->str[0] == '}')
+                                parlevel--;
+
                             tok2 = tok2->next;
+                            if (!tok2->next)
+                                break;
+                        }
                         continue;
                     }
 
@@ -580,12 +590,23 @@ void SimplifyTokenList()
             // Delete typedef..
             if (!prev)
             {
-                while ( tokens && tokens->str[0] != ';' )
+                int parlevel = 0;
+                while ( parlevel > 0 || tokens->str[0] != ';' )
                 {
+                    if ( strchr( "({", tokens->str[0] ) )
+                        parlevel++;
+                    else if ( strchr( ")}", tokens->str[0] ) )
+                        parlevel--;
+
+                    // Delete the first element in the tokens list.
                     TOKEN *next = tokens->next;
                     free(tokens->str);
                     delete tokens;
                     tokens = next;
+
+
+                    if (!tokens)
+                        break;
                 }
                 tok = tokens;
                 prev = NULL;
@@ -593,8 +614,17 @@ void SimplifyTokenList()
             }
             else
             {
-                while ( prev->next->str[0] != ';' )
+                int parlevel = 0;
+                while ( parlevel > 0 || prev->next->str[0] != ';' )
+                {
+                    if ( strchr( "({", prev->next->str[0] ) )
+                        parlevel++;
+                    else if ( strchr( ")}", prev->next->str[0] ) )
+                        parlevel--;
                     DeleteNextToken(prev);
+                    if (!prev->next)
+                        break;
+                }
                 tok = prev;
             }
         }
