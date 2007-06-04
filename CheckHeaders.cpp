@@ -76,10 +76,10 @@ void WarningIncludeHeader()
                 continue;
 
             if (!tok1->next)
-                continue;
+                break;
 
             if (!tok1->next->next)
-                continue;
+                break;
 
             // I'm only interested in stuff that is declared at indentlevel 0
             if (tok1->str[0] == '{')
@@ -125,41 +125,49 @@ void WarningIncludeHeader()
                 varname = getstr(tok1, 1);
             if (match(tok1, "type * var ;") || match(tok1, "type * var ["))
                 varname = getstr(tok1, 2);
-            if (!varname.empty())
-            {
-                for (TOKEN *tok2 = tokens; tok2; tok2 = tok2->next)
-                {
-                    if (tok2->FileIndex != includetok->FileIndex)
-                        continue;
+            if (match(tok1, "const type var =") || match(tok1, "const type var ["))
+                varname = getstr(tok1, 2);
+            if (match(tok1, "const type * var =") || match(tok1, "const type * var ["))
+                varname = getstr(tok1, 3);
 
-                    NeedDeclaration |= (tok2->str == varname);
-                    Needed |= match(tok2, varname + " .");
-                    Needed |= match(tok2, varname + " ->");
-                    Needed |= match(tok2, varname + " =");
-                }
-
-                if (Needed | NeedDeclaration)
-                    break;
-            }
-
-            // enum
+            // enum..
+            std::string enumname = "";
             if (match(tok1,"enum var {"))
+                enumname = getstr(tok1, 1);
+
+            // function..
+            std::string funcname = "";
+            if (match(tok1,"type var ("))
+                funcname = getstr(tok1, 1);
+            else if (match(tok1,"type * var ("))
+                funcname = getstr(tok1, 2);
+            else if (match(tok1,"const type var ("))
+                funcname = getstr(tok1, 2);
+            else if (match(tok1,"const type * var ("))
+                funcname = getstr(tok1, 3);
+
+
+            if ( varname.empty() && enumname.empty() && funcname.empty() )
+                continue;
+
+            // Check if the parent contains the enum/var/function..
+            if ( ! enumname.empty() )
+                varname = enumname;
+            else if ( ! funcname.empty() )
+                varname = funcname;
+
+            for (TOKEN *tok2 = tokens; tok2; tok2 = tok2->next)
             {
-                std::string enumname = getstr(tok1, 1);
-
-                // Try to find enum usage in "parent" file..
-                for (TOKEN *tok2 = tokens; tok2; tok2 = tok2->next)
+                if (tok2->FileIndex == includetok->FileIndex &&
+                    tok2->str == varname)
                 {
-                    if (tok2->FileIndex != includetok->FileIndex)
-                        continue;
-
-                    Needed |= (enumname == tok2->str);
-                }
-
-                if (Needed)
+                    Needed = true;
                     break;
+                }
             }
 
+            if (Needed | NeedDeclaration)
+                break;
         }
 
 

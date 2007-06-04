@@ -71,6 +71,13 @@ static void CppCheck(const char FileName[])
     CheckMemset();
 
 
+    if ( ShowWarnings )
+    {
+        // Including header which is not needed
+        WarningIncludeHeader();
+    }
+
+
     SimplifyTokenList();
 
 
@@ -103,9 +110,6 @@ static void CppCheck(const char FileName[])
 
         // Use standard functions instead
         WarningIsDigit();
-
-        // Including header
-        //WarningIncludeHeader();
 
         CheckOperatorEq1();
 
