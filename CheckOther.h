@@ -10,6 +10,9 @@ void WarningOldStylePointerCast();
 // Use standard functions instead
 void WarningIsDigit();
 
+// Use standard functions instead
+void WarningIsAlpha();
+
 // Redundant code
 void WarningRedundantCode();
 

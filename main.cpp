@@ -74,6 +74,7 @@ static void CppCheck(const char FileName[])
     if ( ShowWarnings )
     {
         // Including header which is not needed
+        // Todo: This is really slow!
         WarningIncludeHeader();
     }
 
@@ -110,6 +111,7 @@ static void CppCheck(const char FileName[])
 
         // Use standard functions instead
         WarningIsDigit();
+        WarningIsAlpha();
 
         CheckOperatorEq1();
 

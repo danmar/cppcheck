@@ -59,6 +59,39 @@ void WarningIsDigit()
 //---------------------------------------------------------------------------
 
 
+
+//---------------------------------------------------------------------------
+// Use standard function "isalpha" instead
+//---------------------------------------------------------------------------
+
+void WarningIsAlpha()
+{
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        bool err = false;
+
+        if ( tok->str[0] != '(' )
+            continue;
+
+        err |= match(tok, "( var >= 'A' && var <= 'Z' ) || ( var >= 'a' && var <= 'z' )");
+        err |= match(tok, "( var >= 'a' && var <= 'z' ) || ( var >= 'A' && var <= 'Z' )");
+        err |= match(tok, "( * var >= 'A' && * var <= 'Z' ) || ( * var >= 'a' && * var <= 'z' )");
+        err |= match(tok, "( * var >= 'a' && * var <= 'z' ) || ( * var >= 'A' && * var <= 'Z' )");
+        err |= match(tok, "( ( var >= 'A' ) && ( var <= 'Z' ) ) || ( ( var >= 'a' ) && ( var <= 'z' ) )");
+        err |= match(tok, "( ( var >= 'a' ) && ( var <= 'z' ) ) || ( ( var >= 'A' ) && ( var <= 'Z' ) )");
+        err |= match(tok, "( ( * var >= 'A' ) && ( * var <= 'Z' ) ) || ( ( * var >= 'a' ) && ( * var <= 'z' ) )");
+        err |= match(tok, "( ( * var >= 'a' ) && ( * var <= 'z' ) ) || ( ( * var >= 'A' ) && ( * var <= 'Z' ) )");
+        if (err)
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tok) << ": The condition can be simplified; use 'isalpha'";
+            ReportErr(ostr.str());
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
+
 //---------------------------------------------------------------------------
 // Redundant code..
 //---------------------------------------------------------------------------
