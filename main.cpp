@@ -135,6 +135,9 @@ static void CppCheck(const char FileName[])
     // Invalid function usage..
     InvalidFunctionUsage();
 
+    // Dangerous usage of strtok
+    WarningStrTok();
+
     // Clean up tokens..
     DeallocateTokens();
 }

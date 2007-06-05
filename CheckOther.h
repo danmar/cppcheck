@@ -25,6 +25,9 @@ void WarningDangerousFunctions();
 // Invalid function usage..
 void InvalidFunctionUsage();
 
+// Dangerous usage of 'strtok'
+void WarningStrTok();
+
 //---------------------------------------------------------------------------
 #endif
 

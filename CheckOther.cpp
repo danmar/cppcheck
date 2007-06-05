@@ -2,6 +2,7 @@
 #include "CheckOther.h"
 #include "Tokenize.h"
 #include "CommonCheck.h"
+#include <list>
 #include <sstream>
 #include <stdlib.h>     // <- atoi
 //---------------------------------------------------------------------------
@@ -288,3 +289,115 @@ void InvalidFunctionUsage()
         }
     }
 }
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// Dangerous usage of 'strtok'
+//---------------------------------------------------------------------------
+
+static TOKEN *GetFunction( TOKEN *content )
+{
+    TOKEN *func = NULL;
+
+    int indentlevel = 0;
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if ( tok->str[0] == '{' )
+            indentlevel++;
+
+        else if ( tok->str[0] == '}' )
+        {
+            indentlevel--;
+            if (indentlevel == 0)
+                func = NULL;
+        }
+
+        else if (indentlevel == 0)
+        {
+            if (tok->str[0] == ';')
+                func = NULL;
+
+            else if ( match(tok, "var :: var (") )
+                func = tok->next->next;
+
+            else if ( match(tok, "type var (") )
+                func = tok->next;
+        }
+
+        else if (indentlevel>0 && func)
+        {
+            if ( tok == content )
+                return func;
+        }
+    }
+    return NULL;
+}
+
+void WarningStrTok()
+{
+    std::list<TOKEN *> funclist;
+
+    // Which functions contain the 'strtok'?
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (strcmp(tok->str,"strtok")!=0)
+            continue;
+
+        TOKEN *func = GetFunction(tok);
+        if (!func)
+            continue;
+
+        funclist.push_back( func );
+    }
+
+    // No functions in list => No errors
+    if ( funclist.empty() )
+        return;
+
+    // Take closer look at the strtok usage.
+    std::list<TOKEN *>::const_iterator it1;
+    for (it1 = funclist.begin(); it1 != funclist.end(); it1++)
+    {
+        // Search this function to check that it doesn't call any other of
+        // the functions in the funclist.
+        int indentlevel = 0;
+        for ( TOKEN *tok = *it1; tok; tok = tok->next )
+        {
+            if ( tok->str[0] == '{' )
+                indentlevel++;
+
+            else if ( tok->str[0] == '}' )
+            {
+                if ( indentlevel <= 1 )
+                    break;
+                indentlevel--;
+            }
+
+            else if ( indentlevel >= 1 )
+            {
+                // Only interested in function calls..
+                if (!(IsName(tok->str) && strcmp(getstr(tok,1), "(") == 0))
+                    continue;
+
+                // Check if function name is in funclist..
+                std::list<TOKEN *>::const_iterator it2;
+                for (it2 = funclist.begin(); it2 != funclist.end(); it2++)
+                {
+                    if ( strcmp( tok->str, (*it2)->str ) )
+                        continue;
+
+                    std::ostringstream ostr;
+                    ostr << FileLine(tok) << ": Possible bug. Both '" << (*it1)->str << "' and '" << (*it2)->str << "' uses strtok.";
+                    ReportErr(ostr.str());
+                }
+            }
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
+
+
