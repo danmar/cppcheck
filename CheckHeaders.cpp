@@ -113,6 +113,8 @@ void WarningIncludeHeader()
                     Needed |= match(tok2, classname + " ::");
                     Needed |= match(tok2, classname + " var");
                     NeedDeclaration |= match(tok2, classname + " *");
+                    if (Needed | NeedDeclaration)
+                        break;
                 }
 
                 if (Needed | NeedDeclaration)
