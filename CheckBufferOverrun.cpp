@@ -77,8 +77,13 @@ void CheckBufferOverrun()
                             if (match(tok2->next,"( var , num , num )") ||
                                 match(tok2->next,"( var , var , num )") )
                             {
-                                if (strcmp(getstr(tok2,2),varname)==0 &&
-                                    atoi(getstr(tok2,6))>total_size)
+                                const char *var1 = getstr(tok2, 2);
+                                const char *var2 = getstr(tok2, 4);
+                                const char *num  = getstr(tok2, 6);
+
+                                if ( atoi(num)>total_size &&
+                                    (strcmp(var1,varname)==0 ||
+                                     strcmp(var2,varname)==0 ) )
                                 {
                                     std::ostringstream ostr;
                                     ostr << FileLine(tok2) << ": Buffer overrun";
@@ -91,25 +96,28 @@ void CheckBufferOverrun()
                         // Loop..
                         const char *strindex = 0;
                         int value = 0;
-                        if (match(tok2,"for ( var = 0 ; var < num ; var + + )"))
+                        if ( match(tok2, "for ( var = 0 ;") )
                         {
-                            strindex = getstr(tok2,2);
-                            value = atoi(getstr(tok2,8));
-                        }
-                        else if (match(tok2,"for ( var = 0 ; var <= num ; var + + )"))
-                        {
-                            strindex = getstr(tok2,2);
-                            value = 1 + atoi(getstr(tok2,8));
-                        }
-                        else if (match(tok2,"for ( var = 0 ; var < num ; + + var )"))
-                        {
-                            strindex = getstr(tok2,2);
-                            value = atoi(getstr(tok2,8));
-                        }
-                        else if (match(tok2,"for ( var = 0 ; var <= num ; + + var )"))
-                        {
-                            strindex = getstr(tok2,2);
-                            value = 1 + atoi(getstr(tok2,8));
+                            if (match(tok2,"for ( var = 0 ; var < num ; var + + )"))
+                            {
+                                strindex = getstr(tok2,2);
+                                value = atoi(getstr(tok2,8));
+                            }
+                            else if (match(tok2,"for ( var = 0 ; var <= num ; var + + )"))
+                            {
+                                strindex = getstr(tok2,2);
+                                value = 1 + atoi(getstr(tok2,8));
+                            }
+                            else if (match(tok2,"for ( var = 0 ; var < num ; + + var )"))
+                            {
+                                strindex = getstr(tok2,2);
+                                value = atoi(getstr(tok2,8));
+                            }
+                            else if (match(tok2,"for ( var = 0 ; var <= num ; + + var )"))
+                            {
+                                strindex = getstr(tok2,2);
+                                value = 1 + atoi(getstr(tok2,8));
+                            }
                         }
                         if (strindex && value>(int)size)
                         {
