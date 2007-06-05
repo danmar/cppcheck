@@ -70,6 +70,7 @@ void CheckBufferOverrun()
                         // memset, memcmp, memcpy, strncpy, fgets..
                         if (strcmp(tok2->str,"memset")==0 ||
                             strcmp(tok2->str,"memcpy")==0 ||
+                            strcmp(tok2->str,"memmove")==0 ||
                             strcmp(tok2->str,"memcmp")==0 ||
                             strcmp(tok2->str,"strncpy")==0 ||
                             strcmp(tok2->str,"fgets")==0 )
