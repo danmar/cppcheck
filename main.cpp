@@ -132,6 +132,9 @@ static void CppCheck(const char FileName[])
     // Dangerous functions, such as 'gets' and 'scanf'
     WarningDangerousFunctions();
 
+    // Invalid function usage..
+    InvalidFunctionUsage();
+
     // Clean up tokens..
     DeallocateTokens();
 }

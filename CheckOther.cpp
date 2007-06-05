@@ -3,6 +3,7 @@
 #include "Tokenize.h"
 #include "CommonCheck.h"
 #include <sstream>
+#include <stdlib.h>     // <- atoi
 //---------------------------------------------------------------------------
 
 
@@ -243,3 +244,47 @@ void WarningIf()
 }
 //---------------------------------------------------------------------------
 
+
+
+
+//---------------------------------------------------------------------------
+// strtol(str, 0, radix)  <- radix must be 0 or 2-36
+//---------------------------------------------------------------------------
+
+void InvalidFunctionUsage()
+{
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( strcmp(tok->str, "strtol") && strcmp(tok->str, "strtoul") )
+            continue;
+
+        // Locate the third parameter of the function call..
+        int parlevel = 0;
+        int param = 1;
+        for ( TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
+        {
+            if ( tok2->str[0] == '(' )
+                parlevel++;
+            else if (tok2->str[0] == ')')
+                parlevel--;
+            else if (parlevel == 1 && tok2->str[0] == ',')
+            {
+                param++;
+                if (param==3)
+                {
+                    if ( match(tok2, ", num )") )
+                    {
+                        int radix = atoi(tok2->next->str);
+                        if (!(radix==0 || (radix>=2 && radix<=36)))
+                        {
+                            std::ostringstream ostr;
+                            ostr << FileLine(tok2) << ": Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
+                            ReportErr(ostr.str());
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}

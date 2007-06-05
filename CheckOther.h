@@ -22,6 +22,8 @@ void WarningIf();
 // Using dangerous functions
 void WarningDangerousFunctions();
 
+// Invalid function usage..
+void InvalidFunctionUsage();
 
 //---------------------------------------------------------------------------
 #endif
