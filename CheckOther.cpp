@@ -242,6 +242,47 @@ void WarningIf()
         }
         ReportErr(ostr.str());
     }
+
+    // Search for 'if (condition) flag = true;'
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (strcmp(tok->str,"if"))
+            continue;
+
+        int parlevel = 0;
+        for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
+        {
+            if (tok2->str[0]=='(')
+                parlevel++;
+            else if (tok2->str[0]==')')
+            {
+                parlevel--;
+                if (parlevel<=0)
+                {
+                    // Don't handle "else" now
+                    if ( strcmp(getstr(tok2,5), "else") == 0 )
+                        break;
+
+                    if ( match(tok2->next, "var = true ;") )
+                    {
+                        std::ostringstream ostr;
+                        ostr << FileLine(tok) << ": Found \"if (condition) var = true;\", it can be rewritten as \"var |= (condition);\"";
+                        ReportErr(ostr.str());
+                    }
+
+                    else if ( match(tok2->next, "var = false ;") )
+                    {
+                        std::ostringstream ostr;
+                        ostr << FileLine(tok) << ": Found \"if (condition) var = false;\", it can be rewritten as \"var &= (condition);\"";
+                        ReportErr(ostr.str());
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
 }
 //---------------------------------------------------------------------------
 
@@ -392,6 +433,7 @@ void WarningStrTok()
                     std::ostringstream ostr;
                     ostr << FileLine(tok) << ": Possible bug. Both '" << (*it1)->str << "' and '" << (*it2)->str << "' uses strtok.";
                     ReportErr(ostr.str());
+                    break;
                 }
             }
         }
