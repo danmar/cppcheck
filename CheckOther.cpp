@@ -259,11 +259,17 @@ void WarningIf()
                 parlevel--;
                 if (parlevel<=0)
                 {
-                    // Don't handle "else" now
                     if ( strcmp(getstr(tok2,5), "else") == 0 )
-                        break;
+                    {
+                        if ( match(tok2->next, "var = true ; else var = false ;") )
+                        {
+                            std::ostringstream ostr;
+                            ostr << FileLine(tok) << ": Found \"if (condition) var=true; else var=false;\", it can be rewritten as \"var = (condition);\"";
+                            ReportErr(ostr.str());
+                        }
+                    }
 
-                    if ( match(tok2->next, "var = true ;") )
+                    else if ( match(tok2->next, "var = true ;") )
                     {
                         std::ostringstream ostr;
                         ostr << FileLine(tok) << ": Found \"if (condition) var = true;\", it can be rewritten as \"var |= (condition);\"";
@@ -273,7 +279,7 @@ void WarningIf()
                     else if ( match(tok2->next, "var = false ;") )
                     {
                         std::ostringstream ostr;
-                        ostr << FileLine(tok) << ": Found \"if (condition) var = false;\", it can be rewritten as \"var &= (condition);\"";
+                        ostr << FileLine(tok) << ": Found \"if (condition) var = false;\", it can be rewritten as \"var &= (!condition);\"";
                         ReportErr(ostr.str());
                     }
 
