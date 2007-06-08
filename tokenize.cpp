@@ -322,6 +322,9 @@ void Tokenize(const char FileName[])
 
                 if (State==Value)
                 {
+                    addtoken("def", lineno, CurrentFile);
+                    addtoken(strId, lineno, CurrentFile);
+                    addtoken(";", lineno, CurrentFile);
                     Define(strId, CurrentToken);
                 }
 
