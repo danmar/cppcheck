@@ -220,7 +220,7 @@ void WarningIncludeHeader()
             std::ostringstream ostr;
             ostr << FileLine(includetok) << ": The included header '" << includefile << "' is not needed";
             if (NeedDeclaration)
-                ostr << " (but a declaration in it is needed)";
+                ostr << " (but a forward declaration is needed)";
             ReportErr(ostr.str());
         }
     }
