@@ -180,6 +180,8 @@ void WarningIncludeHeader()
 
                     tok1 = tok1->next;
                 }
+                if (!tok1)
+                    break;
             }
 
 
