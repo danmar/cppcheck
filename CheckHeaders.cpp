@@ -134,7 +134,7 @@ void WarningIncludeHeader()
 
             // enum..
             std::string enumname = "";
-            if (match(tok1,"enum var {"))
+            if (match(tok1, "enum var {"))
                 enumname = getstr(tok1, 1);
 
             // function..
@@ -148,15 +148,45 @@ void WarningIncludeHeader()
             else if (match(tok1,"const type * var ("))
                 funcname = getstr(tok1, 3);
 
+            // typedef..
+            std::string typedefname = "";
+            if (strcmp(tok1->str,"typedef")==0)
+            {
+                int parlevel = 0;
+                while (tok1)
+                {
+                    if ( strchr("({", tok1->str[0]) )
+                    {
+                        parlevel++;
+                    }
+                    else if ( strchr("({", tok1->str[0]) )
+                    {
+                        parlevel--;
+                        if (parlevel < 0)
+                            break;
+                    }
+                    else if ( parlevel == 0 )
+                    {
+                        if (match(tok1,"var ;"))
+                        {
+                            typedefname = tok1->str;
+                            break;
+                        }
+                        if (tok1->str[0] == ';')
+                        {
+                            break;
+                        }
+                    }
 
-            if ( varname.empty() && enumname.empty() && funcname.empty() )
+                    tok1 = tok1->next;
+                }
+            }
+
+
+            if ( varname.empty() && enumname.empty() && funcname.empty() && typedefname.empty() )
                 continue;
 
-            // Check if the parent contains the enum/var/function..
-            if ( ! enumname.empty() )
-                varname = enumname;
-            else if ( ! funcname.empty() )
-                varname = funcname;
+            varname = varname + enumname + funcname + typedefname;
 
             for (TOKEN *tok2 = tokens; tok2; tok2 = tok2->next)
             {
