@@ -25,6 +25,11 @@ void WarningHeaderWithImplementation()
             std::ostringstream ostr;
             ostr << FileLine(tok) << ": Found implementation in header";
             ReportErr(ostr.str());
+
+            // Goto next file..
+            unsigned int fileindex = tok->FileIndex;
+            while ( tok->next && tok->FileIndex == fileindex )
+                tok = tok->next;
         }
     }
 }
