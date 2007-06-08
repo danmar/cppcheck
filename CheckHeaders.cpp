@@ -159,7 +159,7 @@ void WarningIncludeHeader()
                     {
                         parlevel++;
                     }
-                    else if ( strchr("({", tok1->str[0]) )
+                    else if ( strchr(")}", tok1->str[0]) )
                     {
                         parlevel--;
                         if (parlevel < 0)
