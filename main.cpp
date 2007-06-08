@@ -93,14 +93,13 @@ static void CppCheck(const char FileName[])
     CheckBufferOverrun();
 
 
-    // Check that all private functions are called.
-    // Temporarily inactivated to avoid any false positives
-    CheckUnusedPrivateFunctions();
-
 
     // Warnings
     if (ShowWarnings)
     {
+        // Check that all private functions are called.
+        CheckUnusedPrivateFunctions();
+
         // Found implementation in header
         WarningHeaderWithImplementation();
 
@@ -118,25 +117,23 @@ static void CppCheck(const char FileName[])
         // Check that all class constructors are ok.
         // Temporarily inactivated to avoid any false positives
         //CheckConstructors();
+
+        // if (a) delete a;
+        WarningRedundantCode();
+
+        // if (condition);
+        WarningIf();
+
+        // Dangerous usage of strtok
+        WarningStrTok();
     }
 
-
-
-
-    // if (a) delete a;
-    WarningRedundantCode();
-
-    // if (condition);
-    WarningIf();
 
     // Dangerous functions, such as 'gets' and 'scanf'
     WarningDangerousFunctions();
 
     // Invalid function usage..
     InvalidFunctionUsage();
-
-    // Dangerous usage of strtok
-    WarningStrTok();
 
     // Clean up tokens..
     DeallocateTokens();
