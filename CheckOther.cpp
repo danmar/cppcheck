@@ -244,9 +244,10 @@ void WarningIf()
     }
 
     // Search for 'if (condition) flag = true;'
+    bool newstatement = false;
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (strcmp(tok->str,"if"))
+        if (!newstatement || strcmp(tok->str,"if"))
             continue;
 
         int parlevel = 0;
@@ -287,6 +288,8 @@ void WarningIf()
                 }
             }
         }
+
+        newstatement = (strchr("{};",tok->str[0]));
     }
 
 }
