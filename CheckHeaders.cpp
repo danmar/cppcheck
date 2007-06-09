@@ -2,7 +2,9 @@
 #include "CheckHeaders.h"
 #include "Tokenize.h"
 #include "CommonCheck.h"
+#include <list>
 #include <sstream>
+#include <string>
 //---------------------------------------------------------------------------
 
 
@@ -72,144 +74,135 @@ void WarningIncludeHeader()
         // * It contains some needed constant value
         // * It contains some needed variable
         // * It contains some needed enum
-        bool Needed = false;
-        bool NeedDeclaration = false;
+
+        std::list<std::string> classlist;
+        std::list<std::string> namelist;
+
+        // Extract classes and names in the header..
         int indentlevel = 0;
-        for (TOKEN *tok1 = tokens; tok1; tok1 = tok1->next)
+        for ( TOKEN *tok1 = tokens; tok1; tok1 = tok1->next )
         {
-            if (tok1->FileIndex != hfile)
+            if ( tok1->FileIndex != hfile )
                 continue;
-
-            if (!tok1->next)
-                break;
-
-            if (!tok1->next->next)
-                break;
 
             // I'm only interested in stuff that is declared at indentlevel 0
             if (tok1->str[0] == '{')
                 indentlevel++;
-            if (tok1->str[0] == '}')
+
+            else if (tok1->str[0] == '}')
                 indentlevel--;
+                
             if (indentlevel != 0)
                 continue;
 
             // Class or namespace declaration..
-            if (match(tok1,"class var {") ||
-                match(tok1,"class var :") ||
-                match(tok1,"namespace var {"))
-            {
-                std::string classname = getstr(tok1, 1);
+            // --------------------------------------
+            if (match(tok1,"class var {") || match(tok1,"class var :") || match(tok1,"namespace var {"))
+                classlist.push_back(getstr(tok1, 1));
 
-                // Try to find class usage in "parent" file..
-                for (TOKEN *tok2 = tokens; tok2; tok2 = tok2->next)
-                {
-                    if (tok2->FileIndex != includetok->FileIndex)
-                        continue;
+            // Variable declaration..
+            // --------------------------------------
+            else if (match(tok1, "type var ;") || match(tok1, "type var ["))
+                namelist.push_back(getstr(tok1, 1));
 
-                    // Inheritage..
-                    Needed |= match(tok2, "class var : " + classname);
-                    Needed |= match(tok2, "class var : type " + classname);
+            else if (match(tok1, "type * var ;") || match(tok1, "type * var ["))
+                namelist.push_back(getstr(tok1, 2));
 
-                    // Allocating..
-                    Needed |= match(tok2, "new " + classname);
+            else if (match(tok1, "const type var =") || match(tok1, "const type var ["))
+                namelist.push_back(getstr(tok1, 2));
 
-                    // Using class..
-                    Needed |= match(tok2, classname + " ::");
-                    Needed |= match(tok2, classname + " var");
-                    NeedDeclaration |= match(tok2, classname + " *");
-                    if (Needed | NeedDeclaration)
-                        break;
-                }
-
-                if (Needed | NeedDeclaration)
-                    break;
-            }
-
-            // Variable..
-            std::string varname = "";
-            if (match(tok1, "type var ;") || match(tok1, "type var ["))
-                varname = getstr(tok1, 1);
-            if (match(tok1, "type * var ;") || match(tok1, "type * var ["))
-                varname = getstr(tok1, 2);
-            if (match(tok1, "const type var =") || match(tok1, "const type var ["))
-                varname = getstr(tok1, 2);
-            if (match(tok1, "const type * var =") || match(tok1, "const type * var ["))
-                varname = getstr(tok1, 3);
+            else if (match(tok1, "const type * var =") || match(tok1, "const type * var ["))
+                namelist.push_back(getstr(tok1, 3));
 
             // enum..
-            std::string enumname = "";
-            if (match(tok1, "enum var {"))
-                enumname = getstr(tok1, 1);
+            // --------------------------------------
+            else if (strcmp(tok1->str, "enum") == 0)
+            {
+                tok1 = tok1->next;
+                while (tok1->next && tok1->str[0]!=';')
+                {
+                    if ( IsName(tok1->str) )
+                        namelist.push_back(tok1->str);
+                    tok1 = tok1->next;
+                }
+            }
+                
+            // function..  
+            // --------------------------------------
+            else if (match(tok1,"type var ("))
+                namelist.push_back(getstr(tok1, 1));
 
-            // function..
-            std::string funcname = "";
-            if (match(tok1,"type var ("))
-                funcname = getstr(tok1, 1);
             else if (match(tok1,"type * var ("))
-                funcname = getstr(tok1, 2);
+                namelist.push_back(getstr(tok1, 2));
+
             else if (match(tok1,"const type var ("))
-                funcname = getstr(tok1, 2);
+                namelist.push_back(getstr(tok1, 2));
+
             else if (match(tok1,"const type * var ("))
-                funcname = getstr(tok1, 3);
+                namelist.push_back(getstr(tok1, 3));
 
             // typedef..
-            std::string typedefname = "";
-            if (strcmp(tok1->str,"typedef")==0)
+            // --------------------------------------
+            else if (strcmp(tok1->str,"typedef")==0)
             {
+                if (strcmp(getstr(tok1,1),"enum")==0)
+                    continue;
                 int parlevel = 0;
-                while (tok1)
+                while (tok1->next)
                 {
                     if ( strchr("({", tok1->str[0]) )
-                    {
                         parlevel++;
-                    }
+
                     else if ( strchr(")}", tok1->str[0]) )
-                    {
                         parlevel--;
-                        if (parlevel < 0)
-                            break;
-                    }
-                    else if ( parlevel == 0 )
+
+                    else if (parlevel == 0)
                     {
-                        if (match(tok1,"var ;"))
-                        {
-                            typedefname = tok1->str;
+                        if ( tok1->str[0] == ';' )
                             break;
-                        }
-                        if (tok1->str[0] == ';')
-                        {
-                            break;
-                        }
+
+                        if ( match(tok1, "var ;") )
+                            namelist.push_back(tok1->str);
                     }
 
                     tok1 = tok1->next;
                 }
-                if (!tok1)
-                    break;
             }
+        }
 
 
-            if ( varname.empty() && enumname.empty() && funcname.empty() && typedefname.empty() )
+        // Check if the extracted names are used...
+        bool Needed = false;
+        bool NeedDeclaration = false;
+        for (TOKEN *tok1 = tokens; tok1; tok1 = tok1->next)
+        {
+            if (tok1->FileIndex != includetok->FileIndex)
                 continue;
 
-            varname = varname + enumname + funcname + typedefname;
-
-            for (TOKEN *tok2 = tokens; tok2; tok2 = tok2->next)
+            if ( match(tok1, ": var {") || match(tok1, ": type var {") )
             {
-                if (tok2->FileIndex == includetok->FileIndex &&
-                    tok2->str == varname)
+                std::string classname = getstr(tok1, (strcmp(getstr(tok1,2),"{")) ? 2 : 1);
+                if (std::find(classlist.begin(),classlist.end(),classname)!=classlist.end())
                 {
                     Needed = true;
                     break;
                 }
             }
 
-            if (Needed | NeedDeclaration)
+            if ( ! IsName(tok1->str) )
+                continue;
+
+            if (std::find(namelist.begin(),namelist.end(),tok1->str ) != namelist.end())
+            {
+                Needed = true;
                 break;
+            }
+
+            if ( ! NeedDeclaration )
+                NeedDeclaration = (std::find(classlist.begin(),classlist.end(),tok1->str ) != classlist.end());
         }
 
-
+        
         // Not a header file?
         if (includetok->FileIndex == 0)
             Needed |= NeedDeclaration;
