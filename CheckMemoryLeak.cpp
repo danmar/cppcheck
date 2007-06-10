@@ -1,6 +1,7 @@
 
 #include "CheckMemoryLeak.h"
 
+#include "Tokenize.h"
 #include "Statements.h"
 
 #include "CommonCheck.h"
@@ -23,12 +24,11 @@ struct _variable
 
 
 
-
 //---------------------------------------------------------------------------
-// Checks for memory leaks..
+// Checks for memory leaks inside function..
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeak()
+static void _InFunction()
 {
     std::vector<_variable *> varlist;
 
@@ -285,6 +285,194 @@ void CheckMemoryLeak()
         endloop = (it->Type == STATEMENT::ENDLOOP);
         endswitch = (it->Type == STATEMENT::ENDSWITCH);
     }
+}
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// Check that all class members are deallocated..
+//---------------------------------------------------------------------------
+
+static void _ClassMembers_CheckVar(const char *classname, const char *varname)
+{
+    // Check how the variable 'varname' is allocated..
+    enum {No, New, NewA, Malloc} Alloc, Dealloc;
+    Alloc = Dealloc = No;
+    for (TOKEN *func = tokens; func; func = func->next)
+    {
+        if (strcmp(func->str, classname))
+            continue;
+
+        if (strcmp(getstr(func, 1), "::") != 0)
+            continue;
+
+        if (strcmp(getstr(func, 3), "(") != 0)
+            continue;
+
+
+        int indentlevel = 0;
+        for (TOKEN *tok = func; tok; tok = tok->next)
+        {
+            if (tok->str[0] == '{')
+            {
+                indentlevel++;
+            }
+
+            else if (tok->str[0] == '}')
+            {
+                indentlevel--;
+                if (indentlevel == 0)
+                {
+                    func = tok;
+                    break;
+                }
+            }
+
+            else if (indentlevel > 0)
+            {
+                // Deallocation..
+                if (strcmp(tok->str,"delete")==0 || strcmp(tok->str,"free")==0)
+                {
+                    bool err = false;
+
+                    if (match(tok, "delete var ;") &&
+                        strcmp(getstr(tok,1),varname)==0)
+                    {
+                        err |= ( Dealloc != No && Dealloc != New );
+                        Dealloc = New;
+                    }
+
+                    else if (match(tok, "delete [ ] var ;") &&
+                        strcmp(getstr(tok,3),varname)==0)
+                    {
+                        err |= ( Dealloc != No && Dealloc != NewA );
+                        Dealloc = NewA;
+                    }
+
+                    else if (match(tok, "free ( var )") &&
+                        strcmp(getstr(tok,2),varname)==0)
+                    {
+                        err |= ( Dealloc != No && Dealloc != Malloc );
+                        Dealloc = Malloc;
+                    }
+
+                    if (err)
+                    {
+                        std::ostringstream ostr;
+                        ostr << FileLine(tok) << ": Mismatching deallocation for '" << classname << "::" << varname << "'";
+                        ReportErr(ostr.str());
+                    }
+                }
+
+                else
+                {
+                    // Allocation...
+                    if ( strcmp(tok->str, varname) != 0 )
+                        continue;
+
+                    if ( strcmp(getstr(tok,1), "=") != 0 )
+                        continue;
+
+                    bool err = false;
+
+                    if ( strcmp(getstr(tok,2), "new") == 0 )
+                    {
+                        if ( match(tok, "var = new type ;") ||
+                             match(tok, "var = new type (") )
+                        {
+                            err |= ( Alloc != No && Alloc != New );
+                            Alloc = New;
+                        }
+
+                        else if ( match(tok, "var = new type [") )
+                        {
+                            err |= ( Alloc != No && Alloc != NewA );
+                            Alloc = NewA;
+                        }
+                    }
+
+                    else if ( match(tok, "var = strdup (") ||
+                              match(tok, "var = ( type * ) malloc ("))
+                    {
+                        err |= ( Alloc != No && Alloc != Malloc );
+                        Alloc = Malloc;
+                    }
+
+                    if (err)
+                    {
+                        std::ostringstream ostr;
+                        ostr << FileLine(tok) << ": Mismatching allocation for '" << classname << "::" << varname << "'";
+                        ReportErr(ostr.str());
+                    }
+                }
+            }
+        }
+    }
+
+    if ( Alloc != Dealloc )
+    {
+        if ( Dealloc == No )
+        {
+            std::ostringstream ostr;
+            ostr << "Memory leak for '" << classname << "::" << varname << "'";
+            ReportErr(ostr.str());
+        }
+    }
+
+}
+
+static void _ClassMembers()
+{
+    for (TOKEN *ClassDecl = tokens; ClassDecl; ClassDecl = ClassDecl->next)
+    {
+        // Is this a class declaration?
+        // -------------------------------------
+        if ( ! match(ClassDecl, "class var {") )
+            continue;
+
+        const char *classname = getstr(ClassDecl, 1);
+
+        // Locate member variables..
+        int indentlevel = 0;
+        for (TOKEN *ClassVar = ClassDecl; ClassVar; ClassVar = ClassVar->next)
+        {
+            if ( ClassVar->str[0] == '{' )
+                indentlevel++;
+
+            else if ( ClassVar->str[0] == '}' )
+            {
+                indentlevel--;
+                if (indentlevel == 0)
+                    break;
+            }
+
+            else if (indentlevel == 1)
+            {
+                if ( match(ClassVar, "type * var ;") )
+                {
+                    const char *varname = getstr(ClassVar, 2);
+
+                    // Check the variable usage..
+                    _ClassMembers_CheckVar(classname, varname);
+                }
+            }
+        }
+    }
+}
+
+
+//---------------------------------------------------------------------------
+// Checks for memory leaks..
+//---------------------------------------------------------------------------
+
+void CheckMemoryLeak()
+{
+    // Check for memory leaks inside functions..
+    _InFunction();
+
+    // Check that all class members are deallocated..
+    _ClassMembers();
 }
 //---------------------------------------------------------------------------
 
