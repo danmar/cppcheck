@@ -248,7 +248,10 @@ void WarningIf()
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (!newstatement || strcmp(tok->str,"if"))
+        {
+            newstatement = (strchr("{};",tok->str[0]) != NULL);
             continue;
+        }
 
         int parlevel = 0;
         for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
