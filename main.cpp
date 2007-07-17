@@ -6,7 +6,7 @@
 #include <sstream>
 
 #include "tokenize.h"   // <- Tokenizer
-#include "statements.h" // <- Statement list
+#include "Statements.h" // <- Statement list
 
 #include "CheckMemoryLeak.h"
 #include "CheckBufferOverrun.h"
@@ -31,10 +31,18 @@ int main(int argc, char* argv[])
     const char *fname = NULL;
     for (int i = 1; i < argc; i++)
     {
+#ifdef __linux__
+        if(strcasecmp(argv[i],"--debug") == 0)
+#else
         if (stricmp(argv[i],"--debug") == 0)
+#endif
             Debug = true;
 
+#ifdef __linux__
+        else if (strcasecmp(argv[i],"-w") == 0)
+#else
         else if (stricmp(argv[i],"-w") == 0)
+#endif
             ShowWarnings = true;
 
         else
@@ -105,7 +113,11 @@ static void CppCheck(const char FileName[])
 
         // Warning upon c-style pointer casts
         const char *ext = strrchr(FileName, '.');
+#ifdef __linux__
+        if (ext && strcasecmp(ext,".c"))
+#else
         if (ext && stricmp(ext,".c"))
+#endif
             WarningOldStylePointerCast();
 
         // Use standard functions instead

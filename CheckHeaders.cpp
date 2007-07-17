@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 #include "CheckHeaders.h"
-#include "Tokenize.h"
+#include "tokenize.h"
 #include "CommonCheck.h"
 #include <list>
 #include <sstream>
@@ -61,7 +61,11 @@ void WarningIncludeHeader()
         const char *includefile = includetok->next->str;
         while (hfile < Files.size())
         {
+#ifdef __linux__
+            if (strcasecmp(Files[hfile].c_str(), includefile) == 0)
+#else
             if (stricmp(Files[hfile].c_str(), includefile) == 0)
+#endif
                 break;
             hfile++;
         }
@@ -90,21 +94,14 @@ void WarningIncludeHeader()
                 indentlevel++;
 
             else if (tok1->str[0] == '}')
-            {
-                if (indentlevel > 0)
-                    indentlevel--;
-            }
-
+                indentlevel--;
+                
             if (indentlevel != 0)
                 continue;
 
-            // namespace..
-            if (match(tok1,"namespace var {"))
-                tok1 = gettok(tok1,2);
-
             // Class or namespace declaration..
             // --------------------------------------
-            else if (match(tok1,"class var {") || match(tok1,"class var :"))
+            if (match(tok1,"class var {") || match(tok1,"class var :") || match(tok1,"namespace var {"))
                 classlist.push_back(getstr(tok1, 1));
 
             // Variable declaration..
@@ -133,8 +130,8 @@ void WarningIncludeHeader()
                     tok1 = tok1->next;
                 }
             }
-
-            // function..
+                
+            // function..  
             // --------------------------------------
             else if (match(tok1,"type var ("))
                 namelist.push_back(getstr(tok1, 1));
@@ -206,21 +203,7 @@ void WarningIncludeHeader()
             }
 
             if ( ! NeedDeclaration )
-            {
-                if (std::find(classlist.begin(),classlist.end(),tok1->str ) != classlist.end())
-                {
-                    if ( strcmp(getstr(tok1, 1), "*") == 0 )
-                    {
-                        NeedDeclaration = true;
-                    }
-                    
-                    else
-                    {
-                        Needed = true;
-                        break;
-                    }
-                }
-            }
+                NeedDeclaration = (std::find(classlist.begin(),classlist.end(),tok1->str ) != classlist.end());
         }
 
         

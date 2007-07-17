@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 #include "CheckClass.h"
-#include "Tokenize.h"
+#include "tokenize.h"
 #include "CommonCheck.h"
 #include <locale>
 #include <list>
@@ -181,7 +181,11 @@ static TOKEN * ClassChecking_VarList_RemoveAssigned(TOKEN *_tokens, struct VAR *
             if (strcmp(ftok->next->str,".")==0 || strcmp(ftok->next->str,"->")==0)
             {
                 // The functions 'clear' and 'Clear' are supposed to initialize variable.
+#ifdef __linux__
+                if( strcasecmp( ftok->next->next->str,"clear") == 0)
+#else
                 if (stricmp(ftok->next->next->str,"clear") == 0)
+#endif
                 {
                     for (struct VAR *var = varlist; var; var = var->next)
                     {

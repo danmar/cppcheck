@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 #include "CheckBufferOverrun.h"
-#include "Tokenize.h"
+#include "tokenize.h"
 #include "CommonCheck.h"
 
 #include <sstream>

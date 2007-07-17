@@ -10,6 +10,7 @@
 #include <string>
 
 #include <stdlib.h>     // <- strtoul
+#include <stdio.h>
 
 //---------------------------------------------------------------------------
 
@@ -75,7 +76,8 @@ static void Define(const char Name[], const char Value[])
         char str[50];
         unsigned long value = strtoul(Value+2, NULL, 16);
         free(strValue);
-        strValue = strdup(itoa(value, str, 10));
+        sprintf(str, "%d", value);
+        strValue = strdup(str);
     }
 
     DefineSymbol *NewSym = new DefineSymbol;
@@ -113,7 +115,7 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
     if (strncmp(str,"0x",2)==0)
     {
         unsigned int value = strtoul(str+2, NULL, 16);
-        itoa(value, str2, 10);
+        sprintf( str2, "%d", value );
     }
 
     TOKEN *newtoken  = new TOKEN;
@@ -248,7 +250,11 @@ void Tokenize(const char FileName[])
     // Has this file been tokenized already?
     for (unsigned int i = 0; i < Files.size(); i++)
     {
+#ifdef __linux__
+        if( strcasecmp(Files[i].c_str(), FileName) == 0 )
+#else
         if ( stricmp(Files[i].c_str(), FileName) == 0 )
+#endif
             return;
     }
 
@@ -668,7 +674,8 @@ void SimplifyTokenList()
             free(tok->str);
             char str[10];
             // 'sizeof(type *)' has the same size as 'sizeof(char *)'
-            tok->str = strdup(itoa(sizeof(char *), str, 10));
+            sprintf( str, "%d", sizeof(char *));
+            tok->str = strdup( str );
 
             for (int i = 0; i < 4; i++)
             {
@@ -684,8 +691,8 @@ void SimplifyTokenList()
             {
                 free(tok->str);
                 char str[10];
-                tok->str = strdup(itoa(size, str, 10));
-
+                sprintf( str, "%d", size );
+                tok->str = strdup( str );
                 for (int i = 0; i < 3; i++)
                 {
                     DeleteNextToken(tok);
@@ -730,8 +737,8 @@ void SimplifyTokenList()
                 {
                     free(tok2->str);
                     char str[20];
-                    tok2->str = strdup(itoa(total_size, str, 10));
-
+                    sprintf( str, "%d", total_size);
+                    tok2->str = strdup(str );
                     // Delete the other tokens..
                     for (int i = 0; i < 3; i++)
                     {
@@ -782,7 +789,8 @@ void SimplifyTokenList()
                 tok = tok->next;
                 free(tok->str);
                 char str[10];
-                tok->str = strdup(itoa(i1,str,10));
+                sprintf(str,"%d", i1);
+                tok->str = strdup(str);
                 for (int i = 0; i < 2; i++)
                 {
                     DeleteNextToken(tok);

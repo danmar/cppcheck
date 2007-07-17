@@ -114,7 +114,7 @@ Item0=_DEBUG
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=testbufferoverrun5\testbufferoverrun5.cpp
+RunParams=-w testif5\testif5.cpp
 Launcher=
 UseLauncher=0
 DebugCWD=

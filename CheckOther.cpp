@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------
 #include "CheckOther.h"
-#include "Tokenize.h"
+#include "tokenize.h"
 #include "CommonCheck.h"
 #include <list>
 #include <sstream>
@@ -249,7 +249,7 @@ void WarningIf()
     {
         if (!newstatement || strcmp(tok->str,"if"))
         {
-            newstatement = (strchr("{};",tok->str[0]) != NULL);
+            newstatement = (strchr("{};",tok->str[0]));
             continue;
         }
 
