@@ -1,7 +1,7 @@
 
 #include "CheckMemoryLeak.h"
 
-#include "Tokenize.h"
+#include "tokenize.h"
 #include "Statements.h"
 
 #include "CommonCheck.h"
