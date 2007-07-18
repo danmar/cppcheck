@@ -76,7 +76,7 @@ static void Define(const char Name[], const char Value[])
         char str[50];
         unsigned long value = strtoul(Value+2, NULL, 16);
         free(strValue);
-        sprintf(str, "%d", value);
+        sprintf(str, "%lu", value);
         strValue = strdup(str);
     }
 
