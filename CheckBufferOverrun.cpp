@@ -9,6 +9,124 @@
 
 //---------------------------------------------------------------------------
 
+TOKEN *findfunction(TOKEN *tok)
+{
+    int indentlevel = 0, parlevel = 0;
+    for (; tok; tok = tok->next)
+    {
+        if (tok->str[0] == '{')
+            indentlevel++;
+        else if (tok->str[0] == '}')
+            indentlevel--;
+        else if (tok->str[0] == '(')
+            parlevel++;
+        else if (tok->str[0] == ')')
+            parlevel--;
+
+        if (!tok->next)
+            break;
+
+        if (indentlevel==0 && parlevel==0 && IsName(tok->str) && tok->next->str[0]=='(')
+        {
+            for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
+            {
+                if (tok2->str[0] == ')')
+                {
+                    if (tok2->next->str[0] == '{')
+                        return tok;
+                    break;
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+//---------------------------------------------------------------------------
+// Writing dynamic data in buffer without bounds checking
+//---------------------------------------------------------------------------
+
+static void _DynamicDataCheck(TOKEN *ftok, TOKEN *tok)
+{
+    const char *var2 = tok->str;
+    bool decl = false;
+    unsigned int Var2Count = 0;
+    for ( TOKEN *tok2 = ftok; tok2; tok2 = tok2->next )
+    {
+        if (tok2 == tok)
+            break;
+        if (match(tok2,"char * var"))
+        {
+            decl |= (strcmp(getstr(tok2,2),var2)==0);
+            tok2 = gettok(tok2,3);
+            if ( strcmp(tok2->str, "=") == 0 )
+            {
+                Var2Count++;
+                break;
+            }
+        }
+        if (strcmp(tok2->str,var2)==0)
+        {
+            Var2Count++;
+            break;
+        }
+    }
+
+    // The size of Var2 isn't checked, is it?
+    if (decl && Var2Count == 0)
+    {
+        std::ostringstream ostr;
+        ostr << FileLine(tok) << ": A string with unknown length is copied to buffer.";
+        ReportErr(ostr.str());
+    }
+}
+
+
+static void _DynamicData()
+{
+    for (TOKEN *ftok = findfunction(tokens); ftok; ftok = findfunction(ftok->next))
+    {
+        int indentlevel = 0;
+        for (TOKEN *tok = ftok; tok; tok = tok->next)
+        {
+            if (tok->str[0] == '{')
+                indentlevel++;
+            else if (tok->str[0] == '}')
+            {
+                indentlevel--;
+                if (indentlevel <= 0)
+                    break;
+            }
+
+
+            if (match(tok,"strcpy ( var , var )") ||
+                match(tok,"strcat ( var , var )") )
+            {
+                _DynamicDataCheck(ftok,gettok(tok,4));
+            }
+
+            if (match(tok,"sprintf ( var"))
+            {
+                for ( TOKEN *tok2 = gettok(tok,3); tok2; tok2 = tok2->next )
+                {
+                    if (tok2->str[0] == ')')
+                        break;
+                    if (match(tok2,", var ,") || match(tok2,", var )"))
+                    {
+                        _DynamicDataCheck(ftok,tok2->next);
+                    }
+                }
+            }
+
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
+
+
 
 
 //---------------------------------------------------------------------------
@@ -17,6 +135,8 @@
 
 void CheckBufferOverrun()
 {
+    _DynamicData();
+
     int indentlevel = 0;
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {

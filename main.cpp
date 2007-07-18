@@ -65,8 +65,12 @@ int main(int argc, char* argv[])
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
 
+extern bool HasErrors;
+
 static void CppCheck(const char FileName[])
 {
+    HasErrors = false;
+
     // Tokenize the file
     tokens = tokens_back = NULL;
     Files.clear();
@@ -74,7 +78,7 @@ static void CppCheck(const char FileName[])
 
 
     // Check that the memsets are valid.
-    // This function can do dangerous things if used wrong.
+    // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
     CheckMemset();
 
@@ -149,6 +153,10 @@ static void CppCheck(const char FileName[])
 
     // Clean up tokens..
     DeallocateTokens();
+
+    // Todo: How should this work? Activated by a command line switch?
+    //if ( ! HasErrors )
+    //    std::cout << "No errors found\n";
 }
 //---------------------------------------------------------------------------
 

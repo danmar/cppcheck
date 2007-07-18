@@ -4,6 +4,8 @@
 #include <iostream>
 #include <sstream>
 //---------------------------------------------------------------------------
+bool HasErrors;
+//---------------------------------------------------------------------------
 
 std::string FileLine(TOKEN *tok)
 {
@@ -16,6 +18,7 @@ std::string FileLine(TOKEN *tok)
 void ReportErr(const std::string errmsg)
 {
     std::cerr << errmsg << std::endl;
+    HasErrors = true;
 }
 //---------------------------------------------------------------------------
 
