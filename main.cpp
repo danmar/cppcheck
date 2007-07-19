@@ -16,7 +16,7 @@
 
 //---------------------------------------------------------------------------
 bool Debug = false;
-static bool ShowWarnings = false;
+bool ShowWarnings = false;
 //---------------------------------------------------------------------------
 
 static void CppCheck(const char FileName[]);
