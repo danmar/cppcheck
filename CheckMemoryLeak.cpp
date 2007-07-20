@@ -17,7 +17,7 @@
 
 //---------------------------------------------------------------------------
 
-extern bool ShowWarnings;
+extern bool ShowAll;
 
 //---------------------------------------------------------------------------
 
@@ -396,7 +396,7 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                         if ( match(tok, "var = new type ;") ||
                              match(tok, "var = new type (") )
                         {
-                            if ( ! ShowWarnings && ! IsStandardType(getstr(tok,3)) )
+                            if ( ! ShowAll && ! IsStandardType(getstr(tok,3)) )
                                 continue;
                             err |= ( Alloc != No && Alloc != New );
                             Alloc = New;
@@ -404,7 +404,7 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
 
                         else if ( match(tok, "var = new type [") )
                         {
-                            if ( ! ShowWarnings && ! IsStandardType(getstr(tok,3)) )
+                            if ( ! ShowAll && ! IsStandardType(getstr(tok,3)) )
                                 continue;
                             err |= ( Alloc != No && Alloc != NewA );
                             Alloc = NewA;
@@ -414,7 +414,7 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                     else if ( match(tok, "var = strdup (") ||
                               match(tok, "var = ( type * ) malloc ("))
                     {
-                        if ( ! ShowWarnings &&
+                        if ( ! ShowAll &&
                              tok->next->next->str[0] == '(' &&
                              ! IsStandardType(getstr(tok,3)) )
                                 continue;
@@ -495,6 +495,7 @@ void CheckMemoryLeak()
     _ClassMembers();
 }
 //---------------------------------------------------------------------------
+
 
 
 

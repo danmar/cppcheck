@@ -48,7 +48,7 @@ TOKEN *findfunction(TOKEN *tok)
 // Writing dynamic data in buffer without bounds checking
 //---------------------------------------------------------------------------
 
-extern bool ShowWarnings;
+extern bool ShowAll;
 
 static void _DynamicDataCheck(TOKEN *ftok, TOKEN *tok)
 {
@@ -75,8 +75,8 @@ static void _DynamicDataCheck(TOKEN *ftok, TOKEN *tok)
             tok2 = gettok(tok2,3);
         }
 
-        // If ShowWarnings, only strlen(var2) counts
-        if ( ShowWarnings )
+        // If ShowAll, only strlen(var2) counts
+        if ( ShowAll )
         {
             if (match(tok2,"strlen ( var )") &&
                 strcmp(getstr(tok2,2),var2)==0)
@@ -86,7 +86,7 @@ static void _DynamicDataCheck(TOKEN *ftok, TOKEN *tok)
             }
         }
 
-        // If not ShowWarnings, all usage of "var2" counts
+        // If not ShowAll, all usage of "var2" counts
         else
         {
             if (strcmp(tok2->str,var2)==0)
@@ -355,6 +355,7 @@ void WarningDangerousFunctions()
     }
 }
 //---------------------------------------------------------------------------
+
 
 
 

@@ -1,7 +1,4 @@
 
-
-// Todo: Output progress? Using commandline option "--progress"?
-
 #include <iostream>
 #include <sstream>
 
@@ -16,7 +13,8 @@
 
 //---------------------------------------------------------------------------
 bool Debug = false;
-bool ShowWarnings = false;
+bool ShowAll = false;
+bool CheckCodingStyle = false;
 //---------------------------------------------------------------------------
 
 static void CppCheck(const char FileName[]);
@@ -31,19 +29,16 @@ int main(int argc, char* argv[])
     const char *fname = NULL;
     for (int i = 1; i < argc; i++)
     {
-#ifdef __linux__
-        if(strcasecmp(argv[i],"--debug") == 0)
-#else
-        if (stricmp(argv[i],"--debug") == 0)
-#endif
+        if (strcmp(argv[i],"--debug") == 0)
             Debug = true;
 
-#ifdef __linux__
-        else if (strcasecmp(argv[i],"-w") == 0)
-#else
-        else if (stricmp(argv[i],"-w") == 0)
-#endif
-            ShowWarnings = true;
+        // Show all messages
+        else if (strcmp(argv[i],"--all") == 0)
+            ShowAll = true;
+
+        // Checking coding style.
+        else if (strcmp(argv[i],"--style")==0)
+            CheckCodingStyle = true;
 
         else
             fname = argv[i];
@@ -51,8 +46,14 @@ int main(int argc, char* argv[])
 
     if (!fname)
     {
-        std::cout << "checkcode [-w] filename\n";
-        std::cout << "-w : enables extra warnings\n";
+        std::cout << "cppcheck [--all] [--style] filename\n";
+        std::cout << "  --all    Show all messages.\n"
+                     "           By default this is off, a message is only shown"
+                     "           if cppcheck is sure it has found a bug."
+                     "           By turning on all warnings, you'll probably get"
+                     "           false positives, but some of the positives might"
+                     "           be real bugs.\n";
+        std::cout << "  --style  Check coding style\n";
         return 0;
     }
 
@@ -83,12 +84,9 @@ static void CppCheck(const char FileName[])
     CheckMemset();
 
 
-    if ( ShowWarnings )
-    {
-        // Including header which is not needed
-        // Todo: This is really slow!
+    // Including header which is not needed
+    if ( CheckCodingStyle )
         WarningIncludeHeader();
-    }
 
 
     SimplifyTokenList();
@@ -105,9 +103,30 @@ static void CppCheck(const char FileName[])
     CheckBufferOverrun();
 
 
+    if (ShowAll)
+    {
+        // Check for "if (a=b)"
+        // Check for case without break
 
-    // Warnings
-    if (ShowWarnings)
+        // Check that all class constructors are ok.
+        // Temporarily inactivated to avoid any false positives
+        CheckConstructors();
+
+        // Dangerous usage of strtok
+        WarningStrTok();
+    }
+
+
+
+    // Dangerous functions, such as 'gets' and 'scanf'
+    WarningDangerousFunctions();
+
+    
+    // Invalid function usage..
+    InvalidFunctionUsage();
+
+
+    if (CheckCodingStyle)
     {
         // Check that all private functions are called.
         CheckUnusedPrivateFunctions();
@@ -130,26 +149,13 @@ static void CppCheck(const char FileName[])
 
         CheckOperatorEq1();
 
-        // Check that all class constructors are ok.
-        // Temporarily inactivated to avoid any false positives
-        //CheckConstructors();
-
         // if (a) delete a;
         WarningRedundantCode();
 
         // if (condition);
         WarningIf();
-
-        // Dangerous usage of strtok
-        WarningStrTok();
     }
 
-
-    // Dangerous functions, such as 'gets' and 'scanf'
-    WarningDangerousFunctions();
-
-    // Invalid function usage..
-    InvalidFunctionUsage();
 
     // Clean up tokens..
     DeallocateTokens();
@@ -159,6 +165,7 @@ static void CppCheck(const char FileName[])
     //    std::cout << "No errors found\n";
 }
 //---------------------------------------------------------------------------
+
 
 
 

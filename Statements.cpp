@@ -11,7 +11,7 @@ std::vector<std::string> VariableNames;
 std::list<STATEMENT> Statements;
 
 extern bool Debug;
-extern bool ShowWarnings;
+extern bool ShowAll;
 
 
 
@@ -51,7 +51,7 @@ static void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="
 
     if ( PointerType )
     {
-        if ( ! ShowWarnings && ! IsStandardType(PointerType) )
+        if ( ! ShowAll && ! IsStandardType(PointerType) )
             return;
     }
 
@@ -463,6 +463,7 @@ void CreateStatementList()
     }
 }
 //---------------------------------------------------------------------------
+
 
 
 
