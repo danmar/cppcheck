@@ -1,0 +1,71 @@
+
+
+
+Case 1
+
+    Using array with invalid index. The index may either be a constant or a variable..
+
+    Constant index is easy to check.
+        str[10]
+
+    Variable index is hard to check. It's common with a for loop like this:
+        for (i=0;i<100;i++)
+            str[i] = 0;
+
+
+    [TODO]
+    I should make a check that checks the entire block below a loop.
+        for (i=0;i<100;i++)
+        {
+            ...
+        }
+
+
+
+Case 2   [TODO]
+
+    Array with multiple dimensions.
+    char data[10][10];
+
+    Constant indexes shouldn't be too hard to check..
+        data[1][10] = 0;
+
+
+
+
+Case 3
+
+    strcpy/strcat
+
+    Either the second parameter is a constant or a variable.
+
+    [TODO]
+    Constant: the size of the destination buffer must be checked
+        strcpy(str, "hello");
+
+    Variable: Check that the length isn't unknown
+        strcpy(str1, str2);
+
+    Very difficult case to check:
+        while (tok = strtok(0," "))
+            strcat(str, tok);
+
+
+Case 4
+
+    sprintf
+
+    All parameters must have a known length.
+
+
+
+
+Case 5   [TODO]
+
+    memset/memcpy/memmove/strncpy/strncmp
+
+    The given size must never be bigger than any of the parameters..
+
+    It's bad if the size is given as a signed int.
+    This gives nasty errors:
+        strncpy(buf,str,-1);
