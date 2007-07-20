@@ -418,19 +418,15 @@ void CheckMemset()
         if (!(type && type[0]))
             continue;
 
-        // It will be assumed that memset can be used upon 'this'.
-        // Todo: Check this too
-        if (strcmp(getstr(tok,2),"this") == 0)
-            continue;
-
         // Warn if type is a class..
         const char *pattern1[] = {"class","",NULL};
         pattern1[1] = type;
-        if (findtoken(tokens,pattern1))
+        if (strcmp("this",getstr(tok,2))==0 || findtoken(tokens,pattern1))
         {
             std::ostringstream ostr;
             ostr << FileLine(tok) << ": Using 'memset' on class.";
             ReportErr(ostr.str());
+            continue;
         }
 
         // Warn if type is a struct that contains any std::*
