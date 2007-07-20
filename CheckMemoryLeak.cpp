@@ -17,6 +17,10 @@
 
 //---------------------------------------------------------------------------
 
+extern bool ShowWarnings;
+
+//---------------------------------------------------------------------------
+
 struct _variable
 {
     int indentlevel;
@@ -334,6 +338,12 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                 }
             }
 
+            else if (indentlevel==0 && tok->str[0] == ';')
+            {
+                func = tok;
+                break;
+            }
+
             else if (indentlevel > 0)
             {
                 // Deallocation..
@@ -386,12 +396,16 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                         if ( match(tok, "var = new type ;") ||
                              match(tok, "var = new type (") )
                         {
+                            if ( ! ShowWarnings && ! IsStandardType(getstr(tok,3)) )
+                                continue;
                             err |= ( Alloc != No && Alloc != New );
                             Alloc = New;
                         }
 
                         else if ( match(tok, "var = new type [") )
                         {
+                            if ( ! ShowWarnings && ! IsStandardType(getstr(tok,3)) )
+                                continue;
                             err |= ( Alloc != No && Alloc != NewA );
                             Alloc = NewA;
                         }
@@ -400,6 +414,11 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                     else if ( match(tok, "var = strdup (") ||
                               match(tok, "var = ( type * ) malloc ("))
                     {
+                        if ( ! ShowWarnings &&
+                             tok->next->next->str[0] == '(' &&
+                             ! IsStandardType(getstr(tok,3)) )
+                                continue;
+
                         err |= ( Alloc != No && Alloc != Malloc );
                         Alloc = Malloc;
                     }
@@ -415,16 +434,12 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
         }
     }
 
-    if ( Alloc != Dealloc )
+    if ( Alloc != Dealloc && Dealloc == No )
     {
-        if ( Dealloc == No )
-        {
-            std::ostringstream ostr;
-            ostr << "Memory leak for '" << classname << "::" << varname << "'";
-            ReportErr(ostr.str());
-        }
+        std::ostringstream ostr;
+        ostr << "Memory leak for '" << classname << "::" << varname << "'";
+        ReportErr(ostr.str());
     }
-
 }
 
 static void _ClassMembers()

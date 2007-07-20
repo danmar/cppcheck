@@ -34,4 +34,15 @@ bool IsNumber(const char str[])
 }
 //---------------------------------------------------------------------------
 
+bool IsStandardType(const char str[])
+{
+    if (!str)
+        return false;
+    bool Ret = false;
+    const char *type[] = {"bool","char","short","int","long","float","double",0};
+    for (int i = 0; type[i]; i++)
+        Ret |= (strcmp(str,type[i])==0);
+    return Ret;
+}
+//---------------------------------------------------------------------------
 

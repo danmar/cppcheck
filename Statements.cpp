@@ -11,6 +11,7 @@ std::vector<std::string> VariableNames;
 std::list<STATEMENT> Statements;
 
 extern bool Debug;
+extern bool ShowWarnings;
 
 
 
@@ -19,7 +20,7 @@ extern bool Debug;
 // Create statement list
 //---------------------------------------------------------------------------
 
-void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="")
+static void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="", const char PointerType[]=0)
 {
     STATEMENT NewStatement;
     NewStatement.Type = Type;
@@ -47,6 +48,13 @@ void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="")
             VariableNames.push_back(Var);
         }
     }
+
+    if ( PointerType )
+    {
+        if ( ! ShowWarnings && ! IsStandardType(PointerType) )
+            return;
+    }
+
     Statements.push_back(NewStatement);
 }
 
@@ -210,27 +218,34 @@ void CreateStatementList()
                 {
                     TOKEN *rs = eq->next;
 
+                    const char *pointertype = 0;
                     bool ismalloc = false;
-                    ismalloc |= match(rs, "strdup (");
-                    if (rs->str[0]=='(' && IsName(getstr(rs,1)))
+                    if (match(rs, "strdup ("))
+                    {
+                        pointertype = "char";
+                        ismalloc = true;
+                    }
+                    else if (rs->str[0]=='(' && IsName(getstr(rs,1)))
                     {
                         ismalloc |= match(rs, "( type * ) malloc (");
                         ismalloc |= match(rs, "( type * * ) malloc (");
                         ismalloc |= match(rs, "( type type * ) malloc (");
                         ismalloc |= match(rs, "( type type * * ) malloc (");
+                        if (ismalloc)
+                            pointertype = getstr(rs, rs->next->next->str[0]=='*' ? 1 : 2 );
                     }
 
                     if ( ismalloc )
-                        AppendStatement(STATEMENT::MALLOC, tok2, varname);
+                        AppendStatement(STATEMENT::MALLOC, tok2, varname, pointertype);
 
                     else if ( match(rs,"new type ;") )
-                        AppendStatement(STATEMENT::NEW, tok2, varname);
+                        AppendStatement(STATEMENT::NEW, tok2, varname, getstr(rs,1));
 
                     else if ( match(rs, "new type (") )
-                        AppendStatement(STATEMENT::NEW, tok2, varname);
+                        AppendStatement(STATEMENT::NEW, tok2, varname, getstr(rs,1));
 
                     else if ( match(rs, "new type [") )
-                        AppendStatement(STATEMENT::NEWARRAY, tok2, varname);
+                        AppendStatement(STATEMENT::NEWARRAY, tok2, varname, getstr(rs,1));
 
                     else
                         AppendStatement(STATEMENT::ASSIGN, tok2, varname);

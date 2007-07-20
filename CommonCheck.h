@@ -15,5 +15,7 @@ void ReportErr(const std::string errmsg);
 bool IsName(const char str[]);
 bool IsNumber(const char str[]);
 
+bool IsStandardType(const char str[]);
+
 //---------------------------------------------------------------------------
 #endif
