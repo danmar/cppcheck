@@ -11,6 +11,8 @@
 #include "CheckHeaders.h"
 #include "CheckOther.h"
 
+#include <dir.h>    // <- findfirst, ffblk
+
 //---------------------------------------------------------------------------
 bool Debug = false;
 bool ShowAll = false;
@@ -46,18 +48,44 @@ int main(int argc, char* argv[])
 
     if (!fname)
     {
-        std::cout << "cppcheck [--all] [--style] filename\n";
-        std::cout << "  --all    Show all messages.\n"
-                     "           By default this is off, a message is only shown"
-                     "           if cppcheck is sure it has found a bug."
-                     "           By turning on all warnings, you'll probably get"
-                     "           false positives, but some of the positives might"
-                     "           be real bugs.\n";
-        std::cout << "  --style  Check coding style\n";
+        std::cout << "C/C++ code checking.\n"
+                     "\n"
+                     "Syntax:\n"
+                     "    cppcheck [--all] [--style] filename\n"
+                     "\n"
+                     "Options:\n"
+                     "    --all    Normally a message is only shown if cppcheck is sure\n"
+                     "             it has found a bug.\n"
+                     "             When this option is given, all messages are shown.\n"
+                     "\n"
+                     "    --style  Check coding style.\n";
         return 0;
     }
 
-    CppCheck(fname);
+    struct ffblk f;
+    int done = findfirst(fname,&f,0);
+    while (!done)
+    {
+        char path[1000];
+        if (strchr(fname,'\\'))
+        {
+            strcpy(path, fname);
+            *(strrchr(path,'\\')+1) = 0;
+        }
+        else if (strchr(fname,'/'))
+        {
+            strcpy(path, fname);
+            *(strrchr(path,'/')+1) = 0;
+        }
+        else
+        {
+            path[0] = 0;
+        }
+        strcat(path, f.ff_name);
+
+        CppCheck(path);
+        done = findnext(&f);
+    }
 
     return 0;
 }
@@ -71,6 +99,8 @@ extern bool HasErrors;
 static void CppCheck(const char FileName[])
 {
     HasErrors = false;
+
+    std::cout << "Checking " << FileName << "...\n";
 
     // Tokenize the file
     tokens = tokens_back = NULL;
@@ -106,7 +136,10 @@ static void CppCheck(const char FileName[])
     if (ShowAll)
     {
         // Check for "if (a=b)"
+        CheckIfAssignment();
+
         // Check for case without break
+        CheckCaseWithoutBreak();
 
         // Check that all class constructors are ok.
         // Temporarily inactivated to avoid any false positives
@@ -161,8 +194,8 @@ static void CppCheck(const char FileName[])
     DeallocateTokens();
 
     // Todo: How should this work? Activated by a command line switch?
-    //if ( ! HasErrors )
-    //    std::cout << "No errors found\n";
+    if ( ! HasErrors )
+        std::cout << "No errors found\n";
 }
 //---------------------------------------------------------------------------
 
