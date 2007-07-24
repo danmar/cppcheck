@@ -454,4 +454,70 @@ void WarningStrTok()
 //---------------------------------------------------------------------------
 
 
+//---------------------------------------------------------------------------
+// Assignment in condition
+//---------------------------------------------------------------------------
+
+void CheckIfAssignment()
+{
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if (match(tok,"if ( a = b )"))
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tok) << ": Possible bug. Should it be '==' instead of '='?";
+            ReportErr(ostr.str());
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// Check for case without break
+//---------------------------------------------------------------------------
+
+void CheckCaseWithoutBreak()
+{
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( strcmp(tok->str,"case")!=0 )
+            continue;
+
+        // Found a case, check that there's a break..
+        int indentlevel = 0;
+        for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
+        {
+            if (tok2->str[0] == '{')
+                indentlevel++;
+            else if (tok2->str[0] == '}')
+            {
+                indentlevel--;
+                if (indentlevel < 0)
+                {
+                    std::ostringstream ostr;
+                    ostr << FileLine(tok) << ": 'case' without 'break'.";
+                    ReportErr(ostr.str());
+                }
+            }
+            if (indentlevel==0)
+            {
+                if (strcmp(tok2->str,"break")==0)
+                    break;
+                if (strcmp(tok2->str,"return")==0)
+                    break;
+                if (strcmp(tok2->str,"case")==0)
+                {
+                    std::ostringstream ostr;
+                    ostr << FileLine(tok) << ": Possible bug. 'case' without 'break'.";
+                    ReportErr(ostr.str());
+                    break;
+                }
+            }
+        }
+    }
+
+}
+
 

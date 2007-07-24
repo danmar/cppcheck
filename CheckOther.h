@@ -19,6 +19,9 @@ void WarningRedundantCode();
 // Warning upon: if (condition);
 void WarningIf();
 
+// Assignment in condition
+void CheckIfAssignment();
+
 // Using dangerous functions
 void WarningDangerousFunctions();
 
@@ -27,6 +30,9 @@ void InvalidFunctionUsage();
 
 // Dangerous usage of 'strtok'
 void WarningStrTok();
+
+// Check for a 'case' without a 'break'
+void CheckCaseWithoutBreak();
 
 //---------------------------------------------------------------------------
 #endif
