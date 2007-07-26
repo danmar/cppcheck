@@ -11,8 +11,6 @@
 #include "CheckHeaders.h"
 #include "CheckOther.h"
 
-#include <dir.h>    // <- findfirst, ffblk
-
 //---------------------------------------------------------------------------
 bool Debug = false;
 bool ShowAll = false;
@@ -62,30 +60,7 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    struct ffblk f;
-    int done = findfirst(fname,&f,0);
-    while (!done)
-    {
-        char path[1000];
-        if (strchr(fname,'\\'))
-        {
-            strcpy(path, fname);
-            *(strrchr(path,'\\')+1) = 0;
-        }
-        else if (strchr(fname,'/'))
-        {
-            strcpy(path, fname);
-            *(strrchr(path,'/')+1) = 0;
-        }
-        else
-        {
-            path[0] = 0;
-        }
-        strcat(path, f.ff_name);
-
-        CppCheck(path);
-        done = findnext(&f);
-    }
+    CppCheck(fname);
 
     return 0;
 }
