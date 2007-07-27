@@ -26,6 +26,7 @@ struct _variable
     int indentlevel;
     unsigned int varindex;
     enum {Any, Data, Malloc, New, NewA} value;
+    int dealloc_level;
 };
 
 //---------------------------------------------------------------------------
@@ -82,10 +83,15 @@ static void _InFunction()
                 {
                     for (unsigned int i = 0; i < varlist.size(); i++)
                     {
-                        if (varlist[i]->indentlevel != indentlevel)
+                        struct _variable *var = varlist[i];
+
+                        if (var->dealloc_level == indentlevel)
+                            var->dealloc_level = 0;
+
+                        if (var->indentlevel != indentlevel)
                             continue;
 
-                        if (varlist[i]->value == _variable::Malloc || varlist[i]->value == _variable::New || varlist[i]->value == _variable::NewA)
+                        if (var->value == _variable::Malloc || var->value == _variable::New || var->value == _variable::NewA)
                         {
                             std::ostringstream ostr;
                             ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
@@ -199,20 +205,20 @@ static void _InFunction()
                         if ( it->Type == STATEMENT::MALLOC )
                             varlist[i]->value = _variable::Malloc;
 
-                        else if ( it->Type == STATEMENT::FREE )
-                            varlist[i]->value = _variable::Any;
-
                         else if ( it->Type == STATEMENT::NEW )
                             varlist[i]->value = _variable::New;
 
                         else if ( it->Type == STATEMENT::NEWARRAY )
                             varlist[i]->value = _variable::NewA;
 
-                        else if ( it->Type == STATEMENT::DELETE )
-                            varlist[i]->value = _variable::Any;
-
-                        else if ( it->Type == STATEMENT::DELETEARRAY )
-                            varlist[i]->value = _variable::Any;
+                        else
+                        {
+                            // Deallocation...
+                            if (indentlevel > varlist[i]->indentlevel)
+                                varlist[i]->dealloc_level = indentlevel;
+                            else
+                                varlist[i]->value = _variable::Any;
+                        }
 
                         break;
                     }
@@ -234,18 +240,21 @@ static void _InFunction()
             case STATEMENT::RETURN:
                 for (unsigned int i = 0; i < varlist.size(); i++)
                 {
-                    if ( varlist[i]->varindex == it->VarIndex )
+                    struct _variable *var = varlist[i];
+
+                    if ( var->varindex == it->VarIndex )
                     {
-                        varlist[i]->value = _variable::Any;
+                        var->value = _variable::Any;
                     }
 
-                    else if (varlist[i]->value==_variable::New ||
-                             varlist[i]->value==_variable::NewA )
+                    else if (var->value==_variable::New ||
+                             var->value==_variable::NewA ||
+                             var->value==_variable::Malloc )
                     {
                         std::ostringstream ostr;
                         ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
                         ReportErr(ostr.str());
-                        varlist[i]->value = _variable::Any;
+                        var->value = _variable::Any;
                         break;
                     }
                 }

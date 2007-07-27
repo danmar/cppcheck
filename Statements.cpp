@@ -278,6 +278,9 @@ void CreateStatementList()
                 if (parlevel==0 && strchr("{};", tok2->str[0]))
                     break;
 
+                if (match(tok2,"free ( var )"))
+                    break;
+
                 if (tok2->str[0] == '(')
                     parlevel++;
                 if (tok2->str[0] == ')')
