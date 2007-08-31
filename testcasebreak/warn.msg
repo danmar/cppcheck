@@ -1,1 +1,1 @@
-[testcasebreak\testcasebreak.cpp:9]: Possible bug. 'case' without 'break'.
+[testcasebreak\testcasebreak.cpp:9]: Found 'case' without 'break'.

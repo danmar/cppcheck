@@ -247,9 +247,10 @@ static void _InFunction()
                         var->value = _variable::Any;
                     }
 
-                    else if (var->value==_variable::New ||
-                             var->value==_variable::NewA ||
-                             var->value==_variable::Malloc )
+                    else if (var->dealloc_level != indentlevel &&
+                             (var->value==_variable::New ||
+                              var->value==_variable::NewA ||
+                              var->value==_variable::Malloc ) )
                     {
                         std::ostringstream ostr;
                         ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];

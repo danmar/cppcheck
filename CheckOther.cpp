@@ -510,7 +510,7 @@ void CheckCaseWithoutBreak()
                 if (strcmp(tok2->str,"case")==0)
                 {
                     std::ostringstream ostr;
-                    ostr << FileLine(tok) << ": Possible bug. 'case' without 'break'.";
+                    ostr << FileLine(tok) << ": Found 'case' without 'break'.";
                     ReportErr(ostr.str());
                     break;
                 }

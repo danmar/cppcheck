@@ -74,6 +74,7 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
         // Member variable?
         if ((indentlevel == 1) &&
             (tok->next->str[0] == ';') &&
+            (strchr(tok->str,':')==0) &&
             (IsName(tok->str)) &&
             (strcmp(tok->str,"const") != 0 ))
         {
@@ -240,6 +241,16 @@ void CheckConstructors()
         // Check if any variables are uninitialized
         for (struct VAR *var = varlist; var; var = var->next)
         {
+            // Is it a static member variable?
+            const char *pattern[] = {"","::","","=",NULL};
+            pattern[0] = classname;
+            pattern[2] = var->name;
+
+            // Locate member function implementation..
+            TOKEN *ftok = findtoken(tokens, pattern);
+            if (ftok)
+                continue;
+
             if (!var->init && (var->is_pointer || !var->is_class))
             {
                 std::ostringstream ostr;
