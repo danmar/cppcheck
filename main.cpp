@@ -114,14 +114,16 @@ static void CppCheck(const char FileName[])
         CheckIfAssignment();
 
         // Check for case without break
-        CheckCaseWithoutBreak();
+        // Disabled because it generates many false positives
+        // CheckCaseWithoutBreak();
 
         // Check that all class constructors are ok.
         // Temporarily inactivated to avoid any false positives
         CheckConstructors();
 
         // Dangerous usage of strtok
-        WarningStrTok();
+        // Disabled because it generates false positives
+        //WarningStrTok();
     }
 
 
