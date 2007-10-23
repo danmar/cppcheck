@@ -258,19 +258,23 @@ void Tokenize(const char FileName[])
             return;
     }
 
+    // Open file..
     std::ifstream fin(FileName);
     if (!fin.is_open())
         return;
 
+    // The "Files" vector remembers what files have been tokenized..
     unsigned int CurrentFile = Files.size();
     Files.push_back(FileName);
 
+    // Tokenize the file.
     unsigned int lineno = 1;
     char CurrentToken[1000];
     memset(CurrentToken, 0, sizeof(CurrentToken));
     char *pToken = CurrentToken;
     for (char ch = (char)fin.get(); !fin.eof(); ch = (char)fin.get())
     {
+        // Preprocessor stuff?
         if (ch == '#' && !CurrentToken[0])
         {
             std::string line;
@@ -540,7 +544,7 @@ void SimplifyTokenList()
     }
 
 
-
+    /*
     // typedefs..
     TOKEN *prev = NULL;
     for (TOKEN *tok = tokens; tok; tok = tok->next)
@@ -639,6 +643,7 @@ void SimplifyTokenList()
         }
         prev = tok;
     }
+    */
 
 
     // Fill the map TypeSize..
