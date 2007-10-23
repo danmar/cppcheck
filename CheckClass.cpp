@@ -68,6 +68,13 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
                 is_class |= (strcmp(c->name, tok->str) == 0);
         }
 
+        if (match(tok,"std ::"))
+        {
+            while (tok->next && tok->next->str[0] != ';')
+                tok = tok->next;
+            continue;
+        }
+
         if (tok->str[0] == '*')
             is_pointer = true;
 
