@@ -20,6 +20,20 @@ struct VAR
 
 static struct VAR *ClassChecking_GetVarList(const char classname[])
 {
+    // Get all initialized types..
+    std::vector<const char *> InitializedTypes;
+    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        // "typedef std::" => This is a initialized type
+        if (match(tok,"typedef std ::"))
+        {
+            while (tok->next && tok->next->str[0]!=';')
+                tok = tok->next;
+            InitializedTypes.push_back(tok->str);
+            continue;
+        }
+    }
+
     // Locate class..
     const char *pattern[] = {"class","","{",0};
     pattern[1] = classname;
@@ -68,7 +82,12 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
                 is_class |= (strcmp(c->name, tok->str) == 0);
         }
 
-        if (match(tok,"std ::"))
+        bool initializedtype = false;
+        for (unsigned int i = 0; i < InitializedTypes.size(); i++)
+            initializedtype |= (strcmp(tok->str,InitializedTypes[i])==0);
+
+        // "std::" => This variable is initialized
+        if (match(tok,"std ::") || initializedtype)
         {
             while (tok->next && tok->next->str[0] != ';')
                 tok = tok->next;
