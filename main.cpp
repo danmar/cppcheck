@@ -107,6 +107,8 @@ static void CppCheck(const char FileName[])
     // Buffer overruns..
     CheckBufferOverrun();
 
+    // Check that all class constructors are ok.
+    CheckConstructors();
 
     if (ShowAll)
     {
@@ -116,10 +118,6 @@ static void CppCheck(const char FileName[])
         // Check for case without break
         // Disabled because it generates many false positives
         // CheckCaseWithoutBreak();
-
-        // Check that all class constructors are ok.
-        // Temporarily inactivated to avoid any false positives
-        CheckConstructors();
 
         // Dangerous usage of strtok
         // Disabled because it generates false positives
@@ -131,7 +129,7 @@ static void CppCheck(const char FileName[])
     // Dangerous functions, such as 'gets' and 'scanf'
     WarningDangerousFunctions();
 
-    
+
     // Invalid function usage..
     InvalidFunctionUsage();
 

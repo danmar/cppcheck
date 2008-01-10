@@ -10,54 +10,20 @@
 
 struct VAR
 {
-    bool        is_class;
     const char *name;
     bool        init;
-    bool        is_pointer;
     struct VAR *next;
 };
 //---------------------------------------------------------------------------
 
 static struct VAR *ClassChecking_GetVarList(const char classname[])
 {
-    // Get all initialized types..
-    std::vector<const char *> InitializedTypes;
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        // "typedef std::" => This is a initialized type
-        if (match(tok,"typedef std ::"))
-        {
-            while (tok->next && tok->next->str[0]!=';')
-                tok = tok->next;
-            InitializedTypes.push_back(tok->str);
-            continue;
-        }
-    }
-
     // Locate class..
     const char *pattern[] = {"class","","{",0};
     pattern[1] = classname;
     TOKEN *tok1 = findtoken(tokens, pattern);
 
-    // All classes..
-    struct _class
-    {
-        const char *name;
-        struct _class *next;
-    };
-    struct _class *classes = NULL;
-    const char *pattern_anyclass[] = {"class","",NULL};
-    for (TOKEN *t = findtoken(tokens,pattern_anyclass); t; t = findtoken(t->next,pattern_anyclass))
-    {
-        _class *newclass = new _class;
-        newclass->name = t->next->str;
-        newclass->next = classes;
-        classes = newclass;
-    }
-
     // Get variable list..
-    bool is_class = false;
-    bool is_pointer = false;
     struct VAR *varlist = NULL;
     unsigned int indentlevel = 0;
     for (TOKEN *tok = tok1; tok; tok = tok->next)
@@ -74,51 +40,42 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
             indentlevel--;
         }
 
-        if (strchr(";{}", tok->str[0]))
-            is_class = is_pointer = false;
-        else if (IsName(tok->str))
+
+        if (indentlevel==1 && (strchr(";{}", tok->str[0]) || (tok->str[0]!=':' && strchr(tok->str, ':'))))
         {
-            for (_class *c = classes; c; c = c->next)
-                is_class |= (strcmp(c->name, tok->str) == 0);
+            TOKEN *next = tok->next;
+
+            const char *varname = 0;
+
+            // Is it a variable declaration?
+            if ( match(next,"var var ;") )
+            {
+                const char *types[] = {"bool", "char", "int", "short", "long", "float", "double", 0};
+                for ( int type = 0; types[type]; type++ )
+                {
+                    if ( strcmp(next->str, types[type]) == 0)
+                    {
+                        varname = next->next->str;
+                        break;
+                    }
+                }
+            }
+
+            // Pointer?
+            else if ( match(next, "var * var ;") )
+            {
+                varname = getstr(next, 2);
+            }
+
+            if (varname)
+            {
+                struct VAR *var = new VAR;
+                memset(var, 0, sizeof(struct VAR));
+                var->name = varname;
+                var->next = varlist;
+                varlist   = var;
+            }
         }
-
-        bool initializedtype = false;
-        for (unsigned int i = 0; i < InitializedTypes.size(); i++)
-            initializedtype |= (strcmp(tok->str,InitializedTypes[i])==0);
-
-        // "std::" => This variable is initialized
-        if (match(tok,"std ::") || initializedtype)
-        {
-            while (tok->next && tok->next->str[0] != ';')
-                tok = tok->next;
-            continue;
-        }
-
-        if (tok->str[0] == '*')
-            is_pointer = true;
-
-        // Member variable?
-        if ((indentlevel == 1) &&
-            (tok->next->str[0] == ';') &&
-            (strchr(tok->str,':')==0) &&
-            (IsName(tok->str)) &&
-            (strcmp(tok->str,"const") != 0 ))
-        {
-            struct VAR *var = new VAR;
-            memset(var, 0, sizeof(struct VAR));
-            var->name = tok->str;
-            var->next = varlist;
-            var->is_class = is_class;
-            var->is_pointer = is_pointer;
-            varlist   = var;
-        }
-    }
-
-    while (classes)
-    {
-        _class *next = classes->next;
-        delete classes;
-        classes = next;
     }
 
     return varlist;
@@ -277,7 +234,7 @@ void CheckConstructors()
             if (ftok)
                 continue;
 
-            if (!var->init && (var->is_pointer || !var->is_class))
+            if (!var->init)
             {
                 std::ostringstream ostr;
                 ostr << "Uninitialized member variable '" << classname << "::" << var->name << "'";

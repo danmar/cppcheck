@@ -114,7 +114,7 @@ Item0=_DEBUG
 DebugSourceDirs=$(BCB)\source\vcl
 
 [Parameters]
-RunParams=-w testif5\testif5.cpp
+RunParams=--all testUninitVar1\testUninitvar1.cpp
 Launcher=
 UseLauncher=0
 DebugCWD=
