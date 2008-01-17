@@ -9,7 +9,9 @@ public:
 }
 
 Fred::Fred()
-{ }
+{
+    _i = 0;
+}
 
 Fred::Fred(int i)
 { }

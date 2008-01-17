@@ -72,6 +72,7 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
                 struct VAR *var = new VAR;
                 memset(var, 0, sizeof(struct VAR));
                 var->name = varname;
+                var->init = false;
                 var->next = varlist;
                 varlist   = var;
             }
@@ -82,7 +83,7 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
 }
 //---------------------------------------------------------------------------
 
-static TOKEN * ClassChecking_VarList_RemoveAssigned(TOKEN *_tokens, struct VAR *varlist, const char classname[], const char funcname[])
+static TOKEN * ClassChecking_VarList_Initialize(TOKEN *_tokens, struct VAR *varlist, const char classname[], const char funcname[])
 {
     // Locate class member function
     const char *pattern[] = {"","::","","(",NULL};
@@ -147,7 +148,7 @@ static TOKEN * ClassChecking_VarList_RemoveAssigned(TOKEN *_tokens, struct VAR *
 
             // Calling member function?
             if (ftok->next->str[0] == '(')
-                ClassChecking_VarList_RemoveAssigned(tokens, varlist, classname, ftok->str);
+                ClassChecking_VarList_Initialize(tokens, varlist, classname, ftok->str);
 
             // Assignment of member variable?
             if (strcmp(ftok->next->str, "=") == 0)
@@ -219,27 +220,35 @@ void CheckConstructors()
 
         // Check that all member variables are initialized..
         struct VAR *varlist = ClassChecking_GetVarList(classname);
-        ClassChecking_VarList_RemoveAssigned(tokens, varlist, classname, classname);
 
-        // Check if any variables are uninitialized
-        for (struct VAR *var = varlist; var; var = var->next)
+        const char *constructor_pattern[] = {"","::","","(",NULL};
+        constructor_pattern[0] = classname;
+        constructor_pattern[2] = classname;
+        struct TOKEN *constructor_token = ClassChecking_VarList_Initialize(tokens, varlist, classname, classname);
+        while ( constructor_token )
         {
-            // Is it a static member variable?
-            const char *pattern[] = {"","::","","=",NULL};
-            pattern[0] = classname;
-            pattern[2] = var->name;
-
-            // Locate member function implementation..
-            TOKEN *ftok = findtoken(tokens, pattern);
-            if (ftok)
-                continue;
-
-            if (!var->init)
+            // Check if any variables are uninitialized
+            for (struct VAR *var = varlist; var; var = var->next)
             {
-                std::ostringstream ostr;
-                ostr << "Uninitialized member variable '" << classname << "::" << var->name << "'";
-                ReportErr(ostr.str());
+                // Is it a static member variable?
+                const char *pattern[] = {"","::","","=",NULL};
+                pattern[0] = classname;
+                pattern[2] = var->name;
+                if (findtoken(tokens, pattern))
+                    continue;
+
+                if (!var->init)
+                {
+                    std::ostringstream ostr;
+                    ostr << FileLine(constructor_token);
+                    ostr << " Uninitialized member variable '" << classname << "::" << var->name << "'";
+                    ReportErr(ostr.str());
+                }
             }
+
+            for ( struct VAR *var = varlist; var; var = var->next )
+                var->init = false;
+            constructor_token = ClassChecking_VarList_Initialize(constructor_token->next, varlist, classname, classname);
         }
 
         // Delete the varlist..
