@@ -5,14 +5,13 @@
 
 #include "tokenize.h"   // <- Tokenizer
 #include "CommonCheck.h"
+
 #include "CheckBufferOverrun.h"
+#include "CheckClass.h"
 
 #include <iostream>
 #include <sstream>
 
-//---------------------------------------------------------------------------
-
-#define assert_equal(A,B) if (A!=B) { std::cerr << "Failed at line " << line << "\n"; FailCount++; } else { SuccessCount++; }
 //---------------------------------------------------------------------------
 bool Debug = false;
 bool ShowAll = false;
@@ -21,12 +20,16 @@ bool CheckCodingStyle = false;
 static unsigned int FailCount, SuccessCount;
 //---------------------------------------------------------------------------
 static void buffer_overrun();
+static void constructors();
+static void operator_eq();
 //---------------------------------------------------------------------------
 
 int main()
 {
     Files.push_back( std::string("test.cpp") );
     buffer_overrun();
+    constructors();
+    operator_eq();
     std::cout << "Success Rate: " 
               << SuccessCount 
               << " / " 
@@ -36,9 +39,10 @@ int main()
 }
 //---------------------------------------------------------------------------
 
-static void buffer_overrun_check(const unsigned int line,
-                                 const char code[],
-                                 const char msg[])
+static void check(void (chk)(),
+                  const unsigned int line,
+                  const char code[],
+                  const char msg[])
 {
     // Tokenize..
     tokens = tokens_back = NULL;
@@ -48,10 +52,21 @@ static void buffer_overrun_check(const unsigned int line,
 
     // Check for buffer overruns..
     errout.str("");
-    CheckBufferOverrun();
+    chk();
 
     // Check the error messages..
-    assert_equal(errout.str(), msg);
+    std::string err( errout.str() );
+    if ( err == msg )
+    {
+        SuccessCount++;
+    }
+    else
+    {
+        FailCount++;
+        std::cerr << "Failed at line " << line << std::endl
+                  << "Unexpected Result:" << std::endl
+                  << err << std::endl;
+    }
 
     // Cleanup..
     DeallocateTokens();
@@ -73,7 +88,7 @@ static void buffer_overrun()
                          "    str[15] = 0;\n"
                          "    str[16] = 0;\n"
                          "}\n";
-    buffer_overrun_check( __LINE__, test1, "[test.cpp:5]: Array index out of bounds\n" );
+    check( CheckBufferOverrun, __LINE__, test1, "[test.cpp:5]: Array index out of bounds\n" );
 
 
 
@@ -83,7 +98,7 @@ static void buffer_overrun()
                          "    for (i = 0; i < 100; i++)\n"
                          "        sum += val[i];\n"
                          "}\n";
-    buffer_overrun_check( __LINE__, test2, "[test.cpp:5]: Buffer overrun\n" );
+    check( CheckBufferOverrun, __LINE__, test2, "[test.cpp:5]: Buffer overrun\n" );
 
 
 
@@ -98,7 +113,7 @@ static void buffer_overrun()
                          "        char str[50];\n"
                          "    }\n"
                          "}\n";
-    buffer_overrun_check( __LINE__, test3, "" );
+    check( CheckBufferOverrun, __LINE__, test3, "" );
 
 
 
@@ -107,7 +122,7 @@ static void buffer_overrun()
                          "    char str[3];\n"
                          "    strcpy(str, \"abc\");\n"
                          "}\n";
-    buffer_overrun_check( __LINE__, test4, "[test.cpp:4]: Buffer overrun\n" );
+    check( CheckBufferOverrun, __LINE__, test4, "[test.cpp:4]: Buffer overrun\n" );
 
 
 
@@ -117,7 +132,7 @@ static void buffer_overrun()
                          "    int i[SIZE];\n"
                          "    i[SIZE] = 0;\n"
                          "}\n";
-    buffer_overrun_check( __LINE__, test5, "[test.cpp:5]: Array index out of bounds\n" );
+    check( CheckBufferOverrun, __LINE__, test5, "[test.cpp:5]: Array index out of bounds\n" );
 
 
 
@@ -127,7 +142,7 @@ static void buffer_overrun()
                          "    int i[10];\n"
                          "    i[ sizeof(i) - 1 ] = 0;\n"
                          "}\n";
-    buffer_overrun_check( __LINE__, test6, "[test.cpp:4]: Array index out of bounds\n" );
+    check( CheckBufferOverrun, __LINE__, test6, "[test.cpp:4]: Array index out of bounds\n" );
 
 
 
@@ -154,6 +169,58 @@ static void buffer_overrun()
         "[test.cpp:11]: A string with unknown length is copied to buffer.\n"
         "[test.cpp:15]: A string with unknown length is copied to buffer.\n";
 
-    buffer_overrun_check( __LINE__, test7, err7 );
+    check( CheckBufferOverrun, __LINE__, test7, err7 );
 }
 //---------------------------------------------------------------------------
+
+static void constructors()
+{
+    // Test1: No constructor => Uninitialized variable (TODO)
+    // Test2: Uninitialized variable (TODO)
+    // Test3: Uninitialized variable
+
+    const char test1[] = "class clKalle\n"
+                         "{\n"
+                         "public:\n"
+                         "    int i;\n"
+                         "};\n";
+    check( CheckConstructors, __LINE__, test1, "" );
+
+
+
+
+    const char test2[] = "class clKalle\n"
+                         "{\n"
+                         "public:\n"
+                         "    clKalle() { }\n"
+                         "    int i;\n"
+                         "};\n";
+    check( CheckConstructors, __LINE__, test2, "" );
+
+
+
+    const char test3[] = "class clKalle\n"
+                         "{\n"
+                         "public:\n"
+                         "    clKalle();\n"
+                         "    int i;\n"
+                         "};\n"
+                         "clKalle::clKalle()\n"
+                         "{ }\n";
+    check( CheckConstructors, __LINE__, test3, "[test.cpp:8] Uninitialized member variable 'clKalle::i'\n" );
+
+}
+//---------------------------------------------------------------------------
+
+void operator_eq()
+{
+    const char test1[] = "class clKalle\n"
+                         "{\n"
+                         "public:\n"
+                         "    void operator=(const int &value);\n"
+                         "};\n";
+    check( CheckOperatorEq1, __LINE__, test1, "[test.cpp:4]: 'operator=' should return something\n" );
+
+}
+//---------------------------------------------------------------------------
+
