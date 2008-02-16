@@ -8,6 +8,7 @@
 
 #include "CheckBufferOverrun.h"
 #include "CheckClass.h"
+#include "CheckMemoryLeak.h"
 
 #include <iostream>
 #include <sstream>
@@ -22,6 +23,8 @@ static unsigned int FailCount, SuccessCount;
 static void buffer_overrun();
 static void constructors();
 static void operator_eq();
+static void mismatching_allocation_deallocation();
+static void memleak_in_function();
 //---------------------------------------------------------------------------
 
 int main()
@@ -30,6 +33,8 @@ int main()
     buffer_overrun();
     constructors();
     operator_eq();
+    memleak_in_function();
+    mismatching_allocation_deallocation();
     std::cout << "Success Rate: " 
               << SuccessCount 
               << " / " 
@@ -237,6 +242,97 @@ void operator_eq()
                          "    void operator=(const int &value);\n"
                          "};\n";
     check( CheckOperatorEq1, __LINE__, test1, "[test.cpp:4]: 'operator=' should return something\n" );
+
+}
+//---------------------------------------------------------------------------
+
+static void mismatching_allocation_deallocation()
+{
+    // TODO: This check must be created as I can't find it anywhere
+
+/*
+    const char test1[] = "void f()\n"
+                         "{\n"
+                         "    int *a = new int[10];\n"
+                         "    free(a);\n"
+                         "}\n";
+    check( CheckMismatchingAllocationDeallocation, __LINE__, test1, "[test.cpp:4]: Mismatching allocation / deallocation\n" );
+*/
+}
+//---------------------------------------------------------------------------
+
+static void memleak_in_function()
+{
+    // test1: 'new' but not 'delete'
+    // test2: Return allocated memory
+    // test3: check all execution paths
+    // test4: check all execution paths
+    // test5: check all execution paths
+
+    const char test1[] = "void f()\n"
+                         "{\n"
+                         "    int *a = new int[10];\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test1, "[test.cpp:4]: Memory leak:a\n" );
+
+
+
+
+    const char test2[] = "Fred *NewFred()\n"
+                         "{\n"
+                         "    Fred *f = new Fred;\n"
+                         "    return f;\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test2, "" );
+
+
+
+
+
+    const char test3[] = "void f()\n"
+                         "{\n"
+                         "    Kalle *kalle;\n"
+                         "    if (somecondition)\n"
+                         "    {\n"
+                         "        kalle = new Kalle;\n"
+                         "    }\n"
+                         "    else\n"
+                         "    {\n"
+                         "        return;\n"
+                         "    }\n"
+                         "    delete kalle;\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test3, "" );
+
+
+
+    const char test4[] = "void f()\n"
+                         "{\n"
+                         "    for (int i = 0; i < j; i++)\n"
+                         "    {\n"
+                         "        char *str = strdup(\"hello\");\n"
+                         "        if (condition)\n"
+                         "            continue;\n"
+                         "        free(str);\n"
+                         "    }\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test4, "[test.cpp:7]: Memory leak:str\n" );
+
+
+
+
+
+    const char test5[] = "void f()\n"
+                         "{\n"
+                         "     char *str = strdup(\"hello\");\n"
+                         "    while (condition)\n"
+                         "    {\n"
+                         "        if (condition)\n"
+                         "            break;\n"
+                         "    }\n"
+                         "    free(str);\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test5, "" );
 
 }
 //---------------------------------------------------------------------------

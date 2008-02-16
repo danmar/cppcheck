@@ -3,7 +3,6 @@
 #include <sstream>
 
 #include "tokenize.h"   // <- Tokenizer
-#include "Statements.h" // <- Statement list
 #include "CommonCheck.h"
 
 #include "CheckMemoryLeak.h"
@@ -98,11 +97,6 @@ static void CppCheck(const char FileName[])
 
 
     SimplifyTokenList();
-
-
-    // Create a statement list. It's used by for example 'CheckMemoryLeak'
-    CreateStatementList();
-
 
     // Memory leak
     CheckMemoryLeak();

@@ -498,6 +498,10 @@ static void _ClassMembers()
 
 void CheckMemoryLeak()
 {
+    // Create statement list.
+    Statements.clear();
+    CreateStatementList();
+
     // Check for memory leaks inside functions..
     _InFunction();
 
