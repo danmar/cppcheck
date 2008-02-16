@@ -155,6 +155,5 @@ static void buffer_overrun()
         "[test.cpp:15]: A string with unknown length is copied to buffer.\n";
 
     buffer_overrun_check( __LINE__, test7, err7 );
-
 }
 //---------------------------------------------------------------------------

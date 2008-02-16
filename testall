@@ -1,9 +1,0 @@
-#!/bin/bash
-
-for X in test*
-do
-./cppcheck $X/$X.cpp
-done
-
-
-
