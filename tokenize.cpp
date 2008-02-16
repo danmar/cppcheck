@@ -264,21 +264,34 @@ void Tokenize(const char FileName[])
         return;
 
     // The "Files" vector remembers what files have been tokenized..
-    unsigned int CurrentFile = Files.size();
     Files.push_back(FileName);
 
+    // Tokenize the file..
+    TokenizeCode( fin, Files.size() - 1 );
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
+//---------------------------------------------------------------------------
+// Tokenize - tokenizes input stream
+//---------------------------------------------------------------------------
+
+void TokenizeCode(std::istream &code, const unsigned int FileIndex)
+{
     // Tokenize the file.
     unsigned int lineno = 1;
-    char CurrentToken[1000];
-    memset(CurrentToken, 0, sizeof(CurrentToken));
+    char CurrentToken[1000] = {0};
     char *pToken = CurrentToken;
-    for (char ch = (char)fin.get(); !fin.eof(); ch = (char)fin.get())
+    for (char ch = (char)code.get(); !code.eof(); ch = (char)code.get())
     {
         // Preprocessor stuff?
         if (ch == '#' && !CurrentToken[0])
         {
             std::string line;
-            getline(fin,line);
+            getline(code,line);
             line = "#" + line;
             if (strncmp(line.c_str(),"#include",8)==0 &&
                 line.find("\"") != std::string::npos)
@@ -288,17 +301,15 @@ void Tokenize(const char FileName[])
                 line.erase(line.find("\""));
 
                 // Relative path..
-                if (strchr(FileName,'\\'))
+                if (Files.back().find_first_of("\\/") != std::string::npos)
                 {
-                    char path[1000];
-                    memset(path,0,sizeof(path));
-                    const char *p = strrchr(FileName, '\\');
-                    memcpy(path, FileName, p-FileName+1);
+                    std::string path = Files.back();
+                    path.erase( 1 + path.find_last_of("\\/") );
                     line = path + line;
                 }
 
-                addtoken("#include", lineno, CurrentFile);
-                addtoken(line.c_str(), lineno, CurrentFile);
+                addtoken("#include", lineno, FileIndex);
+                addtoken(line.c_str(), lineno, FileIndex);
 
                 Tokenize(line.c_str());
             }
@@ -332,9 +343,9 @@ void Tokenize(const char FileName[])
 
                 if (State==Value)
                 {
-                    addtoken("def", lineno, CurrentFile);
-                    addtoken(strId, lineno, CurrentFile);
-                    addtoken(";", lineno, CurrentFile);
+                    addtoken("def", lineno, FileIndex);
+                    addtoken(strId, lineno, FileIndex);
+                    addtoken(";", lineno, FileIndex);
                     Define(strId, CurrentToken);
                 }
 
@@ -345,8 +356,8 @@ void Tokenize(const char FileName[])
 
             else
             {
-                addtoken("#", lineno, CurrentFile);
-                addtoken(";", lineno, CurrentFile);
+                addtoken("#", lineno, FileIndex);
+                addtoken(";", lineno, FileIndex);
             }
 
             lineno++;
@@ -356,27 +367,27 @@ void Tokenize(const char FileName[])
         if (ch == '\n')
         {
             // Add current token..
-            addtoken(CurrentToken, lineno++, CurrentFile);
+            addtoken(CurrentToken, lineno++, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
             pToken = CurrentToken;
             continue;
         }
 
         // Comments..
-        if (ch == '/' && !fin.eof())
+        if (ch == '/' && !code.eof())
         {
             // Add current token..
-            addtoken(CurrentToken, lineno, CurrentFile);
+            addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
             pToken = CurrentToken;
 
             // Read next character..
-            ch = (char)fin.get();
+            ch = (char)code.get();
 
             // If '//'..
             if (ch == '/')
             {
-                while (!fin.eof() && (char)fin.get()!='\n');
+                while (!code.eof() && (char)code.get()!='\n');
                 lineno++;
                 continue;
             }
@@ -386,10 +397,10 @@ void Tokenize(const char FileName[])
             {
                 char chPrev;
                 ch = chPrev = 'A';
-                while (!fin.eof() && (chPrev!='*' || ch!='/'))
+                while (!code.eof() && (chPrev!='*' || ch!='/'))
                 {
                     chPrev = ch;
-                    ch = (char)fin.get();
+                    ch = (char)code.get();
                     if (ch == '\n')
                         lineno++;
                 }
@@ -397,25 +408,25 @@ void Tokenize(const char FileName[])
             }
 
             // Not a comment.. add token..
-            addtoken("/", lineno, CurrentFile);
+            addtoken("/", lineno, FileIndex);
         }
 
         // char..
         if (ch == '\'')
         {
             // Add previous token
-            addtoken(CurrentToken, lineno, CurrentFile);
+            addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
 
             // Read this ..
             CurrentToken[0] = ch;
-            CurrentToken[1] = (char)fin.get();
-            CurrentToken[2] = (char)fin.get();
+            CurrentToken[1] = (char)code.get();
+            CurrentToken[2] = (char)code.get();
             if (CurrentToken[1] == '\\')
-                CurrentToken[3] = (char)fin.get();
+                CurrentToken[3] = (char)code.get();
 
             // Add token and start on next..
-            addtoken(CurrentToken, lineno, CurrentFile);
+            addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
             pToken = CurrentToken;
 
@@ -425,7 +436,7 @@ void Tokenize(const char FileName[])
         // String..
         if (ch == '\"')
         {
-            addtoken(CurrentToken, lineno, CurrentFile);
+            addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
             pToken = CurrentToken;
             bool special = false;
@@ -446,11 +457,11 @@ void Tokenize(const char FileName[])
                     special = (c == '\\');
 
                 // Get next character
-                c = (char)fin.get();
+                c = (char)code.get();
             }
             while (special || c != '\"');
             *pToken = '\"';
-            addtoken(CurrentToken, lineno, CurrentFile);
+            addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
             pToken = CurrentToken;
             continue;
@@ -458,10 +469,10 @@ void Tokenize(const char FileName[])
 
         if (strchr("+-*/%&|^?!=<>[](){};:,.",ch))
         {
-            addtoken(CurrentToken, lineno, CurrentFile);
+            addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
             CurrentToken[0] = ch;
-            addtoken(CurrentToken, lineno, CurrentFile);
+            addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
             pToken = CurrentToken;
             continue;
@@ -470,7 +481,7 @@ void Tokenize(const char FileName[])
 
         if (std::isspace(ch) || std::iscntrl(ch))
         {
-            addtoken(CurrentToken, lineno, CurrentFile);
+            addtoken(CurrentToken, lineno, FileIndex);
             pToken = CurrentToken;
             memset(CurrentToken, 0, sizeof(CurrentToken));
             continue;

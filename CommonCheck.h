@@ -4,12 +4,14 @@
 //---------------------------------------------------------------------------
 
 #include <string>
+#include <sstream>
 
 struct TOKEN;
 
 std::string FileLine(TOKEN *tok);
 
 void ReportErr(const std::string errmsg);
+extern std::ostringstream errout;
 
 
 bool IsName(const char str[]);

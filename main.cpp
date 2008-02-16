@@ -4,6 +4,7 @@
 
 #include "tokenize.h"   // <- Tokenizer
 #include "Statements.h" // <- Statement list
+#include "CommonCheck.h"
 
 #include "CheckMemoryLeak.h"
 #include "CheckBufferOverrun.h"
@@ -61,6 +62,8 @@ int main(int argc, char* argv[])
     }
 
     CppCheck(fname);
+
+    std::cerr << errout.str();
 
     return 0;
 }

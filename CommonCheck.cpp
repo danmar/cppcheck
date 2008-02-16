@@ -5,6 +5,7 @@
 #include <sstream>
 //---------------------------------------------------------------------------
 bool HasErrors;
+std::ostringstream errout;
 //---------------------------------------------------------------------------
 
 std::string FileLine(TOKEN *tok)
@@ -17,7 +18,7 @@ std::string FileLine(TOKEN *tok)
 
 void ReportErr(const std::string errmsg)
 {
-    std::cerr << errmsg << std::endl;
+    errout << errmsg << std::endl;
     HasErrors = true;
 }
 //---------------------------------------------------------------------------
