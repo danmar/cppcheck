@@ -176,8 +176,9 @@ static void buffer_overrun()
 static void constructors()
 {
     // Test1: No constructor => Uninitialized variable (TODO)
-    // Test2: Uninitialized variable (TODO)
+    // Test2: embedded constructor, uninitialized variable (TODO)
     // Test3: Uninitialized variable
+    // Test4: multiple constructors, uninitialized variable
 
     const char test1[] = "class clKalle\n"
                          "{\n"
@@ -208,6 +209,22 @@ static void constructors()
                          "clKalle::clKalle()\n"
                          "{ }\n";
     check( CheckConstructors, __LINE__, test3, "[test.cpp:8] Uninitialized member variable 'clKalle::i'\n" );
+
+
+    const char test4[] = "class clKalle\n"
+                         "{\n"
+                         "public:\n"
+                         "    clKalle();\n"
+                         "    clKalle(int _i);\n"
+                         "    int i;\n"
+                         "};\n"
+                         "clKalle::clKalle()\n"
+                         "{ }\n"
+                         "clKalle::clKalle(int _i)\n"
+                         "{\n"
+                         "    i = _i;\n"
+                         "}\n";
+    check( CheckConstructors, __LINE__, test4, "[test.cpp:9] Uninitialized member variable 'clKalle::i'\n" );
 
 }
 //---------------------------------------------------------------------------
