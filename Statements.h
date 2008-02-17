@@ -32,6 +32,8 @@ extern std::list<STATEMENT> Statements;
 
 void CreateStatementList();
 
+void OutputStatementList( std::ostream &ostr );
+
 //---------------------------------------------------------------------------
 #endif
 //---------------------------------------------------------------------------

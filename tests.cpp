@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 
 #include "tokenize.h"   // <- Tokenizer
+#include "Statements.h"
 #include "CommonCheck.h"
 
 #include "CheckBufferOverrun.h"
@@ -20,6 +21,7 @@ bool CheckCodingStyle = false;
 //---------------------------------------------------------------------------
 static unsigned int FailCount, SuccessCount;
 //---------------------------------------------------------------------------
+static void internal_statementlist();
 static void buffer_overrun();
 static void constructors();
 static void operator_eq();
@@ -31,6 +33,7 @@ static void memleak_in_class();
 int main()
 {
     Files.push_back( std::string("test.cpp") );
+    internal_statementlist();
     buffer_overrun();
     constructors();
     operator_eq();
@@ -77,6 +80,179 @@ static void check(void (chk)(),
 
     // Cleanup..
     DeallocateTokens();
+}
+//---------------------------------------------------------------------------
+
+static void statementlist()
+{
+    CreateStatementList();
+    OutputStatementList( errout );
+}
+
+static void internal_statementlist()
+{
+    const char code1[] = "void f()\n"
+                         "{\n"
+                         "    a = 1;\n"
+                         "    b[2] = 3;\n"
+                         "    c[4][5].min = 6;\n"
+                         "    d.min = 7;\n"
+                         "}\n";
+
+    const char sl1[] = "{\n"
+                       "assign a\n"
+                       "assign b[2]\n"
+                       "assign c[4][5].min\n"
+                       "assign d.min\n"
+                       "}\n";
+
+    check( statementlist, __LINE__, code1, sl1 );
+
+
+
+
+
+    const char code2[] = "void f()\n"
+                         "{\n"
+                         "    int a;\n"
+                         "    int b = 2, c, *d = NULL;\n"
+                         "    int e = g(p1,p2);\n"
+                         "    char str[10];\n"
+                         "    return a;\n"
+                         "    delete a;\n"
+                         "}\n";
+
+    const char sl2[] = "{\n"
+                       "decl a\n"
+                       "decl b\n"
+                       "assign b\n"
+                       "decl c\n"
+                       "decl d\n"
+                       "assign d\n"
+                       "use NULL\n"
+                       "decl e\n"
+                       "assign e\n"
+                       "use p1\n"
+                       "use p2\n"
+                       "decl str\n"
+                       "return a\n"
+                       "delete a\n"
+                       "}\n";
+
+    check( statementlist, __LINE__, code2, sl2 );
+
+
+
+
+
+
+    const char code3[] = "void f()\n"
+                         "{\n"
+                         "    if (ab)\n"
+                         "    {\n"
+                         "    }\n"
+                         "    else if (cd)\n"
+                         "    {\n"
+                         "    }\n"
+                         "    else\n"
+                         "    {\n"
+                         "    }\n"
+                         "}\n";
+
+    const char sl3[] = "{\n"
+                       "if\n"
+                       "use ab\n"
+                       "endif\n"
+                       "{\n"
+                       "}\n"
+                       "elseif\n"
+                       "use cd\n"
+                       "endif\n"
+                       "{\n"
+                       "}\n"
+                       "else\n"
+                       "endif\n"
+                       "{\n"
+                       "}\n"
+                       "}\n";
+
+    check( statementlist, __LINE__, code3, sl3 );
+
+
+
+
+
+
+    const char code4[] = "void f()\n"
+                         "{\n"
+                         "    for (int i = 0; i < j; i++)\n"
+                         "    {\n"
+                         "        if (condition)\n"
+                         "            continue;\n"
+                         "        break;\n"
+                         "    }\n"
+                         "}\n";
+
+    const char sl4[] = "{\n"
+                       "loop\n"
+                       "assign i\n"
+                       "use i\n"
+                       "use i\n"
+                       "use j\n"
+                       "use i\n"
+                       "endloop\n"
+                       "{\n"
+                       "if\n"
+                       "use condition\n"
+                       "continue\n"
+                       "endif\n"
+                       "break\n"
+                       "}\n"
+                       "}\n";
+
+    check( statementlist, __LINE__, code4, sl4 );
+
+
+
+
+/*  TODO: This should work
+
+    const char code5[] = "void f()\n"
+                         "{\n"
+                         "    a = new char[10];\n"
+                         "    fred = new Fred;\n"
+                         "    fred = new Fred();\n"
+                         "}\n";
+
+    const char sl5[] = "{\n"
+                       "new[] a\n"
+                       "use char[10]\n"
+                       "new fred\n"
+                       "use Fred\n"
+                       "new fred\n"
+                       "}\n";
+
+    check( statementlist, __LINE__, code5, sl5 );
+
+*/
+
+
+    const char code6[] = "void f()\n"
+                         "{\n"
+                         "    a = b;\n"
+                         "    c = func(d,e);\n"
+                         "}\n";
+
+    const char sl6[] = "{\n"
+                       "assign a\n"
+                       "use b\n"
+                       "assign c\n"
+                       "use d\n"
+                       "use e\n"
+                       "}\n";
+
+    check( statementlist, __LINE__, code6, sl6 );
+
 }
 //---------------------------------------------------------------------------
 

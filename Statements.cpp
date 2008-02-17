@@ -359,110 +359,116 @@ void CreateStatementList()
 
     if (Debug)
     {
-        std::list<STATEMENT>::const_iterator it;
-        for (it = Statements.begin(); it != Statements.end(); it++)
+        OutputStatementList( std::cout );
+    }
+}
+
+
+void OutputStatementList( std::ostream &ostr )
+{
+    std::list<STATEMENT>::const_iterator it;
+    for (it = Statements.begin(); it != Statements.end(); it++)
+    {
+        STATEMENT s = *it;
+        // ostr << it->Token->linenr << " : ";
+        switch (s.Type)
         {
-            STATEMENT s = *it;
-            std::cout << it->Token->linenr << " : ";
-            switch (s.Type)
-            {
-                case STATEMENT::OBRACE:
-                    std::cout << "{";
-                    break;
+            case STATEMENT::OBRACE:
+                ostr << "{";
+                break;
 
-                case STATEMENT::EBRACE:
-                    std::cout << "}";
-                    break;
+            case STATEMENT::EBRACE:
+                ostr << "}";
+                break;
 
-                case STATEMENT::DECL:
-                    std::cout << "decl " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::DECL:
+                ostr << "decl " << VariableNames[s.VarIndex];
+                break;
 
-                case STATEMENT::ASSIGN:
-                    std::cout << "assign " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::ASSIGN:
+                ostr << "assign " << VariableNames[s.VarIndex];
+                break;
 
-                case STATEMENT::MALLOC:
-                    std::cout << "malloc " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::MALLOC:
+                ostr << "malloc " << VariableNames[s.VarIndex];
+                break;
 
-                case STATEMENT::FREE:
-                    std::cout << "free " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::FREE:
+                ostr << "free " << VariableNames[s.VarIndex];
+                break;
 
-                case STATEMENT::NEW:
-                    std::cout << "new " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::NEW:
+                ostr << "new " << VariableNames[s.VarIndex];
+                break;
 
-                case STATEMENT::NEWARRAY:
-                    std::cout << "new[] " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::NEWARRAY:
+                ostr << "new[] " << VariableNames[s.VarIndex];
+                break;
 
-                case STATEMENT::DELETE:
-                    std::cout << "delete " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::DELETE:
+                ostr << "delete " << VariableNames[s.VarIndex];
+                break;
 
-                case STATEMENT::DELETEARRAY:
-                    std::cout << "delete[] " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::DELETEARRAY:
+                ostr << "delete[] " << VariableNames[s.VarIndex];
+                break;
 
-                case STATEMENT::USE:
-                    std::cout << "use " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::USE:
+                ostr << "use " << VariableNames[s.VarIndex];
+                break;
 
 
-                case STATEMENT::LOOP:
-                    std::cout << "loop";
-                    break;
+            case STATEMENT::LOOP:
+                ostr << "loop";
+                break;
 
-                case STATEMENT::ENDLOOP:
-                    std::cout << "endloop";
-                    break;
-
-
-                case STATEMENT::SWITCH:
-                    std::cout << "switch";
-                    break;
-
-                case STATEMENT::ENDSWITCH:
-                    std::cout << "endswitch";
-                    break;
+            case STATEMENT::ENDLOOP:
+                ostr << "endloop";
+                break;
 
 
-                case STATEMENT::IF:
-                    std::cout << "if";
-                    break;
+            case STATEMENT::SWITCH:
+                ostr << "switch";
+                break;
 
-                case STATEMENT::ELSEIF:
-                    std::cout << "elseif";
-                    break;
+            case STATEMENT::ENDSWITCH:
+                ostr << "endswitch";
+                break;
 
-                case STATEMENT::ELSE:
-                    std::cout << "else";
-                    break;
 
-                case STATEMENT::ENDIF:
-                    std::cout << "endif";
-                    break;
+            case STATEMENT::IF:
+                ostr << "if";
+                break;
 
-                case STATEMENT::RETURN:
-                    std::cout << "return " << VariableNames[s.VarIndex];
-                    break;
+            case STATEMENT::ELSEIF:
+                ostr << "elseif";
+                break;
 
-                case STATEMENT::CONTINUE:
-                    std::cout << "continue";
-                    break;
+            case STATEMENT::ELSE:
+                ostr << "else";
+                break;
 
-                case STATEMENT::BREAK:
-                    std::cout << "break";
-                    break;
+            case STATEMENT::ENDIF:
+                ostr << "endif";
+                break;
 
-                default:
-                    std::cout << "ERROR. Unknown code!!";
-                    break;
-            }
-            std::cout << "\n";
+            case STATEMENT::RETURN:
+                ostr << "return " << VariableNames[s.VarIndex];
+                break;
+
+            case STATEMENT::CONTINUE:
+                ostr << "continue";
+                break;
+
+            case STATEMENT::BREAK:
+                ostr << "break";
+                break;
+
+            default:
+                ostr << "ERROR. Unknown code!!";
+                break;
         }
+        ostr << "\n";
     }
 }
 //---------------------------------------------------------------------------
