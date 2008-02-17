@@ -1,7 +1,4 @@
 
-#include <iostream>
-#include <sstream>
-
 #include "tokenize.h"   // <- Tokenizer
 #include "CommonCheck.h"
 
@@ -10,6 +7,9 @@
 #include "CheckClass.h"
 #include "CheckHeaders.h"
 #include "CheckOther.h"
+
+#include <iostream>
+#include <sstream>
 
 //---------------------------------------------------------------------------
 bool Debug = false;
@@ -26,7 +26,8 @@ static void CppCheck(const char FileName[]);
 
 int main(int argc, char* argv[])
 {
-    const char *fname = NULL;
+    std::vector<std::string> filenames;
+
     for (int i = 1; i < argc; i++)
     {
         if (strcmp(argv[i],"--debug") == 0)
@@ -41,15 +42,15 @@ int main(int argc, char* argv[])
             CheckCodingStyle = true;
 
         else
-            fname = argv[i];
+            filenames.push_back( argv[i] );
     }
 
-    if (!fname)
+    if (filenames.empty())
     {
         std::cout << "C/C++ code checking.\n"
                      "\n"
                      "Syntax:\n"
-                     "    cppcheck [--all] [--style] filename\n"
+                     "    cppcheck [--all] [--style] filename1 [filename2]\n"
                      "\n"
                      "Options:\n"
                      "    --all    Normally a message is only shown if cppcheck is sure\n"
@@ -60,9 +61,12 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    CppCheck(fname);
-
-    std::cerr << errout.str();
+    for (unsigned int c = 0; c < filenames.size(); c++)
+    {
+        errout.str("");
+        CppCheck(filenames[c].c_str());
+        std::cerr << errout.str();
+    }
 
     return 0;
 }

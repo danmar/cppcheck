@@ -259,6 +259,7 @@ static void buffer_overrun()
     // test4: using strcpy -> check string length
     // test5: constant array index
     // test6: calculated array index that is out of bounds
+    // test7: unknown string length
 
     const char test1[] = "void f()\n"
                          "{\n"
