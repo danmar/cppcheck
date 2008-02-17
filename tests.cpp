@@ -215,7 +215,6 @@ static void internal_statementlist()
 
 
 
-/*  TODO: This should work
 
     const char code5[] = "void f()\n"
                          "{\n"
@@ -234,7 +233,6 @@ static void internal_statementlist()
 
     check( statementlist, __LINE__, code5, sl5 );
 
-*/
 
 
     const char code6[] = "void f()\n"

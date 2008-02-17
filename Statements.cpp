@@ -49,12 +49,6 @@ static void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="
         }
     }
 
-    if ( PointerType )
-    {
-        if ( ! ShowAll && ! IsStandardType(PointerType) )
-            return;
-    }
-
     Statements.push_back(NewStatement);
 }
 
