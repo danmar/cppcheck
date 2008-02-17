@@ -25,6 +25,7 @@ static void constructors();
 static void operator_eq();
 static void mismatching_allocation_deallocation();
 static void memleak_in_function();
+static void memleak_in_class();
 //---------------------------------------------------------------------------
 
 int main()
@@ -35,6 +36,7 @@ int main()
     operator_eq();
     memleak_in_function();
     mismatching_allocation_deallocation();
+    memleak_in_class();
     std::cout << "Success Rate: " 
               << SuccessCount 
               << " / " 
@@ -268,6 +270,7 @@ static void memleak_in_function()
     // test3: check all execution paths
     // test4: check all execution paths
     // test5: check all execution paths
+    // test6: check all execution paths
 
     const char test1[] = "void f()\n"
                          "{\n"
@@ -324,7 +327,7 @@ static void memleak_in_function()
 
     const char test5[] = "void f()\n"
                          "{\n"
-                         "     char *str = strdup(\"hello\");\n"
+                         "    char *str = strdup(\"hello\");\n"
                          "    while (condition)\n"
                          "    {\n"
                          "        if (condition)\n"
@@ -333,6 +336,82 @@ static void memleak_in_function()
                          "    free(str);\n"
                          "}\n";
     check( CheckMemoryLeak, __LINE__, test5, "" );
+
+
+
+
+    const char test6[] = "void f()\n"
+                         "{\n"
+                         "    char *str = strdup(\"hello\");\n"
+                         "    if (a==b)\n"
+                         "    {\n"
+                         "        return;\n"
+                         "    }\n"
+                         "    free(str);\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test6, "[test.cpp:6]: Memory leak:str\n" );
+
+
+
+
+    const char test7[] = "void f()\n"
+                         "{\n"
+                         "    char *str = strdup(\"hello\");\n"
+                         "    if (a==b)\n"
+                         "    {\n"
+                         "        free(str);\n"
+                         "        return;\n"
+                         "    }\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test7, "[test.cpp:9]: Memory leak:str\n" );
+
+
+
+
+    const char test8[] = "void f()\n"
+                         "{\n"
+                         "    char *str = new char[10];\n"
+                         "    if (a==b)\n"
+                         "    {\n"
+                         "        delete [] str;\n"
+                         "        return;\n"
+                         "    }\n"
+                         "    delete [] str;\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test8, "" );
+
+}
+//---------------------------------------------------------------------------
+
+static void memleak_in_class()
+{
+
+
+    const char test1[] = "class clKalle\n"
+                         "{\n"
+                         "private:\n"
+                         "    char *str1;\n"
+                         "    char *str2;\n"
+                         "public:\n"
+                         "    clKalle();\n"
+                         "    ~clKalle();\n"
+                         "};\n"
+                         "\n"
+                         "clKalle::clKalle()\n"
+                         "{\n"
+                         "    str1 = new char[10];\n"
+                         "    str2 = new char[10];\n"
+                         "}\n"
+                         "\n"
+                         "clKalle::~clKalle()\n"
+                         "{\n"
+                         "    delete [] str2;\n"
+                         "}\n";
+
+    check( CheckMemoryLeak, __LINE__, test1, "Memory leak for 'clKalle::str1'\n" );
+
+
+
 
 }
 //---------------------------------------------------------------------------
