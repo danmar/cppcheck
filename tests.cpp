@@ -15,9 +15,8 @@
 #include <sstream>
 
 //---------------------------------------------------------------------------
+bool ShowAll = true;
 bool Debug = false;
-bool ShowAll = false;
-bool CheckCodingStyle = false;
 //---------------------------------------------------------------------------
 static unsigned int FailCount, SuccessCount;
 //---------------------------------------------------------------------------
@@ -25,7 +24,6 @@ static void internal_statementlist();
 static void buffer_overrun();
 static void constructors();
 static void operator_eq();
-static void mismatching_allocation_deallocation();
 static void memleak_in_function();
 static void memleak_in_class();
 //---------------------------------------------------------------------------
@@ -38,7 +36,6 @@ int main()
     constructors();
     operator_eq();
     memleak_in_function();
-    mismatching_allocation_deallocation();
     memleak_in_class();
     std::cout << "Success Rate: " 
               << SuccessCount 
@@ -422,21 +419,6 @@ void operator_eq()
 }
 //---------------------------------------------------------------------------
 
-static void mismatching_allocation_deallocation()
-{
-    // TODO: This check must be created as I can't find it anywhere
-
-/*
-    const char test1[] = "void f()\n"
-                         "{\n"
-                         "    int *a = new int[10];\n"
-                         "    free(a);\n"
-                         "}\n";
-    check( CheckMismatchingAllocationDeallocation, __LINE__, test1, "[test.cpp:4]: Mismatching allocation / deallocation\n" );
-*/
-}
-//---------------------------------------------------------------------------
-
 static void memleak_in_function()
 {
     // test1: 'new' but not 'delete'
@@ -445,6 +427,9 @@ static void memleak_in_function()
     // test4: check all execution paths
     // test5: check all execution paths
     // test6: check all execution paths
+    // test7: check all execution paths
+    // test8: check all execution paths
+    // test9: mismatching allocation / deallocation
 
     const char test1[] = "void f()\n"
                          "{\n"
@@ -554,6 +539,16 @@ static void memleak_in_function()
                          "}\n";
     check( CheckMemoryLeak, __LINE__, test8, "" );
 
+
+
+
+    const char test9[] = "void f()\n"
+                         "{\n"
+                         "    int *a = new int[10];\n"
+                         "    free(a);\n"
+                         "}\n";
+    check( CheckMemoryLeak, __LINE__, test9, "[test.cpp:4]: Mismatching allocation and deallocation 'a'\n" );
+
 }
 //---------------------------------------------------------------------------
 
@@ -584,6 +579,29 @@ static void memleak_in_class()
 
     check( CheckMemoryLeak, __LINE__, test1, "Memory leak for 'clKalle::str1'\n" );
 
+
+
+
+    const char test2[] = "class clKalle\n"
+                         "{\n"
+                         "private:\n"
+                         "    char *str1;\n"
+                         "public:\n"
+                         "    clKalle();\n"
+                         "    ~clKalle();\n"
+                         "};\n"
+                         "\n"
+                         "clKalle::clKalle()\n"
+                         "{\n"
+                         "    str1 = new char[10];\n"
+                         "}\n"
+                         "\n"
+                         "clKalle::~clKalle()\n"
+                         "{\n"
+                         "    free(str1);\n"
+                         "}\n";
+
+    check( CheckMemoryLeak, __LINE__, test2, "[test.cpp:17]: Mismatching deallocation for 'clKalle::str1'\n" );
 
 
 

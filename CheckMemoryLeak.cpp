@@ -326,7 +326,10 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
         if (strcmp(getstr(func, 1), "::") != 0)
             continue;
 
-        if (strcmp(getstr(func, 3), "(") != 0)
+        if ((strcmp(getstr(func,2),"~")==0 && 
+             strcmp(getstr(func,3),classname)==0 &&
+             strcmp(getstr(func,4),"(")==0) ||
+            (strcmp(getstr(func, 3), "(") != 0))
             continue;
 
 
@@ -364,21 +367,21 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                     if (match(tok, "delete var ;") &&
                         strcmp(getstr(tok,1),varname)==0)
                     {
-                        err |= ( Dealloc != No && Dealloc != New );
+                        err |= ( Alloc != No && Alloc != New );
                         Dealloc = New;
                     }
 
                     else if (match(tok, "delete [ ] var ;") &&
                         strcmp(getstr(tok,3),varname)==0)
                     {
-                        err |= ( Dealloc != No && Dealloc != NewA );
+                        err |= ( Alloc != No && Alloc != NewA );
                         Dealloc = NewA;
                     }
 
                     else if (match(tok, "free ( var )") &&
                         strcmp(getstr(tok,2),varname)==0)
                     {
-                        err |= ( Dealloc != No && Dealloc != Malloc );
+                        err |= ( Alloc != No && Alloc != Malloc );
                         Dealloc = Malloc;
                     }
 
@@ -408,7 +411,7 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                         {
                             if ( ! ShowAll && ! IsStandardType(getstr(tok,3)) )
                                 continue;
-                            err |= ( Alloc != No && Alloc != New );
+                            err |= ( Dealloc != No && Dealloc != New );
                             Alloc = New;
                         }
 
@@ -416,7 +419,7 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                         {
                             if ( ! ShowAll && ! IsStandardType(getstr(tok,3)) )
                                 continue;
-                            err |= ( Alloc != No && Alloc != NewA );
+                            err |= ( Dealloc != No && Dealloc != NewA );
                             Alloc = NewA;
                         }
                     }
@@ -429,7 +432,7 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                              ! IsStandardType(getstr(tok,3)) )
                                 continue;
 
-                        err |= ( Alloc != No && Alloc != Malloc );
+                        err |= ( Dealloc != No && Dealloc != Malloc );
                         Alloc = Malloc;
                     }
 
