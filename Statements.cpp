@@ -20,7 +20,7 @@ extern bool ShowAll;
 // Create statement list
 //---------------------------------------------------------------------------
 
-static void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="", const char PointerType[]=0)
+static void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="")
 {
     STATEMENT NewStatement;
     NewStatement.Type = Type;
@@ -212,11 +212,9 @@ void CreateStatementList()
                 {
                     TOKEN *rs = eq->next;
 
-                    const char *pointertype = 0;
                     bool ismalloc = false;
                     if (match(rs, "strdup ("))
                     {
-                        pointertype = "char";
                         ismalloc = true;
                     }
                     else if (rs->str[0]=='(' && IsName(getstr(rs,1)))
@@ -225,21 +223,19 @@ void CreateStatementList()
                         ismalloc |= match(rs, "( type * * ) malloc (");
                         ismalloc |= match(rs, "( type type * ) malloc (");
                         ismalloc |= match(rs, "( type type * * ) malloc (");
-                        if (ismalloc)
-                            pointertype = getstr(rs, rs->next->next->str[0]=='*' ? 1 : 2 );
                     }
 
                     if ( ismalloc )
-                        AppendStatement(STATEMENT::MALLOC, tok2, varname, pointertype);
+                        AppendStatement(STATEMENT::MALLOC, tok2, varname);
 
                     else if ( match(rs,"new type ;") )
-                        AppendStatement(STATEMENT::NEW, tok2, varname, getstr(rs,1));
+                        AppendStatement(STATEMENT::NEW, tok2, varname);
 
                     else if ( match(rs, "new type (") )
-                        AppendStatement(STATEMENT::NEW, tok2, varname, getstr(rs,1));
+                        AppendStatement(STATEMENT::NEW, tok2, varname);
 
                     else if ( match(rs, "new type [") )
-                        AppendStatement(STATEMENT::NEWARRAY, tok2, varname, getstr(rs,1));
+                        AppendStatement(STATEMENT::NEWARRAY, tok2, varname);
 
                     else
                         AppendStatement(STATEMENT::ASSIGN, tok2, varname);
