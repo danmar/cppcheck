@@ -208,12 +208,18 @@ void CheckConstructors()
         const char *classname = tok1->next->str;
 
         // Are there a class constructor?
-        const char *pattern_constructor[] = {"clKalle","::","clKalle","(",NULL};
-        pattern_constructor[0] = classname;
-        pattern_constructor[2] = classname;
-        if (!findtoken(tokens,pattern_constructor))
+        const char *constructor_pattern[] = {"","clKalle","(",NULL};
+        constructor_pattern[1] = classname;
+        TOKEN *constructor_token = findtoken( tokens, constructor_pattern );
+        while ( constructor_token && constructor_token->str[0] == '~' )
+            constructor_token = findtoken( constructor_token->next, constructor_pattern );
+        if ( ! constructor_token )
         {
-            // There's no class implementation, it must be somewhere else.
+            // There's no class constructor
+            std::ostringstream ostr;
+            ostr << FileLine(tok1);
+            ostr << " The class '" << classname << "' has no constructor";
+            ReportErr(ostr.str());
             tok1 = findtoken( tok1->next, pattern_classname );
             continue;
         }
@@ -221,10 +227,7 @@ void CheckConstructors()
         // Check that all member variables are initialized..
         struct VAR *varlist = ClassChecking_GetVarList(classname);
 
-        const char *constructor_pattern[] = {"","::","","(",NULL};
-        constructor_pattern[0] = classname;
-        constructor_pattern[2] = classname;
-        struct TOKEN *constructor_token = ClassChecking_VarList_Initialize(tokens, varlist, classname, classname);
+        constructor_token = ClassChecking_VarList_Initialize(tokens, varlist, classname, classname);
         while ( constructor_token )
         {
             // Check if any variables are uninitialized

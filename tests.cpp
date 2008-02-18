@@ -354,7 +354,7 @@ static void buffer_overrun()
 
 static void constructors()
 {
-    // Test1: No constructor => Uninitialized variable (TODO)
+    // Test1: No constructor
     // Test2: embedded constructor, uninitialized variable (TODO)
     // Test3: Uninitialized variable
     // Test4: multiple constructors, uninitialized variable
@@ -364,7 +364,7 @@ static void constructors()
                          "public:\n"
                          "    int i;\n"
                          "};\n";
-    check( CheckConstructors, __LINE__, test1, "" );
+    check( CheckConstructors, __LINE__, test1, "[test.cpp:1] The class 'clKalle' has no constructor\n" );
 
 
 
