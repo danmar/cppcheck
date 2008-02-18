@@ -12,6 +12,10 @@
 #include <stdlib.h>     // <- strtoul
 #include <stdio.h>
 
+#ifdef __BORLANDC__
+#include <mem.h>
+#endif
+
 //---------------------------------------------------------------------------
 
 // Helper functions..

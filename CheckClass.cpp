@@ -6,6 +6,11 @@
 #include <list>
 #include <string>
 #include <sstream>
+
+
+#ifdef __BORLANDC__
+#include <mem.h>
+#endif
 //---------------------------------------------------------------------------
 
 extern bool CheckCodingStyle;

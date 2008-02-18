@@ -2,6 +2,7 @@
 #include "CheckHeaders.h"
 #include "tokenize.h"
 #include "CommonCheck.h"
+#include <algorithm>
 #include <list>
 #include <sstream>
 #include <string>

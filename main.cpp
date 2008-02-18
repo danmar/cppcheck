@@ -11,6 +11,10 @@
 #include <iostream>
 #include <sstream>
 
+#ifdef __BORLANDC__
+#include <dir.h>
+#endif
+
 //---------------------------------------------------------------------------
 bool Debug = false;
 bool ShowAll = false;
@@ -40,6 +44,21 @@ int main(int argc, char* argv[])
         // Checking coding style.
         else if (strcmp(argv[i],"--style")==0)
             CheckCodingStyle = true;
+
+        // Filenames
+        else if ( strchr(argv[i], '*') )
+        {
+            #ifndef __GNUC__
+            struct ffblk f;
+            int done = findfirst(argv[i], &f, 0);
+            while ( ! done )
+            {
+                filenames.push_back( f.ff_name );
+                done = findnext(&f);
+            }
+            findclose(&f);
+            #endif
+        }
 
         else
             filenames.push_back( argv[i] );
