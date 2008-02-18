@@ -16,6 +16,7 @@
 
 //---------------------------------------------------------------------------
 bool ShowAll = true;
+bool CheckCodingStyle = true;
 bool Debug = false;
 //---------------------------------------------------------------------------
 static unsigned int FailCount, SuccessCount;
@@ -454,16 +455,16 @@ static void memleak_in_function()
 
     const char test3[] = "void f()\n"
                          "{\n"
-                         "    Kalle *kalle;\n"
+                         "    Fred *fred;\n"
                          "    if (somecondition)\n"
                          "    {\n"
-                         "        kalle = new Kalle;\n"
+                         "        fred = new Fred;\n"
                          "    }\n"
                          "    else\n"
                          "    {\n"
                          "        return;\n"
                          "    }\n"
-                         "    delete kalle;\n"
+                         "    delete fred;\n"
                          "}\n";
     check( CheckMemoryLeak, __LINE__, test3, "" );
 
@@ -549,7 +550,6 @@ static void memleak_in_function()
                          "    free(a);\n"
                          "}\n";
     check( CheckMemoryLeak, __LINE__, test9, "[test.cpp:4]: Mismatching allocation and deallocation 'a'\n" );
-
 }
 //---------------------------------------------------------------------------
 

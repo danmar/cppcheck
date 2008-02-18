@@ -8,6 +8,8 @@
 #include <sstream>
 //---------------------------------------------------------------------------
 
+extern bool CheckCodingStyle;
+
 struct VAR
 {
     const char *name;
@@ -216,10 +218,14 @@ void CheckConstructors()
         if ( ! constructor_token )
         {
             // There's no class constructor
-            std::ostringstream ostr;
-            ostr << FileLine(tok1);
-            ostr << " The class '" << classname << "' has no constructor";
-            ReportErr(ostr.str());
+            if ( CheckCodingStyle )
+            {
+                std::ostringstream ostr;
+                ostr << FileLine(tok1);
+                ostr << " The class '" << classname << "' has no constructor";
+                ReportErr(ostr.str());
+            }
+
             tok1 = findtoken( tok1->next, pattern_classname );
             continue;
         }
