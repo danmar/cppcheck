@@ -31,18 +31,33 @@ static void memleak_in_class();
 
 int main()
 {
+    // Provide a dummy filename for the error messages
     Files.push_back( std::string("test.cpp") );
+
+    // Check that the statement list is created correctly
     internal_statementlist();
+
+    // Check that buffer overruns are detected
     buffer_overrun();
+
+    // Test the constructor-checks
     constructors();
+
+    // Test the class operator= checking
     operator_eq();
+
+    // Test that memory leaks in a function are detected
     memleak_in_function();
+
+    // Test that memory leaks in a class are detected
     memleak_in_class();
+
     std::cout << "Success Rate: " 
               << SuccessCount 
               << " / " 
               << (SuccessCount + FailCount) 
               << std::endl;
+
     return 0;
 }
 //---------------------------------------------------------------------------
@@ -350,6 +365,23 @@ static void buffer_overrun()
         "[test.cpp:15]: A string with unknown length is copied to buffer.\n";
 
     check( CheckBufferOverrun, __LINE__, test7, err7 );
+
+
+    // TODO
+    /*
+    const char test8[] = "class Fred\n"
+                         "{\n"
+                         "private:\n"
+                         "    char str[10];\n"
+                         "public:\n"
+                         "    Fred();\n"
+                         "};\n"
+                         "Fred::Fred()\n"
+                         "{\n"
+                         "    str[10] = 0;\n"
+                         "}\n";
+    check( CheckBufferOverrun, __LINE__, test8, "[test.cpp:5]: Array index out of bounds\n" );
+    */
 }
 //---------------------------------------------------------------------------
 
@@ -360,58 +392,58 @@ static void constructors()
     // Test3: Uninitialized variable
     // Test4: multiple constructors, uninitialized variable
 
-    const char test1[] = "class clKalle\n"
+    const char test1[] = "class Fred\n"
                          "{\n"
                          "public:\n"
                          "    int i;\n"
                          "};\n";
-    check( CheckConstructors, __LINE__, test1, "[test.cpp:1] The class 'clKalle' has no constructor\n" );
+    check( CheckConstructors, __LINE__, test1, "[test.cpp:1] The class 'Fred' has no constructor\n" );
 
 
 
 
-    const char test2[] = "class clKalle\n"
+    const char test2[] = "class Fred\n"
                          "{\n"
                          "public:\n"
-                         "    clKalle() { }\n"
+                         "    Fred() { }\n"
                          "    int i;\n"
                          "};\n";
-    check( CheckConstructors, __LINE__, test2, "" );
+    check( CheckConstructors, __LINE__, test2, "[test.cpp:4] Uninitialized member variable 'Fred::i'\n" );
 
 
 
-    const char test3[] = "class clKalle\n"
+    const char test3[] = "class Fred\n"
                          "{\n"
                          "public:\n"
-                         "    clKalle();\n"
+                         "    Fred();\n"
                          "    int i;\n"
                          "};\n"
-                         "clKalle::clKalle()\n"
+                         "Fred::Fred()\n"
                          "{ }\n";
-    check( CheckConstructors, __LINE__, test3, "[test.cpp:8] Uninitialized member variable 'clKalle::i'\n" );
+    check( CheckConstructors, __LINE__, test3, "[test.cpp:7] Uninitialized member variable 'Fred::i'\n" );
 
 
-    const char test4[] = "class clKalle\n"
+    const char test4[] = "class Fred\n"
                          "{\n"
                          "public:\n"
-                         "    clKalle();\n"
-                         "    clKalle(int _i);\n"
+                         "    Fred();\n"
+                         "    Fred(int _i);\n"
                          "    int i;\n"
                          "};\n"
-                         "clKalle::clKalle()\n"
+                         "Fred::Fred()\n"
                          "{ }\n"
-                         "clKalle::clKalle(int _i)\n"
+                         "Fred::Fred(int _i)\n"
                          "{\n"
                          "    i = _i;\n"
                          "}\n";
-    check( CheckConstructors, __LINE__, test4, "[test.cpp:9] Uninitialized member variable 'clKalle::i'\n" );
+    check( CheckConstructors, __LINE__, test4, "[test.cpp:8] Uninitialized member variable 'Fred::i'\n" );
 
 }
 //---------------------------------------------------------------------------
 
 void operator_eq()
 {
-    const char test1[] = "class clKalle\n"
+    const char test1[] = "class Fred\n"
                          "{\n"
                          "public:\n"
                          "    void operator=(const int &value);\n"
@@ -557,52 +589,82 @@ static void memleak_in_class()
 {
 
 
-    const char test1[] = "class clKalle\n"
+    const char test1[] = "class Fred\n"
                          "{\n"
                          "private:\n"
                          "    char *str1;\n"
                          "    char *str2;\n"
                          "public:\n"
-                         "    clKalle();\n"
-                         "    ~clKalle();\n"
+                         "    Fred();\n"
+                         "    ~Fred();\n"
                          "};\n"
                          "\n"
-                         "clKalle::clKalle()\n"
+                         "Fred::Fred()\n"
                          "{\n"
                          "    str1 = new char[10];\n"
                          "    str2 = new char[10];\n"
                          "}\n"
                          "\n"
-                         "clKalle::~clKalle()\n"
+                         "Fred::~Fred()\n"
                          "{\n"
                          "    delete [] str2;\n"
                          "}\n";
 
-    check( CheckMemoryLeak, __LINE__, test1, "Memory leak for 'clKalle::str1'\n" );
+    check( CheckMemoryLeak, __LINE__, test1, "Memory leak for 'Fred::str1'\n" );
 
 
 
 
-    const char test2[] = "class clKalle\n"
+    const char test2[] = "class Fred\n"
                          "{\n"
                          "private:\n"
                          "    char *str1;\n"
                          "public:\n"
-                         "    clKalle();\n"
-                         "    ~clKalle();\n"
+                         "    Fred();\n"
+                         "    ~Fred();\n"
                          "};\n"
                          "\n"
-                         "clKalle::clKalle()\n"
+                         "Fred::Fred()\n"
                          "{\n"
                          "    str1 = new char[10];\n"
                          "}\n"
                          "\n"
-                         "clKalle::~clKalle()\n"
+                         "Fred::~Fred()\n"
                          "{\n"
                          "    free(str1);\n"
                          "}\n";
 
-    check( CheckMemoryLeak, __LINE__, test2, "[test.cpp:17]: Mismatching deallocation for 'clKalle::str1'\n" );
+    check( CheckMemoryLeak, __LINE__, test2, "[test.cpp:17]: Mismatching deallocation for 'Fred::str1'\n" );
+
+
+
+
+    const char test3[] = "class Fred\n"
+                         "{\n"
+                         "private:\n"
+                         "    char *str;\n"
+                         "public:\n"
+                         "    Fred();\n"
+                         "    ~Fred();\n"
+                         "    void SetStr(const char s[]);"
+                         "};\n"
+                         "\n"
+                         "Fred::Fred()\n"
+                         "{\n"
+                         "    str = NULL;\n"
+                         "}\n"
+                         "\n"
+                         "Fred::~Fred()\n"
+                         "{\n"
+                         "    free(str1);\n"
+                         "}\n"
+                         "\n"
+                         "void Fred::SetStr(const char s[])\n"
+                         "{\n"
+                         "    str = strdup(s);\n"
+                         "}\n";
+
+    check( CheckMemoryLeak, __LINE__, test3, "Memory leak for 'Fred::str'\n" );
 
 
 

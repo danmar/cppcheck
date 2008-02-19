@@ -90,18 +90,53 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
 }
 //---------------------------------------------------------------------------
 
-static TOKEN * ClassChecking_VarList_Initialize(TOKEN *_tokens, struct VAR *varlist, const char classname[], const char funcname[])
+static TOKEN * FindClassFunction( TOKEN *_tokens, const char classname[], const char funcname[], unsigned int &indentlevel )
 {
-    // Locate class member function
-    const char *pattern[] = {"","::","","(",NULL};
-    pattern[0] = classname;
-    pattern[2] = funcname;
+    while ( _tokens )
+    {
+        if ( indentlevel > 0 )
+        {
+            if ( _tokens->str[0] == '{' )
+                indentlevel++;
+            else if ( _tokens->str[0] == '}' )
+                indentlevel--;
+            else if ( indentlevel == 1 )
+            {
+                // Member function is implemented in the class declaration..
+                if ( match( _tokens, "var (" ) && strcmp(_tokens->str,funcname) == 0 )
+                {
+                    TOKEN *tok2 = _tokens;
+                    while ( tok2 && tok2->str[0] != '{' && tok2->str[0] != ';' )
+                        tok2 = tok2->next;
+                    if ( tok2 && tok2->str[0] == '{' )
+                        return _tokens;
+                }
+            }
+        }
 
-    // Locate member function implementation..
-    TOKEN *ftok = findtoken(_tokens, pattern);
-    if (!ftok)
-        return NULL;
+        else if ( match(_tokens, "class var {") && strcmp(getstr(_tokens,1),classname)==0 )
+        {
+            indentlevel = 1;
+            _tokens = gettok( _tokens, 2 );
+        }
 
+        else if ( match(_tokens, "var :: var (") &&
+                  strcmp(_tokens->str,classname) == 0 &&
+                  strcmp(getstr(_tokens,2),funcname) == 0  )
+        {
+            return _tokens;
+        }
+
+        _tokens = _tokens->next;
+    }
+
+    // Not found
+    return NULL;
+}
+//---------------------------------------------------------------------------
+
+static void ClassChecking_VarList_Initialize(TOKEN *ftok, struct VAR *varlist, const char classname[])
+{
     bool BeginLine = false;
     bool Assign = false;
     unsigned int indentlevel = 0;
@@ -112,7 +147,7 @@ static TOKEN * ClassChecking_VarList_Initialize(TOKEN *_tokens, struct VAR *varl
 
         // Class constructor.. initializing variables like this
         // clKalle::clKalle() : var(value) { }
-        if (indentlevel==0 && strcmp(classname,funcname)==0)
+        if (indentlevel==0)
         {
             if (Assign &&
                 IsName(ftok->str) &&
@@ -155,7 +190,11 @@ static TOKEN * ClassChecking_VarList_Initialize(TOKEN *_tokens, struct VAR *varl
 
             // Calling member function?
             if (ftok->next->str[0] == '(')
-                ClassChecking_VarList_Initialize(tokens, varlist, classname, ftok->str);
+            {
+                unsigned int i = 0;
+                TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
+                ClassChecking_VarList_Initialize(ftok2, varlist, classname);
+            }
 
             // Assignment of member variable?
             if (strcmp(ftok->next->str, "=") == 0)
@@ -192,8 +231,6 @@ static TOKEN * ClassChecking_VarList_Initialize(TOKEN *_tokens, struct VAR *varl
 
         BeginLine = (strchr("{};", ftok->str[0]));
     }
-
-    return ftok;
 }
 
 
@@ -238,7 +275,9 @@ void CheckConstructors()
         // Check that all member variables are initialized..
         struct VAR *varlist = ClassChecking_GetVarList(classname);
 
-        constructor_token = ClassChecking_VarList_Initialize(tokens, varlist, classname, classname);
+        unsigned int indentlevel = 0;
+        constructor_token = FindClassFunction( tokens, classname, classname, indentlevel );
+        ClassChecking_VarList_Initialize(constructor_token, varlist, classname);
         while ( constructor_token )
         {
             // Check if any variables are uninitialized
@@ -262,7 +301,9 @@ void CheckConstructors()
 
             for ( struct VAR *var = varlist; var; var = var->next )
                 var->init = false;
-            constructor_token = ClassChecking_VarList_Initialize(constructor_token->next, varlist, classname, classname);
+
+            constructor_token = FindClassFunction( constructor_token->next, classname, classname, indentlevel );
+            ClassChecking_VarList_Initialize(constructor_token, varlist, classname);
         }
 
         // Delete the varlist..
