@@ -109,10 +109,6 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
     if (str[0] == 0)
         return;
 
-    // The keyword 'unsigned' can be skipped for now.
-    if (strcmp(str,"unsigned")==0)
-        return;
-
     // Replace hexadecimal value with decimal
     char str2[50];
     memset(str2, 0, sizeof(str2));
@@ -539,6 +535,16 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
 
 void SimplifyTokenList()
 {
+
+    // Remove the keyword 'unsigned'
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if (tok->next && strcmp(tok->next->str,"unsigned")==0)
+        {
+            DeleteNextToken( tok );
+        }
+    }
+
     // Replace constants..
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {

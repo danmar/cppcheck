@@ -519,5 +519,54 @@ void CheckCaseWithoutBreak()
     }
 
 }
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// Check for case without break
+//---------------------------------------------------------------------------
+
+void CheckUnsignedDivision()
+{
+    const char *pattern_declvar[] = { "unsigned", "int", "", NULL };
+    TOKEN *declvar = findtoken(tokens, pattern_declvar);
+    while (  declvar )
+    {
+        const char *varname = getstr( declvar, 2 );
+        if ( ! IsName(varname) )
+        {
+            declvar = findtoken( declvar->next, pattern_declvar );
+            continue;
+        }
+
+        const char *pattern_div1[] = { "/", "", NULL };
+        pattern_div1[1] = varname;
+        TOKEN *tokdiv = findtoken(declvar, pattern_div1);
+        while ( tokdiv )
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tokdiv) << ": If the result is negative it will be wrong because an operand is unsigned.";
+            ReportErr(ostr.str());
+            tokdiv = findtoken(tokdiv->next, pattern_div1);
+        }
+
+        const char *pattern_div2[] = { "", "", "/", NULL };
+        pattern_div2[1] = varname;
+        tokdiv = findtoken(declvar, pattern_div2);
+        while ( tokdiv )
+        {
+            if ( tokdiv->str[0] != ')' )    // The ')' may indicate a cast
+            {
+                std::ostringstream ostr;
+                ostr << FileLine(tokdiv) << ": If the result is negative it will be wrong because an operand is unsigned.";
+                ReportErr(ostr.str());
+            }
+            tokdiv = findtoken(tokdiv->next, pattern_div2);
+        }
+
+        declvar = findtoken(declvar->next, pattern_declvar);
+    }
+}
 
 

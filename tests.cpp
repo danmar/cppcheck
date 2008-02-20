@@ -10,6 +10,7 @@
 #include "CheckBufferOverrun.h"
 #include "CheckClass.h"
 #include "CheckMemoryLeak.h"
+#include "CheckOther.h"
 
 #include <iostream>
 #include <sstream>
@@ -27,6 +28,7 @@ static void constructors();
 static void operator_eq();
 static void memleak_in_function();
 static void memleak_in_class();
+static void division();
 //---------------------------------------------------------------------------
 
 int main()
@@ -52,6 +54,9 @@ int main()
     // Test that memory leaks in a class are detected
     memleak_in_class();
 
+    // Check for dangerous division.. such as "svar / uvar". Treating "svar" as unsigned data is not good
+    division();
+
     std::cout << "Success Rate: " 
               << SuccessCount 
               << " / " 
@@ -71,7 +76,8 @@ static void check(void (chk)(),
     tokens = tokens_back = NULL;
     std::istringstream istr(code);
     TokenizeCode( istr );
-    SimplifyTokenList();
+    if ( chk != CheckUnsignedDivision )
+        SimplifyTokenList();
 
     // Check for buffer overruns..
     errout.str("");
@@ -671,3 +677,16 @@ static void memleak_in_class()
 }
 //---------------------------------------------------------------------------
 
+static void division()
+{
+
+    const char test1[] = "void f()\n"
+                         "{\n"
+                         "    unsigned int uvar = 2;\n"
+                         "    return -2 / uvar;\n"
+                         "}\n";
+    check( CheckUnsignedDivision, __LINE__, test1, "[test.cpp:4]: If the result is negative it will be wrong because an operand is unsigned.\n" );
+
+
+}
+//---------------------------------------------------------------------------

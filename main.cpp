@@ -114,6 +114,12 @@ static void CppCheck(const char FileName[])
     CheckMemset();
 
 
+    // Check for unwanted unsigned division
+    // Not accurate yet. Very important to run it before 'SimplifyTokenList'
+    if ( ShowAll )
+        CheckUnsignedDivision();
+
+
     // Including header which is not needed
     if ( CheckCodingStyle )
         WarningIncludeHeader();
