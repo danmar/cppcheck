@@ -14,6 +14,9 @@
 #ifdef __BORLANDC__
 #include <dir.h>
 #endif
+#ifdef __GNUC__
+#include <glob.h>
+#endif
 
 //---------------------------------------------------------------------------
 bool Debug = false;
@@ -35,11 +38,21 @@ static void AddFiles( std::vector<std::string> &filenames, const char path[], co
         filenames.push_back( fname.str() );
     }
     findclose(&f);
+    #else
+    glob_t glob_results;
+    glob(pattern, 0, 0, &glob_results);
+    for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
+    {
+        std::ostringstream fname;
+        fname << path << glob_results.gl_pathv[i];
+        filenames.push_back( fname.str() );
+    }
+    globfree(&glob_results);
     #endif
 }
 
 static void RecursiveAddFiles( std::vector<std::string> &filenames, const char path[] )
-{         
+{
     AddFiles( filenames, path, "*.cpp" );
     AddFiles( filenames, path, "*.cc" );
     AddFiles( filenames, path, "*.c" );
@@ -57,6 +70,22 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
         chdir( ".." );
     }
     findclose(&f);
+    #else
+    glob_t glob_results;
+    glob("*", GLOB_ONLYDIR, 0, &glob_results);
+    for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
+    {
+        const char *dirname = glob_results.gl_pathv[i];
+        if ( dirname[0] == '.' )
+            continue;
+
+        chdir( dirname );
+        std::ostringstream curdir;
+        curdir << path << dirname << "/";
+        RecursiveAddFiles( filenames, curdir.str().c_str() );
+        chdir( ".." );
+    }
+    globfree(&glob_results);
     #endif
 }
 
@@ -114,7 +143,7 @@ int main(int argc, char* argv[])
                      "             When this option is given, all messages are shown.\n"
                      "\n"
                      "    --style  Check coding style.\n"
-                     "    --recursive  Recursily check all *.cpp, *.cc and *.c files\n";
+                     "    --recursive  Recursively check all *.cpp, *.cc and *.c files\n";
         return 0;
     }
 
