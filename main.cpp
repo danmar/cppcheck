@@ -24,6 +24,42 @@ bool CheckCodingStyle = false;
 static void CppCheck(const char FileName[]);
 
 
+static void AddFiles( std::vector<std::string> &filenames, const char path[], const char pattern[] )
+{
+    #ifndef __GNUC__
+    struct ffblk f;
+    for ( int done = findfirst(pattern, &f, 0); ! done; done = findnext(&f) )
+    {
+        std::ostringstream fname;
+        fname << path << f.ff_name;
+        filenames.push_back( fname.str() );
+    }
+    findclose(&f);
+    #endif
+}
+
+static void RecursiveAddFiles( std::vector<std::string> &filenames, const char path[] )
+{         
+    AddFiles( filenames, path, "*.cpp" );
+    AddFiles( filenames, path, "*.cc" );
+    AddFiles( filenames, path, "*.c" );
+
+    #ifndef __GNUC__
+    struct ffblk f ;
+    for ( int done = findfirst("*", &f, FA_DIREC); ! done; done = findnext(&f) )
+    {
+        if ( f.ff_attrib != FA_DIREC || f.ff_name[0] == '.' )
+            continue;
+        chdir( f.ff_name );
+        std::ostringstream curdir;
+        curdir << path << f.ff_name << "/";
+        RecursiveAddFiles( filenames, curdir.str().c_str() );
+        chdir( ".." );
+    }
+    findclose(&f);
+    #endif
+}
+
 //---------------------------------------------------------------------------
 // Main function of cppcheck
 //---------------------------------------------------------------------------
@@ -31,6 +67,8 @@ static void CppCheck(const char FileName[]);
 int main(int argc, char* argv[])
 {
     std::vector<std::string> filenames;
+
+    bool Recursive = false;
 
     for (int i = 1; i < argc; i++)
     {
@@ -45,38 +83,38 @@ int main(int argc, char* argv[])
         else if (strcmp(argv[i],"--style")==0)
             CheckCodingStyle = true;
 
-        // Filenames
-        else if ( strchr(argv[i], '*') )
+        else if (strcmp(argv[i],"--recursive")==0)
+            Recursive = true;
+
+        else if (strchr(argv[i],'*'))
         {
-            #ifndef __GNUC__
-            struct ffblk f;
-            int done = findfirst(argv[i], &f, 0);
-            while ( ! done )
-            {
-                filenames.push_back( f.ff_name );
-                done = findnext(&f);
-            }
-            findclose(&f);
-            #endif
+            AddFiles( filenames, "", argv[i] );
         }
 
         else
+        {
             filenames.push_back( argv[i] );
+        }
     }
+
+    // No filename given.. automaticly search for available files.
+    if ( Recursive )
+        RecursiveAddFiles( filenames, "" );
 
     if (filenames.empty())
     {
         std::cout << "C/C++ code checking.\n"
                      "\n"
                      "Syntax:\n"
-                     "    cppcheck [--all] [--style] filename1 [filename2]\n"
+                     "    cppcheck [--all] [--style] [--recursive] [filename1] [filename2]\n"
                      "\n"
                      "Options:\n"
                      "    --all    Normally a message is only shown if cppcheck is sure\n"
                      "             it has found a bug.\n"
                      "             When this option is given, all messages are shown.\n"
                      "\n"
-                     "    --style  Check coding style.\n";
+                     "    --style  Check coding style.\n"
+                     "    --recursive  Recursily check all *.cpp, *.cc and *.c files\n";
         return 0;
     }
 
