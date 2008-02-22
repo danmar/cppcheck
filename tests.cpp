@@ -36,6 +36,9 @@ int main()
     // Provide a dummy filename for the error messages
     Files.push_back( std::string("test.cpp") );
 
+    // Don't filter out duplicate error messages..
+    OnlyReportUniqueErrors = false;
+
     // Check that the statement list is created correctly
     internal_statementlist();
 
