@@ -8,6 +8,7 @@
 #include "CheckHeaders.h"
 #include "CheckOther.h"
 
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 
@@ -146,6 +147,8 @@ int main(int argc, char* argv[])
                      "    --recursive  Recursively check all *.cpp, *.cc and *.c files\n";
         return 0;
     }
+
+    std::sort( filenames.begin(), filenames.end() );
 
     for (unsigned int c = 0; c < filenames.size(); c++)
     {
