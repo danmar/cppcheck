@@ -262,10 +262,22 @@ void CheckConstructors()
             // There's no class constructor
             if ( CheckCodingStyle )
             {
-                std::ostringstream ostr;
-                ostr << FileLine(tok1);
-                ostr << " The class '" << classname << "' has no constructor";
-                ReportErr(ostr.str());
+                // Check that all member variables are initialized..
+                struct VAR *varlist = ClassChecking_GetVarList(classname);
+                if ( varlist )
+                {
+                    std::ostringstream ostr;
+                    ostr << FileLine(tok1);
+                    ostr << " The class '" << classname << "' has no constructor";
+                    ReportErr(ostr.str());
+                }
+                // Delete the varlist..
+                while (varlist)
+                {
+                    struct VAR *nextvar = varlist->next;
+                    delete varlist;
+                    varlist = nextvar;
+                }
             }
 
             tok1 = findtoken( tok1->next, pattern_classname );
