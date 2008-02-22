@@ -524,11 +524,13 @@ void CheckCaseWithoutBreak()
 
 
 //---------------------------------------------------------------------------
-// Check for case without break
+// Check for unsigned divisions
 //---------------------------------------------------------------------------
 
 void CheckUnsignedDivision()
 {
+    // TODO: Check that the scope is the same
+
     const char *pattern_declvar[] = { "unsigned", "int", "", NULL };
     TOKEN *declvar = findtoken(tokens, pattern_declvar);
     while (  declvar )
