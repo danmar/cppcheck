@@ -21,11 +21,12 @@ Compiling
 Usage
 
   The syntax is:
-      cppcheck [--all] [--style] filename.cpp
+      cppcheck [--all] [--style] [--recursive] [filename1] [filename2]
 
   The error messages will be printed to stderr.
 
-
+  Example (Check all files. Use all checks):
+      cppcheck -style --all --recursive
 
 
 Recommendations
