@@ -169,6 +169,7 @@ extern bool HasErrors;
 static void CppCheck(const char FileName[])
 {
     HasErrors = false;
+    OnlyReportUniqueErrors = true;
 
     std::cout << "Checking " << FileName << "...\n";
 
@@ -190,9 +191,9 @@ static void CppCheck(const char FileName[])
         CheckUnsignedDivision();
 
 
-    // Including header which is not needed
-    if ( CheckCodingStyle )
-        WarningIncludeHeader();
+    // Including header which is not needed (too many false positives)
+    //if ( CheckCodingStyle )
+    //    WarningIncludeHeader();
 
 
     SimplifyTokenList();

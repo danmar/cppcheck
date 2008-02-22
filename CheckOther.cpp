@@ -242,59 +242,6 @@ void WarningIf()
         }
         ReportErr(ostr.str());
     }
-
-    // Search for 'if (condition) flag = true;'
-    bool newstatement = false;
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        if (!newstatement || strcmp(tok->str,"if"))
-        {
-            newstatement = (strchr("{};",tok->str[0]));
-            continue;
-        }
-
-        int parlevel = 0;
-        for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
-        {
-            if (tok2->str[0]=='(')
-                parlevel++;
-            else if (tok2->str[0]==')')
-            {
-                parlevel--;
-                if (parlevel<=0)
-                {
-                    if ( strcmp(getstr(tok2,5), "else") == 0 )
-                    {
-                        if ( match(tok2->next, "var = true ; else var = false ;") )
-                        {
-                            std::ostringstream ostr;
-                            ostr << FileLine(tok) << ": Found \"if (condition) var=true; else var=false;\", it can be rewritten as \"var = (condition);\"";
-                            ReportErr(ostr.str());
-                        }
-                    }
-
-                    else if ( match(tok2->next, "var = true ;") )
-                    {
-                        std::ostringstream ostr;
-                        ostr << FileLine(tok) << ": Found \"if (condition) var = true;\", it can be rewritten as \"var |= (condition);\"";
-                        ReportErr(ostr.str());
-                    }
-
-                    else if ( match(tok2->next, "var = false ;") )
-                    {
-                        std::ostringstream ostr;
-                        ostr << FileLine(tok) << ": Found \"if (condition) var = false;\", it can be rewritten as \"var &= (!condition);\"";
-                        ReportErr(ostr.str());
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        newstatement = (strchr("{};",tok->str[0]));
-    }
-
 }
 //---------------------------------------------------------------------------
 

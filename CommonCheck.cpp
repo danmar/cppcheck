@@ -3,8 +3,11 @@
 #include "tokenize.h"
 #include <iostream>
 #include <sstream>
+#include <list>
+#include <algorithm>
 //---------------------------------------------------------------------------
 bool HasErrors;
+bool OnlyReportUniqueErrors;
 std::ostringstream errout;
 //---------------------------------------------------------------------------
 
@@ -16,8 +19,16 @@ std::string FileLine(TOKEN *tok)
 }
 //---------------------------------------------------------------------------
 
+std::list<std::string> ErrorList;
+
 void ReportErr(const std::string errmsg)
 {
+    if ( OnlyReportUniqueErrors )
+    {
+        if ( std::find( ErrorList.begin(), ErrorList.end(), errmsg ) != ErrorList.end() )
+            return;
+        ErrorList.push_back( errmsg );
+    }
     errout << errmsg << std::endl;
     HasErrors = true;
 }

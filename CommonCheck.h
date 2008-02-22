@@ -9,6 +9,8 @@
 struct TOKEN;
 
 std::string FileLine(TOKEN *tok);
+                                   
+extern bool OnlyReportUniqueErrors;
 
 void ReportErr(const std::string errmsg);
 extern std::ostringstream errout;
