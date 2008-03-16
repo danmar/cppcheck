@@ -29,6 +29,7 @@ static void operator_eq();
 static void memleak_in_function();
 static void memleak_in_class();
 static void division();
+static void unused_variable();
 //---------------------------------------------------------------------------
 
 int main()
@@ -59,6 +60,9 @@ int main()
 
     // Check for dangerous division.. such as "svar / uvar". Treating "svar" as unsigned data is not good
     division();
+
+    // unused variable..
+    unused_variable();
 
     std::cout << "Success Rate: " 
               << SuccessCount 
@@ -693,3 +697,22 @@ static void division()
 
 }
 //---------------------------------------------------------------------------
+
+static void unused_variable()
+{
+    // Unused private member variable...
+    const char test1[] = "class Fred\n"
+                         "{\n"
+                         "private:\n"
+                         "    int i;\n"
+                         "public:\n"
+                         "    Fred();\n"
+                         "};\n"
+                         "Fred::Fred()\n"
+                         "{\n"
+                         "    i = 0;\n"
+                         "}\n";
+
+
+}
+

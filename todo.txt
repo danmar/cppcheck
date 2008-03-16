@@ -1,0 +1,31 @@
+
+
+Userdefined types
+
+  I think this needs to be handled better.
+
+
+
+
+Unused function / variable
+
+  If the user provides "--recursive" there should be
+  warnings for unused functions and variables.
+
+  Check if all members in the public section of a class
+  are used externally.
+
+
+
+
+Dead pointers
+
+  Check for dead pointers
+
+
+
+Buffer overruns
+
+  When writing to struct members
+
+
