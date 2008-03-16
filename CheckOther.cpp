@@ -517,5 +517,92 @@ void CheckUnsignedDivision()
         declvar = findtoken(declvar->next, pattern_declvar);
     }
 }
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+// Check scope of variables..
+//---------------------------------------------------------------------------
+
+static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
+
+void CheckVariableScope()
+{
+    // Walk through all tokens..
+    bool func = false;
+    int indentlevel = 0;
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( tok->str[0] == '{' )
+        {
+            indentlevel++;
+        }
+        if ( tok->str[0] == '}' )
+        {
+            indentlevel--;
+            if ( indentlevel == 0 )
+                func = false;
+        }
+        if ( indentlevel == 0 && match(tok, ") {") )
+        {
+            func = true;
+        }
+        if ( indentlevel > 0 && func && strchr("{};", tok->str[0]) )
+        {
+            // Variable declaration?
+            if (match(tok->next, "var var ;"))
+                CheckVariableScope_LookupVar( tok->next, getstr(tok, 2) );
+
+            // Variable declaration?
+            else if (match(tok->next, "var var ="))
+                CheckVariableScope_LookupVar( tok->next, getstr(tok, 2) );
+        }
+    }
+
+}
+//---------------------------------------------------------------------------
+
+static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] )
+{
+    const TOKEN *tok = tok1;
+
+    // Skip the variable declaration..
+    tok = tok->next;
+    while ( tok->str[0] != ';' )
+        tok = tok->next;
+
+    // Check if the variable is used in this indentlevel..
+    bool used = false;
+    int indentlevel = 0;
+    while ( indentlevel >= 0 && tok )
+    {
+        if ( tok->str[0] == '{' )
+        {
+            indentlevel++;
+        }
+
+        else if ( tok->str[0] == '}' )
+        {
+            indentlevel--;
+        }
+
+        else if ( strcmp(tok->str, varname) == 0 )
+        {
+            if ( indentlevel == 0 )
+                return;
+            used = true;
+        }
+
+        tok = tok->next;
+    }
+
+    // Warning if "used" is true
+    std::ostringstream errmsg;
+    errmsg << FileLine(tok1) << " The scope of the variable '" << varname << "' can be limited";
+    ReportErr( errmsg.str() );
+}
+//---------------------------------------------------------------------------
+
 
 

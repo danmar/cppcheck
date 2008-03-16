@@ -8,7 +8,7 @@
 
 struct TOKEN;
 
-std::string FileLine(TOKEN *tok);
+std::string FileLine(const TOKEN *tok);
                                    
 extern bool OnlyReportUniqueErrors;
 

@@ -1018,12 +1018,12 @@ TOKEN *findtoken(TOKEN *tok1, const char *tokenstr[])
 }
 //---------------------------------------------------------------------------
 
-bool match(TOKEN *tok, const std::string pattern)
+bool match(const TOKEN *tok, const char pattern[])
 {
     if (!tok)
         return false;
 
-    const char *p = pattern.c_str();
+    const char *p = pattern;
     while (*p)
     {
         char str[50];

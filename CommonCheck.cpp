@@ -11,7 +11,7 @@ bool OnlyReportUniqueErrors;
 std::ostringstream errout;
 //---------------------------------------------------------------------------
 
-std::string FileLine(TOKEN *tok)
+std::string FileLine(const TOKEN *tok)
 {
     std::ostringstream ostr;
     ostr << "[" << Files[tok->FileIndex] << ":" << tok->linenr << "]";

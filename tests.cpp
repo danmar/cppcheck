@@ -714,5 +714,26 @@ static void unused_variable()
                          "}\n";
 
 
+    // Scope of variable..
+    const char test2[] = "void f()\n"
+                         "{\n"
+                         "    int i;\n"
+                         "    if (abc)\n"
+                         "    {\n"
+                         "        i = 1;\n"
+                         "    }\n"
+                         "}\n";
+    check( CheckVariableScope, __LINE__, test2, "[test.cpp:3] The scope of the variable 'i' can be limited\n" );
+/*
+    const char test3[] = "void f()\n"
+                         "{\n"
+                         "    int i = 0;\n"
+                         "    while (abc)\n"
+                         "    {\n"
+                         "        i = i + 1;\n"
+                         "    }\n"
+                         "}\n";
+    check( CheckVariableScope, __LINE__, test3, "" );
+*/
 }
 

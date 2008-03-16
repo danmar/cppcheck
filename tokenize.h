@@ -36,7 +36,7 @@ void DeallocateTokens();
 
 // Helper functions for handling the tokens list..
 TOKEN *findtoken(TOKEN *tok1, const char *tokenstr[]);
-bool match(TOKEN *tok, const std::string pattern);
+bool match(const TOKEN *tok, const char pattern[]);
 TOKEN *gettok(TOKEN *tok, int index);
 const char *getstr(TOKEN *tok, int index);
 

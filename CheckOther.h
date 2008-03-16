@@ -37,6 +37,9 @@ void CheckCaseWithoutBreak();
 // Check for unsigned division that might create bad results
 void CheckUnsignedDivision();
 
+// Check scope of variables
+void CheckVariableScope();
+
 //---------------------------------------------------------------------------
 #endif
 
