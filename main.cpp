@@ -219,6 +219,9 @@ static void CppCheck(const char FileName[])
         // Dangerous usage of strtok
         // Disabled because it generates false positives
         //WarningStrTok();
+
+        // Variable scope
+        CheckVariableScope();
     }
 
 

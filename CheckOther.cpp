@@ -550,13 +550,20 @@ void CheckVariableScope()
         }
         if ( indentlevel > 0 && func && strchr("{};", tok->str[0]) )
         {
-            // Variable declaration?
-            if (match(tok->next, "var var ;"))
-                CheckVariableScope_LookupVar( tok->next, getstr(tok, 2) );
+            // First token of statement..
+            TOKEN *tok1 = tok->next;
+
+            if (strcmp(tok1->str,"return")==0 ||
+                strcmp(tok1->str,"delete")==0 ||
+                strcmp(tok1->str,"else")==0)
+                continue;
 
             // Variable declaration?
-            else if (match(tok->next, "var var ="))
-                CheckVariableScope_LookupVar( tok->next, getstr(tok, 2) );
+            if (match(tok1, "var var ;") ||
+                match(tok1, "var var =") )
+            {
+                CheckVariableScope_LookupVar( tok1, getstr(tok1, 1) );
+            }
         }
     }
 
@@ -568,7 +575,6 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
     const TOKEN *tok = tok1;
 
     // Skip the variable declaration..
-    tok = tok->next;
     while ( tok->str[0] != ';' )
         tok = tok->next;
 

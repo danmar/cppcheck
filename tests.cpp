@@ -724,16 +724,33 @@ static void unused_variable()
                          "    }\n"
                          "}\n";
     check( CheckVariableScope, __LINE__, test2, "[test.cpp:3] The scope of the variable 'i' can be limited\n" );
-/*
-    const char test3[] = "void f()\n"
+
+
+    const char test3[] = "static void DeleteNextToken(TOKEN *tok)\n"
                          "{\n"
-                         "    int i = 0;\n"
-                         "    while (abc)\n"
-                         "    {\n"
-                         "        i = i + 1;\n"
-                         "    }\n"
+                         "    TOKEN *next = tok->next;\n"
+                         "    tok->next = next->next;\n"
+                         "    free(next->str);\n"
+                         "    delete next;\n"
                          "}\n";
     check( CheckVariableScope, __LINE__, test3, "" );
-*/
+
+
+
+    const char test4[] = "static void f()\n"
+                         "{\n"
+                         "    bool special = false;\n"
+                         "    do\n"
+                         "    {\n"
+                         "        // Special sequence\n"
+                         "        if (special)\n"
+                         "            special = false;\n"
+                         "        else\n"
+                         "            special = (c == \'\\\');\n"
+                         "    }\n"
+                         "    while (special || c != \'\"\');\n"
+                         "}\n";
+    check( CheckVariableScope, __LINE__, test4, "" );
+
 }
 
