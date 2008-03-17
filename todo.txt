@@ -29,3 +29,30 @@ Buffer overruns
   When writing to struct members
 
 
+
+Style
+
+  Increase constness
+
+  Function parameters: Use std::ostream instead of std::ostringstream or std::ofstream
+
+  Optimisation: Return "const _T &" instead of "_T"?
+
+  Function parameters: Better with "const _T *" or "const _T &" than "_T"
+
+  Unused variable (function, file, class), unused value, unused parameter
+
+
+
+
+MEMORY LEAKS
+============
+
+  Allow the user to specify classes to be ignored (that have garbage collection)
+
+  Allow the user to specify allocation and free functions (kmalloc, kfree)
+
+  Better checking of pointers in structs
+
+
+
