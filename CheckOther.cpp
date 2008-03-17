@@ -579,7 +579,7 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
         tok = tok->next;
 
     // Check if the variable is used in this indentlevel..
-    bool used = false;
+    bool used = false, used1 = false;
     int indentlevel = 0;
     while ( indentlevel >= 0 && tok )
     {
@@ -591,11 +591,16 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
         else if ( tok->str[0] == '}' )
         {
             indentlevel--;
+            if ( indentlevel == 0 )
+            {
+                used1 = used;
+                used = false;
+            }
         }
 
         else if ( strcmp(tok->str, varname) == 0 )
         {
-            if ( indentlevel == 0 )
+            if ( indentlevel == 0 || used1 )
                 return;
             used = true;
         }

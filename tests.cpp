@@ -752,5 +752,19 @@ static void unused_variable()
                          "}\n";
     check( CheckVariableScope, __LINE__, test4, "" );
 
+
+
+    const char test5[] = "static void f()\n"
+                         "{\n"
+                         "    int i = 0;\n"
+                         "    {\n"
+                         "        i+5;\n"
+                         "    }\n"
+                         "    {\n"
+                         "        i+5;\n"
+                         "    }\n"
+                         "}\n";
+    check( CheckVariableScope, __LINE__, test5, "" );
+
 }
 
