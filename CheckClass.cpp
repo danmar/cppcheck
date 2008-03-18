@@ -250,6 +250,11 @@ void CheckConstructors()
     while (tok1)
     {
         const char *classname = tok1->next->str;
+        if ( ! IsName(classname) )
+        {
+            tok1 = findtoken( tok1->next, pattern_classname );
+            continue;
+        }
 
         // Are there a class constructor?
         const char *constructor_pattern[] = {"","clKalle","(",NULL};
