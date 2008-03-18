@@ -328,13 +328,20 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                         State = (State==Space1) ? Id : Value;
                     }
 
-                    else if (State==Id && std::isspace(line[i]))
+                    else if (State==Id)
                     {
-                        strId = strdup(CurrentToken);
-                        memset(CurrentToken, 0, sizeof(CurrentToken));
-                        pToken = CurrentToken;
-                        State = Space2;
-                        continue;
+                        if ( std::isspace( line[i] ) )
+                        {
+                            strId = strdup(CurrentToken);
+                            memset(CurrentToken, 0, sizeof(CurrentToken));
+                            pToken = CurrentToken;
+                            State = Space2;
+                            continue;
+                        }
+                        else if ( ! std::isalnum(line[i]) )
+                        {
+                            break;
+                        }
                     }
 
                     *pToken = line[i];

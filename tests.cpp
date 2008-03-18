@@ -766,5 +766,13 @@ static void unused_variable()
                          "}\n";
     check( CheckVariableScope, __LINE__, test5, "" );
 
+
+
+    const char test6[] = "static void f()\n"
+                         "{\n"
+                         "#define F1(x, y, z)     (z ^ (x & (y ^ z)))\n"
+                         "}\n";
+    check( CheckVariableScope, __LINE__, test6, "" );
+
 }
 
