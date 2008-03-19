@@ -223,6 +223,10 @@ void CreateStatementList()
                         ismalloc |= match(rs, "( type * * ) malloc (");
                         ismalloc |= match(rs, "( type type * ) malloc (");
                         ismalloc |= match(rs, "( type type * * ) malloc (");
+                        ismalloc |= match(rs, "( type * ) kmalloc (");
+                        ismalloc |= match(rs, "( type * * ) kmalloc (");
+                        ismalloc |= match(rs, "( type type * ) kmalloc (");
+                        ismalloc |= match(rs, "( type type * * ) kmalloc (");
                     }
 
                     if ( ismalloc )
@@ -251,6 +255,9 @@ void CreateStatementList()
                     break;
 
                 if (match(tok2, "free ( var ) ;"))
+                    AppendStatement(STATEMENT::FREE, tok2, getstr(tok2, 2));
+
+                if (match(tok2, "kfree ( var ) ;"))
                     AppendStatement(STATEMENT::FREE, tok2, getstr(tok2, 2));
 
                 if (match(tok2, "delete var ;"))

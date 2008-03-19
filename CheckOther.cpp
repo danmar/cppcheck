@@ -494,9 +494,12 @@ void CheckUnsignedDivision()
         TOKEN *tokdiv = findtoken(declvar, pattern_div1);
         while ( tokdiv )
         {
-            std::ostringstream ostr;
-            ostr << FileLine(tokdiv) << ": If the result is negative it will be wrong because an operand is unsigned.";
-            ReportErr(ostr.str());
+            if ( strcmp(getstr(tokdiv,2), "->") )
+            {
+                std::ostringstream ostr;
+                ostr << FileLine(tokdiv) << ": If the result is negative it will be wrong because an operand is unsigned.";
+                ReportErr(ostr.str());
+            }
             tokdiv = findtoken(tokdiv->next, pattern_div1);
         }
 
@@ -505,7 +508,9 @@ void CheckUnsignedDivision()
         tokdiv = findtoken(declvar, pattern_div2);
         while ( tokdiv )
         {
-            if (!IsNumber(getstr(tokdiv,3)) && tokdiv->str[0]!=')')    // The ')' may indicate a cast
+            if (!IsNumber(getstr(tokdiv,3)) &&
+                tokdiv->str[0] != ')' &&    // The ')' may indicate a cast
+                strcmp(tokdiv->str,"->"))
             {
                 std::ostringstream ostr;
                 ostr << FileLine(tokdiv) << ": If the result is negative it will be wrong because an operand is unsigned.";
