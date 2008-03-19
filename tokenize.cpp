@@ -466,7 +466,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 // Get next character
                 c = (char)code.get();
             }
-            while (special || c != '\"');
+            while (!code.eof() && (special || c != '\"'));
             *pToken = '\"';
             addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
@@ -808,10 +808,13 @@ void SimplifyTokenList()
                 IsNumber(getstr(tok,3))   &&
                 strchr("],);=<>",*(getstr(tok,4))) )
             {
-                done = false;
-
                 int i1 = atoi(getstr(tok,1));
                 int i2 = atoi(getstr(tok,3));
+                if ( i2 == 0 && *(getstr(tok,2)) == '/' )
+                {
+                    continue;
+                }
+
                 switch (*(getstr(tok,2)))
                 {
                     case '+': i1 += i2; break;
@@ -828,6 +831,8 @@ void SimplifyTokenList()
                 {
                     DeleteNextToken(tok);
                 }
+                
+                done = false;
             }
         }
     }
