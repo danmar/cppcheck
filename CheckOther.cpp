@@ -476,50 +476,51 @@ void CheckCaseWithoutBreak()
 
 void CheckUnsignedDivision()
 {
-    // TODO: Check that the scope is the same
-
-    const char *pattern_declvar[] = { "unsigned", "int", "", NULL };
-    TOKEN *declvar = findtoken(tokens, pattern_declvar);
-    while (  declvar )
+    // Check for "ivar / uvar" and "uvar / ivar"
+    // Todo: Much better checking for declared variables
+    const char *div_pattern[] = {"", "/", "", NULL};
+    for (const TOKEN *div_tok = findtoken(tokens, div_pattern); div_tok; div_tok = findtoken(div_tok->next, div_pattern))
     {
-        const char *varname = getstr( declvar, 2 );
-        if ( ! IsName(varname) )
+        const char *varname1 = div_tok->str;
+        const char *varname2 = div_tok->next->next->str;
+        if ( IsName(varname1) && IsName(varname2) )
         {
-            declvar = findtoken( declvar->next, pattern_declvar );
-            continue;
-        }
+            char var1_sign=0, var2_sign=0;
 
-        const char *pattern_div1[] = { "/", "", NULL };
-        pattern_div1[1] = varname;
-        TOKEN *tokdiv = findtoken(declvar, pattern_div1);
-        while ( tokdiv )
-        {
-            if ( strcmp(getstr(tokdiv,2), "->") )
+            // Check if any of the variables are unsigned..
+            const char *pattern_declvar[] = { "unsigned", "", "", NULL };
+
+            pattern_declvar[2] = varname1;
+            if ( findtoken(tokens, pattern_declvar) )
+                var1_sign = 'u';
+
+            pattern_declvar[2] = varname2;
+            if ( findtoken(tokens, pattern_declvar) )
+                var2_sign = 'u';
+
+            if (var1_sign == var2_sign)
+                continue;
+
+            // Check if any of the variables are signed..
+            pattern_declvar[0] = ";";
+            pattern_declvar[1] = "int";
+
+            pattern_declvar[2] = varname1;
+            if ( findtoken(tokens, pattern_declvar) )
+                var1_sign = 's';
+
+            pattern_declvar[2] = varname2;
+            if ( findtoken(tokens, pattern_declvar) )
+                var2_sign = 's';
+
+            if ( var1_sign && var2_sign && var1_sign != var2_sign )
             {
+                // One of the operands are signed, the other is unsigned..
                 std::ostringstream ostr;
-                ostr << FileLine(tokdiv) << ": If the result is negative it will be wrong because an operand is unsigned.";
+                ostr << FileLine(div_tok) << ": If the result is negative it will be wrong because an operand is unsigned.";
                 ReportErr(ostr.str());
             }
-            tokdiv = findtoken(tokdiv->next, pattern_div1);
         }
-
-        const char *pattern_div2[] = { "", "", "/", NULL };
-        pattern_div2[1] = varname;
-        tokdiv = findtoken(declvar, pattern_div2);
-        while ( tokdiv )
-        {
-            if (!IsNumber(getstr(tokdiv,3)) &&
-                tokdiv->str[0] != ')' &&    // The ')' may indicate a cast
-                strcmp(tokdiv->str,"->"))
-            {
-                std::ostringstream ostr;
-                ostr << FileLine(tokdiv) << ": If the result is negative it will be wrong because an operand is unsigned.";
-                ReportErr(ostr.str());
-            }
-            tokdiv = findtoken(tokdiv->next, pattern_div2);
-        }
-
-        declvar = findtoken(declvar->next, pattern_declvar);
     }
 }
 //---------------------------------------------------------------------------
