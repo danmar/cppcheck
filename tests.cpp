@@ -689,11 +689,20 @@ static void division()
 
     const char test1[] = "void f()\n"
                          "{\n"
+                         "    int ivar = -2;\n"
                          "    unsigned int uvar = 2;\n"
-                         "    return -2 / uvar;\n"
+                         "    return ivar / uvar;\n"
                          "}\n";
-    check( CheckUnsignedDivision, __LINE__, test1, "[test.cpp:4]: If the result is negative it will be wrong because an operand is unsigned.\n" );
+    check( CheckUnsignedDivision, __LINE__, test1, "[test.cpp:5]: If the result is negative it will be wrong because an operand is unsigned.\n" );
 
+
+    const char test2[] = "void f()\n"
+                         "{\n"
+                         "    int ivar = -2;\n"
+                         "    unsigned int uvar = 2;\n"
+                         "    return uvar / ivar;\n"
+                         "}\n";
+    check( CheckUnsignedDivision, __LINE__, test2, "[test.cpp:5]: If the result is negative it will be wrong because an operand is unsigned.\n" );
 
 }
 //---------------------------------------------------------------------------
@@ -773,6 +782,44 @@ static void unused_variable()
                          "#define F1(x, y, z)     (z ^ (x & (y ^ z)))\n"
                          "}\n";
     check( CheckVariableScope, __LINE__, test6, "" );
+
+
+    const char test7[] = "struct a\n"
+                         "{\n"
+                         "    int x;\n"
+                         "    int y;\n"
+                         "};\n";
+    check( CheckVariableScope, __LINE__, test7, "" );
+
+
+    const char test8[] = "static void f()\n"
+                         "{\n"
+                         "    struct\n"
+                         "    {\n"
+                         "        int x;\n"
+                         "        int y;\n"
+                         "    } fred;\n"
+                         "}\n";
+    check( CheckVariableScope, __LINE__, test8, "" );
+
+
+    const char test9[] = "static void f()\n"
+                         "{\n"
+                         "    int i;\n"
+                         "    while (abc)\n"
+                         "    {\n"
+                         "        if (cond1)\n"
+                         "        {\n"
+                         "            i = 2;\n"
+                         "        }\n"
+                         "        if (cond2)\n"
+                         "        {\n"
+                         "            f(i);\n"
+                         "        }\n"
+                         "    }\n"
+                         "}\n";  
+    check( CheckVariableScope, __LINE__, test9, "" );
+
 
 }
 

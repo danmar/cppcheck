@@ -513,6 +513,16 @@ void CheckUnsignedDivision()
             if ( findtoken(tokens, pattern_declvar) )
                 var2_sign = 's';
 
+            pattern_declvar[0] = "{";
+
+            pattern_declvar[2] = varname1;
+            if ( findtoken(tokens, pattern_declvar) )
+                var1_sign = 's';
+
+            pattern_declvar[2] = varname2;
+            if ( findtoken(tokens, pattern_declvar) )
+                var2_sign = 's';
+
             if ( var1_sign && var2_sign && var1_sign != var2_sign )
             {
                 // One of the operands are signed, the other is unsigned..
@@ -540,6 +550,42 @@ void CheckVariableScope()
     int indentlevel = 0;
     for ( TOKEN *tok = tokens; tok; tok = tok->next )
     {
+        // Skip class and struct declarations..
+        if ( strcmp(tok->str, "class") == 0 || strcmp(tok->str, "struct") == 0 )
+        {
+            for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
+            {    
+                if ( tok2->str[0] == '{' )
+                {
+                    int _indentlevel = 0;
+                    tok = tok2;
+                    for (tok = tok2; tok; tok = tok->next)
+                    {
+                        if ( tok->str[0] == '{' )
+                        {
+                            _indentlevel++;
+                        }
+                        if ( tok->str[0] == '}' )
+                        {
+                            _indentlevel--;
+                            if ( _indentlevel <= 0 )
+                            {
+                                tok = tok->next;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                if (strchr(",);", tok2->str[0]))
+                {
+                    break;
+                }
+            }
+            if ( ! tok )
+                break;
+        }
+
         if ( tok->str[0] == '{' )
         {
             indentlevel++;
@@ -587,6 +633,7 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
     // Check if the variable is used in this indentlevel..
     bool used = false, used1 = false;
     int indentlevel = 0;
+    bool for_or_while = false;
     while ( indentlevel >= 0 && tok )
     {
         if ( tok->str[0] == '{' )
@@ -599,6 +646,8 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
             indentlevel--;
             if ( indentlevel == 0 )
             {
+                if ( for_or_while && used )
+                    return;
                 used1 = used;
                 used = false;
             }
@@ -609,6 +658,14 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
             if ( indentlevel == 0 || used1 )
                 return;
             used = true;
+        }
+
+        else if ( indentlevel==0 )
+        {
+            if ( strcmp(tok->str,"for")==0 || strcmp(tok->str,"while")==0 )
+                for_or_while = true;
+            if ( tok->str[0] == ';' )
+                for_or_while = false;
         }
 
         tok = tok->next;
