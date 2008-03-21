@@ -289,6 +289,7 @@ static void buffer_overrun()
     // test5: constant array index
     // test6: calculated array index that is out of bounds
     // test7: unknown string length
+    // test8: struct member..
 
     const char test1[] = "void f()\n"
                          "{\n"
@@ -380,9 +381,23 @@ static void buffer_overrun()
     check( CheckBufferOverrun, __LINE__, test7, err7 );
 
 
+    const char test8[] = "struct ABC\n"
+                         "{\n"
+                         "    char str[10];\n"
+                         "};\n"
+                         "\n"
+                         "static void f()\n"
+                         "{\n"
+                         "    struct ABC abc;\n"
+                         "    abc.str[10] = 0;\n"
+                         "}\n";
+    check( CheckBufferOverrun, __LINE__, test8, "[test.cpp:9]: Buffer overrun\n" );
+
+
+
     // TODO
     /*
-    const char test8[] = "class Fred\n"
+    const char test[] = "class Fred\n"
                          "{\n"
                          "private:\n"
                          "    char str[10];\n"
@@ -393,8 +408,9 @@ static void buffer_overrun()
                          "{\n"
                          "    str[10] = 0;\n"
                          "}\n";
-    check( CheckBufferOverrun, __LINE__, test8, "[test.cpp:5]: Array index out of bounds\n" );
+    check( CheckBufferOverrun, __LINE__, test, "[test.cpp:5]: Array index out of bounds\n" );
     */
+
 }
 //---------------------------------------------------------------------------
 
