@@ -323,6 +323,29 @@ static void CheckBufferOverrun_LocalVariable()
 }
 //---------------------------------------------------------------------------
 
+static void CheckBufferOverrun_StructVariable_CheckVar( TOKEN *tok1, const char varname[], const char dot[], const char arrname[], const int arrsize )
+{
+    const char *badpattern[] = {"varname",".","arrname","[","","]",NULL};
+    badpattern[0] = varname;
+    badpattern[1] = dot;
+    badpattern[2] = arrname;
+    TOKEN *tok2 = findtoken( tok1, badpattern );
+    while (tok2)
+    {
+        if ( IsNumber( getstr(tok2, 4) ) )
+        {
+            if ( atoi( getstr(tok2, 4) ) >= arrsize )
+            {
+                std::ostringstream errmsg;
+                errmsg << FileLine(tok2) << ": Array index out of bounds";
+                ReportErr(errmsg.str());
+            }
+        }
+        tok2 = findtoken( tok2->next, badpattern );
+    }
+}
+//---------------------------------------------------------------------------
+
 static void CheckBufferOverrun_StructVariable()
 {
     const char *declstruct_pattern[] = {"struct","","{",0};
@@ -340,45 +363,33 @@ static void CheckBufferOverrun_StructVariable()
         {
             if ( tok2->str[0] == '}' )
                 break;
-            if ( strchr( ";{", tok2->str[0] ) )
-            {
-                const char *arrname = 0;
-                const char *arrsize = 0;
 
+            if ( strchr( ";{,(", tok2->str[0] ) )
+            {
                 // Declare array..
                 if ( match(tok2->next, "var var [ num ] ;") )
                 {
-                    arrname = getstr(tok2, 2);
-                    arrsize = getstr(tok2, 4);
-                }
+                    const char *arrname = getstr(tok2, 2);
+                    const char *arrsize = getstr(tok2, 4);
 
-                if ( ! arrname )
-                    continue;
-
-                for ( TOKEN *tok3 = tokens; tok3; tok3 = tok3->next )
-                {
-                    if ( strcmp(tok3->str, structname) )
-                        continue;
-                    if ( ! match( tok3->next, "var ;" ) )
-                        continue;
-                    const char *varname = tok3->next->str;
-
-                    const char *badpattern[] = {"varname",".","arrname","[","","]",NULL};
-                    badpattern[0] = varname;
-                    badpattern[2] = arrname;
-                    TOKEN *tok4 = findtoken( tok3, badpattern );
-                    while (tok4)
+                    for ( TOKEN *tok3 = tokens; tok3; tok3 = tok3->next )
                     {
-                        if ( IsNumber( getstr(tok4, 4) ) )
+                        if ( strcmp(tok3->str, structname) )
+                            continue;
+
+                        // Declare variable: Fred fred1;
+                        if ( match( tok3->next, "var ;" ) )
                         {
-                            if ( atoi( getstr(tok4,4) ) >= atoi(arrsize) )
-                            {
-                                std::ostringstream errmsg;
-                                errmsg << FileLine(tok4) << ": Buffer overrun";
-                                ReportErr(errmsg.str());
-                            }
+                            const char *varname = tok3->next->str;
+                            CheckBufferOverrun_StructVariable_CheckVar( tok3, varname, ".", arrname, atoi(arrsize) );
                         }
-                        tok4 = findtoken( tok4->next, badpattern );
+
+                        // Declare pointer: Fred *fred1
+                        else if ( match(tok3->next, "* var") && tok3->next->next->next && strchr(",);=", tok3->next->next->next->str[0]) )
+                        {
+                            const char *varname = tok3->next->next->str;
+                            CheckBufferOverrun_StructVariable_CheckVar( tok3, varname, "->", arrname, atoi(arrsize) );
+                        }
                     }
                 }
             }

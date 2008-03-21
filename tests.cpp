@@ -391,8 +391,35 @@ static void buffer_overrun()
                          "    struct ABC abc;\n"
                          "    abc.str[10] = 0;\n"
                          "}\n";
-    check( CheckBufferOverrun, __LINE__, test8, "[test.cpp:9]: Buffer overrun\n" );
+    check( CheckBufferOverrun, __LINE__, test8, "[test.cpp:9]: Array index out of bounds\n" );
 
+
+    const char test9[] = "const int SIZE = 10;\n"
+                         "\n"
+                         "struct ABC\n"
+                         "{\n"
+                         "    char str[SIZE];\n"
+                         "};\n"
+                         "\n"
+                         "static void f()\n"
+                         "{\n"
+                         "    struct ABC abc;\n"
+                         "    abc.str[SIZE] = 0;\n"
+                         "}\n";
+    check( CheckBufferOverrun, __LINE__, test9, "[test.cpp:11]: Array index out of bounds\n" );
+
+
+
+    const char test10[] = "struct ABC\n"
+                          "{\n"
+                          "    char str[10];\n"
+                          "};\n"
+                          "\n"
+                          "static void f(ABC *abc)\n"
+                          "{\n"
+                          "    abc->str[10] = 0;\n"
+                          "}\n";
+    check( CheckBufferOverrun, __LINE__, test10, "[test.cpp:8]: Array index out of bounds\n" );
 
 
     // TODO
@@ -725,6 +752,7 @@ static void division()
 
 static void unused_variable()
 {
+/* TODO
     // Unused private member variable...
     const char test1[] = "class Fred\n"
                          "{\n"
@@ -737,7 +765,7 @@ static void unused_variable()
                          "{\n"
                          "    i = 0;\n"
                          "}\n";
-
+*/
 
     // Scope of variable..
     const char test2[] = "void f()\n"
