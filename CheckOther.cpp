@@ -16,7 +16,7 @@
 
 void WarningOldStylePointerCast()
 {
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         // Old style pointer casting..
         if (!match(tok, "( type * ) var"))
@@ -43,7 +43,7 @@ void WarningOldStylePointerCast()
 
 void WarningIsDigit()
 {
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         bool err = false;
         err |= match(tok, "var >= '0' && var <= '9'");
@@ -68,7 +68,7 @@ void WarningIsDigit()
 
 void WarningIsAlpha()
 {
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         bool err = false;
 
@@ -102,13 +102,13 @@ void WarningRedundantCode()
 {
 
     // if (p) delete p
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (strcmp(tok->str,"if"))
             continue;
 
         const char *varname1 = NULL;
-        TOKEN *tok2 = NULL;
+        const TOKEN *tok2 = NULL;
 
         if (match(tok,"if ( var )"))
         {
@@ -165,12 +165,12 @@ void WarningIf()
 {
 
     // Search for 'if (condition);'
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (strcmp(tok->str,"if")==0)
         {
             int parlevel = 0;
-            for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
+            for (const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
             {
                 if (tok2->str[0]=='(')
                     parlevel++;
@@ -194,7 +194,7 @@ void WarningIf()
     }
 
     // Search for 'a=b; if (a==b)'
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         // Begin statement?
         if ( ! strchr(";{}", tok->str[0]) )
@@ -254,7 +254,7 @@ void WarningIf()
 
 void InvalidFunctionUsage()
 {
-    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
         if ( strcmp(tok->str, "strtol") && strcmp(tok->str, "strtoul") )
             continue;
@@ -262,7 +262,7 @@ void InvalidFunctionUsage()
         // Locate the third parameter of the function call..
         int parlevel = 0;
         int param = 1;
-        for ( TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
+        for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
         {
             if ( tok2->str[0] == '(' )
                 parlevel++;
@@ -298,12 +298,12 @@ void InvalidFunctionUsage()
 // Dangerous usage of 'strtok'
 //---------------------------------------------------------------------------
 
-static TOKEN *GetFunction( TOKEN *content )
+static const TOKEN *GetFunction( const TOKEN *content )
 {
-    TOKEN *func = NULL;
+    const TOKEN *func = NULL;
 
     int indentlevel = 0;
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if ( tok->str[0] == '{' )
             indentlevel++;
@@ -338,15 +338,15 @@ static TOKEN *GetFunction( TOKEN *content )
 
 void WarningStrTok()
 {
-    std::list<TOKEN *> funclist;
+    std::list<const TOKEN *> funclist;
 
     // Which functions contain the 'strtok'?
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (strcmp(tok->str,"strtok")!=0)
             continue;
 
-        TOKEN *func = GetFunction(tok);
+        const TOKEN *func = GetFunction(tok);
         if (!func)
             continue;
 
@@ -358,13 +358,13 @@ void WarningStrTok()
         return;
 
     // Take closer look at the strtok usage.
-    std::list<TOKEN *>::const_iterator it1;
+    std::list<const TOKEN *>::const_iterator it1;
     for (it1 = funclist.begin(); it1 != funclist.end(); it1++)
     {
         // Search this function to check that it doesn't call any other of
         // the functions in the funclist.
         int indentlevel = 0;
-        for ( TOKEN *tok = *it1; tok; tok = tok->next )
+        for ( const TOKEN *tok = *it1; tok; tok = tok->next )
         {
             if ( tok->str[0] == '{' )
                 indentlevel++;
@@ -383,7 +383,7 @@ void WarningStrTok()
                     continue;
 
                 // Check if function name is in funclist..
-                std::list<TOKEN *>::const_iterator it2;
+                std::list<const TOKEN *>::const_iterator it2;
                 for (it2 = funclist.begin(); it2 != funclist.end(); it2++)
                 {
                     if ( strcmp( tok->str, (*it2)->str ) )
@@ -407,7 +407,7 @@ void WarningStrTok()
 
 void CheckIfAssignment()
 {
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (match(tok,"if ( a = b )"))
         {
@@ -427,14 +427,14 @@ void CheckIfAssignment()
 
 void CheckCaseWithoutBreak()
 {
-    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
         if ( strcmp(tok->str,"case")!=0 )
             continue;
 
         // Found a case, check that there's a break..
         int indentlevel = 0;
-        for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
+        for (const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
         {
             if (tok2->str[0] == '{')
                 indentlevel++;
@@ -548,13 +548,13 @@ void CheckVariableScope()
     // Walk through all tokens..
     bool func = false;
     int indentlevel = 0;
-    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
         // Skip class and struct declarations..
         if ( strcmp(tok->str, "class") == 0 || strcmp(tok->str, "struct") == 0 )
         {
-            for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
-            {    
+            for (const TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
+            {
                 if ( tok2->str[0] == '{' )
                 {
                     int _indentlevel = 0;
@@ -603,7 +603,7 @@ void CheckVariableScope()
         if ( indentlevel > 0 && func && strchr("{};", tok->str[0]) )
         {
             // First token of statement..
-            TOKEN *tok1 = tok->next;
+            const TOKEN *tok1 = tok->next;
 
             if (strcmp(tok1->str,"return")==0 ||
                 strcmp(tok1->str,"delete")==0 ||

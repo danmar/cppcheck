@@ -50,12 +50,12 @@ TOKEN *findfunction(TOKEN *tok)
 
 extern bool ShowAll;
 
-static void _DynamicDataCheck(TOKEN *ftok, TOKEN *tok)
+static void _DynamicDataCheck(const TOKEN *ftok, const TOKEN *tok)
 {
     const char *var2 = tok->str;
     bool decl = false;
     unsigned int Var2Count = 0;
-    for ( TOKEN *tok2 = ftok; tok2; tok2 = tok2->next )
+    for ( const TOKEN *tok2 = ftok; tok2; tok2 = tok2->next )
     {
         if (tok2 == tok)
             break;
@@ -109,10 +109,10 @@ static void _DynamicDataCheck(TOKEN *ftok, TOKEN *tok)
 
 static void _DynamicData()
 {
-    for (TOKEN *ftok = findfunction(tokens); ftok; ftok = findfunction(ftok->next))
+    for (const TOKEN *ftok = findfunction(tokens); ftok; ftok = findfunction(ftok->next))
     {
         int indentlevel = 0;
-        for (TOKEN *tok = ftok; tok; tok = tok->next)
+        for (const TOKEN *tok = ftok; tok; tok = tok->next)
         {
             if (tok->str[0] == '{')
                 indentlevel++;
@@ -132,7 +132,7 @@ static void _DynamicData()
 
             if (match(tok,"sprintf ( var"))
             {
-                for ( TOKEN *tok2 = gettok(tok,3); tok2; tok2 = tok2->next )
+                for ( const TOKEN *tok2 = gettok(tok,3); tok2; tok2 = tok2->next )
                 {
                     if (tok2->str[0] == ')')
                         break;
@@ -161,7 +161,7 @@ static void CheckBufferOverrun_LocalVariable()
     _DynamicData();
 
     int indentlevel = 0;
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (tok->str[0]=='{')
             indentlevel++;
@@ -180,7 +180,7 @@ static void CheckBufferOverrun_LocalVariable()
                 if (total_size == 0)
                     continue;
                 int _indentlevel = indentlevel;
-                for (TOKEN *tok2 = gettok(tok,5); tok2; tok2 = tok2->next)
+                for (const TOKEN *tok2 = gettok(tok,5); tok2; tok2 = tok2->next)
                 {
                     if (tok2->str[0]=='{')
                     {
@@ -265,7 +265,7 @@ static void CheckBufferOverrun_LocalVariable()
                         }
                         if (strindex && value>(int)size)
                         {
-                            TOKEN *tok3 = tok2;
+                            const TOKEN *tok3 = tok2;
                             while (tok3 && strcmp(tok3->str,")"))
                                 tok3 = tok3->next;
                             if (!tok3)
@@ -323,13 +323,13 @@ static void CheckBufferOverrun_LocalVariable()
 }
 //---------------------------------------------------------------------------
 
-static void CheckBufferOverrun_StructVariable_CheckVar( TOKEN *tok1, const char varname[], const char dot[], const char arrname[], const int arrsize )
+static void CheckBufferOverrun_StructVariable_CheckVar( const TOKEN *tok1, const char varname[], const char dot[], const char arrname[], const int arrsize )
 {
     const char *badpattern[] = {"varname",".","arrname","[","","]",NULL};
     badpattern[0] = varname;
     badpattern[1] = dot;
     badpattern[2] = arrname;
-    TOKEN *tok2 = findtoken( tok1, badpattern );
+    const TOKEN *tok2 = findtoken( tok1, badpattern );
     while (tok2)
     {
         if ( IsNumber( getstr(tok2, 4) ) )
@@ -349,7 +349,7 @@ static void CheckBufferOverrun_StructVariable_CheckVar( TOKEN *tok1, const char 
 static void CheckBufferOverrun_StructVariable()
 {
     const char *declstruct_pattern[] = {"struct","","{",0};
-    for ( TOKEN * tok = findtoken( tokens, declstruct_pattern );
+    for ( const TOKEN * tok = findtoken( tokens, declstruct_pattern );
           tok;
           tok = findtoken( tok->next, declstruct_pattern ) )
     {
@@ -372,7 +372,7 @@ static void CheckBufferOverrun_StructVariable()
                     const char *arrname = getstr(tok2, 2);
                     const char *arrsize = getstr(tok2, 4);
 
-                    for ( TOKEN *tok3 = tokens; tok3; tok3 = tok3->next )
+                    for ( const TOKEN *tok3 = tokens; tok3; tok3 = tok3->next )
                     {
                         if ( strcmp(tok3->str, structname) )
                             continue;
@@ -418,7 +418,7 @@ void CheckBufferOverrun()
 
 void WarningDangerousFunctions()
 {
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (match(tok, "gets ("))
         {

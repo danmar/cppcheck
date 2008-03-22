@@ -28,6 +28,18 @@ static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[]);
 
 static void DeleteNextToken(TOKEN *tok);
 
+static TOKEN *_gettok(TOKEN *tok, int index)
+{
+    while (tok && index>0)
+    {
+        tok = tok->next;
+        index--;
+    }
+    return tok;
+}
+//---------------------------------------------------------------------------
+
+
 //---------------------------------------------------------------------------
 
 std::vector<std::string> Files;
@@ -560,7 +572,7 @@ void SimplifyTokenList()
             const char *sym = getstr(tok,2);
             const char *num = getstr(tok,4);
 
-            for (TOKEN *tok2 = gettok(tok,6); tok2; tok2 = tok2->next)
+            for (TOKEN *tok2 = _gettok(tok,6); tok2; tok2 = tok2->next)
             {
                 if (strcmp(tok2->str,sym) == 0)
                 {
@@ -750,7 +762,7 @@ void SimplifyTokenList()
 
         // Replace 'sizeof(var)' with number
         int indentlevel = 0;
-        for ( TOKEN *tok2 = gettok(tok,5); tok2; tok2 = tok2->next )
+        for ( TOKEN *tok2 = _gettok(tok,5); tok2; tok2 = tok2->next )
         {
             if (tok2->str[0] == '{')
             {
@@ -831,7 +843,7 @@ void SimplifyTokenList()
                 {
                     DeleteNextToken(tok);
                 }
-                
+
                 done = false;
             }
         }
@@ -885,56 +897,56 @@ void SimplifyTokenList()
 
         if ( match(type0, "type var ,") )
         {
-            tok2 = gettok(type0, 2);    // The ',' token
+            tok2 = _gettok(type0, 2);    // The ',' token
             typelen = 1;
         }
 
         else if ( match(type0, "type * var ,") )
         {
-            tok2 = gettok(type0, 3);    // The ',' token
+            tok2 = _gettok(type0, 3);    // The ',' token
             typelen = 1;
         }
 
         else if ( match(type0, "type var [ num ] ,") )
         {
-            tok2 = gettok(type0, 5);    // The ',' token
+            tok2 = _gettok(type0, 5);    // The ',' token
             typelen = 1;
         }
 
         else if ( match(type0, "type * var [ num ] ,") )
         {
-            tok2 = gettok(type0, 6);    // The ',' token
+            tok2 = _gettok(type0, 6);    // The ',' token
             typelen = 1;
         }
 
         else if ( match(type0, "struct type var ,") )
         {
-            tok2 = gettok(type0, 3);
+            tok2 = _gettok(type0, 3);
             typelen = 2;
         }
 
         else if ( match(type0, "struct type * var ,") )
         {
-            tok2 = gettok(type0, 4);
+            tok2 = _gettok(type0, 4);
             typelen = 2;
         }
 
 
         else if ( match(type0, "type var =") )
         {
-            tok2 = gettok(type0, 2);
+            tok2 = _gettok(type0, 2);
             typelen = 1;
         }
 
         else if ( match(type0, "type * var =") )
         {
-            tok2 = gettok(type0, 3);
+            tok2 = _gettok(type0, 3);
             typelen = 1;
         }
 
         else if ( match(type0, "struct type * var =") )
         {
-            tok2 = gettok(type0, 4);
+            tok2 = _gettok(type0, 4);
             typelen = 2;
         }
 
@@ -969,7 +981,7 @@ void SimplifyTokenList()
                     else if ( parlevel==0 && strchr(";,",tok2->str[0]) )
                     {
                         // "type var ="   =>   "type var; var ="
-                        TOKEN *VarTok = gettok(type0,typelen);
+                        TOKEN *VarTok = _gettok(type0,typelen);
                         if (VarTok->str[0]=='*')
                             VarTok = VarTok->next;
                         InsertTokens(eq, VarTok, 2);
@@ -1008,12 +1020,12 @@ void SimplifyTokenList()
 // Helper functions for handling the tokens list
 //---------------------------------------------------------------------------
 
-TOKEN *findtoken(TOKEN *tok1, const char *tokenstr[])
+const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[])
 {
-    for (TOKEN *ret = tok1; ret; ret = ret->next)
+    for (const TOKEN *ret = tok1; ret; ret = ret->next)
     {
         unsigned int i = 0;
-        TOKEN *tok = ret;
+        const TOKEN *tok = ret;
         while (tokenstr[i])
         {
             if (!tok)
@@ -1073,7 +1085,7 @@ bool match(const TOKEN *tok, const char pattern[])
 }
 //---------------------------------------------------------------------------
 
-TOKEN *gettok(TOKEN *tok, int index)
+const TOKEN *gettok(const TOKEN *tok, int index)
 {
     while (tok && index>0)
     {
@@ -1084,7 +1096,7 @@ TOKEN *gettok(TOKEN *tok, int index)
 }
 //---------------------------------------------------------------------------
 
-const char *getstr(TOKEN *tok, int index)
+const char *getstr(const TOKEN *tok, int index)
 {
     tok = gettok(tok, index);
     return tok ? tok->str : "";

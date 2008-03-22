@@ -28,12 +28,12 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
     // Locate class..
     const char *pattern[] = {"class","","{",0};
     pattern[1] = classname;
-    TOKEN *tok1 = findtoken(tokens, pattern);
+    const TOKEN *tok1 = findtoken(tokens, pattern);
 
     // Get variable list..
     struct VAR *varlist = NULL;
     unsigned int indentlevel = 0;
-    for (TOKEN *tok = tok1; tok; tok = tok->next)
+    for (const TOKEN *tok = tok1; tok; tok = tok->next)
     {
         if (!tok->next)
             break;
@@ -50,7 +50,7 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
 
         if (indentlevel==1 && (strchr(";{}", tok->str[0]) || (tok->str[0]!=':' && strchr(tok->str, ':'))))
         {
-            TOKEN *next = tok->next;
+            const TOKEN *next = tok->next;
 
             const char *varname = 0;
 
@@ -90,7 +90,7 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
 }
 //---------------------------------------------------------------------------
 
-static TOKEN * FindClassFunction( TOKEN *_tokens, const char classname[], const char funcname[], unsigned int &indentlevel )
+static const TOKEN * FindClassFunction( const TOKEN *_tokens, const char classname[], const char funcname[], unsigned int &indentlevel )
 {
     while ( _tokens )
     {
@@ -105,7 +105,7 @@ static TOKEN * FindClassFunction( TOKEN *_tokens, const char classname[], const 
                 // Member function is implemented in the class declaration..
                 if ( match( _tokens, "var (" ) && strcmp(_tokens->str,funcname) == 0 )
                 {
-                    TOKEN *tok2 = _tokens;
+                    const TOKEN *tok2 = _tokens;
                     while ( tok2 && tok2->str[0] != '{' && tok2->str[0] != ';' )
                         tok2 = tok2->next;
                     if ( tok2 && tok2->str[0] == '{' )
@@ -135,7 +135,7 @@ static TOKEN * FindClassFunction( TOKEN *_tokens, const char classname[], const 
 }
 //---------------------------------------------------------------------------
 
-static void ClassChecking_VarList_Initialize(TOKEN *ftok, struct VAR *varlist, const char classname[])
+static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varlist, const char classname[])
 {
     bool BeginLine = false;
     bool Assign = false;
@@ -192,7 +192,7 @@ static void ClassChecking_VarList_Initialize(TOKEN *ftok, struct VAR *varlist, c
             if (ftok->next->str[0] == '(')
             {
                 unsigned int i = 0;
-                TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
+                const TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
                 ClassChecking_VarList_Initialize(ftok2, varlist, classname);
             }
 
@@ -246,7 +246,7 @@ void CheckConstructors()
 {
     // Locate class
     const char *pattern_classname[] = {"class","","{",NULL};
-    TOKEN *tok1 = findtoken(tokens, pattern_classname);
+    const TOKEN *tok1 = findtoken(tokens, pattern_classname);
     while (tok1)
     {
         const char *classname = tok1->next->str;
@@ -259,7 +259,7 @@ void CheckConstructors()
         // Are there a class constructor?
         const char *constructor_pattern[] = {"","clKalle","(",NULL};
         constructor_pattern[1] = classname;
-        TOKEN *constructor_token = findtoken( tokens, constructor_pattern );
+        const TOKEN *constructor_token = findtoken( tokens, constructor_pattern );
         while ( constructor_token && constructor_token->str[0] == '~' )
             constructor_token = findtoken( constructor_token->next, constructor_pattern );
         if ( ! constructor_token )
@@ -345,7 +345,7 @@ void CheckUnusedPrivateFunctions()
 {
     // Locate some class
     const char *pattern_class[] = {"class","","{",NULL};
-    for (TOKEN *tok1 = findtoken(tokens, pattern_class); tok1; tok1 = findtoken(tok1->next, pattern_class))
+    for (const TOKEN *tok1 = findtoken(tokens, pattern_class); tok1; tok1 = findtoken(tok1->next, pattern_class))
     {
         const char *classname = tok1->next->str;
 
@@ -361,7 +361,7 @@ void CheckUnusedPrivateFunctions()
         FuncList.clear();
         bool priv = false;
         unsigned int indent_level = 0;
-        for (TOKEN *tok = tok1; tok; tok = tok->next)
+        for (const TOKEN *tok = tok1; tok; tok = tok->next)
         {
             if (match(tok,"friend class"))
             {
@@ -401,7 +401,7 @@ void CheckUnusedPrivateFunctions()
         const char *pattern_function[] = {"","::",NULL};
         pattern_function[0] = classname;
         bool HasFuncImpl = false;
-        for (TOKEN *ftok = findtoken(tokens, pattern_function); ftok; ftok = findtoken(ftok->next,pattern_function))
+        for (const TOKEN *ftok = findtoken(tokens, pattern_function); ftok; ftok = findtoken(ftok->next,pattern_function))
         {
             int numpar = 0;
             while (ftok && ftok->str[0]!=';' && ftok->str[0]!='{')
@@ -474,7 +474,7 @@ void CheckUnusedPrivateFunctions()
 void CheckMemset()
 {
     // Locate all 'memset' tokens..
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         if (strcmp(tok->str,"memset")!=0)
             continue;
@@ -507,7 +507,7 @@ void CheckMemset()
         // Warn if type is a struct that contains any std::*
         const char *pattern2[] = {"struct","","{",NULL};
         pattern2[1] = type;
-        for (TOKEN *tstruct = findtoken(tokens, pattern2); tstruct; tstruct = tstruct->next)
+        for (const TOKEN *tstruct = findtoken(tokens, pattern2); tstruct; tstruct = tstruct->next)
         {
             if (tstruct->str[0] == '}')
                 break;
@@ -533,7 +533,7 @@ void CheckMemset()
 void CheckOperatorEq1()
 {
     const char *pattern[] = {"void", "operator", "=", "(", NULL};
-    if (TOKEN *tok = findtoken(tokens,pattern))
+    if (const TOKEN *tok = findtoken(tokens,pattern))
     {
         std::ostringstream ostr;
         ostr << FileLine(tok) << ": 'operator=' should return something";
