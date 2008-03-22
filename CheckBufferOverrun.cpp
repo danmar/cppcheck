@@ -8,8 +8,10 @@
 #include <stdlib.h>     // <- strtoul
 
 //---------------------------------------------------------------------------
+extern bool ShowAll;
+//---------------------------------------------------------------------------
 
-TOKEN *findfunction(TOKEN *tok)
+static const TOKEN *findfunction(const TOKEN *tok)
 {
     int indentlevel = 0, parlevel = 0;
     for (; tok; tok = tok->next)
@@ -28,7 +30,7 @@ TOKEN *findfunction(TOKEN *tok)
 
         if (indentlevel==0 && parlevel==0 && IsName(tok->str) && tok->next->str[0]=='(')
         {
-            for (TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
+            for (const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
             {
                 if (tok2->str[0] == ')' && tok2->next)
                 {
@@ -43,12 +45,9 @@ TOKEN *findfunction(TOKEN *tok)
     return 0;
 }
 
-
 //---------------------------------------------------------------------------
 // Writing dynamic data in buffer without bounds checking
 //---------------------------------------------------------------------------
-
-extern bool ShowAll;
 
 static void _DynamicDataCheck(const TOKEN *ftok, const TOKEN *tok)
 {
@@ -107,7 +106,7 @@ static void _DynamicDataCheck(const TOKEN *ftok, const TOKEN *tok)
 }
 
 
-static void _DynamicData()
+static void CheckBufferOverrun_DynamicData()
 {
     for (const TOKEN *ftok = findfunction(tokens); ftok; ftok = findfunction(ftok->next))
     {
@@ -158,8 +157,6 @@ static void _DynamicData()
 
 static void CheckBufferOverrun_LocalVariable()
 {
-    _DynamicData();
-
     int indentlevel = 0;
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -400,6 +397,7 @@ static void CheckBufferOverrun_StructVariable()
 
 void CheckBufferOverrun()
 {
+    CheckBufferOverrun_DynamicData();
     CheckBufferOverrun_LocalVariable();
     CheckBufferOverrun_StructVariable();
 }

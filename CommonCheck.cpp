@@ -21,7 +21,7 @@ std::string FileLine(const TOKEN *tok)
 
 std::list<std::string> ErrorList;
 
-void ReportErr(const std::string errmsg)
+void ReportErr(const std::string &errmsg)
 {
     if ( OnlyReportUniqueErrors )
     {

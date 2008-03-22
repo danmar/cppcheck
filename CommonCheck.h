@@ -12,7 +12,7 @@ std::string FileLine(const TOKEN *tok);
                                    
 extern bool OnlyReportUniqueErrors;
 
-void ReportErr(const std::string errmsg);
+void ReportErr(const std::string &errmsg);
 extern std::ostringstream errout;
 
 
