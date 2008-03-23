@@ -135,9 +135,21 @@ static const TOKEN * FindClassFunction( const TOKEN *_tokens, const char classna
 }
 //---------------------------------------------------------------------------
 
+static void InitVar(struct VAR *varlist, const char varname[])
+{
+    for (struct VAR *var = varlist; var; var = var->next)
+    {
+        if ( strcmp(var->name, varname) == 0 )
+        {
+            var->init = true;
+            break;
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
 static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varlist, const char classname[])
 {
-    bool BeginLine = false;
     bool Assign = false;
     unsigned int indentlevel = 0;
     for (; ftok; ftok = ftok->next)
@@ -149,17 +161,9 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
         // clKalle::clKalle() : var(value) { }
         if (indentlevel==0)
         {
-            if (Assign &&
-                IsName(ftok->str) &&
-                ftok->next->str[0]=='(')
+            if (Assign && match(ftok, "var ("))
             {
-                for (struct VAR *var = varlist; var; var = var->next)
-                {
-                    if (strcmp(var->name,ftok->str))
-                        continue;
-                    var->init = true;
-                    break;
-                }
+                InitVar( varlist, ftok->str );
             }
 
             Assign |= (ftok->str[0] == ':');
@@ -179,8 +183,10 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             indentlevel--;
         }
 
-        if (BeginLine && indentlevel>=1 && IsName(ftok->str))
+        if (strchr("{};", ftok->str[0]) && indentlevel>=1 && IsName(ftok->next->str))
         {
+            ftok = ftok->next;
+
             // Clearing all variables..
             if (match(ftok,"memset ( this ,"))
             {
@@ -189,7 +195,7 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             }
 
             // Calling member function?
-            if (ftok->next->str[0] == '(')
+            else if (match(ftok, "var ("))
             {
                 unsigned int i = 0;
                 const TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
@@ -197,39 +203,17 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             }
 
             // Assignment of member variable?
-            if (strcmp(ftok->next->str, "=") == 0)
+            else if (match(ftok, "var ="))
             {
-                for (struct VAR *var = varlist; var; var = var->next)
-                {
-                    if (strcmp(var->name,ftok->str))
-                        continue;
-                    var->init = true;
-                    break;
-                }
+                InitVar( varlist, ftok->str );
             }
 
-            // Calling member function..
-            if (strcmp(ftok->next->str,".")==0 || strcmp(ftok->next->str,"->")==0)
+            // The functions 'clear' and 'Clear' are supposed to initialize variable.
+            if (match(ftok,"var . clear (") || match(ftok,"var . Clear ("))
             {
-                // The functions 'clear' and 'Clear' are supposed to initialize variable.
-#ifdef __linux__
-                if( strcasecmp( ftok->next->next->str,"clear") == 0)
-#else
-                if (stricmp(ftok->next->next->str,"clear") == 0)
-#endif
-                {
-                    for (struct VAR *var = varlist; var; var = var->next)
-                    {
-                        if (strcmp(var->name,ftok->str))
-                            continue;
-                        var->init = true;
-                        break;
-                    }
-                }
+                InitVar( varlist, ftok->str );
             }
         }
-
-        BeginLine = (strchr("{};", ftok->str[0]));
     }
 }
 

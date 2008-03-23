@@ -192,10 +192,7 @@ static void CheckBufferOverrun_LocalVariable()
                     else
                     {
                         // Array index..
-                        if (strcmp(tok2->str,varname)==0 &&
-                            strcmp(getstr(tok2,1),"[")==0 &&
-                            IsNumber(getstr(tok2,2)) &&
-                            strcmp(getstr(tok2,3),"]")==0 )
+                        if (strcmp(tok2->str,varname)==0 && match(tok2->next,"[ num ]"))
                         {
                             const char *str = getstr(tok2, 2);
                             if (strtoul(str, NULL, 10) >= size)
@@ -320,11 +317,10 @@ static void CheckBufferOverrun_LocalVariable()
 }
 //---------------------------------------------------------------------------
 
-static void CheckBufferOverrun_StructVariable_CheckVar( const TOKEN *tok1, const char varname[], const char dot[], const char arrname[], const int arrsize )
+static void CheckBufferOverrun_StructVariable_CheckVar( const TOKEN *tok1, const char varname[], const char arrname[], const int arrsize )
 {
     const char *badpattern[] = {"varname",".","arrname","[","","]",NULL};
     badpattern[0] = varname;
-    badpattern[1] = dot;
     badpattern[2] = arrname;
     const TOKEN *tok2 = findtoken( tok1, badpattern );
     while (tok2)
@@ -378,14 +374,14 @@ static void CheckBufferOverrun_StructVariable()
                         if ( match( tok3->next, "var ;" ) )
                         {
                             const char *varname = tok3->next->str;
-                            CheckBufferOverrun_StructVariable_CheckVar( tok3, varname, ".", arrname, atoi(arrsize) );
+                            CheckBufferOverrun_StructVariable_CheckVar( tok3, varname, arrname, atoi(arrsize) );
                         }
 
                         // Declare pointer: Fred *fred1
                         else if ( match(tok3->next, "* var") && tok3->next->next->next && strchr(",);=", tok3->next->next->next->str[0]) )
                         {
                             const char *varname = tok3->next->next->str;
-                            CheckBufferOverrun_StructVariable_CheckVar( tok3, varname, "->", arrname, atoi(arrsize) );
+                            CheckBufferOverrun_StructVariable_CheckVar( tok3, varname, arrname, atoi(arrsize) );
                         }
                     }
                 }

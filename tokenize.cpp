@@ -538,6 +538,15 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
         combine_2tokens(tok, "protected", ":");
         combine_2tokens(tok, "public", ":");
     }
+
+    // Replace "->" with "."
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( strcmp(tok->str, "->") == 0 )
+        {
+            strcpy( tok->str, "." );
+        }
+    }
 }
 //---------------------------------------------------------------------------
 
