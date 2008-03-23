@@ -155,6 +155,172 @@ static void CheckBufferOverrun_DynamicData()
 // Buffer overrun..
 //---------------------------------------------------------------------------
 
+static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const char varname[], const int size, const int total_size )
+{
+    int indentlevel = 0;
+    for ( ; tok; tok = tok->next )
+    {
+        if (tok->str[0]=='{')
+        {
+            indentlevel++;
+            continue;
+        }
+
+        if (tok->str[0]=='}')
+        {
+            indentlevel--;
+            if ( indentlevel < 0 )
+                return;
+            continue;
+        }
+
+
+        // Array index..
+        if (strcmp(tok->str,varname)==0 && match(tok->next,"[ num ]"))
+        {
+            const char *str = getstr(tok, 2);
+            if (strtol(str, NULL, 10) >= size)
+            {
+                std::ostringstream ostr;
+                ostr << FileLine(tok) << ": Array index out of bounds";
+                ReportErr(ostr.str());
+            }
+            continue;
+        }
+
+
+        // memset, memcmp, memcpy, strncpy, fgets..
+        if (strcmp(tok->str,"memset")==0 ||
+            strcmp(tok->str,"memcpy")==0 ||
+            strcmp(tok->str,"memmove")==0 ||
+            strcmp(tok->str,"memcmp")==0 ||
+            strcmp(tok->str,"strncpy")==0 ||
+            strcmp(tok->str,"fgets")==0 )
+        {
+            if (match(tok->next,"( var , num , num )") ||
+                match(tok->next,"( var , var , num )") )
+            {
+                const char *var1 = getstr(tok, 2);
+                const char *var2 = getstr(tok, 4);
+                const char *num  = getstr(tok, 6);
+
+                if ( atoi(num)>total_size &&
+                     (strcmp(var1,varname)==0 ||
+                      strcmp(var2,varname)==0 ) )
+                {
+                    std::ostringstream ostr;
+                    ostr << FileLine(tok) << ": Buffer overrun";
+                    ReportErr(ostr.str());
+                }
+            }
+            continue;
+        }
+
+
+        // Loop..
+        if ( match(tok, "for ( var = 0 ;") )
+        {
+            const char *strindex = 0;
+            int value = 0;
+
+            if (match(tok,"for ( var = 0 ; var < num ; var + + )") ||
+                match(tok,"for ( var = 0 ; var < num ; + + var )") )
+            {
+                strindex = getstr(tok,2);
+                value = atoi(getstr(tok,8));
+            }
+            else if (match(tok,"for ( var = 0 ; var <= num ; var + + )") ||
+                     match(tok,"for ( var = 0 ; var <= num ; + + var )") )
+            {
+                strindex = getstr(tok,2);
+                value = 1 + atoi(getstr(tok,8));
+            }
+
+            if (strindex && value>(int)size)
+            {
+                const TOKEN *tok2 = tok;
+                while (tok2 && strcmp(tok2->str,")"))
+                    tok2 = tok2->next;
+                if (!tok2)
+                    break;
+                tok2 = tok2->next;
+                if (tok2->str[0] == '{')
+                    tok2 = tok2->next;
+                while (tok2 && !strchr(";}",tok2->str[0]))
+                {
+                    if ( match( tok2, "var [ var ]" ) &&
+                         strcmp(tok2->str,varname)==0 &&
+                         strcmp(getstr(tok2,2),strindex)==0 )
+                    {
+                        std::ostringstream ostr;
+                        ostr << FileLine(tok2) << ": Buffer overrun";
+                        ReportErr(ostr.str());
+                        break;
+                    }
+
+                    tok2 = tok2->next;
+                }
+            }
+            continue;
+        }
+
+
+        // Writing data into array..
+        if (match(tok,"strcpy ( var , "))
+        {
+            int len = 0;
+            if (strcmp(getstr(tok, 2), varname) == 0)
+            {
+                const char *str = getstr(tok, 4);
+                if (str[0] == '\"')
+                {
+                    while (*str)
+                    {
+                        if (*str=='\\')
+                            str++;
+                        str++;
+                        len++;
+                    }
+                }
+            }
+            if (len > 2 && len >= (int)size + 2)
+            {
+                std::ostringstream ostr;
+                ostr << FileLine(tok) << ": Buffer overrun";
+                ReportErr(ostr.str());
+            }
+            continue;
+        }
+
+
+        // Function call..
+        // Todo: This is just experimental. It must be more versatile..
+        if ( match( tok, "var ( var )" ) && strcmp(varname, getstr(tok,2)) == 0 )
+        {
+            // Find function..
+            const TOKEN *ftok = FindFunction( tok->str );
+            if ( ! ftok )
+                continue;
+
+            // Parse head of function..
+            while ( ftok )
+            {
+                if ( match( ftok, "var ) {" ) )
+                {
+                    CheckBufferOverrun_LocalVariable_CheckScope( gettok(ftok,3), ftok->str, size, total_size );
+                    break;
+                }
+
+                if ( ftok->str[0] == '{' )
+                    break;
+
+                ftok = ftok->next;
+            }
+        }
+    }
+}
+
+
 static void CheckBufferOverrun_LocalVariable()
 {
     int indentlevel = 0;
@@ -166,152 +332,15 @@ static void CheckBufferOverrun_LocalVariable()
         else if (tok->str[0]=='}')
             indentlevel--;
 
-        else if (indentlevel > 0)
+        else if (indentlevel > 0 && match(tok, "type var [ num ] ;"))
         {
-            // Declaring array..
-            if (match(tok, "type var [ num ] ;"))
-            {
-                const char *varname = getstr(tok,1);
-                unsigned int size = strtoul(getstr(tok,3), NULL, 10);
-                int total_size = size * SizeOfType(tok->str);
-                if (total_size == 0)
-                    continue;
-                int _indentlevel = indentlevel;
-                for (const TOKEN *tok2 = gettok(tok,5); tok2; tok2 = tok2->next)
-                {
-                    if (tok2->str[0]=='{')
-                    {
-                        _indentlevel++;
-                    }
-                    else if (tok2->str[0]=='}')
-                    {
-                        _indentlevel--;
-                        if (_indentlevel < indentlevel)
-                            break;
-                    }
-                    else
-                    {
-                        // Array index..
-                        if (strcmp(tok2->str,varname)==0 && match(tok2->next,"[ num ]"))
-                        {
-                            const char *str = getstr(tok2, 2);
-                            if (strtoul(str, NULL, 10) >= size)
-                            {
-                                std::ostringstream ostr;
-                                ostr << FileLine(tok2) << ": Array index out of bounds";
-                                ReportErr(ostr.str());
-                            }
-                        }
+            const char *varname = getstr(tok,1);
+            unsigned int size = strtoul(getstr(tok,3), NULL, 10);
+            int total_size = size * SizeOfType(tok->str);
+            if (total_size == 0)
+                continue;
 
-
-                        // memset, memcmp, memcpy, strncpy, fgets..
-                        if (strcmp(tok2->str,"memset")==0 ||
-                            strcmp(tok2->str,"memcpy")==0 ||
-                            strcmp(tok2->str,"memmove")==0 ||
-                            strcmp(tok2->str,"memcmp")==0 ||
-                            strcmp(tok2->str,"strncpy")==0 ||
-                            strcmp(tok2->str,"fgets")==0 )
-                        {
-                            if (match(tok2->next,"( var , num , num )") ||
-                                match(tok2->next,"( var , var , num )") )
-                            {
-                                const char *var1 = getstr(tok2, 2);
-                                const char *var2 = getstr(tok2, 4);
-                                const char *num  = getstr(tok2, 6);
-
-                                if ( atoi(num)>total_size &&
-                                    (strcmp(var1,varname)==0 ||
-                                     strcmp(var2,varname)==0 ) )
-                                {
-                                    std::ostringstream ostr;
-                                    ostr << FileLine(tok2) << ": Buffer overrun";
-                                    ReportErr(ostr.str());
-                                }
-                            }
-                        }
-
-
-                        // Loop..
-                        const char *strindex = 0;
-                        int value = 0;
-                        if ( match(tok2, "for ( var = 0 ;") )
-                        {
-                            if (match(tok2,"for ( var = 0 ; var < num ; var + + )"))
-                            {
-                                strindex = getstr(tok2,2);
-                                value = atoi(getstr(tok2,8));
-                            }
-                            else if (match(tok2,"for ( var = 0 ; var <= num ; var + + )"))
-                            {
-                                strindex = getstr(tok2,2);
-                                value = 1 + atoi(getstr(tok2,8));
-                            }
-                            else if (match(tok2,"for ( var = 0 ; var < num ; + + var )"))
-                            {
-                                strindex = getstr(tok2,2);
-                                value = atoi(getstr(tok2,8));
-                            }
-                            else if (match(tok2,"for ( var = 0 ; var <= num ; + + var )"))
-                            {
-                                strindex = getstr(tok2,2);
-                                value = 1 + atoi(getstr(tok2,8));
-                            }
-                        }
-                        if (strindex && value>(int)size)
-                        {
-                            const TOKEN *tok3 = tok2;
-                            while (tok3 && strcmp(tok3->str,")"))
-                                tok3 = tok3->next;
-                            if (!tok3)
-                                break;
-                            tok3 = tok3->next;
-                            if (tok3->str[0] == '{')
-                                tok3 = tok3->next;
-                            while (tok3 && !strchr(";}",tok3->str[0]))
-                            {
-                                if (strcmp(tok3->str,varname)==0 &&
-                                    strcmp(getstr(tok3,1),"[")==0 &&
-                                    strcmp(getstr(tok3,2),strindex)==0 &&
-                                    strcmp(getstr(tok3,3),"]")==0 )
-                                {
-                                    std::ostringstream ostr;
-                                    ostr << FileLine(tok3) << ": Buffer overrun";
-                                    ReportErr(ostr.str());
-                                    break;
-                                }
-                                tok3 = tok3->next;
-                            }
-                        }
-
-
-                        // Writing data into array..
-                        if (match(tok2,"strcpy ( var , "))
-                        {
-                            int len = 0;
-                            if (strcmp(getstr(tok2, 2), varname) == 0)
-                            {
-                                const char *str = getstr(tok2, 4);
-                                if (str[0] == '\"')
-                                {
-                                    while (*str)
-                                    {
-                                        if (*str=='\\')
-                                            str++;
-                                        str++;
-                                        len++;
-                                    }
-                                }
-                            }
-                            if (len > 2 && len >= (int)size + 2)
-                            {
-                                std::ostringstream ostr;
-                                ostr << FileLine(tok2) << ": Buffer overrun";
-                                ReportErr(ostr.str());
-                            }
-                        }
-                    }
-                }
-            }
+            CheckBufferOverrun_LocalVariable_CheckScope( gettok(tok,5), varname, size, total_size );
         }
     }
 }

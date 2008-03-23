@@ -422,6 +422,40 @@ static void buffer_overrun()
     check( CheckBufferOverrun, __LINE__, test10, "[test.cpp:8]: Array index out of bounds\n" );
 
 
+
+    const char test11[] = "static void memclr( char *data )\n"
+                          "{\n"
+                          "    data[10] = 0;\n"
+                          "}\n"
+                          "\n"
+                          "static void f()\n"
+                          "{\n"
+                          "    char str[5];\n"
+                          "    memclr( str );   // ERROR\n"
+                          "}\n";
+    check( CheckBufferOverrun, __LINE__, test11, "[test.cpp:3]: Array index out of bounds\n" );
+
+
+
+    // TODO
+    /*
+    const char test11[] = "static void memclr( char *data, const int bytes )\n"
+                          "{\n"
+                          "    for (int i = 0; i < bytes; i++)\n"
+                          "        data[i] = 0;\n"
+                          "}\n"
+                          "\n"
+                          "static void f()\n"
+                          "{\n"
+                          "    char str[5];\n"
+                          "    memclr( str, 5 );   // OK\n"
+                          "    memclr( str+1, 5 );   // ERROR\n"
+                          "    memclr( str, 6 );   // ERROR\n"
+                          "}\n";
+    check( CheckBufferOverrun, __LINE__, test11, "" );
+    */
+
+
     // TODO
     /*
     const char test[] = "class Fred\n"

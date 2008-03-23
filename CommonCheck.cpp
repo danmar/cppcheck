@@ -58,3 +58,40 @@ bool IsStandardType(const char str[])
 }
 //---------------------------------------------------------------------------
 
+const TOKEN *FindFunction( const char funcname[] )
+{
+    int indentlevel = 0;
+    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( tok->str[0] == '{' )
+            indentlevel++;
+
+        else if ( tok->str[0] == '}' )
+            indentlevel--;
+
+        else if (indentlevel==0 && IsName(tok->str))
+        {
+            // Check if this is the first token of a function implementation..
+            bool haspar = false;
+            bool foundname = false;
+            for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+            {
+                haspar |= bool(tok2->str[0] == '(');
+                if ( ! haspar && match(tok2,"var (") )
+                {
+                    if ( strcmp(funcname, tok2->str) != 0 )
+                        break;
+                    foundname = true;
+                }
+                if ( tok2->str[0] == ';' )
+                    break;
+                if ( tok2->str[0] == '{' )
+                    break;
+                if ( foundname && haspar && match(tok2, ") {") )
+                    return tok;
+            }
+        }
+    }
+    return NULL;
+}
+
