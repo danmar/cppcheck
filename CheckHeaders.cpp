@@ -91,12 +91,7 @@ void WarningIncludeHeader()
                 continue;
 
             // I'm only interested in stuff that is declared at indentlevel 0
-            if (tok1->str[0] == '{')
-                indentlevel++;
-
-            else if (tok1->str[0] == '}')
-                indentlevel--;
-                
+            setindentlevel( tok1, indentlevel, -1 );
             if (indentlevel != 0)
                 continue;
 

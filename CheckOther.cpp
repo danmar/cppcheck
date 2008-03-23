@@ -305,17 +305,10 @@ static const TOKEN *GetFunction( const TOKEN *content )
     int indentlevel = 0;
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if ( tok->str[0] == '{' )
-            indentlevel++;
+        if (setindentlevel(tok, indentlevel, 0))
+            func = NULL;
 
-        else if ( tok->str[0] == '}' )
-        {
-            indentlevel--;
-            if (indentlevel == 0)
-                func = NULL;
-        }
-
-        else if (indentlevel == 0)
+        if (indentlevel == 0)
         {
             if (tok->str[0] == ';')
                 func = NULL;
@@ -366,34 +359,27 @@ void WarningStrTok()
         int indentlevel = 0;
         for ( const TOKEN *tok = *it1; tok; tok = tok->next )
         {
-            if ( tok->str[0] == '{' )
-                indentlevel++;
+            if (setindentlevel(tok, indentlevel, 0))
+                break;
 
-            else if ( tok->str[0] == '}' )
-            {
-                if ( indentlevel <= 1 )
-                    break;
-                indentlevel--;
-            }
+            if ( indentlevel == 0 )
+                continue;
 
-            else if ( indentlevel >= 1 )
+            // Only interested in function calls..
+            if (! match(tok, "var ("))
+                continue;
+
+            // Check if function name is in funclist..
+            std::list<const TOKEN *>::const_iterator it2;
+            for (it2 = funclist.begin(); it2 != funclist.end(); it2++)
             {
-                // Only interested in function calls..
-                if (!(IsName(tok->str) && strcmp(getstr(tok,1), "(") == 0))
+                if ( strcmp( tok->str, (*it2)->str ) )
                     continue;
 
-                // Check if function name is in funclist..
-                std::list<const TOKEN *>::const_iterator it2;
-                for (it2 = funclist.begin(); it2 != funclist.end(); it2++)
-                {
-                    if ( strcmp( tok->str, (*it2)->str ) )
-                        continue;
-
-                    std::ostringstream ostr;
-                    ostr << FileLine(tok) << ": Possible bug. Both '" << (*it1)->str << "' and '" << (*it2)->str << "' uses strtok.";
-                    ReportErr(ostr.str());
-                    break;
-                }
+                std::ostringstream ostr;
+                ostr << FileLine(tok) << ": Possible bug. Both '" << (*it1)->str << "' and '" << (*it2)->str << "' uses strtok.";
+                ReportErr(ostr.str());
+                break;
             }
         }
     }
@@ -436,18 +422,13 @@ void CheckCaseWithoutBreak()
         int indentlevel = 0;
         for (const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
         {
-            if (tok2->str[0] == '{')
-                indentlevel++;
-            else if (tok2->str[0] == '}')
+            if ( setindentlevel( tok2, indentlevel, -1 ) )
             {
-                indentlevel--;
-                if (indentlevel < 0)
-                {
-                    std::ostringstream ostr;
-                    ostr << FileLine(tok) << ": 'case' without 'break'.";
-                    ReportErr(ostr.str());
-                }
+                std::ostringstream ostr;
+                ostr << FileLine(tok) << ": 'case' without 'break'.";
+                ReportErr(ostr.str());
             }
+
             if (indentlevel==0)
             {
                 if (strcmp(tok2->str,"break")==0)
@@ -464,7 +445,6 @@ void CheckCaseWithoutBreak()
             }
         }
     }
-
 }
 //---------------------------------------------------------------------------
 
@@ -561,18 +541,10 @@ void CheckVariableScope()
                     tok = tok2;
                     for (tok = tok2; tok; tok = tok->next)
                     {
-                        if ( tok->str[0] == '{' )
+                        if ( setindentlevel( tok, _indentlevel, 0 ) )
                         {
-                            _indentlevel++;
-                        }
-                        if ( tok->str[0] == '}' )
-                        {
-                            _indentlevel--;
-                            if ( _indentlevel <= 0 )
-                            {
-                                tok = tok->next;
-                                break;
-                            }
+                            tok = tok->next;
+                            break;
                         }
                     }
                     break;
@@ -586,16 +558,11 @@ void CheckVariableScope()
                 break;
         }
 
-        if ( tok->str[0] == '{' )
+        if ( setindentlevel( tok, indentlevel, 0 ) )
         {
-            indentlevel++;
+            func = false;
         }
-        if ( tok->str[0] == '}' )
-        {
-            indentlevel--;
-            if ( indentlevel == 0 )
-                func = false;
-        }
+
         if ( indentlevel == 0 && match(tok, ") {") )
         {
             func = true;
@@ -632,25 +599,18 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
 
     // Check if the variable is used in this indentlevel..
     bool used = false, used1 = false;
-    int indentlevel = 0;
     bool for_or_while = false;
-    while ( indentlevel >= 0 && tok )
+    int indentlevel = 0;
+    for (; tok; tok = tok->next )
     {
-        if ( tok->str[0] == '{' )
+        if ( setindentlevel( tok, indentlevel, 0 ) )
         {
-            indentlevel++;
-        }
-
-        else if ( tok->str[0] == '}' )
-        {
-            indentlevel--;
-            if ( indentlevel == 0 )
-            {
-                if ( for_or_while && used )
-                    return;
-                used1 = used;
-                used = false;
-            }
+            if ( for_or_while && used )
+                return;
+            used1 = used;
+            used = false;
+            if ( indentlevel < 0 )
+                break;
         }
 
         else if ( strcmp(tok->str, varname) == 0 )
@@ -667,8 +627,6 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
             if ( tok->str[0] == ';' )
                 for_or_while = false;
         }
-
-        tok = tok->next;
     }
 
     // Warning if "used" is true

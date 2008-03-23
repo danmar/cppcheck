@@ -58,7 +58,7 @@ bool IsStandardType(const char str[])
 }
 //---------------------------------------------------------------------------
 
-bool setindentlevel( const TOKEN *tok, int &indentlevel )
+bool setindentlevel( const TOKEN *tok, int &indentlevel, int endlevel )
 {
     if ( tok->str[0] == '{' )
         indentlevel++;
@@ -66,6 +66,6 @@ bool setindentlevel( const TOKEN *tok, int &indentlevel )
     else if ( tok->str[0] == '}' )
         indentlevel--;
 
-    return bool(tok->str[0] == '}');
+    return bool(tok->str[0]=='}' && indentlevel<=endlevel);
 }
 //---------------------------------------------------------------------------

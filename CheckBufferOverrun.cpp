@@ -16,7 +16,7 @@ static const TOKEN *findfunction(const TOKEN *tok)
     int indentlevel = 0, parlevel = 0;
     for (; tok; tok = tok->next)
     {
-        setindentlevel( tok, indentlevel );
+        setindentlevel( tok, indentlevel, -1 );
 
         if (tok->str[0] == '(')
             parlevel++;
@@ -111,10 +111,9 @@ static void CheckBufferOverrun_DynamicData()
         int indentlevel = 0;
         for (const TOKEN *tok = ftok; tok; tok = tok->next)
         {
-            if (setindentlevel(tok, indentlevel))
+            if (setindentlevel(tok, indentlevel, 0))
             {
-                if (indentlevel <= 0)
-                    break;
+                break;
             }
 
 
@@ -155,8 +154,7 @@ static void CheckBufferOverrun_LocalVariable()
     int indentlevel = 0;
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        setindentlevel( tok, indentlevel );
-        if (indentlevel < 0)
+        if (setindentlevel( tok, indentlevel, -1 ))
             break;
 
         // Declaring array..
@@ -172,8 +170,7 @@ static void CheckBufferOverrun_LocalVariable()
         int _indentlevel = 0;
         for (const TOKEN *tok2 = gettok(tok,5); tok2; tok2 = tok2->next)
         {
-            setindentlevel(tok2, _indentlevel);
-            if ( _indentlevel < 0 )
+            if ( setindentlevel(tok2, _indentlevel, -1) )
                 break;
 
             // Array index..

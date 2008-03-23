@@ -494,6 +494,16 @@ static void constructors()
                          "}\n";
     check( CheckConstructors, __LINE__, test4, "[test.cpp:8] Uninitialized member variable 'Fred::i'\n" );
 
+
+
+    const char test5[] = "class Fred\n"
+                         "{\n"
+                         "public:\n"
+                         "    unsigned int i;\n"
+                         "};\n";
+    check( CheckConstructors, __LINE__, test5, "[test.cpp:1] The class 'Fred' has no constructor\n" );
+
+
 }
 //---------------------------------------------------------------------------
 

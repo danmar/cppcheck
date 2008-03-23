@@ -34,7 +34,7 @@ bool IsStandardType(const char str[]);
 // Iterating through tokens..
 //---------------------------------------------------------------------------
 
-bool setindentlevel( const TOKEN *tok, int &indentlevel );
+bool setindentlevel( const TOKEN *tok, int &indentlevel, int endlevel );
 
 
 //---------------------------------------------------------------------------
