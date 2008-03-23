@@ -16,7 +16,7 @@
 
 void WarningOldStylePointerCast()
 {
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = FindMatchingToken(tokens); tok; tok = tok->next)
     {
         // Old style pointer casting..
         if (!match(tok, "( type * ) var"))
@@ -194,15 +194,8 @@ void WarningIf()
     }
 
     // Search for 'a=b; if (a==b)'
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = tokens; tok; GotoNextStatement(&tok))
     {
-        // Begin statement?
-        if ( ! strchr(";{}", tok->str[0]) )
-            continue;
-        tok = tok->next;
-        if ( ! tok )
-            break;
-
         if (!match(tok,"var = var ; if ( var"))
             continue;
 

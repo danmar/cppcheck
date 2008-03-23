@@ -35,6 +35,8 @@ bool IsStandardType(const char str[]);
 //---------------------------------------------------------------------------
 
 bool setindentlevel( const TOKEN *tok, int &indentlevel, int endlevel );
+void GotoNextStatement( const TOKEN **tok );
+void FindMatchingTokenInScope( const TOKEN **tok, const char pattern[], int &indentlevel );
 
 
 //---------------------------------------------------------------------------

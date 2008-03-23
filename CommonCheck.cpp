@@ -69,3 +69,32 @@ bool setindentlevel( const TOKEN *tok, int &indentlevel, int endlevel )
     return bool(tok->str[0]=='}' && indentlevel<=endlevel);
 }
 //---------------------------------------------------------------------------
+
+void GotoNextStatement( const TOKEN **tok )
+{
+    // Goto end of statement..
+    while ( *tok && ! strchr("{};", (*tok)->str[0]) )
+        *tok = (*tok)->next;
+
+    // Goto next statement
+    if ( *tok )
+        *tok = (*tok)->next;
+}
+//---------------------------------------------------------------------------
+
+void FindMatchingTokenInScope( const TOKEN **tok, const char pattern[], int &indentlevel )
+{
+    while ( *tok )
+    {
+        if ( setindentlevel( *tok, indentlevel, -1 ) )
+            *tok = NULL;
+
+        else if ( match( *tok, pattern ) )
+            return;
+
+        else
+            *tok = (*tok)->next;
+    }
+}
+//---------------------------------------------------------------------------
+
