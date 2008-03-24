@@ -33,10 +33,10 @@ static void ReportError(const TOKEN *tok, const char errmsg[])
 
 
 //---------------------------------------------------------------------------
-// Checking local variables in a scope
+// Check array usage..
 //---------------------------------------------------------------------------
 
-static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const char varname[], const int size, const int total_size )
+static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char varname[], const char arrname[], const int size, const int total_size )
 {
     int indentlevel = 0;
     for ( ; tok; tok = tok->next )
@@ -57,9 +57,15 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
 
 
         // Array index..
-        if (strcmp(tok->str,varname)==0 && match(tok->next,"[ num ]"))
+        if ( match(tok, "var [ num ]") || match(tok, "var . var [ num ]" ) )
         {
-            const char *str = getstr(tok, 2);
+            if ( strcmp(tok->str, varname) != 0 )
+                continue;
+
+            if ( arrname && strcmp(getstr(tok, 2), arrname) != 0 )
+                continue;
+
+            const char *str = getstr(tok, (arrname ? 4 : 2));
             if (strtol(str, NULL, 10) >= size)
             {
                 ReportError(tok, "Array index out of bounds");
@@ -76,21 +82,45 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
             strcmp(tok->str,"strncpy")==0 ||
             strcmp(tok->str,"fgets")==0 )
         {
-            if (match(tok->next,"( var , num , num )") ||
-                match(tok->next,"( var , var , num )") )
+            if (arrname == 0)
             {
-                const char *var1 = getstr(tok, 2);
-                const char *var2 = getstr(tok, 4);
-                const char *num  = getstr(tok, 6);
+                if (match(tok->next,"( var , num , num )") ||
+                    match(tok->next,"( var , var , num )") )
+                {
+                    const char *var1 = getstr(tok, 2);
+                    const char *var2 = getstr(tok, 4);
+                    const char *num  = getstr(tok, 6);
 
-                if ( atoi(num)>total_size &&
-                     (strcmp(var1,varname)==0 ||
-                      strcmp(var2,varname)==0 ) )
+                    if ( atoi(num)>total_size &&
+                        (strcmp(var1,varname)==0 ||
+                        strcmp(var2,varname)==0 ) )
+                    {
+                        ReportError(tok, "Buffer overrun");
+                    }
+                }
+                continue;
+            }
+
+            else
+            {
+                int pos = 0;
+
+                if ( match(tok->next, "( var . var , var , num )") )
+                    pos = 2;
+
+                else if ( match(tok->next, "( var , var . var , num )") )
+                    pos = 4;
+
+                else
+                    continue;
+
+                if ( strcmp( getstr(tok,pos), varname ) == 0 &&
+                     strcmp( getstr(tok,pos+2), arrname ) == 0 &&
+                     atoi(getstr(tok,8)) > total_size )
                 {
                     ReportError(tok, "Buffer overrun");
                 }
             }
-            continue;
         }
 
 
@@ -140,12 +170,27 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
                         break;
                 }
 
-                if ( match( tok2, "var [ var ]" ) &&
-                     strcmp(tok2->str,varname)==0 &&
-                     strcmp(getstr(tok2,2),strindex)==0 )
+                if ( arrname == 0 )
                 {
-                    ReportError(tok2, "Buffer overrun");
-                    break;
+                    if ( match( tok2, "var [ var ]" ) &&
+                        strcmp(tok2->str,varname)==0 &&
+                        strcmp(getstr(tok2,2),strindex)==0 )
+                    {
+                        ReportError(tok2, "Buffer overrun");
+                        break;
+                    }
+                }
+
+                else
+                {
+                    if ( match( tok2, "var . var [ var ]" ) &&
+                        strcmp(tok2->str,varname)==0 &&
+                        strcmp(getstr(tok2,2), arrname) == 0 &&
+                        strcmp(getstr(tok2,4), strindex) == 0 )
+                    {
+                        ReportError(tok2, "Buffer overrun");
+                        break;
+                    }
                 }
 
                 tok2 = tok2->next;
@@ -155,33 +200,39 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
 
 
         // Writing data into array..
-        if (match(tok,"strcpy ( var , "))
+        if ( match(tok,"strcpy ( var ") && strcmp(getstr(tok,2),varname)==0 )
         {
+            int pos2 = 3;
+            if ( arrname && match(gettok(tok,3),". var ,") && strcmp(getstr(tok,4),arrname)==0 )
+                pos2 = 5;
+
+            // pos2 should point on the ','
+            if ( strcmp( getstr(tok, pos2), "," ) )
+                continue;
+
             int len = 0;
-            if (strcmp(getstr(tok, 2), varname) == 0)
+            const char *str = getstr(tok, pos2 + 1);
+            if (str[0] == '\"')
             {
-                const char *str = getstr(tok, 4);
-                if (str[0] == '\"')
+                while (*str)
                 {
-                    while (*str)
-                    {
-                        if (*str=='\\')
-                            str++;
+                    if (*str=='\\')
                         str++;
-                        len++;
-                    }
+                    str++;
+                    len++;
                 }
-            }
-            if (len > 2 && len >= (int)size + 2)
-            {
-                ReportError(tok, "Buffer overrun");
+                if (len > 2 && len >= (int)size + 2)
+                {
+                    ReportError(tok, "Buffer overrun");
+                }
             }
             continue;
         }
 
 
         // Function call..
-        if ( match( tok, "var (" ) )
+        // Todo: Handle struct member variables..
+        if ( arrname == 0 && match( tok, "var (" ) )
         {
             // Don't make recursive checking..
             if (std::find(CallStack.begin(), CallStack.end(), tok) != CallStack.end())
@@ -254,7 +305,7 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
 
                     // Check variable usage in the function..
                     CallStack.push_back( tok );
-                    CheckBufferOverrun_LocalVariable_CheckScope( ftok, parname, size, total_size );
+                    CheckBufferOverrun_CheckScope( ftok, parname, 0, size, total_size );
                     CallStack.pop_back();
 
                     // break out..
@@ -267,6 +318,10 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
     }
 }
 
+
+//---------------------------------------------------------------------------
+// Checking local variables in a scope
+//---------------------------------------------------------------------------
 
 static void CheckBufferOverrun_LocalVariable()
 {
@@ -289,7 +344,7 @@ static void CheckBufferOverrun_LocalVariable()
 
             // The callstack is empty
             CallStack.clear();
-            CheckBufferOverrun_LocalVariable_CheckScope( gettok(tok,5), varname, size, total_size );
+            CheckBufferOverrun_CheckScope( gettok(tok,5), varname, 0, size, total_size );
         }
     }
 }
@@ -298,28 +353,6 @@ static void CheckBufferOverrun_LocalVariable()
 
 //---------------------------------------------------------------------------
 // Checking member variables of structs..
-//---------------------------------------------------------------------------
-
-static void CheckBufferOverrun_StructVariable_CheckVar( const TOKEN *tok1, const char varname[], const char arrname[], const int arrsize )
-{
-    const char *badpattern[] = {"varname",".","arrname","[","","]",NULL};
-    badpattern[0] = varname;
-    badpattern[2] = arrname;
-    const TOKEN *tok2 = findtoken( tok1, badpattern );
-    while (tok2)
-    {
-        if ( IsNumber( getstr(tok2, 4) ) )
-        {
-            if ( atoi( getstr(tok2, 4) ) >= arrsize )
-            {
-                std::ostringstream errmsg;
-                errmsg << FileLine(tok2) << ": Array index out of bounds";
-                ReportErr(errmsg.str());
-            }
-        }
-        tok2 = findtoken( tok2->next, badpattern );
-    }
-}
 //---------------------------------------------------------------------------
 
 static void CheckBufferOverrun_StructVariable()
@@ -346,7 +379,10 @@ static void CheckBufferOverrun_StructVariable()
                 if ( match(tok2->next, "var var [ num ] ;") )
                 {
                     const char *arrname = getstr(tok2, 2);
-                    const char *arrsize = getstr(tok2, 4);
+                    int arrsize = atoi(getstr(tok2, 4));
+                    int total_size = arrsize * SizeOfType(tok2->next->str);
+                    if (total_size == 0)
+                        continue;
 
                     for ( const TOKEN *tok3 = tokens; tok3; tok3 = tok3->next )
                     {
@@ -357,14 +393,14 @@ static void CheckBufferOverrun_StructVariable()
                         if ( match( tok3->next, "var ;" ) )
                         {
                             const char *varname = tok3->next->str;
-                            CheckBufferOverrun_StructVariable_CheckVar( tok3, varname, arrname, atoi(arrsize) );
+                            CheckBufferOverrun_CheckScope( tok3, varname, arrname, arrsize, total_size );
                         }
 
                         // Declare pointer: Fred *fred1
                         else if ( match(tok3->next, "* var") && tok3->next->next->next && strchr(",);=", tok3->next->next->next->str[0]) )
                         {
                             const char *varname = tok3->next->next->str;
-                            CheckBufferOverrun_StructVariable_CheckVar( tok3, varname, arrname, atoi(arrsize) );
+                            CheckBufferOverrun_CheckScope( tok3, varname, arrname, arrsize, total_size );
                         }
                     }
                 }
