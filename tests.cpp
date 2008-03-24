@@ -431,6 +431,25 @@ static void buffer_overrun()
     check( CheckBufferOverrun, __LINE__, test11, "[test.cpp:9] -> [test.cpp:3]: Array index out of bounds\n" );
 
 
+    const char test12[] = "struct ABC\n"
+                          "{\n"
+                          "    char str[10];\n"
+                          "};\n"
+                          "\n"
+                          "static void memclr( char *data )\n"
+                          "{\n"
+                          "    data[10] = 0;\n"
+                          "}\n"
+                          "\n"
+                          "static void f(ABC *abc)\n"
+                          "{\n"
+                          "    memclr(abc->str);\n"
+                          "}\n";
+    check( CheckBufferOverrun, __LINE__, test12, "[test.cpp:13] -> [test.cpp:8]: Array index out of bounds\n" );
+
+
+
+
 
     // TODO
     /*

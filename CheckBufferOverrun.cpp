@@ -259,7 +259,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
         // Function call..
         // Todo: Handle struct member variables..
-        if ( varc == 0 && match( tok, "var (" ) )
+        if ( match( tok, "var (" ) )
         {
             // Don't make recursive checking..
             if (std::find(CallStack.begin(), CallStack.end(), tok) != CallStack.end())
@@ -290,8 +290,8 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
                 if ( parlevel == 1 &&
                     strchr( "(,", *getstr(tok2,0) ) &&
-                    strcmp( varname[0], getstr(tok2, 1) ) == 0 &&
-                    strchr( ",)", *getstr(tok2,2) ) )
+                    Match1( tok2->next, "%var1%", varname ) &&
+                    strchr( ",)", *getstr(tok2, 2+varc) ) )
                 {
                     par++;
                     break;
@@ -320,7 +320,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
                 else if ( ftok->str[0] == ',' )
                     par--;
 
-                else if (par==1 && parlevel==1 && (match(ftok,"var ,") || match(ftok,"var )")))
+                else if (par==1 && parlevel==1 && (match(ftok, "var ,") || match(ftok, "var )")))
                 {
                     // Parameter name..
                     const char *parname[2];
