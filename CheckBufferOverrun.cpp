@@ -274,25 +274,79 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
 
 
         // Function call..
-        // Todo: This is just experimental. It must be more versatile..
-        if ( match( tok, "var ( var )" ) && strcmp(varname, getstr(tok,2)) == 0 )
+        if ( match( tok, "var (" ) )
         {
+            unsigned int parlevel = 0, par = 0;
+            for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+            {
+                if ( tok2->str[0] == '(' )
+                {
+                    parlevel++;
+                }
+
+                else if ( tok2->str[0] == ')' )
+                {
+                    parlevel--;
+                    if ( parlevel < 1 )
+                    {
+                        par = 0;
+                        break;
+                    }
+                }
+
+                else if ( parlevel == 1 && tok2->str[0] == ',' )
+                {
+                    par++;
+                }
+
+                if ( parlevel == 1 &&
+                    strchr( "(,", *getstr(tok2,0) ) &&
+                    strcmp( varname, getstr(tok2, 1) ) == 0 &&
+                    strchr( ",)", *getstr(tok2,2) ) )
+                {
+                    par++;
+                    break;
+                }
+            }
+
+            if ( par == 0 )
+                continue;
+
             // Find function..
             const TOKEN *ftok = FindFunction( tokens, tok->str );
             if ( ! ftok )
                 continue;
 
             // Parse head of function..
-            while ( ftok )
+            ftok = gettok( ftok, 2 );
+            parlevel = 1;
+            while ( ftok && parlevel == 1 && par >= 1 )
             {
-                if ( match( ftok, "var ) {" ) )
+                if ( ftok->str[0] == '(' )
+                    parlevel++;
+
+                else if ( ftok->str[0] == ')' )
+                    parlevel--;
+
+                else if ( ftok->str[0] == ',' )
+                    par--;
+
+                else if (par==1 && parlevel==1 && (match(ftok,"var ,") || match(ftok,"var )")))
                 {
-                    CheckBufferOverrun_LocalVariable_CheckScope( gettok(ftok,3), ftok->str, size, total_size );
+                    // Parameter name..
+                    const char *parname = ftok->str;
+
+                    // Goto function body..
+                    while ( ftok && ftok->str[0] != '{' )
+                        ftok = ftok->next;
+                    ftok = ftok ? ftok->next : 0;
+
+                    // Check variable usage in the function..
+                    CheckBufferOverrun_LocalVariable_CheckScope( ftok, parname, size, total_size );
+
+                    // break out..
                     break;
                 }
-
-                if ( ftok->str[0] == '{' )
-                    break;
 
                 ftok = ftok->next;
             }
