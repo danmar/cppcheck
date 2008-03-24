@@ -11,40 +11,6 @@
 extern bool ShowAll;
 //---------------------------------------------------------------------------
 
-static const TOKEN *findfunction(const TOKEN *tok)
-{
-    int indentlevel = 0, parlevel = 0;
-    for (; tok; tok = tok->next)
-    {
-        if (tok->str[0] == '{')
-            indentlevel++;
-        else if (tok->str[0] == '}')
-            indentlevel--;
-        else if (tok->str[0] == '(')
-            parlevel++;
-        else if (tok->str[0] == ')')
-            parlevel--;
-
-        if (!tok->next)
-            break;
-
-        if (indentlevel==0 && parlevel==0 && IsName(tok->str) && tok->next->str[0]=='(')
-        {
-            for (const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
-            {
-                if (tok2->str[0] == ')' && tok2->next)
-                {
-                    if (tok2->next->str[0] == '{')
-                        return tok;
-                    break;
-                }
-            }
-        }
-    }
-
-    return 0;
-}
-
 //---------------------------------------------------------------------------
 // Writing dynamic data in buffer without bounds checking
 //---------------------------------------------------------------------------
@@ -108,7 +74,7 @@ static void _DynamicDataCheck(const TOKEN *ftok, const TOKEN *tok)
 
 static void CheckBufferOverrun_DynamicData()
 {
-    for (const TOKEN *ftok = findfunction(tokens); ftok; ftok = findfunction(ftok->next))
+    for (const TOKEN *ftok = FindFunction(tokens,0); ftok; ftok = FindFunction(ftok->next,0))
     {
         int indentlevel = 0;
         for (const TOKEN *tok = ftok; tok; tok = tok->next)
@@ -218,48 +184,62 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
 
 
         // Loop..
-        if ( match(tok, "for ( var = 0 ;") )
+        if ( match(tok, "for (") )
         {
-            const char *strindex = 0;
-            int value = 0;
+            const TOKEN *tok2 = gettok( tok, 2 );
 
-            if (match(tok,"for ( var = 0 ; var < num ; var + + )") ||
-                match(tok,"for ( var = 0 ; var < num ; + + var )") )
-            {
-                strindex = getstr(tok,2);
-                value = atoi(getstr(tok,8));
-            }
-            else if (match(tok,"for ( var = 0 ; var <= num ; var + + )") ||
-                     match(tok,"for ( var = 0 ; var <= num ; + + var )") )
-            {
-                strindex = getstr(tok,2);
-                value = 1 + atoi(getstr(tok,8));
-            }
+            // for - setup..
+            if ( match(tok2, "var = 0 ;") )
+                tok2 = gettok(tok2, 4);
+            else if ( match(tok2, "type var = 0 ;") )
+                tok2 = gettok(tok2, 5);
+            else if ( match(tok2, "type type var = 0 ;") )
+                tok2 = gettok(tok2, 6);
+            else
+                continue;
 
-            if (strindex && value>(int)size)
-            {
-                const TOKEN *tok2 = tok;
-                while (tok2 && strcmp(tok2->str,")"))
-                    tok2 = tok2->next;
-                if (!tok2)
-                    break;
+            // for - condition..
+            if ( ! match(tok2, "var < num ;") && ! match(tok2, "var <= num ;"))
+                continue;
+
+            // Get index variable and stopsize.
+            const char *strindex = tok2->str;
+            int value = (tok2->next->str[1] ? 1 : 0) + atoi(getstr(tok2, 2));
+            if ( value <= size )
+                continue;
+
+            // Goto the end of the for loop..
+            while (tok2 && strcmp(tok2->str,")"))
                 tok2 = tok2->next;
-                if (tok2->str[0] == '{')
-                    tok2 = tok2->next;
-                while (tok2 && !strchr(";}",tok2->str[0]))
-                {
-                    if ( match( tok2, "var [ var ]" ) &&
-                         strcmp(tok2->str,varname)==0 &&
-                         strcmp(getstr(tok2,2),strindex)==0 )
-                    {
-                        std::ostringstream ostr;
-                        ostr << FileLine(tok2) << ": Buffer overrun";
-                        ReportErr(ostr.str());
-                        break;
-                    }
+            if (!gettok(tok2,5))
+                break;
+            int indentlevel2 = 0;
+            while (tok2)
+            {
+                if ( tok2->str[0] == ';' && indentlevel == 0 )
+                    break;
 
-                    tok2 = tok2->next;
+                if ( tok2->str[0] == '{' )
+                    indentlevel2++;
+
+                if ( tok2->str[0] == '}' )
+                {
+                    indentlevel2--;
+                    if ( indentlevel2 <= 0 )
+                        break;
                 }
+
+                if ( match( tok2, "var [ var ]" ) &&
+                     strcmp(tok2->str,varname)==0 &&
+                     strcmp(getstr(tok2,2),strindex)==0 )
+                {
+                    std::ostringstream ostr;
+                    ostr << FileLine(tok2) << ": Buffer overrun";
+                    ReportErr(ostr.str());
+                    break;
+                }
+
+                tok2 = tok2->next;
             }
             continue;
         }
@@ -298,7 +278,7 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
         if ( match( tok, "var ( var )" ) && strcmp(varname, getstr(tok,2)) == 0 )
         {
             // Find function..
-            const TOKEN *ftok = FindFunction( tok->str );
+            const TOKEN *ftok = FindFunction( tokens, tok->str );
             if ( ! ftok )
                 continue;
 

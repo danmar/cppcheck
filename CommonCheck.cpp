@@ -58,10 +58,10 @@ bool IsStandardType(const char str[])
 }
 //---------------------------------------------------------------------------
 
-const TOKEN *FindFunction( const char funcname[] )
+const TOKEN *FindFunction( const TOKEN *tok, const char funcname[] )
 {
     int indentlevel = 0;
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( ; tok; tok = tok->next )
     {
         if ( tok->str[0] == '{' )
             indentlevel++;
@@ -69,7 +69,7 @@ const TOKEN *FindFunction( const char funcname[] )
         else if ( tok->str[0] == '}' )
             indentlevel--;
 
-        else if (indentlevel==0 && IsName(tok->str))
+        else if (indentlevel==0 && match(tok,"var ("))
         {
             // Check if this is the first token of a function implementation..
             bool haspar = false;
@@ -79,12 +79,15 @@ const TOKEN *FindFunction( const char funcname[] )
                 haspar |= bool(tok2->str[0] == '(');
                 if ( ! haspar && match(tok2,"var (") )
                 {
-                    if ( strcmp(funcname, tok2->str) != 0 )
+                    if ( funcname && strcmp(funcname, tok2->str) != 0 )
                         break;
                     foundname = true;
                 }
                 if ( tok2->str[0] == ';' )
+                {
+                    tok = tok2;
                     break;
+                }
                 if ( tok2->str[0] == '{' )
                     break;
                 if ( foundname && haspar && match(tok2, ") {") )

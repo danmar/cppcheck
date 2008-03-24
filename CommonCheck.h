@@ -21,7 +21,7 @@ bool IsNumber(const char str[]);
 
 bool IsStandardType(const char str[]);
 
-const TOKEN *FindFunction( const char funcname[] );
+const TOKEN *FindFunction( const TOKEN *tok, const char funcname[] );
 
 //---------------------------------------------------------------------------
 #endif
