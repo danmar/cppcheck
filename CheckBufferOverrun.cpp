@@ -1,9 +1,14 @@
+
 //---------------------------------------------------------------------------
+// Buffer overrun..
+//---------------------------------------------------------------------------
+
 #include "CheckBufferOverrun.h"
 #include "tokenize.h"
 #include "CommonCheck.h"
 
 #include <sstream>
+#include <list>
 
 #include <stdlib.h>     // <- strtoul
 
@@ -11,114 +16,24 @@
 extern bool ShowAll;
 //---------------------------------------------------------------------------
 
-//---------------------------------------------------------------------------
-// Writing dynamic data in buffer without bounds checking
-//---------------------------------------------------------------------------
+// CallStack used when parsing into subfunctions.
+static std::list<const TOKEN *> CallStack;
 
-static void _DynamicDataCheck(const TOKEN *ftok, const TOKEN *tok)
+// Modified version of 'ReportError' that also reports the callstack
+static void ReportError(const TOKEN *tok, const char errmsg[])
 {
-    const char *var2 = tok->str;
-    bool decl = false;
-    unsigned int Var2Count = 0;
-    for ( const TOKEN *tok2 = ftok; tok2; tok2 = tok2->next )
-    {
-        if (tok2 == tok)
-            break;
-        if (match(tok2,"char * var"))
-        {
-            decl |= (strcmp(getstr(tok2,2),var2)==0);
-            tok2 = gettok(tok2,3);
-            if ( strcmp(tok2->str, "=") == 0 )
-            {
-                Var2Count++;
-                break;
-            }
-        }
-        if (match(tok2,"char var [ ]"))
-        {
-            decl |= (strcmp(getstr(tok2,1),var2)==0);
-            tok2 = gettok(tok2,3);
-        }
-
-        // If ShowAll, only strlen(var2) counts
-        if ( ShowAll )
-        {
-            if (match(tok2,"strlen ( var )") &&
-                strcmp(getstr(tok2,2),var2)==0)
-            {
-                Var2Count++;
-                break;
-            }
-        }
-
-        // If not ShowAll, all usage of "var2" counts
-        else
-        {
-            if (strcmp(tok2->str,var2)==0)
-            {
-                Var2Count++;
-                break;
-            }
-        }
-    }
-
-    // The size of Var2 isn't checked, is it?
-    if (decl && Var2Count == 0)
-    {
-        std::ostringstream ostr;
-        ostr << FileLine(tok) << ": A string with unknown length is copied to buffer.";
-        ReportErr(ostr.str());
-    }
+    std::ostringstream ostr;
+    std::list<const TOKEN *>::const_iterator it;
+    for ( it = CallStack.begin(); it != CallStack.end(); it++ )
+        ostr << FileLine(*it) << " -> ";
+    ostr << FileLine(tok) << ": " << errmsg;
+    ReportErr(ostr.str());
 }
 
 
-static void CheckBufferOverrun_DynamicData()
-{
-    for (const TOKEN *ftok = FindFunction(tokens,0); ftok; ftok = FindFunction(ftok->next,0))
-    {
-        int indentlevel = 0;
-        for (const TOKEN *tok = ftok; tok; tok = tok->next)
-        {
-            if (tok->str[0] == '{')
-                indentlevel++;
-            else if (tok->str[0] == '}')
-            {
-                indentlevel--;
-                if (indentlevel <= 0)
-                    break;
-            }
-
-
-            if (match(tok,"strcpy ( var , var )") ||
-                match(tok,"strcat ( var , var )") )
-            {
-                _DynamicDataCheck(ftok,gettok(tok,4));
-            }
-
-            if (match(tok,"sprintf ( var"))
-            {
-                for ( const TOKEN *tok2 = gettok(tok,3); tok2; tok2 = tok2->next )
-                {
-                    if (tok2->str[0] == ')')
-                        break;
-                    if (match(tok2,", var ,") || match(tok2,", var )"))
-                    {
-                        _DynamicDataCheck(ftok,tok2->next);
-                    }
-                }
-            }
-
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
-
-
-
 
 //---------------------------------------------------------------------------
-// Buffer overrun..
+// Checking local variables in a scope
 //---------------------------------------------------------------------------
 
 static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const char varname[], const int size, const int total_size )
@@ -147,9 +62,7 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
             const char *str = getstr(tok, 2);
             if (strtol(str, NULL, 10) >= size)
             {
-                std::ostringstream ostr;
-                ostr << FileLine(tok) << ": Array index out of bounds";
-                ReportErr(ostr.str());
+                ReportError(tok, "Array index out of bounds");
             }
             continue;
         }
@@ -174,9 +87,7 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
                      (strcmp(var1,varname)==0 ||
                       strcmp(var2,varname)==0 ) )
                 {
-                    std::ostringstream ostr;
-                    ostr << FileLine(tok) << ": Buffer overrun";
-                    ReportErr(ostr.str());
+                    ReportError(tok, "Buffer overrun");
                 }
             }
             continue;
@@ -233,9 +144,7 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
                      strcmp(tok2->str,varname)==0 &&
                      strcmp(getstr(tok2,2),strindex)==0 )
                 {
-                    std::ostringstream ostr;
-                    ostr << FileLine(tok2) << ": Buffer overrun";
-                    ReportErr(ostr.str());
+                    ReportError(tok2, "Buffer overrun");
                     break;
                 }
 
@@ -265,9 +174,7 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
             }
             if (len > 2 && len >= (int)size + 2)
             {
-                std::ostringstream ostr;
-                ostr << FileLine(tok) << ": Buffer overrun";
-                ReportErr(ostr.str());
+                ReportError(tok, "Buffer overrun");
             }
             continue;
         }
@@ -276,6 +183,10 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
         // Function call..
         if ( match( tok, "var (" ) )
         {
+            // Don't make recursive checking..
+            if (std::find(CallStack.begin(), CallStack.end(), tok) != CallStack.end())
+                continue;
+
             unsigned int parlevel = 0, par = 0;
             for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
             {
@@ -342,7 +253,9 @@ static void CheckBufferOverrun_LocalVariable_CheckScope( const TOKEN *tok, const
                     ftok = ftok ? ftok->next : 0;
 
                     // Check variable usage in the function..
+                    CallStack.push_back( tok );
                     CheckBufferOverrun_LocalVariable_CheckScope( ftok, parname, size, total_size );
+                    CallStack.pop_back();
 
                     // break out..
                     break;
@@ -374,10 +287,17 @@ static void CheckBufferOverrun_LocalVariable()
             if (total_size == 0)
                 continue;
 
+            // The callstack is empty
+            CallStack.clear();
             CheckBufferOverrun_LocalVariable_CheckScope( gettok(tok,5), varname, size, total_size );
         }
     }
 }
+//---------------------------------------------------------------------------
+
+
+//---------------------------------------------------------------------------
+// Checking member variables of structs..
 //---------------------------------------------------------------------------
 
 static void CheckBufferOverrun_StructVariable_CheckVar( const TOKEN *tok1, const char varname[], const char arrname[], const int arrsize )
@@ -456,7 +376,6 @@ static void CheckBufferOverrun_StructVariable()
 
 void CheckBufferOverrun()
 {
-    CheckBufferOverrun_DynamicData();
     CheckBufferOverrun_LocalVariable();
     CheckBufferOverrun_StructVariable();
 }

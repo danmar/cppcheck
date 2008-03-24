@@ -372,13 +372,8 @@ static void buffer_overrun()
                          "{\n"
                          "    strcpy(buf, str);\n"
                          "}\n";
-    const char err7[] = 
-        "[test.cpp:3]: A string with unknown length is copied to buffer.\n"
-        "[test.cpp:7]: A string with unknown length is copied to buffer.\n"
-        "[test.cpp:11]: A string with unknown length is copied to buffer.\n"
-        "[test.cpp:15]: A string with unknown length is copied to buffer.\n";
 
-    check( CheckBufferOverrun, __LINE__, test7, err7 );
+    check( CheckBufferOverrun, __LINE__, test7, "" );
 
 
     const char test8[] = "struct ABC\n"
@@ -433,7 +428,7 @@ static void buffer_overrun()
                           "    char str[5];\n"
                           "    memclr( str );   // ERROR\n"
                           "}\n";
-    check( CheckBufferOverrun, __LINE__, test11, "[test.cpp:3]: Array index out of bounds\n" );
+    check( CheckBufferOverrun, __LINE__, test11, "[test.cpp:9] -> [test.cpp:3]: Array index out of bounds\n" );
 
 
 
