@@ -7,6 +7,7 @@
 #include "tokenize.h"
 #include "CommonCheck.h"
 
+#include <algorithm>
 #include <sstream>
 #include <list>
 
