@@ -20,6 +20,68 @@ extern bool ShowAll;
 // CallStack used when parsing into subfunctions.
 static std::list<const TOKEN *> CallStack;
 
+static std::list<const TOKEN *> FunctionList;
+static void FillFunctionList()
+{
+    FunctionList.clear();
+    int indentlevel = 0;
+    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( tok->str[0] == '{' )
+            indentlevel++;
+
+        else if ( tok->str[0] == '}' )
+            indentlevel--;
+
+        else if (indentlevel==0 && match(tok, "var ("))
+        {
+            // Check if this is the first token of a function implementation..
+            for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+            {
+                if ( tok2->str[0] == ';' )
+                {
+                    tok = tok2;
+                    break;
+                }
+
+                else if ( tok2->str[0] == '{' )
+                {
+                    break;
+                }
+
+                else if ( tok2->str[0] == ')' )
+                {
+                    if ( match(tok2, ") {") )
+                    {
+                        FunctionList.push_back( tok );
+                        tok = tok2;
+                    }
+                    else
+                    {
+                        tok = tok2;
+                        while (tok->next && !strchr(";{", tok->next->str[0]))
+                            tok = tok->next;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+static const TOKEN *GetFunctionTokenByName( const char funcname[] )
+{
+    std::list<const TOKEN *>::const_iterator it;
+    for ( it = FunctionList.begin(); it != FunctionList.end(); it++ )
+    {
+        if ( strcmp( (*it)->str, funcname ) == 0 )
+        {
+            return *it;
+        }
+    }
+    return NULL;
+}
+
 // Modified version of 'ReportError' that also reports the callstack
 static void ReportError(const TOKEN *tok, const char errmsg[])
 {
@@ -69,7 +131,7 @@ static bool Match1(const TOKEN *tok, const char pattern[], const char *varname[]
         // Variable name..
         else if (strcmp(str,"%var1%")==0)
         {
-            if (!IsName(tok->str))
+            if (strcmp(tok->str, varname[0]) != 0)
                 return false;
 
             for ( int i = 1; varname[i]; i++ )
@@ -144,7 +206,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
 
         // Array index..
-        if ( Match1(tok, "%var1% [ %num% ]", varname) )
+        if ( !IsName(tok->str) && Match1(tok->next, "%var1% [ %num% ]", varname) )
         {
             const char *num = getstr(tok, 2 + varc);
             if (strtol(num, NULL, 10) >= size)
@@ -303,7 +365,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
                 continue;
 
             // Find function..
-            const TOKEN *ftok = FindFunction( tokens, tok->str );
+            const TOKEN *ftok = GetFunctionTokenByName( tok->str );
             if ( ! ftok )
                 continue;
 
@@ -445,6 +507,7 @@ static void CheckBufferOverrun_StructVariable()
 
 void CheckBufferOverrun()
 {
+    FillFunctionList();
     CheckBufferOverrun_LocalVariable();
     CheckBufferOverrun_StructVariable();
 }
