@@ -187,32 +187,42 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
         varc++;
     varc = 2 * ( varc - 1 );
 
+
+    // Array index..
+    if ( Match1(tok, "%var1% [ %num% ]", varname) )
+    {
+        const char *num = getstr(tok, 2 + varc);
+        if (strtol(num, NULL, 10) >= size)
+        {
+            ReportError(tok->next, "Array index out of bounds");
+        }
+    }
+
+
     int indentlevel = 0;
     for ( ; tok; tok = tok->next )
     {
         if (tok->str[0]=='{')
         {
             indentlevel++;
-            continue;
         }
 
-        if (tok->str[0]=='}')
+        else if (tok->str[0]=='}')
         {
             indentlevel--;
             if ( indentlevel < 0 )
                 return;
-            continue;
         }
-
 
         // Array index..
         if ( !IsName(tok->str) && Match1(tok->next, "%var1% [ %num% ]", varname) )
         {
-            const char *num = getstr(tok, 2 + varc);
+            const char *num = getstr(tok->next, 2 + varc);
             if (strtol(num, NULL, 10) >= size)
             {
-                ReportError(tok, "Array index out of bounds");
+                ReportError(tok->next, "Array index out of bounds");
             }
+            tok = gettok(tok, 4);
             continue;
         }
 
@@ -486,17 +496,46 @@ static void CheckBufferOverrun_StructVariable()
 
                         // Declare variable: Fred fred1;
                         if ( match( tok3->next, "var ;" ) )
-                        {
                             varname[0] = getstr(tok3, 1);
-                            CheckBufferOverrun_CheckScope( tok3, varname, arrsize, total_size );
-                        }
 
                         // Declare pointer: Fred *fred1
                         else if ( match(tok3->next, "* var") && tok3->next->next->next && strchr(",);=", tok3->next->next->next->str[0]) )
-                        {
                             varname[0] = getstr(tok3, 2);
-                            CheckBufferOverrun_CheckScope( tok3, varname, arrsize, total_size );
+
+                        else
+                            continue;
+
+
+                        // Goto end of statement.
+                        const TOKEN *CheckTok = NULL;
+                        while ( tok3 )
+                        {
+                            // End of statement.
+                            if ( tok3->str[0] == ';' )
+                            {
+                                CheckTok = tok3;
+                                break;
+                            }
+
+                            // End of function declaration..
+                            if ( match(tok3, ") ;") )
+                                break;
+
+                            // Function implementation..
+                            if ( match(tok3, ") {") )
+                            {
+                                CheckTok = gettok(tok3, 2);
+                                break;
+                            }
+
+                            tok3 = tok3->next;
                         }
+
+                        if ( ! CheckTok )
+                            continue;
+
+                        // Check variable usage..
+                        CheckBufferOverrun_CheckScope( CheckTok, varname, arrsize, total_size );
                     }
                 }
             }
