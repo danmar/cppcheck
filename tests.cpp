@@ -418,7 +418,20 @@ static void buffer_overrun()
 
 
 
-    const char test11[] = "static void memclr( char *data )\n"
+    const char test11[] = "struct ABC\n"
+                          "{\n"
+                          "    char str[5];\n"
+                          "};\n"
+                          "\n"
+                          "static void f(ABC *abc)\n"
+                          "{\n"
+                          "    strcpy( abc->str, \"abcdef\" );\n"
+                          "}\n";
+    check( CheckBufferOverrun, __LINE__, test11, "[test.cpp:8]: Buffer overrun\n" );
+
+
+
+    const char test12[] = "static void memclr( char *data )\n"
                           "{\n"
                           "    data[10] = 0;\n"
                           "}\n"
@@ -428,10 +441,10 @@ static void buffer_overrun()
                           "    char str[5];\n"
                           "    memclr( str );   // ERROR\n"
                           "}\n";
-    check( CheckBufferOverrun, __LINE__, test11, "[test.cpp:9] -> [test.cpp:3]: Array index out of bounds\n" );
+    check( CheckBufferOverrun, __LINE__, test12, "[test.cpp:9] -> [test.cpp:3]: Array index out of bounds\n" );
 
 
-    const char test12[] = "struct ABC\n"
+    const char test13[] = "struct ABC\n"
                           "{\n"
                           "    char str[10];\n"
                           "};\n"
@@ -445,7 +458,26 @@ static void buffer_overrun()
                           "{\n"
                           "    memclr(abc->str);\n"
                           "}\n";
-    check( CheckBufferOverrun, __LINE__, test12, "[test.cpp:13] -> [test.cpp:8]: Array index out of bounds\n" );
+    check( CheckBufferOverrun, __LINE__, test13, "[test.cpp:13] -> [test.cpp:8]: Array index out of bounds\n" );
+
+
+
+    const char test14[] = "class ABC\n"
+                          "{\n"
+                          "public:\n"
+                          "    ABC();\n"
+                          "    char *str[10];\n"
+                          "    struct ABC *next;"
+                          "};\n"
+                          "\n"
+                          "static void f()\n"
+                          "{\n"
+                          "    for ( ABC *abc = abc1; abc; abc = abc->next )\n"
+                          "    {\n"
+                          "        abc->str[10] = 0;\n"
+                          "    }\n"
+                          "}\n";
+    check( CheckBufferOverrun, __LINE__, test14, "[test.cpp:12]: Array index out of bounds\n" );
 
 
 

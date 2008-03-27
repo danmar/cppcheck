@@ -461,11 +461,14 @@ static void CheckBufferOverrun_LocalVariable()
 
 static void CheckBufferOverrun_StructVariable()
 {
-    const char *declstruct_pattern[] = {"struct","","{",0};
+    const char *declstruct_pattern[] = {"","","{",0};
     for ( const TOKEN * tok = findtoken( tokens, declstruct_pattern );
           tok;
           tok = findtoken( tok->next, declstruct_pattern ) )
     {
+        if ( strcmp(tok->str, "struct") && strcmp(tok->str, "class") )
+            continue;
+
         const char *structname = tok->next->str;
 
         if ( ! IsName( structname ) )
@@ -480,11 +483,14 @@ static void CheckBufferOverrun_StructVariable()
             if ( strchr( ";{,(", tok2->str[0] ) )
             {
                 // Declare array..
-                if ( match(tok2->next, "var var [ num ] ;") )
+                if ( match(tok2->next, "type var [ num ] ;") ||
+                     match(tok2->next, "type * var [ num ] ;") )
                 {
                     const char *varname[3] = {0,0,0};
-                    varname[1] = getstr(tok2, 2);
-                    int arrsize = atoi(getstr(tok2, 4));
+                    int ivar = IsName(getstr(tok2, 2)) ? 2 : 3;
+
+                    varname[1] = getstr(tok2, ivar);
+                    int arrsize = atoi(getstr(tok2, ivar+2));
                     int total_size = arrsize * SizeOfType(tok2->next->str);
                     if (total_size == 0)
                         continue;
