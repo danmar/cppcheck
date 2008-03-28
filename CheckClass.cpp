@@ -55,7 +55,7 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
             const char *varname = 0;
 
             // Is it a variable declaration?
-            if ( match(next,"var var ;") )
+            if ( Match(next,"%type% %var% ;") )
             {
                 const char *types[] = {"bool", "char", "int", "short", "long", "float", "double", 0};
                 for ( int type = 0; types[type]; type++ )
@@ -69,7 +69,7 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
             }
 
             // Pointer?
-            else if ( match(next, "var * var ;") )
+            else if ( Match(next, "%type% * %var% ;") )
             {
                 varname = getstr(next, 2);
             }
@@ -103,7 +103,7 @@ static const TOKEN * FindClassFunction( const TOKEN *_tokens, const char classna
             else if ( indentlevel == 1 )
             {
                 // Member function is implemented in the class declaration..
-                if ( match( _tokens, "var (" ) && strcmp(_tokens->str,funcname) == 0 )
+                if ( Match( _tokens, "%var% (" ) && strcmp(_tokens->str,funcname) == 0 )
                 {
                     const TOKEN *tok2 = _tokens;
                     while ( tok2 && tok2->str[0] != '{' && tok2->str[0] != ';' )
@@ -114,13 +114,15 @@ static const TOKEN * FindClassFunction( const TOKEN *_tokens, const char classna
             }
         }
 
-        else if ( match(_tokens, "class var {") && strcmp(getstr(_tokens,1),classname)==0 )
+        // Todo: Match the classname directly instead
+        else if ( Match(_tokens, "class %var% {") && strcmp(getstr(_tokens,1),classname)==0 )
         {
             indentlevel = 1;
             _tokens = gettok( _tokens, 2 );
         }
 
-        else if ( match(_tokens, "var :: var (") &&
+        // Todo: Match the classname and funcname directly instead
+        else if ( Match(_tokens, "%var% :: %var% (") &&
                   strcmp(_tokens->str,classname) == 0 &&
                   strcmp(getstr(_tokens,2),funcname) == 0  )
         {
@@ -161,7 +163,7 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
         // clKalle::clKalle() : var(value) { }
         if (indentlevel==0)
         {
-            if (Assign && match(ftok, "var ("))
+            if (Assign && Match(ftok, "%var% ("))
             {
                 InitVar( varlist, ftok->str );
             }
@@ -188,14 +190,14 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             ftok = ftok->next;
 
             // Clearing all variables..
-            if (match(ftok,"memset ( this ,"))
+            if (Match(ftok,"memset ( this ,"))
             {
                 for (struct VAR *var = varlist; var; var = var->next)
                     var->init = true;
             }
 
             // Calling member function?
-            else if (match(ftok, "var ("))
+            else if (Match(ftok, "%var% ("))
             {
                 unsigned int i = 0;
                 const TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
@@ -203,13 +205,13 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             }
 
             // Assignment of member variable?
-            else if (match(ftok, "var ="))
+            else if (Match(ftok, "%var% ="))
             {
                 InitVar( varlist, ftok->str );
             }
 
             // The functions 'clear' and 'Clear' are supposed to initialize variable.
-            if (match(ftok,"var . clear (") || match(ftok,"var . Clear ("))
+            if (Match(ftok,"%var% . clear (") || Match(ftok,"%var% . Clear ("))
             {
                 InitVar( varlist, ftok->str );
             }
@@ -347,7 +349,7 @@ void CheckUnusedPrivateFunctions()
         unsigned int indent_level = 0;
         for (const TOKEN *tok = tok1; tok; tok = tok->next)
         {
-            if (match(tok,"friend class"))
+            if (Match(tok,"friend %var%"))
             {
                 // Todo: Handle friend classes
                 FuncList.clear();
@@ -464,13 +466,13 @@ void CheckMemset()
             continue;
 
         const char *type = NULL;
-        if (match(tok, "memset ( var , num , sizeof ( type ) )"))
+        if (Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
             type = getstr(tok, 8);
-        else if (match(tok, "memset ( & var , num , sizeof ( type ) )"))
+        else if (Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
             type = getstr(tok, 9);
-        else if (match(tok, "memset ( var , num , sizeof ( struct type ) )"))
+        else if (Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
             type = getstr(tok, 9);
-        else if (match(tok, "memset ( & var , num , sizeof ( struct type ) )"))
+        else if (Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
             type = getstr(tok, 10);
 
         // No type defined => The tokens didn't match
@@ -496,7 +498,7 @@ void CheckMemset()
             if (tstruct->str[0] == '}')
                 break;
 
-            if (match(tstruct, "std :: type var ;"))
+            if (Match(tstruct, "std :: %type% %var% ;"))
             {
                 std::ostringstream ostr;
                 ostr << FileLine(tok) << ": Using 'memset' on struct that contains a 'std::" << getstr(tstruct,2) << "'";

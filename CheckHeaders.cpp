@@ -23,7 +23,7 @@ void WarningHeaderWithImplementation()
         if (tok->FileIndex == 0)
             continue;
 
-        if (match(tok, ") {"))
+        if (Match(tok, ") {"))
         {
             std::ostringstream ostr;
             ostr << FileLine(tok) << ": Found implementation in header";
@@ -102,21 +102,21 @@ void WarningIncludeHeader()
 
             // Class or namespace declaration..
             // --------------------------------------
-            if (match(tok1,"class var {") || match(tok1,"class var :") || match(tok1,"namespace var {"))
+            if (Match(tok1,"class %var% {") || Match(tok1,"class %var% :") || Match(tok1,"namespace %var% {"))
                 classlist.push_back(getstr(tok1, 1));
 
             // Variable declaration..
             // --------------------------------------
-            else if (match(tok1, "type var ;") || match(tok1, "type var ["))
+            else if (Match(tok1, "%type% %var% ;") || Match(tok1, "%type% %var% ["))
                 namelist.push_back(getstr(tok1, 1));
 
-            else if (match(tok1, "type * var ;") || match(tok1, "type * var ["))
+            else if (Match(tok1, "%type% * %var% ;") || Match(tok1, "%type% * %var% ["))
                 namelist.push_back(getstr(tok1, 2));
 
-            else if (match(tok1, "const type var =") || match(tok1, "const type var ["))
+            else if (Match(tok1, "const %type% %var% =") || Match(tok1, "const %type% %var% ["))
                 namelist.push_back(getstr(tok1, 2));
 
-            else if (match(tok1, "const type * var =") || match(tok1, "const type * var ["))
+            else if (Match(tok1, "const %type% * %var% =") || Match(tok1, "const %type% * %var% ["))
                 namelist.push_back(getstr(tok1, 3));
 
             // enum..
@@ -134,16 +134,16 @@ void WarningIncludeHeader()
                 
             // function..  
             // --------------------------------------
-            else if (match(tok1,"type var ("))
+            else if (Match(tok1,"%type% %var% ("))
                 namelist.push_back(getstr(tok1, 1));
 
-            else if (match(tok1,"type * var ("))
+            else if (Match(tok1,"%type% * %var% ("))
                 namelist.push_back(getstr(tok1, 2));
 
-            else if (match(tok1,"const type var ("))
+            else if (Match(tok1,"const %type% %var% ("))
                 namelist.push_back(getstr(tok1, 2));
 
-            else if (match(tok1,"const type * var ("))
+            else if (Match(tok1,"const %type% * %var% ("))
                 namelist.push_back(getstr(tok1, 3));
 
             // typedef..
@@ -166,7 +166,7 @@ void WarningIncludeHeader()
                         if ( tok1->str[0] == ';' )
                             break;
 
-                        if ( match(tok1, "var ;") )
+                        if ( Match(tok1, "%var% ;") )
                             namelist.push_back(tok1->str);
                     }
 
@@ -184,7 +184,7 @@ void WarningIncludeHeader()
             if (tok1->FileIndex != includetok->FileIndex)
                 continue;
 
-            if ( match(tok1, ": var {") || match(tok1, ": type var {") )
+            if ( Match(tok1, ": %var% {") || Match(tok1, ": %type% %var% {") )
             {
                 std::string classname = getstr(tok1, (strcmp(getstr(tok1,2),"{")) ? 2 : 1);
                 if (std::find(classlist.begin(),classlist.end(),classname)!=classlist.end())

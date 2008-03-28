@@ -9,6 +9,7 @@
 bool HasErrors;
 bool OnlyReportUniqueErrors;
 std::ostringstream errout;
+std::list<const TOKEN *> FunctionList;
 //---------------------------------------------------------------------------
 
 std::string FileLine(const TOKEN *tok)
@@ -58,10 +59,10 @@ bool IsStandardType(const char str[])
 }
 //---------------------------------------------------------------------------
 
-const TOKEN *FindFunction( const TOKEN *tok, const char funcname[] )
+void FillFunctionList()
 {
     int indentlevel = 0;
-    for ( ; tok; tok = tok->next )
+    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
         if ( tok->str[0] == '{' )
             indentlevel++;
@@ -69,32 +70,135 @@ const TOKEN *FindFunction( const TOKEN *tok, const char funcname[] )
         else if ( tok->str[0] == '}' )
             indentlevel--;
 
-        else if (indentlevel==0 && match(tok,"var ("))
+        else if (indentlevel==0 && Match(tok, "%var% ("))
         {
             // Check if this is the first token of a function implementation..
-            bool haspar = false;
-            bool foundname = false;
             for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
             {
-                haspar |= bool(tok2->str[0] == '(');
-                if ( ! haspar && match(tok2,"var (") )
-                {
-                    if ( funcname && strcmp(funcname, tok2->str) != 0 )
-                        break;
-                    foundname = true;
-                }
                 if ( tok2->str[0] == ';' )
                 {
                     tok = tok2;
                     break;
                 }
-                if ( tok2->str[0] == '{' )
+
+                else if ( tok2->str[0] == '{' )
+                {
                     break;
-                if ( foundname && haspar && match(tok2, ") {") )
-                    return tok;
+                }
+
+                else if ( tok2->str[0] == ')' )
+                {
+                    if ( Match(tok2, ") {") )
+                    {
+                        FunctionList.push_back( tok );
+                        tok = tok2;
+                    }
+                    else
+                    {
+                        tok = tok2;
+                        while (tok->next && !strchr(";{", tok->next->str[0]))
+                            tok = tok->next;
+                    }
+                    break;
+                }
             }
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
+const TOKEN *GetFunctionTokenByName( const char funcname[] )
+{
+    std::list<const TOKEN *>::const_iterator it;
+    for ( it = FunctionList.begin(); it != FunctionList.end(); it++ )
+    {
+        if ( strcmp( (*it)->str, funcname ) == 0 )
+        {
+            return *it;
         }
     }
     return NULL;
 }
+//---------------------------------------------------------------------------
+
+bool Match(const TOKEN *tok, const char pattern[], const char *varname[])
+{
+    if (!tok)
+        return false;
+
+    const char *p = pattern;
+    while (*p)
+    {
+        // Skip spaces in pattern..
+        while ( *p == ' ' )
+            p++;
+
+        // Extract token from pattern..
+        char str[50];
+        char *s = str;
+        while (*p && *p!=' ')
+        {
+            *s = *p;
+            s++;
+            p++;
+        }
+        *s = 0;
+
+        // No token => Success!
+        if (str[0] == 0)
+            return true;
+
+        // Any symbolname..
+        if (strcmp(str,"%var%")==0 || strcmp(str,"%type%")==0)
+        {
+            if (!IsName(tok->str))
+                return false;
+        }
+
+        // Variable name..
+        else if (strcmp(str,"%var1%")==0)
+        {
+            if (strcmp(tok->str, varname[0]) != 0)
+                return false;
+
+            for ( int i = 1; varname[i]; i++ )
+            {
+                if ( ! gettok(tok, 2) )
+                    return false;
+
+                if ( strcmp(getstr(tok, 1), ".") )
+                    return false;
+
+                if ( strcmp(getstr(tok, 2), varname[i]) )
+                    return false;
+
+                tok = gettok(tok, 2);
+            }
+        }
+
+        else if (strcmp(str,"%num%")==0)
+        {
+            if ( ! IsNumber(tok->str) )
+                return false;
+        }
+
+
+        else if (strcmp(str,"%str%")==0)
+        {
+            if ( tok->str[0] != '\"' )
+                return false;
+        }
+
+        else if (strcmp(str, tok->str) != 0)
+            return false;
+
+        tok = tok->next;
+        if (!tok)
+            return false;
+    }
+
+    // The end of the pattern has been reached and nothing wrong has been found
+    return true;
+}
+//---------------------------------------------------------------------------
 

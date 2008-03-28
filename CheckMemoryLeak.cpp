@@ -364,21 +364,21 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                 {
                     bool err = false;
 
-                    if (match(tok, "delete var ;") &&
+                    if (Match(tok, "delete %var% ;") &&
                         strcmp(getstr(tok,1),varname)==0)
                     {
                         err |= ( Alloc != No && Alloc != New );
                         Dealloc = New;
                     }
 
-                    else if (match(tok, "delete [ ] var ;") &&
+                    else if (Match(tok, "delete [ ] %var% ;") &&
                         strcmp(getstr(tok,3),varname)==0)
                     {
                         err |= ( Alloc != No && Alloc != NewA );
                         Dealloc = NewA;
                     }
 
-                    else if (match(tok, "free ( var )") &&
+                    else if (Match(tok, "free ( %var% )") &&
                         strcmp(getstr(tok,2),varname)==0)
                     {
                         err |= ( Alloc != No && Alloc != Malloc );
@@ -406,8 +406,8 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
 
                     if ( strcmp(getstr(tok,2), "new") == 0 )
                     {
-                        if ( match(tok, "var = new type ;") ||
-                             match(tok, "var = new type (") )
+                        if ( Match(tok, "%var% = new %type% ;") ||
+                             Match(tok, "%var% = new %type% (") )
                         {
                             if ( ! ShowAll && ! IsStandardType(getstr(tok,3)) )
                                 continue;
@@ -415,7 +415,7 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                             Alloc = New;
                         }
 
-                        else if ( match(tok, "var = new type [") )
+                        else if ( Match(tok, "%var% = new %type% [") )
                         {
                             if ( ! ShowAll && ! IsStandardType(getstr(tok,3)) )
                                 continue;
@@ -424,8 +424,8 @@ static void _ClassMembers_CheckVar(const char *classname, const char *varname)
                         }
                     }
 
-                    else if ( match(tok, "var = strdup (") ||
-                              match(tok, "var = ( type * ) malloc ("))
+                    else if ( Match(tok, "%var% = strdup (") ||
+                              Match(tok, "%var% = ( %type% * ) malloc ("))
                     {
                         if ( ! ShowAll &&
                              tok->next->next->str[0] == '(' &&
@@ -461,7 +461,7 @@ static void _ClassMembers()
     {
         // Is this a class declaration?
         // -------------------------------------
-        if ( ! match(ClassDecl, "class var {") )
+        if ( ! Match(ClassDecl, "class %var% {") )
             continue;
 
         const char *classname = getstr(ClassDecl, 1);
@@ -482,7 +482,7 @@ static void _ClassMembers()
 
             else if (indentlevel == 1)
             {
-                if ( match(ClassVar, "type * var ;") )
+                if ( Match(ClassVar, "%type% * %var% ;") )
                 {
                     const char *varname = getstr(ClassVar, 2);
 

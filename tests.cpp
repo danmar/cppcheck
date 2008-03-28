@@ -86,6 +86,9 @@ static void check(void (chk)(),
     if ( chk != CheckUnsignedDivision )
         SimplifyTokenList();
 
+    FunctionList.clear();
+    FillFunctionList();
+
     // Check for buffer overruns..
     errout.str("");
     chk();

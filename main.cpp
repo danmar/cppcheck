@@ -178,6 +178,7 @@ static void CppCheck(const char FileName[])
     Files.clear();
     Tokenize(FileName);
 
+    FunctionList.clear();
 
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.

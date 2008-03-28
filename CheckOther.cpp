@@ -19,7 +19,7 @@ void WarningOldStylePointerCast()
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         // Old style pointer casting..
-        if (!match(tok, "( type * ) var"))
+        if (!Match(tok, "( %type% * ) %var%"))
             continue;
 
         // Is "type" a class?
@@ -46,10 +46,10 @@ void WarningIsDigit()
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         bool err = false;
-        err |= match(tok, "var >= '0' && var <= '9'");
-        err |= match(tok, "* var >= '0' && * var <= '9'");
-        err |= match(tok, "( var >= '0' ) && ( var <= '9' )");
-        err |= match(tok, "( * var >= '0' ) && ( * var <= '9' )");
+        err |= Match(tok, "%var% >= '0' && %var% <= '9'");
+        err |= Match(tok, "* %var% >= '0' && * %var% <= '9'");
+        err |= Match(tok, "( %var% >= '0' ) && ( %var% <= '9' )");
+        err |= Match(tok, "( * %var% >= '0' ) && ( * %var% <= '9' )");
         if (err)
         {
             std::ostringstream ostr;
@@ -75,14 +75,14 @@ void WarningIsAlpha()
         if ( tok->str[0] != '(' )
             continue;
 
-        err |= match(tok, "( var >= 'A' && var <= 'Z' ) || ( var >= 'a' && var <= 'z' )");
-        err |= match(tok, "( var >= 'a' && var <= 'z' ) || ( var >= 'A' && var <= 'Z' )");
-        err |= match(tok, "( * var >= 'A' && * var <= 'Z' ) || ( * var >= 'a' && * var <= 'z' )");
-        err |= match(tok, "( * var >= 'a' && * var <= 'z' ) || ( * var >= 'A' && * var <= 'Z' )");
-        err |= match(tok, "( ( var >= 'A' ) && ( var <= 'Z' ) ) || ( ( var >= 'a' ) && ( var <= 'z' ) )");
-        err |= match(tok, "( ( var >= 'a' ) && ( var <= 'z' ) ) || ( ( var >= 'A' ) && ( var <= 'Z' ) )");
-        err |= match(tok, "( ( * var >= 'A' ) && ( * var <= 'Z' ) ) || ( ( * var >= 'a' ) && ( * var <= 'z' ) )");
-        err |= match(tok, "( ( * var >= 'a' ) && ( * var <= 'z' ) ) || ( ( * var >= 'A' ) && ( * var <= 'Z' ) )");
+        err |= Match(tok, "( %var% >= 'A' && %var% <= 'Z' ) || ( %var% >= 'a' && %var% <= 'z' )");
+        err |= Match(tok, "( %var% >= 'a' && %var% <= 'z' ) || ( %var% >= 'A' && %var% <= 'Z' )");
+        err |= Match(tok, "( * %var% >= 'A' && * %var% <= 'Z' ) || ( * %var% >= 'a' && * %var% <= 'z' )");
+        err |= Match(tok, "( * %var% >= 'a' && * %var% <= 'z' ) || ( * %var% >= 'A' && * %var% <= 'Z' )");
+        err |= Match(tok, "( ( %var% >= 'A' ) && ( %var% <= 'Z' ) ) || ( ( %var% >= 'a' ) && ( %var% <= 'z' ) )");
+        err |= Match(tok, "( ( %var% >= 'a' ) && ( %var% <= 'z' ) ) || ( ( %var% >= 'A' ) && ( %var% <= 'Z' ) )");
+        err |= Match(tok, "( ( * %var% >= 'A' ) && ( * %var% <= 'Z' ) ) || ( ( * var >= 'a' ) && ( * %var% <= 'z' ) )");
+        err |= Match(tok, "( ( * %var% >= 'a' ) && ( * %var% <= 'z' ) ) || ( ( * var >= 'A' ) && ( * %var% <= 'Z' ) )");
         if (err)
         {
             std::ostringstream ostr;
@@ -110,12 +110,12 @@ void WarningRedundantCode()
         const char *varname1 = NULL;
         const TOKEN *tok2 = NULL;
 
-        if (match(tok,"if ( var )"))
+        if (Match(tok,"if ( %var% )"))
         {
             varname1 = getstr(tok, 2);
             tok2 = gettok(tok, 4);
         }
-        else if (match(tok,"if ( var != NULL )"))
+        else if (Match(tok,"if ( %var% != NULL )"))
         {
             varname1 = getstr(tok, 2);
             tok2 = gettok(tok, 6);
@@ -125,17 +125,17 @@ void WarningRedundantCode()
             continue;
 
         bool err = false;
-        if (match(tok2,"delete var ;"))
+        if (Match(tok2,"delete %var% ;"))
             err = (strcmp(getstr(tok2,1),varname1)==0);
-        else if (match(tok2,"{ delete var ; }"))
+        else if (Match(tok2,"{ delete %var% ; }"))
             err = (strcmp(getstr(tok2,2),varname1)==0);
-        else if (match(tok2,"delete [ ] var ;"))
+        else if (Match(tok2,"delete [ ] %var% ;"))
             err = (strcmp(getstr(tok2,1),varname1)==0);
-        else if (match(tok2,"{ delete [ ] var ; }"))
+        else if (Match(tok2,"{ delete [ ] %var% ; }"))
             err = (strcmp(getstr(tok2,2),varname1)==0);
-        else if (match(tok2,"free ( var )"))
+        else if (Match(tok2,"free ( %var% )"))
             err = (strcmp(getstr(tok2,2),varname1)==0);
-        else if (match(tok2,"{ free ( var ) ; }"))
+        else if (Match(tok2,"{ free ( %var% ) ; }"))
             err = (strcmp(getstr(tok2,3),varname1)==0);
 
         if (err)
@@ -147,7 +147,7 @@ void WarningRedundantCode()
     }
 
 
-    // TODO
+    // TODO: Redundant condition
     // if (haystack.find(needle) != haystack.end())
     //    haystack.remove(needle);
 
@@ -203,7 +203,7 @@ void WarningIf()
         if ( ! tok )
             break;
 
-        if (!match(tok,"var = var ; if ( var"))
+        if (!Match(tok,"%var% = %var% ; if ( %var%"))
             continue;
 
         if ( strcmp(getstr(tok, 9), ")") != 0 )
@@ -273,7 +273,7 @@ void InvalidFunctionUsage()
                 param++;
                 if (param==3)
                 {
-                    if ( match(tok2, ", num )") )
+                    if ( Match(tok2, ", %num% )") )
                     {
                         int radix = atoi(tok2->next->str);
                         if (!(radix==0 || (radix>=2 && radix<=36)))
@@ -320,10 +320,10 @@ static const TOKEN *GetFunction( const TOKEN *content )
             if (tok->str[0] == ';')
                 func = NULL;
 
-            else if ( match(tok, "var :: var (") )
+            else if ( Match(tok, "%var% :: %var% (") )
                 func = tok->next->next;
 
-            else if ( match(tok, "type var (") )
+            else if ( Match(tok, "%type% %var% (") )
                 func = tok->next;
         }
 
@@ -409,7 +409,9 @@ void CheckIfAssignment()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (match(tok,"if ( a = b )"))
+        if (Match(tok, "if ( %var% = %num% )") ||
+            Match(tok, "if ( %var% = %str% )") ||
+            Match(tok, "if ( %var% = %var% )") )
         {
             std::ostringstream ostr;
             ostr << FileLine(tok) << ": Possible bug. Should it be '==' instead of '='?";
@@ -596,7 +598,7 @@ void CheckVariableScope()
             if ( indentlevel == 0 )
                 func = false;
         }
-        if ( indentlevel == 0 && match(tok, ") {") )
+        if ( indentlevel == 0 && Match(tok, ") {") )
         {
             func = true;
         }
@@ -611,8 +613,8 @@ void CheckVariableScope()
                 continue;
 
             // Variable declaration?
-            if (match(tok1, "var var ;") ||
-                match(tok1, "var var =") )
+            if (Match(tok1, "%var% %var% ;") ||
+                Match(tok1, "%var% %var% =") )
             {
                 CheckVariableScope_LookupVar( tok1, getstr(tok1, 1) );
             }

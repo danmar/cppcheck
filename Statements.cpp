@@ -213,32 +213,32 @@ void CreateStatementList()
                     TOKEN *rs = eq->next;
 
                     bool ismalloc = false;
-                    if (match(rs, "strdup ("))
+                    if (Match(rs, "strdup ("))
                     {
                         ismalloc = true;
                     }
                     else if (rs->str[0]=='(' && IsName(getstr(rs,1)))
                     {
-                        ismalloc |= match(rs, "( type * ) malloc (");
-                        ismalloc |= match(rs, "( type * * ) malloc (");
-                        ismalloc |= match(rs, "( type type * ) malloc (");
-                        ismalloc |= match(rs, "( type type * * ) malloc (");
-                        ismalloc |= match(rs, "( type * ) kmalloc (");
-                        ismalloc |= match(rs, "( type * * ) kmalloc (");
-                        ismalloc |= match(rs, "( type type * ) kmalloc (");
-                        ismalloc |= match(rs, "( type type * * ) kmalloc (");
+                        ismalloc |= Match(rs, "( %type% * ) malloc (");
+                        ismalloc |= Match(rs, "( %type% * * ) malloc (");
+                        ismalloc |= Match(rs, "( %type% %type% * ) malloc (");
+                        ismalloc |= Match(rs, "( %type% %type% * * ) malloc (");
+                        ismalloc |= Match(rs, "( %type% * ) kmalloc (");
+                        ismalloc |= Match(rs, "( %type% * * ) kmalloc (");
+                        ismalloc |= Match(rs, "( %type% %type% * ) kmalloc (");
+                        ismalloc |= Match(rs, "( %type% %type% * * ) kmalloc (");
                     }
 
                     if ( ismalloc )
                         AppendStatement(STATEMENT::MALLOC, tok2, varname);
 
-                    else if ( match(rs,"new type ;") )
+                    else if ( Match(rs,"new %type% ;") )
                         AppendStatement(STATEMENT::NEW, tok2, varname);
 
-                    else if ( match(rs, "new type (") )
+                    else if ( Match(rs, "new %type% (") )
                         AppendStatement(STATEMENT::NEW, tok2, varname);
 
-                    else if ( match(rs, "new type [") )
+                    else if ( Match(rs, "new %type% [") )
                         AppendStatement(STATEMENT::NEWARRAY, tok2, varname);
 
                     else
@@ -254,16 +254,16 @@ void CreateStatementList()
                 if (strchr("{};", tok2->str[0]))
                     break;
 
-                if (match(tok2, "free ( var ) ;"))
+                if (Match(tok2, "free ( %var% ) ;"))
                     AppendStatement(STATEMENT::FREE, tok2, getstr(tok2, 2));
 
-                if (match(tok2, "kfree ( var ) ;"))
+                if (Match(tok2, "kfree ( %var% ) ;"))
                     AppendStatement(STATEMENT::FREE, tok2, getstr(tok2, 2));
 
-                if (match(tok2, "delete var ;"))
+                if (Match(tok2, "delete %var% ;"))
                     AppendStatement(STATEMENT::DELETE, tok2, getstr(tok2,1));
 
-                if (match(tok2, "delete [ ] var ;"))
+                if (Match(tok2, "delete [ ] %var% ;"))
                     AppendStatement(STATEMENT::DELETEARRAY, tok2, getstr(tok2,3));
             }
 
@@ -275,7 +275,7 @@ void CreateStatementList()
                 if (parlevel==0 && strchr("{};", tok2->str[0]))
                     break;
 
-                if (match(tok2,"free ( var )"))
+                if (Match(tok2,"free ( %var% )"))
                     break;
 
                 if (tok2->str[0] == '(')

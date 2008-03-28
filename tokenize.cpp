@@ -576,7 +576,7 @@ void SimplifyTokenList()
     // Replace constants..
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (match(tok,"const type var = num ;"))
+        if (Match(tok,"const %type% %var% = %num% ;"))
         {
             const char *sym = getstr(tok,2);
             const char *num = getstr(tok,4);
@@ -705,12 +705,12 @@ void SimplifyTokenList()
     TypeSize["double"] = sizeof(double);
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (match(tok,"class type"))
+        if (Match(tok,"class %var%"))
         {
             TypeSize[getstr(tok,1)] = 11;
         }
 
-        else if (match(tok, "struct type"))
+        else if (Match(tok, "struct %var%"))
         {
             TypeSize[getstr(tok,1)] = 13;
         }
@@ -723,7 +723,7 @@ void SimplifyTokenList()
         if (strcmp(tok->str,"sizeof") != 0)
             continue;
 
-        if (match(tok, "sizeof ( type * )"))
+        if (Match(tok, "sizeof ( %type% * )"))
         {
             free(tok->str);
             char str[10];
@@ -737,7 +737,7 @@ void SimplifyTokenList()
             }
         }
 
-        else if (match(tok, "sizeof ( type )"))
+        else if (Match(tok, "sizeof ( %type% )"))
         {
             const char *type = getstr(tok, 2);
             int size = SizeOfType(type);
@@ -759,7 +759,7 @@ void SimplifyTokenList()
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
         // type array [ num ] ;
-        if ( ! match(tok, "type var [ num ] ;") )
+        if ( ! Match(tok, "%type% %var% [ %num% ] ;") )
             continue;
 
         int size = SizeOfType(tok->str);
@@ -785,7 +785,8 @@ void SimplifyTokenList()
                     break;
             }
 
-            else if (match(tok2, "sizeof ( var )"))
+            // Todo: Match varname directly
+            else if (Match(tok2, "sizeof ( %var% )"))
             {
                 if (strcmp(getstr(tok2,2), varname) == 0)
                 {
@@ -815,7 +816,7 @@ void SimplifyTokenList()
 
         for (TOKEN *tok = tokens; tok; tok = tok->next)
         {
-            if (match(tok->next, "* 1") || match(tok->next, "1 *"))
+            if (Match(tok->next, "* 1") || Match(tok->next, "1 *"))
             {
                 for (int i = 0; i < 2; i++)
                     DeleteNextToken(tok);
@@ -869,7 +870,7 @@ void SimplifyTokenList()
         if ( ! next )
             break;
 
-        if (match(next, "* ( var + num )"))
+        if (Match(next, "* ( %var% + %num% )"))
         {
             const char *str[4] = {"var","[","num","]"};
             str[0] = getstr(tok,3);
@@ -904,56 +905,56 @@ void SimplifyTokenList()
         TOKEN *tok2 = NULL;
         unsigned int typelen = 0;
 
-        if ( match(type0, "type var ,") )
+        if ( Match(type0, "%type% %var% ,") )
         {
             tok2 = _gettok(type0, 2);    // The ',' token
             typelen = 1;
         }
 
-        else if ( match(type0, "type * var ,") )
+        else if ( Match(type0, "%type% * %var% ,") )
         {
             tok2 = _gettok(type0, 3);    // The ',' token
             typelen = 1;
         }
 
-        else if ( match(type0, "type var [ num ] ,") )
+        else if ( Match(type0, "%type% %var% [ %num% ] ,") )
         {
             tok2 = _gettok(type0, 5);    // The ',' token
             typelen = 1;
         }
 
-        else if ( match(type0, "type * var [ num ] ,") )
+        else if ( Match(type0, "%type% * %var% [ %num% ] ,") )
         {
             tok2 = _gettok(type0, 6);    // The ',' token
             typelen = 1;
         }
 
-        else if ( match(type0, "struct type var ,") )
+        else if ( Match(type0, "struct %type% %var% ,") )
         {
             tok2 = _gettok(type0, 3);
             typelen = 2;
         }
 
-        else if ( match(type0, "struct type * var ,") )
+        else if ( Match(type0, "struct %type% * %var% ,") )
         {
             tok2 = _gettok(type0, 4);
             typelen = 2;
         }
 
 
-        else if ( match(type0, "type var =") )
+        else if ( Match(type0, "%type% %var% =") )
         {
             tok2 = _gettok(type0, 2);
             typelen = 1;
         }
 
-        else if ( match(type0, "type * var =") )
+        else if ( Match(type0, "%type% * %var% =") )
         {
             tok2 = _gettok(type0, 3);
             typelen = 1;
         }
 
-        else if ( match(type0, "struct type * var =") )
+        else if ( Match(type0, "struct %type% * %var% =") )
         {
             tok2 = _gettok(type0, 4);
             typelen = 2;
@@ -1048,49 +1049,6 @@ const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[])
             return ret;
     }
     return NULL;
-}
-//---------------------------------------------------------------------------
-
-bool match(const TOKEN *tok, const char pattern[])
-{
-    if (!tok)
-        return false;
-
-    const char *p = pattern;
-    while (*p)
-    {
-        char str[50];
-        char *s = str;
-        while (*p==' ')
-            p++;
-        while (*p && *p!=' ')
-        {
-            *s = *p;
-            s++;
-            p++;
-        }
-        *s = 0;
-        if (str[0] == 0)
-            return true;
-
-        if (strcmp(str,"var")==0 || strcmp(str,"type")==0)
-        {
-            if (!IsName(tok->str))
-                return false;
-        }
-        else if (strcmp(str,"num")==0)
-        {
-            if (!std::isdigit(tok->str[0]))
-                return false;
-        }
-        else if (strcmp(str, tok->str) != 0)
-            return false;
-
-        tok = tok->next;
-        if (!tok)
-            return false;
-    }
-    return true;
 }
 //---------------------------------------------------------------------------
 

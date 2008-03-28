@@ -3,13 +3,16 @@
 #define CommonCheckH
 //---------------------------------------------------------------------------
 
+#include <list>
 #include <string>
 #include <sstream>
 
 struct TOKEN;
 
+extern std::list<const TOKEN *> FunctionList;
+
 std::string FileLine(const TOKEN *tok);
-                                   
+
 extern bool OnlyReportUniqueErrors;
 
 void ReportErr(const std::string &errmsg);
@@ -21,7 +24,12 @@ bool IsNumber(const char str[]);
 
 bool IsStandardType(const char str[]);
 
-const TOKEN *FindFunction( const TOKEN *tok, const char funcname[] );
+void FillFunctionList();
+const TOKEN *GetFunctionTokenByName( const char funcname[] );
+
+
+bool Match(const TOKEN *tok, const char pattern[], const char *varname[]=0);
+
 
 //---------------------------------------------------------------------------
 #endif

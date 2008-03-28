@@ -20,67 +20,6 @@ extern bool ShowAll;
 // CallStack used when parsing into subfunctions.
 static std::list<const TOKEN *> CallStack;
 
-static std::list<const TOKEN *> FunctionList;
-static void FillFunctionList()
-{
-    FunctionList.clear();
-    int indentlevel = 0;
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
-    {
-        if ( tok->str[0] == '{' )
-            indentlevel++;
-
-        else if ( tok->str[0] == '}' )
-            indentlevel--;
-
-        else if (indentlevel==0 && match(tok, "var ("))
-        {
-            // Check if this is the first token of a function implementation..
-            for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
-            {
-                if ( tok2->str[0] == ';' )
-                {
-                    tok = tok2;
-                    break;
-                }
-
-                else if ( tok2->str[0] == '{' )
-                {
-                    break;
-                }
-
-                else if ( tok2->str[0] == ')' )
-                {
-                    if ( match(tok2, ") {") )
-                    {
-                        FunctionList.push_back( tok );
-                        tok = tok2;
-                    }
-                    else
-                    {
-                        tok = tok2;
-                        while (tok->next && !strchr(";{", tok->next->str[0]))
-                            tok = tok->next;
-                    }
-                    break;
-                }
-            }
-        }
-    }
-}
-
-static const TOKEN *GetFunctionTokenByName( const char funcname[] )
-{
-    std::list<const TOKEN *>::const_iterator it;
-    for ( it = FunctionList.begin(); it != FunctionList.end(); it++ )
-    {
-        if ( strcmp( (*it)->str, funcname ) == 0 )
-        {
-            return *it;
-        }
-    }
-    return NULL;
-}
 
 // Modified version of 'ReportError' that also reports the callstack
 static void ReportError(const TOKEN *tok, const char errmsg[])
@@ -91,87 +30,6 @@ static void ReportError(const TOKEN *tok, const char errmsg[])
         ostr << FileLine(*it) << " -> ";
     ostr << FileLine(tok) << ": " << errmsg;
     ReportErr(ostr.str());
-}
-
-
-static bool Match1(const TOKEN *tok, const char pattern[], const char *varname[])
-{
-    if (!tok)
-        return false;
-
-    const char *p = pattern;
-    while (*p)
-    {
-        // Skip spaces in pattern..
-        while ( *p == ' ' )
-            p++;
-
-        // Extract token from pattern..
-        char str[50];
-        char *s = str;
-        while (*p && *p!=' ')
-        {
-            *s = *p;
-            s++;
-            p++;
-        }
-        *s = 0;
-
-        // No token => Success!
-        if (str[0] == 0)
-            return true;
-
-        // Any symbolname..
-        if (strcmp(str,"%var%")==0 || strcmp(str,"%type%")==0)
-        {
-            if (!IsName(tok->str))
-                return false;
-        }
-
-        // Variable name..
-        else if (strcmp(str,"%var1%")==0)
-        {
-            if (strcmp(tok->str, varname[0]) != 0)
-                return false;
-
-            for ( int i = 1; varname[i]; i++ )
-            {
-                if ( ! gettok(tok, 2) )
-                    return false;
-
-                if ( strcmp(getstr(tok, 1), ".") )
-                    return false;
-
-                if ( strcmp(getstr(tok, 2), varname[i]) )
-                    return false;
-
-                tok = gettok(tok, 2);
-            }
-        }
-
-        else if (strcmp(str,"%num%")==0)
-        {
-            if ( ! IsNumber(tok->str) )
-                return false;
-        }
-
-
-        else if (strcmp(str,"%str%")==0)
-        {
-            if ( tok->str[0] != '\"' )
-                return false;
-        }
-
-        else if (strcmp(str, tok->str) != 0)
-            return false;
-
-        tok = tok->next;
-        if (!tok)
-            return false;
-    }
-
-    // The end of the pattern has been reached and nothing wrong has been found
-    return true;
 }
 //---------------------------------------------------------------------------
 
@@ -189,7 +47,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
 
     // Array index..
-    if ( Match1(tok, "%var1% [ %num% ]", varname) )
+    if ( Match(tok, "%var1% [ %num% ]", varname) )
     {
         const char *num = getstr(tok, 2 + varc);
         if (strtol(num, NULL, 10) >= size)
@@ -215,7 +73,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
         }
 
         // Array index..
-        if ( !IsName(tok->str) && Match1(tok->next, "%var1% [ %num% ]", varname) )
+        if ( !IsName(tok->str) && Match(tok->next, "%var1% [ %num% ]", varname) )
         {
             const char *num = getstr(tok->next, 2 + varc);
             if (strtol(num, NULL, 10) >= size)
@@ -235,8 +93,8 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
             strcmp(tok->str,"strncpy")==0 ||
             strcmp(tok->str,"fgets")==0 )
         {
-            if ( Match1( tok->next, "( %var1% , %num% , %num% )", varname ) ||
-                 Match1( tok->next, "( %var% , %var1% , %num% )", varname ) )
+            if ( Match( tok->next, "( %var1% , %num% , %num% )", varname ) ||
+                 Match( tok->next, "( %var% , %var1% , %num% )", varname ) )
             {
                 const char *num  = getstr(tok, varc + 6);
                 if ( atoi(num) > total_size )
@@ -249,22 +107,22 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
 
         // Loop..
-        if ( match(tok, "for (") )
+        if ( Match(tok, "for (") )
         {
             const TOKEN *tok2 = gettok( tok, 2 );
 
             // for - setup..
-            if ( match(tok2, "var = 0 ;") )
+            if ( Match(tok2, "%var% = 0 ;") )
                 tok2 = gettok(tok2, 4);
-            else if ( match(tok2, "type var = 0 ;") )
+            else if ( Match(tok2, "%type% %var% = 0 ;") )
                 tok2 = gettok(tok2, 5);
-            else if ( match(tok2, "type type var = 0 ;") )
+            else if ( Match(tok2, "%type% %type% %var% = 0 ;") )
                 tok2 = gettok(tok2, 6);
             else
                 continue;
 
             // for - condition..
-            if ( ! match(tok2, "var < num ;") && ! match(tok2, "var <= num ;"))
+            if ( ! Match(tok2, "%var% < %num% ;") && ! Match(tok2, "%var% <= %num% ;"))
                 continue;
 
             // Get index variable and stopsize.
@@ -298,7 +156,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
                         break;
                 }
 
-                if ( Match1( tok2, pattern.str().c_str(), varname ) )
+                if ( Match( tok2, pattern.str().c_str(), varname ) )
                 {
                     ReportError(tok2, "Buffer overrun");
                     break;
@@ -311,7 +169,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
 
         // Writing data into array..
-        if ( Match1(tok, "strcpy ( %var1% , %str% )", varname) )
+        if ( Match(tok, "strcpy ( %var1% , %str% )", varname) )
         {
             int len = 0;
             const char *str = getstr(tok, varc + 4 );
@@ -332,7 +190,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
         // Function call..
         // Todo: Handle struct member variables..
-        if ( match( tok, "var (" ) )
+        if ( Match( tok, "%var% (" ) )
         {
             // Don't make recursive checking..
             if (std::find(CallStack.begin(), CallStack.end(), tok) != CallStack.end())
@@ -363,7 +221,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
                 if ( parlevel == 1 &&
                     strchr( "(,", *getstr(tok2,0) ) &&
-                    Match1( tok2->next, "%var1%", varname ) &&
+                    Match( tok2->next, "%var1%", varname ) &&
                     strchr( ",)", *getstr(tok2, 2+varc) ) )
                 {
                     par++;
@@ -393,7 +251,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
                 else if ( ftok->str[0] == ',' )
                     par--;
 
-                else if (par==1 && parlevel==1 && (match(ftok, "var ,") || match(ftok, "var )")))
+                else if (par==1 && parlevel==1 && (Match(ftok, "%var% ,") || Match(ftok, "%var% )")))
                 {
                     // Parameter name..
                     const char *parname[2];
@@ -436,7 +294,7 @@ static void CheckBufferOverrun_LocalVariable()
         else if (tok->str[0]=='}')
             indentlevel--;
 
-        else if (indentlevel > 0 && match(tok, "type var [ num ] ;"))
+        else if (indentlevel > 0 && Match(tok, "%type% %var% [ %num% ] ;"))
         {
             const char *varname[2];
             varname[0] = getstr(tok,1);
@@ -483,8 +341,8 @@ static void CheckBufferOverrun_StructVariable()
             if ( strchr( ";{,(", tok2->str[0] ) )
             {
                 // Declare array..
-                if ( match(tok2->next, "type var [ num ] ;") ||
-                     match(tok2->next, "type * var [ num ] ;") )
+                if ( Match(tok2->next, "%type% %var% [ %num% ] ;") ||
+                     Match(tok2->next, "%type% * %var% [ %num% ] ;") )
                 {
                     const char *varname[3] = {0,0,0};
                     int ivar = IsName(getstr(tok2, 2)) ? 2 : 3;
@@ -501,11 +359,11 @@ static void CheckBufferOverrun_StructVariable()
                             continue;
 
                         // Declare variable: Fred fred1;
-                        if ( match( tok3->next, "var ;" ) )
+                        if ( Match( tok3->next, "%var% ;" ) )
                             varname[0] = getstr(tok3, 1);
 
                         // Declare pointer: Fred *fred1
-                        else if ( match(tok3->next, "* var") && tok3->next->next->next && strchr(",);=", tok3->next->next->next->str[0]) )
+                        else if ( Match(tok3->next, "* %var%") && tok3->next->next->next && strchr(",);=", tok3->next->next->next->str[0]) )
                             varname[0] = getstr(tok3, 2);
 
                         else
@@ -524,11 +382,11 @@ static void CheckBufferOverrun_StructVariable()
                             }
 
                             // End of function declaration..
-                            if ( match(tok3, ") ;") )
+                            if ( Match(tok3, ") ;") )
                                 break;
 
                             // Function implementation..
-                            if ( match(tok3, ") {") )
+                            if ( Match(tok3, ") {") )
                             {
                                 CheckTok = gettok(tok3, 2);
                                 break;
@@ -552,7 +410,6 @@ static void CheckBufferOverrun_StructVariable()
 
 void CheckBufferOverrun()
 {
-    FillFunctionList();
     CheckBufferOverrun_LocalVariable();
     CheckBufferOverrun_StructVariable();
 }
@@ -573,14 +430,14 @@ void WarningDangerousFunctions()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (match(tok, "gets ("))
+        if (Match(tok, "gets ("))
         {
             std::ostringstream ostr;
             ostr << FileLine(tok) << ": Found 'gets'. You should use 'fgets' instead";
             ReportErr(ostr.str());
         }
 
-        else if (match(tok, "scanf (") && strcmp(getstr(tok,2),"\"%s\"") == 0)
+        else if (Match(tok, "scanf (") && strcmp(getstr(tok,2),"\"%s\"") == 0)
         {
             std::ostringstream ostr;
             ostr << FileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";
