@@ -9,8 +9,6 @@
 
 struct TOKEN;
 
-extern std::list<const TOKEN *> FunctionList;
-
 std::string FileLine(const TOKEN *tok);
 
 extern bool OnlyReportUniqueErrors;
@@ -28,7 +26,7 @@ void FillFunctionList();
 const TOKEN *GetFunctionTokenByName( const char funcname[] );
 
 
-bool Match(const TOKEN *tok, const char pattern[], const char *varname[]=0);
+bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
 
 
 //---------------------------------------------------------------------------

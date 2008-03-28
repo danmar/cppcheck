@@ -164,11 +164,8 @@ int main(int argc, char* argv[])
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
 
-extern bool HasErrors;
-
 static void CppCheck(const char FileName[])
 {
-    HasErrors = false;
     OnlyReportUniqueErrors = true;
 
     std::cout << "Checking " << FileName << "...\n";
@@ -178,7 +175,7 @@ static void CppCheck(const char FileName[])
     Files.clear();
     Tokenize(FileName);
 
-    FunctionList.clear();
+    FillFunctionList();
 
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
@@ -242,11 +239,7 @@ static void CppCheck(const char FileName[])
 
         // Warning upon c-style pointer casts
         const char *ext = strrchr(FileName, '.');
-#ifdef __linux__
-        if (ext && strcasecmp(ext,".c"))
-#else
-        if (ext && stricmp(ext,".c"))
-#endif
+        if (ext && strcmp(ext,".cpp")==0)
             WarningOldStylePointerCast();
 
         // Use standard functions instead
@@ -269,27 +262,10 @@ static void CppCheck(const char FileName[])
     // Clean up tokens..
     DeallocateTokens();
 
-    // Todo: How should this work? Activated by a command line switch?
-    if ( ! HasErrors )
+    if ( errout.str().empty() )
         std::cout << "No errors found\n";
 }
 //---------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

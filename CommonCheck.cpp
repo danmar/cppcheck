@@ -6,10 +6,9 @@
 #include <list>
 #include <algorithm>
 //---------------------------------------------------------------------------
-bool HasErrors;
 bool OnlyReportUniqueErrors;
 std::ostringstream errout;
-std::list<const TOKEN *> FunctionList;
+static std::list<const TOKEN *> FunctionList;
 //---------------------------------------------------------------------------
 
 std::string FileLine(const TOKEN *tok)
@@ -31,7 +30,6 @@ void ReportErr(const std::string &errmsg)
         ErrorList.push_back( errmsg );
     }
     errout << errmsg << std::endl;
-    HasErrors = true;
 }
 //---------------------------------------------------------------------------
 
@@ -61,6 +59,8 @@ bool IsStandardType(const char str[])
 
 void FillFunctionList()
 {
+    FunctionList.clear();
+
     int indentlevel = 0;
     for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
@@ -121,7 +121,7 @@ const TOKEN *GetFunctionTokenByName( const char funcname[] )
 }
 //---------------------------------------------------------------------------
 
-bool Match(const TOKEN *tok, const char pattern[], const char *varname[])
+bool Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
 {
     if (!tok)
         return false;
@@ -156,8 +156,13 @@ bool Match(const TOKEN *tok, const char pattern[], const char *varname[])
         }
 
         // Variable name..
-        else if (strcmp(str,"%var1%")==0)
+        else if (strcmp(str,"%var1%")==0 || strcmp(str,"%var2%")==0)
         {
+            const char **varname = (strcmp(str,"%var1%")==0) ? varname1 : varname2;
+
+            if ( ! varname )
+                return false;
+
             if (strcmp(tok->str, varname[0]) != 0)
                 return false;
 

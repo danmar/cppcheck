@@ -92,6 +92,12 @@ static struct VAR *ClassChecking_GetVarList(const char classname[])
 
 static const TOKEN * FindClassFunction( const TOKEN *_tokens, const char classname[], const char funcname[], unsigned int &indentlevel )
 {
+    const char *_classname[2] = {0,0};
+    const char *_funcname[2] = {0,0};
+    _classname[0] = classname;
+    _funcname[0] = funcname;
+
+
     while ( _tokens )
     {
         if ( indentlevel > 0 )
@@ -103,7 +109,7 @@ static const TOKEN * FindClassFunction( const TOKEN *_tokens, const char classna
             else if ( indentlevel == 1 )
             {
                 // Member function is implemented in the class declaration..
-                if ( Match( _tokens, "%var% (" ) && strcmp(_tokens->str,funcname) == 0 )
+                if ( Match( _tokens, "%var1% (", _funcname ) )
                 {
                     const TOKEN *tok2 = _tokens;
                     while ( tok2 && tok2->str[0] != '{' && tok2->str[0] != ';' )
@@ -114,17 +120,13 @@ static const TOKEN * FindClassFunction( const TOKEN *_tokens, const char classna
             }
         }
 
-        // Todo: Match the classname directly instead
-        else if ( Match(_tokens, "class %var% {") && strcmp(getstr(_tokens,1),classname)==0 )
+        else if ( Match(_tokens, "class %var1% {", _classname) )
         {
             indentlevel = 1;
             _tokens = gettok( _tokens, 2 );
         }
 
-        // Todo: Match the classname and funcname directly instead
-        else if ( Match(_tokens, "%var% :: %var% (") &&
-                  strcmp(_tokens->str,classname) == 0 &&
-                  strcmp(getstr(_tokens,2),funcname) == 0  )
+        else if ( Match(_tokens, "%var1% :: %var2% (", _classname, _funcname) )
         {
             return _tokens;
         }
