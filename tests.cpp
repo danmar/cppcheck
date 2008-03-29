@@ -86,7 +86,7 @@ static void check(void (chk)(),
     if ( chk != CheckUnsignedDivision )
         SimplifyTokenList();
 
-    FillFunctionList();
+    FillFunctionList(0);
 
     // Check for buffer overruns..
     errout.str("");
@@ -579,7 +579,7 @@ static void constructors()
 }
 //---------------------------------------------------------------------------
 
-void operator_eq()
+static void operator_eq()
 {
     const char test1[] = "class Fred\n"
                          "{\n"

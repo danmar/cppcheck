@@ -52,7 +52,7 @@ static void AppendStatement(STATEMENT::etype Type, TOKEN *tok, std::string Var="
     Statements.push_back(NewStatement);
 }
 
-TOKEN *GotoNextStatement(TOKEN *tok)
+static TOKEN *GotoNextStatement(TOKEN *tok)
 {
     if (tok && (tok->str[0]=='{' || tok->str[0]=='}'))
         return tok->next;
@@ -79,7 +79,7 @@ TOKEN *GotoNextStatement(TOKEN *tok)
 }
 
 
-void GetVariableName(TOKEN * &Token, std::string &varname)
+static void GetVariableName(TOKEN * &Token, std::string &varname)
 {
     varname = "";
 

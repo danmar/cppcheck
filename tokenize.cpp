@@ -230,7 +230,7 @@ static void DeleteNextToken(TOKEN *tok)
 // InsertTokens - Copy and insert tokens
 //---------------------------------------------------------------------------
 
-void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
+static void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
 {
     while (n > 0)
     {
@@ -1093,5 +1093,8 @@ void DeallocateTokens()
         dsymlist = next;        
     }
 }
+
+
+
 
 

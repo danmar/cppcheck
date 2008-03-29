@@ -25,7 +25,7 @@ bool ShowAll = false;
 bool CheckCodingStyle = false;
 //---------------------------------------------------------------------------
 
-static void CppCheck(const char FileName[]);
+static void CppCheck(const char FileName[], unsigned int FileId);
 
 
 static void AddFiles( std::vector<std::string> &filenames, const char path[], const char pattern[] )
@@ -153,8 +153,19 @@ int main(int argc, char* argv[])
     for (unsigned int c = 0; c < filenames.size(); c++)
     {
         errout.str("");
-        CppCheck(filenames[c].c_str());
+        CppCheck(filenames[c].c_str(), c);
         std::cerr << errout.str();
+    }
+
+    if ( CheckCodingStyle && filenames.size() > 1 )
+    {
+        errout.str("");
+        CheckGlobalFunctionUsage(filenames);
+        if ( ! errout.str().empty() )
+        {
+            std::cerr << "\n";
+            std::cerr << errout.str();
+        }
     }
 
     return 0;
@@ -164,7 +175,7 @@ int main(int argc, char* argv[])
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
 
-static void CppCheck(const char FileName[])
+static void CppCheck(const char FileName[], unsigned int FileId)
 {
     OnlyReportUniqueErrors = true;
 
@@ -175,7 +186,7 @@ static void CppCheck(const char FileName[])
     Files.clear();
     Tokenize(FileName);
 
-    FillFunctionList();
+    FillFunctionList(FileId);
 
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
