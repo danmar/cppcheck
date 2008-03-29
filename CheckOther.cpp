@@ -606,6 +606,8 @@ void CheckVariableScope()
         {
             // First token of statement..
             const TOKEN *tok1 = tok->next;
+            if ( ! tok1 )
+                continue;
 
             if (strcmp(tok1->str,"return")==0 ||
                 strcmp(tok1->str,"delete")==0 ||

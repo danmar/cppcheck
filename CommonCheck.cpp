@@ -110,7 +110,8 @@ void FillFunctionList(const unsigned int file_id)
 
                 if ( Match(tok,"%var% (") )
                     funcname = tok->str;
-                else if ( Match(tok, "= %var% ;") )
+                else if ( Match(tok, "= %var% ;") ||
+                          Match(tok, "= %var% ,") )
                     funcname = tok->next->str;
 
                 if ( std::find(_usedfunc.begin(), _usedfunc.end(), funcname) == _usedfunc.end() )

@@ -213,11 +213,13 @@ void CreateStatementList()
                     TOKEN *rs = eq->next;
 
                     bool ismalloc = false;
-                    if (Match(rs, "strdup ("))
+                    if ( Match(rs, "%var% (") )
                     {
-                        ismalloc = true;
+                        ismalloc |= Match(rs, "strdup (");
+                        ismalloc |= Match(rs, "malloc (");
+                        ismalloc |= Match(rs, "kmalloc (");
                     }
-                    else if (rs->str[0]=='(' && IsName(getstr(rs,1)))
+                    else
                     {
                         ismalloc |= Match(rs, "( %type% * ) malloc (");
                         ismalloc |= Match(rs, "( %type% * * ) malloc (");
