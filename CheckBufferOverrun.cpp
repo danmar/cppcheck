@@ -189,7 +189,8 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
 
         // Function call..
-        // Todo: Handle struct member variables..
+        // It's not interesting to check what happens when the whole struct is
+        // sent as the parameter, that is checked separately anyway.
         if ( Match( tok, "%var% (" ) )
         {
             // Don't make recursive checking..

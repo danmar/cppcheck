@@ -952,8 +952,23 @@ static void unused_variable()
                          "            f(i);\n"
                          "        }\n"
                          "    }\n"
-                         "}\n";  
+                         "}\n";
     check( CheckVariableScope, __LINE__, test9, "" );
+
+
+
+    
+    const char test10[] = "static void f()\n"
+                          "{\n"
+                          "    TPoint p1;\n"
+                          "    for (i=0;i<10;i++)\n"
+                          "    {\n"
+                          "        p1=point(i,i);\n"
+                          "    }\n"
+                          "}\n";
+    check( CheckVariableScope, __LINE__, test10, "" );
+
+
 
 
 }
