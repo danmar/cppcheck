@@ -220,10 +220,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
                     par++;
                 }
 
-                if ( parlevel == 1 &&
-                    strchr( "(,", *getstr(tok2,0) ) &&
-                    Match( tok2->next, "%var1%", varname ) &&
-                    strchr( ",)", *getstr(tok2, 2+varc) ) )
+                if ( parlevel == 1 && Match(tok2, "[(,] %var1% [,)]", varname) )
                 {
                     par++;
                     break;
@@ -364,7 +361,7 @@ static void CheckBufferOverrun_StructVariable()
                             varname[0] = getstr(tok3, 1);
 
                         // Declare pointer: Fred *fred1
-                        else if ( Match(tok3->next, "* %var%") && tok3->next->next->next && strchr(",);=", tok3->next->next->next->str[0]) )
+                        else if ( Match(tok3->next, "* %var% [,);=]") )
                             varname[0] = getstr(tok3, 2);
 
                         else

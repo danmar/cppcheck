@@ -59,7 +59,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char *varname[]
             return;
 
         // Used..
-        if ( strchr("=,(", tok->str[0]) && Match( tok->next, "%var1%", varname )  )
+        if ( Match( tok, "[=,(] %var1%", varname )  )
             return;
         if ( Match( tok, "return %var1%", varname ) )
             return;

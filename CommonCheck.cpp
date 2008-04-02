@@ -308,6 +308,14 @@ bool Match(const TOKEN *tok, const char pattern[], const char *varname1[], const
                 return false;
         }
 
+        // [.. => search for a one-character token..
+        else if (str[0]=='[' && strchr(str, ']') && tok->str[1] == 0)
+        {
+            *strrchr(str, ']') = 0;
+            if ( strchr( str + 1, tok->str[0] ) == 0 )
+                return false;
+        }
+
         else if (strcmp(str, tok->str) != 0)
             return false;
 

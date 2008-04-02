@@ -187,7 +187,7 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             indentlevel--;
         }
 
-        if (strchr("{};", ftok->str[0]) && indentlevel>=1 && IsName(ftok->next->str))
+        if (indentlevel>=1 && Match(ftok, "[{};] %var%"))
         {
             ftok = ftok->next;
 
