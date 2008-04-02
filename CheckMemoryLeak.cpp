@@ -2,7 +2,6 @@
 #include "CheckMemoryLeak.h"
 
 #include "tokenize.h"
-#include "Statements.h"
 
 #include "CommonCheck.h"
 
@@ -21,16 +20,53 @@ extern bool ShowAll;
 
 //---------------------------------------------------------------------------
 
-struct _variable
+static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char *varname[] )
 {
-    int indentlevel;
-    unsigned int varindex;
-    enum {Any, Data, Malloc, New, NewA} value;
-    int dealloc_level;
-};
+    // Goto end of statement..
+    const TOKEN *tok = Tok1;
+    while (tok && tok->str[0] != ';')
+        tok = tok->next;
 
+    int indentlevel = 0;
+    for ( ; tok; tok = tok->next )
+    {
+        if (tok->str[0]=='{')
+            indentlevel++;
+
+        else if (tok->str[0]=='}')
+        {
+            indentlevel--;
+            if ( indentlevel < 0 )
+            {
+                std::ostringstream errmsg;
+                errmsg << FileLine(Tok1) << ": Memory leak:" << varname[0];
+                ReportErr( errmsg.str() );
+                return;
+            }
+        }
+
+        // Deallocated..
+        if ( Match(tok, "delete %var1% ;", varname) )
+            return;
+
+        if ( Match(tok, "delete [ ] %var1% ;", varname) )
+            return;
+
+        if ( Match(tok, "free ( %var1% ) ;", varname) )
+            return;
+
+        if ( Match(tok, "kfree ( %var1% ) ;", varname) )
+            return;
+
+        // Used..
+        if ( strchr("=,(", tok->str[0]) && Match( tok->next, "%var1%", varname )  )
+            return;
+        if ( Match( tok, "return %var1%", varname ) )
+            return;
+
+    }
+}
 //---------------------------------------------------------------------------
-
 
 
 
@@ -38,271 +74,46 @@ struct _variable
 // Checks for memory leaks inside function..
 //---------------------------------------------------------------------------
 
-static void _InFunction()
+static void CheckMemoryLeak_InFunction()
 {
-    std::vector<_variable *> varlist;
-
-    // if
-    int iflevel = 0;
-    bool endif = false;
-    std::vector<bool> iflist;
-
-    // loop
-    int looplevel = 0;
-    bool endloop = false;
-    std::vector<bool> looplist;
-
-    // switch
-    int switchlevel = 0;
-    bool endswitch = false;
-    std::vector<bool> switchlist;
-
-    // Parse the statement list and locate memory leaks..
     int indentlevel = 0;
-    std::list<STATEMENT>::const_iterator it;
-    for (it = Statements.begin(); it != Statements.end(); it++)
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        switch (it->Type)
+        if (tok->str[0]=='{')
+            indentlevel++;
+
+        else if (tok->str[0]=='}')
+            indentlevel--;
+
+        else if (indentlevel > 0 && Match(tok, "%var% = "))
         {
-            case STATEMENT::OBRACE:
-                indentlevel++;
-                iflist.push_back(endif);
-                if (endif)
-                    iflevel++;
-                looplist.push_back(endloop);
-                if (endloop)
-                    looplevel++;
-                switchlist.push_back(endswitch);
-                if (endswitch)
-                    switchlevel++;
-                break;
+            // What we may have...
+            //     * var = (char *)malloc(10);
+            //     * var = new char[10];
+            //     * var = strdup("hello");
+            const TOKEN *tok2 = gettok(tok, 2);
+            if ( tok2 && tok2->str[0] == '(' )
+            {
+                while ( tok2 && tok2->str[0] != ')' )
+                    tok2 = tok2->next;
+                tok2 = tok2 ? tok2->next : NULL;
+            }
+            if ( ! tok2 )
+                continue;
 
-            case STATEMENT::EBRACE:
-                // Check if any variables go out of scope..
-                if (indentlevel >= 1)
+            // tok2 now points on "malloc", "new", "strdup" or something like that..
+            const char *allocfunc[] = {"malloc", "strdup", "kmalloc", "new", 0};
+            for ( unsigned int i = 0; allocfunc[i]; i++ )
+            {
+                if ( strcmp(allocfunc[i], tok2->str) == 0 )
                 {
-                    for (unsigned int i = 0; i < varlist.size(); i++)
-                    {
-                        struct _variable *var = varlist[i];
-
-                        if (var->dealloc_level == indentlevel)
-                            var->dealloc_level = 0;
-
-                        if (var->indentlevel != indentlevel)
-                            continue;
-
-                        if (var->value == _variable::Malloc || var->value == _variable::New || var->value == _variable::NewA)
-                        {
-                            std::ostringstream ostr;
-                            ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
-                            ReportErr(ostr.str());
-                        }
-
-                        // Delete this instance..
-                        delete varlist[i];
-                        varlist.erase(varlist.begin()+i);
-                    }
-                }
-
-                // if level..
-                if ( ! iflist.empty() )
-                {
-                    if (iflist.back())
-                        iflevel--;
-                    iflist.pop_back();
-                }
-
-                // loop level..
-                if ( ! looplist.empty() )
-                {
-                    if (looplist.back())
-                        looplevel--;
-                    looplist.pop_back();
-                }
-
-                // switch level..
-                if ( ! switchlist.empty() )
-                {
-                    if (switchlist.back())
-                        switchlevel--;
-                    switchlist.pop_back();
-                }
-
-                // Make sure the varlist is empty..
-                if (indentlevel <= 1)
-                    varlist.clear();
-
-                if (indentlevel > 0)
-                    indentlevel--;
-                break;
-
-            case STATEMENT::DECL:
-                if (indentlevel > 0)
-                {
-                    _variable *NewVar = new _variable;
-                    memset(NewVar, 0, sizeof(_variable));
-                    NewVar->indentlevel = indentlevel;
-                    NewVar->varindex = it->VarIndex;
-                    varlist.push_back(NewVar);
-                }
-                break;
-
-            case STATEMENT::IF:
-            case STATEMENT::ELSEIF:
-            case STATEMENT::ELSE:
-                // Conditional statements..
-                iflevel++;
-                break;
-
-            case STATEMENT::ENDIF:
-                iflevel--;
-                break;
-
-            // Not very interested in these..
-            case STATEMENT::LOOP:
-            case STATEMENT::ENDLOOP:
-            case STATEMENT::SWITCH:
-            case STATEMENT::ENDSWITCH:
-                break;
-
-            case STATEMENT::MALLOC:
-            case STATEMENT::NEW:
-            case STATEMENT::NEWARRAY:
-            case STATEMENT::FREE:
-            case STATEMENT::DELETE:
-            case STATEMENT::DELETEARRAY:
-                // Don't handle conditional allocation at the moment..
-                if (iflevel>0 && (it->Type==STATEMENT::MALLOC || it->Type==STATEMENT::NEW || it->Type==STATEMENT::NEWARRAY))
+                    const char *varname[2] = {0,0};
+                    varname[0] = tok->str;
+                    CheckMemoryLeak_CheckScope(tok, varname);
                     break;
-
-                for (unsigned int i = 0; i < varlist.size(); i++)
-                {
-                    if ( varlist[i]->varindex == it->VarIndex )
-                    {
-                        bool isalloc = (varlist[i]->value==_variable::Malloc || varlist[i]->value==_variable::New || varlist[i]->value==_variable::NewA);
-                        bool alloc = (it->Type==STATEMENT::MALLOC || it->Type==STATEMENT::NEW || it->Type==STATEMENT::NEWARRAY);
-
-                        // Already allocated and then allocated again..
-                        //bool err = (isalloc & alloc);
-
-                        if (isalloc && !alloc)
-                        {
-                            // Check that the deallocation matches..
-                            bool err = false;
-
-                            err |= (varlist[i]->value==_variable::Malloc && it->Type!=STATEMENT::FREE);
-                            err |= (varlist[i]->value==_variable::New    && it->Type!=STATEMENT::DELETE);
-                            err |= (varlist[i]->value==_variable::NewA   && it->Type!=STATEMENT::DELETEARRAY);
-
-                            if (err)
-                            {
-                                std::ostringstream ostr;
-                                ostr << FileLine(it->Token) << ": Mismatching allocation and deallocation '" << VariableNames[varlist[i]->varindex] << "'";
-                                ReportErr(ostr.str());
-                            }
-                        }
-
-                        if ( it->Type == STATEMENT::MALLOC )
-                            varlist[i]->value = _variable::Malloc;
-
-                        else if ( it->Type == STATEMENT::NEW )
-                            varlist[i]->value = _variable::New;
-
-                        else if ( it->Type == STATEMENT::NEWARRAY )
-                            varlist[i]->value = _variable::NewA;
-
-                        else
-                        {
-                            // Deallocation...
-                            if (indentlevel > varlist[i]->indentlevel)
-                                varlist[i]->dealloc_level = indentlevel;
-                            else
-                                varlist[i]->value = _variable::Any;
-                        }
-
-                        break;
-                    }
                 }
-                break;
-
-            case STATEMENT::ASSIGN:
-            case STATEMENT::USE:
-                for (unsigned int i = 0; i < varlist.size(); i++)
-                {
-                    if ( varlist[i]->varindex == it->VarIndex )
-                    {
-                        varlist[i]->value = _variable::Data;
-                        break;
-                    }
-                }
-                break;
-
-            case STATEMENT::RETURN:
-                for (unsigned int i = 0; i < varlist.size(); i++)
-                {
-                    struct _variable *var = varlist[i];
-
-                    if ( var->varindex == it->VarIndex )
-                    {
-                        var->value = _variable::Any;
-                    }
-
-                    else if (var->dealloc_level != indentlevel &&
-                             (var->value==_variable::New ||
-                              var->value==_variable::NewA ||
-                              var->value==_variable::Malloc ) )
-                    {
-                        std::ostringstream ostr;
-                        ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
-                        ReportErr(ostr.str());
-                        var->value = _variable::Any;
-                        break;
-                    }
-                }
-                break;
-
-            case STATEMENT::CONTINUE:
-            case STATEMENT::BREAK:
-                // Memory leak if variable is allocated..
-                if (looplevel>0)
-                {
-                    // Find the last loop..
-                    for (int i = looplist.size() - 1; i >= 0; i--)
-                    {
-                        if (switchlist[i])
-                            break;
-
-                        if (!looplist[i])
-                            continue;
-
-                        int loop_indentlevel = i + 1;
-
-                        for (i = 0; i < (int)varlist.size(); i++)
-                        {
-                            if (varlist[i]->indentlevel < loop_indentlevel)
-                                continue;
-
-                            if (varlist[i]->value==_variable::Malloc ||
-                                varlist[i]->value==_variable::New ||
-                                varlist[i]->value==_variable::NewA )
-                            {
-                                std::ostringstream ostr;
-                                ostr << FileLine(it->Token) << ": Memory leak:" << VariableNames[varlist[i]->varindex];
-                                ReportErr(ostr.str());
-                            }
-
-                            break;
-                        }
-
-                        break;
-                    }
-                }
-                break;
+            }
         }
-
-        endif = (it->Type == STATEMENT::ENDIF);
-        endloop = (it->Type == STATEMENT::ENDLOOP);
-        endswitch = (it->Type == STATEMENT::ENDSWITCH);
     }
 }
 //---------------------------------------------------------------------------
@@ -310,188 +121,12 @@ static void _InFunction()
 
 
 //---------------------------------------------------------------------------
-// Check that all class members are deallocated..
+// Checks for memory leaks in classes..
 //---------------------------------------------------------------------------
 
-static void _ClassMembers_CheckVar(const char *classname, const char *varname)
+static void CheckMemoryLeak_ClassMembers()
 {
-    // Check how the variable 'varname' is allocated..
-    enum {No, New, NewA, Malloc} Alloc, Dealloc;
-    Alloc = Dealloc = No;
-    for (TOKEN *func = tokens; func; func = func->next)
-    {
-        if (strcmp(func->str, classname))
-            continue;
 
-        if (strcmp(getstr(func, 1), "::") != 0)
-            continue;
-
-        if ((strcmp(getstr(func,2),"~")==0 && 
-             strcmp(getstr(func,3),classname)==0 &&
-             strcmp(getstr(func,4),"(")==0) ||
-            (strcmp(getstr(func, 3), "(") != 0))
-            continue;
-
-
-        int indentlevel = 0;
-        for (TOKEN *tok = func; tok; tok = tok->next)
-        {
-            if (tok->str[0] == '{')
-            {
-                indentlevel++;
-            }
-
-            else if (tok->str[0] == '}')
-            {
-                indentlevel--;
-                if (indentlevel == 0)
-                {
-                    func = tok;
-                    break;
-                }
-            }
-
-            else if (indentlevel==0 && tok->str[0] == ';')
-            {
-                func = tok;
-                break;
-            }
-
-            else if (indentlevel > 0)
-            {
-                // Deallocation..
-                if (strcmp(tok->str,"delete")==0 || strcmp(tok->str,"free")==0)
-                {
-                    bool err = false;
-
-                    if (Match(tok, "delete %var% ;") &&
-                        strcmp(getstr(tok,1),varname)==0)
-                    {
-                        err |= ( Alloc != No && Alloc != New );
-                        Dealloc = New;
-                    }
-
-                    else if (Match(tok, "delete [ ] %var% ;") &&
-                        strcmp(getstr(tok,3),varname)==0)
-                    {
-                        err |= ( Alloc != No && Alloc != NewA );
-                        Dealloc = NewA;
-                    }
-
-                    else if (Match(tok, "free ( %var% )") &&
-                        strcmp(getstr(tok,2),varname)==0)
-                    {
-                        err |= ( Alloc != No && Alloc != Malloc );
-                        Dealloc = Malloc;
-                    }
-
-                    if (err)
-                    {
-                        std::ostringstream ostr;
-                        ostr << FileLine(tok) << ": Mismatching deallocation for '" << classname << "::" << varname << "'";
-                        ReportErr(ostr.str());
-                    }
-                }
-
-                else
-                {
-                    // Allocation...
-                    if ( strcmp(tok->str, varname) != 0 )
-                        continue;
-
-                    if ( strcmp(getstr(tok,1), "=") != 0 )
-                        continue;
-
-                    bool err = false;
-
-                    if ( strcmp(getstr(tok,2), "new") == 0 )
-                    {
-                        if ( Match(tok, "%var% = new %type% ;") ||
-                             Match(tok, "%var% = new %type% (") )
-                        {
-                            if ( ! ShowAll && ! IsStandardType(getstr(tok,3)) )
-                                continue;
-                            err |= ( Dealloc != No && Dealloc != New );
-                            Alloc = New;
-                        }
-
-                        else if ( Match(tok, "%var% = new %type% [") )
-                        {
-                            if ( ! ShowAll && ! IsStandardType(getstr(tok,3)) )
-                                continue;
-                            err |= ( Dealloc != No && Dealloc != NewA );
-                            Alloc = NewA;
-                        }
-                    }
-
-                    else if ( Match(tok, "%var% = strdup (") ||
-                              Match(tok, "%var% = ( %type% * ) malloc ("))
-                    {
-                        if ( ! ShowAll &&
-                             tok->next->next->str[0] == '(' &&
-                             ! IsStandardType(getstr(tok,3)) )
-                                continue;
-
-                        err |= ( Dealloc != No && Dealloc != Malloc );
-                        Alloc = Malloc;
-                    }
-
-                    if (err)
-                    {
-                        std::ostringstream ostr;
-                        ostr << FileLine(tok) << ": Mismatching allocation for '" << classname << "::" << varname << "'";
-                        ReportErr(ostr.str());
-                    }
-                }
-            }
-        }
-    }
-
-    if ( Alloc != Dealloc && Dealloc == No )
-    {
-        std::ostringstream ostr;
-        ostr << "Memory leak for '" << classname << "::" << varname << "'";
-        ReportErr(ostr.str());
-    }
-}
-
-static void _ClassMembers()
-{
-    for (TOKEN *ClassDecl = tokens; ClassDecl; ClassDecl = ClassDecl->next)
-    {
-        // Is this a class declaration?
-        // -------------------------------------
-        if ( ! Match(ClassDecl, "class %var% {") )
-            continue;
-
-        const char *classname = getstr(ClassDecl, 1);
-
-        // Locate member variables..
-        int indentlevel = 0;
-        for (TOKEN *ClassVar = ClassDecl; ClassVar; ClassVar = ClassVar->next)
-        {
-            if ( ClassVar->str[0] == '{' )
-                indentlevel++;
-
-            else if ( ClassVar->str[0] == '}' )
-            {
-                indentlevel--;
-                if (indentlevel == 0)
-                    break;
-            }
-
-            else if (indentlevel == 1)
-            {
-                if ( Match(ClassVar, "%type% * %var% ;") )
-                {
-                    const char *varname = getstr(ClassVar, 2);
-
-                    // Check the variable usage..
-                    _ClassMembers_CheckVar(classname, varname);
-                }
-            }
-        }
-    }
 }
 
 
@@ -501,15 +136,11 @@ static void _ClassMembers()
 
 void CheckMemoryLeak()
 {
-    // Create statement list.
-    Statements.clear();
-    CreateStatementList();
-
     // Check for memory leaks inside functions..
-    _InFunction();
+    CheckMemoryLeak_InFunction();
 
     // Check that all class members are deallocated..
-    _ClassMembers();
+    CheckMemoryLeak_ClassMembers();
 }
 //---------------------------------------------------------------------------
 
