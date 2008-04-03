@@ -551,7 +551,7 @@ static void memleak_in_function()
                           "    struct acpi_object_list *obj_list;\n"
                           "    obj_list = kmalloc(sizeof(struct acpi_object_list), GFP_KERNEL);\n"
                           "}\n";
-    check( CheckMemoryLeak, __LINE__, test10, "[test.cpp:5]: Memory leak:obj_list\n" );
+    check( CheckMemoryLeak, __LINE__, test10, "[test.cpp:3]: Memory leak:obj_list\n" );
 
 }
 //---------------------------------------------------------------------------

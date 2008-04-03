@@ -22,13 +22,19 @@ extern bool ShowAll;
 
 static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char *varname[] )
 {
-    // Goto end of statement..
-    const TOKEN *tok = Tok1;
-    while (tok && tok->str[0] != ';')
-        tok = tok->next;
+    // Check input pointers..
+    if ( ! (Tok1 && varname && varname[0] ) )
+        return;
+
+    int varc = 1;
+    while ( varname[varc] )
+        varc++;
+    varc = (varc - 1) * 2;
+
+    enum {No, Malloc, New, NewA} Alloc = No;
 
     int indentlevel = 0;
-    for ( ; tok; tok = tok->next )
+    for (const TOKEN *tok = Tok1 ; tok; tok = tok->next )
     {
         if (tok->str[0]=='{')
             indentlevel++;
@@ -36,13 +42,48 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char *varname[]
         else if (tok->str[0]=='}')
         {
             indentlevel--;
-            if ( indentlevel < 0 )
+            if ( indentlevel < 0 && Alloc != No )
             {
                 std::ostringstream errmsg;
                 errmsg << FileLine(Tok1) << ": Memory leak:" << varname[0];
                 ReportErr( errmsg.str() );
                 return;
             }
+        }
+
+        // Allocated..
+        if ( Match(tok, "%var1% =", varname) )
+        {
+            // What we may have...
+            //     * var = (char *)malloc(10);
+            //     * var = new char[10];
+            //     * var = strdup("hello");
+            const TOKEN *tok2 = gettok(tok, varc+2);
+            if ( tok2 && tok2->str[0] == '(' )
+            {
+                while ( tok2 && tok2->str[0] != ')' )
+                    tok2 = tok2->next;
+                tok2 = tok2 ? tok2->next : NULL;
+            }
+            if ( ! tok2 )
+                continue;
+
+            // Does tok2 point on "malloc", "strdup" or "kmalloc"..
+            const char *mallocfunc[] = {"malloc", "strdup", "kmalloc", 0};
+            for ( unsigned int i = 0; mallocfunc[i]; i++ )
+            {
+                if ( strcmp(mallocfunc[i], tok2->str) == 0 )
+                {
+                    Alloc = Malloc;
+                    break;
+                }
+            }
+
+            if ( Match( tok2, "new %type% [;(]" ) )
+                Alloc = New;
+
+            if ( Match( tok2, "new %type% [" ) )
+                Alloc = NewA;
         }
 
         // Deallocated..
@@ -76,6 +117,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char *varname[]
 
 static void CheckMemoryLeak_InFunction()
 {
+    bool infunc = false;
     int indentlevel = 0;
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -85,33 +127,32 @@ static void CheckMemoryLeak_InFunction()
         else if (tok->str[0]=='}')
             indentlevel--;
 
-        else if (indentlevel > 0 && Match(tok, "%var% = "))
-        {
-            // What we may have...
-            //     * var = (char *)malloc(10);
-            //     * var = new char[10];
-            //     * var = strdup("hello");
-            const TOKEN *tok2 = gettok(tok, 2);
-            if ( tok2 && tok2->str[0] == '(' )
-            {
-                while ( tok2 && tok2->str[0] != ')' )
-                    tok2 = tok2->next;
-                tok2 = tok2 ? tok2->next : NULL;
-            }
-            if ( ! tok2 )
-                continue;
 
-            // tok2 now points on "malloc", "new", "strdup" or something like that..
-            const char *allocfunc[] = {"malloc", "strdup", "kmalloc", "new", 0};
-            for ( unsigned int i = 0; allocfunc[i]; i++ )
+        // In function..
+        if ( indentlevel == 0 )
+        {
+            if ( Match(tok, ") {") )
+                infunc = true;
+
+            if ( Match(tok, "[;}]") )
+                infunc = false;
+        }
+
+        // Declare a local variable => Check
+        if (indentlevel>0 && infunc)
+        {
+            if ( Match(tok, "[{};] %type% * %var% [;=]") )
             {
-                if ( strcmp(allocfunc[i], tok2->str) == 0 )
-                {
-                    const char *varname[2] = {0,0};
-                    varname[0] = tok->str;
-                    CheckMemoryLeak_CheckScope(tok, varname);
-                    break;
-                }
+                const char *varname[2] = {0,0};
+                varname[0] = getstr(tok, 3);
+                CheckMemoryLeak_CheckScope( tok->next, varname );
+            }
+
+            if ( Match(tok, "[{};] %type% %type% * %var% [;=]") )
+            {
+                const char *varname[2] = {0,0};
+                varname[0] = getstr(tok, 4);
+                CheckMemoryLeak_CheckScope( tok->next, varname );
             }
         }
     }
