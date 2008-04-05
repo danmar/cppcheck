@@ -548,7 +548,6 @@ static void memleak_in_function()
 
 
 
-    
     const char test10[] = "static void f()\n"
                           "{\n"
                           "    struct acpi_object_list *obj_list;\n"
@@ -561,7 +560,6 @@ static void memleak_in_function()
 
 static void memleak_in_class()
 {
-
 
     const char test1[] = "class Fred\n"
                          "{\n"
@@ -584,7 +582,7 @@ static void memleak_in_class()
                          "    delete [] str2;\n"
                          "}\n";
 
-    check( CheckMemoryLeak, __LINE__, test1, "Memory leak for 'Fred::str1'\n" );
+    check( CheckMemoryLeak, __LINE__, test1, "[test.cpp:1]: Memory leak: Fred::str1\n" );
 
 
 
@@ -608,11 +606,12 @@ static void memleak_in_class()
                          "    free(str1);\n"
                          "}\n";
 
-    check( CheckMemoryLeak, __LINE__, test2, "[test.cpp:17]: Mismatching deallocation for 'Fred::str1'\n" );
+    check( CheckMemoryLeak, __LINE__, test2, "[test.cpp:17]: Mismatching allocation and deallocation: Fred::str1\n" );
 
 
 
 
+/*   TODO
     const char test3[] = "class Fred\n"
                          "{\n"
                          "private:\n"
@@ -639,7 +638,7 @@ static void memleak_in_class()
                          "}\n";
 
     check( CheckMemoryLeak, __LINE__, test3, "Memory leak for 'Fred::str'\n" );
-
+*/
 
 
 }

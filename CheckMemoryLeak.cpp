@@ -20,30 +20,81 @@ extern bool ShowAll;
 
 //---------------------------------------------------------------------------
 
-static void MismatchError( const TOKEN *Tok1, const char *varname[] )
+enum AllocType { No, Malloc, New, NewA };
+
+static AllocType GetAllocationType( const TOKEN *tok2 )
+{
+    // What we may have...
+    //     * var = (char *)malloc(10);
+    //     * var = new char[10];
+    //     * var = strdup("hello");
+    if ( tok2 && tok2->str[0] == '(' )
+    {
+        while ( tok2 && tok2->str[0] != ')' )
+            tok2 = tok2->next;
+        tok2 = tok2 ? tok2->next : NULL;
+    }
+    if ( ! tok2 )
+        return No;
+
+    // Does tok2 point on "malloc", "strdup" or "kmalloc"..
+    const char *mallocfunc[] = {"malloc", "strdup", "kmalloc", 0};
+    for ( unsigned int i = 0; mallocfunc[i]; i++ )
+    {
+        if ( strcmp(mallocfunc[i], tok2->str) == 0 )
+            return Malloc;
+    }
+
+    if ( Match( tok2, "new %type% [;(]" ) )
+        return New;
+
+    if ( Match( tok2, "new %type% [" ) )
+        return NewA;
+
+    return No;
+}
+
+static AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] )
+{
+    if ( Match(tok, "delete %var1% ;", varnames) )
+        return New;
+
+    if ( Match(tok, "delete [ ] %var1% ;", varnames) )
+        return NewA;
+
+    if ( Match(tok, "free ( %var1% ) ;", varnames) ||
+         Match(tok, "kfree ( %var1% ) ;", varnames) )
+    {
+        return Malloc;
+    }
+
+    return No;
+}
+//---------------------------------------------------------------------------
+
+static void MismatchError( const TOKEN *Tok1, const char varname[] )
 {
     std::ostringstream errmsg;
-    errmsg << FileLine(Tok1) << ": Mismatching allocation and deallocation: " << varname[0];
+    errmsg << FileLine(Tok1) << ": Mismatching allocation and deallocation: " << varname;
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
 
-static void MemoryLeak( const TOKEN *tok, const char *varname[] )
+static void MemoryLeak( const TOKEN *tok, const char varname[] )
 {
     std::ostringstream errmsg;
-    errmsg << FileLine(tok) << ": Memory leak: " << varname[0];
+    errmsg << FileLine(tok) << ": Memory leak: " << varname;
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
 
-static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char *varname[] )
+static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
 {
-    int varc = 1;
-    while ( varname[varc] )
-        varc++;
-    varc = (varc - 1) * 2;
+    const char *varnames[2];
+    varnames[0] = varname;
+    varnames[1] = 0;
 
-    enum {No, Malloc, New, NewA} Alloc = No;
+    AllocType Alloc = No;
 
     int alloc_indentlevel = 0;
 
@@ -67,9 +118,9 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char *varname[]
         }
 
         // Skip stuff like: if (!var) ...
-        if ( Match(tok, "if ( ! %var1% )", varname) ||
-             Match(tok, "if ( %var1% == NULL )", varname) ||
-             Match(tok, "if ( %var1% == 0 )", varname) )
+        if ( Match(tok, "if ( ! %var1% )", varnames) ||
+             Match(tok, "if ( %var1% == NULL )", varnames) ||
+             Match(tok, "if ( %var1% == 0 )", varnames) )
         {
             int _indentlevel = 0;
             while ( tok )
@@ -89,74 +140,30 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char *varname[]
         }
 
         // Allocated..
-        if ( Match(tok, "%var1% =", varname) )
+        if ( Match(tok, "%var1% =", varnames) )
         {
-            // What we may have...
-            //     * var = (char *)malloc(10);
-            //     * var = new char[10];
-            //     * var = strdup("hello");
-            const TOKEN *tok2 = gettok(tok, varc+2);
-            if ( tok2 && tok2->str[0] == '(' )
+            AllocType alloc = GetAllocationType( gettok(tok, 2) );
+            if ( alloc != No )
             {
-                while ( tok2 && tok2->str[0] != ')' )
-                    tok2 = tok2->next;
-                tok2 = tok2 ? tok2->next : NULL;
-            }
-            if ( ! tok2 )
-                continue;
-
-            // Does tok2 point on "malloc", "strdup" or "kmalloc"..
-            const char *mallocfunc[] = {"malloc", "strdup", "kmalloc", 0};
-            for ( unsigned int i = 0; mallocfunc[i]; i++ )
-            {
-                if ( strcmp(mallocfunc[i], tok2->str) == 0 )
-                {
-                    Alloc = Malloc;
-                    alloc_indentlevel = indentlevel;
-                    break;
-                }
-            }
-
-            if ( Match( tok2, "new %type% [;(]" ) )
-            {
+                Alloc = alloc;
                 alloc_indentlevel = indentlevel;
-                Alloc = New;
-            }
-
-            if ( Match( tok2, "new %type% [" ) )
-            {
-                alloc_indentlevel = indentlevel;
-                Alloc = NewA;
             }
         }
 
 
         // Deallocated..
-        if ( Match(tok, "delete %var1% ;", varname) )
+        AllocType dealloc = GetDeallocationType( tok, varnames );
+        if ( dealloc != No )
         {
-            if ( Alloc != No && Alloc != New )
-                MismatchError( Tok1, varname );
-            return;
-        }
-
-        if ( Match(tok, "delete [ ] %var1% ;", varname) )
-        {
-            if ( Alloc != No && Alloc != NewA )
-                MismatchError( Tok1, varname );
-            return;
-        }
-
-        if ( Match(tok, "free ( %var1% ) ;", varname) || Match(tok, "kfree ( %var1% ) ;", varname) )
-        {
-            if ( Alloc != No && Alloc != Malloc )
+            if ( Alloc != No && Alloc != dealloc )
                 MismatchError( Tok1, varname );
             return;
         }
 
         // Used..
-        if ( Match( tok, "[=,(] %var1%", varname )  )
+        if ( Match( tok, "[=,(] %var1%", varnames )  )
             return;
-        if ( Match( tok, "return %var1%", varname ) )
+        if ( Match( tok, "return %var1%", varnames ) )
             return;
 
         if ( Alloc != No && alloc_indentlevel >= 0 && Match(tok, "return") )
@@ -201,18 +208,10 @@ static void CheckMemoryLeak_InFunction()
         if (indentlevel>0 && infunc)
         {
             if ( Match(tok, "[{};] %type% * %var% [;=]") )
-            {
-                const char *varname[2] = {0,0};
-                varname[0] = getstr(tok, 3);
-                CheckMemoryLeak_CheckScope( tok->next, varname );
-            }
+                CheckMemoryLeak_CheckScope( tok->next, getstr(tok, 3) );
 
-            if ( Match(tok, "[{};] %type% %type% * %var% [;=]") )
-            {
-                const char *varname[2] = {0,0};
-                varname[0] = getstr(tok, 4);
-                CheckMemoryLeak_CheckScope( tok->next, varname );
-            }
+            else if ( Match(tok, "[{};] %type% %type% * %var% [;=]") )
+                CheckMemoryLeak_CheckScope( tok->next, getstr(tok, 4) );
         }
     }
 }
@@ -225,6 +224,8 @@ static void CheckMemoryLeak_InFunction()
 //---------------------------------------------------------------------------
 
 static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname );
+static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char *> &classname, const char varname[] );
+
 
 static void CheckMemoryLeak_ClassMembers()
 {
@@ -245,6 +246,7 @@ static void CheckMemoryLeak_ClassMembers()
         }
     }
 }
+
 
 static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname )
 {
@@ -267,36 +269,118 @@ static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vec
                 return;
         }
 
-        else if ( indentlevel == 0 && Match(tok, "class %var% [{:]") )
+        // Only parse this particular class.. not subclasses
+        if ( indentlevel > 0 )
+            continue;
+
+        // Declaring subclass.. recursive checking
+        if ( Match(tok, "class %var% [{:]") )
         {
             classname.push_back( getstr(tok, 1) );
             CheckMemoryLeak_ClassMembers_ParseClass( tok, classname );
             classname.pop_back();
         }
 
-        else if ( indentlevel == 1 && Match(tok, "[:;] %type% * %var% ;") )
+        // Declaring member variable.. check allocations and deallocations
+        if ( Match(tok->next, "%type% * %var% ;") )
         {
-            const char *func_pattern[] = {"classname", "::", "", "("};
-            func_pattern[0] = classname.back();
-            for ( const TOKEN *ftok = findtoken(tokens, func_pattern);
-                  ftok;
-                  ftok = findtoken(ftok->next, func_pattern) )
+            if ( IsName(tok->str) || strchr(";}", tok->str[0]) )
+                CheckMemoryLeak_ClassMembers_Variable( classname, getstr(tok, 3) );
+        }
+    }
+}
+
+static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char *> &classname, const char varname[] )
+{
+    // Function pattern.. Check if member function
+    char fpattern[500] = {0};
+    for ( unsigned int i = 0; i < classname.size(); i++ )
+    {
+        strcat( fpattern, classname[i] );
+        strcat( fpattern, " :: " );
+    }
+    strcat( fpattern, "%var% (" );
+
+    // Destructor pattern.. Check if class destructor..
+    char destructor[500] = {0};
+    for ( unsigned int i = 0; i < classname.size(); i++ )
+    {
+        strcat( destructor, classname[i] );
+        strcat( destructor, " :: " );
+    }
+    strcat( destructor, " ~" );
+    strcat( destructor, classname.back() );
+    strcat( destructor, " (" );
+
+    // Pattern used in member function. "Var = ..."
+    std::ostringstream varname_eq;
+    varname_eq << varname << " =";
+
+    // Full variable name..
+    std::ostringstream FullVariableName;
+    for ( unsigned int i = 0; i < classname.size(); i++ )
+        FullVariableName << classname[i] << "::";
+    FullVariableName << varname;
+
+    // Check if member variable has been allocated and deallocated..
+    AllocType Alloc = No;
+    AllocType Dealloc = No;
+
+    // Loop through all tokens. Inspect member functions
+    bool memberfunction = false;
+    int indentlevel = 0;
+    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( tok->str[0] == '{' )
+            indentlevel++;
+
+        else if ( tok->str[0] == '}' )
+            indentlevel--;
+
+        // Set the 'memberfunction' variable..
+        if ( indentlevel == 0 )
+        {
+            if ( strchr(";}", tok->str[0]) )
+                memberfunction = false;
+            else if ( Match( tok, fpattern ) || Match( tok, destructor ) )
+                memberfunction = true;
+        }
+
+        // Parse member function..
+        if ( indentlevel > 0 && memberfunction )
+        {
+            // Allocate..
+            if ( Match( tok, varname_eq.str().c_str() ) )
             {
-                for ( const TOKEN *tok2 = ftok; tok2; tok2 = tok2->next )
+                AllocType alloc = GetAllocationType( gettok( tok, 2 ) );
+                if ( alloc != No )
                 {
-                    if ( tok->str[0] == ';' )
-                        break;
-                    if ( tok->str[0] == '{' )
-                    {  
-                        classname.push_back( getstr(tok, 3) );
-                        classname.push_back( 0 );
-                        // Todo check the function..
-                        classname.pop_back();
-                        classname.pop_back();
-                    }
+                    if ( Dealloc != No && Dealloc != alloc )
+                        MismatchError( tok, FullVariableName.str().c_str() );
+                    if ( Alloc != No && Alloc != alloc )
+                        MismatchError( tok, FullVariableName.str().c_str() );
+                    Alloc = alloc;
                 }
             }
+
+            // Deallocate..
+            const char *varnames[2] = { "var", 0 };
+            varnames[0] = varname;
+            AllocType dealloc = GetDeallocationType( tok, varnames );
+            if ( dealloc != No )
+            {
+                if ( Dealloc != No && Dealloc != dealloc )
+                    MismatchError( tok, FullVariableName.str().c_str() );
+                if ( Alloc != No && Alloc != dealloc )
+                    MismatchError( tok, FullVariableName.str().c_str() );
+                Dealloc = dealloc;
+            }
         }
+    }
+
+    if ( Alloc != No && Dealloc == No )
+    {
+        MemoryLeak( tokens, FullVariableName.str().c_str() );
     }
 }
 
