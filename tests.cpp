@@ -307,6 +307,15 @@ static void buffer_overrun()
 
 
 
+    const char test15[] = "static void f()\n"
+                          "{\n"
+                          "    char data[1];\n"
+                          "    return abc.data[1];\n"
+                          "}\n";
+    check( CheckBufferOverrun, __LINE__, test15, "" );
+
+
+
 
 
     // TODO

@@ -73,7 +73,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
         }
 
         // Array index..
-        if ( !IsName(tok->str) && Match(tok->next, "%var1% [ %num% ]", varname) )
+        if ( !IsName(tok->str) && tok->str[0] != '.' && Match(tok->next, "%var1% [ %num% ]", varname) )
         {
             const char *num = getstr(tok->next, 2 + varc);
             if (strtol(num, NULL, 10) >= size)
