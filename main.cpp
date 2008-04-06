@@ -72,7 +72,7 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
     findclose(&f);
     #else
     glob_t glob_results;
-    #ifdef CYGWIN
+    #ifndef CYGWIN
     glob("*", GLOB_ONLYDIR, 0, &glob_results);
     #else
     glob("*", 0, 0, &glob_results);
