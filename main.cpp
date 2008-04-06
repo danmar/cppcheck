@@ -71,10 +71,13 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
     }
     findclose(&f);
     #else
+    // gcc / cygwin..
     glob_t glob_results;
-    #ifndef CYGWIN
+    #ifdef __GNUC__
+    // gcc..
     glob("*", GLOB_ONLYDIR, 0, &glob_results);
     #else
+    // cygwin..
     glob("*", 0, 0, &glob_results);
     #endif
     for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
