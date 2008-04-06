@@ -38,7 +38,14 @@ static AllocType GetAllocationType( const TOKEN *tok2 )
         return No;
 
     // Does tok2 point on "malloc", "strdup" or "kmalloc"..
-    const char *mallocfunc[] = {"malloc", "strdup", "kmalloc", 0};
+    const char *mallocfunc[] = {"malloc",
+                                "calloc",
+                                "realloc",
+                                "strdup",
+                                "kmalloc",
+                                "kzalloc",
+                                "g_malloc",
+                                0};
     for ( unsigned int i = 0; mallocfunc[i]; i++ )
     {
         if ( strcmp(mallocfunc[i], tok2->str) == 0 )
@@ -63,7 +70,8 @@ static AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] )
         return NewA;
 
     if ( Match(tok, "free ( %var1% ) ;", varnames) ||
-         Match(tok, "kfree ( %var1% ) ;", varnames) )
+         Match(tok, "kfree ( %var1% ) ;", varnames) ||
+         Match(tok, "g_free ( %var1% ) ;", varnames) )
     {
         return Malloc;
     }
