@@ -24,21 +24,15 @@ Dead pointers
 
 
 
-Buffer overruns
-
-  When writing to struct members
-
-
-
 Style
 
   Increase constness
 
   Function parameters: Use std::ostream instead of std::ostringstream or std::ofstream
 
-  Optimisation: Return "const _T &" instead of "_T"?
+  Function parameters: By reference instead of by value
 
-  Function parameters: Better with "const _T *" or "const _T &" than "_T"
+  Optimisation: Return "const _T &" instead of "_T"?
 
   Unused variable (function, file, class), unused value, unused parameter
 
