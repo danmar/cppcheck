@@ -1,4 +1,4 @@
-SRCS=CheckBufferOverrun.cpp  CheckClass.cpp  CheckHeaders.cpp  CheckMemoryLeak.cpp  CheckOther.cpp  CommonCheck.cpp  Statements.cpp  tokenize.cpp
+SRCS=CheckBufferOverrun.cpp  CheckClass.cpp  CheckHeaders.cpp  CheckMemoryLeak.cpp  CheckOther.cpp  CommonCheck.cpp  tokenize.cpp
 OBJS=$(SRCS:%.cpp=%.o)
 	
 
