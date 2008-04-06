@@ -12,6 +12,9 @@ struct TOKEN;
 
 std::string FileLine(const TOKEN *tok);
 
+// Are two filenames the same? Case insensitive on windows
+bool SameFileName( const char fname1[], const char fname2[] );
+
 extern bool OnlyReportUniqueErrors;
 
 void ReportErr(const std::string &errmsg);

@@ -14,8 +14,7 @@
 
 #ifdef __BORLANDC__
 #include <dir.h>
-#endif
-#ifdef __GNUC__
+#else
 #include <glob.h>
 #endif
 
@@ -30,7 +29,7 @@ static void CppCheck(const char FileName[], unsigned int FileId);
 
 static void AddFiles( std::vector<std::string> &filenames, const char path[], const char pattern[] )
 {
-    #ifndef __GNUC__
+    #ifdef __BORLANDC__
     struct ffblk f;
     for ( int done = findfirst(pattern, &f, 0); ! done; done = findnext(&f) )
     {
@@ -58,7 +57,7 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
     AddFiles( filenames, path, "*.cc" );
     AddFiles( filenames, path, "*.c" );
 
-    #ifndef __GNUC__
+    #ifdef __BORLANDC__
     struct ffblk f ;
     for ( int done = findfirst("*", &f, FA_DIREC); ! done; done = findnext(&f) )
     {
@@ -73,7 +72,11 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
     findclose(&f);
     #else
     glob_t glob_results;
+    #ifdef CYGWIN
     glob("*", GLOB_ONLYDIR, 0, &glob_results);
+    #else
+    glob("*", 0, 0, &glob_results);
+    #endif
     for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
     {
         const char *dirname = glob_results.gl_pathv[i];

@@ -62,11 +62,7 @@ void WarningIncludeHeader()
         const char *includefile = includetok->next->str;
         while (hfile < Files.size())
         {
-#ifdef __linux__
-            if (strcasecmp(Files[hfile].c_str(), includefile) == 0)
-#else
-            if (stricmp(Files[hfile].c_str(), includefile) == 0)
-#endif
+            if ( SameFileName( Files[hfile].c_str(), includefile ) )
                 break;
             hfile++;
         }

@@ -262,11 +262,7 @@ void Tokenize(const char FileName[])
     // Has this file been tokenized already?
     for (unsigned int i = 0; i < Files.size(); i++)
     {
-#ifdef __linux__
-        if( strcasecmp(Files[i].c_str(), FileName) == 0 )
-#else
-        if ( stricmp(Files[i].c_str(), FileName) == 0 )
-#endif
+        if ( SameFileName( Files[i].c_str(), FileName ) )
             return;
     }
 

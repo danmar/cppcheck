@@ -8,10 +8,10 @@
 #include <vector>
 #include <sstream>
 
-#ifdef __linux__
-#include <string.h>
-#else
+#ifdef __BORLANDC__
 #include <mem.h>     // <- memset
+#else
+#include <string.h>
 #endif
 
 //---------------------------------------------------------------------------
