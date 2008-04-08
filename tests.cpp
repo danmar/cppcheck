@@ -564,6 +564,27 @@ static void memleak_in_function()
                           "}\n";
     check( CheckMemoryLeak, __LINE__, test10, "[test.cpp:3]: Memory leak: obj_list\n" );
 
+
+
+    const char test11[] = "static char *f()\n"
+                          "{\n"
+                          "    char *s = new char[100];\n"
+                          "    return s;\n"
+                          "}\n";
+    check( CheckMemoryLeak, __LINE__, test11, "" );
+
+
+
+
+    const char test12[] = "static char *f()\n"
+                          "{\n"
+                          "    Fred *fred = new Fred;\n"
+                          "    free( fred->Name );\n"
+                          "}\n";
+    check( CheckMemoryLeak, __LINE__, test12, "[test.cpp:3]: Memory leak: fred\n" );
+
+
+
 }
 //---------------------------------------------------------------------------
 

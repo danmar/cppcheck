@@ -169,7 +169,10 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         }
 
         // Used..
-        if ( Match( tok, "[=,(] %var1%", varnames )  )
+        //     list.push_back( var1 );
+        //     listtail->next = var1;
+        //     foo( var1 );
+        if ( Match( tok, "[=,(] %var1% [,);]", varnames )  )
             return;
         if ( Match( tok, "return %var1%", varnames ) )
             return;
