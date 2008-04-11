@@ -1,4 +1,29 @@
 
+/**
+ * C/C++ Checking
+ *
+ * This program will check either the file(s) specified or all source files in
+ * all sub-directories
+ *
+ * Some checks are commented out below because they generate too many false
+ * positives. There are cases when the reported message is true, but it is
+ * what the developer wanted to do (missing break after case).
+ * It is safe to uncomment any of the checks.
+ *
+ * Todo-list:
+ * - using 'char'-data as array index..
+ *   char ch = 0xff;
+ *   array[ch] = 0;
+ *   => Dangerous. ch => -1 => 0xffffffff
+ *
+ * Design
+ *   The token list is a stringlist with the same contents and structure
+ *   as the file.
+ *   All checks will check for errors in the token list.
+ *
+ **/
+
+
 #include "tokenize.h"   // <- Tokenizer
 #include "CommonCheck.h"
 
@@ -271,7 +296,7 @@ static void CppCheck(const char FileName[], unsigned int FileId)
         // if (condition);
         WarningIf();
 
-        // Variable scope
+        // Variable scope (check if the scope could be limited)
         CheckVariableScope();
     }
 
