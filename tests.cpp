@@ -585,6 +585,16 @@ static void memleak_in_function()
 
 
 
+
+    const char test13[] = "static char *f()\n"
+                          "{\n"
+                          "    Fred *fred = new Fred;\n"
+                          "    // fred is deleted automaticly\n"
+                          "}\n";
+    check( CheckMemoryLeak, __LINE__, test13, "" );
+
+
+
 }
 //---------------------------------------------------------------------------
 

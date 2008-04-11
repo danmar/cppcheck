@@ -39,6 +39,11 @@ const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[]);
 const TOKEN *gettok(const TOKEN *tok, int index);
 const char *getstr(const TOKEN *tok, int index);
 
+
+// Delete comments such as "fred is deleted automaticly"
+int isdeleted( const char varname[] );
+
+
 //---------------------------------------------------------------------------
 #endif
 

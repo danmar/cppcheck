@@ -155,6 +155,10 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             {
                 Alloc = alloc;
                 alloc_indentlevel = indentlevel;
+
+                // Is there a comment such as "var is deleted automaticly"
+                if ( Alloc == New && isdeleted(tok->str) > 0 )
+                    return;
             }
         }
 

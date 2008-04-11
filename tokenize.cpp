@@ -287,8 +287,18 @@ void Tokenize(const char FileName[])
 // Tokenize - tokenizes input stream
 //---------------------------------------------------------------------------
 
+struct DeleteComment
+{
+    unsigned int LineNr;
+    std::string  Str;
+};
+
+std::list< DeleteComment > DeleteComments;
+
 void TokenizeCode(std::istream &code, const unsigned int FileIndex)
 {
+    DeleteComments.clear();
+
     // Tokenize the file.
     unsigned int lineno = 1;
     char CurrentToken[1000] = {0};
@@ -391,6 +401,8 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
         // Comments..
         if (ch == '/' && !code.eof())
         {
+            bool newstatement = bool( strchr(";{}", CurrentToken[0]) != NULL );
+
             // Add current token..
             addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));
@@ -402,7 +414,15 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             // If '//'..
             if (ch == '/')
             {
-                while (!code.eof() && (char)code.get()!='\n');
+                std::string comment;
+                getline( code, comment );
+                if ( newstatement && comment.find(" delete")!=std::string::npos )
+                {
+                    DeleteComment dc;
+                    dc.LineNr = lineno;
+                    dc.Str = comment;
+                    DeleteComments.push_back( dc );
+                }
                 lineno++;
                 continue;
             }
@@ -1093,4 +1113,15 @@ void DeallocateTokens()
 
 
 
+int isdeleted( const char varname[] )
+{
+    std::list<DeleteComment>::const_iterator it;
+    for ( it = DeleteComments.begin(); it != DeleteComments.end(); it++ )
+    {
+        const DeleteComment &dc = *it;
+        if ( dc.Str.find( varname ) != std::string::npos )
+            return dc.LineNr;
+    }
+    return -1;
+}
 
