@@ -287,18 +287,8 @@ void Tokenize(const char FileName[])
 // Tokenize - tokenizes input stream
 //---------------------------------------------------------------------------
 
-struct DeleteComment
-{
-    unsigned int LineNr;
-    std::string  Str;
-};
-
-std::list< DeleteComment > DeleteComments;
-
 void TokenizeCode(std::istream &code, const unsigned int FileIndex)
 {
-    DeleteComments.clear();
-
     // Tokenize the file.
     unsigned int lineno = 1;
     char CurrentToken[1000] = {0};
@@ -415,14 +405,25 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             if (ch == '/')
             {
                 std::string comment;
-                getline( code, comment );
-                if ( newstatement && comment.find(" delete")!=std::string::npos )
+                getline( code, comment );   // Parse in the whole comment
+
+                // If the comment says something like "fred is deleted" then generate appropriate tokens for that
+                comment = comment + " ";
+                if ( newstatement && comment.find(" deleted ")!=std::string::npos )
                 {
-                    DeleteComment dc;
-                    dc.LineNr = lineno;
-                    dc.Str = comment;
-                    DeleteComments.push_back( dc );
+                    // delete
+                    addtoken( "delete", lineno, FileIndex );
+
+                    // fred
+                    std::string::size_type pos1 = comment.find_first_not_of(" \t");
+                    std::string::size_type pos2 = comment.find(" ", pos1);
+                    std::string firstWord = comment.substr( pos1, pos2-pos1 );
+                    addtoken( firstWord.c_str(), lineno, FileIndex );
+
+                    // ;
+                    addtoken( ";", lineno, FileIndex );
                 }
+
                 lineno++;
                 continue;
             }
@@ -1112,16 +1113,4 @@ void DeallocateTokens()
 
 
 
-
-int isdeleted( const char varname[] )
-{
-    std::list<DeleteComment>::const_iterator it;
-    for ( it = DeleteComments.begin(); it != DeleteComments.end(); it++ )
-    {
-        const DeleteComment &dc = *it;
-        if ( dc.Str.find( varname ) != std::string::npos )
-            return dc.LineNr;
-    }
-    return -1;
-}
 
