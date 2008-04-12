@@ -594,6 +594,19 @@ static void memleak_in_function()
     check( CheckMemoryLeak, __LINE__, test13, "" );
 
 
+    /* TODO
+    const char test14[] = "struct Fred\n"
+                          "{\n"
+                          "    char *str;\n"
+                          "}\n"
+                          "\n"
+                          "void f()\n"
+                          "{\n"
+                          "    Fred f;\n"
+                          "    f.str = strdup(\"aa\");\n"
+                          "}\n";
+    check( CheckMemoryLeak, __LINE__, test14, "[test.cpp:9]: Memory leak: f.str\n" );
+    */
 
 }
 //---------------------------------------------------------------------------
