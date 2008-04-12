@@ -472,7 +472,6 @@ static void memleak_in_function()
     check( CheckMemoryLeak, __LINE__, test3, "" );
 
 
-/*  TODO
     const char test4[] = "void f()\n"
                          "{\n"
                          "    for (int i = 0; i < j; i++)\n"
@@ -483,8 +482,8 @@ static void memleak_in_function()
                          "        free(str);\n"
                          "    }\n"
                          "}\n";
-    check( CheckMemoryLeak, __LINE__, test4, "[test.cpp:7]: Memory leak:str\n" );
-*/
+    check( CheckMemoryLeak, __LINE__, test4, "[test.cpp:7]: Memory leak: str\n" );
+
 
 
 

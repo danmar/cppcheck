@@ -464,9 +464,10 @@ void CheckMemset()
     // Locate all 'memset' tokens..
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (strcmp(tok->str,"memset")!=0)
+        if (!Match(tok,"memset") && !Match(tok,"memcpy") && !Match(tok,"memmove"))
             continue;
 
+        // Todo: Handle memcpy and memmove
         const char *type = NULL;
         if (Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
             type = getstr(tok, 8);
