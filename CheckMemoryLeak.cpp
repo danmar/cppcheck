@@ -174,11 +174,21 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         //     foo( var1 );
         if ( Match( tok, "[=,(] %var1% [,);]", varnames )  )
             return;
+
+        // Return the memory..
         if ( Match( tok, "return %var1%", varnames ) )
             return;
 
+        // Return without deallocating the memory..
         if ( Alloc != No && alloc_indentlevel >= 0 && Match(tok, "return") )
         {
+            for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
+            {
+                if ( Match( tok2, "%var1%", varnames ) )
+                    return;
+                if ( tok2->str[0] == ';' )
+                    break;
+            }
             MemoryLeak( tok, varname );
             return;
         }
