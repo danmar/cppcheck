@@ -115,9 +115,10 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         else if (tok->str[0]=='}')
         {
             indentlevel--;
-            if ( indentlevel < 0 && Alloc != No )
+            if ( indentlevel < 0 )
             {
-                MemoryLeak( Tok1, varname );
+                if ( Alloc != No )
+                    MemoryLeak( Tok1, varname );
                 return;
             }
 
@@ -128,6 +129,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         // Skip stuff like: if (!var) ...
         if ( Match(tok, "if ( ! %var1% )", varnames) ||
              Match(tok, "if ( %var1% == NULL )", varnames) ||
+             Match(tok, "if ( NULL == %var1% )", varnames) ||
              Match(tok, "if ( %var1% == 0 )", varnames) )
         {
             int _indentlevel = 0;
