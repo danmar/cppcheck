@@ -106,6 +106,8 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
     int alloc_indentlevel = 0;
 
+    bool isif = false;
+
     int indentlevel = 0;
     for (const TOKEN *tok = Tok1 ; tok; tok = tok->next )
     {
@@ -128,6 +130,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
         // Skip stuff like: if (!var) ...
         if ( Match(tok, "if ( ! %var1% )", varnames) ||
+             Match(tok, "if ( unlikely( ! %var1% ) )", varnames) ||
              Match(tok, "if ( %var1% == NULL )", varnames) ||
              Match(tok, "if ( NULL == %var1% )", varnames) ||
              Match(tok, "if ( %var1% == 0 )", varnames) )
@@ -149,6 +152,12 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             }
         }
 
+        // if..
+        if ( Match(tok,"if") )
+            isif = true;
+        if ( strchr(";{}", tok->str[0]) )
+            isif = false;
+
         // Allocated..
         if ( Match(tok, "%var1% =", varnames) )
         {
@@ -157,6 +166,28 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             {
                 Alloc = alloc;
                 alloc_indentlevel = indentlevel;
+
+                if ( isif )
+                {
+                    while ( tok )
+                    {
+                        if ( tok->str[0] == '{' )
+                        {
+                            indentlevel++;
+                        }
+                        else if ( tok->str[0] == '}' )
+                        {
+                            indentlevel--;
+                            if ( indentlevel <= alloc_indentlevel )
+                                break;
+                        }
+                        else if ( tok->str[0] == ';' && indentlevel == alloc_indentlevel )
+                        {
+                            break;
+                        }
+                        tok = tok->next;
+                    }
+                }
             }
         }
 
@@ -174,8 +205,11 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         //     list.push_back( var1 );
         //     listtail->next = var1;
         //     foo( var1 );
-        if ( Match( tok, "[=,(] %var1% [,);]", varnames )  )
+        if ( Match( tok, "[=,(] %var1% [,);]", varnames ) )
             return;
+        if ( Match( tok, "= ( %type% * ) %var1% ;", varnames ) )
+            return;
+
 
         // continue/break loop..
         if (Alloc != No &&

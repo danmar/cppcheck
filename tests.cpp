@@ -627,6 +627,26 @@ static void memleak_in_function()
                           "    return NULL;\n"
                           "}\n";
     check( CheckMemoryLeak, __LINE__, test16, "[test.cpp:8]: Memory leak: s\n" );
+
+
+    const char test17[] = "static void f()\n"
+                          "{\n"
+                          "    char *str = strdup(\"hello\");\n"
+                          "    char *str2 = (char *)str;\n"
+                          "    free(str2);\n"
+                          "}\n";                          
+    check( CheckMemoryLeak, __LINE__, test17, "" );
+
+                                         
+    const char test18[] = "static void f()\n"
+                          "{\n"
+                          "    char *str;\n"
+                          "    if ((str = (char *)malloc(123,33)) == NULL)\n"
+                          "        return;\n"
+                          "    free(str);\n"
+                          "}\n";
+    check( CheckMemoryLeak, __LINE__, test18, "" );
+
 }
 //---------------------------------------------------------------------------
 
