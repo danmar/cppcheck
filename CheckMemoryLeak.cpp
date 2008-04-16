@@ -14,9 +14,6 @@
 #include <string.h>
 #endif
 
-//---------------------------------------------------------------------------
-
-extern bool ShowAll;
 
 //---------------------------------------------------------------------------
 
@@ -207,9 +204,17 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         //     foo( var1 );
         if ( Match( tok, "[=,(] %var1% [,);]", varnames ) )
             return;
-        if ( Match( tok, "= ( %type% * ) %var1% ;", varnames ) )
+        if ( Match( tok, "[=,(] ( %type% * ) %var1% [,);]", varnames ) )
+            return;
+        if ( Match( tok, "[=,(] ( %type% %type% * ) %var1% [,);]", varnames ) )
             return;
 
+        // Linux lists..
+        if ( Match( tok, "%var% ( & %var1% .", varnames ) )
+        {
+            if ( strstr(tok->str, "list_add") )
+                return;
+        }
 
         // continue/break loop..
         if (Alloc != No &&
