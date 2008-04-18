@@ -477,6 +477,8 @@ void CheckMemset()
             type = getstr(tok, 9);
         else if (Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
             type = getstr(tok, 10);
+        else if (Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
+            type = getstr(tok, 8);
 
         // No type defined => The tokens didn't match
         if (!(type && type[0]))
@@ -485,10 +487,10 @@ void CheckMemset()
         // Warn if type is a class..
         const char *pattern1[] = {"class","",NULL};
         pattern1[1] = type;
-        if (strcmp("this",getstr(tok,2))==0 || findtoken(tokens,pattern1))
+        if (findtoken(tokens,pattern1))
         {
             std::ostringstream ostr;
-            ostr << FileLine(tok) << ": Using 'memset' on class.";
+            ostr << FileLine(tok) << ": Using '" << tok->str << "' on class.";
             ReportErr(ostr.str());
             continue;
         }
@@ -504,7 +506,7 @@ void CheckMemset()
             if (Match(tstruct, "std :: %type% %var% ;"))
             {
                 std::ostringstream ostr;
-                ostr << FileLine(tok) << ": Using 'memset' on struct that contains a 'std::" << getstr(tstruct,2) << "'";
+                ostr << FileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << getstr(tstruct,2) << "'";
                 ReportErr(ostr.str());
                 break;
             }
