@@ -704,11 +704,31 @@ void CheckConstantFunctionParameter()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if ( Match(tok,"[,(] const std :: string %var% [,)]") )
+        if ( Match(tok,"[,(] const std :: %type% %var% [,)]") )
         {
             std::ostringstream errmsg;
-            errmsg << FileLine(tok) << " looks like a constant function parameter that is passed by value";
+            errmsg << FileLine(tok) << " " << getstr(tok,5) << " is passed by value, it could be passed by reference/pointer instead";
             ReportErr( errmsg.str() );
+        }
+
+        else if ( Match(tok,"[,(] const %type% %var% [,)]") )
+        {
+            // Check if type is a struct or class.
+            const char *pattern[3] = {"class","type",0};
+            pattern[1] = getstr(tok, 2);
+            if ( findtoken(tokens, pattern) )
+            {
+                std::ostringstream errmsg;
+                errmsg << FileLine(tok) << " " << getstr(tok,3) << " is passed by value, it could be passed by reference/pointer instead";
+                ReportErr( errmsg.str() );
+            }
+            pattern[0] = "struct";
+            if ( findtoken(tokens, pattern) )
+            {
+                std::ostringstream errmsg;
+                errmsg << FileLine(tok) << " " << getstr(tok,3) << " is passed by value, it could be passed by reference/pointer instead";
+                ReportErr( errmsg.str() );
+            }
         }
     }
 }

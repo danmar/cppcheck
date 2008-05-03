@@ -28,6 +28,7 @@ static void memleak_in_function();
 static void memleak_in_class();
 static void division();
 static void unused_variable();
+static void fpar_byvalue();
 //---------------------------------------------------------------------------
 
 int main()
@@ -58,6 +59,8 @@ int main()
 
     // unused variable..
     unused_variable();
+
+    fpar_byvalue();
 
     std::cout << "Success Rate: " 
               << SuccessCount 
@@ -875,7 +878,7 @@ static void unused_variable()
 
 
 
-    
+
     const char test10[] = "static void f()\n"
                           "{\n"
                           "    TPoint p1;\n"
@@ -885,9 +888,26 @@ static void unused_variable()
                           "    }\n"
                           "}\n";
     check( CheckVariableScope, __LINE__, test10, "" );
-
-
-
-
 }
+//---------------------------------------------------------------------------
+
+static void fpar_byvalue()
+{
+    check( CheckConstantFunctionParameter,
+           __LINE__,
+           "void f(const std::string str);",
+           "[test.cpp:1] str is passed by value, it could be passed by reference/pointer instead\n" );
+
+    check( CheckConstantFunctionParameter,
+           __LINE__,
+           "void f(const int a, const std::vector v, const int b);",
+           "[test.cpp:1] v is passed by value, it could be passed by reference/pointer instead\n" );
+
+    check( CheckConstantFunctionParameter,
+           __LINE__,
+           "class Fred;\n"
+           "void f(const Fred f);",
+           "[test.cpp:2] f is passed by value, it could be passed by reference/pointer instead\n" );
+}
+//---------------------------------------------------------------------------
 
