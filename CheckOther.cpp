@@ -693,6 +693,23 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
+ 
 
 
+//---------------------------------------------------------------------------
+// Check for constant function parameters
+//---------------------------------------------------------------------------
+
+void CheckConstantFunctionParameter()
+{
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        if ( Match(tok,"[,(] const std :: string %var% [,)]") )
+        {
+            std::ostringstream errmsg;
+            errmsg << FileLine(tok) << " looks like a constant function parameter that is passed by value";
+            ReportErr( errmsg.str() );
+        }
+    }
+}
 

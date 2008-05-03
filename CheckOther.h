@@ -40,6 +40,9 @@ void CheckUnsignedDivision();
 // Check scope of variables
 void CheckVariableScope();
 
+// Check for constant function parameter
+void CheckConstantFunctionParameter();
+
 //---------------------------------------------------------------------------
 #endif
 

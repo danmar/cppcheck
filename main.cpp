@@ -298,8 +298,10 @@ static void CppCheck(const char FileName[], unsigned int FileId)
 
         // Variable scope (check if the scope could be limited)
         CheckVariableScope();
-    }
 
+        // Check if a constant function parameter is passed by value
+        CheckConstantFunctionParameter();
+    }
 
     // Clean up tokens..
     DeallocateTokens();
