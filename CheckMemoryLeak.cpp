@@ -127,7 +127,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
         // Skip stuff like: if (!var) ...
         if ( Match(tok, "if ( ! %var1% )", varnames) ||
-             Match(tok, "if ( unlikely( ! %var1% ) )", varnames) ||
+             Match(tok, "if ( unlikely ( ! %var1% ) )", varnames) ||
              Match(tok, "if ( %var1% == NULL )", varnames) ||
              Match(tok, "if ( NULL == %var1% )", varnames) ||
              Match(tok, "if ( %var1% == 0 )", varnames) )
@@ -156,11 +156,12 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             isif = false;
 
         // Allocated..
-        if ( Match(tok, "%var1% =", varnames) )
+        if ( Match(tok, "[(;{}] %var1% =", varnames) )
         {
-            AllocType alloc = GetAllocationType( gettok(tok, 2) );
+            AllocType alloc = GetAllocationType( gettok(tok, 3) );
             if ( alloc != No )
             {
+                tok = tok->next;
                 Alloc = alloc;
                 alloc_indentlevel = indentlevel;
 
