@@ -637,10 +637,10 @@ static void memleak_in_function()
                           "    char *str = strdup(\"hello\");\n"
                           "    char *str2 = (char *)str;\n"
                           "    free(str2);\n"
-                          "}\n";                          
+                          "}\n";
     check( CheckMemoryLeak, __LINE__, test17, "" );
 
-                                         
+
     const char test18[] = "static void f()\n"
                           "{\n"
                           "    char *str;\n"
@@ -650,6 +650,20 @@ static void memleak_in_function()
                           "}\n";
     check( CheckMemoryLeak, __LINE__, test18, "" );
 
+
+    const char test19[] = "struct abc\n"
+                          "{\n"
+                          "    int a;\n"
+                          "    int b;\n"
+                          "    int c;\n"
+                          "}\n"
+                          "\n"
+                          "static void f()\n"
+                          "{\n"
+                          "    struct abc *abc1 = new abc;\n"
+                          "    p = &abc1->a;\n"
+                          "}\n";
+    check( CheckMemoryLeak, __LINE__, test19, "" );
 }
 //---------------------------------------------------------------------------
 

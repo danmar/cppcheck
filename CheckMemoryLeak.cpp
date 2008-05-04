@@ -210,6 +210,11 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         if ( Match( tok, "[=,(] ( %type% %type% * ) %var1% [,);]", varnames ) )
             return;
 
+        // Used. Todo: check if "p" is the first member in the struct.
+        //     p = &var1->p;
+        if ( Match( tok, "= & %var1% . %var% ;", varnames ) )
+            return;
+
         // Linux lists..
         if ( Match( tok, "%var% ( & %var1% .", varnames ) )
         {
