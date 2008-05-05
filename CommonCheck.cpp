@@ -215,7 +215,9 @@ void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames)
     // Check that every function in GlobalFunctions are used
     for ( func = GlobalFunctions.begin(); func != GlobalFunctions.end(); func++ )
     {
-        if ( func->name() == "main" )
+        const std::string &funcname = func->name();
+
+        if ( funcname == "main" || funcname == "WinMain" )
             continue;
 
         // Check if this global function is used in any of the other files..
@@ -223,25 +225,29 @@ void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames)
         bool UsedAnyFile = false;
         for ( usedfunc = UsedGlobalFunctions.begin(); usedfunc != UsedGlobalFunctions.end(); usedfunc++ )
         {
-            if ( func->name() == usedfunc->name() )
+            if ( funcname == usedfunc->name() )
             {
                 UsedAnyFile = true;
-                UsedOtherFile |= (func->file_id() != usedfunc->file_id());
+                if (func->file_id() != usedfunc->file_id())
+                {
+                    UsedOtherFile = true;
+                    break;
+                }
             }
         }
-
-        std::string file = "[" + filenames[func->file_id()] + "]: ";
 
         if ( ! UsedAnyFile )
         {
             std::ostringstream errmsg;
-            errmsg << file << "The function '" << func->name() << "' is never used.";
+            errmsg << "[" << filenames[func->file_id()] << "]: "
+                   << "The function '" << func->name() << "' is never used.";
             ReportErr( errmsg.str() );
         }
         else if ( ! UsedOtherFile )
         {
             std::ostringstream errmsg;
-            errmsg << file << "The linkage of the function '" << func->name() << "' can be local (static) instead of global";
+            errmsg << "[" << filenames[func->file_id()] << "]: "
+                   << "The linkage of the function '" << func->name() << "' can be local (static) instead of global";
             ReportErr( errmsg.str() );
         }
     }
