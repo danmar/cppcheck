@@ -301,6 +301,9 @@ static void CppCheck(const char FileName[], unsigned int FileId)
 
         // Check if a constant function parameter is passed by value
         CheckConstantFunctionParameter();
+        
+        // Unused struct members..
+        CheckStructMemberUsage();
     }
 
     // Clean up tokens..

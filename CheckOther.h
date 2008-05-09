@@ -43,6 +43,9 @@ void CheckVariableScope();
 // Check for constant function parameter
 void CheckConstantFunctionParameter();
 
+// Check that all struct members are used
+void CheckStructMemberUsage();
+
 //---------------------------------------------------------------------------
 #endif
 

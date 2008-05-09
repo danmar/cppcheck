@@ -29,6 +29,7 @@ static void memleak_in_class();
 static void division();
 static void unused_variable();
 static void fpar_byvalue();
+static void unused_struct_member();
 //---------------------------------------------------------------------------
 
 int main()
@@ -61,6 +62,9 @@ int main()
     unused_variable();
 
     fpar_byvalue();
+    
+    // unused struct member..
+    unused_struct_member();
 
     std::cout << "Success Rate: " 
               << SuccessCount 
@@ -924,4 +928,14 @@ static void fpar_byvalue()
            "[test.cpp:2] f is passed by value, it could be passed by reference/pointer instead\n" );
 }
 //---------------------------------------------------------------------------
+
+static void unused_struct_member()
+{
+    check( CheckStructMemberUsage,
+           __LINE__,
+           "struct abc {int i;};",
+           "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+}
+
+
 
