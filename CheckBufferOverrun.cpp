@@ -143,7 +143,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
             int indentlevel2 = 0;
             while (tok2)
             {
-                if ( tok2->str[0] == ';' && indentlevel == 0 )
+                if ( tok2->str[0] == ';' && indentlevel2 == 0 )
                     break;
 
                 if ( tok2->str[0] == '{' )
