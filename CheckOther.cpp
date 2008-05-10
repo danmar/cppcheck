@@ -756,8 +756,14 @@ void CheckStructMemberUsage()
         if (structname && Match(tok, "[{;]"))
         {
             const char *varname = 0;
-            if (Match(tok->next, "%type% %var% ;"))
+            if (Match(tok->next, "%type% %var% [;[]"))
                 varname = getstr( tok, 2 );
+            else if (Match(tok->next, "%type% %type% %var% [;[]"))
+                varname = getstr( tok, 2 );
+            else if (Match(tok->next, "%type% * %var% [;[]"))
+                varname = getstr( tok, 3 );
+            else if (Match(tok->next, "%type% %type% * %var% [;[]"))
+                varname = getstr( tok, 4 );
             else
                 continue;
             

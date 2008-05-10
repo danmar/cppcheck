@@ -935,6 +935,44 @@ static void unused_struct_member()
            __LINE__,
            "struct abc {int i;};",
            "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+
+    check( CheckStructMemberUsage,
+           __LINE__,
+           "struct abc {unsigned int i;};",
+           "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+
+    check( CheckStructMemberUsage,
+           __LINE__,
+           "struct abc {int *i;};",
+           "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+
+    check( CheckStructMemberUsage,
+           __LINE__,
+           "struct abc {unsigned int *i;};",
+           "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+
+    check( CheckStructMemberUsage,
+           __LINE__,
+           "struct abc {int i[10];};",
+           "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+
+    check( CheckStructMemberUsage,
+           __LINE__,
+           "struct abc {unsigned int i[10];};",
+           "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+
+
+    check( CheckStructMemberUsage,
+           __LINE__,
+           "struct abc {int *i[10];};",
+           "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+
+    check( CheckStructMemberUsage,
+           __LINE__,
+           "struct abc {unsigned int *i[10];};",
+           "[test.cpp:1]: struct member 'abc::i' is never read\n" );
+
+
 }
 
 
