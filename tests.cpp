@@ -681,6 +681,18 @@ static void memleak_in_function()
                           "}\n";
     check( CheckMemoryLeak, __LINE__, test20, "[test.cpp:8]: Memory leak: p\n" );
     
+    
+    const char test21[] = "static char *dmalloc()\n"
+                          "{\n"
+                          "    char *p = new char[100];\n"
+                          "    return p;\n"
+                          "}\n"
+                          "static void f()\n"
+                          "{\n"
+                          "    char *p = dmalloc();\n"
+                          "    delete p;\n"
+                          "}\n";
+    check( CheckMemoryLeak, __LINE__, test21, "[test.cpp:8]: Mismatching allocation and deallocation: p\n" );
 }
 //---------------------------------------------------------------------------
 
