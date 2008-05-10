@@ -239,10 +239,10 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             return;
 
         // Linux lists.. todo: check if the first struct member is passed
-        if ( Match( tok, "%var% ( & %var1% .", varnames ) )
+        if ( Match( tok, "%var% ( & %var1% .", varnames ) ||
+             Match( tok, ", & %var1% .", varnames ) )
         {
-            if ( strstr(tok->str, "list_add") )
-                return;
+            return;
         }
 
         // continue/break loop..
@@ -530,6 +530,8 @@ static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char 
 
 void CheckMemoryLeak()
 {
+    listallocfunc.clear();
+
     // Check for memory leaks inside functions..
     CheckMemoryLeak_InFunction();
 
