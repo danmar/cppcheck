@@ -336,70 +336,75 @@ static void CheckBufferOverrun_StructVariable()
             if ( tok2->str[0] == '}' )
                 break;
 
-            if ( strchr( ";{,(", tok2->str[0] ) )
+            if ( ! strchr( ";{,(", tok2->str[0] ) )
+                continue;
+
+            int ivar = 0;
+            if ( Match(tok2->next, "%type% %var% [ %num% ] ;") )
+                ivar = 2;
+            else if ( Match(tok2->next, "%type% %type% %var% [ %num% ] ;") )
+                ivar = 3;
+            else if ( Match(tok2->next, "%type% * %var% [ %num% ] ;") )
+                ivar = 3;
+            else if ( Match(tok2->next, "%type% %type% * %var% [ %num% ] ;") )
+                ivar = 4;
+            else
+                continue;
+
+            const char *varname[3] = {0,0,0};
+            varname[1] = getstr(tok2, ivar);
+            int arrsize = atoi(getstr(tok2, ivar+2));
+            int total_size = arrsize * SizeOfType(tok2->next->str);
+            if (total_size == 0)
+                continue;
+
+            for ( const TOKEN *tok3 = tokens; tok3; tok3 = tok3->next )
             {
-                // Declare array..
-                if ( Match(tok2->next, "%type% %var% [ %num% ] ;") ||
-                     Match(tok2->next, "%type% * %var% [ %num% ] ;") )
+                if ( strcmp(tok3->str, structname) )
+                    continue;
+
+                // Declare variable: Fred fred1;
+                if ( Match( tok3->next, "%var% ;" ) )
+                    varname[0] = getstr(tok3, 1);
+
+                // Declare pointer: Fred *fred1
+                else if ( Match(tok3->next, "* %var% [,);=]") )
+                    varname[0] = getstr(tok3, 2);
+
+                else
+                    continue;
+
+
+                // Goto end of statement.
+                const TOKEN *CheckTok = NULL;
+                while ( tok3 )
                 {
-                    const char *varname[3] = {0,0,0};
-                    int ivar = IsName(getstr(tok2, 2)) ? 2 : 3;
-
-                    varname[1] = getstr(tok2, ivar);
-                    int arrsize = atoi(getstr(tok2, ivar+2));
-                    int total_size = arrsize * SizeOfType(tok2->next->str);
-                    if (total_size == 0)
-                        continue;
-
-                    for ( const TOKEN *tok3 = tokens; tok3; tok3 = tok3->next )
+                    // End of statement.
+                    if ( tok3->str[0] == ';' )
                     {
-                        if ( strcmp(tok3->str, structname) )
-                            continue;
-
-                        // Declare variable: Fred fred1;
-                        if ( Match( tok3->next, "%var% ;" ) )
-                            varname[0] = getstr(tok3, 1);
-
-                        // Declare pointer: Fred *fred1
-                        else if ( Match(tok3->next, "* %var% [,);=]") )
-                            varname[0] = getstr(tok3, 2);
-
-                        else
-                            continue;
-
-
-                        // Goto end of statement.
-                        const TOKEN *CheckTok = NULL;
-                        while ( tok3 )
-                        {
-                            // End of statement.
-                            if ( tok3->str[0] == ';' )
-                            {
-                                CheckTok = tok3;
-                                break;
-                            }
-
-                            // End of function declaration..
-                            if ( Match(tok3, ") ;") )
-                                break;
-
-                            // Function implementation..
-                            if ( Match(tok3, ") {") )
-                            {
-                                CheckTok = gettok(tok3, 2);
-                                break;
-                            }
-
-                            tok3 = tok3->next;
-                        }
-
-                        if ( ! CheckTok )
-                            continue;
-
-                        // Check variable usage..
-                        CheckBufferOverrun_CheckScope( CheckTok, varname, arrsize, total_size );
+                        CheckTok = tok3;
+                        break;
                     }
+
+                    // End of function declaration..
+                    if ( Match(tok3, ") ;") )
+                        break;
+
+                    // Function implementation..
+                    if ( Match(tok3, ") {") )
+                    {
+                        CheckTok = gettok(tok3, 2);
+                        break;
+                    }
+
+                    tok3 = tok3->next;
                 }
+
+                if ( ! CheckTok )
+                    continue;
+
+                // Check variable usage..
+                CheckBufferOverrun_CheckScope( CheckTok, varname, arrsize, total_size );
             }
         }
     }
