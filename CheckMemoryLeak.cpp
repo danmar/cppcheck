@@ -14,10 +14,24 @@
 #include <string.h>
 #endif
 
-
 //---------------------------------------------------------------------------
 
 enum AllocType { No, Malloc, New, NewA };
+
+// Extra allocation..
+class allocfunc
+{
+    public:
+        const char *funcname;
+        AllocType   alloctype;
+        
+        allocfunc(const char f[], AllocType a)
+        {
+            funcname = f;
+            alloctype = a;
+        }
+};
+static std::list<allocfunc> listallocfunc;
 
 static AllocType GetAllocationType( const TOKEN *tok2 )
 {
@@ -54,6 +68,15 @@ static AllocType GetAllocationType( const TOKEN *tok2 )
 
     if ( Match( tok2, "new %type% [" ) )
         return NewA;
+
+    // Userdefined allocation function..
+    std::list<allocfunc>::const_iterator it = listallocfunc.begin();
+    while ( it != listallocfunc.end() )
+    {
+        if ( strcmp(tok2->str, it->funcname) == 0 )
+            return it->alloctype;
+        ++it;
+    }
 
     return No;
 }
@@ -215,7 +238,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         if ( Match( tok, "= & %var1% . %var% ;", varnames ) )
             return;
 
-        // Linux lists..
+        // Linux lists.. todo: check if the first struct member is passed
         if ( Match( tok, "%var% ( & %var1% .", varnames ) )
         {
             if ( strstr(tok->str, "list_add") )
@@ -251,6 +274,36 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
             if ( ! retvar )
                 MemoryLeak( tok, varname );
+                
+            else
+            {
+                // The allocated memory is returned.. check that it is deallocated
+                
+                // Get function name..
+                const char *funcname = 0;
+                int indentlevel = 0;
+                for ( const TOKEN *ftok = tokens; ftok && ftok != tok; ftok = ftok->next )
+                {
+                    if ( ftok->str[0] == '{' )
+                        indentlevel++;
+                        
+                    else if ( ftok->str[0] == '}' )
+                        indentlevel--;
+
+                    if ( indentlevel <= 0 )
+                    {
+                        if ( Match(ftok, "[};]") )
+                            funcname = 0;
+                        else if ( Match(ftok, "%var% (") )
+                            funcname = ftok->str;
+                    }
+                }
+                
+                if ( funcname )
+                {
+                    listallocfunc.push_back( allocfunc(funcname, Alloc) );
+                }
+            }
 
             if ( indentlevel <= alloc_indentlevel )
                 return;
