@@ -27,7 +27,7 @@ static void operator_eq();
 static void memleak_in_function();
 static void memleak_in_class();
 static void division();
-static void unused_variable();
+static void variable_scope();
 static void fpar_byvalue();
 static void unused_struct_member();
 //---------------------------------------------------------------------------
@@ -58,13 +58,15 @@ int main()
     // Check for dangerous division.. such as "svar / uvar". Treating "svar" as unsigned data is not good
     division();
 
-    // unused variable..
-    unused_variable();
+    // variable scope..
+    variable_scope();
 
     fpar_byvalue();
     
     // unused struct member..
     unused_struct_member();
+
+    // unused variable
 
     std::cout << "Success Rate: " 
               << SuccessCount 
@@ -805,7 +807,7 @@ static void division()
 }
 //---------------------------------------------------------------------------
 
-static void unused_variable()
+static void variable_scope()
 {
 /* TODO
     // Unused private member variable...
@@ -999,6 +1001,7 @@ static void unused_struct_member()
 
 
 }
+//---------------------------------------------------------------------------
 
 
 
