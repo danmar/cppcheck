@@ -28,12 +28,6 @@ void WarningDangerousFunctions();
 // Invalid function usage..
 void InvalidFunctionUsage();
 
-// Dangerous usage of 'strtok'
-void WarningStrTok();
-
-// Check for a 'case' without a 'break'
-void CheckCaseWithoutBreak();
-
 // Check for unsigned division that might create bad results
 void CheckUnsignedDivision();
 

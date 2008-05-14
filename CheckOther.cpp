@@ -124,19 +124,18 @@ void WarningRedundantCode()
         if (varname1==NULL || tok2==NULL)
             continue;
 
+        if ( tok2->str[0] == '{' )
+            tok2 = tok2->next;
+
         bool err = false;
         if (Match(tok2,"delete %var% ;"))
             err = (strcmp(getstr(tok2,1),varname1)==0);
-        else if (Match(tok2,"{ delete %var% ; }"))
-            err = (strcmp(getstr(tok2,2),varname1)==0);
         else if (Match(tok2,"delete [ ] %var% ;"))
             err = (strcmp(getstr(tok2,1),varname1)==0);
-        else if (Match(tok2,"{ delete [ ] %var% ; }"))
-            err = (strcmp(getstr(tok2,2),varname1)==0);
         else if (Match(tok2,"free ( %var% )"))
             err = (strcmp(getstr(tok2,2),varname1)==0);
-        else if (Match(tok2,"{ free ( %var% ) ; }"))
-            err = (strcmp(getstr(tok2,3),varname1)==0);
+        else if (Match(tok2,"kfree ( %var% )"))
+            err = (strcmp(getstr(tok2,2),varname1)==0);
 
         if (err)
         {
@@ -292,115 +291,6 @@ void InvalidFunctionUsage()
 //---------------------------------------------------------------------------
 
 
-
-
-//---------------------------------------------------------------------------
-// Dangerous usage of 'strtok'
-//---------------------------------------------------------------------------
-
-static const TOKEN *GetFunction( const TOKEN *content )
-{
-    const TOKEN *func = NULL;
-
-    int indentlevel = 0;
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        if ( tok->str[0] == '{' )
-            indentlevel++;
-
-        else if ( tok->str[0] == '}' )
-        {
-            indentlevel--;
-            if (indentlevel == 0)
-                func = NULL;
-        }
-
-        else if (indentlevel == 0)
-        {
-            if (tok->str[0] == ';')
-                func = NULL;
-
-            else if ( Match(tok, "%var% :: %var% (") )
-                func = tok->next->next;
-
-            else if ( Match(tok, "%type% %var% (") )
-                func = tok->next;
-        }
-
-        else if (indentlevel>0 && func)
-        {
-            if ( tok == content )
-                return func;
-        }
-    }
-    return NULL;
-}
-
-void WarningStrTok()
-{
-    std::list<const TOKEN *> funclist;
-
-    // Which functions contain the 'strtok'?
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        if (strcmp(tok->str,"strtok")!=0)
-            continue;
-
-        const TOKEN *func = GetFunction(tok);
-        if (!func)
-            continue;
-
-        funclist.push_back( func );
-    }
-
-    // No functions in list => No errors
-    if ( funclist.empty() )
-        return;
-
-    // Take closer look at the strtok usage.
-    std::list<const TOKEN *>::const_iterator it1;
-    for (it1 = funclist.begin(); it1 != funclist.end(); it1++)
-    {
-        // Search this function to check that it doesn't call any other of
-        // the functions in the funclist.
-        int indentlevel = 0;
-        for ( const TOKEN *tok = *it1; tok; tok = tok->next )
-        {
-            if ( tok->str[0] == '{' )
-                indentlevel++;
-
-            else if ( tok->str[0] == '}' )
-            {
-                if ( indentlevel <= 1 )
-                    break;
-                indentlevel--;
-            }
-
-            else if ( indentlevel >= 1 )
-            {
-                // Only interested in function calls..
-                if (!(IsName(tok->str) && strcmp(getstr(tok,1), "(") == 0))
-                    continue;
-
-                // Check if function name is in funclist..
-                std::list<const TOKEN *>::const_iterator it2;
-                for (it2 = funclist.begin(); it2 != funclist.end(); it2++)
-                {
-                    if ( strcmp( tok->str, (*it2)->str ) )
-                        continue;
-
-                    std::ostringstream ostr;
-                    ostr << FileLine(tok) << ": Possible bug. Both '" << (*it1)->str << "' and '" << (*it2)->str << "' uses strtok.";
-                    ReportErr(ostr.str());
-                    break;
-                }
-            }
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
-
 //---------------------------------------------------------------------------
 // Assignment in condition
 //---------------------------------------------------------------------------
@@ -420,56 +310,6 @@ void CheckIfAssignment()
     }
 }
 //---------------------------------------------------------------------------
-
-
-
-//---------------------------------------------------------------------------
-// Check for case without break
-//---------------------------------------------------------------------------
-
-void CheckCaseWithoutBreak()
-{
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
-    {
-        if ( strcmp(tok->str,"case")!=0 )
-            continue;
-
-        // Found a case, check that there's a break..
-        int indentlevel = 0;
-        for (const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
-        {
-            if (tok2->str[0] == '{')
-                indentlevel++;
-            else if (tok2->str[0] == '}')
-            {
-                indentlevel--;
-                if (indentlevel < 0)
-                {
-                    std::ostringstream ostr;
-                    ostr << FileLine(tok) << ": 'case' without 'break'.";
-                    ReportErr(ostr.str());
-                }
-            }
-            if (indentlevel==0)
-            {
-                if (strcmp(tok2->str,"break")==0)
-                    break;
-                if (strcmp(tok2->str,"return")==0)
-                    break;
-                if (strcmp(tok2->str,"case")==0)
-                {
-                    std::ostringstream ostr;
-                    ostr << FileLine(tok) << ": Found 'case' without 'break'.";
-                    ReportErr(ostr.str());
-                    break;
-                }
-            }
-        }
-    }
-
-}
-//---------------------------------------------------------------------------
-
 
 
 //---------------------------------------------------------------------------
