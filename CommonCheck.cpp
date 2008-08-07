@@ -11,14 +11,14 @@ bool OnlyReportUniqueErrors;
 std::ostringstream errout;
 static std::list<const TOKEN *> FunctionList;
 
-class clGlobalFunction
+class GlobalFunction
 {
 private:
     unsigned int _FileId;
     std::string  _FuncName;
 
 public:
-    clGlobalFunction( const unsigned int FileId, const char FuncName[] )
+    GlobalFunction( const unsigned int FileId, const char FuncName[] )
     {
         _FileId = FileId;
         _FuncName = FuncName;
@@ -28,8 +28,8 @@ public:
     const std::string &name() const { return _FuncName; }
 };
 
-static std::list< clGlobalFunction > GlobalFunctions;
-static std::list< clGlobalFunction > UsedGlobalFunctions;
+static std::list< GlobalFunction > GlobalFunctions;
+static std::list< GlobalFunction > UsedGlobalFunctions;
 
 //---------------------------------------------------------------------------
 
@@ -164,7 +164,7 @@ void FillFunctionList(const unsigned int file_id)
                     if ( Match(tok2, ") {") )
                     {
                         if (CheckCodingStyle && !staticfunc && !classfunc && tok->FileIndex==0)
-                            GlobalFunctions.push_back( clGlobalFunction(file_id, tok->str) );
+                            GlobalFunctions.push_back( GlobalFunction(file_id, tok->str) );
                         FunctionList.push_back( tok );
                         tok = tok2;
                     }
@@ -184,7 +184,7 @@ void FillFunctionList(const unsigned int file_id)
     {
         if ( *it != 0 )
         {
-            UsedGlobalFunctions.push_back( clGlobalFunction(file_id, *it) );
+            UsedGlobalFunctions.push_back( GlobalFunction(file_id, *it) );
         }
     }
 }
@@ -207,10 +207,10 @@ const TOKEN *GetFunctionTokenByName( const char funcname[] )
 void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames)
 {
     // Iterator for GlobalFunctions
-    std::list<clGlobalFunction>::const_iterator func;
+    std::list<GlobalFunction>::const_iterator func;
 
     // Iterator for UsedGlobalFunctions
-    std::list<clGlobalFunction>::const_iterator usedfunc;
+    std::list<GlobalFunction>::const_iterator usedfunc;
 
     // Check that every function in GlobalFunctions are used
     for ( func = GlobalFunctions.begin(); func != GlobalFunctions.end(); func++ )
