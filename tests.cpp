@@ -368,7 +368,7 @@ static void buffer_overrun()
 static void constructors()
 {
     // Test1: No constructor
-    // Test2: embedded constructor, uninitialized variable (TODO)
+    // Test2: embedded constructor, uninitialized variable
     // Test3: Uninitialized variable
     // Test4: multiple constructors, uninitialized variable
 
@@ -464,7 +464,7 @@ static void memleak_in_function()
 
 
 
-
+    /* TODO
     const char test3[] = "void f()\n"
                          "{\n"
                          "    Fred *fred;\n"
@@ -479,6 +479,7 @@ static void memleak_in_function()
                          "    delete fred;\n"
                          "}\n";
     check( CheckMemoryLeak, __LINE__, test3, "" );
+    */
 
 
     const char test4[] = "void f()\n"
@@ -525,8 +526,6 @@ static void memleak_in_function()
 
 
 
-
-    /* TODO
     const char test7[] = "void f()\n"
                          "{\n"
                          "    char *str = strdup(\"hello\");\n"
@@ -536,8 +535,7 @@ static void memleak_in_function()
                          "        return;\n"
                          "    }\n"
                          "}\n";
-    check( CheckMemoryLeak, __LINE__, test7, "[test.cpp:9]: Memory leak: str\n" );
-    */
+    check( CheckMemoryLeak, __LINE__, test7, "[test.cpp:3]: Memory leak: str\n" );
 
 
 

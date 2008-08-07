@@ -125,6 +125,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
     AllocType Alloc = No;
 
     int alloc_indentlevel = 0;
+    int dealloc_indentlevel = 0;
 
     bool isif = false;
 
@@ -146,6 +147,9 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
             if ( indentlevel < alloc_indentlevel )
                 alloc_indentlevel = -1;
+
+            if ( indentlevel < dealloc_indentlevel )
+                dealloc_indentlevel = -1;
         }
 
         // Skip stuff like: if (!var) ...
@@ -218,8 +222,18 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         if ( dealloc != No )
         {
             if ( Alloc != No && Alloc != dealloc )
+            {
                 MismatchError( Tok1, varname );
-            return;
+                return;
+            }
+
+            // Deallocated at same indentlevel as the allocation => no memory leak
+            if ( alloc_indentlevel == indentlevel )
+                return;
+
+            dealloc_indentlevel = indentlevel;
+            while ( tok && tok->str[0] != ';' )
+                tok = tok->next;
         }
 
         // Used..
@@ -227,16 +241,24 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         //     listtail->next = var1;
         //     foo( var1 );
         if ( Match( tok, "[=,(] %var1% [,);]", varnames ) )
+        {
             return;
+        }
         if ( Match( tok, "[=,(] ( %type% * ) %var1% [,);]", varnames ) )
+        {
             return;
+        }
         if ( Match( tok, "[=,(] ( %type% %type% * ) %var1% [,);]", varnames ) )
+        {
             return;
+        }
 
         // Used. Todo: check if "p" is the first member in the struct.
         //     p = &var1->p;
         if ( Match( tok, "= & %var1% . %var% ;", varnames ) )
+        {
             return;
+        }
 
         // Linux lists.. todo: check if the first struct member is passed
         if ( Match( tok, "%var% ( & %var1% .", varnames ) ||
@@ -255,7 +277,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         }
 
         // Return without deallocating the memory..
-        if ( Alloc != No && alloc_indentlevel >= 0 && Match(tok, "return") )
+        if ( Alloc != No && alloc_indentlevel >= 0 && dealloc_indentlevel <= 0 && Match(tok, "return") )
         {
             bool retvar = false;
             for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
