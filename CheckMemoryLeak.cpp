@@ -19,19 +19,19 @@
 enum AllocType { No, Malloc, New, NewA };
 
 // Extra allocation..
-class allocfunc
+class AllocFunc
 {
     public:
         const char *funcname;
         AllocType   alloctype;
-        
-        allocfunc(const char f[], AllocType a)
+
+        AllocFunc(const char f[], AllocType a)
         {
             funcname = f;
             alloctype = a;
         }
 };
-static std::list<allocfunc> listallocfunc;
+static std::list<AllocFunc> listallocfunc;
 
 static AllocType GetAllocationType( const TOKEN *tok2 )
 {
@@ -70,7 +70,7 @@ static AllocType GetAllocationType( const TOKEN *tok2 )
         return NewA;
 
     // Userdefined allocation function..
-    std::list<allocfunc>::const_iterator it = listallocfunc.begin();
+    std::list<AllocFunc>::const_iterator it = listallocfunc.begin();
     while ( it != listallocfunc.end() )
     {
         if ( strcmp(tok2->str, it->funcname) == 0 )
@@ -274,11 +274,11 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
             if ( ! retvar )
                 MemoryLeak( tok, varname );
-                
+
             else
             {
                 // The allocated memory is returned.. check that it is deallocated
-                
+
                 // Get function name..
                 const char *funcname = 0;
                 int indentlevel = 0;
@@ -286,7 +286,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 {
                     if ( ftok->str[0] == '{' )
                         indentlevel++;
-                        
+
                     else if ( ftok->str[0] == '}' )
                         indentlevel--;
 
@@ -298,10 +298,10 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                             funcname = ftok->str;
                     }
                 }
-                
+
                 if ( funcname )
                 {
-                    listallocfunc.push_back( allocfunc(funcname, Alloc) );
+                    listallocfunc.push_back( AllocFunc(funcname, Alloc) );
                 }
             }
 
