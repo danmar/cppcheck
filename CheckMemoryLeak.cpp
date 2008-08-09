@@ -124,8 +124,9 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
     AllocType Alloc = No;
 
-    int alloc_indentlevel = 0;
-    int dealloc_indentlevel = 0;
+    int alloc_indentlevel = -1;
+    int dealloc_indentlevel = -1;
+    std::list<int> loop_indentlevel;
 
     bool isif = false;
 
@@ -145,12 +146,19 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 return;
             }
 
+            if ( !loop_indentlevel.empty() && indentlevel <= loop_indentlevel.back() )
+                loop_indentlevel.pop_back();
+
             if ( indentlevel < alloc_indentlevel )
                 alloc_indentlevel = -1;
 
             if ( indentlevel < dealloc_indentlevel )
                 dealloc_indentlevel = -1;
         }
+
+        // for, while set loop level..
+        if ( alloc_indentlevel >= 0 && (Match(tok,"while") || Match(tok,"for")) )
+            loop_indentlevel.push_back( indentlevel );
 
         // Skip stuff like: if (!var) ...
         if ( Match(tok, "if ( ! %var1% )", varnames) ||
@@ -269,7 +277,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
         // continue/break loop..
         if (Alloc != No &&
-            alloc_indentlevel == indentlevel &&
+            loop_indentlevel.empty() &&
             (Match(tok,"continue") || Match(tok,"break")))
         {
             MemoryLeak( tok, varname );
