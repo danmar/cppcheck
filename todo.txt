@@ -1,5 +1,11 @@
 
 
+Tokens..
+  I think the SimplifyTokens function should insert braces after every if/for/while.
+  That would make the token list easier to parse.
+
+
+
 Userdefined types
 
   I think this needs to be handled better.
