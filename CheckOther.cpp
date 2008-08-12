@@ -533,7 +533,6 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
- 
 
 
 //---------------------------------------------------------------------------
@@ -573,7 +572,6 @@ void CheckConstantFunctionParameter()
     }
 }
 //---------------------------------------------------------------------------
- 
 
 
 //---------------------------------------------------------------------------
@@ -592,7 +590,7 @@ void CheckStructMemberUsage()
             structname = 0;
         if ( Match(tok, "struct %type% {") )
             structname = getstr(tok, 1);
-            
+
         if (structname && Match(tok, "[{;]"))
         {
             const char *varname = 0;
@@ -606,16 +604,16 @@ void CheckStructMemberUsage()
                 varname = getstr( tok, 4 );
             else
                 continue;
-            
+
             const char *varnames[2];
             varnames[0] = varname;
             varnames[1] = 0;
-            bool used = false;            
+            bool used = false;
             for ( const TOKEN *tok2 = tokens; tok2; tok2 = tok2->next )
             {
                 if ( tok->FileIndex != 0 )
                     continue;
-                    
+
                 if (Match(tok2, ". %var%", varnames))
                 {
                     if ( strcmp("=", getstr(tok2,2)) == 0 )
@@ -624,7 +622,7 @@ void CheckStructMemberUsage()
                     break;
                 }
             }
-            
+
             if ( ! used )
             {
                 std::ostringstream errmsg;

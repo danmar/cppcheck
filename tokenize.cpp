@@ -1107,7 +1107,7 @@ void DeallocateTokens()
         free(dsymlist->name);
         free(dsymlist->value);
         delete dsymlist;
-        dsymlist = next;        
+        dsymlist = next; 
     }
 }
 
