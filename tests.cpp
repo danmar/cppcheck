@@ -167,28 +167,28 @@ static void buffer_overrun()
 
 
     code = "static void f()\n"
-            "{\n"
-            "    char data[1];\n"
-            "    return abc.data[1];\n"
-            "}\n";
+           "{\n"
+           "    char data[1];\n"
+           "    return abc.data[1];\n"
+           "}\n";
     check( CheckBufferOverrun, __LINE__, code, "" );
 
 
     // TODO
     /*
     code = "static void memclr( char *data, const int bytes )\n"
-            "{\n"
-            "    for (int i = 0; i < bytes; i++)\n"
-            "        data[i] = 0;\n"
-            "}\n"
-            "\n"
-            "static void f()\n"
-            "{\n"
-            "    char str[5];\n"
-            "    memclr( str, 5 );   // OK\n"
-            "    memclr( str+1, 5 );   // ERROR\n"
-            "    memclr( str, 6 );   // ERROR\n"
-            "}\n";
+           "{\n"
+           "    for (int i = 0; i < bytes; i++)\n"
+           "        data[i] = 0;\n"
+           "}\n"
+           "\n"
+           "static void f()\n"
+           "{\n"
+           "    char str[5];\n"
+           "    memclr( str, 5 );   // OK\n"
+           "    memclr( str+1, 5 );   // ERROR\n"
+           "    memclr( str, 6 );   // ERROR\n"
+           "}\n";
     check( CheckBufferOverrun, __LINE__, code, "" );
     */
 
@@ -259,14 +259,14 @@ static void buffer_overrun()
 
 
     code = "struct ABC\n"
-            "{\n"
-            "    char str[10];\n"
-            "};\n"
-            "\n"
-            "static void f(ABC *abc)\n"
-            "{\n"
-            "    abc->str[10] = 0;\n"
-            "}\n";
+           "{\n"
+           "    char str[10];\n"
+           "};\n"
+           "\n"
+           "static void f(ABC *abc)\n"
+           "{\n"
+           "    abc->str[10] = 0;\n"
+           "}\n";
     check( CheckBufferOverrun, __LINE__, code, "[test.cpp:8]: Array index out of bounds\n" );
 
 
@@ -288,51 +288,51 @@ static void buffer_overrun()
 
 
     code = "static void memclr( char *data )\n"
-            "{\n"
-            "    data[10] = 0;\n"
-            "}\n"
-            "\n"
-            "static void f()\n"
-            "{\n"
-            "    char str[5];\n"
-            "    memclr( str );   // ERROR\n"
-            "}\n";
+           "{\n"
+           "    data[10] = 0;\n"
+           "}\n"
+           "\n"
+           "static void f()\n"
+           "{\n"
+           "    char str[5];\n"
+           "    memclr( str );   // ERROR\n"
+           "}\n";
     check( CheckBufferOverrun, __LINE__, code, "[test.cpp:9] -> [test.cpp:3]: Array index out of bounds\n" );
 
 
     code = "struct ABC\n"
-            "{\n"
-            "    char str[10];\n"
-            "};\n"
-            "\n"
-            "static void memclr( char *data )\n"
-            "{\n"
-            "    data[10] = 0;\n"
-            "}\n"
-            "\n"
-            "static void f(ABC *abc)\n"
-            "{\n"
-            "    memclr(abc->str);\n"
-            "}\n";
+           "{\n"
+           "    char str[10];\n"
+           "};\n"
+           "\n"
+           "static void memclr( char *data )\n"
+           "{\n"
+           "    data[10] = 0;\n"
+           "}\n"
+           "\n"
+           "static void f(ABC *abc)\n"
+           "{\n"
+           "    memclr(abc->str);\n"
+           "}\n";
     check( CheckBufferOverrun, __LINE__, code, "[test.cpp:13] -> [test.cpp:8]: Array index out of bounds\n" );
 
 
 
     code = "class ABC\n"
-            "{\n"
-            "public:\n"
-            "    ABC();\n"
-            "    char *str[10];\n"
-            "    struct ABC *next;"
-            "};\n"
-            "\n"
-            "static void f()\n"
-            "{\n"
-            "    for ( ABC *abc = abc1; abc; abc = abc->next )\n"
-            "    {\n"
-            "        abc->str[10] = 0;\n"
-            "    }\n"
-            "}\n";
+           "{\n"
+           "public:\n"
+           "    ABC();\n"
+           "    char *str[10];\n"
+           "    struct ABC *next;"
+           "};\n"
+           "\n"
+           "static void f()\n"
+           "{\n"
+           "    for ( ABC *abc = abc1; abc; abc = abc->next )\n"
+           "    {\n"
+           "        abc->str[10] = 0;\n"
+           "    }\n"
+           "}\n";
     check( CheckBufferOverrun, __LINE__, code, "[test.cpp:12]: Array index out of bounds\n" );
 
 
@@ -369,14 +369,14 @@ static void buffer_overrun()
 
 
     code = "struct ABC\n"
-            "{\n"
-            "    char str[5];\n"
-            "};\n"
-            "\n"
-            "static void f(ABC *abc)\n"
-            "{\n"
-            "    strcpy( abc->str, \"abcdef\" );\n"
-            "}\n";
+           "{\n"
+           "    char str[5];\n"
+           "};\n"
+           "\n"
+           "static void f(ABC *abc)\n"
+           "{\n"
+           "    strcpy( abc->str, \"abcdef\" );\n"
+           "}\n";
     check( CheckBufferOverrun, __LINE__, code, "[test.cpp:8]: Buffer overrun\n" );
 
 
@@ -492,19 +492,19 @@ static void memleak_in_function()
 
 
     code = "static char *f()\n"
-            "{\n"
-            "    char *s = new char[100];\n"
-            "    return (char *)s;\n"
-            "}\n";
+           "{\n"
+           "    char *s = new char[100];\n"
+           "    return (char *)s;\n"
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "" );
 
 
     code = "static void f()\n"
-            "{\n"
-            "    char *str = strdup(\"hello\");\n"
-            "    char *str2 = (char *)str;\n"
-            "    free(str2);\n"
-            "}\n";
+           "{\n"
+           "    char *str = strdup(\"hello\");\n"
+           "    char *str2 = (char *)str;\n"
+           "    free(str2);\n"
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "" );
 
 
@@ -521,7 +521,7 @@ static void memleak_in_function()
            "    int *a = new int[10];\n"
            "    if (a)\n"
            "    {\n"
-           "        delete a;\n"
+           "        delete [] a;\n"
            "    }\n"
            "}\n";
     check( CheckMemoryLeak, __LINE__, code, "" );
@@ -584,14 +584,14 @@ static void memleak_in_function()
     */
 
     code = "static char *f()\n"
-            "{\n"
-            "    char *s = new char[100];\n"
-            "    if ( a == b )\n"
-            "    {\n"
-            "        return s;\n"
-            "    }\n"
-            "    return NULL;\n"
-            "}\n";
+           "{\n"
+           "    char *s = new char[100];\n"
+           "    if ( a == b )\n"
+           "    {\n"
+           "        return s;\n"
+           "    }\n"
+           "    return NULL;\n"
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: s\n" );
 
 
@@ -617,18 +617,6 @@ static void memleak_in_function()
            "    free(str);\n"
            "}\n";
     check( CheckMemoryLeak, __LINE__, code, "" );
-
-
-    /*  TODO
-    code = "void f()\n"
-           "{\n"
-           "    char *str;\n"
-           "    for (int i = 0; i < 10; ++i)\n"
-           "        str = strdup(\"hello\");\n"
-           "    free(str);\n"
-           "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:5]: Memory leak: str" );
-    */
 
 
     code = "void f()\n"
@@ -674,25 +662,25 @@ static void memleak_in_function()
 
 
     code = "static char *f()\n"
-            "{\n"
-            "    Fred *fred = new Fred;\n"
-            "    // fred is deleted automaticly\n"
-            "}\n";
+           "{\n"
+           "    Fred *fred = new Fred;\n"
+           "    // fred is deleted automaticly\n"
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "" );
 
 
     code = "struct abc\n"
-            "{\n"
-            "    int a;\n"
-            "    int b;\n"
-            "    int c;\n"
-            "}\n"
-            "\n"
-            "static void f()\n"
-            "{\n"
-            "    struct abc *abc1 = new abc;\n"
-            "    p = &abc1->a;\n"       // p may be part of a garbage collector
-            "}\n";
+           "{\n"
+           "    int a;\n"
+           "    int b;\n"
+           "    int c;\n"
+           "}\n"
+           "\n"
+           "static void f()\n"
+           "{\n"
+           "    struct abc *abc1 = new abc;\n"
+           "    p = &abc1->a;\n"       // p may be part of a garbage collector
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "" );
 
 
@@ -722,24 +710,24 @@ static void memleak_in_function()
 
 
     code = "static char *f()\n"
-            "{\n"
-            "    Fred *fred = new Fred;\n"
-            "    free( fred->Name );\n"
-            "}\n";
+           "{\n"
+           "    Fred *fred = new Fred;\n"
+           "    free( fred->Name );\n"
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "[test.cpp:3]: Memory leak: fred\n" );
 
 
     /* TODO
     code = "struct Fred\n"
-            "{\n"
-            "    char *str;\n"
-            "}\n"
-            "\n"
-            "void f()\n"
-            "{\n"
-            "    Fred f;\n"
-            "    f.str = strdup(\"aa\");\n"
-            "}\n";
+           "{\n"
+           "    char *str;\n"
+           "}\n"
+           "\n"
+           "void f()\n"
+           "{\n"
+           "    Fred f;\n"
+           "    f.str = strdup(\"aa\");\n"
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Memory leak: f.str\n" );
     */
 
@@ -755,28 +743,40 @@ static void memleak_in_function()
 
 
     code = "static char *dmalloc()\n"
-            "{\n"
-            "    char *p = new char[100];\n"
-            "    return p;\n"
-            "}\n"
-            "static void f()\n"
-            "{\n"
-            "    char *p = dmalloc();\n"
-            "}\n";
+           "{\n"
+           "    char *p = new char[100];\n"
+           "    return p;\n"
+           "}\n"
+           "static void f()\n"
+           "{\n"
+           "    char *p = dmalloc();\n"
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: p\n" );
 
 
     code = "static char *dmalloc()\n"
-            "{\n"
-            "    char *p = new char[100];\n"
-            "    return p;\n"
-            "}\n"
-            "static void f()\n"
-            "{\n"
-            "    char *p = dmalloc();\n"
-            "    delete p;\n"
-            "}\n";
+           "{\n"
+           "    char *p = new char[100];\n"
+           "    return p;\n"
+           "}\n"
+           "static void f()\n"
+           "{\n"
+           "    char *p = dmalloc();\n"
+           "    delete p;\n"
+           "}\n";
     check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Mismatching allocation and deallocation: p\n" );
+
+
+    code = "static void foo(const char *str)\n"
+           "{ }\n"
+           "\n"
+           "static void f()\n"
+           "{\n"
+           "    char *p = new char[100];\n"
+           "    foo(p);\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:6]: Memory leak: p\n" );
+
 }
 //---------------------------------------------------------------------------
 
@@ -1015,13 +1015,13 @@ static void variable_scope()
 
 
     code = "static void f()\n"
-            "{\n"
-            "    TPoint p1;\n"
-            "    for (i=0;i<10;i++)\n"
-            "    {\n"
-            "        p1=point(i,i);\n"
-            "    }\n"
-            "}\n";
+           "{\n"
+           "    TPoint p1;\n"
+           "    for (i=0;i<10;i++)\n"
+           "    {\n"
+           "        p1=point(i,i);\n"
+           "    }\n"
+           "}\n";
     check( CheckVariableScope, __LINE__, code, "" );
 }
 //---------------------------------------------------------------------------
