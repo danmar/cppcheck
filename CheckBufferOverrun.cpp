@@ -292,13 +292,30 @@ static void CheckBufferOverrun_LocalVariable()
         else if (tok->str[0]=='}')
             indentlevel--;
 
-        else if (indentlevel > 0 && Match(tok, "%type% %var% [ %num% ] ;"))
+        else if (indentlevel > 0)
         {
-            const char *varname[2];
-            varname[0] = getstr(tok,1);
-            varname[1] = 0;
-            unsigned int size = strtoul(getstr(tok,3), NULL, 10);
-            int total_size = size * SizeOfType(tok->str);
+            const char *varname[2] = {0};
+            unsigned int size = 0;
+            const char *type = 0;
+
+            if (Match(tok, "%type% %var% [ %num% ] ;"))
+            {
+                varname[0] = getstr(tok,1);
+                size = strtoul(getstr(tok,3), NULL, 10);
+                type = tok->str;
+            }
+            else if (indentlevel > 0 && Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
+            {
+                varname[0] = getstr(tok,1);
+                size = strtoul(getstr(tok,6), NULL, 10);
+                type = getstr(tok, 4);
+            }
+            else
+            {
+                continue;
+            }
+
+            int total_size = size * SizeOfType(type);
             if (total_size == 0)
                 continue;
 

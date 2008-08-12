@@ -208,6 +208,14 @@ static void buffer_overrun()
     check( CheckBufferOverrun, __LINE__, code, "[test.cpp:5]: Array index out of bounds\n" );
 
 
+    code = "void f()\n"
+           "{\n"
+           "    char *str = new char[0x10];\n"
+           "    str[15] = 0;\n"
+           "    str[16] = 0;\n"
+           "}\n";
+    check( CheckBufferOverrun, __LINE__, code, "[test.cpp:5]: Array index out of bounds\n" );
+
 
     code = "void f()\n"
            "{\n"
@@ -455,6 +463,7 @@ static void memleak_in_function()
     // * for/while..
     // * mismatching allocation and deallocation
     // * garbage collection
+    // * arrays
     // * struct members
     // * function calls
 
@@ -610,6 +619,18 @@ static void memleak_in_function()
     check( CheckMemoryLeak, __LINE__, code, "" );
 
 
+    /*  TODO
+    code = "void f()\n"
+           "{\n"
+           "    char *str;\n"
+           "    for (int i = 0; i < 10; ++i)\n"
+           "        str = strdup(\"hello\");\n"
+           "    free(str);\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:5]: Memory leak: str" );
+    */
+
+
     code = "void f()\n"
            "{\n"
            "    for (int i = 0; i < j; i++)\n"
@@ -676,6 +697,22 @@ static void memleak_in_function()
 
 
 
+
+
+
+    ////////////////////////////////////////////////
+    // arrays
+    ////////////////////////////////////////////////
+
+
+    /*  TODO
+    code = "static void f()\n"
+           "{\n"
+           "    char *str[10];\n"
+           "    str[0] = strdup(\"hello\");\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:3]: Memory leak: str[0]\n" );
+    */
 
 
 
