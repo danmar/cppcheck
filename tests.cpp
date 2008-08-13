@@ -777,6 +777,14 @@ static void memleak_in_function()
            "}\n";
     check( CheckMemoryLeak, __LINE__, code, "[test.cpp:6]: Memory leak: p\n" );
 
+
+    code = "static void f()\n"
+           "{\n"
+           "    char *p = new char[100];\n"
+           "    foo(p);\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "" );
+
 }
 //---------------------------------------------------------------------------
 

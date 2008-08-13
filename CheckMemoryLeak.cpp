@@ -89,7 +89,7 @@ static AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] )
         tok = gettok( tok, 4 );
         if ( Match(tok,"{") )
             tok = tok->next;
-    }                               
+    }
 
     if ( Match(tok, "delete %var1% ;", varnames) )
         return New;
@@ -167,75 +167,92 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         // Check subfunction...
         if (Alloc != No && Match(tok,"[{};] %var% ("))
         {
+            AllocType dealloc = GetDeallocationType(tok->next, varnames);
+
             const char *funcname = getstr( tok, 1 );
-
-            unsigned int param = 0;
-            for (const TOKEN *tok2 = gettok(tok,2); tok2; tok2 = tok2->next)
+            if (dealloc==No && strcmp(funcname,"if") && strcmp(funcname,"for") && strcmp(funcname,"while"))
             {
-                if ( tok2->str[0] == ';' )
-                    break;
-                if ( tok2->str[0] == ',' )
-                    param++;
-
-                if ( Match(tok2, "[(,] %var1% [,)]", varnames) )
+                unsigned int param = 0;
+                for (const TOKEN *tok2 = gettok(tok,2); tok2; tok2 = tok2->next)
                 {
-                    // Find function..
-                    const TOKEN *ftok = GetFunctionTokenByName( funcname );
-                    ftok = gettok(ftok,2);
-                    if ( ! ftok )
+                    if ( tok2->str[0] == ';' || tok2->str[0] == ')' )
                         break;
+                    if ( tok2->str[0] == ',' )
+                        param++;
 
-                    // Goto function parameter..
-                    for ( unsigned int fparam = 0; ftok && fparam < param; ftok = ftok->next )
+                    if ( Match(tok2, "[(,] %var1% [,)]", varnames) )
                     {
-                        if ( ftok->str[0] == ',' )
-                            ++fparam;
-                    }
-                    for ( ; ftok; ftok = ftok->next )
-                    {
-                        if ( ! Match(ftok,"%var% [,)]") )
-                            continue;
-
-                        const char *paramname[2] = {0};
-                        paramname[0] = ftok->str;
-                        // parse function and check if it deallocates the parameter..
-                        int _indentlevel = 0;
-                        while (_indentlevel>=0 && ftok)
+                        // Find function..
+                        const TOKEN *ftok = GetFunctionTokenByName( funcname );
+                        ftok = gettok(ftok,2);
+                        if ( ! ftok )
                         {
-                            if ( ftok->str[0] == '{' )
-                                _indentlevel++;
-                            else if ( ftok->str[0] == '}' )
-                            {
-                                _indentlevel--;
-                                if ( _indentlevel <= 0 )
-                                    break;
-                            }
+                            // Can't find the function but to avoid false
+                            // positives it is assumed that the variable is
+                            // deallocated..
 
-                            if ( _indentlevel >= 1 )
+                            // Deallocated at same indentlevel as the allocation => no memory leak
+                            if ( alloc_indentlevel == indentlevel )
+                                return;
+
+                            dealloc_indentlevel = indentlevel;
+                        }
+
+                        else
+                        {
+                            // Goto function parameter..
+                            for ( unsigned int fparam = 0; ftok && fparam < param; ftok = ftok->next )
                             {
-                                AllocType dealloc = GetDeallocationType(ftok,paramname);
-                                if ( dealloc != No )
+                                if ( ftok->str[0] == ',' )
+                                    ++fparam;
+                            }
+                            for ( ; ftok; ftok = ftok->next )
+                            {
+                                if ( ! Match(ftok,"%var% [,)]") )
+                                    continue;
+
+                                const char *paramname[2] = {0};
+                                paramname[0] = ftok->str;
+                                // parse function and check if it deallocates the parameter..
+                                int _indentlevel = 0;
+                                while (_indentlevel>=0 && ftok)
                                 {
-                                    if ( Alloc != No && Alloc != dealloc )
+                                    if ( ftok->str[0] == '{' )
+                                        _indentlevel++;
+                                    else if ( ftok->str[0] == '}' )
                                     {
-                                        MismatchError( Tok1, varname );
-                                        return;
+                                        _indentlevel--;
+                                        if ( _indentlevel <= 0 )
+                                            break;
                                     }
 
-                                    // Deallocated at same indentlevel as the allocation => no memory leak
-                                    if ( alloc_indentlevel == indentlevel )
-                                        return;
+                                    if ( _indentlevel >= 1 )
+                                    {
+                                        AllocType dealloc = GetDeallocationType(ftok,paramname);
+                                        if ( dealloc != No )
+                                        {
+                                            if ( Alloc != No && Alloc != dealloc )
+                                            {
+                                                MismatchError( Tok1, varname );
+                                                return;
+                                            }
 
-                                    dealloc_indentlevel = indentlevel;
-                                    break;
+                                            // Deallocated at same indentlevel as the allocation => no memory leak
+                                            if ( alloc_indentlevel == indentlevel )
+                                                return;
+
+                                            dealloc_indentlevel = indentlevel;
+                                            break;
+                                        }
+                                    }
+
+                                    ftok = ftok->next;
                                 }
+                                break;
                             }
-
-                            ftok = ftok->next;
                         }
                         break;
                     }
-                    break;
                 }
             }
         }
