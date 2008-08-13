@@ -595,6 +595,18 @@ static void memleak_in_function()
     check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: s\n" );
 
 
+    code = "static char *f()\n"
+           "{\n"
+           "    char *s;\n"
+           "    if ( abc )\n"
+           "    {\n"
+           "        s = new char[10];\n"
+           "    }\n"
+           "    return s;\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "" );
+
+
 
 
 

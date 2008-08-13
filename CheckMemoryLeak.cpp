@@ -385,7 +385,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         }
 
         // Return without deallocating the memory..
-        if ( Alloc != No && alloc_indentlevel >= 0 && dealloc_indentlevel <= 0 && Match(tok, "return") )
+        if ( Alloc != No && (indentlevel==0 || (alloc_indentlevel >= 0 && dealloc_indentlevel <= 0)) && Match(tok, "return") )
         {
             bool retvar = false;
             for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
@@ -435,8 +435,15 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 }
             }
 
-            if ( indentlevel <= alloc_indentlevel )
+            if ( indentlevel == 0 )
                 return;
+
+            if ( indentlevel <= alloc_indentlevel )
+            {
+                Alloc = No;
+                alloc_indentlevel = -1;
+                dealloc_indentlevel = -1;
+            }
         }
     }
 }
