@@ -460,7 +460,8 @@ static void memleak_in_function()
     // There are 2 sections:
     // * Simple testcases
     // * if else
-    // * for/while..
+    // * for/while
+    // * switch
     // * mismatching allocation and deallocation
     // * garbage collection
     // * arrays
@@ -645,6 +646,25 @@ static void memleak_in_function()
 
 
 
+
+
+
+
+    ////////////////////////////////////////////////
+    // switch
+    ////////////////////////////////////////////////
+    
+    code = "void f()\n"
+           "{\n"
+           "    char *str = new char[10];\n"
+           "    switch (abc)\n"
+           "    {\n"
+           "        case 1:\n"
+           "            break;\n"
+           "    };\n"
+           "    delete [] str;\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "" );
 
 
 
