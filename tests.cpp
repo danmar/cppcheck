@@ -455,6 +455,17 @@ static void operator_eq()
 }
 //---------------------------------------------------------------------------
 
+static void check_(void (chk)(),
+                   const unsigned int line,
+                   const char code[],
+                   const char msg[])
+{
+    ShowAll = false;
+    check( chk, line, code, msg );
+    ShowAll = true;
+    check( chk, line, code, msg );
+}
+
 static void memleak_in_function()
 {
     // There are 2 sections:
@@ -476,12 +487,11 @@ static void memleak_in_function()
     // Simple testcases
     ////////////////////////////////////////////////
 
-
     code = "void f()\n"
            "{\n"
            "    int *a = new int[10];\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:3]: Memory leak: a\n" );
+    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:4]: Memory leak: a\n" );
 
 
     code = "Fred *NewFred()\n"
@@ -489,7 +499,7 @@ static void memleak_in_function()
            "    Fred *f = new Fred;\n"
            "    return f;\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
     code = "static char *f()\n"
@@ -497,7 +507,7 @@ static void memleak_in_function()
            "    char *s = new char[100];\n"
            "    return (char *)s;\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
     code = "static void f()\n"
@@ -506,9 +516,7 @@ static void memleak_in_function()
            "    char *str2 = (char *)str;\n"
            "    free(str2);\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
-
-
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
 
@@ -525,7 +533,7 @@ static void memleak_in_function()
            "        delete [] a;\n"
            "    }\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
     code = "void f()\n"
@@ -549,7 +557,7 @@ static void memleak_in_function()
            "        return;\n"
            "    }\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:3]: Memory leak: str\n" );
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Memory leak: str\n" );
 
 
     code = "void f()\n"
@@ -562,7 +570,7 @@ static void memleak_in_function()
            "    }\n"
            "    delete [] str;\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
 
@@ -581,7 +589,7 @@ static void memleak_in_function()
            "    }\n"
            "    delete fred;\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
     */
 
     code = "static char *f()\n"
@@ -605,9 +613,9 @@ static void memleak_in_function()
            "    }\n"
            "    return s;\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
-
+/* todo
     code = "static char *f()\n"
            "{\n"
            "    char *s = new char[10];\n"
@@ -618,7 +626,7 @@ static void memleak_in_function()
            "    return 0;\n"
            "}\n";
     check( CheckMemoryLeak, __LINE__, code, "" );
-
+*/
 
 
 
@@ -639,7 +647,7 @@ static void memleak_in_function()
            "    }\n"
            "    free(str);\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
     code = "void f()\n"
@@ -674,7 +682,7 @@ static void memleak_in_function()
            "    };\n"
            "    delete [] str;\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
 
@@ -690,7 +698,7 @@ static void memleak_in_function()
            "    int *a = new int[10];\n"
            "    free(a);\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:3]: Mismatching allocation and deallocation: a\n" );
+    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:4]: Mismatching allocation and deallocation: a\n" );
 
 
 
@@ -708,7 +716,7 @@ static void memleak_in_function()
            "    Fred *fred = new Fred;\n"
            "    // fred is deleted automaticly\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
     code = "struct abc\n"
@@ -741,7 +749,7 @@ static void memleak_in_function()
            "    char *str[10];\n"
            "    str[0] = strdup(\"hello\");\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:3]: Memory leak: str[0]\n" );
+    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:3]: Memory leak: str[0]\n" );
     */
 
 
@@ -756,7 +764,7 @@ static void memleak_in_function()
            "    Fred *fred = new Fred;\n"
            "    free( fred->Name );\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:3]: Memory leak: fred\n" );
+    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:5]: Memory leak: fred\n" );
 
 
     /* TODO
@@ -770,7 +778,7 @@ static void memleak_in_function()
            "    Fred f;\n"
            "    f.str = strdup(\"aa\");\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Memory leak: f.str\n" );
+    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Memory leak: f.str\n" );
     */
 
 
@@ -793,7 +801,7 @@ static void memleak_in_function()
            "{\n"
            "    char *p = dmalloc();\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: p\n" );
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Memory leak: p\n" );
 
 
     code = "static char *dmalloc()\n"
@@ -806,7 +814,7 @@ static void memleak_in_function()
            "    char *p = dmalloc();\n"
            "    delete p;\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Mismatching allocation and deallocation: p\n" );
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Mismatching allocation and deallocation: p\n" );
 
 
     code = "static void foo(const char *str)\n"
@@ -817,7 +825,7 @@ static void memleak_in_function()
            "    char *p = new char[100];\n"
            "    foo(p);\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:6]: Memory leak: p\n" );
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: p\n" );
 
 
     code = "static void f()\n"
@@ -825,7 +833,7 @@ static void memleak_in_function()
            "    char *p = new char[100];\n"
            "    foo(p);\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
     code = "static void f()\n"
@@ -833,7 +841,7 @@ static void memleak_in_function()
            "    char *p = new char[100];\n"
            "    foo.add(p);\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 }
 //---------------------------------------------------------------------------
