@@ -653,7 +653,7 @@ static void memleak_in_function()
     ////////////////////////////////////////////////
     // switch
     ////////////////////////////////////////////////
-    
+
     code = "void f()\n"
            "{\n"
            "    char *str = new char[10];\n"
@@ -814,6 +814,14 @@ static void memleak_in_function()
            "{\n"
            "    char *p = new char[100];\n"
            "    foo(p);\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "" );
+
+
+    code = "static void f()\n"
+           "{\n"
+           "    char *p = new char[100];\n"
+           "    foo.add(p);\n"
            "}\n";
     check( CheckMemoryLeak, __LINE__, code, "" );
 

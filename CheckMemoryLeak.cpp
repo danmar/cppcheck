@@ -168,6 +168,26 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 dealloc_indentlevel = -1;
         }
 
+        if ( Alloc != No && Match(tok, ". %var% (") )
+        {
+            bool isused = false;
+            while (tok && !Match(tok, "[;{]"))
+            {
+                if ( Match(tok, "[(,] %var1% [,)]", varnames) )
+                    isused = true;
+                tok = tok->next;
+            }
+
+            // Don't know what happens, assume that it's deallocated.
+            if ( isused )
+            {
+                if ( indentlevel == 0 )
+                    return;
+
+                dealloc_indentlevel = indentlevel;
+            }
+        }
+
         // Check subfunction...
         if (Alloc != No && Match(tok,"[{};] %var% ("))
         {
