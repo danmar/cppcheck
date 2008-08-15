@@ -608,6 +608,16 @@ static void memleak_in_function()
     check( CheckMemoryLeak, __LINE__, code, "" );
 
 
+    code = "static char *f()\n"
+           "{\n"
+           "    char *s = new char[10];\n"
+           "    if ( s )\n"
+           "    {\n"
+           "        return s;\n"
+           "    }\n"
+           "    return 0;\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "" );
 
 
 
