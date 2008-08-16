@@ -664,42 +664,58 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 done = false;
             }
 
-            // Delete "else { }", "else if { }", "else ;" and "else if ;"
-            if ( Match(tok2->next, "else") )
+            // Delete empty block
+            if ( Match(tok2->next, "{ }") )
             {
-                const TOKEN *_tok2 = gettok(tok2,2);
+                erase(tok2, gettok(tok2,3));
+                done = false;
+            }
 
-                // Delete optional "if"
-                if ( Match( _tok2, "if" ) )
-                    _tok2 = _tok2->next;
+            // Delete braces around a single instruction..
+            if ( Match(tok2->next, "{ %var% ; }") )
+            {
+                erase( tok2, gettok(tok2,2) );
+                erase( tok2->next->next, gettok(tok2,4) );
+                done = false;
+            }
 
-                // Delete "{ }" or ";"
-                if (Match(_tok2, "{ }"))
+            // Delete empty if
+            if ( Match(tok2,"[;{}] if ;") ||
+                 Match(tok2,"[;{}] if(var) ;") ||
+                 Match(tok2,"[;{}] if(!var) ;") )
+            {
+                if ( ! Match(gettok(tok2,3), "else") )
                 {
-                    erase(tok2, _tok2->next->next);
+                    erase(tok2, gettok(tok2, 3));
                     done = false;
-                }
-                else if ( Match(_tok2, ";") )
-                {
-                    erase(tok2, _tok2->next);
-                    done = false;
+                    continue;
                 }
             }
 
-            // Delete "loop ;" and "loop { }"
-            if ( Match(tok2->next, "loop") )
+            // Delete "else ;" and "else if ;"
+            if ( Match(tok2->next, "else if ;") )
             {
-                if ( Match(gettok(tok2,2), ";") )
-                {
-                    erase(tok2, gettok(tok2,3));
-                    done = false;
-                }
+                erase(tok2, gettok(tok2,4));
+                done = false;
+            }
+            if ( Match(tok2->next, "else ;") )
+            {
+                erase(tok2, gettok(tok2,3));
+                done = false;
+            }
 
-                else if ( Match(gettok(tok2,2), "{ }") )
-                {
-                    erase(tok2, gettok(tok2,4));
-                    done = false;
-                }
+            // Delete "loop ;"
+            if ( Match(tok2->next, "loop ;") )
+            {
+                erase(tok2, gettok(tok2,3));
+                done = false;
+            }
+
+            // Delete "alloc ; if(!var) return ;"
+            if ( Match(tok2->next, "alloc ; if(!var) return ;") )
+            {
+                erase(tok2, gettok(tok2,6));
+                done = false;
             }
         }
     }
