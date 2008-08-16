@@ -554,18 +554,51 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
             dealloctype = dealloc;
         }
 
-        static const int SIZE = 6;
-        const char *str[SIZE] = {"if","else","for","while","switch","return"};
-        for (int i = 0; i < SIZE; ++i)
+        // if else switch
+        if ( Match(tok, "if ( %var1% )", varnames) )
         {
-            if (strcmp(tok->str, str[i])==0)
-                addtoken(tok->str);
+            addtoken("if(var)");
+        }
+        else if ( Match(tok, "if ( ! %var1% )", varnames) ||
+                  Match(tok, "if ( unlikely ( ! %var1% ) )", varnames) ||
+                  Match(tok, "if ( %var1% == NULL )", varnames) ||
+                  Match(tok, "if ( NULL == %var1% )", varnames) ||
+                  Match(tok, "if ( %var1% == 0 )", varnames) )
+        {
+            addtoken("if(!var)");
+        }
+        else
+        {
+            if (Match(tok, "if"))
+                addtoken("if");
+            if (Match(tok, "else"))
+                addtoken("else");
+            if (Match(tok, "switch"))
+                addtoken("switch");
         }
 
+        // Loops..
+        if ( Match(tok, "for") )
+            addtoken("loop");
+        if ( Match(tok, "while") )
+            addtoken("loop");
+        if ( Match(tok, "do") )
+            addtoken("loop");
+
+        // continue / break..
+        if ( Match(tok, "continue") )
+            addtoken("continue");
+        if ( Match(tok, "break") )
+            addtoken("break");
+
         // Return..
-        if ( Match(tok, "return %var1%", varnames) ||
-             Match(tok, "return & %var1%", varnames) )
-            addtoken("use");
+        if ( Match(tok, "return") )
+        {
+            addtoken("return");
+            if ( Match(tok, "return %var1%", varnames) ||
+                 Match(tok, "return & %var1%", varnames) )
+                addtoken("use");
+        }
 
         // Assignment..
         if ( Match(tok,"[)=] %var1%", varnames) )
@@ -583,12 +616,15 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     return rethead;
 }
 
-static void eraseNext(TOKEN *tok)
+static void erase(TOKEN *begin, const TOKEN *end)
 {
-    if ( tok && tok->next )
+    if ( ! begin )
+        return;
+
+    while ( begin->next && begin->next != end )
     {
-        TOKEN *next = tok->next;
-        tok->next = tok->next->next;
+        TOKEN *next = begin->next;
+        begin->next = begin->next->next;
         delete next;
     }
 }
@@ -621,19 +657,49 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
         for (TOKEN *tok2 = tok ; tok2; tok2 = tok2->next )
         {
+            // Delete extra ";"
             while (Match(tok2,"[;{}] ;"))
             {
-                eraseNext(tok2);
+                erase(tok2, gettok(tok2,2));
                 done = false;
             }
 
-            // Delete else { }
-            if ( Match(tok2->next, "else { }") )
+            // Delete "else { }", "else if { }", "else ;" and "else if ;"
+            if ( Match(tok2->next, "else") )
             {
-                eraseNext(tok2);
-                eraseNext(tok2);
-                eraseNext(tok2);
-                done = false;
+                const TOKEN *_tok2 = gettok(tok2,2);
+
+                // Delete optional "if"
+                if ( Match( _tok2, "if" ) )
+                    _tok2 = _tok2->next;
+
+                // Delete "{ }" or ";"
+                if (Match(_tok2, "{ }"))
+                {
+                    erase(tok2, _tok2->next->next);
+                    done = false;
+                }
+                else if ( Match(_tok2, ";") )
+                {
+                    erase(tok2, _tok2->next);
+                    done = false;
+                }
+            }
+
+            // Delete "loop ;" and "loop { }"
+            if ( Match(tok2->next, "loop") )
+            {
+                if ( Match(gettok(tok2,2), ";") )
+                {
+                    erase(tok2, gettok(tok2,3));
+                    done = false;
+                }
+
+                else if ( Match(gettok(tok2,2), "{ }") )
+                {
+                    erase(tok2, gettok(tok2,4));
+                    done = false;
+                }
             }
         }
     }

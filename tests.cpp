@@ -747,7 +747,7 @@ static void memleak_in_function()
            "    struct abc *abc1 = new abc;\n"
            "    p = &abc1->a;\n"       // p may be part of a garbage collector
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "" );
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
 
