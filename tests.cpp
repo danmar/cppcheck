@@ -510,6 +510,22 @@ static void memleak_in_function()
     check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
+    code = "static char *f()\n"
+           "{\n"
+           "    char *s = new char[100];\n"
+           "    return 0;\n"
+           "}\n";
+    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:4]: Memory leak: s\n" );
+
+
+    code = "static char *f()\n"
+           "{\n"
+           "    struct *str = new strlist;\n"
+           "    return &str->s;\n"
+           "}\n";
+    check_( CheckMemoryLeak, __LINE__, code, "" );
+
+
     code = "static void f()\n"
            "{\n"
            "    char *str = strdup(\"hello\");\n"

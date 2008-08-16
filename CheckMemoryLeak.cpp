@@ -562,6 +562,11 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
                 addtoken(tok->str);
         }
 
+        // Return..
+        if ( Match(tok, "return %var1%", varnames) ||
+             Match(tok, "return & %var1%", varnames) )
+            addtoken("use");
+
         // Assignment..
         if ( Match(tok,"[)=] %var1%", varnames) )
             addtoken("use");
@@ -570,11 +575,22 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         if ( Match(tok, "[(,] %var1% [,)]", varnames) )
             addtoken("use");
 
-        if ( Match( tok, "[=(,] & %var1% .", varnames ) )
+        // Linux lists..
+        if ( Match( tok, "[=(,] & %var1% [.[]", varnames ) )
             addtoken("use");
     }
 
     return rethead;
+}
+
+static void eraseNext(TOKEN *tok)
+{
+    if ( tok && tok->next )
+    {
+        TOKEN *next = tok->next;
+        tok->next = tok->next->next;
+        delete next;
+    }
 }
 
 
@@ -598,19 +614,38 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
 
     // reduce the code..
-    for (TOKEN *tok2 = tok ; tok2; tok2 = tok2->next )
+    bool done = false;
+    while ( ! done )
     {
-        while (Match(tok2,"[;{}] ;"))
+        done = true;
+
+        for (TOKEN *tok2 = tok ; tok2; tok2 = tok2->next )
         {
-            TOKEN *next = tok2->next;
-            tok2->next = tok2->next->next;
-            delete next;
+            while (Match(tok2,"[;{}] ;"))
+            {
+                eraseNext(tok2);
+                done = false;
+            }
+
+            // Delete else { }
+            if ( Match(tok2->next, "else { }") )
+            {
+                eraseNext(tok2);
+                eraseNext(tok2);
+                eraseNext(tok2);
+                done = false;
+            }
         }
     }
 
-    if ( ! findmatch(tok,"dealloc") &&
-         ! findmatch(tok,"return") &&
-         ! findmatch(tok,"use") )
+    if ( findmatch(tok,"alloc ; return ;") )
+    {
+        MemoryLeak(gettok(findmatch(tok,"alloc ; return ;"),2), varname);
+    }
+
+    else if ( ! findmatch(tok,"dealloc") &&
+              ! findmatch(tok,"use") &&
+              ! findmatch(tok,"return use ;") )
     {
         const TOKEN *last = tok;
         while (last->next)
