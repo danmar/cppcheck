@@ -480,6 +480,101 @@ static void CheckMemoryLeak_CheckScope_All( const TOKEN *Tok1, const char varnam
 
 extern bool ShowAll;
 
+static TOKEN *getcode(const TOKEN *tok, const char varname[])
+{
+    const char *varnames[2];
+    varnames[0] = varname;
+    varnames[1] = 0;
+
+    TOKEN *rethead = 0, *rettail = 0;
+    #define addtoken(_str)                  \
+    {                                       \
+        TOKEN *newtok = new TOKEN;          \
+        newtok->str = _str;                 \
+        newtok->linenr = tok->linenr;       \
+        newtok->FileIndex = tok->FileIndex; \
+        newtok->next = 0;                   \
+        if (rettail)                        \
+            rettail->next = newtok;         \
+        else                                \
+            rethead = newtok;               \
+        rettail=newtok;                     \
+    }
+
+    AllocType alloctype = No;
+    AllocType dealloctype = No;
+
+    int indentlevel = 0;
+    int parlevel = 0;
+    for ( ; tok; tok = tok->next )
+    {
+        if ( tok->str[0] == '{' )
+        {
+            addtoken( "{" );
+            indentlevel++;
+        }
+        else if ( tok->str[0] == '}' )
+        {
+            addtoken( "}" );
+            if ( indentlevel <= 0 )
+                break;
+            indentlevel--;
+        }
+
+        if ( tok->str[0] == '(' )
+            parlevel++;
+        else if ( tok->str[0] == ')' )
+            parlevel--;
+
+        if ( parlevel == 0 && tok->str[0]==';')
+            addtoken(";");
+
+        if (Match(tok, "[(;{}] %var1% = ", varnames))
+        {
+            AllocType alloc = GetAllocationType(gettok(tok,3));
+            if ( alloc != No )
+            {
+                addtoken("alloc");
+                if (alloctype!=No && alloctype!=alloc)
+                    MismatchError(tok, varname);
+                if (dealloctype!=No && dealloctype!=alloc)
+                    MismatchError(tok, varname);
+                alloctype = alloc;
+            }
+        }
+
+        AllocType dealloc = GetDeallocationType(tok, varnames);
+        if ( dealloc != No )
+        {
+            addtoken("dealloc");
+            if (alloctype!=No && alloctype!=dealloc)
+                MismatchError(tok, varname);
+            if (dealloctype!=No && dealloctype!=dealloc)
+                MismatchError(tok, varname);
+            dealloctype = dealloc;
+        }
+
+        static const int SIZE = 6;
+        const char *str[SIZE] = {"if","else","for","while","switch","return"};
+        for (int i = 0; i < SIZE; ++i)
+        {
+            if (strcmp(tok->str, str[i])==0)
+                addtoken(tok->str);
+        }
+
+        // Assignment..
+        if ( Match(tok,"[)=] %var1%", varnames) )
+            addtoken("use");
+
+        // Function parameter..
+        if ( Match(tok, "[(,] %var1% [,)]", varnames) )
+            addtoken("use");
+    }
+
+    return rethead;
+}
+
+
 // Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
 static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
 {
@@ -489,70 +584,38 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         return;
     }
 
-    const char *varnames[2];
-    varnames[0] = varname;
-    varnames[1] = 0;
+    TOKEN *tok = getcode( Tok1, varname );
 
-    AllocType Alloc = No;
-
-    bool isfunc = false;
-    bool isreturn = false;
-
-    int indentlevel = 0;
-    for (const TOKEN *tok = Tok1 ; tok; tok = tok->next )
+    // If the variable is not allocated at all => no memory leak
+    if (findmatch(tok, "alloc") == 0)
     {
-        if (tok->str[0]=='{')
-            indentlevel++;
-
-        else if (tok->str[0]=='}')
-        {
-            indentlevel--;
-            if ( indentlevel < 0 )
-            {
-                if ( Alloc != No )
-                    MemoryLeak( tok, varname );
-                return;
-            }
-        }
-
-        // Allocated..
-        if ( Alloc == No && Match(tok, "[(;{}] %var1% =", varnames) )
-            Alloc = GetAllocationType( gettok(tok, 3) );
-
-        // Deallocated..
-        AllocType dealloc = GetDeallocationType( tok, varnames );
-        if ( dealloc != No )
-        {
-            if ( Alloc != No && Alloc != dealloc )
-                MismatchError( tok, varname );
-            return;
-        }
-
-        if ( Match(tok,";") )
-            isfunc = isreturn = false;
-
-        // Assignment..
-        if ( Match(tok, "[=)&] %var1%", varnames) )
-            return;
-
-        // Assuming that it's deallocated if it's passed as parameter to a
-        // function
-        if ( Match(tok, "%var% (") &&
-             strcmp(tok->str,"if") &&
-             strcmp(tok->str,"for") &&
-             strcmp(tok->str,"while"))
-        {
-            isfunc = true;
-        }
-        if (isfunc && Match(tok,"[(,] %var1% [,)]", varnames))
-            return;
-
-        // Return variable..
-        if (Match(tok, "return"))
-            isreturn = true;
-        if (isreturn && Match(tok,varname))
-            return;
+        deleteTokens(tok);
+        return;
     }
+
+
+    // reduce the code..
+    for (TOKEN *tok2 = tok ; tok2; tok2 = tok2->next )
+    {
+        while (Match(tok2,"[;{}] ;"))
+        {
+            TOKEN *next = tok2->next;
+            tok2->next = tok2->next->next;
+            delete next;
+        }
+    }
+
+    if ( ! findmatch(tok,"dealloc") &&
+         ! findmatch(tok,"return") &&
+         ! findmatch(tok,"use") )
+    {
+        const TOKEN *last = tok;
+        while (last->next)
+            last = last->next;
+        MemoryLeak(last, varname);
+    }
+
+    deleteTokens(tok);
 }
 //---------------------------------------------------------------------------
 

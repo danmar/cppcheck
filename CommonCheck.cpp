@@ -348,3 +348,26 @@ bool Match(const TOKEN *tok, const char pattern[], const char *varname1[], const
 }
 //---------------------------------------------------------------------------
 
+const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
+{
+    for ( ; tok; tok = tok->next)
+    {
+        if ( Match(tok, pattern, varname1, varname2) )
+            return tok;
+    }
+    return 0;
+}
+//---------------------------------------------------------------------------
+
+void deleteTokens(TOKEN *tok)
+{
+    while (tok)
+    {
+        TOKEN *next = tok->next;
+        delete tok;
+        tok = next;
+    }
+}
+//---------------------------------------------------------------------------
+
+

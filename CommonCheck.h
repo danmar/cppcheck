@@ -32,6 +32,8 @@ void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
 
 bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
 
+const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
 
+void deleteTokens(TOKEN *tok);
 //---------------------------------------------------------------------------
 #endif
