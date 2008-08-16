@@ -569,6 +569,9 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         // Function parameter..
         if ( Match(tok, "[(,] %var1% [,)]", varnames) )
             addtoken("use");
+
+        if ( Match( tok, "[=(,] & %var1% .", varnames ) )
+            addtoken("use");
     }
 
     return rethead;
