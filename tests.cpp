@@ -676,7 +676,7 @@ static void memleak_in_function()
            "        free(str);\n"
            "    }\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:7]: Memory leak: str\n" );
+    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:7]: Memory leak: str\n" );
 
 
 

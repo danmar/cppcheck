@@ -711,16 +711,28 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 done = false;
             }
 
-            // Delete "alloc ; if(!var) return ;"
-            if ( Match(tok2->next, "alloc ; if(!var) return ;") )
+            // Delete if block in "alloc ; if(!var) return ;"
+            if ( Match(tok2, "alloc ; if(!var) return ;") )
             {
-                erase(tok2, gettok(tok2,6));
+                erase(tok2, gettok(tok2,4));
+                done = false;
+            }
+
+            // Delete second use in "use ; use;"
+            while (Match(tok2, "use ; use ;"))
+            {
+                erase(tok2, gettok(tok2,3));
                 done = false;
             }
         }
     }
 
-    if ( findmatch(tok,"alloc ; return ;") )
+    if ( findmatch(tok, "alloc ; if continue ;") )
+    {
+        MemoryLeak(gettok(findmatch(tok, "alloc ; if continue ;"), 4), varname);
+    }
+
+    else if ( findmatch(tok, "alloc ; return ;") )
     {
         MemoryLeak(gettok(findmatch(tok,"alloc ; return ;"),2), varname);
     }
