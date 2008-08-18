@@ -16,6 +16,27 @@
 
 //---------------------------------------------------------------------------
 
+
+static bool isclass( const std::string &typestr )
+{
+    if ( typestr == "char" ||
+         typestr == "short" ||
+         typestr == "int" ||
+         typestr == "long" ||
+         typestr == "float" ||
+         typestr == "double" )
+        return false;
+
+    std::ostringstream pattern;
+    pattern << "struct " << typestr << " [;{]";
+    if ( findmatch( tokens, pattern.str().c_str() ) )
+        return false;
+
+    return true;
+}
+//---------------------------------------------------------------------------
+
+
 enum AllocType { No, Malloc, New, NewA };
 
 // Extra allocation..
@@ -532,6 +553,17 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         if (Match(tok, "[(;{}] %var1% = ", varnames))
         {
             AllocType alloc = GetAllocationType(gettok(tok,3));
+
+            // If "--all" hasn't been given, don't check classes..
+            if ( alloc == New && ! ShowAll )
+            {
+                if ( Match(gettok(tok,3), "new %var% ;") )
+                {
+                    if ( isclass( getstr(tok, 4) ) )
+                        alloc = No;
+                }
+            }
+
             if ( alloc != No )
             {
                 addtoken("alloc");
@@ -868,7 +900,10 @@ static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vec
         if ( Match(tok->next, "%type% * %var% ;") )
         {
             if ( IsName(tok->str) || strchr(";}", tok->str[0]) )
-                CheckMemoryLeak_ClassMembers_Variable( classname, getstr(tok, 3) );
+            {
+                if (ShowAll || !isclass(getstr(tok,1)))
+                    CheckMemoryLeak_ClassMembers_Variable( classname, getstr(tok, 3) );
+            }
         }
     }
 }

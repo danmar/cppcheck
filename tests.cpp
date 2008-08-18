@@ -535,6 +535,16 @@ static void memleak_in_function()
     check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
+    // Fred may be deleted automaticly by a garbage collector..
+    code = "class Fred;\n"
+           "void foo()\n"
+           "{\n"
+           "    Fred *f = new Fred;\n"
+           "}\n";
+    ShowAll = false;
+    check( CheckMemoryLeak, __LINE__, code, "" );
+    ShowAll = true;
+
 
     ////////////////////////////////////////////////
     // if else
@@ -780,7 +790,7 @@ static void memleak_in_function()
            "    Fred *fred = new Fred;\n"
            "    free( fred->Name );\n"
            "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:5]: Memory leak: fred\n" );
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:5]: Memory leak: fred\n" );
 
 
     /* TODO
