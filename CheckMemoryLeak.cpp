@@ -511,7 +511,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     #define addtoken(_str)                  \
     {                                       \
         TOKEN *newtok = new TOKEN;          \
-        newtok->str = _str;                 \
+        newtok->str = strdup(_str);         \
         newtok->linenr = tok->linenr;       \
         newtok->FileIndex = tok->FileIndex; \
         newtok->next = 0;                   \
@@ -658,6 +658,7 @@ static void erase(TOKEN *begin, const TOKEN *end)
     {
         TOKEN *next = begin->next;
         begin->next = begin->next->next;
+        free(next->str);
         delete next;
     }
 }
@@ -711,6 +712,12 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 erase( tok2->next->next, gettok(tok2,4) );
                 done = false;
             }
+            if ( Match(tok2->next, "{ return use ; }") )
+            {
+                erase( tok2, gettok(tok2,2) );
+                erase( tok2->next->next->next, gettok(tok2,5) );
+                done = false;
+            }
 
             // Delete empty if
             if ( Match(tok2,"[;{}] if ;") ||
@@ -737,6 +744,21 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 done = false;
             }
 
+            // Delete if block: "alloc; if return use ;"
+            if (Match(tok2,"alloc ; if return use ;") && !Match(gettok(tok2,6),"else"))
+            {
+                erase(tok2, gettok(tok2,5));
+                done = false;
+            }
+            
+            // "[;{}] if alloc ; else return ;" => "[;{}] alloc ;"
+            if (Match(tok2,"[;{}] if alloc ; else return ;"))
+            {
+                erase(tok2, gettok(tok2,2));        // Remove "if"
+                erase(tok2->next, gettok(tok2,5));  // Remove "; else return"
+                done = false;
+            }
+
             // Delete "loop ;"
             if ( Match(tok2->next, "loop ;") )
             {
@@ -759,6 +781,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             }
         }
     }
+
 
     if ( findmatch(tok, "alloc ; if continue ;") )
     {

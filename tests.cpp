@@ -599,24 +599,22 @@ static void memleak_in_function()
     check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
-
-
-    /* TODO
     code = "void f()\n"
            "{\n"
-           "    Fred *fred;\n"
+           "    char *str;\n"
            "    if (somecondition)\n"
            "    {\n"
-           "        fred = new Fred;\n"
+           "        str = new char[100];\n"
            "    }\n"
            "    else\n"
            "    {\n"
            "        return;\n"
            "    }\n"
-           "    delete fred;\n"
+           "    delete [] str;\n"
            "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "" );
-    */
+    ShowAll = false;
+    check( CheckMemoryLeak, __LINE__, code, "" );
+    ShowAll = true;
 
     code = "static char *f()\n"
            "{\n"
@@ -627,7 +625,7 @@ static void memleak_in_function()
            "    }\n"
            "    return NULL;\n"
            "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: s\n" );
+    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: s\n" );
 
 
     code = "static char *f()\n"
@@ -641,7 +639,7 @@ static void memleak_in_function()
            "}\n";
     check_( CheckMemoryLeak, __LINE__, code, "" );
 
-/* todo
+
     code = "static char *f()\n"
            "{\n"
            "    char *s = new char[10];\n"
@@ -651,8 +649,9 @@ static void memleak_in_function()
            "    }\n"
            "    return 0;\n"
            "}\n";
+    ShowAll = false;
     check( CheckMemoryLeak, __LINE__, code, "" );
-*/
+    ShowAll = true;
 
 
 
@@ -809,6 +808,20 @@ static void memleak_in_function()
 
 
 
+    code = "static struct fib6_table *fib6_alloc_table(struct net *net, u32 id)\n"
+           "{\n"
+           "	struct fib6_table *table;\n"
+           "\n"
+           "	table = kzalloc(sizeof(*table), GFP_ATOMIC);\n"
+           "	if (table != NULL) {\n"
+           "		table->tb6_id = id;\n"
+           "		table->tb6_root.leaf = net->ipv6.ip6_null_entry;\n"
+           "		table->tb6_root.fn_flags = RTN_ROOT | RTN_TL_ROOT | RTN_RTINFO;\n"
+           "	}\n"
+           "\n"
+           "	return table;\n"
+           "}\n";
+    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 
 
