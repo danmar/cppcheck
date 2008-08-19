@@ -807,7 +807,6 @@ static void memleak_in_function()
     */
 
 
-
     code = "static struct fib6_table *fib6_alloc_table(struct net *net, u32 id)\n"
            "{\n"
            "	struct fib6_table *table;\n"
@@ -821,7 +820,9 @@ static void memleak_in_function()
            "\n"
            "	return table;\n"
            "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "" );
+    ShowAll = false;
+    check( CheckMemoryLeak, __LINE__, code, "" );
+    ShowAll = true;
 
 
 

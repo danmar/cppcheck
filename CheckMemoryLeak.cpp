@@ -587,7 +587,8 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         }
 
         // if else switch
-        if ( Match(tok, "if ( %var1% )", varnames) )
+        if ( Match(tok, "if ( %var1% )", varnames) ||
+             Match(tok, "if ( %var1% != NULL )", varnames)   )
         {
             addtoken("if(var)");
         }
