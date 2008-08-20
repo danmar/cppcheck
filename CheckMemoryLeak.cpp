@@ -699,10 +699,11 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 done = false;
             }
 
-            // Delete empty block
+            // Replace "{ }" with ";"
             if ( Match(tok2->next, "{ }") )
             {
-                erase(tok2, gettok(tok2,3));
+                tok2->next->str[0] = ';';
+                erase(tok2->next, gettok(tok2,3));
                 done = false;
             }
 
