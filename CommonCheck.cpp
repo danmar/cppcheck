@@ -1,6 +1,7 @@
 //---------------------------------------------------------------------------
 #include "CommonCheck.h"
 #include "tokenize.h"
+#include <stdlib.h>     // free
 #include <iostream>
 #include <sstream>
 #include <list>

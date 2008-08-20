@@ -5,6 +5,8 @@
 
 #include "CommonCheck.h"
 
+#include <stdlib.h> // free
+
 #include <vector>
 #include <sstream>
 
