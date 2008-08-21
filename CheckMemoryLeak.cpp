@@ -147,360 +147,6 @@ static void MemoryLeak( const TOKEN *tok, const char varname[] )
 }
 //---------------------------------------------------------------------------
 
-static void CheckMemoryLeak_CheckScope_All( const TOKEN *Tok1, const char varname[] )
-{
-    const char *varnames[2];
-    varnames[0] = varname;
-    varnames[1] = 0;
-
-    AllocType Alloc = No;
-
-    int alloc_indentlevel = -1;
-    int dealloc_indentlevel = -1;
-    std::list<int> loop_indentlevel;
-    std::list<int> switch_indentlevel;
-
-    bool isif = false;
-
-    int indentlevel = 0;
-    for (const TOKEN *tok = Tok1 ; tok; tok = tok->next )
-    {
-        if (tok->str[0]=='{')
-            indentlevel++;
-
-        else if (tok->str[0]=='}')
-        {
-            indentlevel--;
-            if ( indentlevel < 0 )
-            {
-                if ( Alloc != No )
-                    MemoryLeak( tok, varname );
-                return;
-            }
-
-            if ( !loop_indentlevel.empty() && indentlevel <= loop_indentlevel.back() )
-                loop_indentlevel.pop_back();
-
-            if ( !switch_indentlevel.empty() && indentlevel <= switch_indentlevel.back() )
-                switch_indentlevel.pop_back();
-
-            if ( indentlevel < alloc_indentlevel )
-                alloc_indentlevel = -1;
-
-            if ( indentlevel < dealloc_indentlevel )
-                dealloc_indentlevel = -1;
-        }
-
-        if ( Alloc != No && Match(tok, ". %var% (") )
-        {
-            bool isused = false;
-            while (tok && !Match(tok, "[;{]"))
-            {
-                if ( Match(tok, "[(,] %var1% [,)]", varnames) )
-                    isused = true;
-                tok = tok->next;
-            }
-
-            // Don't know what happens, assume that it's deallocated.
-            if ( isused )
-            {
-                if ( indentlevel == 0 )
-                    return;
-
-                dealloc_indentlevel = indentlevel;
-            }
-        }
-
-        // Check subfunction...
-        if (Alloc != No && Match(tok,"[{};] %var% ("))
-        {
-            AllocType dealloc = GetDeallocationType(tok->next, varnames);
-
-            const char *funcname = getstr( tok, 1 );
-            if (dealloc==No && strcmp(funcname,"if") && strcmp(funcname,"for") && strcmp(funcname,"while"))
-            {
-                unsigned int param = 0;
-                for (const TOKEN *tok2 = gettok(tok,2); tok2; tok2 = tok2->next)
-                {
-                    if ( tok2->str[0] == ';' || tok2->str[0] == ')' )
-                        break;
-                    if ( tok2->str[0] == ',' )
-                        param++;
-
-                    if ( Match(tok2, "[(,] %var1% [,)]", varnames) )
-                    {
-                        // Find function..
-                        const TOKEN *ftok = GetFunctionTokenByName( funcname );
-                        ftok = gettok(ftok,2);
-                        if ( ! ftok )
-                        {
-                            // Can't find the function but to avoid false
-                            // positives it is assumed that the variable is
-                            // deallocated..
-
-                            // Deallocated at same indentlevel as the allocation => no memory leak
-                            if ( alloc_indentlevel == indentlevel )
-                                return;
-
-                            dealloc_indentlevel = indentlevel;
-                        }
-
-                        else
-                        {
-                            // Goto function parameter..
-                            for ( unsigned int fparam = 0; ftok && fparam < param; ftok = ftok->next )
-                            {
-                                if ( ftok->str[0] == ',' )
-                                    ++fparam;
-                            }
-                            for ( ; ftok; ftok = ftok->next )
-                            {
-                                if ( ! Match(ftok,"%var% [,)]") )
-                                    continue;
-
-                                const char *paramname[2] = {0};
-                                paramname[0] = ftok->str;
-                                // parse function and check if it deallocates the parameter..
-                                int _indentlevel = 0;
-                                while (_indentlevel>=0 && ftok)
-                                {
-                                    if ( ftok->str[0] == '{' )
-                                        _indentlevel++;
-                                    else if ( ftok->str[0] == '}' )
-                                    {
-                                        _indentlevel--;
-                                        if ( _indentlevel <= 0 )
-                                            break;
-                                    }
-
-                                    if ( _indentlevel >= 1 )
-                                    {
-                                        AllocType dealloc = GetDeallocationType(ftok,paramname);
-                                        if ( dealloc != No )
-                                        {
-                                            if ( Alloc != No && Alloc != dealloc )
-                                            {
-                                                MismatchError( Tok1, varname );
-                                                return;
-                                            }
-
-                                            // Deallocated at same indentlevel as the allocation => no memory leak
-                                            if ( alloc_indentlevel == indentlevel )
-                                                return;
-
-                                            dealloc_indentlevel = indentlevel;
-                                            break;
-                                        }
-                                    }
-
-                                    ftok = ftok->next;
-                                }
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-
-        // for, while set loop level..
-        if ( Match(tok,"while") || Match(tok,"for") )
-            loop_indentlevel.push_back( indentlevel );
-
-        // switch..
-        if (Match(tok,"switch"))
-            switch_indentlevel.push_back( indentlevel );
-
-        // Skip stuff like: if (!var) ...
-        if ( Match(tok, "if ( ! %var1% )", varnames) ||
-             Match(tok, "if ( unlikely ( ! %var1% ) )", varnames) ||
-             Match(tok, "if ( %var1% == NULL )", varnames) ||
-             Match(tok, "if ( NULL == %var1% )", varnames) ||
-             Match(tok, "if ( %var1% == 0 )", varnames) )
-        {
-            int _indentlevel = 0;
-            while ( tok )
-            {
-                if ( tok->str[0] == '{' )
-                    _indentlevel++;
-                else if ( tok->str[0] == '}' )
-                {
-                    _indentlevel--;
-                    if ( _indentlevel <= 0 )
-                        break;
-                }
-                else if (_indentlevel==0 && tok->str[0]==';')
-                    break;
-                tok = tok->next;
-            }
-        }
-
-        // if..
-        if ( Match(tok,"if") )
-            isif = true;
-        if ( strchr(";{}", tok->str[0]) )
-            isif = false;
-
-        // Allocated..
-        if ( Match(tok, "[(;{}] %var1% =", varnames) )
-        {
-            AllocType alloc = GetAllocationType( gettok(tok, 3) );
-            if ( alloc != No )
-            {
-                tok = tok->next;
-                Alloc = alloc;
-                alloc_indentlevel = indentlevel;
-
-                if ( isif )
-                {
-                    while ( tok )
-                    {
-                        if ( tok->str[0] == '{' )
-                        {
-                            indentlevel++;
-                        }
-                        else if ( tok->str[0] == '}' )
-                        {
-                            indentlevel--;
-                            if ( indentlevel <= alloc_indentlevel )
-                                break;
-                        }
-                        else if ( tok->str[0] == ';' && indentlevel == alloc_indentlevel )
-                        {
-                            break;
-                        }
-                        tok = tok->next;
-                    }
-                }
-            }
-        }
-
-
-        // Deallocated..
-        AllocType dealloc = GetDeallocationType( tok, varnames );
-        if ( dealloc != No )
-        {
-            if ( Alloc != No && Alloc != dealloc )
-            {
-                MismatchError( tok, varname );
-                return;
-            }
-
-            // Deallocated at same indentlevel as the allocation => no memory leak
-            if ( alloc_indentlevel == indentlevel )
-                return;
-
-            dealloc_indentlevel = indentlevel;
-            while ( tok && tok->str[0] != ';' )
-                tok = tok->next;
-        }
-
-        // Used..
-        //     list.push_back( var1 );
-        //     listtail->next = var1;
-        if ( Match( tok, "[=] %var1% [;]", varnames ) )
-        {
-            return;
-        }
-        if ( Match( tok, "[=,(] ( %type% * ) %var1% [,);]", varnames ) )
-        {
-            return;
-        }
-        if ( Match( tok, "[=,(] ( %type% %type% * ) %var1% [,);]", varnames ) )
-        {
-            return;
-        }
-
-        // Used. Todo: check if "p" is the first member in the struct.
-        //     p = &var1->p;
-        if ( Match( tok, "= & %var1% . %var% ;", varnames ) )
-        {
-            return;
-        }
-
-        // Linux lists.. todo: check if the first struct member is passed
-        if ( Match( tok, "%var% ( & %var1% .", varnames ) ||
-             Match( tok, ", & %var1% .", varnames ) )
-        {
-            return;
-        }
-
-        // continue/break loop..
-        if (Alloc != No &&
-            loop_indentlevel.empty() &&
-            switch_indentlevel.empty() &&
-            (Match(tok,"continue") || Match(tok,"break")))
-        {
-            MemoryLeak( tok, varname );
-            return;
-        }
-
-        // Return without deallocating the memory..
-        if ( Alloc != No && (indentlevel==0 || (alloc_indentlevel >= 0 && dealloc_indentlevel <= 0)) && Match(tok, "return") )
-        {
-            bool retvar = false;
-            for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
-            {
-                if ( Match( tok2, "%var1%", varnames ) )
-                {
-                    retvar = true;
-                    break;
-                }
-
-                if ( tok2->str[0] == ';' )
-                {
-                    break;
-                }
-            }
-
-            if ( ! retvar )
-                MemoryLeak( tok, varname );
-
-            else
-            {
-                // The allocated memory is returned.. check that it is deallocated
-
-                // Get function name..
-                const char *funcname = 0;
-                int indentlevel = 0;
-                for ( const TOKEN *ftok = tokens; ftok && ftok != tok; ftok = ftok->next )
-                {
-                    if ( ftok->str[0] == '{' )
-                        indentlevel++;
-
-                    else if ( ftok->str[0] == '}' )
-                        indentlevel--;
-
-                    if ( indentlevel <= 0 )
-                    {
-                        if ( Match(ftok, "[};]") )
-                            funcname = 0;
-                        else if ( Match(ftok, "%var% (") )
-                            funcname = ftok->str;
-                    }
-                }
-
-                if ( funcname )
-                {
-                    listallocfunc.push_back( AllocFunc(funcname, Alloc) );
-                }
-            }
-
-            if ( indentlevel == 0 )
-                return;
-
-            if ( indentlevel <= alloc_indentlevel )
-            {
-                Alloc = No;
-                alloc_indentlevel = -1;
-                dealloc_indentlevel = -1;
-            }
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
 extern bool ShowAll;
 
 static TOKEN *getcode(const TOKEN *tok, const char varname[])
@@ -670,12 +316,6 @@ static void erase(TOKEN *begin, const TOKEN *end)
 // Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
 static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
 {
-    if ( ShowAll )
-    {
-        CheckMemoryLeak_CheckScope_All(Tok1, varname);
-        return;
-    }
-
     TOKEN *tok = getcode( Tok1, varname );
 
     // If the variable is not allocated at all => no memory leak
@@ -754,12 +394,28 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 erase(tok2, gettok(tok2,5));
                 done = false;
             }
-            
+
+            // Replace "if { dealloc ; return ; }" with "if ;"
+            if (Match(tok2,"if { dealloc ; return ; }"))
+            {
+                erase(tok2, gettok(tok2, 6));
+                free(tok2->next->str);
+                tok2->next->str = strdup(";");
+                done = false;
+            }
+
             // "[;{}] if alloc ; else return ;" => "[;{}] alloc ;"
             if (Match(tok2,"[;{}] if alloc ; else return ;"))
             {
                 erase(tok2, gettok(tok2,2));        // Remove "if"
                 erase(tok2->next, gettok(tok2,5));  // Remove "; else return"
+                done = false;
+            }
+
+            // Replace "dealloc use ;" with "dealloc ;"
+            if ( Match(tok2, "dealloc use ;") )
+            {
+                erase(tok2, gettok(tok2,2));
                 done = false;
             }
 

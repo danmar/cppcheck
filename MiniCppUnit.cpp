@@ -226,7 +226,7 @@ void Assert::assertEquals( const std::string expected, const std::string result,
 	
 	int indexDiferent = notEqualIndex(expected, result);
 	TestsListener::theInstance().errorsLog()
-		<< file << ", linia: " << linia << "\n"
+		<< file << ", line: " << linia << "\n"
 		<< errmsgTag_expected() << "\n" << blue() 
 		<< expected.substr(0,indexDiferent)
 		<< green() << expected.substr(indexDiferent) 
