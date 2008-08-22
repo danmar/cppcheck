@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2003-2004  Pau Arum� & David Garc�a
  *
  *
@@ -163,7 +163,7 @@ class Assert
 	static const char * errmsgTag_butWas() { return "But was: "; } 
 
 public:
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 	static const char * blue() { return ""; }
 	static const char * green() { return ""; }
 	static const char * red() { return ""; }

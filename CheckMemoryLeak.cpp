@@ -251,20 +251,16 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         }
         else
         {
-            if (Match(tok, "if"))
-                addtoken("if");
-            if (Match(tok, "else"))
-                addtoken("else");
-            if (Match(tok, "switch"))
-                addtoken("switch");
+            if (Match(tok, "if")     ||
+                Match(tok, "else")   ||
+                Match(tok, "switch") ||
+                Match(tok, "case")   ||
+                Match(tok, "default"))
+                addtoken(tok->str);
         }
 
         // Loops..
-        if ( Match(tok, "for") )
-            addtoken("loop");
-        if ( Match(tok, "while") )
-            addtoken("loop");
-        if ( Match(tok, "do") )
+        if (Match(tok, "for") || Match(tok, "while") || Match(tok, "do") )
             addtoken("loop");
 
         // continue / break..

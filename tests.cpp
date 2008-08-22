@@ -455,31 +455,8 @@ static void operator_eq()
 }
 //---------------------------------------------------------------------------
 
-static void check_(void (chk)(),
-                   const unsigned int line,
-                   const char code[],
-                   const char msg[])
-{
-    ShowAll = false;
-    check( chk, line, code, msg );
-    ShowAll = true;
-    check( chk, line, code, msg );
-}
-
 static void memleak_in_function()
 {
-    // There are 2 sections:
-    // * Simple testcases
-    // * if else
-    // * for/while
-    // * switch
-    // * mismatching allocation and deallocation
-    // * garbage collection
-    // * arrays
-    // * struct members
-    // * function calls
-
-
 
 
     ////////////////////////////////////////////////
@@ -487,70 +464,10 @@ static void memleak_in_function()
     ////////////////////////////////////////////////
 
 
-    code = "void f()\n"
-           "{\n"
-           "    char *str = strdup(\"hello\");\n"
-           "    while (condition)\n"
-           "    {\n"
-           "        if (condition)\n"
-           "        {\n"
-           "            break;\n"
-           "        }\n"
-           "    }\n"
-           "    free(str);\n"
-           "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "" );
-
-
-    code = "void f()\n"
-           "{\n"
-           "    for (int i = 0; i < j; i++)\n"
-           "    {\n"
-           "        char *str = strdup(\"hello\");\n"
-           "        if (condition)\n"
-           "            continue;\n"
-           "        free(str);\n"
-           "    }\n"
-           "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:7]: Memory leak: str\n" );
 
 
 
 
-
-
-
-    ////////////////////////////////////////////////
-    // switch
-    ////////////////////////////////////////////////
-
-    code = "void f()\n"
-           "{\n"
-           "    char *str = new char[10];\n"
-           "    switch (abc)\n"
-           "    {\n"
-           "        case 1:\n"
-           "            break;\n"
-           "    };\n"
-           "    delete [] str;\n"
-           "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "" );
-
-
-
-
-
-
-    ////////////////////////////////////////////////
-    // mismatching allocation and deallocation
-    ////////////////////////////////////////////////
-
-    code = "void f()\n"
-           "{\n"
-           "    int *a = new int[10];\n"
-           "    free(a);\n"
-           "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "[test.cpp:4]: Mismatching allocation and deallocation: a\n" );
 
 
 

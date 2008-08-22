@@ -43,6 +43,16 @@ public:
         TEST_CASE( ifelse3 );
         TEST_CASE( ifelse4 );
         TEST_CASE( ifelse5 );
+
+        TEST_CASE( forwhile1 );
+        TEST_CASE( forwhile2 );
+
+
+        TEST_CASE( switch1 );
+        // TODO: TEST_CASE( switch2 );
+
+        TEST_CASE( mismatch1 );
+
     }
 
     void simple1()
@@ -246,6 +256,102 @@ public:
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
+
+
+
+
+
+    void forwhile1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *str = strdup(\"hello\");\n"
+              "    while (condition)\n"
+              "    {\n"
+              "        if (condition)\n"
+              "        {\n"
+              "            break;\n"
+              "        }\n"
+              "    }\n"
+              "    free(str);\n"
+              "}\n");
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void forwhile2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    for (int i = 0; i < j; i++)\n"
+              "    {\n"
+              "        char *str = strdup(\"hello\");\n"
+              "        if (condition)\n"
+              "            continue;\n"
+              "        free(str);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS( std::string("[test.cpp:7]: Memory leak: str\n"), errout.str() );
+    }
+
+
+
+
+
+
+
+
+    void switch1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *str = new char[10];\n"
+              "    switch (abc)\n"
+              "    {\n"
+              "        case 1:\n"
+              "            break;\n"
+              "    };\n"
+              "    delete [] str;\n"
+              "}\n");
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void switch2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *str = new char[10];\n"
+              "    switch (abc)\n"
+              "    {\n"
+              "        case 1:\n"
+              "            delete [] str;\n"
+              "            break;\n"
+              "        default:\n"
+              "            break;\n"
+              "    };\n"
+              "}\n");
+        ASSERT_EQUALS( std::string("[test.cpp:12]: Memory leak"), errout.str() );
+    }
+
+
+
+
+
+
+
+    void mismatch1()
+    {
+        check( "void f()\n"
+           "{\n"
+           "    int *a = new int[10];\n"
+           "    free(a);\n"
+           "}\n");
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Mismatching allocation and deallocation: a\n"), errout.str() );
+    }
+
+
+
 };
 
 REGISTER_FIXTURE( TestMemleak )

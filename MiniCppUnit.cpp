@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2003-2004  Pau Arum� & David Garc�a
  *
  *
@@ -22,7 +22,7 @@
 
 #include <cmath>
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__BORLANDC__)
 #include <float.h>
 namespace std
 {
@@ -80,19 +80,19 @@ std::string TestsListener::summary()
 {
 	std::ostringstream os;
 	os	<< "\nSummary:\n"
-		<< Assert::bold() << "\tExecuted Tests:         " 
+		<< Assert::bold() << "\tExecuted Tests:         "
 		<< _executed << Assert::normal() << std::endl
-		<< Assert::green() << "\tPassed Tests:           " 
-		<< (_executed-_failed-_exceptions) 
+		<< Assert::green() << "\tPassed Tests:           "
+		<< (_executed-_failed-_exceptions)
 		<< Assert::normal() << std::endl;
 	if (_failed > 0)
 	{
-		os 	<< Assert::red() << "\tFailed Tests:           " 
+		os 	<< Assert::red() << "\tFailed Tests:           "
 			<< _failed << Assert::normal() << std::endl;
 	}
 	if (_exceptions > 0)
 	{
-		os 	<< Assert::yellow() << "\tUnexpected exceptions:  " 
+		os 	<< Assert::yellow() << "\tUnexpected exceptions:  "
 			<< _exceptions << Assert::normal() << std::endl;
 	}
 	os << std::endl;
@@ -163,12 +163,12 @@ bool isNaN(double x)
 
 double scaledEpsilon(const double& expected, const double& fuzzyEpsilon )
 { 
-	const double aa = fabs(expected)+1;
+	const double aa = std::fabs(expected)+1;
 	return (std::isinf(aa))? fuzzyEpsilon: fuzzyEpsilon * aa;
 }
 bool fuzzyEquals(double expected, double result, double fuzzyEpsilon)
 {
-	return (expected==result) || ( fabs(expected-result) <= scaledEpsilon(expected, fuzzyEpsilon) );
+	return (expected==result) || ( std::fabs(expected-result) <= scaledEpsilon(expected, fuzzyEpsilon) );
 }
 void Assert::assertEquals( const double& expected, const double& result,
 		const char* file, int linia )
