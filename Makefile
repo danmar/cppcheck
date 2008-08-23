@@ -7,7 +7,7 @@ OBJS=$(SRCS:%.cpp=%.o)
 
 all:	${OBJS} main.o
 	g++ -Wall -g -o cppcheck $^
-test:	${OBJS} TestsRunner.o	MiniCppUnit.o	testmemleak.o
+test:	${OBJS} TestsRunner.o	MiniCppUnit.o	testmemleak.o	testbufferoverrun.o
 	g++ -Wall -g -o testsrunner $^
 clean:
 	rm -f *.o cppcheck_test cppcheck
