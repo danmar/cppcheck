@@ -1,5 +1,5 @@
-﻿/*
- * Copyright (c) 2003-2004  Pau Arum� & David Garc�a
+/*
+ * Copyright (c) 2003-2004  Pau Arum. & David Garc.a
  *
  *
  * This program is free software; you can redistribute it and/or modify
