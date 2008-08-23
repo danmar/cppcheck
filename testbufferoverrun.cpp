@@ -52,6 +52,7 @@ public:
         //TEST_CASE( array_index_12 );
 
         TEST_CASE( buffer_overrun_1 );
+        TEST_CASE( buffer_overrun_2 );
     }
 
 

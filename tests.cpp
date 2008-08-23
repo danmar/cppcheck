@@ -21,7 +21,7 @@ bool Debug = false;
 //---------------------------------------------------------------------------
 static unsigned int FailCount, SuccessCount;
 //---------------------------------------------------------------------------
-static void buffer_overrun();
+
 static void constructors();
 static void operator_eq();
 static void memleak_in_function();
@@ -39,9 +39,6 @@ int main()
 
     // Don't filter out duplicate error messages..
     OnlyReportUniqueErrors = false;
-
-    // Check that buffer overruns are detected
-    buffer_overrun();
 
     // Test the constructor-checks
     constructors();
@@ -112,43 +109,6 @@ static void check(void (chk)(),
 
     // Cleanup..
     DeallocateTokens();
-}
-//---------------------------------------------------------------------------
-
-static void buffer_overrun()
-{
-    // There are 3 sections..
-    // 1. No errors
-    // 2. Array index out of bounds
-    // 3. Buffer overrun
-
-
-
-    ////////////////////////////////////////////////
-    // Buffer overrun
-    ////////////////////////////////////////////////
-
-
-    code = "void f()\n"
-           "{\n"
-           "    char str[3];\n"
-           "    strcpy(str, \"abc\");\n"
-           "}\n";
-    check( CheckBufferOverrun, __LINE__, code, "[test.cpp:4]: Buffer overrun\n" );
-
-
-    code = "struct ABC\n"
-           "{\n"
-           "    char str[5];\n"
-           "};\n"
-           "\n"
-           "static void f(ABC *abc)\n"
-           "{\n"
-           "    strcpy( abc->str, \"abcdef\" );\n"
-           "}\n";
-    check( CheckBufferOverrun, __LINE__, code, "[test.cpp:8]: Buffer overrun\n" );
-
-
 }
 //---------------------------------------------------------------------------
 
