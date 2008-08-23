@@ -50,6 +50,8 @@ public:
         TEST_CASE( array_index_10 );
         TEST_CASE( array_index_11 );
         //TEST_CASE( array_index_12 );
+
+        TEST_CASE( buffer_overrun_1 );
     }
 
 
@@ -282,6 +284,32 @@ public:
                "    str[10] = 0;\n"
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:5]: Array index out of bounds\n"), errout.str() );
+    }
+
+
+    void buffer_overrun_1()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char str[3];\n"
+               "    strcpy(str, \"abc\");\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Buffer overrun\n"), errout.str() );
+    }
+
+
+    void buffer_overrun_2()
+    {
+        check( "struct ABC\n"
+               "{\n"
+               "    char str[5];\n"
+               "};\n"
+               "\n"
+               "static void f(ABC *abc)\n"
+               "{\n"
+               "    strcpy( abc->str, \"abcdef\" );\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:8]: Buffer overrun\n"), errout.str() );
     }
 
 
