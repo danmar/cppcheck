@@ -249,14 +249,23 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         {
             addtoken("if(!var)");
         }
-        else
+        else if ( Match(tok, "if")     ||
+                  Match(tok, "else")   ||
+                  Match(tok, "switch") )
         {
-            if (Match(tok, "if")     ||
-                Match(tok, "else")   ||
-                Match(tok, "switch") ||
-                Match(tok, "case")   ||
-                Match(tok, "default"))
-                addtoken(tok->str);
+            addtoken(tok->str);
+        }
+
+        if ( Match(tok, "case") )
+        {
+            addtoken("case");
+            addtoken(";");
+        }
+
+        if ( Match(tok, "default") )
+        {
+            addtoken("case");
+            addtoken(";");
         }
 
         // Loops..
@@ -429,8 +438,15 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 done = false;
             }
 
-            // Delete second use in "use ; use;"
+            // Delete second use in "use ; use ;"
             while (Match(tok2, "use ; use ;"))
+            {
+                erase(tok2, gettok(tok2,3));
+                done = false;
+            }
+
+            // Delete second case in "case ; case ;"
+            while (Match(tok2, "case ; case ;"))
             {
                 erase(tok2, gettok(tok2,3));
                 done = false;
