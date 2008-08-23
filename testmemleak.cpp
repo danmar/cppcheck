@@ -53,6 +53,9 @@ public:
 
         TEST_CASE( mismatch1 );
 
+        TEST_CASE( func1 );
+        TEST_CASE( func2 );
+
     }
 
     void simple1()
@@ -343,12 +346,80 @@ public:
     void mismatch1()
     {
         check( "void f()\n"
-           "{\n"
-           "    int *a = new int[10];\n"
-           "    free(a);\n"
-           "}\n");
+               "{\n"
+               "    int *a = new int[10];\n"
+               "    free(a);\n"
+               "}\n");
         ASSERT_EQUALS( std::string("[test.cpp:4]: Mismatching allocation and deallocation: a\n"), errout.str() );
     }
+
+
+
+
+
+    ////////////////////////////////////////////////
+    // function calls
+    ////////////////////////////////////////////////
+
+
+    void func1()
+    {
+        check( "static void f()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    foo(p);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void func2()
+    {
+        check( "static void f()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    foo.add(p);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+/*
+    code = "static char *dmalloc()\n"
+           "{\n"
+           "    char *p = new char[100];\n"
+           "    return p;\n"
+           "}\n"
+           "static void f()\n"
+           "{\n"
+           "    char *p = dmalloc();\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Memory leak: p\n" );
+
+
+    code = "static char *dmalloc()\n"
+           "{\n"
+           "    char *p = new char[100];\n"
+           "    return p;\n"
+           "}\n"
+           "static void f()\n"
+           "{\n"
+           "    char *p = dmalloc();\n"
+           "    delete p;\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Mismatching allocation and deallocation: p\n" );
+
+
+    code = "static void foo(const char *str)\n"
+           "{ }\n"
+           "\n"
+           "static void f()\n"
+           "{\n"
+           "    char *p = new char[100];\n"
+           "    foo(p);\n"
+           "}\n";
+    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: p\n" );
+*/
 
 
 

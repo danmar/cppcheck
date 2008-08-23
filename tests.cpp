@@ -26,7 +26,6 @@ static void constructors();
 static void operator_eq();
 static void memleak_in_function();
 static void memleak_in_class();
-static void division();
 static void variable_scope();
 static void fpar_byvalue();
 static void unused_struct_member();
@@ -51,9 +50,6 @@ int main()
 
     // Test that memory leaks in a class are detected
     memleak_in_class();
-
-    // Check for dangerous division.. such as "svar / uvar". Treating "svar" as unsigned data is not good
-    division();
 
     // variable scope..
     variable_scope();
@@ -187,23 +183,6 @@ static void operator_eq()
 static void memleak_in_function()
 {
 
-
-    ////////////////////////////////////////////////
-    // for/while
-    ////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-
-
-
     ////////////////////////////////////////////////
     // Garbage collection
     ////////////////////////////////////////////////
@@ -300,61 +279,6 @@ static void memleak_in_function()
 
 
 
-    ////////////////////////////////////////////////
-    // function calls
-    ////////////////////////////////////////////////
-
-
-    code = "static char *dmalloc()\n"
-           "{\n"
-           "    char *p = new char[100];\n"
-           "    return p;\n"
-           "}\n"
-           "static void f()\n"
-           "{\n"
-           "    char *p = dmalloc();\n"
-           "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Memory leak: p\n" );
-
-
-    code = "static char *dmalloc()\n"
-           "{\n"
-           "    char *p = new char[100];\n"
-           "    return p;\n"
-           "}\n"
-           "static void f()\n"
-           "{\n"
-           "    char *p = dmalloc();\n"
-           "    delete p;\n"
-           "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Mismatching allocation and deallocation: p\n" );
-
-
-    code = "static void foo(const char *str)\n"
-           "{ }\n"
-           "\n"
-           "static void f()\n"
-           "{\n"
-           "    char *p = new char[100];\n"
-           "    foo(p);\n"
-           "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: p\n" );
-
-
-    code = "static void f()\n"
-           "{\n"
-           "    char *p = new char[100];\n"
-           "    foo(p);\n"
-           "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "" );
-
-
-    code = "static void f()\n"
-           "{\n"
-           "    char *p = new char[100];\n"
-           "    foo.add(p);\n"
-           "}\n";
-    check_( CheckMemoryLeak, __LINE__, code, "" );
 
 }
 //---------------------------------------------------------------------------
@@ -444,31 +368,6 @@ static void memleak_in_class()
     check( CheckMemoryLeak, __LINE__, code, "Memory leak for 'Fred::str'\n" );
 */
 
-
-}
-//---------------------------------------------------------------------------
-
-static void division()
-{
-
-    const char *code;
-
-    code = "void f()\n"
-           "{\n"
-           "    int ivar = -2;\n"
-           "    unsigned int uvar = 2;\n"
-           "    return ivar / uvar;\n"
-           "}\n";
-    check( CheckUnsignedDivision, __LINE__, code, "[test.cpp:5]: If the result is negative it will be wrong because an operand is unsigned.\n" );
-
-
-    code = "void f()\n"
-           "{\n"
-           "    int ivar = -2;\n"
-           "    unsigned int uvar = 2;\n"
-           "    return uvar / ivar;\n"
-           "}\n";
-    check( CheckUnsignedDivision, __LINE__, code, "[test.cpp:5]: If the result is negative it will be wrong because an operand is unsigned.\n" );
 
 }
 //---------------------------------------------------------------------------
