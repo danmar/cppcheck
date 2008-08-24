@@ -147,6 +147,16 @@ static void MemoryLeak( const TOKEN *tok, const char varname[] )
 }
 //---------------------------------------------------------------------------
 
+static void instoken(TOKEN *tok, const char str[])
+{
+    TOKEN *newtok = new TOKEN;
+    memcpy( newtok, tok, sizeof(TOKEN) );
+    newtok->str = strdup(str);
+    tok->next = newtok;
+}
+//---------------------------------------------------------------------------
+
+
 extern bool ShowAll;
 
 static TOKEN *getcode(const TOKEN *tok, const char varname[])
@@ -450,6 +460,68 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             {
                 erase(tok2, gettok(tok2,3));
                 done = false;
+            }
+
+            // Replace switch with if (if not complicated)
+            if (Match(tok2, "switch {"))
+            {
+                // Right now, I just handle if there are a few case and perhaps a default.
+                bool valid = true;
+                bool incase = false;
+                for ( const TOKEN * _tok = gettok(tok2,2); valid && _tok; _tok = _tok->next )
+                {
+                    if ( _tok->str[0] == '{' )
+                        valid = false;
+
+                    else if ( _tok->str[0] == '}' )
+                        break;
+
+                    else if (strncmp(_tok->str,"if",2)==0)
+                        valid = false;
+
+                    else if (strncmp(_tok->str,"loop",2)==0)
+                        valid = false;
+
+                    else if (incase && Match(_tok,"case"))
+                        valid = false;
+
+                    incase |= Match(_tok,"case");
+                    incase &= !Match(_tok,"break");
+                }
+
+                if ( valid )
+                {
+                    done = false;
+                    free(tok2->str);
+                    tok2->str = strdup(";");
+                    erase( tok2, gettok(tok2, 2) );
+                    tok2 = tok2->next;
+                    bool first = true;
+                    while (Match(tok2,"case") || Match(tok2,"default"))
+                    {
+                        bool def = Match(tok2, "default");
+                        free(tok2->str);
+                        tok2->str = strdup(first ? "if" : "}");
+                        if ( first )
+                        {
+                            first = false;
+                            instoken( tok2, "{" );
+                        }
+                        else
+                        {
+                            // Insert "else [if] {
+                            instoken( tok2, "{" );
+                            if ( ! def )
+                                instoken( tok2, "if" );
+                            instoken( tok2, "else" );
+                        }
+                        while ( tok2 && ! Match(tok2,"break ;") )
+                            tok2 = tok2->next;
+                        free(tok2->str);
+                        tok2->str = strdup(";");
+                        tok2 = tok2->next->next;
+                    }
+                }
             }
         }
     }

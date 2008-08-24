@@ -49,7 +49,7 @@ public:
 
 
         TEST_CASE( switch1 );
-        // TODO: TEST_CASE( switch2 );
+        TEST_CASE( switch2 );
 
         TEST_CASE( mismatch1 );
 
