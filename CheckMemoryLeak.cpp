@@ -378,7 +378,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 done = false;
             }
 
-            // Delete empty if
+            // Delete empty if that is not followed by an else
             if ( Match(tok2,"[;{}] if ;") ||
                  Match(tok2,"[;{}] if(var) ;") ||
                  Match(tok2,"[;{}] if(!var) ;") )
@@ -391,31 +391,10 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 }
             }
 
-            // Delete "else ;" and "else if ;"
-            if ( Match(tok2->next, "else if ;") )
-            {
-                erase(tok2, gettok(tok2,4));
-                done = false;
-            }
-            if ( Match(tok2->next, "else ;") )
-            {
-                erase(tok2, gettok(tok2,3));
-                done = false;
-            }
-
             // Delete if block: "alloc; if return use ;"
             if (Match(tok2,"alloc ; if return use ;") && !Match(gettok(tok2,6),"else"))
             {
                 erase(tok2, gettok(tok2,5));
-                done = false;
-            }
-
-            // Replace "if { dealloc ; return ; }" with "if ;"
-            if (Match(tok2,"if { dealloc ; return ; }"))
-            {
-                erase(tok2, gettok(tok2, 6));
-                free(tok2->next->str);
-                tok2->next->str = strdup(";");
                 done = false;
             }
 
@@ -431,6 +410,18 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             if ( Match(tok2, "dealloc use ;") )
             {
                 erase(tok2, gettok(tok2,2));
+                done = false;
+            }
+
+            // Reducing if..
+            if (Match(tok2,"if dealloc ; else") || Match(tok2,"if use ; else"))
+            {
+                erase(tok2, gettok(tok2, 2));
+                done = false;
+            }
+            if (Match(tok2,"[;{}] if { dealloc ; return ; }") && !Match(gettok(tok2,8),"else"))
+            {
+                erase(tok2,gettok(tok2,8));
                 done = false;
             }
 

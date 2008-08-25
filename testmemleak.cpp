@@ -334,7 +334,7 @@ public:
               "            break;\n"
               "    };\n"
               "}\n");
-        ASSERT_EQUALS( std::string("[test.cpp:12]: Memory leak"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:12]: Memory leak: str\n"), errout.str() );
     }
 
 
