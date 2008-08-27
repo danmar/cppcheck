@@ -11,7 +11,6 @@
 
 extern std::ostringstream errout;
 extern bool ShowAll;
-extern bool CheckCodingStyle;
 
 class TestDivision : public TestFixture<TestDivision>
 {
@@ -28,7 +27,6 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        CheckCodingStyle = true;
         ShowAll = true;
         CheckUnsignedDivision();
     }
@@ -48,7 +46,7 @@ public:
                "    unsigned int uvar = 2;\n"
                "    return ivar / uvar;\n"
                "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:5]: If the result is negative it will be wrong because an operand is unsigned.\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Warning: Division with signed and unsigned operators\n"), errout.str() );
     }
 
     void division2()
@@ -59,7 +57,7 @@ public:
                "    unsigned int uvar = 2;\n"
                "    return uvar / ivar;\n"
                "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:5]: If the result is negative it will be wrong because an operand is unsigned.\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Warning: Division with signed and unsigned operators\n"), errout.str() );
     }
 };
 

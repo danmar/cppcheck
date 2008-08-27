@@ -369,7 +369,7 @@ void CheckUnsignedDivision()
             {
                 // One of the operands are signed, the other is unsigned..
                 std::ostringstream ostr;
-                ostr << FileLine(div_tok) << ": If the result is negative it will be wrong because an operand is unsigned.";
+                ostr << FileLine(div_tok) << ": Warning: Division with signed and unsigned operators";
                 ReportErr(ostr.str());
             }
         }
