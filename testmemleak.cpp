@@ -46,7 +46,8 @@ public:
 
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
-
+        TEST_CASE( forwhile3 );
+        TEST_CASE( forwhile4 );
 
         TEST_CASE( switch1 );
         TEST_CASE( switch2 );
@@ -298,7 +299,35 @@ public:
     }
 
 
+    void forwhile3()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char *str = 0;\n"
+               "    for (int i = 0; i < 10; i++)\n"
+               "    {\n"
+               "        str = strdup(\"hello\");\n"
+               "    }\n"
+               "    free(str);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Memory leak: str\n"), errout.str() );
+    }
 
+
+    void forwhile4()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char *str = 0;\n"
+               "    for (int i = 0; i < 10; i++)\n"
+               "    {\n"
+               "        str = strdup(\"hello\");\n"
+               "        if (str) { }\n"
+               "    }\n"
+               "    free(str);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Memory leak: str\n"), errout.str() );
+    }
 
 
 

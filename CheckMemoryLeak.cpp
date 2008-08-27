@@ -249,6 +249,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
              Match(tok, "if ( %var1% != NULL )", varnames)   )
         {
             addtoken("if(var)");
+            tok = gettok(tok, 3);   // Make sure the "use" will not be added
         }
         else if ( Match(tok, "if ( ! %var1% )", varnames) ||
                   Match(tok, "if ( unlikely ( ! %var1% ) )", varnames) ||
@@ -518,7 +519,12 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
     }
 
 
-    if ( findmatch(tok, "alloc ; if continue ;") )
+    if ( findmatch(tok, "loop alloc ;") )
+    {
+        MemoryLeak(findmatch(tok, "loop alloc ;"), varname);
+    }
+
+    else if ( findmatch(tok, "alloc ; if continue ;") )
     {
         MemoryLeak(gettok(findmatch(tok, "alloc ; if continue ;"), 3), varname);
     }
