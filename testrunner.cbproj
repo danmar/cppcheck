@@ -18,15 +18,15 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <OutputExt>exe</OutputExt>
     <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
-    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+    <OutputExt>exe</OutputExt>
     <Defines>NO_STRICT</Defines>
+    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
     <DynamicRTL>true</DynamicRTL>
-    <ILINK_ObjectSearchPath>C:\cppcheck</ILINK_ObjectSearchPath>
     <UsePackages>true</UsePackages>
-    <NoVCL>true</NoVCL>
+    <ILINK_ObjectSearchPath>C:\cppcheck</ILINK_ObjectSearchPath>
     <ProjectType>CppConsoleApplication</ProjectType>
+    <NoVCL>true</NoVCL>
     <FinalOutputDir>.</FinalOutputDir>
     <PackageImports>vclx.bpi;vcl.bpi;rtl.bpi;vclactnband.bpi</PackageImports>
     <BCC_wpar>false</BCC_wpar>
@@ -34,10 +34,10 @@
     <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck</ILINK_LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
     <DCC_Optimize>false</DCC_Optimize>
-    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
     <Defines>_DEBUG;$(Defines)</Defines>
+    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
@@ -47,8 +47,8 @@
     <IntermediateOutputDir>Debug</IntermediateOutputDir>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
     <BCC_StackFrames>true</BCC_StackFrames>
-    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
   </PropertyGroup>
@@ -62,94 +62,28 @@
     <Borland.Personality>CPlusPlusBuilder.Personality</Borland.Personality>
     <Borland.ProjectType>CppConsoleApplication</Borland.ProjectType>
     <BorlandProject>
-<BorlandProject> <CPlusPlusBuilder.Personality>   <VersionInfo>
-      <VersionInfo Name="IncludeVerInfo">False</VersionInfo>
-      <VersionInfo Name="AutoIncBuild">False</VersionInfo>
-      <VersionInfo Name="MajorVer">1</VersionInfo>
-      <VersionInfo Name="MinorVer">0</VersionInfo>
-      <VersionInfo Name="Release">0</VersionInfo>
-      <VersionInfo Name="Build">0</VersionInfo>
-      <VersionInfo Name="Debug">False</VersionInfo>
-      <VersionInfo Name="PreRelease">False</VersionInfo>
-      <VersionInfo Name="Special">False</VersionInfo>
-      <VersionInfo Name="Private">False</VersionInfo>
-      <VersionInfo Name="DLL">False</VersionInfo>
-      <VersionInfo Name="Locale">1053</VersionInfo>
-      <VersionInfo Name="CodePage">1252</VersionInfo>
-    </VersionInfo>
-    <VersionInfoKeys>
-      <VersionInfoKeys Name="CompanyName"></VersionInfoKeys>
-      <VersionInfoKeys Name="FileDescription"></VersionInfoKeys>
-      <VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys>
-      <VersionInfoKeys Name="InternalName"></VersionInfoKeys>
-      <VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys>
-      <VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys>
-      <VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys>
-      <VersionInfoKeys Name="ProductName"></VersionInfoKeys>
-      <VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys>
-      <VersionInfoKeys Name="Comments"></VersionInfoKeys>
-    </VersionInfoKeys>
-    <Debugging>
-      <Debugging Name="DebugSourceDirs"></Debugging>
-    </Debugging>
-    <Parameters>
-      <Parameters Name="RunParams"></Parameters>
-      <Parameters Name="Launcher"></Parameters>
-      <Parameters Name="UseLauncher">False</Parameters>
-      <Parameters Name="DebugCWD"></Parameters>
-      <Parameters Name="HostApplication"></Parameters>
-      <Parameters Name="RemoteHost"></Parameters>
-      <Parameters Name="RemotePath"></Parameters>
-      <Parameters Name="RemoteParams"></Parameters>
-      <Parameters Name="RemoteLauncher"></Parameters>
-      <Parameters Name="UseRemoteLauncher">False</Parameters>
-      <Parameters Name="RemoteCWD"></Parameters>
-      <Parameters Name="RemoteDebug">False</Parameters>
-      <Parameters Name="Debug Symbols Search Path"></Parameters>
-      <Parameters Name="LoadAllSymbols">True</Parameters>
-      <Parameters Name="LoadUnspecifiedSymbols">False</Parameters>
-    </Parameters>
-    <Excluded_Packages>
-      
-      
-      
-      
+<BorlandProject><CPlusPlusBuilder.Personality><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1053</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Debugging><Debugging Name="DebugSourceDirs"></Debugging></Debugging><Parameters><Parameters Name="RunParams"></Parameters><Parameters Name="Launcher"></Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="DebugCWD"></Parameters><Parameters Name="HostApplication"></Parameters><Parameters Name="RemoteHost"></Parameters><Parameters Name="RemotePath"></Parameters><Parameters Name="RemoteParams"></Parameters><Parameters Name="RemoteLauncher"></Parameters><Parameters Name="UseRemoteLauncher">False</Parameters><Parameters Name="RemoteCWD"></Parameters><Parameters Name="RemoteDebug">False</Parameters><Parameters Name="Debug Symbols Search Path"></Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Excluded_Packages>
       <Excluded_Packages Name="C:\Documents and Settings\All Users\Documents\RAD Studio\5.0\BPL\A407_D110.bpl">TurboPower Async Professional 4.07 Designtime Package - VCL110</Excluded_Packages>
       <Excluded_Packages Name="C:\Documents and Settings\All Users\Documents\RAD Studio\5.0\BPL\DreamEdit_C6.bpl">Dream Editor Package</Excluded_Packages>
-    </Excluded_Packages>
-    <Linker>
-      <Linker Name="LibPrefix"></Linker>
-      <Linker Name="LibSuffix"></Linker>
-      <Linker Name="LibVersion"></Linker>
-    </Linker>
-    <ProjectProperties>
-      <ProjectProperties Name="AutoShowDeps">False</ProjectProperties>
-      <ProjectProperties Name="ManagePaths">True</ProjectProperties>
-      <ProjectProperties Name="VerifyPackages">True</ProjectProperties>
-    </ProjectProperties>
-    <HistoryLists_hlIncludePath>
-      <HistoryLists_hlIncludePath Name="Count">1</HistoryLists_hlIncludePath>
-      <HistoryLists_hlIncludePath Name="Item0">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck</HistoryLists_hlIncludePath>
-    </HistoryLists_hlIncludePath>
-    <HistoryLists_hlFinalOutputDir>
-      <HistoryLists_hlFinalOutputDir Name="Count">1</HistoryLists_hlFinalOutputDir>
-      <HistoryLists_hlFinalOutputDir Name="Item0">.</HistoryLists_hlFinalOutputDir>
-    </HistoryLists_hlFinalOutputDir>
-    <HistoryLists_hlILINK_LibraryPath>
-      <HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath>
-      <HistoryLists_hlILINK_LibraryPath Name="Item0">$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck</HistoryLists_hlILINK_LibraryPath>
-    </HistoryLists_hlILINK_LibraryPath>
-    <HistoryLists_hlDefines>
-      <HistoryLists_hlDefines Name="Count">1</HistoryLists_hlDefines>
-      <HistoryLists_hlDefines Name="Item0">NO_STRICT</HistoryLists_hlDefines>
-    </HistoryLists_hlDefines>
-  </CPlusPlusBuilder.Personality> </BorlandProject></BorlandProject>
+    </Excluded_Packages><Linker><Linker Name="LibPrefix"></Linker><Linker Name="LibSuffix"></Linker><Linker Name="LibVersion"></Linker></Linker><ProjectProperties><ProjectProperties Name="AutoShowDeps">False</ProjectProperties><ProjectProperties Name="ManagePaths">True</ProjectProperties><ProjectProperties Name="VerifyPackages">True</ProjectProperties></ProjectProperties><HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Count">1</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item0">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck</HistoryLists_hlIncludePath></HistoryLists_hlIncludePath><HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Count">1</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item0">.</HistoryLists_hlFinalOutputDir></HistoryLists_hlFinalOutputDir><HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Item0">$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck</HistoryLists_hlILINK_LibraryPath></HistoryLists_hlILINK_LibraryPath><HistoryLists_hlDefines><HistoryLists_hlDefines Name="Count">1</HistoryLists_hlDefines><HistoryLists_hlDefines Name="Item0">NO_STRICT</HistoryLists_hlDefines></HistoryLists_hlDefines></CPlusPlusBuilder.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(MSBuildBinPath)\Borland.Cpp.Targets" />
   <ItemGroup>
+    <CppCompile Include="CheckBufferOverrun.cpp">
+      <DependentOn>CheckBufferOverrun.h</DependentOn>
+      <BuildOrder>9</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="CheckClass.cpp">
+      <DependentOn>CheckClass.h</DependentOn>
+      <BuildOrder>10</BuildOrder>
+    </CppCompile>
     <CppCompile Include="CheckMemoryLeak.cpp">
       <DependentOn>CheckMemoryLeak.h</DependentOn>
       <BuildOrder>2</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="CheckOther.cpp">
+      <DependentOn>CheckOther.h</DependentOn>
+      <BuildOrder>11</BuildOrder>
     </CppCompile>
     <CppCompile Include="CommonCheck.cpp">
       <DependentOn>CommonCheck.h</DependentOn>
@@ -157,6 +91,15 @@
     </CppCompile>
     <CppCompile Include="MiniCppUnit.cpp">
       <BuildOrder>3</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="testbufferoverrun.cpp">
+      <BuildOrder>7</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="testconstructors.cpp">
+      <BuildOrder>8</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="testdivision.cpp">
+      <BuildOrder>6</BuildOrder>
     </CppCompile>
     <CppCompile Include="testmemleak.cpp">
       <BuildOrder>4</BuildOrder>
