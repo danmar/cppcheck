@@ -633,3 +633,56 @@ void CheckStructMemberUsage()
     }
 }
 
+
+
+
+
+//---------------------------------------------------------------------------
+// Check usage of char variables..
+//---------------------------------------------------------------------------
+
+void CheckCharVariable()
+{
+    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    {
+        // Declaring the variable..
+        if ( Match(tok, "[{};] char %var% [;=,]") )
+        {
+            const char *varname[2] = {0};
+            varname[0] = getstr(tok, 2);
+
+            // Check usage of char variable..
+            int indentlevel = 0;
+            for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
+            {
+                if ( tok2->str[0] == '{' )
+                    ++indentlevel;
+
+                else if ( tok2->str[0] == '}' )
+                {
+                    --indentlevel;
+                    if ( indentlevel < 0 )
+                        break;
+                }
+
+                else if ( Match(tok2, "%var% [ %var1% ]", varname) )
+                {
+                    std::ostringstream errmsg;
+                    errmsg << FileLine(tok2) << ": Warning - using char variable as array index";
+                    ReportErr(errmsg.str());
+                    break;
+                }
+
+                else if ( Match(tok2, "[&|] %var1%") )
+                {
+                    std::ostringstream errmsg;
+                    errmsg << FileLine(tok2) << ": Warning - using char variable in bit operation";
+                    ReportErr(errmsg.str());
+                    break;
+                }
+            }
+        }
+    }
+}
+//---------------------------------------------------------------------------
+

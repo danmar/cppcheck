@@ -40,6 +40,10 @@ void CheckConstantFunctionParameter();
 // Check that all struct members are used
 void CheckStructMemberUsage();
 
+// Using char variable as array index / as operand in bit operation
+void CheckCharVariable();
+
+
 //---------------------------------------------------------------------------
 #endif
 

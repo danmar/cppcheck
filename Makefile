@@ -1,6 +1,6 @@
 SRCS=CheckBufferOverrun.cpp  CheckClass.cpp  CheckHeaders.cpp  CheckMemoryLeak.cpp  CheckOther.cpp  CommonCheck.cpp  tokenize.cpp
 OBJS=$(SRCS:%.cpp=%.o)
-TESTS=testbufferoverrun.o	testconstructors.o	testdivision.o	testmemleak.o
+TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testmemleak.o
 
 %.o:	%.cpp
 	g++ -Wall -pedantic -g -I. -o $@ -c $^

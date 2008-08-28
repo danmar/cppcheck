@@ -10,12 +10,6 @@
  * what the developer wanted to do (missing break after case).
  * It is safe to uncomment any of the checks.
  *
- * Todo-list:
- * - using 'char'-data as array index..
- *   char ch = 0xff;
- *   array[ch] = 0;
- *   => Dangerous. ch => -1 => 0xffffffff
- *
  * Design
  *   The token list is a stringlist with the same contents and structure
  *   as the file.
@@ -229,6 +223,11 @@ static void CppCheck(const char FileName[], unsigned int FileId)
     // Not accurate yet. Very important to run it before 'SimplifyTokenList'
     if ( ShowAll )
         CheckUnsignedDivision();
+
+    // Give warning when using char variable as array index
+    // Doesn't work on simplified token list ('unsigned')
+    if ( ShowAll )
+        CheckCharVariable();
 
 
     // Including header which is not needed (too many false positives)
