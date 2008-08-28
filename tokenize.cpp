@@ -564,6 +564,46 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             strcpy( tok->str, "." );
         }
     }
+
+    // typedef..
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if (Match(tok, "typedef %type% %type% ;"))
+        {
+            const char *type1 = getstr(tok, 1);
+            const char *type2 = getstr(tok, 2);
+            for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+            {
+                if (tok2->str!=type2 && strcmp(tok2->str,type2)==0)
+                {
+                    free(tok2->str);
+                    tok2->str = strdup(type1);
+                }
+            }
+        }
+
+        else if (Match(tok, "typedef %type% %type% %type% ;"))
+        {
+            const char *type1 = getstr(tok, 1);
+            const char *type2 = getstr(tok, 2);
+            const char *type3 = getstr(tok, 3);
+            for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+            {
+                if (tok2->str!=type3 && strcmp(tok2->str,type3)==0)
+                {
+                    free(tok2->str);
+                    tok2->str = strdup(type1);
+
+                    TOKEN *newtok = new TOKEN;
+                    newtok->str = strdup(type2);
+                    newtok->FileIndex = tok2->FileIndex;
+                    newtok->linenr = tok2->linenr;
+                    newtok->next = tok2->next;
+                    tok2->next = newtok;
+                }
+            }
+        }
+    }
 }
 //---------------------------------------------------------------------------
 
@@ -608,108 +648,6 @@ void SimplifyTokenList()
             }
         }
     }
-
-
-    /*
-    // typedefs..
-    TOKEN *prev = NULL;
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
-    {
-        if (!prev)
-            tok = tokens;
-
-        if ( strcmp(tok->str, "typedef") == 0 )
-        {
-            TOKEN *type0 = tok->next;
-            int len = 0, parlevel = 0;
-            for ( TOKEN *tok2 = gettok(type0,1); tok2; tok2 = tok2->next)
-            {
-                if (strchr("{(", tok2->str[0]))
-                    parlevel++;
-                else if (strchr("})", tok2->str[0]))
-                    parlevel--;
-                else if (parlevel==0 && tok2->str[0]==';')
-                    break;
-                len++;
-            }
-
-            const char *typestr = getstr(type0, len);
-            if (typestr[0] != ')')  // Function pointer
-            {
-                // Replace tokens..
-                for ( TOKEN *tok2 = gettok(type0, len+1); tok2; tok2 = tok2->next )
-                {
-                    if (strcmp(tok2->str,"typedef")==0)
-                    {
-                        int parlevel = 0;
-                        while (parlevel > 0 || tok2->next->str[0] != ';')
-                        {
-                            if (tok2->str[0] == '{')
-                                parlevel++;
-                            else if (tok2->str[0] == '}')
-                                parlevel--;
-
-                            tok2 = tok2->next;
-                            if (!tok2->next)
-                                break;
-                        }
-                        continue;
-                    }
-
-                    TOKEN *next = tok2->next;
-                    if (next && strcmp(next->str, typestr) == 0)
-                    {
-                        DeleteNextToken(tok2);
-                        InsertTokens( tok2, type0, len );
-                        tok2 = gettok(tok2, len);
-                    }
-                }
-            }
-
-            // Delete typedef..
-            if (!prev)
-            {
-                int parlevel = 0;
-                while ( parlevel > 0 || tokens->str[0] != ';' )
-                {
-                    if ( strchr( "({", tokens->str[0] ) )
-                        parlevel++;
-                    else if ( strchr( ")}", tokens->str[0] ) )
-                        parlevel--;
-
-                    // Delete the first element in the tokens list.
-                    TOKEN *next = tokens->next;
-                    free(tokens->str);
-                    delete tokens;
-                    tokens = next;
-
-
-                    if (!tokens)
-                        break;
-                }
-                tok = tokens;
-                prev = NULL;
-                continue;
-            }
-            else
-            {
-                int parlevel = 0;
-                while ( parlevel > 0 || prev->next->str[0] != ';' )
-                {
-                    if ( strchr( "({", prev->next->str[0] ) )
-                        parlevel++;
-                    else if ( strchr( ")}", prev->next->str[0] ) )
-                        parlevel--;
-                    DeleteNextToken(prev);
-                    if (!prev->next)
-                        break;
-                }
-                tok = prev;
-            }
-        }
-        prev = tok;
-    }
-    */
 
 
     // Fill the map TypeSize..
