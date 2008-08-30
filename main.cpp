@@ -35,6 +35,7 @@
 #include <dir.h>
 #else
 #include <glob.h>
+#include <unistd.h>
 #endif
 
 //---------------------------------------------------------------------------
@@ -92,22 +93,19 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
     #else
     // gcc / cygwin..
     glob_t glob_results;
-    #ifdef __GNUC__
-    // gcc..
-    glob("*", GLOB_ONLYDIR, 0, &glob_results);
-    #else
-    // cygwin..
-    glob("*", 0, 0, &glob_results);
-    #endif
+    glob("*", GLOB_MARK, 0, &glob_results);
     for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
     {
         const char *dirname = glob_results.gl_pathv[i];
         if ( dirname[0] == '.' )
             continue;
 
+        if ( strchr(dirname, '/') == 0 )
+            continue;
+
         chdir( dirname );
         std::ostringstream curdir;
-        curdir << path << dirname << "/";
+        curdir << path << dirname;
         RecursiveAddFiles( filenames, curdir.str().c_str() );
         chdir( ".." );
     }

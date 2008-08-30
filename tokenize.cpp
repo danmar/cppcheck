@@ -683,7 +683,7 @@ void SimplifyTokenList()
             free(tok->str);
             char str[10];
             // 'sizeof(type *)' has the same size as 'sizeof(char *)'
-            sprintf( str, "%d", sizeof(char *));
+            sprintf( str, "%lu", sizeof(char *));
             tok->str = strdup( str );
 
             for (int i = 0; i < 4; i++)
