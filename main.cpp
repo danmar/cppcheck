@@ -30,6 +30,8 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#include <cstring>
+
 
 #ifdef __BORLANDC__
 #include <dir.h>

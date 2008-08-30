@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <sstream>
 #include <list>
+#include <cstring>
 
 #include <stdlib.h>     // <- strtoul
 

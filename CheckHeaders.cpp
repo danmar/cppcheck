@@ -6,6 +6,7 @@
 #include <list>
 #include <sstream>
 #include <string>
+#include <cstring>
 //---------------------------------------------------------------------------
 
 

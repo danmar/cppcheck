@@ -6,6 +6,7 @@
 #include <sstream>
 #include <list>
 #include <algorithm>
+#include <cstring>
 //---------------------------------------------------------------------------
 extern bool CheckCodingStyle;
 bool OnlyReportUniqueErrors;
