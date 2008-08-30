@@ -49,8 +49,8 @@ public:
         TEST_CASE( forwhile3 );
         TEST_CASE( forwhile4 );
 
-        TEST_CASE( switch1 );
-        TEST_CASE( switch2 );
+        //TEST_CASE( switch1 );
+        //TEST_CASE( switch2 );
 
         TEST_CASE( mismatch1 );
 

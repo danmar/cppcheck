@@ -146,14 +146,14 @@ static void MemoryLeak( const TOKEN *tok, const char varname[] )
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
-
+/*
 static void instoken(TOKEN *tok, const char str[])
 {
     TOKEN *newtok = new TOKEN;
     memcpy( newtok, tok, sizeof(TOKEN) );
     newtok->str = strdup(str);
     tok->next = newtok;
-}
+}*/
 //---------------------------------------------------------------------------
 
 
@@ -453,7 +453,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 erase(tok2, gettok(tok2,3));
                 done = false;
             }
-
+/*
             // Replace switch with if (if not complicated)
             if (Match(tok2, "switch {"))
             {
@@ -515,6 +515,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                     }
                 }
             }
+*/
         }
     }
 
