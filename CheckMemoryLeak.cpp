@@ -146,14 +146,14 @@ static void MemoryLeak( const TOKEN *tok, const char varname[] )
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
-/*
+
 static void instoken(TOKEN *tok, const char str[])
 {
     TOKEN *newtok = new TOKEN;
     memcpy( newtok, tok, sizeof(TOKEN) );
     newtok->str = strdup(str);
     tok->next = newtok;
-}*/
+}
 //---------------------------------------------------------------------------
 
 
@@ -453,29 +453,35 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 erase(tok2, gettok(tok2,3));
                 done = false;
             }
-/*
+
             // Replace switch with if (if not complicated)
             if (Match(tok2, "switch {"))
             {
                 // Right now, I just handle if there are a few case and perhaps a default.
-                bool valid = true;
+                bool valid = false;
                 bool incase = false;
                 for ( const TOKEN * _tok = gettok(tok2,2); valid && _tok; _tok = _tok->next )
                 {
                     if ( _tok->str[0] == '{' )
-                        valid = false;
-
-                    else if ( _tok->str[0] == '}' )
                         break;
 
-                    else if (strncmp(_tok->str,"if",2)==0)
-                        valid = false;
+                    else if ( _tok->str[0] == '}' )
+                    {
+                        valid = true;
+                        break;
+                    }
 
-                    else if (strncmp(_tok->str,"loop",2)==0)
-                        valid = false;
+                    else if (strncmp(_tok->str,"if",2)==0)
+                        break;
+
+                    else if (strcmp(_tok->str,"switch")==0)
+                        break;
+
+                    else if (strcmp(_tok->str,"loop")==0)
+                        break;
 
                     else if (incase && Match(_tok,"case"))
-                        valid = false;
+                        break;
 
                     incase |= Match(_tok,"case");
                     incase &= !Match(_tok,"break");
@@ -515,7 +521,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                     }
                 }
             }
-*/
+
         }
     }
 
