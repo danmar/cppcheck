@@ -57,6 +57,8 @@ public:
         TEST_CASE( func1 );
         TEST_CASE( func2 );
 
+        TEST_CASE( class1 );
+
     }
 
     void simple1()
@@ -449,6 +451,65 @@ public:
            "}\n";
     check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: p\n" );
 */
+
+
+
+
+
+
+
+    void class1()
+    {
+        check( "class Fred\n"
+               "{\n"
+               "private:\n"
+               "    char *str1;\n"
+               "    char *str2;\n"
+               "public:\n"
+               "    Fred();\n"
+               "    ~Fred();\n"
+               "};\n"
+               "\n"
+               "Fred::Fred()\n"
+               "{\n"
+               "    str1 = new char[10];\n"
+               "    str2 = new char[10];\n"
+               "}\n"
+               "\n"
+               "Fred::~Fred()\n"
+               "{\n"
+               "    delete [] str2;\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:1]: Memory leak: Fred::str1\n"), errout.str() );
+    }
+
+
+    void class2()
+    {
+        check( "class Fred\n"
+               "{\n"
+               "private:\n"
+               "    char *str1;\n"
+               "public:\n"
+               "    Fred();\n"
+               "    ~Fred();\n"
+               "};\n"
+               "\n"
+               "Fred::Fred()\n"
+               "{\n"
+               "    str1 = new char[10];\n"
+               "}\n"
+               "\n"
+               "Fred::~Fred()\n"
+               "{\n"
+               "    free(str1);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:17]: Mismatching allocation and deallocation: Fred::str1\n"), errout.str() );
+    }
+
+
 
 
 
