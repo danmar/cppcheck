@@ -289,6 +289,10 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         if ( Match(tok, "break") )
             addtoken("break");
 
+        // goto..
+        if ( Match(tok, "goto") )
+            addtoken( "goto" );
+
         // Return..
         if ( Match(tok, "return") )
         {
@@ -460,7 +464,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 // Right now, I just handle if there are a few case and perhaps a default.
                 bool valid = false;
                 bool incase = false;
-                for ( const TOKEN * _tok = gettok(tok2,2); valid && _tok; _tok = _tok->next )
+                for ( const TOKEN * _tok = gettok(tok2,2); _tok; _tok = _tok->next )
                 {
                     if ( _tok->str[0] == '{' )
                         break;
@@ -487,7 +491,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                     incase &= !Match(_tok,"break");
                 }
 
-                if ( valid )
+                if ( !incase && valid )
                 {
                     done = false;
                     free(tok2->str);
@@ -513,11 +517,14 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                                 instoken( tok2, "if" );
                             instoken( tok2, "else" );
                         }
-                        while ( tok2 && ! Match(tok2,"break ;") )
+                        while ( tok2 && tok2->str[0] != '}' && ! Match(tok2,"break ;") )
                             tok2 = tok2->next;
-                        free(tok2->str);
-                        tok2->str = strdup(";");
-                        tok2 = tok2->next->next;
+                        if (Match(tok2,"break ;"))
+                        {
+                            free(tok2->str);
+                            tok2->str = strdup(";");
+                            tok2 = tok2->next->next;
+                        }
                     }
                 }
             }
