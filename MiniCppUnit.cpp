@@ -37,6 +37,16 @@ namespace std
 }
 #endif
 
+#ifdef __GNUC__
+#include <float.h>
+namespace std
+{
+    bool isinf(double x) {
+        return bool(x == DBL_MAX);
+    }
+}
+#endif
+
 TestsListener& TestsListener::theInstance()
 {
 	static TestsListener instancia;

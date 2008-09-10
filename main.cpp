@@ -33,11 +33,11 @@
 #include <cstring>
 
 
-#ifdef __BORLANDC__
-#include <dir.h>
-#else
+#ifdef __GNUC__
 #include <glob.h>
 #include <unistd.h>
+#else
+#include <dir.h>
 #endif
 
 //---------------------------------------------------------------------------
@@ -51,16 +51,7 @@ static void CppCheck(const char FileName[], unsigned int FileId);
 
 static void AddFiles( std::vector<std::string> &filenames, const char path[], const char pattern[] )
 {
-    #ifdef __BORLANDC__
-    struct ffblk f;
-    for ( int done = findfirst(pattern, &f, 0); ! done; done = findnext(&f) )
-    {
-        std::ostringstream fname;
-        fname << path << f.ff_name;
-        filenames.push_back( fname.str() );
-    }
-    findclose(&f);
-    #else
+    #ifdef __GNUC__
     glob_t glob_results;
     glob(pattern, 0, 0, &glob_results);
     for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
@@ -70,6 +61,15 @@ static void AddFiles( std::vector<std::string> &filenames, const char path[], co
         filenames.push_back( fname.str() );
     }
     globfree(&glob_results);
+    #else
+    struct ffblk f;
+    for ( int done = findfirst(pattern, &f, 0); ! done; done = findnext(&f) )
+    {
+        std::ostringstream fname;
+        fname << path << f.ff_name;
+        filenames.push_back( fname.str() );
+    }
+    findclose(&f);
     #endif
 }
 
@@ -79,20 +79,7 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
     AddFiles( filenames, path, "*.cc" );
     AddFiles( filenames, path, "*.c" );
 
-    #ifdef __BORLANDC__
-    struct ffblk f ;
-    for ( int done = findfirst("*", &f, FA_DIREC); ! done; done = findnext(&f) )
-    {
-        if ( f.ff_attrib != FA_DIREC || f.ff_name[0] == '.' )
-            continue;
-        chdir( f.ff_name );
-        std::ostringstream curdir;
-        curdir << path << f.ff_name << "/";
-        RecursiveAddFiles( filenames, curdir.str().c_str() );
-        chdir( ".." );
-    }
-    findclose(&f);
-    #else
+    #ifdef __GNUC__
     // gcc / cygwin..
     glob_t glob_results;
     glob("*", GLOB_MARK, 0, &glob_results);
@@ -112,6 +99,19 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
         chdir( ".." );
     }
     globfree(&glob_results);
+    #else
+    struct ffblk f ;
+    for ( int done = findfirst("*", &f, FA_DIREC); ! done; done = findnext(&f) )
+    {
+        if ( f.ff_attrib != FA_DIREC || f.ff_name[0] == '.' )
+            continue;
+        chdir( f.ff_name );
+        std::ostringstream curdir;
+        curdir << path << f.ff_name << "/";
+        RecursiveAddFiles( filenames, curdir.str().c_str() );
+        chdir( ".." );
+    }
+    findclose(&f);
     #endif
 }
 
