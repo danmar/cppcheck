@@ -40,6 +40,9 @@
 #ifdef __BORLANDC__
 #include <dir.h>
 #endif
+#ifdef _MSC_VER
+#include <windows.h>
+#endif
 
 //---------------------------------------------------------------------------
 bool Debug = false;
@@ -73,6 +76,20 @@ static void AddFiles( std::vector<std::string> &filenames, const char path[], co
     }
     findclose(&f);
     #endif
+    #ifdef _MSC_VER
+    WIN32_FIND_DATA ffd;
+    HANDLE hFind = FindFirstFile(pattern, &ffd);
+	if (INVALID_HANDLE_VALUE != hFind) 
+	{
+		do
+		{
+	        std::ostringstream fname;
+			fname << path << ffd.cFileName;
+			filenames.push_back( fname.str() );
+		}
+		while (FindNextFile(hFind, &ffd) != 0);
+	}
+	#endif
 }
 
 static void RecursiveAddFiles( std::vector<std::string> &filenames, const char path[] )
@@ -116,6 +133,26 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
     }
     findclose(&f);
     #endif
+    #ifdef _MSC_VER
+    WIN32_FIND_DATA ffd;
+    HANDLE hFind = FindFirstFile("*", &ffd);
+	if (INVALID_HANDLE_VALUE != hFind) 
+	{
+		do
+		{
+			if ( (ffd.cFileName[0]!='.') &&
+				 (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
+			{
+				SetCurrentDirectory( ffd.cFileName );
+				std::ostringstream curdir;
+				curdir << path << ffd.cFileName << "/";
+				RecursiveAddFiles( filenames, curdir.str().c_str() );
+				SetCurrentDirectory( ".." );
+			}
+		}
+		while (FindNextFile(hFind, &ffd) != 0);
+	}
+	#endif
 }
 
 //---------------------------------------------------------------------------
