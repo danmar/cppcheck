@@ -585,7 +585,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             const char *type2 = getstr(tok, 2);
             for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
             {
-                if (tok2->str!=type2 && strcmp(tok2->str,type2)==0)
+                if (tok2->str!=type1 && tok2->str!=type2 && strcmp(tok2->str,type2)==0)
                 {
                     free(tok2->str);
                     tok2->str = _strdup(type1);
