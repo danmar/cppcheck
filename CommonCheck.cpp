@@ -7,6 +7,10 @@
 #include <list>
 #include <algorithm>
 #include <cstring>
+
+#ifdef __BORLANDC__
+#include <ctype.h>
+#endif
 //---------------------------------------------------------------------------
 extern bool CheckCodingStyle;
 bool OnlyReportUniqueErrors;
@@ -50,8 +54,12 @@ bool SameFileName( const char fname1[], const char fname2[] )
 #endif
 #ifdef __GNUC__
     return bool( strcasecmp(fname1, fname2) == 0 );
-#else
+#endif
+#ifdef __BORLANDC__
     return bool( stricmp(fname1, fname2) == 0 );
+#endif
+#ifdef _MSC_VER
+    return bool( _stricmp(fname1, fname2) == 0 );
 #endif
 }
 //---------------------------------------------------------------------------
@@ -72,13 +80,13 @@ void ReportErr(const std::string &errmsg)
 
 bool IsName(const char str[])
 {
-    return (str[0]=='_' || std::isalpha(str[0]));
+    return bool(str[0]=='_' || isalpha(str[0]));
 }
 //---------------------------------------------------------------------------
 
 bool IsNumber(const char str[])
 {
-    return std::isdigit(str[0]);
+    return bool(isdigit(str[0]) != 0);
 }
 //---------------------------------------------------------------------------
 

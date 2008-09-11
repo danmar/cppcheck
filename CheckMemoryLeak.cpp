@@ -16,6 +16,10 @@
 #include <string.h>
 #endif
 
+#ifndef _MSC_VER
+#define _strdup(str) strdup(str)
+#endif
+
 //---------------------------------------------------------------------------
 
 
@@ -151,7 +155,7 @@ static void instoken(TOKEN *tok, const char str[])
 {
     TOKEN *newtok = new TOKEN;
     memcpy( newtok, tok, sizeof(TOKEN) );
-    newtok->str = strdup(str);
+	newtok->str = _strdup(str);
     tok->next = newtok;
 }
 //---------------------------------------------------------------------------
@@ -169,7 +173,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     #define addtoken(_str)                  \
     {                                       \
         TOKEN *newtok = new TOKEN;          \
-        newtok->str = strdup(_str);         \
+    	newtok->str = _strdup(_str);         \
         newtok->linenr = tok->linenr;       \
         newtok->FileIndex = tok->FileIndex; \
         newtok->next = 0;                   \
@@ -495,7 +499,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 {
                     done = false;
                     free(tok2->str);
-                    tok2->str = strdup(";");
+                    tok2->str = _strdup(";");
                     erase( tok2, gettok(tok2, 2) );
                     tok2 = tok2->next;
                     bool first = true;
@@ -503,7 +507,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                     {
                         bool def = Match(tok2, "default");
                         free(tok2->str);
-                        tok2->str = strdup(first ? "if" : "}");
+                        tok2->str = _strdup(first ? "if" : "}");
                         if ( first )
                         {
                             first = false;
@@ -522,7 +526,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                         if (Match(tok2,"break ;"))
                         {
                             free(tok2->str);
-                            tok2->str = strdup(";");
+                            tok2->str = _strdup(";");
                             tok2 = tok2->next->next;
                         }
                     }
@@ -689,24 +693,20 @@ static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vec
 static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char *> &classname, const char varname[] )
 {
     // Function pattern.. Check if member function
-    char fpattern[500] = {0};
+	std::ostringstream fpattern;
     for ( unsigned int i = 0; i < classname.size(); i++ )
     {
-        strcat( fpattern, classname[i] );
-        strcat( fpattern, " :: " );
+		fpattern << classname[i] << " :: ";
     }
-    strcat( fpattern, "%var% (" );
+    fpattern << "%var% (";
 
     // Destructor pattern.. Check if class destructor..
-    char destructor[500] = {0};
+	std::ostringstream destructor;
     for ( unsigned int i = 0; i < classname.size(); i++ )
     {
-        strcat( destructor, classname[i] );
-        strcat( destructor, " :: " );
+		destructor << classname[i] << " :: ";
     }
-    strcat( destructor, " ~" );
-    strcat( destructor, classname.back() );
-    strcat( destructor, " (" );
+    destructor << " ~" << classname.back() << " (";
 
     // Pattern used in member function. "Var = ..."
     std::ostringstream varname_eq;
@@ -738,7 +738,7 @@ static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char 
         {
             if ( strchr(";}", tok->str[0]) )
                 memberfunction = false;
-            else if ( Match( tok, fpattern ) || Match( tok, destructor ) )
+            else if ( Match( tok, fpattern.str().c_str() ) || Match( tok, destructor.str().c_str() ) )
                 memberfunction = true;
         }
 

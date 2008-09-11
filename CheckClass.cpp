@@ -10,6 +10,7 @@
 
 
 #ifdef __BORLANDC__
+#include <ctype.h>
 #include <mem.h>
 #endif
 //---------------------------------------------------------------------------
@@ -377,7 +378,7 @@ void CheckUnusedPrivateFunctions()
                 priv = false;
             else if (priv && indent_level == 1)
             {
-                if (std::isalpha(tok->str[0]) &&
+                if (isalpha(tok->str[0]) &&
                     tok->next->str[0]=='(' &&
                     strcmp(tok->str,classname) != 0)
                 {

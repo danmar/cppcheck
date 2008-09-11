@@ -36,7 +36,8 @@
 #ifdef __GNUC__
 #include <glob.h>
 #include <unistd.h>
-#else
+#endif
+#ifdef __BORLANDC__
 #include <dir.h>
 #endif
 
@@ -61,7 +62,8 @@ static void AddFiles( std::vector<std::string> &filenames, const char path[], co
         filenames.push_back( fname.str() );
     }
     globfree(&glob_results);
-    #else
+    #endif
+    #ifdef __BORLANDC__
     struct ffblk f;
     for ( int done = findfirst(pattern, &f, 0); ! done; done = findnext(&f) )
     {
@@ -99,7 +101,8 @@ static void RecursiveAddFiles( std::vector<std::string> &filenames, const char p
         chdir( ".." );
     }
     globfree(&glob_results);
-    #else
+    #endif
+    #ifdef __BORLANDC__
     struct ffblk f ;
     for ( int done = findfirst("*", &f, FA_DIREC); ! done; done = findnext(&f) )
     {

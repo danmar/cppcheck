@@ -14,7 +14,12 @@
 #include <stdio.h>
 
 #ifdef __BORLANDC__
+#include <ctype.h>
 #include <mem.h>
+#endif
+
+#ifndef _MSC_VER
+#define _strdup(str) strdup(str)
 #endif
 
 //---------------------------------------------------------------------------
@@ -76,30 +81,33 @@ static void Define(const char Name[], const char Value[])
     bool dec = true, hex = true;
     for (int i = 0; Value[i]; i++)
     {
-        if ( ! std::isdigit(Value[i]) )
+        if ( ! isdigit(Value[i]) )
             dec = false;
 
-        if ( ! std::isxdigit(Value[i]) && (!(i==1 && Value[i]=='x')))
+        if ( ! isxdigit(Value[i]) && (!(i==1 && Value[i]=='x')))
             hex = false;
     }
 
     if (!dec && !hex)
         return;
 
-    char *strValue = strdup(Value);
+    char *strValue = _strdup(Value);
 
     if (!dec && hex)
     {
-        char str[50];
-        unsigned long value = strtoul(Value+2, NULL, 16);
+		// Convert Value from hexadecimal to decimal
+		unsigned long value;
+		std::istringstream istr(Value+2);
+		istr >> std::hex >> value;
+		std::ostringstream ostr;
+		ostr << value;
         free(strValue);
-        sprintf(str, "%lu", value);
-        strValue = strdup(str);
+        strValue = _strdup(ostr.str().c_str());
     }
 
     DefineSymbol *NewSym = new DefineSymbol;
     memset(NewSym, 0, sizeof(DefineSymbol));
-    NewSym->name = strdup(Name);
+    NewSym->name = _strdup(Name);
     NewSym->value = strValue;
     NewSym->next = dsymlist;
     dsymlist = NewSym;
@@ -123,17 +131,19 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
         return;
 
     // Replace hexadecimal value with decimal
-    char str2[50];
-    memset(str2, 0, sizeof(str2));
-    if (strncmp(str,"0x",2)==0)
+	std::ostringstream str2;
+	if (strncmp(str,"0x",2)==0)
     {
-        unsigned int value = strtoul(str+2, NULL, 16);
-        sprintf( str2, "%d", value );
+        str2 << strtoul(str+2, NULL, 16);
     }
+	else
+	{
+		str2 << str;
+	}
 
     TOKEN *newtoken  = new TOKEN;
     memset(newtoken, 0, sizeof(TOKEN));
-    newtoken->str    = strdup(str2[0] ? str2 : str);
+    newtoken->str    = _strdup(str2.str().c_str());
     newtoken->linenr = lineno;
     newtoken->FileIndex = fileno;
     if (tokens_back)
@@ -152,7 +162,7 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
         if (strcmp(str,sym->name)==0)
         {
             free(newtoken->str);
-            newtoken->str = strdup(sym->value);
+            newtoken->str = _strdup(sym->value);
             break;
         }
     }
@@ -178,9 +188,8 @@ static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
         return;
 
     free(tok->str);
-    tok->str = (char *)malloc(strlen(str1)+strlen(str2)+1);
-    strcpy(tok->str, str1);
-    strcat(tok->str, str2);
+	std::string newstr(std::string(str1) + std::string(str2));
+	tok->str = _strdup( newstr.c_str() );
 
     DeleteNextToken(tok);
 }
@@ -238,7 +247,7 @@ static void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
         TOKEN *NewToken = new TOKEN;
         NewToken->FileIndex = src->FileIndex;
         NewToken->linenr = src->linenr;
-        NewToken->str = strdup(src->str);
+        NewToken->str = _strdup(src->str);
 
         NewToken->next = dest->next;
         dest->next = NewToken;
@@ -332,22 +341,22 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 {
                     if (State==Space1 || State==Space2)
                     {
-                        if (std::isspace(line[i]))
+                        if (isspace(line[i]))
                             continue;
                         State = (State==Space1) ? Id : Value;
                     }
 
                     else if (State==Id)
                     {
-                        if ( std::isspace( line[i] ) )
+                        if ( isspace( line[i] ) )
                         {
-                            strId = strdup(CurrentToken);
+                            strId = _strdup(CurrentToken);
                             memset(CurrentToken, 0, sizeof(CurrentToken));
                             pToken = CurrentToken;
                             State = Space2;
                             continue;
                         }
-                        else if ( ! std::isalnum(line[i]) )
+                        else if ( ! isalnum(line[i]) )
                         {
                             break;
                         }
@@ -516,7 +525,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
         }
 
 
-        if (std::isspace(ch) || std::iscntrl(ch))
+        if (isspace(ch) || iscntrl(ch))
         {
             addtoken(CurrentToken, lineno, FileIndex);
             pToken = CurrentToken;
@@ -562,7 +571,8 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
     {
         if ( strcmp(tok->str, "->") == 0 )
         {
-            strcpy( tok->str, "." );
+            tok->str[0] = '.';
+			tok->str[1] = 0;
         }
     }
 
@@ -578,7 +588,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 if (tok2->str!=type2 && strcmp(tok2->str,type2)==0)
                 {
                     free(tok2->str);
-                    tok2->str = strdup(type1);
+                    tok2->str = _strdup(type1);
                 }
             }
         }
@@ -593,10 +603,10 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 if (tok2->str!=type3 && strcmp(tok2->str,type3)==0)
                 {
                     free(tok2->str);
-                    tok2->str = strdup(type1);
+                    tok2->str = _strdup(type1);
 
                     TOKEN *newtok = new TOKEN;
-                    newtok->str = strdup(type2);
+                    newtok->str = _strdup(type2);
                     newtok->FileIndex = tok2->FileIndex;
                     newtok->linenr = tok2->linenr;
                     newtok->next = tok2->next;
@@ -644,7 +654,7 @@ void SimplifyTokenList()
                 if (strcmp(tok2->str,sym) == 0)
                 {
                     free(tok2->str);
-                    tok2->str = strdup(num);
+                    tok2->str = _strdup(num);
                 }
             }
         }
@@ -682,10 +692,10 @@ void SimplifyTokenList()
         if (Match(tok, "sizeof ( %type% * )"))
         {
             free(tok->str);
-            char str[10];
+			std::ostringstream str;
             // 'sizeof(type *)' has the same size as 'sizeof(char *)'
-            sprintf( str, "%u", (unsigned int)sizeof(char *));
-            tok->str = strdup( str );
+            str << sizeof(char *);
+            tok->str = _strdup( str.str().c_str() );
 
             for (int i = 0; i < 4; i++)
             {
@@ -700,9 +710,9 @@ void SimplifyTokenList()
             if (size > 0)
             {
                 free(tok->str);
-                char str[10];
-                sprintf( str, "%d", size );
-                tok->str = strdup( str );
+				std::ostringstream str;
+				str << size;
+                tok->str = _strdup( str.str().c_str() );
                 for (int i = 0; i < 3; i++)
                 {
                     DeleteNextToken(tok);
@@ -747,9 +757,9 @@ void SimplifyTokenList()
                 if (strcmp(getstr(tok2,2), varname) == 0)
                 {
                     free(tok2->str);
-                    char str[20];
-                    sprintf( str, "%d", total_size);
-                    tok2->str = strdup(str );
+					std::ostringstream str;
+                    str << total_size;
+                    tok2->str = _strdup(str.str().c_str());
                     // Delete the other tokens..
                     for (int i = 0; i < 3; i++)
                     {
@@ -802,9 +812,9 @@ void SimplifyTokenList()
                 }
                 tok = tok->next;
                 free(tok->str);
-                char str[10];
-                sprintf(str,"%d", i1);
-                tok->str = strdup(str);
+				std::ostringstream str;
+                str <<  i1;
+                tok->str = _strdup(str.str().c_str());
                 for (int i = 0; i < 2; i++)
                 {
                     DeleteNextToken(tok);
@@ -836,7 +846,7 @@ void SimplifyTokenList()
             {
                 tok = tok->next;
                 free(tok->str);
-                tok->str = strdup(str[i]);
+                tok->str = _strdup(str[i]);
             }
 
             DeleteNextToken(tok);
@@ -921,7 +931,7 @@ void SimplifyTokenList()
             if (tok2->str[0] == ',')
             {
                 free(tok2->str);
-                tok2->str = strdup(";");
+                tok2->str = _strdup(";");
                 InsertTokens(tok2, type0, typelen);
             }
 
@@ -952,13 +962,13 @@ void SimplifyTokenList()
                             VarTok = VarTok->next;
                         InsertTokens(eq, VarTok, 2);
                         free(eq->str);
-                        eq->str = strdup(";");
+                        eq->str = _strdup(";");
 
                         // "= x, "   =>   "= x; type "
                         if (tok2->str[0] == ',')
                         {
                             free(tok2->str);
-                            tok2->str = strdup(";");
+                            tok2->str = _strdup(";");
                             InsertTokens( tok2, type0, typelen );
                         }
                         break;
