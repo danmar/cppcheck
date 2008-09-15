@@ -3,6 +3,7 @@
 #include "tokenize.h"
 #include "CommonCheck.h"
 #include <list>
+#include <map>
 #include <sstream>
 #include <stdlib.h>     // <- atoi
 #include <cstring>
@@ -320,57 +321,27 @@ void CheckIfAssignment()
 void CheckUnsignedDivision()
 {
     // Check for "ivar / uvar" and "uvar / ivar"
-    // Todo: Much better checking for declared variables
-    const char *div_pattern[] = {"", "/", "", NULL};
-    for (const TOKEN *div_tok = findtoken(tokens, div_pattern); div_tok; div_tok = findtoken(div_tok->next, div_pattern))
+    std::map<std::string, char> varsign;
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
     {
-        const char *varname1 = div_tok->str;
-        const char *varname2 = div_tok->next->next->str;
-        if ( IsName(varname1) && IsName(varname2) )
+        if ( Match(tok, "[{};(,] %type% %var% [;=,)]") )
+            varsign[getstr(tok,2)] = 's';
+
+        else if ( Match(tok, "[{};(,] unsigned %type% %var% [;=,)]") )
+            varsign[getstr(tok,3)] = 'u';
+
+        else if ( tok->str[0] != ')' && Match(tok->next, "%var% / %var%") )
         {
-            char var1_sign=0, var2_sign=0;
+            const char *varname1 = getstr(tok,1);
+            const char *varname2 = getstr(tok,3);
+            char sign1 = varsign[varname1];
+            char sign2 = varsign[varname2];
 
-            // Check if any of the variables are unsigned..
-            const char *pattern_declvar[] = { "unsigned", "", "", NULL };
-
-            pattern_declvar[2] = varname1;
-            if ( findtoken(tokens, pattern_declvar) )
-                var1_sign = 'u';
-
-            pattern_declvar[2] = varname2;
-            if ( findtoken(tokens, pattern_declvar) )
-                var2_sign = 'u';
-
-            if (var1_sign == var2_sign)
-                continue;
-
-            // Check if any of the variables are signed..
-            pattern_declvar[0] = ";";
-            pattern_declvar[1] = "int";
-
-            pattern_declvar[2] = varname1;
-            if ( findtoken(tokens, pattern_declvar) )
-                var1_sign = 's';
-
-            pattern_declvar[2] = varname2;
-            if ( findtoken(tokens, pattern_declvar) )
-                var2_sign = 's';
-
-            pattern_declvar[0] = "{";
-
-            pattern_declvar[2] = varname1;
-            if ( findtoken(tokens, pattern_declvar) )
-                var1_sign = 's';
-
-            pattern_declvar[2] = varname2;
-            if ( findtoken(tokens, pattern_declvar) )
-                var2_sign = 's';
-
-            if ( var1_sign && var2_sign && var1_sign != var2_sign )
+            if ( sign1 && sign2 && sign1 != sign2 )
             {
                 // One of the operands are signed, the other is unsigned..
                 std::ostringstream ostr;
-                ostr << FileLine(div_tok) << ": Warning: Division with signed and unsigned operators";
+                ostr << FileLine(tok->next) << ": Warning: Division with signed and unsigned operators";
                 ReportErr(ostr.str());
             }
         }

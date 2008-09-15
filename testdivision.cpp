@@ -37,6 +37,7 @@ public:
         TEST_CASE( division1 );
         TEST_CASE( division2 );
         TEST_CASE( division3 );
+        TEST_CASE( division4 );
     }
 
     void division1()
@@ -72,6 +73,21 @@ public:
                "    return uvar / ivar;\n"
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:7]: Warning: Division with signed and unsigned operators\n"), errout.str() );
+    }
+
+    void division4()
+    {
+        check( "void f1()\n"
+               "{\n"
+               "    int i1;\n"
+               "}\n"
+               "\n"
+               "void f2(unsigned int i1)\n"
+               "{\n"
+               "    unsigned int i2;\n"
+               "    result = i2 / i1;\n"
+               );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 };
 
