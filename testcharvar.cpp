@@ -36,6 +36,7 @@ public:
     TEST_FIXTURE( TestCharVar )
     {
         TEST_CASE( array_index );
+        TEST_CASE( bitop );
     }
 
 
@@ -54,8 +55,24 @@ public:
                "    buf[ch] = 0;\n"
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str() );
+
+        check( "void foo(char ch)\n"
+               "{\n"
+               "    buf[ch] = 0;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:3]: Warning - using char variable as array index\n"), errout.str() );
     }
 
+
+    void bitop()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char ch;\n"
+               "    result = a | ch;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Warning - using char variable in bit operation\n"), errout.str() );
+    }
 };
 
 REGISTER_FIXTURE( TestCharVar )

@@ -330,7 +330,7 @@ void CheckUnsignedDivision()
         else if ( Match(tok, "[{};(,] unsigned %type% %var% [;=,)]") )
             varsign[getstr(tok,3)] = 'u';
 
-        else if ( tok->str[0] != ')' && Match(tok->next, "%var% / %var%") )
+        else if (!Match(tok,"[).]") && Match(tok->next, "%var% / %var%"))
         {
             const char *varname1 = getstr(tok,1);
             const char *varname2 = getstr(tok,3);
@@ -618,7 +618,7 @@ void CheckCharVariable()
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         // Declaring the variable..
-        if ( Match(tok, "[{};] char %var% [;=,]") )
+        if ( Match(tok, "[{};(,] char %var% [;=,)]") )
         {
             const char *varname[2] = {0};
             varname[0] = getstr(tok, 2);
@@ -645,7 +645,7 @@ void CheckCharVariable()
                     break;
                 }
 
-                else if ( Match(tok2, "[&|] %var1%") )
+                else if ( Match(tok2, "[&|] %var1%", varname) || Match(tok2, "%var1% [&|]", varname) )
                 {
                     std::ostringstream errmsg;
                     errmsg << FileLine(tok2) << ": Warning - using char variable in bit operation";
