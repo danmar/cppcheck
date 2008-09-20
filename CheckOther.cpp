@@ -658,3 +658,46 @@ void CheckCharVariable()
 }
 //---------------------------------------------------------------------------
 
+
+
+
+
+
+//---------------------------------------------------------------------------
+// Incomplete statement..
+//---------------------------------------------------------------------------
+
+void CheckIncompleteStatement()
+{
+	int parlevel = 0;
+
+	for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+	{
+		if ( Match(tok,"; %str%") && !Match(gettok(tok,2), ",") )
+		{
+            std::ostringstream errmsg;
+			errmsg << FileLine(tok->next) << ": Redundant code: Found a statement that begins with string constant";
+            ReportErr(errmsg.str());
+		}
+
+		if ( Match(tok,"; %num%") && !Match(gettok(tok,2), ",") )
+		{
+            std::ostringstream errmsg;
+			errmsg << FileLine(tok->next) << ": Redundant code: Found a statement that begins with numeric constant";
+            ReportErr(errmsg.str());
+		}
+/*
+		if ( tok->str[0] == '(' )
+			++parlevel;
+		else if ( tok->str[0] == ')' )
+			--parlevel;
+		
+		if ( parlevel == 0 && Match(tok, "[;{}] %var% ;") )
+		{
+            std::ostringstream errmsg;
+			errmsg << FileLine(tok->next) << ": Redundant code: Found a statement that only contains a variable";
+            ReportErr(errmsg.str());
+		}
+*/
+	}
+}

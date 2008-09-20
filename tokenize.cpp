@@ -305,6 +305,10 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
     char *pToken = CurrentToken;
     for (char ch = (char)code.get(); !code.eof(); ch = (char)code.get())
     {
+		// Todo
+		if ( ch < 0 )
+			continue;
+
         // Preprocessor stuff?
         if (ch == '#' && !CurrentToken[0])
         {

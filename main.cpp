@@ -343,6 +343,10 @@ static void CppCheck(const char FileName[], unsigned int FileId)
         
         // Unused struct members..
         CheckStructMemberUsage();
+
+		// Check for various types of incomplete statements that could for example
+		// mean that an ';' has been added by accident
+		CheckIncompleteStatement();
     }
 
     // Clean up tokens..

@@ -43,6 +43,8 @@ void CheckStructMemberUsage();
 // Using char variable as array index / as operand in bit operation
 void CheckCharVariable();
 
+// Incomplete statement. A statement that only contains a constant or variable
+void CheckIncompleteStatement();
 
 //---------------------------------------------------------------------------
 #endif
