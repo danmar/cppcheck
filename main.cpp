@@ -225,6 +225,7 @@ int main(int argc, char* argv[])
     if ( CheckCodingStyle && filenames.size() > 1 )
     {
         errout.str("");
+        std::cout << "Checking usage of global functions..\n";
         CheckGlobalFunctionUsage(filenames);
         if ( ! errout.str().empty() )
         {
@@ -315,9 +316,6 @@ static void CppCheck(const char FileName[], unsigned int FileId)
         // Check that all private functions are called.
         CheckUnusedPrivateFunctions();
 
-        // Found implementation in header
-        WarningHeaderWithImplementation();
-
         // Warning upon c-style pointer casts
         const char *ext = strrchr(FileName, '.');
         if (ext && strcmp(ext,".cpp")==0)
@@ -336,17 +334,17 @@ static void CppCheck(const char FileName[], unsigned int FileId)
         WarningIf();
 
         // Variable scope (check if the scope could be limited)
-        CheckVariableScope();
+        //CheckVariableScope();
 
         // Check if a constant function parameter is passed by value
         CheckConstantFunctionParameter();
-        
+
         // Unused struct members..
         CheckStructMemberUsage();
 
-		// Check for various types of incomplete statements that could for example
-		// mean that an ';' has been added by accident
-		CheckIncompleteStatement();
+        // Check for various types of incomplete statements that could for example
+        // mean that an ';' has been added by accident
+        CheckIncompleteStatement();
     }
 
     // Clean up tokens..
