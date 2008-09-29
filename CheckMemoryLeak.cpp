@@ -163,6 +163,12 @@ static void instoken(TOKEN *tok, const char str[])
 
 extern bool ShowAll;
 
+/**
+ * Extract a new tokens list that is easier to parse than the "tokens"
+ * tok - start parse token
+ * varname - name of variable
+ */
+
 static TOKEN *getcode(const TOKEN *tok, const char varname[])
 {
     const char *varnames[2];
@@ -173,7 +179,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     #define addtoken(_str)                  \
     {                                       \
         TOKEN *newtok = new TOKEN;          \
-    	newtok->str = _strdup(_str);         \
+        newtok->str = _strdup(_str);        \
         newtok->linenr = tok->linenr;       \
         newtok->FileIndex = tok->FileIndex; \
         newtok->next = 0;                   \
@@ -212,14 +218,14 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         if ( parlevel == 0 && tok->str[0]==';')
             addtoken(";");
 
-        if (Match(tok, "[(;{}] %var1% = ", varnames))
+        if (Match(tok, "[(;{}] %var1% =", varnames))
         {
             AllocType alloc = GetAllocationType(gettok(tok,3));
 
             // If "--all" hasn't been given, don't check classes..
             if ( alloc == New && ! ShowAll )
             {
-                if ( Match(gettok(tok,3), "new %var% ;") )
+                if ( Match(gettok(tok,3), "new %type% [(;]") )
                 {
                     if ( isclass( getstr(tok, 4) ) )
                         alloc = No;
