@@ -325,7 +325,11 @@ void CheckUnsignedDivision()
     for ( TOKEN *tok = tokens; tok; tok = tok->next )
     {
         if ( Match(tok, "[{};(,] %type% %var% [;=,)]") )
-            varsign[getstr(tok,2)] = 's';
+        {
+            const char *type = getstr(tok, 1);
+            if (strcmp(type,"char")==0 || strcmp(type,"short")==0 || strcmp(type,"int")==0)
+                varsign[getstr(tok,2)] = 's';
+        }
 
         else if ( Match(tok, "[{};(,] unsigned %type% %var% [;=,)]") )
             varsign[getstr(tok,3)] = 'u';
@@ -634,7 +638,7 @@ void CheckCharVariable()
                 else if ( tok2->str[0] == '}' )
                 {
                     --indentlevel;
-                    if ( indentlevel < 0 )
+                    if ( indentlevel <= 0 )
                         break;
                 }
 

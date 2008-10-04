@@ -38,6 +38,7 @@ public:
         TEST_CASE( division2 );
         TEST_CASE( division3 );
         TEST_CASE( division4 );
+        TEST_CASE( division5 );
     }
 
     void division1()
@@ -86,6 +87,17 @@ public:
                "{\n"
                "    unsigned int i2;\n"
                "    result = i2 / i1;\n"
+               );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void division5()
+    {
+        check( "#define USER_HASH (16)\n"
+               "void foo()\n"
+               "{\n"
+               "    unsigned int val = 32;\n"
+               "    val = val / USER_HASH;\n"
                );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }

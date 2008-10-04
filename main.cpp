@@ -260,10 +260,9 @@ static void CppCheck(const char FileName[], unsigned int FileId)
     CheckMemset();
 
 
-    // Check for unwanted unsigned division
-    // Not accurate yet. Very important to run it before 'SimplifyTokenList'
-    if ( ShowAll )
-        CheckUnsignedDivision();
+    // Check for unsigned divisions where one operand is signed
+    // Very important to run it before 'SimplifyTokenList'
+    CheckUnsignedDivision();
 
     // Give warning when using char variable as array index
     // Doesn't work on simplified token list ('unsigned')
