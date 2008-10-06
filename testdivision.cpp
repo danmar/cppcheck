@@ -111,7 +111,7 @@ public:
                "    unsigned int val = 32;\n"
                "    int i = val / -2;\n"
                );
-        ASSERT_EQUALS( std::string("[test.cpp:4]: The division result will be wrong\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Unsigned division. The result will be wrong.\n"), errout.str() );
     }
 
     void division7()
@@ -121,7 +121,7 @@ public:
                "    unsigned int val = 32;\n"
                "    int i = -96 / val;\n"
                );
-        ASSERT_EQUALS( std::string("[test.cpp:4]: The division result will be wrong\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Unsigned division. The result will be wrong.\n"), errout.str() );
     }
 };
 

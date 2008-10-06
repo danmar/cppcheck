@@ -349,6 +349,30 @@ void CheckUnsignedDivision()
                 ReportErr(ostr.str());
             }
         }
+
+        else if (!Match(tok,"[).]") && Match(tok->next, "%var% / - %num%"))
+        {
+            const char *varname1 = getstr(tok,1);
+            char sign1 = varsign[varname1];
+            if ( sign1 == 'u' )
+            {
+                std::ostringstream ostr;
+                ostr << FileLine(tok->next) << ": Unsigned division. The result will be wrong.";
+                ReportErr(ostr.str());
+            }
+        }
+
+        else if (Match(tok, "[([=*/+-] - %num% / %var%"))
+        {
+            const char *varname2 = getstr(tok,4);
+            char sign2 = varsign[varname2];
+            if ( sign2 == 'u' )
+            {
+                std::ostringstream ostr;
+                ostr << FileLine(tok->next) << ": Unsigned division. The result will be wrong.";
+                ReportErr(ostr.str());
+            }
+        }
     }
 }
 //---------------------------------------------------------------------------
