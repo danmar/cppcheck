@@ -416,40 +416,49 @@ public:
 
 
 /*
-    code = "static char *dmalloc()\n"
-           "{\n"
-           "    char *p = new char[100];\n"
-           "    return p;\n"
-           "}\n"
-           "static void f()\n"
-           "{\n"
-           "    char *p = dmalloc();\n"
-           "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Memory leak: p\n" );
+    void func3()
+    {
+        check( "static char *dmalloc()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    return p;\n"
+               "}\n"
+               "static void f()\n"
+               "{\n"
+               "    char *p = dmalloc();\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:9]: Memory leak: p\n"), errout.str() );
+    }
 
 
-    code = "static char *dmalloc()\n"
-           "{\n"
-           "    char *p = new char[100];\n"
-           "    return p;\n"
-           "}\n"
-           "static void f()\n"
-           "{\n"
-           "    char *p = dmalloc();\n"
-           "    delete p;\n"
-           "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:9]: Mismatching allocation and deallocation: p\n" );
+    void func4()
+    {
+        check( "static char *dmalloc()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    return p;\n"
+               "}\n"
+               "static void f()\n"
+               "{\n"
+               "    char *p = dmalloc();\n"
+               "    delete p;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:9]: Mismatching allocation and deallocation: p\n"), errout.str() );
+    }
 
 
-    code = "static void foo(const char *str)\n"
-           "{ }\n"
-           "\n"
-           "static void f()\n"
-           "{\n"
-           "    char *p = new char[100];\n"
-           "    foo(p);\n"
-           "}\n";
-    check( CheckMemoryLeak, __LINE__, code, "[test.cpp:8]: Memory leak: p\n" );
+    void func5()
+    {
+        check( "static void foo(const char *str)\n"
+               "{ }\n"
+               "\n"
+               "static void f()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    foo(p);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: p\n"), errout.str() );
+    }
 */
 
 
