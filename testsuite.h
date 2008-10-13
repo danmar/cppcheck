@@ -1,27 +1,31 @@
 
-#include <iostream>
-#include <string>
+#include <sstream>
 
 
-class TestSuite
+class TestFixture
 {
+private:
+    static std::ostringstream errmsg;
+    static unsigned int countTests;
+
 protected:
     std::string classname;
 
-    virtual void run() = 0;
+    virtual void run()
+    { }
+
+    bool runTest(const char testname[]);
+    void assertFail(const char *filename, int linenr);
 
 public:
-    TestSuite(const std::string &_name);
-    ~TestSuite();
+    TestFixture(const std::string &_name);
+    ~TestFixture();
 
     static void printTests();
     static void runTests();
 };
 
 
-#define TEST_CASE( NAME )  std::cout << classname << "::" << #NAME << std::endl; NAME ();
-
-/*
-#define ASSERT_EQUALS( EXPECTED , ACTUAL )
-*/
+#define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
+#define ASSERT_EQUALS( EXPECTED , ACTUAL )  if (EXPECTED!=ACTUAL) assertFail(__FILE__, __LINE__);
 

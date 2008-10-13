@@ -5,15 +5,19 @@
 
 #include "tokenize.h"
 #include "CheckOther.h"
-#include "MiniCppUnit.h"
+#include "testsuite.h"
 
 #include <sstream>
 
 extern std::ostringstream errout;
 extern bool ShowAll;
 
-class TestDivision : public TestFixture<TestDivision>
+class TestDivision : public TestFixture
 {
+public:
+    TestDivision() : TestFixture("TestDivision")
+    { }
+
 private:
     void check( const char code[] )
     {
@@ -31,8 +35,7 @@ private:
         CheckUnsignedDivision();
     }
 
-public:
-    TEST_FIXTURE( TestDivision )
+    void run()
     {
         TEST_CASE( division1 );
         TEST_CASE( division2 );
@@ -125,6 +128,6 @@ public:
     }
 };
 
-REGISTER_FIXTURE( TestDivision )
+static TestDivision testdivision;
 
 

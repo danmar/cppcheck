@@ -1,15 +1,19 @@
 
 #include "tokenize.h"
 #include "CheckMemoryLeak.h"
-#include "MiniCppUnit.h"
+#include "testsuite.h"
 
 #include <sstream>
 
 extern std::ostringstream errout;
 extern bool ShowAll;
 
-class TestMemleak : public TestFixture<TestMemleak>
+class TestMemleak : public TestFixture
 {
+public:
+    TestMemleak() : TestFixture("TestMemleak")
+    { }
+
 private:
     void check( const char code[] )
     {
@@ -27,8 +31,7 @@ private:
         CheckMemoryLeak();
     }
 
-public:
-    TEST_FIXTURE( TestMemleak )
+    void run()
     {
         TEST_CASE( simple1 );
         TEST_CASE( simple2 );
@@ -58,7 +61,6 @@ public:
         TEST_CASE( func2 );
 
         TEST_CASE( class1 );
-
     }
 
     void simple1()
@@ -524,6 +526,6 @@ public:
 
 };
 
-REGISTER_FIXTURE( TestMemleak )
+static TestMemleak testmemleak;
 
 

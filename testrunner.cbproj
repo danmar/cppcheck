@@ -18,15 +18,15 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <OutputExt>exe</OutputExt>
     <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
-    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+    <OutputExt>exe</OutputExt>
     <Defines>NO_STRICT</Defines>
+    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
     <DynamicRTL>true</DynamicRTL>
-    <ILINK_ObjectSearchPath>C:\cppcheck</ILINK_ObjectSearchPath>
     <UsePackages>true</UsePackages>
-    <NoVCL>true</NoVCL>
+    <ILINK_ObjectSearchPath>C:\cppcheck</ILINK_ObjectSearchPath>
     <ProjectType>CppConsoleApplication</ProjectType>
+    <NoVCL>true</NoVCL>
     <FinalOutputDir>.</FinalOutputDir>
     <PackageImports>vclx.bpi;vcl.bpi;rtl.bpi;vclactnband.bpi</PackageImports>
     <BCC_wpar>false</BCC_wpar>
@@ -34,10 +34,10 @@
     <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck</ILINK_LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
     <DCC_Optimize>false</DCC_Optimize>
-    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
     <Defines>_DEBUG;$(Defines)</Defines>
+    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
@@ -47,8 +47,8 @@
     <IntermediateOutputDir>Debug</IntermediateOutputDir>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
     <BCC_StackFrames>true</BCC_StackFrames>
-    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
   </PropertyGroup>
@@ -71,49 +71,49 @@
   <ItemGroup>
     <CppCompile Include="CheckBufferOverrun.cpp">
       <DependentOn>CheckBufferOverrun.h</DependentOn>
-      <BuildOrder>9</BuildOrder>
+      <BuildOrder>7</BuildOrder>
     </CppCompile>
     <CppCompile Include="CheckClass.cpp">
       <DependentOn>CheckClass.h</DependentOn>
-      <BuildOrder>10</BuildOrder>
+      <BuildOrder>8</BuildOrder>
     </CppCompile>
     <CppCompile Include="CheckMemoryLeak.cpp">
       <DependentOn>CheckMemoryLeak.h</DependentOn>
-      <BuildOrder>2</BuildOrder>
+      <BuildOrder>1</BuildOrder>
     </CppCompile>
     <CppCompile Include="CheckOther.cpp">
       <DependentOn>CheckOther.h</DependentOn>
-      <BuildOrder>11</BuildOrder>
+      <BuildOrder>9</BuildOrder>
     </CppCompile>
     <CppCompile Include="CommonCheck.cpp">
       <DependentOn>CommonCheck.h</DependentOn>
-      <BuildOrder>5</BuildOrder>
-    </CppCompile>
-    <CppCompile Include="MiniCppUnit.cpp">
       <BuildOrder>3</BuildOrder>
     </CppCompile>
     <CppCompile Include="testbufferoverrun.cpp">
-      <BuildOrder>7</BuildOrder>
+      <BuildOrder>5</BuildOrder>
     </CppCompile>
     <CppCompile Include="testcharvar.cpp">
       <DependentOn>testcharvar.h</DependentOn>
-      <BuildOrder>12</BuildOrder>
+      <BuildOrder>10</BuildOrder>
     </CppCompile>
     <CppCompile Include="testconstructors.cpp">
-      <BuildOrder>8</BuildOrder>
-    </CppCompile>
-    <CppCompile Include="testdivision.cpp">
       <BuildOrder>6</BuildOrder>
     </CppCompile>
-    <CppCompile Include="testmemleak.cpp">
+    <CppCompile Include="testdivision.cpp">
       <BuildOrder>4</BuildOrder>
     </CppCompile>
-    <CppCompile Include="TestsRunner.cpp">
-      <BuildOrder>0</BuildOrder>
+    <CppCompile Include="testmemleak.cpp">
+      <BuildOrder>2</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="testrunner.cpp">
+      <BuildOrder>11</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="testsuite.cpp">
+      <BuildOrder>12</BuildOrder>
     </CppCompile>
     <CppCompile Include="tokenize.cpp">
       <DependentOn>tokenize.h</DependentOn>
-      <BuildOrder>1</BuildOrder>
+      <BuildOrder>0</BuildOrder>
     </CppCompile>
     <BuildConfiguration Include="Debug">
       <Key>Cfg_1</Key>

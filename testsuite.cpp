@@ -13,7 +13,7 @@
 class TestRegistry
 {
 private:
-    std::list<TestSuite *> _tests;
+    std::list<TestFixture *> _tests;
 
 public:
     static TestRegistry &theInstance()
@@ -22,54 +22,80 @@ public:
         return testreg;
     }
 
-    void addTest( TestSuite *t )
+    void addTest( TestFixture *t )
     {
         _tests.push_back( t );
     }
 
-    void removeTest( TestSuite *t )
+    void removeTest( TestFixture *t )
     {
         _tests.remove( t );
     }
 
-    const std::list<TestSuite *> &tests() const
-    { return _tests; }
+    const std::list<TestFixture *> &tests() const
+    {
+        return _tests;
+    }
 };
 
 
 
 
 /**
- * TestSuite
+ * TestFixture
  **/
 
-TestSuite::TestSuite(const std::string &_name) : classname(_name)
+std::ostringstream TestFixture::errmsg;
+unsigned int       TestFixture::countTests;
+
+TestFixture::TestFixture(const std::string &_name) : classname(_name)
 {
     TestRegistry::theInstance().addTest(this);
 }
 
-TestSuite::~TestSuite()
+TestFixture::~TestFixture()
 {
     TestRegistry::theInstance().removeTest(this);
 }
 
-void TestSuite::printTests()
+bool TestFixture::runTest(const char testname[])
 {
-    const std::list<TestSuite *> &tests = TestRegistry::theInstance().tests();
+    countTests++;
+    std::cout << classname << "::" << testname << "\n";
+    return true;
+}
 
-    for ( std::list<TestSuite *>::const_iterator it = tests.begin(); it != tests.end(); ++it )
+void TestFixture::assertFail(const char *filename, int linenr)
+{
+    errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl;
+}
+
+void TestFixture::printTests()
+{
+    const std::list<TestFixture *> &tests = TestRegistry::theInstance().tests();
+
+    for ( std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it )
     {
         std::cout << (*it)->classname << std::endl;
     }
 }
 
-void TestSuite::runTests()
+void TestFixture::runTests()
 {
-    const std::list<TestSuite *> &tests = TestRegistry::theInstance().tests();
+    countTests = 0;
+    errmsg.str("");
 
-    for ( std::list<TestSuite *>::const_iterator it = tests.begin(); it != tests.end(); ++it )
+    const std::list<TestFixture *> &tests = TestRegistry::theInstance().tests();
+
+    for ( std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it )
     {
         (*it)->run();
     }
+
+    std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << "\n";
+
+    std::cerr << errmsg.str();
 }
+
+
 

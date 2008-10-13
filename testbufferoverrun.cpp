@@ -2,15 +2,19 @@
 #include "tokenize.h"
 #include "CommonCheck.h"
 #include "CheckBufferOverrun.h"
-#include "MiniCppUnit.h"
+#include "testsuite.h"
 
 #include <sstream>
 
 extern std::ostringstream errout;
 extern bool ShowAll;
 
-class TestBufferOverrun : public TestFixture<TestBufferOverrun>
+class TestBufferOverrun : public TestFixture
 {
+public:
+    TestBufferOverrun() : TestFixture("TestBufferOverrun")
+    { }
+
 private:
     void check( const char code[] )
     {
@@ -31,8 +35,7 @@ private:
         CheckBufferOverrun();
     }
 
-public:
-    TEST_FIXTURE( TestBufferOverrun )
+    void run()
     {
         TEST_CASE( noerr1 );
         TEST_CASE( noerr2 );
@@ -316,6 +319,6 @@ public:
 
 };
 
-REGISTER_FIXTURE( TestBufferOverrun )
+static TestBufferOverrun testbufferoverrun;
 
 

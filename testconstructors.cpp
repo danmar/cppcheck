@@ -1,14 +1,18 @@
 
 #include "tokenize.h"
 #include "CheckClass.h"
-#include "MiniCppUnit.h"
+#include "testsuite.h"
 
 #include <sstream>
 
 extern std::ostringstream errout;
 
-class TestConstructors : public TestFixture<TestConstructors>
+class TestConstructors : public TestFixture
 {
+public:
+    TestConstructors() : TestFixture("TestConstructors")
+    { }
+
 private:
     void check( const char code[] )
     {
@@ -25,8 +29,7 @@ private:
         CheckConstructors();
     }
 
-public:
-    TEST_FIXTURE( TestConstructors )
+    void run()
     {
         TEST_CASE( simple1 );
         TEST_CASE( simple2 );
@@ -42,7 +45,9 @@ public:
            "public:\n"
            "    int i;\n"
            "};\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:1] The class 'Fred' has no constructor\n"), errout.str() );
+        std::string actual( errout.str() );
+        std::string expected( "[test.cpp:1] The class 'Fred' has no constructor\n" );
+        ASSERT_EQUALS( expected, actual );
     }
 
 
@@ -92,4 +97,4 @@ public:
 
 };
 
-REGISTER_FIXTURE( TestConstructors )
+static TestConstructors testconstructors;

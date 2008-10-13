@@ -4,16 +4,26 @@
 #include "tokenize.h"
 #include "CommonCheck.h"
 #include "CheckOther.h"
-#include "MiniCppUnit.h"
+#include "testsuite.h"
 
 #include <sstream>
 
 extern std::ostringstream errout;
 extern bool ShowAll;
 
-class TestCharVar : public TestFixture<TestCharVar>
+class TestCharVar : public TestFixture
 {
+public:
+    TestCharVar() : TestFixture("TestCharVar")
+    { }
+
 private:
+    void run()
+    {
+        TEST_CASE( array_index );
+        TEST_CASE( bitop );
+    }
+
     void check( const char code[] )
     {
         // Tokenize..
@@ -31,14 +41,6 @@ private:
         ShowAll = true;
         CheckCharVariable();
     }
-
-public:
-    TEST_FIXTURE( TestCharVar )
-    {
-        TEST_CASE( array_index );
-        TEST_CASE( bitop );
-    }
-
 
     void array_index()
     {
@@ -75,5 +77,5 @@ public:
     }
 };
 
-REGISTER_FIXTURE( TestCharVar )
+static TestCharVar testcharvar;
 
