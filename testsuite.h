@@ -28,4 +28,5 @@ public:
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  if (EXPECTED!=ACTUAL) assertFail(__FILE__, __LINE__);
+#define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; };
 

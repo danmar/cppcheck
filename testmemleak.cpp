@@ -61,6 +61,7 @@ private:
         TEST_CASE( func2 );
 
         TEST_CASE( class1 );
+        TEST_CASE( class2 );
     }
 
     void simple1()
@@ -461,9 +462,24 @@ private:
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: p\n"), errout.str() );
     }
+
+
+    void func6()
+    {
+        check( "struct ab\n"
+               "{\n"
+               "    int a;\n"
+               "    int b;\n"
+               "};\n"
+               "\n"
+               "static void f()\n"
+               "{\n"
+               "    struct ab *p = malloc(sizeof(struct ab));\n"
+               "    foo(&p->b);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:11]: Memory leak: p\n"), errout.str() );
+    }
 */
-
-
 
 
 
@@ -526,6 +542,6 @@ private:
 
 };
 
-static TestMemleak testmemleak;
+REGISTER_TEST( TestMemleak );
 
 

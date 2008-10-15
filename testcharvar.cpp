@@ -77,5 +77,5 @@ private:
     }
 };
 
-static TestCharVar testcharvar;
+REGISTER_TEST( TestCharVar );
 

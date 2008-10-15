@@ -319,6 +319,6 @@ private:
 
 };
 
-static TestBufferOverrun testbufferoverrun;
+REGISTER_TEST( TestBufferOverrun );
 
 

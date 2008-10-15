@@ -97,4 +97,4 @@ private:
 
 };
 
-static TestConstructors testconstructors;
+REGISTER_TEST( TestConstructors );
