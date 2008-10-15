@@ -313,7 +313,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         }
 
         // Assignment..
-        if ( Match(tok,"[)=] %var1%", varnames) )
+        if ( Match(tok,"[)=] %var1% [;)]", varnames) )
             addtoken("use");
 
         // Function parameter..
@@ -322,7 +322,10 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
 
         // Linux lists..
         if ( Match( tok, "[=(,] & %var1% [.[]", varnames ) )
+        {
+            // todo: better checking
             addtoken("use");
+        }
     }
 
     return rethead;
