@@ -1,7 +1,7 @@
 
 // Check for unused variables..
 
-#include "MiniCppUnit.h"
+#include "testsuite.h"
 #include "tokenize.h"
 #include "CheckOther.h"
 
@@ -9,8 +9,12 @@
 
 extern std::ostringstream errout;
 
-class TestUnusedVar : public TestFixture<TestUnusedVar>
+class TestUnusedVar : public TestFixture
 {
+public:
+    TestUnusedVar() : TestFixture("TestUnusedVar")
+    { }
+
 private:
     void check( const char code[] )
     {
@@ -27,8 +31,7 @@ private:
         CheckStructMemberUsage();
     }
 
-public:
-    TEST_FIXTURE( TestUnusedVar )
+    void run()
     {
         TEST_CASE( structmember1 );
     }
@@ -48,6 +51,6 @@ public:
 
 };
 
-REGISTER_FIXTURE( TestUnusedVar )
+REGISTER_TEST( TestUnusedVar )
 
 

@@ -7,7 +7,7 @@ TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testme
 
 all:	${OBJS} main.o
 	g++ -Wall -g -o cppcheck $^
-test:	${OBJS} TestsRunner.o	MiniCppUnit.o	${TESTS}
-	g++ -Wall -g -o testsrunner $^
+test:	${OBJS} testrunner.o	testsuite.o	${TESTS}
+	g++ -Wall -g -o testrunner $^
 clean:
 	rm -f *.o cppcheck_test cppcheck

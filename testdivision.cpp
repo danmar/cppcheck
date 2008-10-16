@@ -128,6 +128,6 @@ private:
     }
 };
 
-REGISTER_TEST( TestDivision );
+REGISTER_TEST( TestDivision )
 
 

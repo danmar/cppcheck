@@ -542,6 +542,6 @@ private:
 
 };
 
-REGISTER_TEST( TestMemleak );
+REGISTER_TEST( TestMemleak )
 
 

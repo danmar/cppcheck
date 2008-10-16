@@ -53,10 +53,12 @@ TestFixture::TestFixture(const std::string &_name) : classname(_name)
     TestRegistry::theInstance().addTest(this);
 }
 
+/*
 TestFixture::~TestFixture()
 {
     TestRegistry::theInstance().removeTest(this);
 }
+*/
 
 bool TestFixture::runTest(const char testname[])
 {

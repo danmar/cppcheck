@@ -19,7 +19,7 @@ protected:
 
 public:
     TestFixture(const std::string &_name);
-    ~TestFixture();
+    virtual ~TestFixture() { }
 
     static void printTests();
     static void runTests();
@@ -28,5 +28,5 @@ public:
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  if (EXPECTED!=ACTUAL) assertFail(__FILE__, __LINE__);
-#define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; };
+#define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
