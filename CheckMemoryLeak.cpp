@@ -317,7 +317,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
             addtoken("use");
 
         // Function parameter..
-        if ( Match(tok, "[(,] %var1% [,)]", varnames) )
+        if ( Match(tok, "[(,)] %var1% [,)]", varnames) )
             addtoken("use");
 
         // Linux lists..
