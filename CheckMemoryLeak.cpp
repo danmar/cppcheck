@@ -82,7 +82,18 @@ static AllocType GetAllocationType( const TOKEN *tok2 )
                                 "strdup",
                                 "kmalloc",
                                 "kzalloc",
+                                "g_new",
+                                "g_new0",
+                                "g_renew",
+                                "g_try_new",
+                                "g_try_new0",
+                                "g_try_renew",
                                 "g_malloc",
+                                "g_malloc0",
+                                "g_realloc",
+                                "g_try_malloc",
+                                "g_try_malloc0",
+                                "g_try_realloc",
                                 0};
     for ( unsigned int i = 0; mallocfunc[i]; i++ )
     {
