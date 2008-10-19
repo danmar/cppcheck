@@ -454,10 +454,10 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 done = false;
             }
 
-            // Delete "loop ;"
+            // Replace "loop ;" with ";"
             if ( Match(tok2->next, "loop ;") )
             {
-                erase(tok2, gettok(tok2,3));
+                erase(tok2, gettok(tok2,2));
                 done = false;
             }
 

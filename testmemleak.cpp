@@ -40,6 +40,7 @@ private:
         TEST_CASE( simple5 );
         TEST_CASE( simple6 );
         TEST_CASE( simple7 );
+        TEST_CASE( simple8 );
 
         TEST_CASE( ifelse1 );
         TEST_CASE( ifelse2 );
@@ -135,6 +136,20 @@ private:
                "void foo()\n"
                "{\n"
                "    Fred *f = new Fred;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void simple8()
+    {
+        check( "char * foo ()\n"
+               "{\n"
+               "    char *str = strdup(\"abc\");\n"
+               "    if (somecondition)\n"
+               "        for (i = 0; i < 2; i++)\n"
+               "        { }\n"
+               "    return str;\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
