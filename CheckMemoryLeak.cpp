@@ -43,7 +43,7 @@ static bool isclass( const std::string &typestr )
 //---------------------------------------------------------------------------
 
 
-enum AllocType { No, Malloc, New, NewA };
+enum AllocType { No, Malloc, gMalloc, New, NewA };
 
 // Extra allocation..
 class AllocFunc
@@ -82,23 +82,33 @@ static AllocType GetAllocationType( const TOKEN *tok2 )
                                 "strdup",
                                 "kmalloc",
                                 "kzalloc",
-                                "g_new",
-                                "g_new0",
-                                "g_renew",
-                                "g_try_new",
-                                "g_try_new0",
-                                "g_try_renew",
-                                "g_malloc",
-                                "g_malloc0",
-                                "g_realloc",
-                                "g_try_malloc",
-                                "g_try_malloc0",
-                                "g_try_realloc",
                                 0};
     for ( unsigned int i = 0; mallocfunc[i]; i++ )
     {
         if ( strcmp(mallocfunc[i], tok2->str) == 0 )
             return Malloc;
+    }
+
+    // Does tok2 point on "malloc", "strdup" or "kmalloc"..
+    const char *gmallocfunc[] = {"g_new",
+                                 "g_new0",
+                                 "g_renew",
+                                 "g_try_new",
+                                 "g_try_new0",
+                                 "g_try_renew",
+                                 "g_malloc",
+                                 "g_malloc0",
+                                 "g_realloc",
+                                 "g_try_malloc",
+                                 "g_try_malloc0",
+                                 "g_try_realloc",
+                                 "g_strdup",
+                                 "g_strndup",
+                                 0};
+    for ( unsigned int i = 0; gmallocfunc[i]; i++ )
+    {
+        if ( strcmp(gmallocfunc[i], tok2->str) == 0 )
+            return gMalloc;
     }
 
     if ( Match( tok2, "new %type% [;(]" ) )
@@ -136,11 +146,13 @@ static AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] )
         return NewA;
 
     if ( Match(tok, "free ( %var1% ) ;", varnames) ||
-         Match(tok, "kfree ( %var1% ) ;", varnames) ||
-         Match(tok, "g_free ( %var1% ) ;", varnames) )
+         Match(tok, "kfree ( %var1% ) ;", varnames) )
     {
         return Malloc;
     }
+
+    if ( Match(tok, "g_free ( %var1% ) ;", varnames) )
+        return gMalloc;
 
     return No;
 }
