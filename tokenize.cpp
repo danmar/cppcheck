@@ -602,7 +602,12 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             const char *type1 = getstr(tok, 1);
             const char *type2 = getstr(tok, 2);
             const char *type3 = getstr(tok, 3);
-            for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+
+            TOKEN *tok2 = tok;
+            while ( ! Match(tok2, ";") )
+                tok2 = tok2->next;
+
+            for ( ; tok2; tok2 = tok2->next )
             {
                 if (tok2->str!=type3 && strcmp(tok2->str,type3)==0)
                 {
@@ -615,6 +620,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                     newtok->linenr = tok2->linenr;
                     newtok->next = tok2->next;
                     tok2->next = newtok;
+                    tok2 = newtok;
                 }
             }
         }
