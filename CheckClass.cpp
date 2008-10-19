@@ -154,10 +154,11 @@ static void InitVar(struct VAR *varlist, const char varname[])
 }
 //---------------------------------------------------------------------------
 
-static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varlist, const char classname[])
+static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack)
 {
     bool Assign = false;
     unsigned int indentlevel = 0;
+
     for (; ftok; ftok = ftok->next)
     {
         if (!ftok->next)
@@ -203,9 +204,14 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             // Calling member function?
             else if (Match(ftok, "%var% ("))
             {
-                unsigned int i = 0;
-                const TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
-                ClassChecking_VarList_Initialize(ftok2, varlist, classname);
+                // No recursive calls!
+                if ( std::find(callstack.begin(),callstack.end(),ftok->str) == callstack.end() )
+                {
+                    callstack.push_back( ftok->str );
+                    unsigned int i = 0;
+                    const TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
+                    ClassChecking_VarList_Initialize(ftok2, varlist, classname, callstack);
+                }
             }
 
             // Assignment of member variable?
@@ -284,7 +290,8 @@ void CheckConstructors()
 
         unsigned int indentlevel = 0;
         constructor_token = FindClassFunction( tokens, classname, classname, indentlevel );
-        ClassChecking_VarList_Initialize(constructor_token, varlist, classname);
+        std::list<std::string> callstack;
+        ClassChecking_VarList_Initialize(constructor_token, varlist, classname, callstack);
         while ( constructor_token )
         {
             // Check if any variables are uninitialized
@@ -310,7 +317,7 @@ void CheckConstructors()
                 var->init = false;
 
             constructor_token = FindClassFunction( constructor_token->next, classname, classname, indentlevel );
-            ClassChecking_VarList_Initialize(constructor_token, varlist, classname);
+            ClassChecking_VarList_Initialize(constructor_token, varlist, classname, callstack);
         }
 
         // Delete the varlist..
