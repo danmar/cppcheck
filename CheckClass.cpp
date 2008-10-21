@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <cstring>
+#include <algorithm>
 
 
 #ifdef __BORLANDC__
