@@ -710,14 +710,14 @@ void CheckIncompleteStatement()
         if ( parlevel != 0 )
             continue;
 
-        if ( Match(tok,"; %str%") && !Match(gettok(tok,2), ",") )
+        if ( !Match(tok,"#") && Match(tok->next,"; %str%") && !Match(gettok(tok,3), ",") )
         {
             std::ostringstream errmsg;
             errmsg << FileLine(tok->next) << ": Redundant code: Found a statement that begins with string constant";
             ReportErr(errmsg.str());
         }
 
-        if ( Match(tok,"; %num%") && !Match(gettok(tok,2), ",") )
+        if ( !Match(tok,"#") && Match(tok->next,"; %num%") && !Match(gettok(tok,3), ",") )
         {
             std::ostringstream errmsg;
             errmsg << FileLine(tok->next) << ": Redundant code: Found a statement that begins with numeric constant";
