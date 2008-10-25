@@ -222,9 +222,26 @@ void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames)
     // Iterator for UsedGlobalFunctions
     std::list<GlobalFunction>::const_iterator usedfunc;
 
+    unsigned int i1 = 0;
+    unsigned int i2 = 1;
+
     // Check that every function in GlobalFunctions are used
     for ( func = GlobalFunctions.begin(); func != GlobalFunctions.end(); func++ )
     {
+        if ( GlobalFunctions.size() > 100 )
+        {
+            ++i1;
+            if ( i1 > (i2 * GlobalFunctions.size()) / 100 )
+            {
+                if ( (i2 % 10) == 0 )
+                    std::cout << i2 << "%";
+                else
+                    std::cout << ".";
+                std::cout.flush();
+                ++i2;
+            }
+        }
+
         const std::string &funcname = func->name();
 
         if ( funcname == "main" || funcname == "WinMain" )
@@ -261,6 +278,8 @@ void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames)
             ReportErr( errmsg.str() );
         }
     }
+
+    std::cout << "\n";
 }
 //---------------------------------------------------------------------------
 

@@ -222,10 +222,11 @@ int main(int argc, char* argv[])
         std::cerr << errout.str();
     }
 
-    if ( CheckCodingStyle && filenames.size() > 1 )
+    // This generates false positives - especially for libraries
+    if ( ShowAll && CheckCodingStyle && filenames.size() > 1 )
     {
         errout.str("");
-        std::cout << "Checking usage of global functions..\n";
+        std::cout << "Checking usage of global functions (this may take several minutes)..\n";
         CheckGlobalFunctionUsage(filenames);
         if ( ! errout.str().empty() )
         {
