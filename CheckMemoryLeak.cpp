@@ -198,35 +198,6 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     varnames[0] = varname;
     varnames[1] = 0;
 
-
-    // If "--all" hasn't been given and there are a preprocessor command, bail out.
-    // TODO: Evaluate all possible configurations separately instead.
-    if ( ! ShowAll )
-    {
-        int indentlevel = 0;
-        for ( const TOKEN *_tok = tok; _tok; _tok = _tok->next )
-        {
-            if ( _tok->str[0] == '{' )
-            {
-                indentlevel++;
-            }
-
-            else if ( _tok->str[0] == '}' )
-            {
-                if ( indentlevel <= 0 )
-                    break;
-                indentlevel--;
-            }
-
-            else if ( _tok->str[0] == '#' )
-            {
-                return NULL;
-            }
-        }
-    }
-
-
-
     TOKEN *rethead = 0, *rettail = 0;
     #define addtoken(_str)                  \
     {                                       \
@@ -383,7 +354,6 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     return rethead;
 }
 
-
 static void erase(TOKEN *begin, const TOKEN *end)
 {
     if ( ! begin )
@@ -399,11 +369,7 @@ static void erase(TOKEN *begin, const TOKEN *end)
 }
 
 
-/**
- * Check the allocation and deallocation for a function variable
- * \param Tok1 The token where the variable is declared
- * \param varname The name of the variable
- **/
+// Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
 static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
 {
     TOKEN *tok = getcode( Tok1, varname );

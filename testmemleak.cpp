@@ -57,7 +57,6 @@ private:
         TEST_CASE( switch2 );
 
         TEST_CASE( mismatch1 );
-        TEST_CASE( mismatch2 );
 
         TEST_CASE( func1 );
         TEST_CASE( func2 );
@@ -401,27 +400,6 @@ private:
                "    free(a);\n"
                "}\n");
         ASSERT_EQUALS( std::string("[test.cpp:4]: Mismatching allocation and deallocation: a\n"), errout.str() );
-    }
-
-
-    void mismatch2()
-    {
-        // This code is taken directly from bug 2190219 - False positive, Mismatching allocation and deallocation
-        check( "void foo()\n"
-               "{\n"
-               "#ifdef __cplusplus\n"
-               "    int* flags = new int[10];\n"
-               "#else\n"
-               "    int* flags = (int*)malloc((10)*sizeof(int));\n"
-               "#endif\n"
-               "\n"
-               "#ifdef __cplusplus\n"
-               "    delete [] flags;\n"
-               "#else\n"
-               "    free(flags);\n"
-               "#endif\n"
-               "}\n");
-        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
