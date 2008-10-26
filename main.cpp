@@ -1,21 +1,20 @@
-
-/**
- * C/C++ Checking
+/*
+ * c++check - c/c++ syntax checking
+ * Copyright (C) 2007 Daniel Marjamäki
  *
- * This program will check either the file(s) specified or all source files in
- * all sub-directories
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Some checks are commented out below because they generate too many false
- * positives. There are cases when the reported message is true, but it is
- * what the developer wanted to do (missing break after case).
- * It is safe to uncomment any of the checks.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Design
- *   The token list is a stringlist with the same contents and structure
- *   as the file.
- *   All checks will check for errors in the token list.
- *
- **/
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/
+ */
 
 
 #include "tokenize.h"   // <- Tokenizer
