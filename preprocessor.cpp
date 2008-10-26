@@ -17,5 +17,17 @@
  */
 
 
+#include "preprocessor.h"
+
+#include <sstream>
+
+void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
+{
+    std::ostringstream ostr;
+    std::string line;
+    while ( getline(istr, line) )
+        ostr << line << "\n";
+
+}
 
 

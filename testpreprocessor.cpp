@@ -24,6 +24,9 @@
 #include "testsuite.h"
 #include "preprocessor.h"
 
+#include <map>
+#include <string>
+
 class TestPreprocessor : public TestFixture
 {
 public:
@@ -37,8 +40,36 @@ private:
         TEST_CASE( test1 );
     }
 
+    void check(const char filedata[], const std::map<std::string,std::string> &expected)
+    {
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        ASSERT_EQUALS( expected.size(), actual.size() );
+        for ( std::map<std::string,std::string>::const_iterator it = actual.begin(); it != actual.end(); ++it )
+        {
+            std::map<std::string,std::string>::const_iterator it2 = expected.find(it->first);
+            if ( it2 == expected.end() )
+                assertFail(__FILE__, __LINE__);
+            else
+                ASSERT_EQUALS( it->second, it2->second );
+        }
+    }
+
     void test1()
     {
+        const char filedata[] = "#ifdef WIN32\n"
+                                "    abcdef\n"
+                                "#else\n"
+                                "    qwerty\n"
+                                "#endif\n";
+
+        std::map<std::string, std::string> expected;
+        expected[""]      = "\n\n\n    qwerty\n\n";
+        expected["WIN32"] = "\n    abcdef\n\n\n\n";
+
+        check( filedata, expected );
     }
 };
 

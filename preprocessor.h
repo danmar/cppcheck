@@ -21,7 +21,12 @@
 #define preprocessorH
 //---------------------------------------------------------------------------
 
+#include <map>
+#include <istream>
+#include <string>
 
+
+void preprocess(std::istream &istr, std::map<std::string, std::string> &result);
 
 //---------------------------------------------------------------------------
 #endif
