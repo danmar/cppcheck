@@ -19,11 +19,26 @@
 
 #include "preprocessor.h"
 
+#include <algorithm>
 #include <list>
 #include <sstream>
 
+/**
+ * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
+ */
+static std::list<std::string> getcfgs( const std::string &filedata );
+
+/**
+ * Get preprocessed code for a given configuration
+ */
 static std::string getcode(const std::string &filedata, std::string cfg);
 
+
+/**
+ * Extract the code for each configuration
+ * \param istr The (file/string) stream to read from.
+ * \param result The map that will get the results
+ */
 void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 {
     std::ostringstream ostr;
@@ -31,10 +46,40 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
     while ( getline(istr, line) )
         ostr << line << "\n";
 
+    // Get all possible configurations..
+    std::list<std::string> cfgs = getcfgs( ostr.str() );
+
+    // Extract the code for each possible configuration..
     result.clear();
-    result[""] = getcode( ostr.str(), "" );
-    result["WIN32"] = getcode( ostr.str(), "WIN32" );
+    for ( std::list<std::string>::const_iterator it = cfgs.begin(); it != cfgs.end(); ++it )
+    {
+        result[ *it ] = getcode( ostr.str(), *it );
+    }
 }
+
+
+
+static std::list<std::string> getcfgs( const std::string &filedata )
+{
+    std::list<std::string> ret;
+    ret.push_back("");
+
+    std::istringstream istr(filedata);
+    std::string line;
+    while ( getline(istr, line) )
+    {
+        if ( line.find("#ifdef ")==0 || line.find("#ifndef ")==0 )
+        {
+            std::string def( line.substr(line.find(" ") + 1) );
+            if (std::find(ret.begin(), ret.end(), def) == ret.end())
+                ret.push_back( def );
+        }
+    }
+
+    return ret;
+}
+
+
 
 
 static std::string getcode(const std::string &filedata, std::string cfg)
@@ -49,6 +94,9 @@ static std::string getcode(const std::string &filedata, std::string cfg)
     {
         if ( line.find("#ifdef ") == 0 )
             matching_ifdef.push_back( !cfg.empty() && line.find(cfg) != std::string::npos );
+
+        else if ( line.find("#ifndef ") == 0 )
+            matching_ifdef.push_back( cfg.empty() || line.find(cfg) == std::string::npos );
 
         else if ( line.find("#else") == 0)
             matching_ifdef.back() = ! matching_ifdef.back();

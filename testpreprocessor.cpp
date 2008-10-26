@@ -38,6 +38,7 @@ private:
     void run()
     {
         TEST_CASE( test1 );
+        TEST_CASE( test2 );
     }
 
     void check(const char filedata[], const std::map<std::string,std::string> &expected)
@@ -68,6 +69,21 @@ private:
         std::map<std::string, std::string> expected;
         expected[""]      = "\n\n\n    qwerty\n\n";
         expected["WIN32"] = "\n    abcdef\n\n\n\n";
+
+        check( filedata, expected );
+    }
+
+    void test2()
+    {
+        const char filedata[] = "#ifndef WIN32\n"
+                                "    abcdef\n"
+                                "#else\n"
+                                "    qwerty\n"
+                                "#endif\n";
+
+        std::map<std::string, std::string> expected;
+        expected[""]      = "\n    abcdef\n\n\n\n";
+        expected["WIN32"] = "\n\n\n    qwerty\n\n";
 
         check( filedata, expected );
     }
