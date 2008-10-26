@@ -39,6 +39,8 @@ private:
     {
         TEST_CASE( test1 );
         TEST_CASE( test2 );
+
+        TEST_CASE( comments1 );
     }
 
     void check(const char filedata[], const std::map<std::string,std::string> &expected)
@@ -54,7 +56,11 @@ private:
             if ( it2 == expected.end() )
                 assertFail(__FILE__, __LINE__);
             else
+            {
+                std::string s1 = it->second;
+                std::string s2 = it2->second;
                 ASSERT_EQUALS( it->second, it2->second );
+            }
         }
     }
 
@@ -87,6 +93,19 @@ private:
 
         check( filedata, expected );
     }
+
+    void comments1()
+    {
+        const char filedata[] = "/*\n"
+                                "#ifdef WIN32\n"
+                                "#endif\n"
+                                "*/\n";
+
+        std::map<std::string, std::string> expected;
+        expected[""] = "\n\n\n\n";
+        check( filedata, expected );
+    }
+
 };
 
 REGISTER_TEST( TestPreprocessor )

@@ -41,19 +41,85 @@ static std::string getcode(const std::string &filedata, std::string cfg);
  */
 void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 {
-    std::ostringstream ostr;
-    std::string line;
-    while ( getline(istr, line) )
-        ostr << line << "\n";
+    // Get filedata from stream.. remove all comments
+    std::ostringstream code;
+    for (char ch = (char)istr.get(); !istr.eof(); ch = (char)istr.get())
+    {
+        if ( ch == '/' )
+        {
+            char chNext = (char)istr.get();
+
+            if ( chNext == '/' )
+            {
+                while (!istr.eof() && ch!='\n')
+                    ch = (char)istr.get();
+                code << "\n";
+            }
+
+            else if ( chNext == '*' )
+            {
+                char chPrev = 0;
+                while (!istr.eof() && (chPrev!='*' || ch!='/'))
+                {
+                    chPrev = ch;
+                    ch = (char)istr.get();
+                    if (ch == '\n')
+                        code << "\n";
+                }
+            }
+
+            else
+            {
+                code << std::string(1,ch) << std::string(1,chNext);
+            }
+        }
+
+        else if ( ch == '\"' )
+        {
+            do
+            {
+                code << std::string(1,ch);
+                ch = (char)istr.get();
+                if ( ch == '\\' )
+                {
+                    code << "\\";
+                    ch = (char)istr.get();
+                }
+            } while ( !istr.eof() && ch != '\"' );
+            code << std::string(1, ch);
+        }
+
+        else if ( ch == '\'' )
+        {
+            do
+            {
+                code << std::string(1, ch);
+                ch = (char)istr.get();
+                if ( ch == '\\' )
+                {
+                    code << "\\";
+                    ch = (char)istr.get();
+                }
+            } while ( !istr.eof() && ch != '\'' );
+            code << std::string(1, ch);
+        }
+
+        else
+        {
+            code << std::string(1, ch);
+        }
+    }
+
+    std::string codestr( code.str() );
 
     // Get all possible configurations..
-    std::list<std::string> cfgs = getcfgs( ostr.str() );
+    std::list<std::string> cfgs = getcfgs( codestr );
 
     // Extract the code for each possible configuration..
     result.clear();
     for ( std::list<std::string>::const_iterator it = cfgs.begin(); it != cfgs.end(); ++it )
     {
-        result[ *it ] = getcode( ostr.str(), *it );
+        result[ *it ] = getcode( codestr, *it );
     }
 }
 
