@@ -22,7 +22,7 @@ public:
     virtual ~TestFixture() { }
 
     static void printTests();
-    static void runTests();
+    static void runTests(const char cmd[]);
 };
 
 

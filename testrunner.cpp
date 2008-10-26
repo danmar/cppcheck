@@ -27,10 +27,10 @@ bool CheckCodingStyle = true;
 extern std::vector<std::string> Files;
 
 
-int main()
+int main(int argc, const char *argv[])
 {
     Files.push_back( "test.cpp" );
-    TestFixture::runTests();
+    TestFixture::runTests( (argc==2) ? argv[1] : NULL );
     return 0;
 }
 

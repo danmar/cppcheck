@@ -103,8 +103,16 @@ void TestFixture::printTests()
     }
 }
 
-void TestFixture::runTests()
+void TestFixture::runTests(const char cmd[])
 {
+    std::string classname(cmd ? cmd : "");
+    std::string testname("");
+    if ( classname.find("::") != std::string::npos )
+    {
+        testname = classname.substr( classname.find("::") + 2 );
+        classname.erase( classname.find("::") );
+    }
+
     countTests = 0;
     errmsg.str("");
 
@@ -112,7 +120,8 @@ void TestFixture::runTests()
 
     for ( std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it )
     {
-        (*it)->run();
+        if ( classname.empty() || (*it)->classname == classname )
+            (*it)->run();
     }
 
     std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << "\n";
