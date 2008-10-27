@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -66,7 +66,7 @@ private:
 
     void test1()
     {
-        const char filedata[] = "#ifdef WIN32\n"
+        const char filedata[] = "#ifdef  WIN32 \n"
                                 "    abcdef\n"
                                 "#else\n"
                                 "    qwerty\n"
@@ -93,6 +93,8 @@ private:
 
         check( filedata, expected );
     }
+
+
 
     void comments1()
     {

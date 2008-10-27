@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -125,6 +125,42 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 
 
 
+// Get the DEF in this line: "#ifdef DEF"
+static std::string getdef(std::string line, bool def)
+{
+    // Replace tabs with spaces..
+    while ( line.find("\t") != std::string::npos )
+        line[ line.find("\t") ] = 0;
+
+    // Trim off any leading spaces..
+    while (line[0] == ' ')
+        line.erase(0, 1);
+
+    // If def is true, the line must start with "#ifdef"
+    if ( def && line.find("#ifdef ") != 0 )
+    {
+        return "";
+    }
+
+    // If def is false, the line must start with "#ifndef"
+    if ( !def && line.find("#ifndef ") != 0 )
+    {
+        return "";
+    }
+
+    // Remove the "#ifdef" or "#ifndef"
+    line.erase( 0, line.find(" ") );
+
+    // Remove all spaces.
+    while ( line.find(" ") != std::string::npos )
+        line.erase( line.find(" "), 1 );
+
+    // The remaining string is our result.
+    return line;
+}
+
+
+
 static std::list<std::string> getcfgs( const std::string &filedata )
 {
     std::list<std::string> ret;
@@ -134,9 +170,9 @@ static std::list<std::string> getcfgs( const std::string &filedata )
     std::string line;
     while ( getline(istr, line) )
     {
-        if ( line.find("#ifdef ")==0 || line.find("#ifndef ")==0 )
+        std::string def = getdef(line, true) + getdef(line, false);
+        if (!def.empty())
         {
-            std::string def( line.substr(line.find(" ") + 1) );
             if (std::find(ret.begin(), ret.end(), def) == ret.end())
                 ret.push_back( def );
         }
@@ -158,11 +194,14 @@ static std::string getcode(const std::string &filedata, std::string cfg)
     std::string line;
     while ( getline(istr, line) )
     {
-        if ( line.find("#ifdef ") == 0 )
-            matching_ifdef.push_back( !cfg.empty() && line.find(cfg) != std::string::npos );
+        std::string def = getdef( line, true );
+        std::string ndef = getdef( line, false );
 
-        else if ( line.find("#ifndef ") == 0 )
-            matching_ifdef.push_back( cfg.empty() || line.find(cfg) == std::string::npos );
+        if ( ! def.empty() )
+            matching_ifdef.push_back( cfg == def );
+
+        else if ( ! ndef.empty() )
+            matching_ifdef.push_back( cfg != ndef );
 
         else if ( line.find("#else") == 0)
             matching_ifdef.back() = ! matching_ifdef.back();
