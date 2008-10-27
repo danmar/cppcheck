@@ -76,32 +76,25 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 
         else if ( ch == '\"' )
         {
+            code << "\"";
             do
             {
-                code << std::string(1,ch);
                 ch = (char)istr.get();
+                if ( ch != '\"' )
+                    code << ".";
                 if ( ch == '\\' )
-                {
-                    code << "\\";
                     ch = (char)istr.get();
-                }
             } while ( !istr.eof() && ch != '\"' );
-            code << std::string(1, ch);
+            code << "\"";
         }
 
         else if ( ch == '\'' )
         {
-            do
-            {
-                code << std::string(1, ch);
+            ch = (char)istr.get();
+            if ( ch == '\\' )
                 ch = (char)istr.get();
-                if ( ch == '\\' )
-                {
-                    code << "\\";
-                    ch = (char)istr.get();
-                }
-            } while ( !istr.eof() && ch != '\'' );
-            code << std::string(1, ch);
+            ch = (char)istr.get();
+            code << "\'.\'";
         }
 
         else
@@ -111,6 +104,63 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
     }
 
     std::string codestr( code.str() );
+
+    // Replace all tabs with spaces..
+    while ( codestr.find("\t") != std::string::npos )
+        codestr[ codestr.find("\t") ] = ' ';
+
+    // Remove all indentation..
+    while ( ! codestr.empty() && codestr[0] == ' ' )
+        codestr.erase(0, 1);
+    while ( codestr.find("\n ") != std::string::npos )
+        codestr.erase( 1 + codestr.find("\n "), 1 );
+
+    // Remove double spaces..
+    while ( codestr.find("  ") != std::string::npos )
+        codestr.erase( codestr.find("  "), 1 );
+
+    // Remove all trailing spaces..
+    while ( codestr.find(" \n") != std::string::npos )
+        codestr.erase( codestr.find(" \n"), 1 );
+
+    // Remove space in "# if.."
+    while ( codestr.find("# ") != std::string::npos )
+        codestr.erase( 1 + codestr.find("# "), 1 );
+
+    // Remove "#if 0" blocks..
+    if ( codestr.find("#if 0") != std::string::npos )
+    {
+        code.str("");
+        std::string line;
+        std::istringstream istr(codestr.c_str());
+        while (getline(istr,line))
+        {
+            if ( line == "#if 0" )
+            {
+                code << "\n";
+                unsigned int iflevel = 1;
+                while ( getline(istr, line) )
+                {
+                    code << "\n";
+
+                    if ( line.find("#if") != std::string::npos )
+                        ++iflevel;
+
+                    else if ( line.find("#endif") != std::string::npos )
+                    {
+                        --iflevel;
+                        if ( iflevel == 0 )
+                            break;
+                    }
+                }
+            }
+            else
+            {
+                code << line << "\n";
+            }
+        }
+        codestr = code.str();
+    }
 
     // Get all possible configurations..
     std::list<std::string> cfgs = getcfgs( codestr );
@@ -128,14 +178,6 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 // Get the DEF in this line: "#ifdef DEF"
 static std::string getdef(std::string line, bool def)
 {
-    // Replace tabs with spaces..
-    while ( line.find("\t") != std::string::npos )
-        line[ line.find("\t") ] = 0;
-
-    // Trim off any leading spaces..
-    while (line[0] == ' ')
-        line.erase(0, 1);
-
     // If def is true, the line must start with "#ifdef"
     if ( def && line.find("#ifdef ") != 0 )
     {
@@ -203,10 +245,10 @@ static std::string getcode(const std::string &filedata, std::string cfg)
         else if ( ! ndef.empty() )
             matching_ifdef.push_back( cfg != ndef );
 
-        else if ( line.find("#else") == 0)
+        else if ( line == "#else" )
             matching_ifdef.back() = ! matching_ifdef.back();
 
-        else if ( line.find("#endif") == 0 )
+        else if ( line == "#endif" )
             matching_ifdef.pop_back();
 
         if ( !matching_ifdef.empty() && !matching_ifdef.back() )

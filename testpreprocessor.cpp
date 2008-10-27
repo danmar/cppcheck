@@ -41,28 +41,35 @@ private:
         TEST_CASE( test2 );
 
         TEST_CASE( comments1 );
+
+        TEST_CASE( if0 );
     }
 
-    void check(const char filedata[], const std::map<std::string,std::string> &expected)
+    bool cmpmaps(const std::map<std::string, std::string> &m1, const std::map<std::string, std::string> &m2)
     {
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        preprocess( istr, actual );
-
-        ASSERT_EQUALS( expected.size(), actual.size() );
-        for ( std::map<std::string,std::string>::const_iterator it = actual.begin(); it != actual.end(); ++it )
+        // Begin by checking the sizes
+        if ( m1.size() != m2.size() )
+            return false;
+            
+        // Check each item in the maps..
+        for ( std::map<std::string,std::string>::const_iterator it1 = m1.begin(); it1 != m1.end(); ++it1 )
         {
-            std::map<std::string,std::string>::const_iterator it2 = expected.find(it->first);
-            if ( it2 == expected.end() )
-                assertFail(__FILE__, __LINE__);
+            std::map<std::string,std::string>::const_iterator it2 = m2.find(it1->first);
+            if ( it2 == m2.end() )
+                return false;
             else
             {
-                std::string s1 = it->second;
+                std::string s1 = it1->second;
                 std::string s2 = it2->second;
-                ASSERT_EQUALS( it->second, it2->second );
+                if ( s1 != s2 )
+                    return false;
             }
         }
+
+        // No diffs were found
+        return true;
     }
+
 
     void test1()
     {
@@ -72,26 +79,40 @@ private:
                                 "    qwerty\n"
                                 "#endif\n";
 
+        // Expected result..
         std::map<std::string, std::string> expected;
-        expected[""]      = "\n\n\n    qwerty\n\n";
-        expected["WIN32"] = "\n    abcdef\n\n\n\n";
+        expected[""]      = "\n\n\nqwerty\n\n";
+        expected["WIN32"] = "\nabcdef\n\n\n\n";
 
-        check( filedata, expected );
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
     }
 
     void test2()
     {
-        const char filedata[] = "#ifndef WIN32\n"
-                                "    abcdef\n"
-                                "#else\n"
+        const char filedata[] = "# ifndef WIN32\n"
+                                "    \"#ifdef WIN32\" // a comment\n"
+                                "   #   else  \n"
                                 "    qwerty\n"
-                                "#endif\n";
+                                "  # endif  \n";
 
+        // Expected result..
         std::map<std::string, std::string> expected;
-        expected[""]      = "\n    abcdef\n\n\n\n";
-        expected["WIN32"] = "\n\n\n    qwerty\n\n";
+        expected[""]      = "\n\"............\"\n\n\n\n";
+        expected["WIN32"] = "\n\n\nqwerty\n\n";
 
-        check( filedata, expected );
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
     }
 
 
@@ -103,10 +124,41 @@ private:
                                 "#endif\n"
                                 "*/\n";
 
+        // Expected result..
         std::map<std::string, std::string> expected;
         expected[""] = "\n\n\n\n";
-        check( filedata, expected );
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
     }
+
+
+
+    void if0()
+    {
+        const char filedata[] = " # if /* comment */  0 // comment\n"
+                                "#ifdef WIN32\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Expected result..
+        std::map<std::string, std::string> expected;
+        expected[""] = "\n\n\n\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
+
 
 };
 
