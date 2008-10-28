@@ -43,6 +43,8 @@ private:
         TEST_CASE( comments1 );
 
         TEST_CASE( if0 );
+
+        TEST_CASE( include1 );
     }
 
     bool cmpmaps(const std::map<std::string, std::string> &m1, const std::map<std::string, std::string> &m2)
@@ -50,7 +52,7 @@ private:
         // Begin by checking the sizes
         if ( m1.size() != m2.size() )
             return false;
-            
+
         // Check each item in the maps..
         for ( std::map<std::string,std::string>::const_iterator it1 = m1.begin(); it1 != m1.end(); ++it1 )
         {
@@ -96,14 +98,14 @@ private:
     void test2()
     {
         const char filedata[] = "# ifndef WIN32\n"
-                                "    \"#ifdef WIN32\" // a comment\n"
+                                "    \" # ifdef WIN32\" // a comment\n"
                                 "   #   else  \n"
                                 "    qwerty\n"
                                 "  # endif  \n";
 
         // Expected result..
         std::map<std::string, std::string> expected;
-        expected[""]      = "\n\"............\"\n\n\n\n";
+        expected[""]      = "\n\" # ifdef WIN32\"\n\n\n\n";
         expected["WIN32"] = "\n\n\nqwerty\n\n";
 
         // Preprocess => actual result..
@@ -159,6 +161,24 @@ private:
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
     }
 
+
+
+    void include1()
+    {
+        const char filedata[] = " # include \"abcd.h\" // abcd\n";
+
+        // Expected result..
+        std::map<std::string, std::string> expected;
+        expected[""] = "#include \"abcd.h\"\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
 
 };
 
