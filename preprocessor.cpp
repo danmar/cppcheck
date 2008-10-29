@@ -139,41 +139,6 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
     while ( codestr.find(" \n") != std::string::npos )
         codestr.erase( codestr.find(" \n"), 1 );
 
-    // Remove "#if 0" blocks..
-    if ( codestr.find("#if 0") != std::string::npos )
-    {
-        code.str("");
-        std::string line;
-        std::istringstream istr(codestr.c_str());
-        while (getline(istr,line))
-        {
-            if ( line == "#if 0" )
-            {
-                code << "\n";
-                unsigned int iflevel = 1;
-                while ( getline(istr, line) )
-                {
-                    code << "\n";
-
-                    if ( line.find("#if") != std::string::npos )
-                        ++iflevel;
-
-                    else if ( line.find("#endif") != std::string::npos )
-                    {
-                        --iflevel;
-                        if ( iflevel == 0 )
-                            break;
-                    }
-                }
-            }
-            else
-            {
-                code << line << "\n";
-            }
-        }
-        codestr = code.str();
-    }
-
     // Get all possible configurations..
     std::list<std::string> cfgs = getcfgs( codestr );
 
@@ -190,6 +155,11 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 // Get the DEF in this line: "#ifdef DEF"
 static std::string getdef(std::string line, bool def)
 {
+    if ( def && line.find("#if 0") == 0 )
+        return "0";
+    if ( def && line.find("#if 1") == 0 )
+        return "1";
+
     // If def is true, the line must start with "#ifdef"
     if ( def && line.find("#ifdef ") != 0 )
     {
@@ -220,6 +190,8 @@ static std::list<std::string> getcfgs( const std::string &filedata )
     std::list<std::string> ret;
     ret.push_back("");
 
+    std::list<std::string> deflist;
+
     std::istringstream istr(filedata);
     std::string line;
     while ( getline(istr, line) )
@@ -227,15 +199,55 @@ static std::list<std::string> getcfgs( const std::string &filedata )
         std::string def = getdef(line, true) + getdef(line, false);
         if (!def.empty())
         {
+            deflist.push_back(def);
+            def = "";
+            for ( std::list<std::string>::const_iterator it = deflist.begin(); it != deflist.end(); ++it)
+            {
+                if ( *it == "0" )
+                    break;
+                if ( *it == "1" )
+                    continue;
+                if ( ! def.empty() )
+                    def += ";";
+                def += *it;
+            }
+
             if (std::find(ret.begin(), ret.end(), def) == ret.end())
                 ret.push_back( def );
         }
+
+        if ( line.find("#endif") == 0 || line.find("#else") == 0 )
+            deflist.pop_back();
     }
 
     return ret;
 }
 
 
+
+static bool match_cfg_def( std::string cfg, const std::string &def )
+{
+    if ( def == "0" )
+        return false;
+
+    if ( def == "1" )
+        return true;
+
+    if ( cfg.empty() )
+        return false;
+
+    while ( ! cfg.empty() )
+    {
+        if ( cfg.find(";") == std::string::npos )
+            return bool(cfg == def);
+        std::string _cfg = cfg.substr( 0, cfg.find(";") );
+        if ( _cfg == def )
+            return true; 
+        cfg.erase( 0, cfg.find(";") + 1 );
+    }
+
+    return false;
+}
 
 
 static std::string getcode(const std::string &filedata, std::string cfg)
@@ -252,10 +264,10 @@ static std::string getcode(const std::string &filedata, std::string cfg)
         std::string ndef = getdef( line, false );
 
         if ( ! def.empty() )
-            matching_ifdef.push_back( cfg == def );
+            matching_ifdef.push_back( match_cfg_def(cfg, def) );
 
         else if ( ! ndef.empty() )
-            matching_ifdef.push_back( cfg != ndef );
+            matching_ifdef.push_back( ! match_cfg_def(cfg, ndef) );
 
         else if ( line == "#else" )
             matching_ifdef.back() = ! matching_ifdef.back();

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -39,10 +39,14 @@ private:
     {
         TEST_CASE( test1 );
         TEST_CASE( test2 );
+        TEST_CASE( test3 );
+        TEST_CASE( test4 );
+        TEST_CASE( test5 );
 
         TEST_CASE( comments1 );
 
         TEST_CASE( if0 );
+        TEST_CASE( if1 );
 
         TEST_CASE( include1 );
     }
@@ -56,7 +60,8 @@ private:
         // Check each item in the maps..
         for ( std::map<std::string,std::string>::const_iterator it1 = m1.begin(); it1 != m1.end(); ++it1 )
         {
-            std::map<std::string,std::string>::const_iterator it2 = m2.find(it1->first);
+            std::string s1 = it1->first;
+            std::map<std::string,std::string>::const_iterator it2 = m2.find(s1);
             if ( it2 == m2.end() )
                 return false;
             else
@@ -105,8 +110,82 @@ private:
 
         // Expected result..
         std::map<std::string, std::string> expected;
-        expected[""]      = "\n\" # ifdef WIN32\"\n\n\n\n";
         expected["WIN32"] = "\n\n\nqwerty\n\n";
+        expected[""]      = "\n\" # ifdef WIN32\"\n\n\n\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
+
+    void test3()
+    {
+        const char filedata[] = "#ifdef ABC\n"
+                                "a\n"
+                                "#ifdef DEF\n"
+                                "b\n"
+                                "#endif\n"
+                                "c\n"
+                                "#endif\n";
+
+        // Expected result..
+        std::map<std::string, std::string> expected;
+        expected[""]        = "\n\n\n\n\n\n\n";
+        expected["ABC"]     = "\na\n\n\n\nc\n\n";
+        expected["ABC;DEF"] = "\na\n\nb\n\nc\n\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
+
+    void test4()
+    {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#endif\n"
+                                "#ifdef ABC\n"
+                                "A\n"
+                                "#endif\n";
+
+        // Expected result..
+        std::map<std::string, std::string> expected;
+        expected[""]        = "\n\n\n\n\n\n";
+        expected["ABC"]     = "\nA\n\n\nA\n\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
+
+    void test5()
+    {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#else\n"
+                                "B\n"
+                                "#ifdef DEF\n"
+                                "C\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Expected result..
+        std::map<std::string, std::string> expected;
+        expected[""]    = "\n\n\nB\n\n\n\n\n";
+        expected["ABC"] = "\nA\n\n\n\n\n\n\n";
+        expected["DEF"] = "\n\n\nB\n\nC\n\n\n";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
@@ -151,6 +230,25 @@ private:
         // Expected result..
         std::map<std::string, std::string> expected;
         expected[""] = "\n\n\n\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
+
+    void if1()
+    {
+        const char filedata[] = " # if /* comment */  1 // comment\n"
+                                "ABC\n"
+                                " # endif \n";
+
+        // Expected result..
+        std::map<std::string, std::string> expected;
+        expected[""] = "\nABC\n\n";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
