@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -20,6 +20,7 @@
 #include "preprocessor.h"
 
 #include <algorithm>
+#include <ctype>
 #include <list>
 #include <sstream>
 
@@ -41,10 +42,24 @@ static std::string getcode(const std::string &filedata, std::string cfg);
  */
 void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 {
-    // Get filedata from stream.. remove all comments
+    // Get filedata from stream..
+    bool ignoreSpace = true;
+
     std::ostringstream code;
     for (char ch = (char)istr.get(); !istr.eof(); ch = (char)istr.get())
     {
+        // Replace assorted special chars with spaces..
+        if ( ch < 0 )
+            ch = ' ';
+        if ( (ch != '\n') && (isspace(ch) || iscntrl(ch)) )
+            ch = ' ';
+
+        // Skip spaces after ' ' and after '#'
+        if ( ch == ' ' && ignoreSpace )
+            continue;
+        ignoreSpace = bool(ch == ' ' || ch == '#' || ch == '/');
+
+        // Remove comments..
         if ( ch == '/' )
         {
             char chNext = (char)istr.get();
@@ -74,29 +89,38 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
             }
         }
 
+        // String constants..
         else if ( ch == '\"' )
         {
             code << "\"";
             do
             {
                 ch = (char)istr.get();
-                if ( ch != '\"' )
-                    code << ".";
+                code << std::string(1,ch);
                 if ( ch == '\\' )
+                {
                     ch = (char)istr.get();
+                    code << std::string(1,ch);
+                }
             } while ( !istr.eof() && ch != '\"' );
-            code << "\"";
         }
 
+        // char constants..
         else if ( ch == '\'' )
         {
+            code << "\'";
             ch = (char)istr.get();
+            code << std::string(1,ch);
             if ( ch == '\\' )
+            {
                 ch = (char)istr.get();
+                code << std::string(1,ch);
+            }
             ch = (char)istr.get();
-            code << "\'.\'";
+            code << "\'";
         }
 
+        // Just some code..
         else
         {
             code << std::string(1, ch);
@@ -105,27 +129,15 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 
     std::string codestr( code.str() );
 
-    // Replace all tabs with spaces..
-    while ( codestr.find("\t") != std::string::npos )
-        codestr[ codestr.find("\t") ] = ' ';
-
     // Remove all indentation..
     while ( ! codestr.empty() && codestr[0] == ' ' )
         codestr.erase(0, 1);
     while ( codestr.find("\n ") != std::string::npos )
         codestr.erase( 1 + codestr.find("\n "), 1 );
 
-    // Remove double spaces..
-    while ( codestr.find("  ") != std::string::npos )
-        codestr.erase( codestr.find("  "), 1 );
-
     // Remove all trailing spaces..
     while ( codestr.find(" \n") != std::string::npos )
         codestr.erase( codestr.find(" \n"), 1 );
-
-    // Remove space in "# if.."
-    while ( codestr.find("# ") != std::string::npos )
-        codestr.erase( 1 + codestr.find("# "), 1 );
 
     // Remove "#if 0" blocks..
     if ( codestr.find("#if 0") != std::string::npos )
@@ -254,7 +266,9 @@ static std::string getcode(const std::string &filedata, std::string cfg)
         if ( !matching_ifdef.empty() && !matching_ifdef.back() )
             line = "";
 
-        if ( line.find("#") == 0 )
+        if ( line.find("#if") == 0 ||
+             line.find("#else") == 0 ||
+             line.find("#endif") == 0 )
             line = "";
 
         ret << line << "\n";
