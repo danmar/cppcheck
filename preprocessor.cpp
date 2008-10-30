@@ -1,4 +1,4 @@
-﻿/*
+/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -20,9 +20,13 @@
 #include "preprocessor.h"
 
 #include <algorithm>
-#include <ctype>
 #include <list>
 #include <sstream>
+
+#ifdef __BORLANDC__
+#include <ctype>
+#endif
+
 
 /**
  * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
@@ -216,7 +220,14 @@ static std::list<std::string> getcfgs( const std::string &filedata )
                 ret.push_back( def );
         }
 
-        if ( line.find("#endif") == 0 || line.find("#else") == 0 )
+        if ( line.find("#else") == 0 && ! deflist.empty() )
+        {
+            std::string def( ( deflist.back() == "1" ) ? "0" : "1" );
+            deflist.pop_back();
+            deflist.push_back( def );
+        }
+
+        if ( line.find("#endif") == 0 )
             deflist.pop_back();
     }
 
