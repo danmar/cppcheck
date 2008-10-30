@@ -49,6 +49,8 @@ private:
         TEST_CASE( if1 );
 
         TEST_CASE( include1 );
+
+        TEST_CASE( if_cond1 );
     }
 
     bool cmpmaps(const std::map<std::string, std::string> &m1, const std::map<std::string, std::string> &m2)
@@ -268,6 +270,30 @@ private:
         // Expected result..
         std::map<std::string, std::string> expected;
         expected[""] = "#include \"abcd.h\"\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
+
+
+
+
+    void if_cond1()
+    {
+        const char filedata[] = "#if LIBVER>100\n"
+                                "    A\n"
+                                "#else\n"
+                                "    B\n"
+                                "#endif\n";
+
+        // TODO: What should the result be?
+        std::map<std::string, std::string> expected;
+        expected[""] = filedata;
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
