@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -30,6 +30,19 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
+
+
+// Check that the compiler are supported
+// This program should be compiled with either GCC/BORLAND/MSC to work..
+#ifndef __GNUC__
+#ifndef  __BORLANDC__
+#ifndef _MSC_VER
+#error "C++Check must be compiled by either GCC/BORLAND/MSC to work fully.\n"
+#error "Please report that you couldn't compile c++check through the web page:\n"
+#error "      https://sourceforge.net/projects/cppcheck/"
+#endif
+#endif
+#endif
 
 
 #ifdef __GNUC__
