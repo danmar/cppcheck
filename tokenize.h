@@ -37,7 +37,7 @@ struct TOKEN
 extern struct TOKEN *tokens, *tokens_back;
 
 
-void Tokenize(const char FileName[]);
+void Tokenize(std::istream &code, const char FileName[]);
 
 void TokenizeCode(std::istream &code, const unsigned int FileIndex=0);
 

@@ -286,7 +286,7 @@ static void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
-void Tokenize(const char FileName[])
+void Tokenize(std::istream &code, const char FileName[])
 {
     // Has this file been tokenized already?
     for (unsigned int i = 0; i < Files.size(); i++)
@@ -295,16 +295,11 @@ void Tokenize(const char FileName[])
             return;
     }
 
-    // Open file..
-    std::ifstream fin(FileName);
-    if (!fin.is_open())
-        return;
-
     // The "Files" vector remembers what files have been tokenized..
     Files.push_back(FileName);
 
     // Tokenize the file..
-    TokenizeCode( fin, Files.size() - 1 );
+    TokenizeCode( code, Files.size() - 1 );
 }
 //---------------------------------------------------------------------------
 
@@ -322,7 +317,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
     unsigned int lineno = 1;
     char CurrentToken[1000] = {0};
     char *pToken = CurrentToken;
-    for (char ch = (char)code.get(); !code.eof(); ch = (char)code.get())
+    for (char ch = (char)code.get(); code.good(); ch = (char)code.get())
     {
 		// Todo
 		if ( ch < 0 )
@@ -352,7 +347,8 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 addtoken("#include", lineno, FileIndex);
                 addtoken(line.c_str(), lineno, FileIndex);
 
-                Tokenize(line.c_str());
+                std::ifstream fin( line.c_str() );
+                Tokenize(fin, line.c_str());
             }
 
             else if (strncmp(line.c_str(), "#define", 7) == 0)
@@ -422,7 +418,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
         }
 
         // Comments..
-        if (ch == '/' && !code.eof())
+        if (ch == '/' && code.good())
         {
             bool newstatement = bool( strchr(";{}", CurrentToken[0]) != NULL );
 
@@ -466,7 +462,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             {
                 char chPrev;
                 ch = chPrev = 'A';
-                while (!code.eof() && (chPrev!='*' || ch!='/'))
+                while (code.good() && (chPrev!='*' || ch!='/'))
                 {
                     chPrev = ch;
                     ch = (char)code.get();
@@ -528,7 +524,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 // Get next character
                 c = (char)code.get();
             }
-            while (!code.eof() && (special || c != '\"'));
+            while (code.good() && (special || c != '\"'));
             *pToken = '\"';
             addtoken(CurrentToken, lineno, FileIndex);
             memset(CurrentToken, 0, sizeof(CurrentToken));

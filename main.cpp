@@ -17,6 +17,7 @@
  */
 
 
+#include "preprocessor.h" // preprocessor.
 #include "tokenize.h"   // <- Tokenizer
 #include "CommonCheck.h"
 
@@ -30,6 +31,8 @@
 #include <iostream>
 #include <sstream>
 #include <cstring>
+#include <fstream>
+#include <map>
 
 
 // Check that the compiler are supported
@@ -62,7 +65,7 @@ bool ShowAll = false;
 bool CheckCodingStyle = false;
 //---------------------------------------------------------------------------
 
-static void CppCheck(const char FileName[], unsigned int FileId);
+static void CppCheck(const std::string &code, const char FileName[], unsigned int FileId);
 
 
 static void AddFiles( std::vector<std::string> &filenames, const char path[], const char pattern[] )
@@ -230,8 +233,20 @@ int main(int argc, char* argv[])
     for (unsigned int c = 0; c < filenames.size(); c++)
     {
         errout.str("");
-        CppCheck(filenames[c].c_str(), c);
-        std::cerr << errout.str();
+        std::string fname = filenames[c];
+
+        std::cout << "Checking " << fname << "...\n";
+
+        std::ifstream fin( fname.c_str() );
+        std::map<std::string, std::string> code;
+        preprocess(fin, code);
+        for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
+            CppCheck(it->second, filenames[c].c_str(), c);
+
+        if ( errout.str().empty() )
+            std::cout << "No errors found\n";
+        else
+            std::cerr << errout.str();
     }
 
     // This generates false positives - especially for libraries
@@ -254,16 +269,17 @@ int main(int argc, char* argv[])
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
 
-static void CppCheck(const char FileName[], unsigned int FileId)
+static void CppCheck(const std::string &code, const char FileName[], unsigned int FileId)
 {
     OnlyReportUniqueErrors = true;
-
-    std::cout << "Checking " << FileName << "...\n";
 
     // Tokenize the file
     tokens = tokens_back = NULL;
     Files.clear();
-    Tokenize(FileName);
+    {
+    std::istringstream istr(code);
+    Tokenize(istr, FileName);
+    }
 
     FillFunctionList(FileId);
 
@@ -362,8 +378,6 @@ static void CppCheck(const char FileName[], unsigned int FileId)
     // Clean up tokens..
     DeallocateTokens();
 
-    if ( errout.str().empty() )
-        std::cout << "No errors found\n";
 }
 //---------------------------------------------------------------------------
 

@@ -37,6 +37,10 @@ private:
 
     void run()
     {
+        // The bug that started the whole work with the new preprocessor
+        TEST_CASE( Bug2190219 );
+
+
         TEST_CASE( test1 );
         TEST_CASE( test2 );
         TEST_CASE( test3 );
@@ -77,6 +81,65 @@ private:
 
         // No diffs were found
         return true;
+    }
+
+
+    void Bug2190219()
+    {
+        const char filedata[] = "int main()\n"
+                                "{\n"
+                                "#ifdef __cplusplus\n"
+                                "    int* flags = new int[10];\n"
+                                "#else\n"
+                                "    int* flags = (int*)malloc((10)*sizeof(int));\n"
+                                "#endif\n"
+                                "\n"
+                                "#ifdef __cplusplus\n"
+                                "    delete [] flags;\n"
+                                "#else\n"
+                                "    free(flags);\n"
+                                "#endif\n"
+                                "}\n";
+
+        // Expected result..
+        std::map<std::string, std::string> expected;
+        expected[""]          = "int main()\n"
+                                "{\n"
+                                "\n"
+                                "\n"
+                                "\n"
+                                "int* flags = (int*)malloc((10)*sizeof(int));\n"
+                                "\n"
+                                "\n"
+                                "\n"
+                                "\n"
+                                "\n"
+                                "free(flags);\n"
+                                "\n"
+                                "}\n";
+
+        expected["__cplusplus"] = "int main()\n"
+                                "{\n"
+                                "\n"
+                                "int* flags = new int[10];\n"
+                                "\n"
+                                "\n"
+                                "\n"
+                                "\n"
+                                "\n"
+                                "delete [] flags;\n"
+                                "\n"
+                                "\n"
+                                "\n"
+                                "}\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
     }
 
 

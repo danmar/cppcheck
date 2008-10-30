@@ -50,7 +50,7 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
     bool ignoreSpace = true;
 
     std::ostringstream code;
-    for (char ch = (char)istr.get(); !istr.eof(); ch = (char)istr.get())
+    for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
     {
         // Replace assorted special chars with spaces..
         if ( ch < 0 )
@@ -70,7 +70,7 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 
             if ( chNext == '/' )
             {
-                while (!istr.eof() && ch!='\n')
+                while (istr.good() && ch!='\n')
                     ch = (char)istr.get();
                 code << "\n";
             }
@@ -78,7 +78,7 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
             else if ( chNext == '*' )
             {
                 char chPrev = 0;
-                while (!istr.eof() && (chPrev!='*' || ch!='/'))
+                while (istr.good() && (chPrev!='*' || ch!='/'))
                 {
                     chPrev = ch;
                     ch = (char)istr.get();
@@ -106,7 +106,7 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
                     ch = (char)istr.get();
                     code << std::string(1,ch);
                 }
-            } while ( !istr.eof() && ch != '\"' );
+            } while ( istr.good() && ch != '\"' );
         }
 
         // char constants..
@@ -222,7 +222,7 @@ static std::list<std::string> getcfgs( const std::string &filedata )
             deflist.push_back( def );
         }
 
-        if ( line.find("#endif") == 0 )
+        if ( line.find("#endif") == 0 && ! deflist.empty()  )
             deflist.pop_back();
     }
 
@@ -275,13 +275,16 @@ static std::string getcode(const std::string &filedata, std::string cfg)
         else if ( ! ndef.empty() )
             matching_ifdef.push_back( ! match_cfg_def(cfg, ndef) );
 
-        else if ( line == "#else" )
+        else if ( line == "#else" && !matching_ifdef.empty() )
             matching_ifdef.back() = ! matching_ifdef.back();
 
-        else if ( line == "#endif" )
+        else if ( line == "#endif" && !matching_ifdef.empty() )
             matching_ifdef.pop_back();
 
-        if ( !matching_ifdef.empty() && !matching_ifdef.back() )
+        bool match = true;
+        for ( std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it )
+            match &= *it;
+        if ( ! match )
             line = "";
 
         if ( line.find("#if") == 0 ||
