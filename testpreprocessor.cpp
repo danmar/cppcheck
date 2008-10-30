@@ -285,7 +285,6 @@ private:
 
     void if_cond1()
     {
-        /* TODO: Make this work
         const char filedata[] = "#if LIBVER>100\n"
                                 "    A\n"
                                 "#else\n"
@@ -293,7 +292,8 @@ private:
                                 "#endif\n";
 
         std::map<std::string, std::string> expected;
-        expected[""] = filedata;
+        expected[""] = "\n\n\nB\n\n";
+        expected["LIBVER>100"] = "\nA\n\n\n\n";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
@@ -302,7 +302,6 @@ private:
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
-        */
     }
 
 };

@@ -159,13 +159,8 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 // Get the DEF in this line: "#ifdef DEF"
 static std::string getdef(std::string line, bool def)
 {
-    if ( def && line.find("#if 0") == 0 )
-        return "0";
-    if ( def && line.find("#if 1") == 0 )
-        return "1";
-
     // If def is true, the line must start with "#ifdef"
-    if ( def && line.find("#ifdef ") != 0 )
+    if ( def && line.find("#ifdef ") != 0 && line.find("#if ") != 0 )
     {
         return "";
     }
