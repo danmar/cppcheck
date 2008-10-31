@@ -45,7 +45,7 @@ static std::string getcode(const std::string &filedata, std::string cfg);
  * \param istr The (file/string) stream to read from.
  * \param result The map that will get the results
  */
-void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string filename)
+void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
 {
     // Get filedata from stream..
     bool ignoreSpace = true;
