@@ -239,7 +239,7 @@ int main(int argc, char* argv[])
 
         std::ifstream fin( fname.c_str() );
         std::map<std::string, std::string> code;
-        preprocess(fin, code);
+        preprocess(fin, code, fname);
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
             CppCheck(it->second, filenames[c].c_str(), c);
 

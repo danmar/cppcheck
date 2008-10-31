@@ -52,6 +52,8 @@ private:
         TEST_CASE( if0 );
         TEST_CASE( if1 );
 
+        TEST_CASE( elif );
+
         TEST_CASE( include1 );
 
         TEST_CASE( if_cond1 );
@@ -314,6 +316,30 @@ private:
         // Expected result..
         std::map<std::string, std::string> expected;
         expected[""] = "\nABC\n\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
+
+
+    void elif()
+    {
+        const char filedata[] = "#if DEF1\n"
+                                "ABC\n"
+                                "#elif DEF2\n"
+                                "DEF\n"
+                                "#endif\n";
+
+        // Expected result..
+        std::map<std::string, std::string> expected;
+        expected[""] = "\n\n\n\n\n";
+        expected["DEF1"] = "\nABC\n\n\n\n";
+        expected["DEF2"] = "\n\n\nDEF\n\n";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);

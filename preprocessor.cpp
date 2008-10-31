@@ -18,6 +18,7 @@
 
 
 #include "preprocessor.h"
+#include "CommonCheck.h"
 
 #include <algorithm>
 #include <list>
@@ -44,7 +45,7 @@ static std::string getcode(const std::string &filedata, std::string cfg);
  * \param istr The (file/string) stream to read from.
  * \param result The map that will get the results
  */
-void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
+void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string filename)
 {
     // Get filedata from stream..
     bool ignoreSpace = true;
@@ -52,6 +53,14 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
     std::ostringstream code;
     for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
     {
+        if ( ch < 0 )
+        {
+            // Bad content..
+            errout << "[" << filename << "] Bad character found: " << int((unsigned char)ch) << std::endl;
+            result.clear();
+            return;
+        }
+
         // Replace assorted special chars with spaces..
         if ( ch < 0 )
             ch = ' ';
@@ -160,7 +169,7 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 static std::string getdef(std::string line, bool def)
 {
     // If def is true, the line must start with "#ifdef"
-    if ( def && line.find("#ifdef ") != 0 && line.find("#if ") != 0 )
+    if ( def && line.find("#ifdef ") != 0 && line.find("#if ") != 0 && line.find("#elif ") != 0 )
     {
         return "";
     }
@@ -198,6 +207,8 @@ static std::list<std::string> getcfgs( const std::string &filedata )
         std::string def = getdef(line, true) + getdef(line, false);
         if (!def.empty())
         {
+            if ( ! deflist.empty() && line.find("#elif ") == 0 )
+                deflist.pop_back();
             deflist.push_back(def);
             def = "";
             for ( std::list<std::string>::const_iterator it = deflist.begin(); it != deflist.end(); ++it)
@@ -261,6 +272,7 @@ static std::string getcode(const std::string &filedata, std::string cfg)
     std::ostringstream ret;
 
     std::list<bool> matching_ifdef;
+    std::list<bool> matched_ifdef;
 
     std::istringstream istr(filedata);
     std::string line;
@@ -269,17 +281,47 @@ static std::string getcode(const std::string &filedata, std::string cfg)
         std::string def = getdef( line, true );
         std::string ndef = getdef( line, false );
 
-        if ( ! def.empty() )
+        if ( line.find("#elif ") == 0 )
+        {
+            if ( matched_ifdef.back() )
+            {
+                matching_ifdef.back() = false;
+            }
+            else
+            {
+                if ( match_cfg_def(cfg, def) )
+                {
+                    matching_ifdef.back() = true;
+                    matched_ifdef.back() = true;
+                }
+            }
+        }
+
+        else if ( ! def.empty() )
+        {
             matching_ifdef.push_back( match_cfg_def(cfg, def) );
+            matched_ifdef.push_back( matching_ifdef.back() ); 
+        }
 
         else if ( ! ndef.empty() )
+        {
             matching_ifdef.push_back( ! match_cfg_def(cfg, ndef) );
+            matched_ifdef.push_back( matching_ifdef.back() ); 
+        }
 
-        else if ( line == "#else" && !matching_ifdef.empty() )
-            matching_ifdef.back() = ! matching_ifdef.back();
+        else if ( line == "#else" )
+        {
+            if ( ! matched_ifdef.empty() )
+                matching_ifdef.back() = ! matched_ifdef.back();
+        }
 
-        else if ( line == "#endif" && !matching_ifdef.empty() )
-            matching_ifdef.pop_back();
+        else if ( line == "#endif" )
+        {
+            if ( ! matched_ifdef.empty() )
+                matched_ifdef.pop_back();
+            if ( ! matching_ifdef.empty() )
+                matching_ifdef.pop_back();
+        }
 
         bool match = true;
         for ( std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it )
@@ -289,6 +331,7 @@ static std::string getcode(const std::string &filedata, std::string cfg)
 
         if ( line.find("#if") == 0 ||
              line.find("#else") == 0 ||
+             line.find("#elif") == 0 ||
              line.find("#endif") == 0 )
             line = "";
 

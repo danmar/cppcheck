@@ -26,7 +26,7 @@
 #include <string>
 
 
-void preprocess(std::istream &istr, std::map<std::string, std::string> &result);
+void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
 
 //---------------------------------------------------------------------------
 #endif
