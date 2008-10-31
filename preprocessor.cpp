@@ -283,7 +283,7 @@ static std::string getcode(const std::string &filedata, std::string cfg)
 
         bool match = true;
         for ( std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it )
-            match &= *it;
+            match &= bool(*it);
         if ( ! match )
             line = "";
 

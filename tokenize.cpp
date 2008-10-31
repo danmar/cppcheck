@@ -299,7 +299,7 @@ void Tokenize(std::istream &code, const char FileName[])
     Files.push_back(FileName);
 
     // Tokenize the file..
-    TokenizeCode( code, Files.size() - 1 );
+    TokenizeCode( code, (unsigned int)(Files.size() - 1) );
 }
 //---------------------------------------------------------------------------
 
