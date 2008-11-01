@@ -57,7 +57,8 @@ private:
 
         TEST_CASE( initvar_with_this );     // BUG 2190300
         TEST_CASE( initvar_if );            // BUG 2190290
-        TEST_CASE( initvar_operator_eq );    // BUG 2190376
+        TEST_CASE( initvar_operator_eq );   // BUG 2190376
+        TEST_CASE( initvar_same_classname );    // BUG 2208157
     }
 
 
@@ -169,7 +170,32 @@ private:
                "};\n" );
 
         std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), err );
+    }
 
+    void initvar_same_classname()
+    {
+        // Bug 2208157 - False positive: Uninitialized variable, same class name
+
+        check( "void func1()\n"
+               "{\n"
+               "    class Fred\n"
+               "    {\n"
+               "        int a;\n"
+               "        Fred() { a = 0; }\n"
+               "    };\n"
+               "}\n"
+               "\n"
+               "void func2()\n"
+               "{\n"
+               "    class Fred\n"
+               "    {\n"
+               "        int b;\n"
+               "        Fred() { b = 0; }\n"
+               "    };\n"
+               "}\n" );
+
+        std::string err( errout.str() );
         ASSERT_EQUALS( std::string(""), err );
     }
 
