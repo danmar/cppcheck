@@ -56,6 +56,7 @@ private:
         TEST_CASE( simple4 );
 
         TEST_CASE( initvar_with_this );     // BUG 2190300
+        TEST_CASE( initvar_if );            // BUG 2190290
     }
 
 
@@ -124,6 +125,23 @@ private:
                "public:\n"
                "    Fred()\n"
                "    { this->i = 0; }\n"
+               "    int i;\n"
+               "};\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void initvar_if()
+    {
+        check( "class Fred\n"
+               "{\n"
+               "public:\n"
+               "    Fred()\n"
+               "    {\n"
+               "        if (true)\n"
+               "            i = 0;\n"
+               "        else\n"
+               "            i = 1;\n"
+               "    }\n"
                "    int i;\n"
                "};\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );

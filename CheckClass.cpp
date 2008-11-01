@@ -209,43 +209,53 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             indentlevel--;
         }
 
-        if (indentlevel>=1 && (Match(ftok, "[{};] %var%") || Match(ftok, "[{};] this . %var%")))
+        if ( indentlevel < 1 )
+            continue;
+
+        // Before a new statement there is "[{};)]" or "else"
+        if ( ! Match(ftok, "[{};)]") && ! Match(ftok, "else") )
+            continue;
+
+        if (!Match(ftok->next, "%var%") && !Match(ftok->next, "this . %var%"))
+            continue;
+
+        // Goto the first token in this statement..
+        ftok = ftok->next;
+
+        // Skip "this->"
+        if ( Match(ftok, "this .") )
+            ftok = gettok(ftok, 2);
+
+        // Clearing all variables..
+        if (Match(ftok,"memset ( this ,"))
         {
-            ftok = ftok->next;
-            if ( Match(ftok, "this .") )
-                ftok = gettok(ftok, 2);
+            for (struct VAR *var = varlist; var; var = var->next)
+                var->init = true;
+        }
 
-            // Clearing all variables..
-            if (Match(ftok,"memset ( this ,"))
+        // Calling member function?
+        else if (Match(ftok, "%var% ("))
+        {
+            // No recursive calls!
+            if ( std::find(callstack.begin(),callstack.end(),ftok->str) == callstack.end() )
             {
-                for (struct VAR *var = varlist; var; var = var->next)
-                    var->init = true;
+                callstack.push_back( ftok->str );
+                unsigned int i = 0;
+                const TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
+                ClassChecking_VarList_Initialize(ftok2, varlist, classname, callstack);
             }
+        }
 
-            // Calling member function?
-            else if (Match(ftok, "%var% ("))
-            {
-                // No recursive calls!
-                if ( std::find(callstack.begin(),callstack.end(),ftok->str) == callstack.end() )
-                {
-                    callstack.push_back( ftok->str );
-                    unsigned int i = 0;
-                    const TOKEN *ftok2 = FindClassFunction( tokens, classname, ftok->str, i );
-                    ClassChecking_VarList_Initialize(ftok2, varlist, classname, callstack);
-                }
-            }
+        // Assignment of member variable?
+        else if (Match(ftok, "%var% ="))
+        {
+            InitVar( varlist, ftok->str );
+        }
 
-            // Assignment of member variable?
-            else if (Match(ftok, "%var% ="))
-            {
-                InitVar( varlist, ftok->str );
-            }
-
-            // The functions 'clear' and 'Clear' are supposed to initialize variable.
-            if (Match(ftok,"%var% . clear (") || Match(ftok,"%var% . Clear ("))
-            {
-                InitVar( varlist, ftok->str );
-            }
+        // The functions 'clear' and 'Clear' are supposed to initialize variable.
+        if (Match(ftok,"%var% . clear (") || Match(ftok,"%var% . Clear ("))
+        {
+            InitVar( varlist, ftok->str );
         }
     }
 }
