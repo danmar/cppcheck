@@ -209,9 +209,11 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
             indentlevel--;
         }
 
-        if (indentlevel>=1 && Match(ftok, "[{};] %var%"))
+        if (indentlevel>=1 && (Match(ftok, "[{};] %var%") || Match(ftok, "[{};] this . %var%")))
         {
             ftok = ftok->next;
+            if ( Match(ftok, "this .") )
+                ftok = gettok(ftok, 2);
 
             // Clearing all variables..
             if (Match(ftok,"memset ( this ,"))

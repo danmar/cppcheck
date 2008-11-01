@@ -54,6 +54,8 @@ private:
         TEST_CASE( simple2 );
         TEST_CASE( simple3 );
         TEST_CASE( simple4 );
+
+        TEST_CASE( initvar_with_this );     // BUG 2190300
     }
 
 
@@ -112,6 +114,19 @@ private:
            "    i = _i;\n"
            "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:8] Uninitialized member variable 'Fred::i'\n"), errout.str() );
+    }
+
+
+    void initvar_with_this()
+    {
+        check( "class Fred\n"
+               "{\n"
+               "public:\n"
+               "    Fred()\n"
+               "    { this->i = 0; }\n"
+               "    int i;\n"
+               "};\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 };
