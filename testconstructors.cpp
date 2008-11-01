@@ -57,6 +57,7 @@ private:
 
         TEST_CASE( initvar_with_this );     // BUG 2190300
         TEST_CASE( initvar_if );            // BUG 2190290
+        TEST_CASE( initvar_operator_eq );    // BUG 2190376
     }
 
 
@@ -146,6 +147,32 @@ private:
                "};\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
+
+    void initvar_operator_eq()
+    {
+        // Bug 2190376 - False positive, Uninitialized member variable with operator=
+
+        check( "class Fred\n"
+               "{\n"
+               "private:\n"
+               "    int i;\n"
+               "\n"
+               "public:\n"
+               "    Fred()\n"
+               "    { i = 0; }\n"
+               "\n"
+               "    Fred(const Fred &fred)\n"
+               "    { *this = fred; }\n"
+               "\n"
+               "    const Fred & operator=(const Fred &fred)\n"
+               "    { i = fred.i; return *this; }\n"
+               "};\n" );
+
+        std::string err( errout.str() );
+
+        ASSERT_EQUALS( std::string(""), err );
+    }
+
 
 };
 

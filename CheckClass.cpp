@@ -216,6 +216,14 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
         if ( ! Match(ftok, "[{};)]") && ! Match(ftok, "else") )
             continue;
 
+        // Using the operator= function to initialize all variables..
+        if ( Match(ftok->next, "* this = ") )
+        {
+            for (struct VAR *var = varlist; var; var = var->next)
+                var->init = true;
+            break;
+        }
+
         if (!Match(ftok->next, "%var%") && !Match(ftok->next, "this . %var%"))
             continue;
 
@@ -231,6 +239,7 @@ static void ClassChecking_VarList_Initialize(const TOKEN *ftok, struct VAR *varl
         {
             for (struct VAR *var = varlist; var; var = var->next)
                 var->init = true;
+            break;
         }
 
         // Calling member function?
