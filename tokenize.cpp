@@ -888,9 +888,9 @@ void SimplifyTokenList()
             continue;
 
         TOKEN *type0 = tok->next;
-        if (!type0)
-            break;
-        if (strcmp(type0->str, "else") == 0)
+        if (!Match(type0, "%type%"))
+            continue;
+        if (Match(type0, "else") || Match(type0, "return"))
             continue;
 
         TOKEN *tok2 = NULL;

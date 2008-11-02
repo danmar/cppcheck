@@ -76,6 +76,8 @@ private:
         TEST_CASE( switch1 );
         TEST_CASE( switch2 );
 
+        TEST_CASE( ret );
+
         TEST_CASE( mismatch1 );
 
         TEST_CASE( func1 );
@@ -406,6 +408,20 @@ private:
         ASSERT_EQUALS( std::string("[test.cpp:12]: Memory leak: str\n"), errout.str() );
     }
 
+
+
+
+
+    void ret()
+    {
+        check( "char *f( char **str )\n"
+               "{\n"
+               "    char *ret = malloc( 10 );\n"
+               "    return *str = ret;\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
 
 
 
