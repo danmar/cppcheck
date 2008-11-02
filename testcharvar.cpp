@@ -37,7 +37,8 @@ private:
     void run()
     {
         TEST_CASE( array_index );
-        TEST_CASE( bitop );
+        TEST_CASE( bitop1 );
+        TEST_CASE( bitop2 );
     }
 
     void check( const char code[] )
@@ -82,7 +83,7 @@ private:
     }
 
 
-    void bitop()
+    void bitop1()
     {
         check( "void foo()\n"
                "{\n"
@@ -90,6 +91,16 @@ private:
                "    result = a | ch;\n"
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:4]: Warning - using char variable in bit operation\n"), errout.str() );
+    }
+
+    void bitop2()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char ch;\n"
+               "    func(&ch);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 };
 

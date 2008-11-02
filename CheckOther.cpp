@@ -685,15 +685,15 @@ void CheckCharVariable()
                         break;
                 }
 
-                else if ( Match(tok2, "%var% [ %var1% ]", varname) )
+                if (!Match(tok2,".") && Match(tok2->next, "%var% [ %var1% ]", varname))
                 {
                     std::ostringstream errmsg;
-                    errmsg << FileLine(tok2) << ": Warning - using char variable as array index";
+                    errmsg << FileLine(tok2->next) << ": Warning - using char variable as array index";
                     ReportErr(errmsg.str());
                     break;
                 }
 
-                else if ( Match(tok2, "[&|] %var1%", varname) || Match(tok2, "%var1% [&|]", varname) )
+                if ( Match(tok2, "%var% [&|] %var1%", varname) || Match(tok2, "%var1% [&|]", varname) )
                 {
                     std::ostringstream errmsg;
                     errmsg << FileLine(tok2) << ": Warning - using char variable in bit operation";
