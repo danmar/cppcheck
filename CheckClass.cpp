@@ -113,7 +113,7 @@ static const TOKEN * FindClassFunction( const TOKEN *tok, const char classname[]
     _classname[0] = classname;
     _funcname[0] = funcname;
 
-    if ( indentlevel < 0 )
+    if ( indentlevel < 0 || tok == NULL )
         return NULL;
 
     for ( ;tok; tok = tok->next )
@@ -148,6 +148,9 @@ static const TOKEN * FindClassFunction( const TOKEN *tok, const char classname[]
                             break;
                     }
                 }
+                if ( tok == NULL )
+                    return NULL;
+
                 continue;
             }
         }
