@@ -57,6 +57,8 @@ private:
         TEST_CASE( include1 );
 
         TEST_CASE( if_cond1 );
+
+        TEST_CASE( multiline );
     }
 
     bool cmpmaps(const std::map<std::string, std::string> &m1, const std::map<std::string, std::string> &m2)
@@ -383,6 +385,24 @@ private:
         std::map<std::string, std::string> expected;
         expected[""] = "\n\n\nB\n\n";
         expected["LIBVER>100"] = "\nA\n\n\n\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        preprocess( istr, actual, "" );
+
+        // Compare results..
+        ASSERT_EQUALS( true, cmpmaps(actual, expected));
+    }
+
+
+    void multiline()
+    {
+        const char filedata[] = "#define str \"abc\" \\\n"
+                                "            \"def\"\n";
+
+        std::map<std::string, std::string> expected;
+        expected[""] = "#define str \"abc\" \"def\"\n\n";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);

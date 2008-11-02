@@ -152,6 +152,17 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result, 
     while ( codestr.find(" \n") != std::string::npos )
         codestr.erase( codestr.find(" \n"), 1 );
 
+    // Using the backslash at the end of a line..
+    while ( codestr.find("\\\n") != std::string::npos )
+    {
+        std::string::size_type pos = codestr.rfind("\\\n");
+        codestr.erase(pos,2);
+        if (pos > 0 && codestr[pos-1] != ' ')
+            codestr.insert(pos, " ");
+        if ( codestr.find("\n", pos) != std::string::npos)
+            codestr.insert( codestr.find("\n", pos), "\n" );
+    }
+
     // Get all possible configurations..
     std::list<std::string> cfgs = getcfgs( codestr );
 
