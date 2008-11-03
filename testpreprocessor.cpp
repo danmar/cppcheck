@@ -399,10 +399,11 @@ private:
     void multiline()
     {
         const char filedata[] = "#define str \"abc\"   \\  \n"
-                                "            \"def\"\n";
+                                "            \"def\"   \\  \n"
+                                "            \"ghi\"       \n";
 
         std::map<std::string, std::string> expected;
-        expected[""] = "#define str \"abc\" \"def\"\n\n";
+        expected[""] = "#define str \"abc\" \"def\" \"ghi\"\n\n\n";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
