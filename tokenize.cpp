@@ -326,9 +326,22 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
         // Preprocessor stuff?
         if (ch == '#' && !CurrentToken[0])
         {
-            std::string line;
-            getline(code,line);
-            line = "#" + line;
+            std::string line("#");
+            {
+            char chPrev = '#';
+            while ( code.good() )
+            {
+                ch = (char)code.get();
+                if (chPrev!='\\' && ch=='\n')
+                    break;
+                if (ch!=' ')
+                    chPrev = ch;
+                if (ch!='\\' && ch!='\n')
+                    line += ch;
+                if (ch=='\n')
+                    ++lineno;
+            }
+            }
             if (strncmp(line.c_str(),"#include",8)==0 &&
                 line.find("\"") != std::string::npos)
             {
