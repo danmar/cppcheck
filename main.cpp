@@ -20,12 +20,12 @@
 #include "preprocessor.h" // preprocessor.
 #include "tokenize.h"   // <- Tokenizer
 #include "CommonCheck.h"
-
 #include "CheckMemoryLeak.h"
 #include "CheckBufferOverrun.h"
 #include "CheckClass.h"
 #include "CheckHeaders.h"
 #include "CheckOther.h"
+#include "FileLister.h"
 
 #include <algorithm>
 #include <iostream>
@@ -33,31 +33,6 @@
 #include <cstring>
 #include <fstream>
 #include <map>
-
-
-// Check that the compiler are supported
-// This program should be compiled with either GCC/BORLAND/MSC to work..
-#ifndef __GNUC__
-#ifndef  __BORLANDC__
-#ifndef _MSC_VER
-#error "C++Check must be compiled by either GCC/BORLAND/MSC to work fully.\n"
-#error "Please report that you couldn't compile c++check through the web page:\n"
-#error "      https://sourceforge.net/projects/cppcheck/"
-#endif
-#endif
-#endif
-
-
-#ifdef __GNUC__
-#include <glob.h>
-#include <unistd.h>
-#endif
-#ifdef __BORLANDC__
-#include <dir.h>
-#endif
-#ifdef _MSC_VER
-#include <windows.h>
-#endif
 
 //---------------------------------------------------------------------------
 bool Debug = false;
@@ -68,116 +43,13 @@ bool CheckCodingStyle = false;
 static void CppCheck(const std::string &code, const char FileName[], unsigned int FileId);
 
 
-static void AddFiles( std::vector<std::string> &filenames, const char path[], const char pattern[] )
-{
-    #ifdef __GNUC__
-    glob_t glob_results;
-    glob(pattern, 0, 0, &glob_results);
-    for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
-    {
-        std::ostringstream fname;
-        fname << path << glob_results.gl_pathv[i];
-        filenames.push_back( fname.str() );
-    }
-    globfree(&glob_results);
-    #endif
-    #ifdef __BORLANDC__
-    struct ffblk f;
-    for ( int done = findfirst(pattern, &f, 0); ! done; done = findnext(&f) )
-    {
-        std::ostringstream fname;
-        fname << path << f.ff_name;
-        filenames.push_back( fname.str() );
-    }
-    findclose(&f);
-    #endif
-    #ifdef _MSC_VER
-    WIN32_FIND_DATA ffd;
-    HANDLE hFind = FindFirstFile(pattern, &ffd);
-	if (INVALID_HANDLE_VALUE != hFind) 
-	{
-		do
-		{
-	        std::ostringstream fname;
-			fname << path << ffd.cFileName;
-			filenames.push_back( fname.str() );
-		}
-		while (FindNextFile(hFind, &ffd) != 0);
-	}
-	#endif
-}
-
-static void RecursiveAddFiles( std::vector<std::string> &filenames, const char path[] )
-{
-    AddFiles( filenames, path, "*.cpp" );
-    AddFiles( filenames, path, "*.cc" );
-    AddFiles( filenames, path, "*.c" );
-
-    #ifdef __GNUC__
-    // gcc / cygwin..
-    glob_t glob_results;
-    glob("*", GLOB_MARK, 0, &glob_results);
-    for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
-    {
-        const char *dirname = glob_results.gl_pathv[i];
-        if ( dirname[0] == '.' )
-            continue;
-
-        if ( strchr(dirname, '/') == 0 )
-            continue;
-
-        chdir( dirname );
-        std::ostringstream curdir;
-        curdir << path << dirname;
-        RecursiveAddFiles( filenames, curdir.str().c_str() );
-        chdir( ".." );
-    }
-    globfree(&glob_results);
-    #endif
-    #ifdef __BORLANDC__
-    struct ffblk f ;
-    for ( int done = findfirst("*", &f, FA_DIREC); ! done; done = findnext(&f) )
-    {
-        if ( f.ff_attrib != FA_DIREC || f.ff_name[0] == '.' )
-            continue;
-        chdir( f.ff_name );
-        std::ostringstream curdir;
-        curdir << path << f.ff_name << "/";
-        RecursiveAddFiles( filenames, curdir.str().c_str() );
-        chdir( ".." );
-    }
-    findclose(&f);
-    #endif
-    #ifdef _MSC_VER
-    WIN32_FIND_DATA ffd;
-    HANDLE hFind = FindFirstFile("*", &ffd);
-	if (INVALID_HANDLE_VALUE != hFind) 
-	{
-		do
-		{
-			if ( (ffd.cFileName[0]!='.') &&
-				 (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
-			{
-				SetCurrentDirectory( ffd.cFileName );
-				std::ostringstream curdir;
-				curdir << path << ffd.cFileName << "/";
-				RecursiveAddFiles( filenames, curdir.str().c_str() );
-				SetCurrentDirectory( ".." );
-			}
-		}
-		while (FindNextFile(hFind, &ffd) != 0);
-	}
-	#endif
-}
-
 //---------------------------------------------------------------------------
 // Main function of cppcheck
 //---------------------------------------------------------------------------
 
 int main(int argc, char* argv[])
 {
-    std::vector<std::string> filenames;
-
+    std::vector<std::string> pathnames;
     bool Recursive = false;
 
     for (int i = 1; i < argc; i++)
@@ -195,21 +67,37 @@ int main(int argc, char* argv[])
 
         else if (strcmp(argv[i],"--recursive")==0)
             Recursive = true;
-
-        else if (strchr(argv[i],'*'))
-        {
-            AddFiles( filenames, "", argv[i] );
-        }
-
         else
-        {
-            filenames.push_back( argv[i] );
-        }
+            pathnames.push_back( argv[i] );
     }
 
-    // No filename given.. automaticly search for available files.
+    std::vector<std::string> filenames;
+    // --recursive was used
     if ( Recursive )
-        RecursiveAddFiles( filenames, "" );
+    {
+        if( pathnames.size() == 0 )
+        {
+            // Handle situation: cppcheck --recursive
+            FileLister::RecursiveAddFiles( filenames, "", true );
+        }
+        else
+        {
+            // Handle situation: cppcheck --recursive path1 path2
+
+            // Execute RecursiveAddFiles() to each given file parameter
+            std::vector<std::string>::const_iterator iter;
+            for(iter=pathnames.begin(); iter!=pathnames.end(); iter++)
+                FileLister::RecursiveAddFiles( filenames, iter->c_str(), true );
+        }
+    }
+    else
+    {
+        std::vector<std::string>::const_iterator iter;
+        for(iter=pathnames.begin(); iter!=pathnames.end(); iter++)
+            FileLister::RecursiveAddFiles( filenames, iter->c_str(), false );
+    }
+
+
 
     if (filenames.empty())
     {
