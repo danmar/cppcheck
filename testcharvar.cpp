@@ -57,6 +57,8 @@ private:
         // Check for memory leaks..
         ShowAll = true;
         CheckCharVariable();
+
+        DeallocateTokens();
     }
 
     void array_index()

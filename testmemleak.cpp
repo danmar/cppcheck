@@ -49,6 +49,8 @@ private:
         // Check for memory leaks..
         ShowAll = false;
         CheckMemoryLeak();
+
+        DeallocateTokens();
     }
 
     void run()

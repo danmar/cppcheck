@@ -51,6 +51,8 @@ private:
         // Check for memory leaks..
         ShowAll = true;
         CheckUnsignedDivision();
+
+        DeallocateTokens();
     }
 
     void run()

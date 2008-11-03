@@ -52,6 +52,8 @@ private:
         // Check for memory leaks..
         ShowAll = true;
         CheckBufferOverrun();
+
+        DeallocateTokens();
     }
 
     void run()

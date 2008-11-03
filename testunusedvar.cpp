@@ -48,6 +48,8 @@ private:
 
         // Check for unused variables..
         CheckStructMemberUsage();
+
+        DeallocateTokens();
     }
 
     void run()
