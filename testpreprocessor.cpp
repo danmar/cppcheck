@@ -398,7 +398,7 @@ private:
 
     void multiline()
     {
-        const char filedata[] = "#define str \"abc\" \\\n"
+        const char filedata[] = "#define str \"abc\"   \\  \n"
                                 "            \"def\"\n";
 
         std::map<std::string, std::string> expected;
