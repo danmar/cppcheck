@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -143,24 +143,25 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result, 
     std::string codestr( code.str() );
 
     // Remove all indentation..
-    while ( ! codestr.empty() && codestr[0] == ' ' )
-        codestr.erase(0, 1);
-    while ( codestr.find("\n ") != std::string::npos )
-        codestr.erase( 1 + codestr.find("\n "), 1 );
+    if ( !codestr.empty() && codestr[0] == ' ' )
+        codestr.erase( 0, codestr.find_first_not_of(" ") );
+    std::string::size_type loc = 0;
+    while ( (loc = codestr.find("\n ", loc)) != std::string::npos )
+        codestr.erase( 1 + loc, 1 );
 
     // Remove all trailing spaces..
-    while ( codestr.find(" \n") != std::string::npos )
-        codestr.erase( codestr.find(" \n"), 1 );
+    loc = 0;
+    while ( (loc = codestr.find(" \n", loc)) != std::string::npos )
+        codestr.erase( loc, 1 );
 
     // Using the backslash at the end of a line..
-    while ( codestr.find("\\\n") != std::string::npos )
+    while ( (loc = codestr.rfind("\\\n")) != std::string::npos )
     {
-        std::string::size_type pos = codestr.rfind("\\\n");
-        codestr.erase(pos,2);
-        if (pos > 0 && codestr[pos-1] != ' ')
-            codestr.insert(pos, " ");
-        if ( codestr.find("\n", pos) != std::string::npos)
-            codestr.insert( codestr.find("\n", pos), "\n" );
+        codestr.erase(loc, 2);
+        if (loc > 0 && codestr[loc-1] != ' ')
+            codestr.insert(loc, " ");
+        if ( (loc = codestr.find("\n", loc)) != std::string::npos)
+            codestr.insert( loc, "\n" );
     }
 
     // Get all possible configurations..
@@ -282,6 +283,7 @@ static std::string getcode(const std::string &filedata, std::string cfg)
 {
     std::ostringstream ret;
 
+    bool match = true;
     std::list<bool> matching_ifdef;
     std::list<bool> matched_ifdef;
 
@@ -334,9 +336,12 @@ static std::string getcode(const std::string &filedata, std::string cfg)
                 matching_ifdef.pop_back();
         }
 
-        bool match = true;
-        for ( std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it )
-            match &= bool(*it);
+        if ( !line.empty() && line[0] == '#' )
+        {
+            match = true;
+            for ( std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it )
+                match &= bool(*it);
+        }
         if ( ! match )
             line = "";
 
