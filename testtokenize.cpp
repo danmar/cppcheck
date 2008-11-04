@@ -35,6 +35,7 @@ private:
     void run()
     {
         TEST_CASE( multiline );
+        TEST_CASE( longtok );
     }
 
 
@@ -71,6 +72,22 @@ private:
 
         // Compare..
         ASSERT_EQUALS( true, cmptok(expected, tokens) );
+
+        DeallocateTokens();
+    }
+
+
+    void longtok()
+    {
+        std::string filedata(10000,'a');
+
+        // tokenize..
+        tokens = tokens_back = NULL;
+        std::istringstream istr(filedata);
+        TokenizeCode(istr, 0);
+
+        // Expected result..
+        ASSERT_EQUALS( std::string(10000,'a'), std::string(tokens->str) );
 
         DeallocateTokens();
     }

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -315,8 +315,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
 {
     // Tokenize the file.
     unsigned int lineno = 1;
-    char CurrentToken[1000] = {0};
-    char *pToken = CurrentToken;
+    std::string CurrentToken;
     for (char ch = (char)code.get(); code.good(); ch = (char)code.get())
     {
 		// Todo
@@ -324,7 +323,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
 			continue;
 
         // Preprocessor stuff?
-        if (ch == '#' && !CurrentToken[0])
+        if (ch == '#' && CurrentToken.empty())
         {
             std::string line("#");
             {
@@ -366,7 +365,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
 
             else if (strncmp(line.c_str(), "#define", 7) == 0)
             {
-                char *strId = NULL;
+                std::string strId;
                 enum {Space1, Id, Space2, Value} State;
                 State = Space1;
                 for (unsigned int i = 8; i < line.length(); i++)
@@ -382,9 +381,8 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                     {
                         if ( isspace( line[i] ) )
                         {
-                            strId = _strdup(CurrentToken);
-                            memset(CurrentToken, 0, sizeof(CurrentToken));
-                            pToken = CurrentToken;
+                            strId = CurrentToken;
+                            CurrentToken.clear();
                             State = Space2;
                             continue;
                         }
@@ -394,21 +392,18 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                         }
                     }
 
-                    *pToken = line[i];
-                    pToken++;
+                    CurrentToken += line[i];
                 }
 
                 if (State==Value)
                 {
                     addtoken("def", lineno, FileIndex);
-                    addtoken(strId, lineno, FileIndex);
+                    addtoken(strId.c_str(), lineno, FileIndex);
                     addtoken(";", lineno, FileIndex);
-                    Define(strId, CurrentToken);
+                    Define(strId.c_str(), CurrentToken.c_str());
                 }
 
-                pToken = CurrentToken;
-                memset(CurrentToken, 0, sizeof(CurrentToken));
-                free(strId);
+                CurrentToken.clear();
             }
 
             else
@@ -424,21 +419,19 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
         if (ch == '\n')
         {
             // Add current token..
-            addtoken(CurrentToken, lineno++, FileIndex);
-            memset(CurrentToken, 0, sizeof(CurrentToken));
-            pToken = CurrentToken;
+            addtoken(CurrentToken.c_str(), lineno++, FileIndex);
+            CurrentToken.clear();
             continue;
         }
 
         // Comments..
         if (ch == '/' && code.good())
         {
-            bool newstatement = bool( strchr(";{}", CurrentToken[0]) != NULL );
+            bool newstatement = bool( strchr(";{}", CurrentToken.empty() ? '\0' : CurrentToken[0]) != NULL );
 
             // Add current token..
-            addtoken(CurrentToken, lineno, FileIndex);
-            memset(CurrentToken, 0, sizeof(CurrentToken));
-            pToken = CurrentToken;
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            CurrentToken.clear();
 
             // Read next character..
             ch = (char)code.get();
@@ -493,20 +486,19 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
         if (ch == '\'')
         {
             // Add previous token
-            addtoken(CurrentToken, lineno, FileIndex);
-            memset(CurrentToken, 0, sizeof(CurrentToken));
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            CurrentToken.clear();
 
             // Read this ..
-            CurrentToken[0] = ch;
-            CurrentToken[1] = (char)code.get();
-            CurrentToken[2] = (char)code.get();
+            CurrentToken += ch;
+            CurrentToken += (char)code.get();
+            CurrentToken += (char)code.get();
             if (CurrentToken[1] == '\\')
-                CurrentToken[3] = (char)code.get();
+                CurrentToken += (char)code.get();
 
             // Add token and start on next..
-            addtoken(CurrentToken, lineno, FileIndex);
-            memset(CurrentToken, 0, sizeof(CurrentToken));
-            pToken = CurrentToken;
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            CurrentToken.clear();
 
             continue;
         }
@@ -514,19 +506,14 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
         // String..
         if (ch == '\"')
         {
-            addtoken(CurrentToken, lineno, FileIndex);
-            memset(CurrentToken, 0, sizeof(CurrentToken));
-            pToken = CurrentToken;
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            CurrentToken.clear();
             bool special = false;
             char c = ch;
             do
             {
                 // Append token..
-                if ( pToken < &CurrentToken[sizeof(CurrentToken)-10] )
-                {
-                    *pToken = c;
-                    pToken++;
-                }
+                CurrentToken += c;
 
                 // Special sequence '\.'
                 if (special)
@@ -538,36 +525,33 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 c = (char)code.get();
             }
             while (code.good() && (special || c != '\"'));
-            *pToken = '\"';
-            addtoken(CurrentToken, lineno, FileIndex);
-            memset(CurrentToken, 0, sizeof(CurrentToken));
-            pToken = CurrentToken;
+            CurrentToken += '\"';
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            CurrentToken.clear();
             continue;
         }
 
         if (strchr("+-*/%&|^?!=<>[](){};:,.",ch))
         {
-            addtoken(CurrentToken, lineno, FileIndex);
-            memset(CurrentToken, 0, sizeof(CurrentToken));
-            CurrentToken[0] = ch;
-            addtoken(CurrentToken, lineno, FileIndex);
-            memset(CurrentToken, 0, sizeof(CurrentToken));
-            pToken = CurrentToken;
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            CurrentToken.clear();
+            CurrentToken += ch;
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            CurrentToken.clear();
             continue;
         }
 
 
         if (isspace(ch) || iscntrl(ch))
         {
-            addtoken(CurrentToken, lineno, FileIndex);
-            pToken = CurrentToken;
-            memset(CurrentToken, 0, sizeof(CurrentToken));
+            addtoken(CurrentToken.c_str(), lineno, FileIndex);
+            CurrentToken.clear();
             continue;
         }
 
-        *pToken = ch;
-        pToken++;
+        CurrentToken += ch;
     }
+    addtoken( CurrentToken.c_str(), lineno, FileIndex );
 
     // Combine tokens..
     for (TOKEN *tok = tokens; tok && tok->next; tok = tok->next)
