@@ -637,6 +637,30 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             }
         }
     }
+
+
+    // Remove __asm..
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( Match(tok->next, "__asm {") )
+        {
+            while ( tok->next )
+            {
+                bool last = Match( tok->next, "}" );
+
+                // Unlink and delete tok->next
+                TOKEN *next = tok->next;
+                tok->next = tok->next->next;
+                free(next->str);
+                delete next;
+
+                // break if this was the last token to delete..
+                if (last)
+                    break;
+            }
+        }
+    }
+
 }
 //---------------------------------------------------------------------------
 

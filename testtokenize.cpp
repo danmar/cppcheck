@@ -36,6 +36,8 @@ private:
     {
         TEST_CASE( multiline );
         TEST_CASE( longtok );
+
+        TEST_CASE( inlineasm );
     }
 
 
@@ -92,6 +94,40 @@ private:
         DeallocateTokens();
     }
 
+
+    void inlineasm()
+    {
+        const char filedata[] = "void foo()\n"
+                                "{\n"
+                                "    __asm\n"
+                                "    {\n"
+                                "        jmp $jump1\n"
+                                "        $jump1:\n"
+                                "    }\n"
+                                "}\n";
+    
+        // tokenize..
+        tokens = tokens_back = NULL;
+        std::istringstream istr(filedata);
+        TokenizeCode(istr, 0);
+
+        // Expected result..
+        const char *expected[] = 
+        {
+            "void",
+            "foo",
+            "(",
+            ")",
+            "{",
+            "}",
+            0
+        };
+
+        // Compare..
+        ASSERT_EQUALS( true, cmptok(expected, tokens) );
+
+        DeallocateTokens();
+    }
 };
 
 REGISTER_TEST( TestTokenizer )
