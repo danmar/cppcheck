@@ -4,6 +4,8 @@ Tokens..
   I think the SimplifyTokens function should insert braces after every if/for/while.
   That would make the token list easier to parse.
 
+  class TOKEN!
+
 
 
 Userdefined types
@@ -14,9 +16,6 @@ Userdefined types
 
 
 Unused function / variable
-
-  If the user provides "--recursive" there should be
-  warnings for unused functions and variables.
 
   Check if all members in the public section of a class
   are used externally.
@@ -36,8 +35,6 @@ Style
 
   Function parameters: Use std::ostream instead of std::ostringstream or std::ofstream
 
-  Function parameters: By reference instead of by value
-
   Optimisation: Return "const _T &" instead of "_T"?
 
   Unused variable (function, file, class), unused value, unused parameter
@@ -47,10 +44,6 @@ Style
 
 MEMORY LEAKS
 ============
-
-  Allow the user to specify classes to be ignored (that have garbage collection)
-
-  Allow the user to specify allocation and free functions (kmalloc, kfree)
 
   Better checking of pointers in structs
 
