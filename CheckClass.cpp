@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -451,9 +451,11 @@ void CheckUnusedPrivateFunctions()
                 priv = false;
             else if (priv && indent_level == 1)
             {
-                if (isalpha(tok->str[0]) &&
-                    tok->next->str[0]=='(' &&
-                    strcmp(tok->str,classname) != 0)
+                if ( Match(tok, "typedef %type% (") )
+                    tok = gettok(tok, 2);
+
+                if (Match(tok, "%var% (") &&
+                    !Match(tok,classname))
                 {
                     FuncList.push_back(tok->str);
                 }
