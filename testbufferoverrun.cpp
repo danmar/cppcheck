@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -61,6 +61,9 @@ private:
         TEST_CASE( noerr1 );
         TEST_CASE( noerr2 );
         TEST_CASE( noerr3 );
+
+        // Todo: Fix this.
+        //TEST_CASE( noerr4 );
 
         TEST_CASE( array_index_1 );
         TEST_CASE( array_index_2 );
@@ -126,6 +129,18 @@ private:
                "{\n"
                "    char data[1];\n"
                "    return abc.data[1];\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void noerr4()
+    {
+        // The memory isn't read or written and therefore there is no error.
+        check( "static void f()\n"
+               "{\n"
+               "    char data[100];\n"
+               "    const char *p = &data[100];\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
