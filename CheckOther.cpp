@@ -91,11 +91,37 @@ void WarningIsAlpha()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        bool err = false;
-
         if ( tok->str[0] != '(' )
             continue;
 
+        bool err = false;
+
+        err |= Match(tok, "( %var% >= 'A' && %var% <= 'Z' )");
+        err |= Match(tok, "( * %var% >= 'A' && * %var% <= 'Z' )");
+        err |= Match(tok, "( ( %var% >= 'A' ) && ( %var% <= 'Z' ) )");
+        err |= Match(tok, "( ( * %var% >= 'A' ) && ( * %var% <= 'Z' ) )");
+        if (err)
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tok) << ": The condition can be simplified; use 'isupper'";
+            ReportErr(ostr.str());
+            continue;
+        }
+
+        err = false;
+        err |= Match(tok, "( %var% >= 'a' && %var% <= 'z' )");
+        err |= Match(tok, "( * %var% >= 'a' && * %var% <= 'z' )");
+        err |= Match(tok, "( ( %var% >= 'a' ) && ( %var% <= 'z' ) )");
+        err |= Match(tok, "( ( * %var% >= 'a' ) && ( * %var% <= 'z' ) )");
+        if (err)
+        {
+            std::ostringstream ostr;
+            ostr << FileLine(tok) << ": The condition can be simplified; use 'islower'";
+            ReportErr(ostr.str());
+            continue;
+        }
+
+        err = false;
         err |= Match(tok, "( %var% >= 'A' && %var% <= 'Z' ) || ( %var% >= 'a' && %var% <= 'z' )");
         err |= Match(tok, "( %var% >= 'a' && %var% <= 'z' ) || ( %var% >= 'A' && %var% <= 'Z' )");
         err |= Match(tok, "( * %var% >= 'A' && * %var% <= 'Z' ) || ( * %var% >= 'a' && * %var% <= 'z' )");
