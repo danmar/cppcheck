@@ -234,6 +234,8 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     AllocType alloctype = No;
     AllocType dealloctype = No;
 
+    bool isloop = false;
+
     int indentlevel = 0;
     int parlevel = 0;
     for ( ; tok; tok = tok->next )
@@ -255,6 +257,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
             parlevel++;
         else if ( tok->str[0] == ')' )
             parlevel--;
+        isloop &= ( parlevel > 0 );
 
         if ( parlevel == 0 && tok->str[0]==';')
             addtoken(";");
@@ -332,7 +335,12 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
 
         // Loops..
         if (Match(tok, "for") || Match(tok, "while") || Match(tok, "do") )
+        {
             addtoken("loop");
+            isloop = Match(tok, "%var% (");
+        }
+        if ( isloop && Match(tok,"%var1%",varnames) )
+            addtoken("!var");
 
         // continue / break..
         if ( Match(tok, "continue") )
