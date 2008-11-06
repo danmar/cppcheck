@@ -1,6 +1,6 @@
 SRCS=CheckBufferOverrun.cpp  CheckClass.cpp  CheckHeaders.cpp  CheckMemoryLeak.cpp  CheckOther.cpp  CommonCheck.cpp  FileLister.cpp preprocessor.cpp tokenize.cpp
 OBJS=$(SRCS:%.cpp=%.o)
-TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testmemleak.o	testother.o	testpreprocessor.o	testunusedvar.o
+TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testtokenize.o	testunusedvar.o
 BIN = ${DESTDIR}/usr/bin
 
 %.o:	%.cpp
