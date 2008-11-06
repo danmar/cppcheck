@@ -1,4 +1,4 @@
-﻿/*
+/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -466,8 +466,10 @@ void CheckUnusedPrivateFunctions()
         const char *pattern_function[] = {"","::",NULL};
         pattern_function[0] = classname;
         bool HasFuncImpl = false;
-        for (const TOKEN *ftok = findtoken(tokens, pattern_function); ftok; ftok = findtoken(ftok->next,pattern_function))
+        const TOKEN *ftok = tokens;
+        while (ftok)
         {
+            ftok = findtoken(ftok,pattern_function);
             int numpar = 0;
             while (ftok && ftok->str[0]!=';' && ftok->str[0]!='{')
             {
@@ -481,29 +483,29 @@ void CheckUnusedPrivateFunctions()
             if (!ftok)
                 break;
 
-            if (ftok->str[0] == ';')
-                continue;
-
-            if (numpar != 0)
-                continue;
-
-            HasFuncImpl = true;
-
-            indent_level = 0;
-            while (ftok)
+            if (ftok->str[0] != ';' && numpar == 0)
             {
-                if (ftok->str[0] == '{')
-                    indent_level++;
-                if (ftok->str[0] == '}')
+                HasFuncImpl = true;
+
+                indent_level = 0;
+                while (ftok)
                 {
-                    if (indent_level<=1)
-                        break;
-                    indent_level--;
+                    if (ftok->str[0] == '{')
+                        indent_level++;
+                    if (ftok->str[0] == '}')
+                    {
+                        if (indent_level<=1)
+                            break;
+                        indent_level--;
+                    }
+                    if (ftok->next && ftok->next->str[0] == '(')
+                        FuncList.remove(ftok->str);
+                    ftok = ftok->next;
                 }
-                if (ftok->next && ftok->next->str[0] == '(')
-                    FuncList.remove(ftok->str);
-                ftok = ftok->next;
             }
+
+            if (ftok)
+                ftok = ftok->next;
         }
 
         while (HasFuncImpl && !FuncList.empty())
