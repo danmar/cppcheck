@@ -1,6 +1,6 @@
 /*
  * c++check - c/c++ syntax checking
- * Copyright (C) 2007-2008 Daniel Marjam‰ki and Reijo Tomperi
+ * Copyright (C) 2007-2008 Daniel Marjam√§ki and Reijo Tomperi
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
