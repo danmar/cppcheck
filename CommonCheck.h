@@ -28,7 +28,7 @@
 #include <sstream>
 #include <vector>
 
-struct TOKEN;
+class TOKEN;
 
 std::string FileLine(const TOKEN *tok);
 

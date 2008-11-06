@@ -413,7 +413,6 @@ void deleteTokens(TOKEN *tok)
     while (tok)
     {
         TOKEN *next = tok->next;
-        free(tok->str);
         delete tok;
         tok = next;
     }

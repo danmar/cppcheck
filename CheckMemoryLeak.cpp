@@ -195,8 +195,8 @@ static void MemoryLeak( const TOKEN *tok, const char varname[] )
 static void instoken(TOKEN *tok, const char str[])
 {
     TOKEN *newtok = new TOKEN;
-    memcpy( newtok, tok, sizeof(TOKEN) );
-	newtok->str = _strdup(str);
+    newtok->setstr(str);
+    newtok->next = tok->next;
     tok->next = newtok;
 }
 //---------------------------------------------------------------------------
@@ -220,7 +220,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     #define addtoken(_str)                  \
     {                                       \
         TOKEN *newtok = new TOKEN;          \
-        newtok->str = _strdup(_str);        \
+        newtok->setstr(_str);               \
         newtok->linenr = tok->linenr;       \
         newtok->FileIndex = tok->FileIndex; \
         newtok->next = 0;                   \
@@ -381,7 +381,6 @@ static void erase(TOKEN *begin, const TOKEN *end)
     {
         TOKEN *next = begin->next;
         begin->next = begin->next->next;
-        free(next->str);
         delete next;
     }
 }
@@ -406,7 +405,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
     {
         done = true;
 
-        for (TOKEN *tok2 = tok ; tok2; tok2 = tok2->next )
+        for (TOKEN *tok2 = tok; tok2; tok2 = tok2 ? tok2->next : NULL )
         {
             // Delete extra ";"
             while (Match(tok2,"[;{}] ;"))
@@ -418,7 +417,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             // Replace "{ }" with ";"
             if ( Match(tok2->next, "{ }") )
             {
-                tok2->next->str[0] = ';';
+                tok2->next->setstr(";");
                 erase(tok2->next, gettok(tok2,3));
                 done = false;
             }
@@ -548,16 +547,14 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 if ( !incase && valid )
                 {
                     done = false;
-                    free(tok2->str);
-                    tok2->str = _strdup(";");
+                    tok2->setstr(";");
                     erase( tok2, gettok(tok2, 2) );
                     tok2 = tok2->next;
                     bool first = true;
                     while (Match(tok2,"case") || Match(tok2,"default"))
                     {
                         bool def = Match(tok2, "default");
-                        free(tok2->str);
-                        tok2->str = _strdup(first ? "if" : "}");
+                        tok2->setstr(first ? "if" : "}");
                         if ( first )
                         {
                             first = false;
@@ -575,14 +572,12 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                             tok2 = tok2->next;
                         if (Match(tok2,"break ;"))
                         {
-                            free(tok2->str);
-                            tok2->str = _strdup(";");
+                            tok2->setstr(";");
                             tok2 = tok2->next->next;
                         }
                     }
                 }
             }
-
         }
     }
 

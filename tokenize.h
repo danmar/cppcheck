@@ -27,14 +27,28 @@
 
 extern std::vector<std::string> Files;
 
-struct TOKEN
+class TOKEN
 {
+private:
+    char * _str;
+
+public:
+    TOKEN()
+    { FileIndex = 0; _str = 0; linenr = 0; next = 0; }
+
+    ~TOKEN()
+    { free(_str); }
+
+    void setstr( const char s[] )
+    { free(_str); _str = strdup(s); str = _str ? _str : ""; }
+
+    const char *str;
+
     unsigned int FileIndex;
-    char *str;
     unsigned int linenr;
-    struct TOKEN *next;
+    TOKEN *next;
 };
-extern struct TOKEN *tokens, *tokens_back;
+extern TOKEN *tokens, *tokens_back;
 
 
 void Tokenize(std::istream &code, const char FileName[]);

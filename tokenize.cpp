@@ -68,7 +68,7 @@ static TOKEN *_gettok(TOKEN *tok, int index)
 //---------------------------------------------------------------------------
 
 std::vector<std::string> Files;
-struct TOKEN *tokens, *tokens_back;
+TOKEN *tokens, *tokens_back;
 
 //---------------------------------------------------------------------------
 
@@ -161,8 +161,7 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
 	}
 
     TOKEN *newtoken  = new TOKEN;
-    memset(newtoken, 0, sizeof(TOKEN));
-    newtoken->str    = _strdup(str2.str().c_str());
+    newtoken->setstr(str2.str().c_str());
     newtoken->linenr = lineno;
     newtoken->FileIndex = fileno;
     if (tokens_back)
@@ -180,8 +179,7 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
     {
         if (strcmp(str,sym->name)==0)
         {
-            free(newtoken->str);
-            newtoken->str = _strdup(sym->value);
+            newtoken->setstr(sym->value);
             break;
         }
     }
@@ -206,9 +204,8 @@ static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
     if (strcmp(tok->str,str1) || strcmp(tok->next->str,str2))
         return;
 
-    free(tok->str);
 	std::string newstr(std::string(str1) + std::string(str2));
-	tok->str = _strdup( newstr.c_str() );
+	tok->setstr( newstr.c_str() );
 
     DeleteNextToken(tok);
 }
@@ -245,7 +242,6 @@ static void DeleteNextToken(TOKEN *tok)
 {
     TOKEN *next = tok->next;
     tok->next = next->next;
-    free(next->str);
     delete next;
 }
 //---------------------------------------------------------------------------
@@ -266,7 +262,7 @@ static void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
         TOKEN *NewToken = new TOKEN;
         NewToken->FileIndex = src->FileIndex;
         NewToken->linenr = src->linenr;
-        NewToken->str = _strdup(src->str);
+        NewToken->setstr(src->str);
 
         NewToken->next = dest->next;
         dest->next = NewToken;
@@ -587,8 +583,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
     {
         if ( strcmp(tok->str, "->") == 0 )
         {
-            tok->str[0] = '.';
-			tok->str[1] = 0;
+            tok->setstr(".");
         }
     }
 
@@ -603,8 +598,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             {
                 if (tok2->str!=type1 && tok2->str!=type2 && strcmp(tok2->str,type2)==0)
                 {
-                    free(tok2->str);
-                    tok2->str = _strdup(type1);
+                    tok2->setstr(type1);
                 }
             }
         }
@@ -623,11 +617,10 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
             {
                 if (tok2->str!=type3 && strcmp(tok2->str,type3)==0)
                 {
-                    free(tok2->str);
-                    tok2->str = _strdup(type1);
+                    tok2->setstr(type1);
 
                     TOKEN *newtok = new TOKEN;
-                    newtok->str = _strdup(type2);
+                    newtok->setstr(type2);
                     newtok->FileIndex = tok2->FileIndex;
                     newtok->linenr = tok2->linenr;
                     newtok->next = tok2->next;
@@ -651,7 +644,6 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 // Unlink and delete tok->next
                 TOKEN *next = tok->next;
                 tok->next = tok->next->next;
-                free(next->str);
                 delete next;
 
                 // break if this was the last token to delete..
@@ -699,8 +691,7 @@ void SimplifyTokenList()
             {
                 if (strcmp(tok2->str,sym) == 0)
                 {
-                    free(tok2->str);
-                    tok2->str = _strdup(num);
+                    tok2->setstr(num);
                 }
             }
         }
@@ -737,11 +728,10 @@ void SimplifyTokenList()
 
         if (Match(tok, "sizeof ( %type% * )"))
         {
-            free(tok->str);
-			std::ostringstream str;
+            std::ostringstream str;
             // 'sizeof(type *)' has the same size as 'sizeof(char *)'
             str << sizeof(char *);
-            tok->str = _strdup( str.str().c_str() );
+            tok->setstr( str.str().c_str() );
 
             for (int i = 0; i < 4; i++)
             {
@@ -755,10 +745,9 @@ void SimplifyTokenList()
             int size = SizeOfType(type);
             if (size > 0)
             {
-                free(tok->str);
-				std::ostringstream str;
-				str << size;
-                tok->str = _strdup( str.str().c_str() );
+                std::ostringstream str;
+                str << size;
+                tok->setstr( str.str().c_str() );
                 for (int i = 0; i < 3; i++)
                 {
                     DeleteNextToken(tok);
@@ -802,10 +791,9 @@ void SimplifyTokenList()
             {
                 if (strcmp(getstr(tok2,2), varname) == 0)
                 {
-                    free(tok2->str);
-					std::ostringstream str;
+                    std::ostringstream str;
                     str << total_size;
-                    tok2->str = _strdup(str.str().c_str());
+                    tok2->setstr(str.str().c_str());
                     // Delete the other tokens..
                     for (int i = 0; i < 3; i++)
                     {
@@ -857,10 +845,9 @@ void SimplifyTokenList()
                     case '/': i1 /= i2; break;
                 }
                 tok = tok->next;
-                free(tok->str);
-				std::ostringstream str;
+                std::ostringstream str;
                 str <<  i1;
-                tok->str = _strdup(str.str().c_str());
+                tok->setstr(str.str().c_str());
                 for (int i = 0; i < 2; i++)
                 {
                     DeleteNextToken(tok);
@@ -891,8 +878,7 @@ void SimplifyTokenList()
             for (int i = 0; i < 4; i++)
             {
                 tok = tok->next;
-                free(tok->str);
-                tok->str = _strdup(str[i]);
+                tok->setstr(str[i]);
             }
 
             DeleteNextToken(tok);
@@ -976,8 +962,7 @@ void SimplifyTokenList()
         {
             if (tok2->str[0] == ',')
             {
-                free(tok2->str);
-                tok2->str = _strdup(";");
+                tok2->setstr(";");
                 InsertTokens(tok2, type0, typelen);
             }
 
@@ -1007,14 +992,12 @@ void SimplifyTokenList()
                         if (VarTok->str[0]=='*')
                             VarTok = VarTok->next;
                         InsertTokens(eq, VarTok, 2);
-                        free(eq->str);
-                        eq->str = _strdup(";");
+                        eq->setstr(";");
 
                         // "= x, "   =>   "= x; type "
                         if (tok2->str[0] == ',')
                         {
-                            free(tok2->str);
-                            tok2->str = _strdup(";");
+                            tok2->setstr(";");
                             InsertTokens( tok2, type0, typelen );
                         }
                         break;
@@ -1090,7 +1073,6 @@ void DeallocateTokens()
     while (tokens)
     {
         TOKEN *next = tokens->next;
-        free(tokens->str);
         delete tokens;
         tokens = next;
     }
