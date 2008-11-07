@@ -24,10 +24,8 @@
 
 #include <string>
 #include <vector>
-
-#ifdef __BORLANDC__
-#include <stdlib.h>     // <- free
-#endif
+#include <cstdlib>
+#include <cstring>
 
 extern std::vector<std::string> Files;
 
@@ -41,11 +39,11 @@ public:
     { FileIndex = 0; _str = 0; linenr = 0; next = 0; }
 
     ~TOKEN()
-    { free(_str); }
+    { std::free(_str); }
 
     void setstr( const char s[] )
     { 
-        free(_str);
+        std::free(_str);
 #ifndef _MSC_VER
         _str = strdup(s);
 #else
