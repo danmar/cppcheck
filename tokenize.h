@@ -44,7 +44,15 @@ public:
     { free(_str); }
 
     void setstr( const char s[] )
-    { free(_str); _str = strdup(s); str = _str ? _str : ""; }
+    { 
+        free(_str);
+#ifndef _MSC_VER
+        _str = strdup(s);
+#else
+        _str = _strdup(s);
+#endif
+        str = _str ? _str : ""; 
+    }
 
     const char *str;
 
