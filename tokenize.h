@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -24,6 +24,10 @@
 
 #include <string>
 #include <vector>
+
+#ifdef __BORLANDC__
+#include <stdlib.h>     // <- free
+#endif
 
 extern std::vector<std::string> Files;
 
