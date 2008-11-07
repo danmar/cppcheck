@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -495,6 +495,20 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             if ( Match(tok2->next, "loop ;") )
             {
                 erase(tok2, gettok(tok2,2));
+                done = false;
+            }
+
+            // Replace "loop !var ;" with ";"
+            if ( Match(tok2->next, "loop !var ;") )
+            {
+                erase(tok2, gettok(tok2,4));
+                done = false;
+            }
+
+            // Replace "loop !var alloc ;" with " alloc ;"
+            if ( Match(tok2->next, "loop !var alloc ;") )
+            {
+                erase(tok2, gettok(tok2,3));
                 done = false;
             }
 

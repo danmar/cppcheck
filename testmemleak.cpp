@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -75,6 +75,7 @@ private:
         TEST_CASE( forwhile3 );
         TEST_CASE( forwhile4 );
         TEST_CASE( forwhile5 );
+        TEST_CASE( forwhile6 );
 
         TEST_CASE( switch1 );
         TEST_CASE( switch2 );
@@ -389,6 +390,19 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
+
+    void forwhile6()
+    {
+        check( "void f(const char **a)\n"
+               "{\n"
+               "    char *str = 0;\n"
+               "    for (int i = 0; i < 10 && !str; ++i)\n"
+               "    {\n"
+               "        str = strdup(a[i]);\n"
+               "    }\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: str\n"), errout.str() );
+    }
 
 
 
