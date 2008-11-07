@@ -82,7 +82,8 @@ private:
         TEST_CASE( switch1 );
         TEST_CASE( switch2 );
 
-        TEST_CASE( ret );
+        TEST_CASE( ret1 );
+        TEST_CASE( ret2 );
 
         TEST_CASE( mismatch1 );
 
@@ -463,7 +464,7 @@ private:
 
 
 
-    void ret()
+    void ret1()
     {
         check( "char *f( char **str )\n"
                "{\n"
@@ -475,6 +476,20 @@ private:
     }
 
 
+    void ret2()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    struct ABC *abc = new ABC;\n"
+               "    abc->a = new char[10];\n"
+               "    if ( ! abc->a )\n"
+               "        return;\n"
+               "    delete [] abc->a;\n"
+               "    delete abc;\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:6]: Memory leak: abc\n"), errout.str() );
+    }
 
 
 
