@@ -77,6 +77,8 @@ private:
         TEST_CASE( forwhile5 );
         TEST_CASE( forwhile6 );
 
+        TEST_CASE( dowhile1 );
+
         TEST_CASE( switch1 );
         TEST_CASE( switch2 );
 
@@ -404,6 +406,23 @@ private:
         ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: str\n"), errout.str() );
     }
 
+
+
+
+    void dowhile1()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char *str = strdup(\"abc\");\n"
+               "    do\n"
+               "    {\n"
+               "        str = strdup(\"def\");\n"
+               "    }\n"
+               "    while (!str);\n"
+               "    return str;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: str\n"), errout.str() );
+    }
 
 
 

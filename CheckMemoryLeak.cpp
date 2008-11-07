@@ -201,6 +201,16 @@ static void instoken(TOKEN *tok, const char str[])
 }
 //---------------------------------------------------------------------------
 
+static bool notvar(const TOKEN *tok, const char *varnames[])
+{
+    return bool( Match(tok, "! %var1%", varnames) ||
+                 Match(tok, "unlikely ( ! %var1% )", varnames) ||
+                 Match(tok, "unlikely ( %var1% == NULL )", varnames) ||
+                 Match(tok, "%var1% == NULL", varnames) ||
+                 Match(tok, "NULL == %var1%", varnames) ||
+                 Match(tok, "%var1% == 0", varnames) );
+}
+
 
 extern bool ShowAll;
 
@@ -305,12 +315,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
             addtoken("if(var)");
             tok = gettok(tok, 3);   // Make sure the "use" will not be added
         }
-        else if ( Match(tok, "if ( ! %var1% )", varnames) ||
-                  Match(tok, "if ( unlikely ( ! %var1% ) )", varnames) ||
-                  Match(tok, "if ( unlikely ( %var1% == NULL ) )", varnames) ||
-                  Match(tok, "if ( %var1% == NULL )", varnames) ||
-                  Match(tok, "if ( NULL == %var1% )", varnames) ||
-                  Match(tok, "if ( %var1% == 0 )", varnames) )
+        else if ( Match(tok, "if (") && notvar(gettok(tok,2), varnames) )
         {
             addtoken("if(!var)");
         }
@@ -334,12 +339,16 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         }
 
         // Loops..
-        if (Match(tok, "for") || Match(tok, "while") || Match(tok, "do") )
+        if (Match(tok, "for") || Match(tok, "while") )
         {
             addtoken("loop");
-            isloop = Match(tok, "%var% (");
+            isloop = true;
         }
-        if ( isloop && Match(tok,"%var1%",varnames) )
+        if ( Match(tok, "do") )
+        {                                           
+            addtoken("do");
+        }
+        if ( isloop && notvar(tok,varnames) )
             addtoken("!var");
 
         // continue / break..
@@ -404,6 +413,58 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
     {
         deleteTokens(tok);
         return;
+    }
+
+
+    // Remove "do"...
+    // do { x } while (y);
+    // =>
+    // { x } while(y) { x }"
+    for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+    {
+        if ( ! Match(tok2->next, "do") )
+            continue;
+
+        // Remove the next token "do"
+        erase( tok2, gettok(tok2, 2) );
+        tok2 = tok2->next;
+
+        // Find the end of the "do" block..
+        TOKEN *tok2_;
+        int indentlevel = 0;
+        for ( tok2_ = tok2; tok2_ && indentlevel>=0; tok2_ = tok2_->next )
+        {
+            if ( Match(tok2_, "{") )
+                ++indentlevel;
+
+            else if ( Match(tok2_, "}") )
+                --indentlevel;
+
+            else if ( indentlevel == 0 && Match(tok2_->next, ";") )
+                break;
+        }
+
+        // End not found?
+        if ( ! tok2_ )
+            continue;
+
+        // Copy code..
+        indentlevel = 0;
+        do
+        {
+            if ( Match( tok2, "{" ) )
+                ++indentlevel;
+            else if ( Match(tok2, "}") )
+                --indentlevel;
+
+            // Copy token..
+            instoken( tok2_, tok2->str );
+
+            // Next token..
+            tok2 = tok2->next;
+            tok2_ = tok2_->next;
+        }
+        while ( tok2 && indentlevel > 0 );
     }
 
 
@@ -622,6 +683,11 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
     else if ( findmatch(tok, "alloc ; return ;") )
     {
         MemoryLeak(gettok(findmatch(tok,"alloc ; return ;"),2), varname);
+    }
+
+    else if ( findmatch(tok, "alloc ; alloc") )
+    {
+        MemoryLeak(gettok(findmatch(tok,"alloc ; alloc"),2), varname);
     }
 
     else if ( ! findmatch(tok,"dealloc") &&
