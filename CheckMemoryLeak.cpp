@@ -208,7 +208,7 @@ static bool notvar(const TOKEN *tok, const char *varnames[])
                  Match(tok, "unlikely ( %var1% == NULL )", varnames) ||
                  Match(tok, "%var1% == NULL", varnames) ||
                  Match(tok, "NULL == %var1% [;)&|]", varnames) ||
-                 (!Match(tok,".") && Match(tok->next, "%var1% == 0", varnames)) );
+                 Match(tok->next, "%var1% == 0", varnames) );
 }
 
 
@@ -549,6 +549,13 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             if (Match(tok2,"[;{}] if { dealloc ; return ; }") && !Match(gettok(tok2,8),"else"))
             {
                 erase(tok2,gettok(tok2,8));
+                done = false;
+            }
+
+            // Remove "if dealloc ;" if there is no else after it..
+            if (Match(tok2,"if dealloc ;") && !Match(gettok(tok2,3),"else"))
+            {
+                erase( tok2, gettok(tok2, 2) );
                 done = false;
             }
 

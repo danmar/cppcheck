@@ -69,6 +69,10 @@ private:
         TEST_CASE( ifelse3 );
         TEST_CASE( ifelse4 );
         TEST_CASE( ifelse5 );
+        TEST_CASE( ifelse6 );
+        TEST_CASE( ifelse7 );
+        TEST_CASE( ifelse8 );
+        TEST_CASE( ifelse9 );
 
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
@@ -182,6 +186,8 @@ private:
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
+
+
 
 
 
@@ -308,6 +314,20 @@ private:
                "    return 0;\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void ifelse9()
+    {
+        check( "static char *f()\n"
+               "{\n"
+               "    char *s = new char[10];\n"
+               "    if ( ghfgf )\n"
+               "    {\n"
+               "        delete [] s;\n"
+               "    }\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: s\n"), errout.str() );
     }
 
 
