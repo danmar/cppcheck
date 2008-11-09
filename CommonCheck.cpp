@@ -50,7 +50,7 @@ public:
         _FuncName = FuncName;
     }
 
-    const unsigned int file_id() const { return _FileId; }
+    unsigned int file_id() const { return _FileId; }
     const std::string &name() const { return _FuncName; }
 };
 

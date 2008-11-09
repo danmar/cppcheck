@@ -518,6 +518,14 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 }
             }
 
+            // Delete "if dealloc ;" and "if use ;" that is not followed by an else..
+            if ((Match(tok2, "[;{}] if dealloc ;") || Match(tok2, "[;{}] if use ;")) &&
+                !Match(Tokenizer::gettok(tok2,4), "else"))
+            {
+                erase(tok2->next, Tokenizer::gettok(tok2,3));
+                done = false;
+            }
+
             // Delete if block: "alloc; if return use ;"
             if (Match(tok2,"alloc ; if return use ;") && !Match(Tokenizer::gettok(tok2,6),"else"))
             {

@@ -65,6 +65,8 @@ private:
         TEST_CASE( simple7 );
         TEST_CASE( simple8 );
 
+        TEST_CASE( use1 );
+
         TEST_CASE( ifelse1 );
         TEST_CASE( ifelse2 );
         TEST_CASE( ifelse3 );
@@ -188,6 +190,21 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
+
+
+
+
+    void use1()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *str = strdup(\"abc\");\n"
+               "    if (somecondition)\n"
+               "        DeleteString(str);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:6]: Memory leak: str\n"), errout.str() );
+    }
 
 
 
