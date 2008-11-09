@@ -232,7 +232,21 @@ const TOKEN *GetFunctionTokenByName( const char funcname[] )
     }
     return NULL;
 }
-//---------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+
+const char *GetParameterName( const TOKEN *ftok, int par )
+{
+    int _par = 1;
+    for ( ; ftok; ftok = ftok->next)
+    {
+        if ( Match(ftok, ",") )
+            ++_par;
+        if ( par==_par && Match(ftok, "%var% [,)]") )
+            return ftok->str;
+    }
+    return NULL;
+}
+//--------------------------------------------------------------------------
 
 void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames)
 {

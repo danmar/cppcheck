@@ -19,6 +19,7 @@
 
 
 
+#include "CommonCheck.h"
 #include "tokenize.h"
 #include "CheckMemoryLeak.h"
 #include "testsuite.h"
@@ -49,6 +50,7 @@ private:
 
         // Check for memory leaks..
         ShowAll = false;
+        FillFunctionList(0);
         CheckMemoryLeak();
 
         tokenizer.DeallocateTokens();
@@ -97,6 +99,7 @@ private:
 
         TEST_CASE( func1 );
         TEST_CASE( func2 );
+        TEST_CASE( func3 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -584,6 +587,20 @@ private:
                "    foo.add(p);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void func3()
+    {
+        check( "static void foo(const char *str)\n"
+               "{ }\n"
+               "\n"
+               "static void f()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    foo(p);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: p\n"), errout.str() );
     }
 
 

@@ -25,6 +25,7 @@
 
 #include <stdlib.h> // free
 
+#include <algorithm>
 #include <vector>
 #include <sstream>
 
@@ -39,7 +40,7 @@
 #endif
 
 //---------------------------------------------------------------------------
-
+static TOKEN *getcode(const TOKEN *tok, const char varname[]);
 
 static bool isclass( const std::string &typestr )
 {
@@ -174,7 +175,61 @@ static AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] )
 
     return No;
 }
-//---------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+
+static std::list<std::string> callstack;
+
+static const char * call_func( const TOKEN *tok, const char *varnames[] )
+{
+    if (GetAllocationType(tok)!=No || GetDeallocationType(tok,varnames)!=No)
+        return 0;
+
+    const char *funcname = tok->str;
+    if ( std::find(callstack.begin(), callstack.end(), std::string(funcname)) != callstack.end() )
+        return "use";
+    callstack.push_back(funcname);
+
+    int par = 1;
+    int parlevel = 0;
+    for ( ; tok; tok = tok->next )
+    {
+        if ( Match(tok, "(") )
+            ++parlevel;
+        else if ( Match(tok, ")") )
+        {
+            --parlevel;
+            if ( parlevel < 1 )
+                return NULL;
+        }
+
+        if ( parlevel == 1 )
+        {
+            if ( Match(tok, ",") )
+                ++par;
+            if ( Match(tok, "[,()] %var1% [,()]", varnames) )
+            {
+                const TOKEN *ftok = GetFunctionTokenByName(funcname);
+                const char *parname = GetParameterName( ftok, par );
+                if ( ! parname )
+                    return "use";
+                // Check if the function deallocates the variable..
+                while ( ftok && ! Match(ftok,"{") )
+                    ftok = ftok->next;
+                TOKEN *func = getcode( Tokenizer::gettok(ftok,1), parname );
+                const char *ret = 0;
+                if ( findmatch(func, "use") )
+                    ret = "use";
+                if ( findmatch(func, "dealloc") )
+                    ret = "dealloc";
+                deleteTokens(func);
+                return ret;
+            }
+        }
+    }
+    return NULL;
+}
+
+//--------------------------------------------------------------------------
 
 static void MismatchError( const TOKEN *Tok1, const char varname[] )
 {
@@ -374,9 +429,13 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         if ( Match(tok,"[)=] %var1% [;)]", varnames) )
             addtoken("use");
 
-        // Function parameter..
-        if ( Match(tok, "[(,)] %var1% [,)]", varnames) )
-            addtoken("use");
+        // Investigate function calls..
+        if ( Match(tok, "%var% (") )
+        {
+            const char *str = call_func(tok, varnames);
+            if ( str )
+                addtoken( str );
+        }
 
         // Linux lists..
         if ( Match( tok, "[=(,] & %var1% [.[]", varnames ) )
@@ -406,6 +465,8 @@ static void erase(TOKEN *begin, const TOKEN *end)
 // Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
 static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
 {
+    callstack.clear();
+
     TOKEN *tok = getcode( Tok1, varname );
 
     // If the variable is not allocated at all => no memory leak
@@ -414,7 +475,6 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
         deleteTokens(tok);
         return;
     }
-
 
     // Remove "do"...
     // do { x } while (y);
