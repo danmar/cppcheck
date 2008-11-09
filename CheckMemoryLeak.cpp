@@ -41,6 +41,7 @@
 
 //---------------------------------------------------------------------------
 static TOKEN *getcode(const TOKEN *tok, const char varname[]);
+static void simplifycode(TOKEN *tok);
 
 static bool isclass( const std::string &typestr )
 {
@@ -219,6 +220,7 @@ static const char * call_func( const TOKEN *tok, const char *varnames[] )
                 while ( ftok && ! Match(ftok,"{") )
                     ftok = ftok->next;
                 TOKEN *func = getcode( Tokenizer::gettok(ftok,1), parname );
+                simplifycode( func );
                 const char *ret = 0;
                 if ( findmatch(func, "use") )
                     ret = "use";
@@ -465,20 +467,13 @@ static void erase(TOKEN *begin, const TOKEN *end)
 }
 
 
-// Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
-static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
+
+/**
+ * Simplify code
+ * \param tok first token
+ */
+static void simplifycode(TOKEN *tok)
 {
-    callstack.clear();
-
-    TOKEN *tok = getcode( Tok1, varname );
-
-    // If the variable is not allocated at all => no memory leak
-    if (findmatch(tok, "alloc") == 0)
-    {
-        deleteTokens(tok);
-        return;
-    }
-
     // Remove "do"...
     // do { x } while (y);
     // =>
@@ -741,7 +736,27 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             }
         }
     }
+}
 
+
+
+
+
+// Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
+static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
+{
+    callstack.clear();
+
+    TOKEN *tok = getcode( Tok1, varname );
+
+    // If the variable is not allocated at all => no memory leak
+    if (findmatch(tok, "alloc") == 0)
+    {
+        deleteTokens(tok);
+        return;
+    }
+
+    simplifycode( tok );
 
     if ( findmatch(tok, "loop alloc ;") )
     {

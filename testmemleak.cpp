@@ -102,6 +102,7 @@ private:
         TEST_CASE( func1 );
         TEST_CASE( func2 );
         TEST_CASE( func3 );
+        TEST_CASE( func4 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -621,6 +622,23 @@ private:
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: p\n"), errout.str() );
     }
+
+
+    void func4()
+    {
+        check( "static void foo(char *str)\n"
+               "{\n"
+               "    delete [] str;\n"
+               "}\n"
+               "\n"
+               "static void f()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    foo(p);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
 
 
 /*
