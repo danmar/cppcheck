@@ -264,11 +264,12 @@ static void instoken(TOKEN *tok, const char str[])
 static bool notvar(const TOKEN *tok, const char *varnames[])
 {
     return bool( Match(tok, "! %var1% [;)&|]", varnames) ||
+                 Match(tok, "! ( %var1% )", varnames) ||
                  Match(tok, "unlikely ( ! %var1% )", varnames) ||
                  Match(tok, "unlikely ( %var1% == NULL )", varnames) ||
                  Match(tok, "%var1% == NULL", varnames) ||
                  Match(tok, "NULL == %var1% [;)&|]", varnames) ||
-                 Match(tok->next, "%var1% == 0", varnames) );
+                 Match(tok, "%var1% == 0", varnames) );
 }
 
 
