@@ -80,6 +80,8 @@ private:
         TEST_CASE( ifelse8 );
         TEST_CASE( ifelse9 );
 
+        TEST_CASE( if1 );
+
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
         TEST_CASE( forwhile3 );
@@ -364,6 +366,23 @@ private:
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: s\n"), errout.str() );
     }
+
+
+
+
+    void if1()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    struct abc *p = new abc;\n"
+               "    p->a = new char[100];\n"
+               "    if ( ! p->a )\n"
+               "        return;\n"
+               "    foo(p);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:6]: Memory leak: p\n"), errout.str() );
+    }
+
 
 
 

@@ -181,6 +181,9 @@ static std::list<std::string> callstack;
 
 static const char * call_func( const TOKEN *tok, const char *varnames[] )
 {
+    if (Match(tok,"if") || Match(tok,"for") || Match(tok,"while"))
+        return 0;
+
     if (GetAllocationType(tok)!=No || GetDeallocationType(tok,varnames)!=No)
         return 0;
 
