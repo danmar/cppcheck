@@ -44,7 +44,8 @@ private:
         // Tokenize..
         tokens = tokens_back = NULL;
         std::istringstream istr(code);
-        TokenizeCode( istr );
+        Tokenizer tokenizer;
+        tokenizer.TokenizeCode( istr );
 
         // Clear the error buffer..
         errout.str("");
@@ -52,7 +53,7 @@ private:
         // Check for unused private functions..
         CheckUnusedPrivateFunctions();
 
-        DeallocateTokens();
+        tokenizer.DeallocateTokens();
     }
 
 

@@ -29,6 +29,7 @@
 
 extern std::vector<std::string> Files;
 
+
 class TOKEN
 {
 private:
@@ -42,14 +43,14 @@ public:
     { std::free(_str); }
 
     void setstr( const char s[] )
-    { 
+    {
         std::free(_str);
 #ifndef _MSC_VER
         _str = strdup(s);
 #else
         _str = _strdup(s);
 #endif
-        str = _str ? _str : ""; 
+        str = _str ? _str : "";
     }
 
     const char *str;
@@ -58,29 +59,53 @@ public:
     unsigned int linenr;
     TOKEN *next;
 };
+
 extern TOKEN *tokens, *tokens_back;
 
+class Tokenizer
+{
+public:
 
-void Tokenize(std::istream &code, const char FileName[]);
+    void Tokenize(std::istream &code, const char FileName[]);
 
-void TokenizeCode(std::istream &code, const unsigned int FileIndex=0);
+    // Deallocate lists..
+    void DeallocateTokens();
 
-// Return size.
-int SizeOfType(const char type[]);
+    // Simplify tokenlist
+    // -----------------------------
+    void SimplifyTokenList();
 
-// Simplify tokenlist
-// -----------------------------
-void SimplifyTokenList();
+    void TokenizeCode(std::istream &code, const unsigned int FileIndex=0);
+
+    // Helper functions for handling the tokens list..
+    static const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[]);
+    static const TOKEN *gettok(const TOKEN *tok, int index);
+    static const char *getstr(const TOKEN *tok, int index);
+
+    // Return size.
+    static int SizeOfType(const char type[]);
 
 
-// Deallocate lists..
-void DeallocateTokens();
+private:
 
 
-// Helper functions for handling the tokens list..
-const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[]);
-const TOKEN *gettok(const TOKEN *tok, int index);
-const char *getstr(const TOKEN *tok, int index);
+
+
+    static void Define(const char Name[], const char Value[]);
+
+    static void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
+
+    static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[]);
+
+    static void DeleteNextToken(TOKEN *tok);
+
+    static TOKEN *_gettok(TOKEN *tok, int index);
+
+    static void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n);
+};
+
+
+
 
 
 //---------------------------------------------------------------------------

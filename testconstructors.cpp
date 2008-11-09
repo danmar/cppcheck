@@ -38,8 +38,9 @@ private:
         // Tokenize..
         tokens = tokens_back = NULL;
         std::istringstream istr(code);
-        TokenizeCode( istr );
-        SimplifyTokenList();
+        Tokenizer tokenizer;
+        tokenizer.TokenizeCode( istr );
+        tokenizer.SimplifyTokenList();
 
         // Clear the error buffer..
         errout.str("");
@@ -47,7 +48,7 @@ private:
         // Check for memory leaks..
         CheckConstructors();
 
-        DeallocateTokens();
+        tokenizer.DeallocateTokens();
     }
 
     void run()

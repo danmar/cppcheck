@@ -45,15 +45,7 @@
 
 // Helper functions..
 
-static void Define(const char Name[], const char Value[]);
-
-static void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
-
-static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[]);
-
-static void DeleteNextToken(TOKEN *tok);
-
-static TOKEN *_gettok(TOKEN *tok, int index)
+TOKEN *Tokenizer::_gettok(TOKEN *tok, int index)
 {
     while (tok && index>0)
     {
@@ -88,7 +80,7 @@ struct DefineSymbol
 };
 static struct DefineSymbol * dsymlist;
 
-static void Define(const char Name[], const char Value[])
+void Tokenizer::Define(const char Name[], const char Value[])
 {
     if (!(Name && Name[0]))
         return;
@@ -144,7 +136,7 @@ static void Define(const char Name[], const char Value[])
 // add a token. Used by 'Tokenizer'
 //---------------------------------------------------------------------------
 
-static void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno)
+void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsigned int fileno)
 {
     if (str[0] == 0)
         return;
@@ -197,7 +189,7 @@ static void addtoken(const char str[], const unsigned int lineno, const unsigned
 // Combine two tokens that belong to each other. Ex: "<" and "=" may become "<="
 //---------------------------------------------------------------------------
 
-static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
+void Tokenizer::combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
 {
     if (!(tok && tok->next))
         return;
@@ -221,7 +213,7 @@ static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[])
 
 std::map<std::string, unsigned int> TypeSize;
 
-int SizeOfType(const char type[])
+int Tokenizer::SizeOfType(const char type[])
 {
     if (!type)
         return 0;
@@ -238,7 +230,7 @@ int SizeOfType(const char type[])
 // DeleteNextToken. Unlink and delete next token.
 //---------------------------------------------------------------------------
 
-static void DeleteNextToken(TOKEN *tok)
+void Tokenizer::DeleteNextToken(TOKEN *tok)
 {
     TOKEN *next = tok->next;
     tok->next = next->next;
@@ -255,7 +247,7 @@ static void DeleteNextToken(TOKEN *tok)
 // InsertTokens - Copy and insert tokens
 //---------------------------------------------------------------------------
 
-static void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
+void Tokenizer::InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
 {
     while (n > 0)
     {
@@ -282,7 +274,7 @@ static void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
-void Tokenize(std::istream &code, const char FileName[])
+void Tokenizer::Tokenize(std::istream &code, const char FileName[])
 {
     // Has this file been tokenized already?
     for (unsigned int i = 0; i < Files.size(); i++)
@@ -307,7 +299,7 @@ void Tokenize(std::istream &code, const char FileName[])
 // Tokenize - tokenizes input stream
 //---------------------------------------------------------------------------
 
-void TokenizeCode(std::istream &code, const unsigned int FileIndex)
+void Tokenizer::TokenizeCode(std::istream &code, const unsigned int FileIndex)
 {
     // Tokenize the file.
     unsigned int lineno = 1;
@@ -667,7 +659,7 @@ void TokenizeCode(std::istream &code, const unsigned int FileIndex)
 // Simplify token list
 //---------------------------------------------------------------------------
 
-void SimplifyTokenList()
+void Tokenizer::SimplifyTokenList()
 {
 
     // Remove the keyword 'unsigned'
@@ -1025,7 +1017,7 @@ void SimplifyTokenList()
 // Helper functions for handling the tokens list
 //---------------------------------------------------------------------------
 
-const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[])
+const TOKEN *Tokenizer::findtoken(const TOKEN *tok1, const char *tokenstr[])
 {
     for (const TOKEN *ret = tok1; ret; ret = ret->next)
     {
@@ -1047,7 +1039,7 @@ const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[])
 }
 //---------------------------------------------------------------------------
 
-const TOKEN *gettok(const TOKEN *tok, int index)
+const TOKEN *Tokenizer::gettok(const TOKEN *tok, int index)
 {
     while (tok && index>0)
     {
@@ -1058,7 +1050,7 @@ const TOKEN *gettok(const TOKEN *tok, int index)
 }
 //---------------------------------------------------------------------------
 
-const char *getstr(const TOKEN *tok, int index)
+const char *Tokenizer::getstr(const TOKEN *tok, int index)
 {
     tok = gettok(tok, index);
     return tok ? tok->str : "";
@@ -1068,7 +1060,7 @@ const char *getstr(const TOKEN *tok, int index)
 
 
 // Deallocate lists..
-void DeallocateTokens()
+void Tokenizer::DeallocateTokens()
 {
     while (tokens)
     {
@@ -1084,7 +1076,7 @@ void DeallocateTokens()
         free(dsymlist->name);
         free(dsymlist->value);
         delete dsymlist;
-        dsymlist = next; 
+        dsymlist = next;
     }
 }
 

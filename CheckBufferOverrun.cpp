@@ -67,7 +67,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
     // Array index..
     if ( Match(tok, "%var1% [ %num% ]", varname) )
     {
-        const char *num = getstr(tok, 2 + varc);
+        const char *num = Tokenizer::getstr(tok, 2 + varc);
         if (strtol(num, NULL, 10) >= size)
         {
             ReportError(tok->next, "Array index out of bounds");
@@ -93,12 +93,12 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
         // Array index..
         if ( !Match(tok, "%var%") && !Match(tok,"[.&]") && Match(tok->next, "%var1% [ %num% ]", varname) )
         {
-            const char *num = getstr(tok->next, 2 + varc);
+            const char *num = Tokenizer::getstr(tok->next, 2 + varc);
             if (strtol(num, NULL, 10) >= size)
             {
                 ReportError(tok->next, "Array index out of bounds");
             }
-            tok = gettok(tok, 4);
+            tok = Tokenizer::gettok(tok, 4);
             continue;
         }
 
@@ -114,7 +114,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
             if ( Match( tok->next, "( %var1% , %num% , %num% )", varname ) ||
                  Match( tok->next, "( %var% , %var1% , %num% )", varname ) )
             {
-                const char *num  = getstr(tok, varc + 6);
+                const char *num  = Tokenizer::getstr(tok, varc + 6);
                 if ( atoi(num) > total_size )
                 {
                     ReportError(tok, "Buffer overrun");
@@ -127,15 +127,15 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
         // Loop..
         if ( Match(tok, "for (") )
         {
-            const TOKEN *tok2 = gettok( tok, 2 );
+            const TOKEN *tok2 = Tokenizer::gettok( tok, 2 );
 
             // for - setup..
             if ( Match(tok2, "%var% = 0 ;") )
-                tok2 = gettok(tok2, 4);
+                tok2 = Tokenizer::gettok(tok2, 4);
             else if ( Match(tok2, "%type% %var% = 0 ;") )
-                tok2 = gettok(tok2, 5);
+                tok2 = Tokenizer::gettok(tok2, 5);
             else if ( Match(tok2, "%type% %type% %var% = 0 ;") )
-                tok2 = gettok(tok2, 6);
+                tok2 = Tokenizer::gettok(tok2, 6);
             else
                 continue;
 
@@ -145,14 +145,14 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 
             // Get index variable and stopsize.
             const char *strindex = tok2->str;
-            int value = (tok2->next->str[1] ? 1 : 0) + atoi(getstr(tok2, 2));
+            int value = (tok2->next->str[1] ? 1 : 0) + atoi(Tokenizer::getstr(tok2, 2));
             if ( value <= size )
                 continue;
 
             // Goto the end of the for loop..
             while (tok2 && strcmp(tok2->str,")"))
                 tok2 = tok2->next;
-            if (!gettok(tok2,5))
+            if (!Tokenizer::gettok(tok2,5))
                 break;
 
             std::ostringstream pattern;
@@ -190,7 +190,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
         if ( Match(tok, "strcpy ( %var1% , %str% )", varname) )
         {
             int len = 0;
-            const char *str = getstr(tok, varc + 4 );
+            const char *str = Tokenizer::getstr(tok, varc + 4 );
             while ( *str )
             {
                 if (*str=='\\')
@@ -254,7 +254,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
                 continue;
 
             // Parse head of function..
-            ftok = gettok( ftok, 2 );
+            ftok = Tokenizer::gettok( ftok, 2 );
             parlevel = 1;
             while ( ftok && parlevel == 1 && par >= 1 )
             {
@@ -318,28 +318,28 @@ static void CheckBufferOverrun_LocalVariable()
 
             if (Match(tok, "%type% %var% [ %num% ] ;"))
             {
-                varname[0] = getstr(tok,1);
-                size = strtoul(getstr(tok,3), NULL, 10);
+                varname[0] = Tokenizer::getstr(tok,1);
+                size = strtoul(Tokenizer::getstr(tok,3), NULL, 10);
                 type = tok->str;
             }
             else if (indentlevel > 0 && Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
             {
-                varname[0] = getstr(tok,1);
-                size = strtoul(getstr(tok,6), NULL, 10);
-                type = getstr(tok, 4);
+                varname[0] = Tokenizer::getstr(tok,1);
+                size = strtoul(Tokenizer::getstr(tok,6), NULL, 10);
+                type = Tokenizer::getstr(tok, 4);
             }
             else
             {
                 continue;
             }
 
-            int total_size = size * SizeOfType(type);
+            int total_size = size * Tokenizer::SizeOfType(type);
             if (total_size == 0)
                 continue;
 
             // The callstack is empty
             CallStack.clear();
-            CheckBufferOverrun_CheckScope( gettok(tok,5), varname, size, total_size );
+            CheckBufferOverrun_CheckScope( Tokenizer::gettok(tok,5), varname, size, total_size );
         }
     }
 }
@@ -353,9 +353,9 @@ static void CheckBufferOverrun_LocalVariable()
 static void CheckBufferOverrun_StructVariable()
 {
     const char *declstruct_pattern[] = {"","","{",0};
-    for ( const TOKEN * tok = findtoken( tokens, declstruct_pattern );
+    for ( const TOKEN * tok = Tokenizer::findtoken( tokens, declstruct_pattern );
           tok;
-          tok = findtoken( tok->next, declstruct_pattern ) )
+          tok = Tokenizer::findtoken( tok->next, declstruct_pattern ) )
     {
         if ( strcmp(tok->str, "struct") && strcmp(tok->str, "class") )
             continue;
@@ -387,9 +387,9 @@ static void CheckBufferOverrun_StructVariable()
                 continue;
 
             const char *varname[3] = {0,0,0};
-            varname[1] = getstr(tok2, ivar);
-            int arrsize = atoi(getstr(tok2, ivar+2));
-            int total_size = arrsize * SizeOfType(tok2->next->str);
+            varname[1] = Tokenizer::getstr(tok2, ivar);
+            int arrsize = atoi(Tokenizer::getstr(tok2, ivar+2));
+            int total_size = arrsize * Tokenizer::SizeOfType(tok2->next->str);
             if (total_size == 0)
                 continue;
 
@@ -400,11 +400,11 @@ static void CheckBufferOverrun_StructVariable()
 
                 // Declare variable: Fred fred1;
                 if ( Match( tok3->next, "%var% ;" ) )
-                    varname[0] = getstr(tok3, 1);
+                    varname[0] = Tokenizer::getstr(tok3, 1);
 
                 // Declare pointer: Fred *fred1
                 else if ( Match(tok3->next, "* %var% [,);=]") )
-                    varname[0] = getstr(tok3, 2);
+                    varname[0] = Tokenizer::getstr(tok3, 2);
 
                 else
                     continue;
@@ -428,7 +428,7 @@ static void CheckBufferOverrun_StructVariable()
                     // Function implementation..
                     if ( Match(tok3, ") {") )
                     {
-                        CheckTok = gettok(tok3, 2);
+                        CheckTok = Tokenizer::gettok(tok3, 2);
                         break;
                     }
 
@@ -475,7 +475,7 @@ void WarningDangerousFunctions()
             ReportErr(ostr.str());
         }
 
-        else if (Match(tok, "scanf (") && strcmp(getstr(tok,2),"\"%s\"") == 0)
+        else if (Match(tok, "scanf (") && strcmp(Tokenizer::getstr(tok,2),"\"%s\"") == 0)
         {
             std::ostringstream ostr;
             ostr << FileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";

@@ -61,10 +61,11 @@ private:
         // tokenize..
         tokens = tokens_back = NULL;
         std::istringstream istr(filedata);
-        TokenizeCode(istr, 0);
+        Tokenizer tokenizer;
+        tokenizer.TokenizeCode(istr, 0);
 
         // Expected result..
-        const char *expected[] = 
+        const char *expected[] =
         {
             "def",
             "str",
@@ -75,7 +76,7 @@ private:
         // Compare..
         ASSERT_EQUALS( true, cmptok(expected, tokens) );
 
-        DeallocateTokens();
+        tokenizer.DeallocateTokens();
     }
 
 
@@ -86,12 +87,13 @@ private:
         // tokenize..
         tokens = tokens_back = NULL;
         std::istringstream istr(filedata);
-        TokenizeCode(istr, 0);
+        Tokenizer tokenizer;
+        tokenizer.TokenizeCode(istr, 0);
 
         // Expected result..
         ASSERT_EQUALS( std::string(10000,'a'), std::string(tokens->str) );
 
-        DeallocateTokens();
+        tokenizer.DeallocateTokens();
     }
 
 
@@ -105,14 +107,15 @@ private:
                                 "        $jump1:\n"
                                 "    }\n"
                                 "}\n";
-    
+
         // tokenize..
         tokens = tokens_back = NULL;
         std::istringstream istr(filedata);
-        TokenizeCode(istr, 0);
+        Tokenizer tokenizer;
+        tokenizer.TokenizeCode(istr, 0);
 
         // Expected result..
-        const char *expected[] = 
+        const char *expected[] =
         {
             "void",
             "foo",
@@ -126,7 +129,7 @@ private:
         // Compare..
         ASSERT_EQUALS( true, cmptok(expected, tokens) );
 
-        DeallocateTokens();
+        tokenizer.DeallocateTokens();
     }
 };
 

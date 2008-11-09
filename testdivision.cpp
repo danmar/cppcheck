@@ -42,7 +42,8 @@ private:
         // Tokenize..
         tokens = tokens_back = NULL;
         std::istringstream istr(code);
-        TokenizeCode( istr );
+        Tokenizer tokenizer;
+        tokenizer.TokenizeCode( istr );
         //SimplifyTokenList();  <- this can't be used as it removes 'unsigned'
 
         // Clear the error buffer..
@@ -52,7 +53,7 @@ private:
         ShowAll = true;
         CheckUnsignedDivision();
 
-        DeallocateTokens();
+        tokenizer.DeallocateTokens();
     }
 
     void run()

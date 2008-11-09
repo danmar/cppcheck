@@ -152,7 +152,7 @@ static AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] )
     // Redundant condition..
     if ( Match(tok, "if ( %var1% )", varnames) )
     {
-        tok = gettok( tok, 4 );
+        tok = Tokenizer::gettok( tok, 4 );
         if ( Match(tok,"{") )
             tok = tok->next;
     }
@@ -274,14 +274,14 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
 
         if (Match(tok, "[(;{}] %var1% =", varnames))
         {
-            AllocType alloc = GetAllocationType(gettok(tok,3));
+            AllocType alloc = GetAllocationType(Tokenizer::gettok(tok,3));
 
             // If "--all" hasn't been given, don't check classes..
             if ( alloc == New && ! ShowAll )
             {
-                if ( Match(gettok(tok,3), "new %type% [(;]") )
+                if ( Match(Tokenizer::gettok(tok,3), "new %type% [(;]") )
                 {
-                    if ( isclass( getstr(tok, 4) ) )
+                    if ( isclass( Tokenizer::getstr(tok, 4) ) )
                         alloc = No;
                 }
             }
@@ -313,9 +313,9 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
              Match(tok, "if ( %var1% != NULL )", varnames)   )
         {
             addtoken("if(var)");
-            tok = gettok(tok, 3);   // Make sure the "use" will not be added
+            tok = Tokenizer::gettok(tok, 3);   // Make sure the "use" will not be added
         }
-        else if ( Match(tok, "if (") && notvar(gettok(tok,2), varnames) )
+        else if ( Match(tok, "if (") && notvar(Tokenizer::gettok(tok,2), varnames) )
         {
             addtoken("if(!var)");
         }
@@ -345,7 +345,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
             isloop = true;
         }
         if ( Match(tok, "do") )
-        {                                           
+        {
             addtoken("do");
         }
         if ( isloop && notvar(tok,varnames) )
@@ -426,7 +426,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             continue;
 
         // Remove the next token "do"
-        erase( tok2, gettok(tok2, 2) );
+        erase( tok2, Tokenizer::gettok(tok2, 2) );
         tok2 = tok2->next;
 
         // Find the end of the "do" block..
@@ -479,7 +479,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             // Delete extra ";"
             while (Match(tok2,"[;{}] ;"))
             {
-                erase(tok2, gettok(tok2,2));
+                erase(tok2, Tokenizer::gettok(tok2,2));
                 done = false;
             }
 
@@ -487,21 +487,21 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             if ( Match(tok2->next, "{ }") )
             {
                 tok2->next->setstr(";");
-                erase(tok2->next, gettok(tok2,3));
+                erase(tok2->next, Tokenizer::gettok(tok2,3));
                 done = false;
             }
 
             // Delete braces around a single instruction..
             if ( Match(tok2->next, "{ %var% ; }") )
             {
-                erase( tok2, gettok(tok2,2) );
-                erase( tok2->next->next, gettok(tok2,4) );
+                erase( tok2, Tokenizer::gettok(tok2,2) );
+                erase( tok2->next->next, Tokenizer::gettok(tok2,4) );
                 done = false;
             }
             if ( Match(tok2->next, "{ return use ; }") )
             {
-                erase( tok2, gettok(tok2,2) );
-                erase( tok2->next->next->next, gettok(tok2,5) );
+                erase( tok2, Tokenizer::gettok(tok2,2) );
+                erase( tok2->next->next->next, Tokenizer::gettok(tok2,5) );
                 done = false;
             }
 
@@ -510,94 +510,94 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                  Match(tok2,"[;{}] if(var) ;") ||
                  Match(tok2,"[;{}] if(!var) ;") )
             {
-                if ( ! Match(gettok(tok2,3), "else") )
+                if ( ! Match(Tokenizer::gettok(tok2,3), "else") )
                 {
-                    erase(tok2, gettok(tok2, 3));
+                    erase(tok2, Tokenizer::gettok(tok2, 3));
                     done = false;
                     continue;
                 }
             }
 
             // Delete if block: "alloc; if return use ;"
-            if (Match(tok2,"alloc ; if return use ;") && !Match(gettok(tok2,6),"else"))
+            if (Match(tok2,"alloc ; if return use ;") && !Match(Tokenizer::gettok(tok2,6),"else"))
             {
-                erase(tok2, gettok(tok2,5));
+                erase(tok2, Tokenizer::gettok(tok2,5));
                 done = false;
             }
 
             // "[;{}] if alloc ; else return ;" => "[;{}] alloc ;"
             if (Match(tok2,"[;{}] if alloc ; else return ;"))
             {
-                erase(tok2, gettok(tok2,2));        // Remove "if"
-                erase(tok2->next, gettok(tok2,5));  // Remove "; else return"
+                erase(tok2, Tokenizer::gettok(tok2,2));        // Remove "if"
+                erase(tok2->next, Tokenizer::gettok(tok2,5));  // Remove "; else return"
                 done = false;
             }
 
             // Replace "dealloc use ;" with "dealloc ;"
             if ( Match(tok2, "dealloc use ;") )
             {
-                erase(tok2, gettok(tok2,2));
+                erase(tok2, Tokenizer::gettok(tok2,2));
                 done = false;
             }
 
             // Reducing if..
             if (Match(tok2,"if dealloc ; else") || Match(tok2,"if use ; else"))
             {
-                erase(tok2, gettok(tok2, 2));
+                erase(tok2, Tokenizer::gettok(tok2, 2));
                 done = false;
             }
-            if (Match(tok2,"[;{}] if { dealloc ; return ; }") && !Match(gettok(tok2,8),"else"))
+            if (Match(tok2,"[;{}] if { dealloc ; return ; }") && !Match(Tokenizer::gettok(tok2,8),"else"))
             {
-                erase(tok2,gettok(tok2,8));
+                erase(tok2,Tokenizer::gettok(tok2,8));
                 done = false;
             }
 
             // Remove "if dealloc ;" if there is no else after it..
-            if (Match(tok2,"if dealloc ;") && !Match(gettok(tok2,3),"else"))
+            if (Match(tok2,"if dealloc ;") && !Match(Tokenizer::gettok(tok2,3),"else"))
             {
-                erase( tok2, gettok(tok2, 2) );
+                erase( tok2, Tokenizer::gettok(tok2, 2) );
                 done = false;
             }
 
             // Replace "loop ;" with ";"
             if ( Match(tok2->next, "loop ;") )
             {
-                erase(tok2, gettok(tok2,2));
+                erase(tok2, Tokenizer::gettok(tok2,2));
                 done = false;
             }
 
             // Replace "loop !var ;" with ";"
             if ( Match(tok2->next, "loop !var ;") )
             {
-                erase(tok2, gettok(tok2,4));
+                erase(tok2, Tokenizer::gettok(tok2,4));
                 done = false;
             }
 
             // Replace "loop !var alloc ;" with " alloc ;"
             if ( Match(tok2->next, "loop !var alloc ;") )
             {
-                erase(tok2, gettok(tok2,3));
+                erase(tok2, Tokenizer::gettok(tok2,3));
                 done = false;
             }
 
             // Delete if block in "alloc ; if(!var) return ;"
             if ( Match(tok2, "alloc ; if(!var) return ;") )
             {
-                erase(tok2, gettok(tok2,4));
+                erase(tok2, Tokenizer::gettok(tok2,4));
                 done = false;
             }
 
             // Delete second use in "use ; use ;"
             while (Match(tok2, "use ; use ;"))
             {
-                erase(tok2, gettok(tok2,3));
+                erase(tok2, Tokenizer::gettok(tok2,3));
                 done = false;
             }
 
             // Delete second case in "case ; case ;"
             while (Match(tok2, "case ; case ;"))
             {
-                erase(tok2, gettok(tok2,3));
+                erase(tok2, Tokenizer::gettok(tok2,3));
                 done = false;
             }
 
@@ -607,7 +607,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 // Right now, I just handle if there are a few case and perhaps a default.
                 bool valid = false;
                 bool incase = false;
-                for ( const TOKEN * _tok = gettok(tok2,2); _tok; _tok = _tok->next )
+                for ( const TOKEN * _tok = Tokenizer::gettok(tok2,2); _tok; _tok = _tok->next )
                 {
                     if ( _tok->str[0] == '{' )
                         break;
@@ -638,7 +638,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
                 {
                     done = false;
                     tok2->setstr(";");
-                    erase( tok2, gettok(tok2, 2) );
+                    erase( tok2, Tokenizer::gettok(tok2, 2) );
                     tok2 = tok2->next;
                     bool first = true;
                     while (Match(tok2,"case") || Match(tok2,"default"))
@@ -679,22 +679,22 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
     else if ( findmatch(tok, "alloc ; if continue ;") )
     {
-        MemoryLeak(gettok(findmatch(tok, "alloc ; if continue ;"), 3), varname);
+        MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; if continue ;"), 3), varname);
     }
 
     else if ( findmatch(tok, "alloc ; if return ;") )
     {
-        MemoryLeak(gettok(findmatch(tok, "alloc ; if return ;"), 3), varname);
+        MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; if return ;"), 3), varname);
     }
 
     else if ( findmatch(tok, "alloc ; return ;") )
     {
-        MemoryLeak(gettok(findmatch(tok,"alloc ; return ;"),2), varname);
+        MemoryLeak(Tokenizer::gettok(findmatch(tok,"alloc ; return ;"),2), varname);
     }
 
     else if ( findmatch(tok, "alloc ; alloc") )
     {
-        MemoryLeak(gettok(findmatch(tok,"alloc ; alloc"),2), varname);
+        MemoryLeak(Tokenizer::gettok(findmatch(tok,"alloc ; alloc"),2), varname);
     }
 
     else if ( ! findmatch(tok,"dealloc") &&
@@ -745,10 +745,10 @@ static void CheckMemoryLeak_InFunction()
         if (indentlevel>0 && infunc)
         {
             if ( Match(tok, "[{};] %type% * %var% [;=]") )
-                CheckMemoryLeak_CheckScope( tok->next, getstr(tok, 3) );
+                CheckMemoryLeak_CheckScope( tok->next, Tokenizer::getstr(tok, 3) );
 
             else if ( Match(tok, "[{};] %type% %type% * %var% [;=]") )
-                CheckMemoryLeak_CheckScope( tok->next, getstr(tok, 4) );
+                CheckMemoryLeak_CheckScope( tok->next, Tokenizer::getstr(tok, 4) );
         }
     }
 }
@@ -778,7 +778,7 @@ static void CheckMemoryLeak_ClassMembers()
         else if ( indentlevel == 0 && Match(tok, "class %var% [{:]") )
         {
             std::vector<const char *> classname;
-            classname.push_back( getstr(tok, 1) );
+            classname.push_back( Tokenizer::getstr(tok, 1) );
             CheckMemoryLeak_ClassMembers_ParseClass( tok, classname );
         }
     }
@@ -813,7 +813,7 @@ static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vec
         // Declaring subclass.. recursive checking
         if ( Match(tok, "class %var% [{:]") )
         {
-            classname.push_back( getstr(tok, 1) );
+            classname.push_back( Tokenizer::getstr(tok, 1) );
             CheckMemoryLeak_ClassMembers_ParseClass( tok, classname );
             classname.pop_back();
         }
@@ -823,8 +823,8 @@ static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vec
         {
             if ( IsName(tok->str) || strchr(";}", tok->str[0]) )
             {
-                if (ShowAll || !isclass(getstr(tok,1)))
-                    CheckMemoryLeak_ClassMembers_Variable( classname, getstr(tok, 3) );
+                if (ShowAll || !isclass(Tokenizer::getstr(tok,1)))
+                    CheckMemoryLeak_ClassMembers_Variable( classname, Tokenizer::getstr(tok, 3) );
             }
         }
     }
@@ -888,7 +888,7 @@ static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char 
             // Allocate..
             if ( Match( tok, varname_eq.str().c_str() ) )
             {
-                AllocType alloc = GetAllocationType( gettok( tok, 2 ) );
+                AllocType alloc = GetAllocationType( Tokenizer::gettok( tok, 2 ) );
                 if ( alloc != No )
                 {
                     if ( Dealloc != No && Dealloc != alloc )

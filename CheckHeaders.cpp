@@ -112,28 +112,28 @@ void WarningIncludeHeader()
 
             else if (tok1->str[0] == '}')
                 indentlevel--;
-                
+
             if (indentlevel != 0)
                 continue;
 
             // Class or namespace declaration..
             // --------------------------------------
             if (Match(tok1,"class %var% {") || Match(tok1,"class %var% :") || Match(tok1,"namespace %var% {"))
-                classlist.push_back(getstr(tok1, 1));
+                classlist.push_back(Tokenizer::getstr(tok1, 1));
 
             // Variable declaration..
             // --------------------------------------
             else if (Match(tok1, "%type% %var% ;") || Match(tok1, "%type% %var% ["))
-                namelist.push_back(getstr(tok1, 1));
+                namelist.push_back(Tokenizer::getstr(tok1, 1));
 
             else if (Match(tok1, "%type% * %var% ;") || Match(tok1, "%type% * %var% ["))
-                namelist.push_back(getstr(tok1, 2));
+                namelist.push_back(Tokenizer::getstr(tok1, 2));
 
             else if (Match(tok1, "const %type% %var% =") || Match(tok1, "const %type% %var% ["))
-                namelist.push_back(getstr(tok1, 2));
+                namelist.push_back(Tokenizer::getstr(tok1, 2));
 
             else if (Match(tok1, "const %type% * %var% =") || Match(tok1, "const %type% * %var% ["))
-                namelist.push_back(getstr(tok1, 3));
+                namelist.push_back(Tokenizer::getstr(tok1, 3));
 
             // enum..
             // --------------------------------------
@@ -147,26 +147,26 @@ void WarningIncludeHeader()
                     tok1 = tok1->next;
                 }
             }
-                
-            // function..  
+
+            // function..
             // --------------------------------------
             else if (Match(tok1,"%type% %var% ("))
-                namelist.push_back(getstr(tok1, 1));
+                namelist.push_back(Tokenizer::getstr(tok1, 1));
 
             else if (Match(tok1,"%type% * %var% ("))
-                namelist.push_back(getstr(tok1, 2));
+                namelist.push_back(Tokenizer::getstr(tok1, 2));
 
             else if (Match(tok1,"const %type% %var% ("))
-                namelist.push_back(getstr(tok1, 2));
+                namelist.push_back(Tokenizer::getstr(tok1, 2));
 
             else if (Match(tok1,"const %type% * %var% ("))
-                namelist.push_back(getstr(tok1, 3));
+                namelist.push_back(Tokenizer::getstr(tok1, 3));
 
             // typedef..
             // --------------------------------------
             else if (strcmp(tok1->str,"typedef")==0)
             {
-                if (strcmp(getstr(tok1,1),"enum")==0)
+                if (strcmp(Tokenizer::getstr(tok1,1),"enum")==0)
                     continue;
                 int parlevel = 0;
                 while (tok1->next)
@@ -202,7 +202,7 @@ void WarningIncludeHeader()
 
             if ( Match(tok1, ": %var% {") || Match(tok1, ": %type% %var% {") )
             {
-                std::string classname = getstr(tok1, (strcmp(getstr(tok1,2),"{")) ? 2 : 1);
+                std::string classname = Tokenizer::getstr(tok1, (strcmp(Tokenizer::getstr(tok1,2),"{")) ? 2 : 1);
                 if (std::find(classlist.begin(),classlist.end(),classname)!=classlist.end())
                 {
                     Needed = true;
@@ -223,7 +223,7 @@ void WarningIncludeHeader()
                 NeedDeclaration = (std::find(classlist.begin(),classlist.end(),tok1->str ) != classlist.end());
         }
 
-        
+
         // Not a header file?
         if (includetok->FileIndex == 0)
             Needed |= NeedDeclaration;

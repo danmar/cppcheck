@@ -87,7 +87,7 @@ static struct VAR *ClassChecking_GetVarList(const TOKEN *tok1)
             // Pointer?
             else if ( Match(next, "%type% * %var% ;") )
             {
-                varname = getstr(next, 2);
+                varname = Tokenizer::getstr(next, 2);
             }
 
             if (varname)
@@ -123,9 +123,9 @@ static const TOKEN * FindClassFunction( const TOKEN *tok, const char classname[]
                Match(tok, "class %var1% : %type% {", _classname) ) )
         {
             if ( Match(tok, "class %var% {") )
-                tok = gettok(tok, 3);
+                tok = Tokenizer::gettok(tok, 3);
             else
-                tok = gettok(tok, 5);
+                tok = Tokenizer::gettok(tok, 5);
             indentlevel = 1;
         }
 
@@ -258,7 +258,7 @@ static void ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN *fto
 
         // Skip "this->"
         if ( Match(ftok, "this .") )
-            ftok = gettok(ftok, 2);
+            ftok = Tokenizer::gettok(ftok, 2);
 
         // Clearing all variables..
         if (Match(ftok,"memset ( this ,"))
@@ -308,22 +308,22 @@ void CheckConstructors()
 {
     // Locate class
     const char *pattern_classname[] = {"class","","{",NULL};
-    const TOKEN *tok1 = findtoken(tokens, pattern_classname);
+    const TOKEN *tok1 = Tokenizer::findtoken(tokens, pattern_classname);
     while (tok1)
     {
         const char *classname = tok1->next->str;
         if ( ! IsName(classname) )
         {
-            tok1 = findtoken( tok1->next, pattern_classname );
+            tok1 = Tokenizer::findtoken( tok1->next, pattern_classname );
             continue;
         }
 
         // Are there a class constructor?
         const char *constructor_pattern[] = {"","clKalle","(",NULL};
         constructor_pattern[1] = classname;
-        const TOKEN *constructor_token = findtoken( tokens, constructor_pattern );
+        const TOKEN *constructor_token = Tokenizer::findtoken( tokens, constructor_pattern );
         while ( constructor_token && constructor_token->str[0] == '~' )
-            constructor_token = findtoken( constructor_token->next, constructor_pattern );
+            constructor_token = Tokenizer::findtoken( constructor_token->next, constructor_pattern );
         if ( ! constructor_token )
         {
             // There's no class constructor
@@ -347,7 +347,7 @@ void CheckConstructors()
                 }
             }
 
-            tok1 = findtoken( tok1->next, pattern_classname );
+            tok1 = Tokenizer::findtoken( tok1->next, pattern_classname );
             continue;
         }
 
@@ -367,7 +367,7 @@ void CheckConstructors()
                 const char *pattern[] = {"","::","","=",NULL};
                 pattern[0] = classname;
                 pattern[2] = var->name;
-                if (findtoken(tokens, pattern))
+                if (Tokenizer::findtoken(tokens, pattern))
                     continue;
 
                 if (!var->init)
@@ -394,7 +394,7 @@ void CheckConstructors()
             varlist = nextvar;
         }
 
-        tok1 = findtoken( tok1->next, pattern_classname );
+        tok1 = Tokenizer::findtoken( tok1->next, pattern_classname );
     }
 }
 
@@ -408,7 +408,7 @@ void CheckUnusedPrivateFunctions()
 {
     // Locate some class
     const char *pattern_class[] = {"class","","{",NULL};
-    for (const TOKEN *tok1 = findtoken(tokens, pattern_class); tok1; tok1 = findtoken(tok1->next, pattern_class))
+    for (const TOKEN *tok1 = Tokenizer::findtoken(tokens, pattern_class); tok1; tok1 = Tokenizer::findtoken(tok1->next, pattern_class))
     {
         const char *classname = tok1->next->str;
 
@@ -416,7 +416,7 @@ void CheckUnusedPrivateFunctions()
         const char *pattern_classconstructor[] = {"","::","",NULL};
         pattern_classconstructor[0] = classname;
         pattern_classconstructor[2] = classname;
-        if (!findtoken(tokens,pattern_classconstructor))
+        if (!Tokenizer::findtoken(tokens,pattern_classconstructor))
             continue;
 
         // Get private functions..
@@ -452,7 +452,7 @@ void CheckUnusedPrivateFunctions()
             else if (priv && indent_level == 1)
             {
                 if ( Match(tok, "typedef %type% (") )
-                    tok = gettok(tok, 2);
+                    tok = Tokenizer::gettok(tok, 2);
 
                 if (Match(tok, "%var% (") &&
                     !Match(tok,classname))
@@ -469,7 +469,7 @@ void CheckUnusedPrivateFunctions()
         const TOKEN *ftok = tokens;
         while (ftok)
         {
-            ftok = findtoken(ftok,pattern_function);
+            ftok = Tokenizer::findtoken(ftok,pattern_function);
             int numpar = 0;
             while (ftok && ftok->str[0]!=';' && ftok->str[0]!='{')
             {
@@ -515,13 +515,13 @@ void CheckUnusedPrivateFunctions()
             // Final check; check if the function pointer is used somewhere..
             const char *_pattern[] = {"=","",NULL};
             _pattern[1] = FuncList.front().c_str();
-            fp |= (findtoken(tokens, _pattern) != NULL);
+            fp |= (Tokenizer::findtoken(tokens, _pattern) != NULL);
             _pattern[0] = "(";
-            fp |= (findtoken(tokens, _pattern) != NULL);
+            fp |= (Tokenizer::findtoken(tokens, _pattern) != NULL);
             _pattern[0] = ")";
-            fp |= (findtoken(tokens, _pattern) != NULL);
+            fp |= (Tokenizer::findtoken(tokens, _pattern) != NULL);
             _pattern[0] = ",";
-            fp |= (findtoken(tokens, _pattern) != NULL);
+            fp |= (Tokenizer::findtoken(tokens, _pattern) != NULL);
 
             if (!fp)
             {
@@ -549,15 +549,15 @@ void CheckMemset()
         // Todo: Handle memcpy and memmove
         const char *type = NULL;
         if (Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
-            type = getstr(tok, 8);
+            type = Tokenizer::getstr(tok, 8);
         else if (Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
-            type = getstr(tok, 9);
+            type = Tokenizer::getstr(tok, 9);
         else if (Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
-            type = getstr(tok, 9);
+            type = Tokenizer::getstr(tok, 9);
         else if (Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
-            type = getstr(tok, 10);
+            type = Tokenizer::getstr(tok, 10);
         else if (Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
-            type = getstr(tok, 8);
+            type = Tokenizer::getstr(tok, 8);
 
         // No type defined => The tokens didn't match
         if (!(type && type[0]))
@@ -566,7 +566,7 @@ void CheckMemset()
         // Warn if type is a class..
         const char *pattern1[] = {"class","",NULL};
         pattern1[1] = type;
-        if (findtoken(tokens,pattern1))
+        if (Tokenizer::findtoken(tokens,pattern1))
         {
             std::ostringstream ostr;
             ostr << FileLine(tok) << ": Using '" << tok->str << "' on class.";
@@ -577,7 +577,7 @@ void CheckMemset()
         // Warn if type is a struct that contains any std::*
         const char *pattern2[] = {"struct","","{",NULL};
         pattern2[1] = type;
-        for (const TOKEN *tstruct = findtoken(tokens, pattern2); tstruct; tstruct = tstruct->next)
+        for (const TOKEN *tstruct = Tokenizer::findtoken(tokens, pattern2); tstruct; tstruct = tstruct->next)
         {
             if (tstruct->str[0] == '}')
                 break;
@@ -585,7 +585,7 @@ void CheckMemset()
             if (Match(tstruct, "std :: %type% %var% ;"))
             {
                 std::ostringstream ostr;
-                ostr << FileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << getstr(tstruct,2) << "'";
+                ostr << FileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << Tokenizer::getstr(tstruct,2) << "'";
                 ReportErr(ostr.str());
                 break;
             }
@@ -603,7 +603,7 @@ void CheckMemset()
 void CheckOperatorEq1()
 {
     const char *pattern[] = {"void", "operator", "=", "(", NULL};
-    if (const TOKEN *tok = findtoken(tokens,pattern))
+    if (const TOKEN *tok = Tokenizer::findtoken(tokens,pattern))
     {
         std::ostringstream ostr;
         ostr << FileLine(tok) << ": 'operator=' should return something";

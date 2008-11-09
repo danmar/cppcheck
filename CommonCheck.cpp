@@ -350,16 +350,16 @@ bool Match(const TOKEN *tok, const char pattern[], const char *varname1[], const
 
             for ( int i = 1; varname[i]; i++ )
             {
-                if ( ! gettok(tok, 2) )
+                if ( ! Tokenizer::gettok(tok, 2) )
                     return false;
 
-                if ( strcmp(getstr(tok, 1), ".") )
+                if ( strcmp(Tokenizer::getstr(tok, 1), ".") )
                     return false;
 
-                if ( strcmp(getstr(tok, 2), varname[i]) )
+                if ( strcmp(Tokenizer::getstr(tok, 2), varname[i]) )
                     return false;
 
-                tok = gettok(tok, 2);
+                tok = Tokenizer::gettok(tok, 2);
             }
         }
 

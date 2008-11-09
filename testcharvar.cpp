@@ -46,7 +46,8 @@ private:
         // Tokenize..
         tokens = tokens_back = NULL;
         std::istringstream istr(code);
-        TokenizeCode( istr );
+        Tokenizer tokenizer;
+        tokenizer.TokenizeCode( istr );
 
         // Fill function list
         FillFunctionList(0);
@@ -58,7 +59,7 @@ private:
         ShowAll = true;
         CheckCharVariable();
 
-        DeallocateTokens();
+        tokenizer.DeallocateTokens();
     }
 
     void array_index()

@@ -159,6 +159,8 @@ int main(int argc, char* argv[])
 
 static void CppCheck(const std::string &code, const char FileName[], unsigned int FileId)
 {
+    Tokenizer tokenizer;
+
     OnlyReportUniqueErrors = true;
 
     // Tokenize the file
@@ -166,7 +168,7 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
     Files.clear();
     {
     std::istringstream istr(code);
-    Tokenize(istr, FileName);
+    tokenizer.Tokenize(istr, FileName);
     }
 
     FillFunctionList(FileId);
@@ -192,7 +194,7 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
     //    WarningIncludeHeader();
 
 
-    SimplifyTokenList();
+    tokenizer.SimplifyTokenList();
 
     // Memory leak
     CheckMemoryLeak();
@@ -264,7 +266,7 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
     }
 
     // Clean up tokens..
-    DeallocateTokens();
+    tokenizer.DeallocateTokens();
 
 }
 //---------------------------------------------------------------------------
