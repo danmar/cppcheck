@@ -596,7 +596,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
             }
 
             // Delete second use in "use ; use ;"
-            while (Match(tok2, "use ; use ;"))
+            while (Match(tok2, "[;{}] use ; use ;"))
             {
                 erase(tok2, Tokenizer::gettok(tok2,3));
                 done = false;
