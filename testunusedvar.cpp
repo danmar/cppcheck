@@ -56,6 +56,8 @@ private:
     void run()
     {
         TEST_CASE( structmember1 );
+        TEST_CASE( structmember2 );
+        TEST_CASE( structmember3 );
     }
 
     void structmember1()
@@ -70,6 +72,46 @@ private:
                                    "[test.cpp:3]: struct member 'abc::b' is never read\n"
                                    "[test.cpp:4]: struct member 'abc::c' is never read\n"), errout.str() );
     }
+
+    void structmember2()
+    {
+        check( "struct ABC\n"
+               "{\n"
+               "    int a;\n"
+               "    int b;\n"
+               "    int c;\n"
+               "};\n"
+               "\n"
+               "void foo()\n"
+               "{\n"
+               "    struct ABC abc;\n"
+               "    int a = abc.a;\n"
+               "    int b = abc.b;\n"
+               "    int c = abc.c;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void structmember3()
+    {
+        check( "struct ABC\n"
+               "{\n"
+               "    int a;\n"
+               "    int b;\n"
+               "    int c;\n"
+               "};\n"
+               "\n"
+               "static struct ABC abc[] = { {1, 2, 3} };\n"
+               "\n"
+               "void foo()\n"
+               "{\n"
+               "    int a = abc[0].a;\n"
+               "    int b = abc[0].b;\n"
+               "    int c = abc[0].c;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
 
 };
 
