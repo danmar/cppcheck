@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -106,7 +106,14 @@ private:
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
+
+        TEST_CASE( throw1 );
+
+        TEST_CASE( linux_list_1 );
+        TEST_CASE( linux_list_2 );
     }
+
+
 
     void simple1()
     {
@@ -761,6 +768,55 @@ private:
 
 
 
+
+    void throw1()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *str = new char[10];\n"
+               "    if ( ! abc )\n"
+               "        throw 123;\n"
+               "    delete [] str;\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: str\n"), errout.str() );
+    }
+
+
+
+
+    void linux_list_1()
+    {
+        check( "struct AB\n"
+               "{\n"
+               "    int a;\n"
+               "    int b;\n"
+               "};\n"
+               "void foo()\n"
+               "{\n"
+               "    struct AB *ab = new AB;\n"
+               "    func(&ab->a);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void linux_list_2()
+    {
+        check( "struct AB\n"
+               "{\n"
+               "    int a;\n"
+               "    int b;\n"
+               "};\n"
+               "void foo()\n"
+               "{\n"
+               "    struct AB *ab = new AB;\n"
+               "    func(&ab->b);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:10]: Memory leak: ab\n"), errout.str() );
+    }
 
 
 };

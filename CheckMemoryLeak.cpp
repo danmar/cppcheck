@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -420,7 +420,11 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
 
         // goto..
         if ( Match(tok, "goto") )
-            addtoken( "goto" );
+        {
+            // Todo: Add handling of goto..
+            deleteTokens(rethead);
+            return NULL;
+        }
 
         // Return..
         if ( Match(tok, "return") )
@@ -430,6 +434,10 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
                  Match(tok, "return & %var1%", varnames) )
                 addtoken("use");
         }
+
+        // throw..
+        if ( Match(tok, "throw") )
+            addtoken("throw");
 
         // Assignment..
         if ( Match(tok,"[)=] %var1% [;)]", varnames) )
@@ -734,6 +742,12 @@ static void simplifycode(TOKEN *tok)
                         }
                     }
                 }
+            }
+
+            if ( Match(tok2, "throw") )
+            {
+                tok2->setstr( "return" );
+                done = false;
             }
         }
     }
