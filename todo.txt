@@ -4,8 +4,6 @@ Tokens..
   I think the SimplifyTokens function should insert braces after every if/for/while.
   That would make the token list easier to parse.
 
-  class TOKEN!
-
 
 
 Userdefined types
@@ -42,10 +40,14 @@ Style
 
 
 
+  operator= should initialize all class members
+
+
+
 MEMORY LEAKS
 ============
 
   Better checking of pointers in structs
 
-
+  User configurable.
 
