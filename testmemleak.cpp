@@ -88,6 +88,7 @@ private:
         TEST_CASE( forwhile4 );
         TEST_CASE( forwhile5 );
         TEST_CASE( forwhile6 );
+        // TODO TEST_CASE( forwhile7 );
 
         TEST_CASE( dowhile1 );
 
@@ -488,6 +489,25 @@ private:
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: str\n"), errout.str() );
     }
+
+
+    void forwhile7()
+    {
+        // TODO
+        check("void f()\n"
+              "{\n"
+              "    for (int i = 0; i < j; i++)\n"
+              "    {\n"
+              "        char *str = strdup(\"hello\");\n"
+              "        if (condition)\n"
+              "            break;\n"
+              "        free(str);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS( std::string("[test.cpp:7]: Memory leak: str\n"), errout.str() );
+    }
+
+
 
 
 
