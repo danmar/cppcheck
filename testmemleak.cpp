@@ -110,7 +110,7 @@ private:
         TEST_CASE( throw1 );
 
         TEST_CASE( linux_list_1 );
-        TEST_CASE( linux_list_2 );
+        // TODO: TEST_CASE( linux_list_2 );
     }
 
 
@@ -801,7 +801,8 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
-
+/*
+    // TODO: Add this test
     void linux_list_2()
     {
         check( "struct AB\n"
@@ -817,7 +818,7 @@ private:
 
         ASSERT_EQUALS( std::string("[test.cpp:10]: Memory leak: ab\n"), errout.str() );
     }
-
+*/
 
 };
 

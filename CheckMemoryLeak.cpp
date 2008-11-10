@@ -222,9 +222,11 @@ static const char * call_func( const TOKEN *tok, const char *varnames[] )
                 TOKEN *func = getcode( Tokenizer::gettok(ftok,1), parname );
                 simplifycode( func );
                 const char *ret = 0;
-                if ( findmatch(func, "use") )
+                if (findmatch(func, "goto"))
+                    ret = 0;    // TODO : "goto" isn't handled well
+                else if (findmatch(func, "use"))
                     ret = "use";
-                if ( findmatch(func, "dealloc") )
+                else if (findmatch(func, "dealloc"))
                     ret = "dealloc";
                 deleteTokens(func);
                 return ret;
@@ -421,9 +423,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
         // goto..
         if ( Match(tok, "goto") )
         {
-            // Todo: Add handling of goto..
-            deleteTokens(rethead);
-            return NULL;
+            addtoken("goto");
         }
 
         // Return..
@@ -766,6 +766,13 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 
     // If the variable is not allocated at all => no memory leak
     if (findmatch(tok, "alloc") == 0)
+    {
+        deleteTokens(tok);
+        return;
+    }
+
+    // TODO : handle "goto"
+    if (findmatch(tok, "goto"))
     {
         deleteTokens(tok);
         return;
