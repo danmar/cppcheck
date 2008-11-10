@@ -51,3 +51,69 @@ MEMORY LEAKS
 
   User configurable.
 
+
+
+void f()
+{
+    struct ABC *abc;
+
+    try
+    {
+        abc = new ABC;
+        abc->a = new char[10];
+
+        delete [] abc->a;
+        delete abc;
+    }
+    catch (...) {}
+}
+
+
+
+
+void f1()
+{
+    while (true)
+    {
+        struct ABC *abc = new ABC;
+        abc->a = new char[10];
+        if ( ! abc->a )
+            break;
+        delete [] abc->a;
+        delete abc;
+        break;
+    }
+}
+
+void f2()
+{
+    for (;;)
+    {
+        struct ABC *abc = new ABC;
+        abc->a = new char[10];
+        if ( ! abc->a )
+            break;
+        delete [] abc->a;
+        delete abc;
+        break;
+    }
+}
+
+
+
+void foo()
+{
+    struct ABC *abc = new ABC;
+    abc->a = new char[10];
+    if ( ! abc->a )
+        goto end;
+    delete [] abc->a;
+    delete abc;
+end:
+}
+
+
+
+
+
+
