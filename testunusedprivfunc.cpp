@@ -64,11 +64,18 @@ private:
         check( "class Fred\n"
                "{\n"
                "private:\n"
-               "    unsigned int f()\n"
-               "    { }\n"
-               "};\n" );
-        // Todo: This should be detected.
-        ASSERT_EQUALS( std::string(""), errout.str() );
+               "    unsigned int f();\n"
+               "public:\n"
+               "    Fred();\n"
+               "};\n"
+               "\n"
+               "unsigned int Fred::Fred()\n"
+               "{ }\n"
+               "\n"
+               "unsigned int Fred::f()\n"
+               "{ }\n" );
+
+        ASSERT_EQUALS( std::string("Class 'Fred', unused private function: 'f'\n"), errout.str() );
     }
 };
 
