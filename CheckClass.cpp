@@ -511,6 +511,8 @@ void CheckClass::CheckUnusedPrivateFunctions()
             const char *_pattern[] = {"=","",NULL};
             _pattern[1] = FuncList.front().c_str();
             fp |= (Tokenizer::findtoken(tokens, _pattern) != NULL);
+            _pattern[0] = "return";
+            fp |= (Tokenizer::findtoken(tokens, _pattern) != NULL);
             _pattern[0] = "(";
             fp |= (Tokenizer::findtoken(tokens, _pattern) != NULL);
             _pattern[0] = ")";
