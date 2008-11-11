@@ -105,6 +105,7 @@ private:
         TEST_CASE( func2 );
         TEST_CASE( func3 );
         TEST_CASE( func4 );
+        // TODO TEST_CASE( func5 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -664,6 +665,23 @@ private:
                "    foo(p);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void func5()
+    {
+        // TODO
+        check( "static void foo(char *str)\n"
+               "{\n"
+               "    delete str;\n"
+               "}\n"
+               "\n"
+               "static void f()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    foo(p);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("mismatching allocation and deallocation"), errout.str() );
     }
 
 
