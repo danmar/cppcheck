@@ -89,7 +89,7 @@ private:
         TEST_CASE( forwhile4 );
         TEST_CASE( forwhile5 );
         TEST_CASE( forwhile6 );
-        // TODO TEST_CASE( forwhile7 );
+        TEST_CASE( forwhile7 );
 
         TEST_CASE( dowhile1 );
 
@@ -494,7 +494,6 @@ private:
 
     void forwhile7()
     {
-        // TODO
         check("void f()\n"
               "{\n"
               "    for (int i = 0; i < j; i++)\n"
