@@ -91,7 +91,7 @@ void CheckOther::WarningIsAlpha()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if ( tok->str[0] != '(' )
+        if ( ! Match(tok, "(") )
             continue;
 
         bool err = false;
@@ -151,7 +151,7 @@ void CheckOther::WarningRedundantCode()
     // if (p) delete p
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (strcmp(tok->str,"if"))
+        if (!Match(tok,"if"))
             continue;
 
         const char *varname1 = NULL;
@@ -171,7 +171,7 @@ void CheckOther::WarningRedundantCode()
         if (varname1==NULL || tok2==NULL)
             continue;
 
-        if ( tok2->str[0] == '{' )
+        if ( Match(tok2, "{") )
             tok2 = tok2->next;
 
         bool err = false;
@@ -213,14 +213,14 @@ void CheckOther::WarningIf()
     // Search for 'if (condition);'
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
-        if (strcmp(tok->str,"if")==0)
+        if (Match(tok,"if"))
         {
             int parlevel = 0;
             for (const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
             {
-                if (tok2->str[0]=='(')
+                if (Match(tok2,"("))
                     parlevel++;
-                else if (tok2->str[0]==')')
+                else if (Match(tok2,")"))
                 {
                     parlevel--;
                     if (parlevel<=0)
@@ -243,7 +243,7 @@ void CheckOther::WarningIf()
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
         // Begin statement?
-        if ( ! strchr(";{}", tok->str[0]) )
+        if ( ! Match(tok, "[;{}]") )
             continue;
         tok = tok->next;
         if ( ! tok )
@@ -256,7 +256,7 @@ void CheckOther::WarningIf()
             continue;
 
         // var1 = var2 ; if ( var3 cond var4 )
-        const char *var1 = tok->str;
+        const char *var1 = Tokenizer::getstr(tok, 0);
         const char *var2 = Tokenizer::getstr(tok, 2);
         const char *var3 = Tokenizer::getstr(tok, 6);
         const char *cond = Tokenizer::getstr(tok, 7);
@@ -302,7 +302,7 @@ void CheckOther::InvalidFunctionUsage()
 {
     for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
-        if ( strcmp(tok->str, "strtol") && strcmp(tok->str, "strtoul") )
+        if (!Match(tok, "strtol") && !Match(tok, "strtoul"))
             continue;
 
         // Locate the third parameter of the function call..
@@ -310,18 +310,18 @@ void CheckOther::InvalidFunctionUsage()
         int param = 1;
         for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
         {
-            if ( tok2->str[0] == '(' )
+            if ( Match(tok2, "(") )
                 parlevel++;
-            else if (tok2->str[0] == ')')
+            else if (Match(tok2, ")"))
                 parlevel--;
-            else if (parlevel == 1 && tok2->str[0] == ',')
+            else if (parlevel == 1 && Match(tok2, ","))
             {
                 param++;
                 if (param==3)
                 {
                     if ( Match(tok2, ", %num% )") )
                     {
-                        int radix = atoi(tok2->next->str);
+                        int radix = atoi(Tokenizer::getstr(tok2, 1));
                         if (!(radix==0 || (radix>=2 && radix<=36)))
                         {
                             std::ostringstream ostr;
@@ -437,21 +437,21 @@ void CheckOther::CheckVariableScope()
     for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
         // Skip class and struct declarations..
-        if ( strcmp(tok->str, "class") == 0 || strcmp(tok->str, "struct") == 0 )
+        if ( Match(tok, "class") || Match(tok, "struct") )
         {
             for (const TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
             {
-                if ( tok2->str[0] == '{' )
+                if ( Match(tok2, "{") )
                 {
                     int _indentlevel = 0;
                     tok = tok2;
                     for (tok = tok2; tok; tok = tok->next)
                     {
-                        if ( tok->str[0] == '{' )
+                        if ( Match(tok, "{") )
                         {
                             _indentlevel++;
                         }
-                        if ( tok->str[0] == '}' )
+                        if ( Match(tok, "}") )
                         {
                             _indentlevel--;
                             if ( _indentlevel <= 0 )
@@ -463,7 +463,7 @@ void CheckOther::CheckVariableScope()
                     }
                     break;
                 }
-                if (strchr(",);", tok2->str[0]))
+                if (Match(tok2, "[,);]"))
                 {
                     break;
                 }
@@ -472,11 +472,11 @@ void CheckOther::CheckVariableScope()
                 break;
         }
 
-        if ( tok->str[0] == '{' )
+        if ( Match(tok, "{") )
         {
             indentlevel++;
         }
-        if ( tok->str[0] == '}' )
+        if ( Match(tok, "}") )
         {
             indentlevel--;
             if ( indentlevel == 0 )
@@ -486,17 +486,17 @@ void CheckOther::CheckVariableScope()
         {
             func = true;
         }
-        if ( indentlevel > 0 && func && strchr("{};", tok->str[0]) )
+        if ( indentlevel > 0 && func && Match(tok, "[{};]") )
         {
             // First token of statement..
             const TOKEN *tok1 = tok->next;
             if ( ! tok1 )
                 continue;
 
-            if (strcmp(tok1->str,"return")==0 ||
-                strcmp(tok1->str,"delete")==0 ||
-                strcmp(tok1->str,"goto")==0 ||
-                strcmp(tok1->str,"else")==0)
+            if (Match(tok1,"return") ||
+                Match(tok1,"delete") ||
+                Match(tok1,"goto") ||
+                Match(tok1,"else"))
                 continue;
 
             // Variable declaration?
@@ -516,7 +516,7 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
     const TOKEN *tok = tok1;
 
     // Skip the variable declaration..
-    while ( tok->str[0] != ';' )
+    while (tok && !Match(tok,";"))
         tok = tok->next;
 
     // Check if the variable is used in this indentlevel..
@@ -526,12 +526,12 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
     bool for_or_while = false;
     while ( indentlevel >= 0 && tok )
     {
-        if ( tok->str[0] == '{' )
+        if ( Match(tok, "{") )
         {
             indentlevel++;
         }
 
-        else if ( tok->str[0] == '}' )
+        else if ( Match(tok, "}") )
         {
             indentlevel--;
             if ( indentlevel == 0 )
@@ -543,18 +543,18 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
             }
         }
 
-        else if ( tok->str[0] == '(' )
+        else if ( Match(tok, "(") )
         {
             parlevel++;
         }
 
-        else if ( tok->str[0] == ')' )
+        else if ( Match(tok, ")") )
         {
             parlevel--;
         }
 
 
-        else if ( strcmp(tok->str, varname) == 0 )
+        else if ( strcmp(Tokenizer::getstr(tok, 0), varname) == 0 )
         {
             if ( indentlevel == 0 || used1 )
                 return;
@@ -563,9 +563,9 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
 
         else if ( indentlevel==0 )
         {
-            if ( strcmp(tok->str,"for")==0 || strcmp(tok->str,"while")==0 )
+            if ( Match(tok,"for") || Match(tok,"while") )
                 for_or_while = true;
-            if ( parlevel == 0 && tok->str[0] == ';' )
+            if ( parlevel == 0 && Match(tok, ";") )
                 for_or_while = false;
         }
 
@@ -631,7 +631,7 @@ void CheckOther::CheckStructMemberUsage()
     {
         if ( tok->FileIndex != 0 )
             continue;
-        if ( tok->str[0] == '}' )
+        if ( Match(tok,"}") )
             structname = 0;
         if ( Match(tok, "struct %type% {") )
             structname = Tokenizer::getstr(tok, 1);
@@ -700,10 +700,10 @@ void CheckOther::CheckCharVariable()
             int indentlevel = 0;
             for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
             {
-                if ( tok2->str[0] == '{' )
+                if ( Match(tok2, "{") )
                     ++indentlevel;
 
-                else if ( tok2->str[0] == '}' )
+                else if ( Match(tok2, "}") )
                 {
                     --indentlevel;
                     if ( indentlevel <= 0 )
@@ -746,9 +746,9 @@ void CheckOther::CheckIncompleteStatement()
 
     for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
-        if ( tok->str[0] == '(' )
+        if ( Match(tok, "(") )
             ++parlevel;
-        else if ( tok->str[0] == ')' )
+        else if ( Match(tok, ")") )
             --parlevel;
 
         if ( parlevel != 0 )
