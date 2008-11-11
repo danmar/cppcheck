@@ -24,9 +24,27 @@
 #include <map>
 #include <istream>
 #include <string>
+#include <list>
 
+class Preprocessor
+{
+public:
+    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
+private:
+    /**
+     * Get preprocessed code for a given configuration
+     */
+    std::string getcode(const std::string &filedata, std::string cfg);
 
-void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
+    /**
+     * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
+     */
+    std::list<std::string> getcfgs( const std::string &filedata );
+
+    std::string getdef(std::string line, bool def);
+
+    bool match_cfg_def( std::string cfg, const std::string &def );
+};
 
 //---------------------------------------------------------------------------
 #endif

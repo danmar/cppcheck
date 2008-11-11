@@ -23,48 +23,55 @@
 #define CheckOtherH
 //---------------------------------------------------------------------------
 
+#include "tokenize.h"
 
-// Casting
-void WarningOldStylePointerCast();
+class CheckOther
+{
+public:
+    // Casting
+    void WarningOldStylePointerCast();
 
-// Use standard functions instead
-void WarningIsDigit();
+    // Use standard functions instead
+    void WarningIsDigit();
 
-// Use standard functions instead
-void WarningIsAlpha();
+    // Use standard functions instead
+    void WarningIsAlpha();
 
-// Redundant code
-void WarningRedundantCode();
+    // Redundant code
+    void WarningRedundantCode();
 
-// Warning upon: if (condition);
-void WarningIf();
+    // Warning upon: if (condition);
+    void WarningIf();
 
-// Assignment in condition
-void CheckIfAssignment();
+    // Assignment in condition
+    void CheckIfAssignment();
 
-// Using dangerous functions
-void WarningDangerousFunctions();
+    // Using dangerous functions
+    void WarningDangerousFunctions();
 
-// Invalid function usage..
-void InvalidFunctionUsage();
+    // Invalid function usage..
+    void InvalidFunctionUsage();
 
-// Check for unsigned division that might create bad results
-void CheckUnsignedDivision();
+    // Check for unsigned division that might create bad results
+    void CheckUnsignedDivision();
 
-// Check scope of variables
-void CheckVariableScope();
+    // Check scope of variables
+    void CheckVariableScope();
 
-// Check for constant function parameter
-void CheckConstantFunctionParameter();
+    // Check for constant function parameter
+    void CheckConstantFunctionParameter();
 
-// Check that all struct members are used
-void CheckStructMemberUsage();
+    // Check that all struct members are used
+    void CheckStructMemberUsage();
 
-// Using char variable as array index / as operand in bit operation
-void CheckCharVariable();
+    // Using char variable as array index / as operand in bit operation
+    void CheckCharVariable();
 
-// Incomplete statement. A statement that only contains a constant or variable
-void CheckIncompleteStatement();
+    // Incomplete statement. A statement that only contains a constant or variable
+    void CheckIncompleteStatement();
+private:
+    void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
+};
 
 //---------------------------------------------------------------------------
 #endif

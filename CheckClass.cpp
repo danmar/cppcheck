@@ -18,10 +18,10 @@
 
 //---------------------------------------------------------------------------
 #include "CheckClass.h"
-#include "tokenize.h"
+
 #include "CommonCheck.h"
 #include <locale>
-#include <list>
+
 #include <string>
 #include <sstream>
 #include <cstring>
@@ -36,15 +36,10 @@
 
 extern bool CheckCodingStyle;
 
-struct VAR
-{
-    const char *name;
-    bool        init;
-    struct VAR *next;
-};
+
 //---------------------------------------------------------------------------
 
-static struct VAR *ClassChecking_GetVarList(const TOKEN *tok1)
+struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
 {
     // Get variable list..
     struct VAR *varlist = NULL;
@@ -106,7 +101,7 @@ static struct VAR *ClassChecking_GetVarList(const TOKEN *tok1)
 }
 //---------------------------------------------------------------------------
 
-static const TOKEN * FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel )
+const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel )
 {
     const char *_classname[2] = {0,0};
     const char *_funcname[2] = {0,0};
@@ -186,7 +181,7 @@ static const TOKEN * FindClassFunction( const TOKEN *tok, const char classname[]
 }
 //---------------------------------------------------------------------------
 
-static void InitVar(struct VAR *varlist, const char varname[])
+void CheckClass::InitVar(struct VAR *varlist, const char varname[])
 {
     for (struct VAR *var = varlist; var; var = var->next)
     {
@@ -199,7 +194,7 @@ static void InitVar(struct VAR *varlist, const char varname[])
 }
 //---------------------------------------------------------------------------
 
-static void ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack)
+void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack)
 {
     bool Assign = false;
     unsigned int indentlevel = 0;
@@ -304,7 +299,7 @@ static void ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN *fto
 // ClassCheck: Check that all class constructors are ok.
 //---------------------------------------------------------------------------
 
-void CheckConstructors()
+void CheckClass::CheckConstructors()
 {
     // Locate class
     const char *pattern_classname[] = {"class","","{",NULL};
@@ -404,7 +399,7 @@ void CheckConstructors()
 // ClassCheck: Unused private functions
 //---------------------------------------------------------------------------
 
-void CheckUnusedPrivateFunctions()
+void CheckClass::CheckUnusedPrivateFunctions()
 {
     // Locate some class
     const char *pattern_class[] = {"class","","{",NULL};
@@ -538,7 +533,7 @@ void CheckUnusedPrivateFunctions()
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
-void CheckMemset()
+void CheckClass::CheckMemset()
 {
     // Locate all 'memset' tokens..
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
@@ -600,7 +595,7 @@ void CheckMemset()
 // ClassCheck: "void operator=("
 //---------------------------------------------------------------------------
 
-void CheckOperatorEq1()
+void CheckClass::CheckOperatorEq1()
 {
     const char *pattern[] = {"void", "operator", "=", "(", NULL};
     if (const TOKEN *tok = Tokenizer::findtoken(tokens,pattern))

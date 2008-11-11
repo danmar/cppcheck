@@ -22,13 +22,24 @@
 #define CheckBufferOverrunH
 //---------------------------------------------------------------------------
 
-// Buffer overrun..
-void CheckBufferOverrun();
+#include "tokenize.h"
+
+class CheckBufferOverrunClass
+{
+public:
+    // Buffer overrun..
+    void CheckBufferOverrun();
 
 
-// Dangerous functions that can cause buffer overruns
-void WarningDangerousFunctions();
+    // Dangerous functions that can cause buffer overruns
+    void WarningDangerousFunctions();
+private:
+    void CheckBufferOverrun_StructVariable();
+    void CheckBufferOverrun_LocalVariable();
+    void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname[], const int size, const int total_size );
+    void ReportError(const TOKEN *tok, const char errmsg[]);
 
+};
 
 //---------------------------------------------------------------------------
 #endif

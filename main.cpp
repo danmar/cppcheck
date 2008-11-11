@@ -127,7 +127,8 @@ int main(int argc, char* argv[])
 
         std::ifstream fin( fname.c_str() );
         std::map<std::string, std::string> code;
-        preprocess(fin, code, fname);
+        Preprocessor preprocessor;
+        preprocessor.preprocess(fin, code, fname);
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
             CppCheck(it->second, filenames[c].c_str(), c);
 
@@ -176,39 +177,46 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
-    CheckMemset();
+    CheckClass checkClass;
+    checkClass.CheckMemset();
 
 
     // Check for unsigned divisions where one operand is signed
     // Very important to run it before 'SimplifyTokenList'
-    CheckUnsignedDivision();
+    CheckOther checkOther;
+    checkOther.CheckUnsignedDivision();
 
     // Give warning when using char variable as array index
     // Doesn't work on simplified token list ('unsigned')
     if ( ShowAll )
-        CheckCharVariable();
+        checkOther.CheckCharVariable();
 
 
     // Including header which is not needed (too many false positives)
-    //if ( CheckCodingStyle )
-    //    WarningIncludeHeader();
+//    if ( CheckCodingStyle )
+//    {
+//        CheckHeaders checkHeaders;
+//        checkHeaders.WarningIncludeHeader();
+//    }
 
 
     tokenizer.SimplifyTokenList();
 
     // Memory leak
-    CheckMemoryLeak();
+    CheckMemoryLeakClass checkMemoryLeak;
+    checkMemoryLeak.CheckMemoryLeak();
 
     // Buffer overruns..
-    CheckBufferOverrun();
+    CheckBufferOverrunClass checkBufferOverrun;
+    checkBufferOverrun.CheckBufferOverrun();
 
     // Check that all class constructors are ok.
-    CheckConstructors();
+    checkClass.CheckConstructors();
 
     if (ShowAll)
     {
         // Check for "if (a=b)"
-        CheckIfAssignment();
+        checkOther.CheckIfAssignment();
 
         // Check for case without break
         // Disabled because it generates many false positives
@@ -222,47 +230,47 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
 
 
     // Dangerous functions, such as 'gets' and 'scanf'
-    WarningDangerousFunctions();
+    checkBufferOverrun.WarningDangerousFunctions();
 
 
     // Invalid function usage..
-    InvalidFunctionUsage();
+    checkOther.InvalidFunctionUsage();
 
 
     if (CheckCodingStyle)
     {
         // Check that all private functions are called.
-        CheckUnusedPrivateFunctions();
+        checkClass.CheckUnusedPrivateFunctions();
 
         // Warning upon c-style pointer casts
         const char *ext = strrchr(FileName, '.');
         if (ext && strcmp(ext,".cpp")==0)
-            WarningOldStylePointerCast();
+            checkOther.WarningOldStylePointerCast();
 
         // Use standard functions instead
-        WarningIsDigit();
-        WarningIsAlpha();
+        checkOther.WarningIsDigit();
+        checkOther.WarningIsAlpha();
 
-        CheckOperatorEq1();
+        checkClass.CheckOperatorEq1();
 
         // if (a) delete a;
-        WarningRedundantCode();
+        checkOther.WarningRedundantCode();
 
         // if (condition);
-        WarningIf();
+        checkOther.WarningIf();
 
         // Variable scope (check if the scope could be limited)
         //CheckVariableScope();
 
         // Check if a constant function parameter is passed by value
-        CheckConstantFunctionParameter();
+        checkOther.CheckConstantFunctionParameter();
 
         // Unused struct members..
-        CheckStructMemberUsage();
+        checkOther.CheckStructMemberUsage();
 
         // Check for various types of incomplete statements that could for example
         // mean that an ';' has been added by accident
-        CheckIncompleteStatement();
+        checkOther.CheckIncompleteStatement();
     }
 
     // Clean up tokens..

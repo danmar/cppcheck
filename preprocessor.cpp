@@ -21,7 +21,7 @@
 #include "CommonCheck.h"
 
 #include <algorithm>
-#include <list>
+
 #include <sstream>
 
 #ifdef __BORLANDC__
@@ -29,15 +29,6 @@
 #endif
 
 
-/**
- * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
- */
-static std::list<std::string> getcfgs( const std::string &filedata );
-
-/**
- * Get preprocessed code for a given configuration
- */
-static std::string getcode(const std::string &filedata, std::string cfg);
 
 
 /**
@@ -45,7 +36,7 @@ static std::string getcode(const std::string &filedata, std::string cfg);
  * \param istr The (file/string) stream to read from.
  * \param result The map that will get the results
  */
-void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
+void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
 {
     // Get filedata from stream..
     bool ignoreSpace = true;
@@ -178,7 +169,7 @@ void preprocess(std::istream &istr, std::map<std::string, std::string> &result, 
 
 
 // Get the DEF in this line: "#ifdef DEF"
-static std::string getdef(std::string line, bool def)
+std::string Preprocessor::getdef(std::string line, bool def)
 {
     // If def is true, the line must start with "#ifdef"
     if ( def && line.find("#ifdef ") != 0 && line.find("#if ") != 0 && line.find("#elif ") != 0 )
@@ -205,7 +196,7 @@ static std::string getdef(std::string line, bool def)
 
 
 
-static std::list<std::string> getcfgs( const std::string &filedata )
+std::list<std::string> Preprocessor::getcfgs( const std::string &filedata )
 {
     std::list<std::string> ret;
     ret.push_back("");
@@ -254,7 +245,7 @@ static std::list<std::string> getcfgs( const std::string &filedata )
 
 
 
-static bool match_cfg_def( std::string cfg, const std::string &def )
+bool Preprocessor::match_cfg_def( std::string cfg, const std::string &def )
 {
     if ( def == "0" )
         return false;
@@ -271,7 +262,7 @@ static bool match_cfg_def( std::string cfg, const std::string &def )
             return bool(cfg == def);
         std::string _cfg = cfg.substr( 0, cfg.find(";") );
         if ( _cfg == def )
-            return true; 
+            return true;
         cfg.erase( 0, cfg.find(";") + 1 );
     }
 
@@ -279,7 +270,7 @@ static bool match_cfg_def( std::string cfg, const std::string &def )
 }
 
 
-static std::string getcode(const std::string &filedata, std::string cfg)
+std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
 {
     std::ostringstream ret;
 
@@ -313,13 +304,13 @@ static std::string getcode(const std::string &filedata, std::string cfg)
         else if ( ! def.empty() )
         {
             matching_ifdef.push_back( match_cfg_def(cfg, def) );
-            matched_ifdef.push_back( matching_ifdef.back() ); 
+            matched_ifdef.push_back( matching_ifdef.back() );
         }
 
         else if ( ! ndef.empty() )
         {
             matching_ifdef.push_back( ! match_cfg_def(cfg, ndef) );
-            matched_ifdef.push_back( matching_ifdef.back() ); 
+            matched_ifdef.push_back( matching_ifdef.back() );
         }
 
         else if ( line == "#else" )

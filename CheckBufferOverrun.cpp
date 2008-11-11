@@ -21,7 +21,6 @@
 //---------------------------------------------------------------------------
 
 #include "CheckBufferOverrun.h"
-#include "tokenize.h"
 #include "CommonCheck.h"
 
 #include <algorithm>
@@ -40,7 +39,7 @@ static std::list<const TOKEN *> CallStack;
 
 
 // Modified version of 'ReportError' that also reports the callstack
-static void ReportError(const TOKEN *tok, const char errmsg[])
+void CheckBufferOverrunClass::ReportError(const TOKEN *tok, const char errmsg[])
 {
     std::ostringstream ostr;
     std::list<const TOKEN *>::const_iterator it;
@@ -56,7 +55,7 @@ static void ReportError(const TOKEN *tok, const char errmsg[])
 // Check array usage..
 //---------------------------------------------------------------------------
 
-static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname[], const int size, const int total_size )
+void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname[], const int size, const int total_size )
 {
     unsigned int varc = 1;
     while ( varname[varc] )
@@ -299,7 +298,7 @@ static void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname
 // Checking local variables in a scope
 //---------------------------------------------------------------------------
 
-static void CheckBufferOverrun_LocalVariable()
+void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
 {
     int indentlevel = 0;
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
@@ -350,7 +349,7 @@ static void CheckBufferOverrun_LocalVariable()
 // Checking member variables of structs..
 //---------------------------------------------------------------------------
 
-static void CheckBufferOverrun_StructVariable()
+void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 {
     const char *declstruct_pattern[] = {"","","{",0};
     for ( const TOKEN * tok = Tokenizer::findtoken( tokens, declstruct_pattern );
@@ -446,7 +445,7 @@ static void CheckBufferOverrun_StructVariable()
 }
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrun()
+void CheckBufferOverrunClass::CheckBufferOverrun()
 {
     CheckBufferOverrun_LocalVariable();
     CheckBufferOverrun_StructVariable();
@@ -464,7 +463,7 @@ void CheckBufferOverrun()
 // Dangerous functions
 //---------------------------------------------------------------------------
 
-void WarningDangerousFunctions()
+void CheckBufferOverrunClass::WarningDangerousFunctions()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {

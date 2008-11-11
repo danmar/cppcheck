@@ -48,7 +48,8 @@ private:
         errout.str("");
 
         // Check for unused variables..
-        CheckIncompleteStatement();
+        CheckOther checkOther;
+        checkOther.CheckIncompleteStatement();
 
         tokenizer.DeallocateTokens();
     }

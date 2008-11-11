@@ -35,7 +35,7 @@
 // HEADERS - No implementation in a header
 //---------------------------------------------------------------------------
 
-void WarningHeaderWithImplementation()
+void CheckHeaders::WarningHeaderWithImplementation()
 {
     for (TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -69,7 +69,7 @@ void WarningHeaderWithImplementation()
 // HEADERS - Unneeded include
 //---------------------------------------------------------------------------
 
-void WarningIncludeHeader()
+void CheckHeaders::WarningIncludeHeader()
 {
     // Including..
     for (TOKEN *includetok = tokens; includetok; includetok = includetok->next)

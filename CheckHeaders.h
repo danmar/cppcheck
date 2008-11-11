@@ -22,10 +22,13 @@
 #define CheckHeadersH
 //---------------------------------------------------------------------------
 
-void WarningHeaderWithImplementation();
+class CheckHeaders
+{
+public:
+    void WarningHeaderWithImplementation();
+    void WarningIncludeHeader();
 
-void WarningIncludeHeader();
-
+};
 
 //---------------------------------------------------------------------------
 #endif

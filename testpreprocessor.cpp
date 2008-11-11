@@ -140,7 +140,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -163,7 +164,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -185,7 +187,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -210,7 +213,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -233,7 +237,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -259,7 +264,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -281,7 +287,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -303,7 +310,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -322,7 +330,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -346,7 +355,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -365,7 +375,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -389,7 +400,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
@@ -408,7 +420,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        preprocess( istr, actual, "" );
+        Preprocessor preprocessor;
+        preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));

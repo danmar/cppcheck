@@ -48,7 +48,8 @@ private:
         errout.str("");
 
         // Check for unused variables..
-        CheckStructMemberUsage();
+        CheckOther checkOther;
+        checkOther.CheckStructMemberUsage();
 
         tokenizer.DeallocateTokens();
     }

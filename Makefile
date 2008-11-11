@@ -11,7 +11,7 @@ all:	${OBJS} main.o
 test:	${OBJS} testrunner.o	testsuite.o	${TESTS}
 	g++ -Wall -g -o testrunner $^
 clean:
-	rm -f *.o cppcheck_test cppcheck
+	rm -f *.o testrunner cppcheck
 install:	cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}

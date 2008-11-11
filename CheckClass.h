@@ -21,15 +21,33 @@
 #define CheckClassH
 //---------------------------------------------------------------------------
 
+#include "tokenize.h"
+#include <list>
 
-void CheckConstructors();
+struct VAR
+{
+    const char *name;
+    bool        init;
+    struct VAR *next;
+};
 
-void CheckUnusedPrivateFunctions();
+class CheckClass
+{
+public:
+    void CheckConstructors();
 
-void CheckMemset();
+    void CheckUnusedPrivateFunctions();
 
-void CheckOperatorEq1();    // Warning upon "void operator=(.."
+    void CheckMemset();
 
+    void CheckOperatorEq1();    // Warning upon "void operator=(.."
+
+private:
+    void ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack);
+    void InitVar(struct VAR *varlist, const char varname[]);
+    const TOKEN *FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel );
+    struct VAR *ClassChecking_GetVarList(const TOKEN *tok1);
+};
 //---------------------------------------------------------------------------
 #endif
 

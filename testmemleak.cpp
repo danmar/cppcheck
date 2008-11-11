@@ -51,7 +51,8 @@ private:
         // Check for memory leaks..
         ShowAll = false;
         FillFunctionList(0);
-        CheckMemoryLeak();
+        CheckMemoryLeakClass checkMemoryLeak;
+        checkMemoryLeak.CheckMemoryLeak();
 
         tokenizer.DeallocateTokens();
     }

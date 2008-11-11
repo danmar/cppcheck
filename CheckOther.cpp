@@ -19,7 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "CheckOther.h"
-#include "tokenize.h"
+
 #include "CommonCheck.h"
 #include <list>
 #include <map>
@@ -35,7 +35,7 @@
 // Warning on C-Style casts.. p = (kalle *)foo;
 //---------------------------------------------------------------------------
 
-void WarningOldStylePointerCast()
+void CheckOther::WarningOldStylePointerCast()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -62,7 +62,7 @@ void WarningOldStylePointerCast()
 // Use standard function "isdigit" instead
 //---------------------------------------------------------------------------
 
-void WarningIsDigit()
+void CheckOther::WarningIsDigit()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -87,7 +87,7 @@ void WarningIsDigit()
 // Use standard function "isalpha" instead
 //---------------------------------------------------------------------------
 
-void WarningIsAlpha()
+void CheckOther::WarningIsAlpha()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -145,7 +145,7 @@ void WarningIsAlpha()
 // Redundant code..
 //---------------------------------------------------------------------------
 
-void WarningRedundantCode()
+void CheckOther::WarningRedundantCode()
 {
 
     // if (p) delete p
@@ -207,7 +207,7 @@ void WarningRedundantCode()
 // if (condition) ....
 //---------------------------------------------------------------------------
 
-void WarningIf()
+void CheckOther::WarningIf()
 {
 
     // Search for 'if (condition);'
@@ -298,7 +298,7 @@ void WarningIf()
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
 
-void InvalidFunctionUsage()
+void CheckOther::InvalidFunctionUsage()
 {
     for ( const TOKEN *tok = tokens; tok; tok = tok->next )
     {
@@ -342,7 +342,7 @@ void InvalidFunctionUsage()
 // Assignment in condition
 //---------------------------------------------------------------------------
 
-void CheckIfAssignment()
+void CheckOther::CheckIfAssignment()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -363,7 +363,7 @@ void CheckIfAssignment()
 // Check for unsigned divisions
 //---------------------------------------------------------------------------
 
-void CheckUnsignedDivision()
+void CheckOther::CheckUnsignedDivision()
 {
     // Check for "ivar / uvar" and "uvar / ivar"
     std::map<std::string, char> varsign;
@@ -428,9 +428,8 @@ void CheckUnsignedDivision()
 // Check scope of variables..
 //---------------------------------------------------------------------------
 
-static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
 
-void CheckVariableScope()
+void CheckOther::CheckVariableScope()
 {
     // Walk through all tokens..
     bool func = false;
@@ -512,7 +511,7 @@ void CheckVariableScope()
 }
 //---------------------------------------------------------------------------
 
-static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] )
+void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] )
 {
     const TOKEN *tok = tok1;
 
@@ -585,7 +584,7 @@ static void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[
 // Check for constant function parameters
 //---------------------------------------------------------------------------
 
-void CheckConstantFunctionParameter()
+void CheckOther::CheckConstantFunctionParameter()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -624,7 +623,7 @@ void CheckConstantFunctionParameter()
 // Check that all struct members are used
 //---------------------------------------------------------------------------
 
-void CheckStructMemberUsage()
+void CheckOther::CheckStructMemberUsage()
 {
     const char *structname = 0;
 
@@ -687,7 +686,7 @@ void CheckStructMemberUsage()
 // Check usage of char variables..
 //---------------------------------------------------------------------------
 
-void CheckCharVariable()
+void CheckOther::CheckCharVariable()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)
     {
@@ -741,7 +740,7 @@ void CheckCharVariable()
 // Incomplete statement..
 //---------------------------------------------------------------------------
 
-void CheckIncompleteStatement()
+void CheckOther::CheckIncompleteStatement()
 {
     int parlevel = 0;
 

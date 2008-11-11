@@ -19,14 +19,14 @@
 
 #include "CheckMemoryLeak.h"
 
-#include "tokenize.h"
+
 
 #include "CommonCheck.h"
 
 #include <stdlib.h> // free
 
 #include <algorithm>
-#include <vector>
+
 #include <sstream>
 
 #ifdef __BORLANDC__
@@ -40,10 +40,8 @@
 #endif
 
 //---------------------------------------------------------------------------
-static TOKEN *getcode(const TOKEN *tok, const char varname[]);
-static void simplifycode(TOKEN *tok);
 
-static bool isclass( const std::string &typestr )
+bool CheckMemoryLeakClass::isclass( const std::string &typestr )
 {
     if ( typestr == "char" ||
          typestr == "short" ||
@@ -63,7 +61,7 @@ static bool isclass( const std::string &typestr )
 //---------------------------------------------------------------------------
 
 
-enum AllocType { No, Malloc, gMalloc, New, NewA };
+
 
 // Extra allocation..
 class AllocFunc
@@ -80,7 +78,7 @@ class AllocFunc
 };
 static std::list<AllocFunc> listallocfunc;
 
-static AllocType GetAllocationType( const TOKEN *tok2 )
+AllocType CheckMemoryLeakClass::GetAllocationType( const TOKEN *tok2 )
 {
     // What we may have...
     //     * var = (char *)malloc(10);
@@ -149,7 +147,7 @@ static AllocType GetAllocationType( const TOKEN *tok2 )
     return No;
 }
 
-static AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] )
+AllocType CheckMemoryLeakClass::GetDeallocationType( const TOKEN *tok, const char *varnames[] )
 {
     // Redundant condition..
     if ( Match(tok, "if ( %var1% )", varnames) )
@@ -180,7 +178,7 @@ static AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] )
 
 static std::list<std::string> callstack;
 
-static const char * call_func( const TOKEN *tok, const char *varnames[] )
+const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, const char *varnames[] )
 {
     if (Match(tok,"if") || Match(tok,"for") || Match(tok,"while"))
         return 0;
@@ -238,7 +236,7 @@ static const char * call_func( const TOKEN *tok, const char *varnames[] )
 
 //--------------------------------------------------------------------------
 
-static void MismatchError( const TOKEN *Tok1, const char varname[] )
+void CheckMemoryLeakClass::MismatchError( const TOKEN *Tok1, const char varname[] )
 {
     std::ostringstream errmsg;
     errmsg << FileLine(Tok1) << ": Mismatching allocation and deallocation: " << varname;
@@ -246,7 +244,7 @@ static void MismatchError( const TOKEN *Tok1, const char varname[] )
 }
 //---------------------------------------------------------------------------
 
-static void MemoryLeak( const TOKEN *tok, const char varname[] )
+void CheckMemoryLeakClass::MemoryLeak( const TOKEN *tok, const char varname[] )
 {
     std::ostringstream errmsg;
     errmsg << FileLine(tok) << ": Memory leak: " << varname;
@@ -254,7 +252,7 @@ static void MemoryLeak( const TOKEN *tok, const char varname[] )
 }
 //---------------------------------------------------------------------------
 
-static void instoken(TOKEN *tok, const char str[])
+void CheckMemoryLeakClass::instoken(TOKEN *tok, const char str[])
 {
     TOKEN *newtok = new TOKEN;
     newtok->setstr(str);
@@ -263,7 +261,7 @@ static void instoken(TOKEN *tok, const char str[])
 }
 //---------------------------------------------------------------------------
 
-static bool notvar(const TOKEN *tok, const char *varnames[])
+bool CheckMemoryLeakClass::notvar(const TOKEN *tok, const char *varnames[])
 {
     return bool( Match(tok, "! %var1% [;)&|]", varnames) ||
                  Match(tok, "! ( %var1% )", varnames) ||
@@ -283,7 +281,7 @@ extern bool ShowAll;
  * varname - name of variable
  */
 
-static TOKEN *getcode(const TOKEN *tok, const char varname[])
+TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, const char varname[])
 {
     const char *varnames[2];
     varnames[0] = varname;
@@ -462,7 +460,7 @@ static TOKEN *getcode(const TOKEN *tok, const char varname[])
     return rethead;
 }
 
-static void erase(TOKEN *begin, const TOKEN *end)
+void CheckMemoryLeakClass::erase(TOKEN *begin, const TOKEN *end)
 {
     if ( ! begin )
         return;
@@ -481,7 +479,7 @@ static void erase(TOKEN *begin, const TOKEN *end)
  * Simplify code
  * \param tok first token
  */
-static void simplifycode(TOKEN *tok)
+void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
 {
     // Remove "do"...
     // do { x } while (y);
@@ -758,7 +756,7 @@ static void simplifycode(TOKEN *tok)
 
 
 // Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
-static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
+void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
 {
     callstack.clear();
 
@@ -826,7 +824,7 @@ static void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] 
 // Checks for memory leaks inside function..
 //---------------------------------------------------------------------------
 
-static void CheckMemoryLeak_InFunction()
+void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
 {
     bool infunc = false;
     int indentlevel = 0;
@@ -868,11 +866,9 @@ static void CheckMemoryLeak_InFunction()
 // Checks for memory leaks in classes..
 //---------------------------------------------------------------------------
 
-static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname );
-static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char *> &classname, const char varname[] );
 
 
-static void CheckMemoryLeak_ClassMembers()
+void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers()
 {
     int indentlevel = 0;
     for ( const TOKEN *tok = tokens; tok; tok = tok->next )
@@ -893,7 +889,7 @@ static void CheckMemoryLeak_ClassMembers()
 }
 
 
-static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname )
+void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname )
 {
     // Go into class.
     while ( tok1 && tok1->str[0] != '{' )
@@ -938,7 +934,7 @@ static void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vec
     }
 }
 
-static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char *> &classname, const char varname[] )
+void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char *> &classname, const char varname[] )
 {
     // Function pattern.. Check if member function
 	std::ostringstream fpattern;
@@ -1035,7 +1031,7 @@ static void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char 
 // Checks for memory leaks..
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeak()
+void CheckMemoryLeakClass::CheckMemoryLeak()
 {
     listallocfunc.clear();
 
