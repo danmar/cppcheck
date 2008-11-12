@@ -25,7 +25,7 @@
 #include <locale>
 #include <fstream>
 
-#include <map>
+
 #include <string>
 #include <cstring>
 
@@ -60,12 +60,20 @@ TOKEN *Tokenizer::_gettok(TOKEN *tok, int index)
 //---------------------------------------------------------------------------
 
 std::vector<std::string> Files;
-TOKEN *tokens, *tokens_back;
+TOKEN *tokens;
 
 //---------------------------------------------------------------------------
 
+Tokenizer::Tokenizer()
+{
+    tokens = 0;
+    tokens_back = 0;
+}
 
+Tokenizer::~Tokenizer()
+{
 
+}
 
 //---------------------------------------------------------------------------
 // Defined symbols.
@@ -211,7 +219,7 @@ void Tokenizer::combine_2tokens(TOKEN *tok, const char str1[], const char str2[]
 // SizeOfType - gives the size of a type
 //---------------------------------------------------------------------------
 
-std::map<std::string, unsigned int> TypeSize;
+
 
 int Tokenizer::SizeOfType(const char type[])
 {

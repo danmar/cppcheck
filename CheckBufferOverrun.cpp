@@ -341,7 +341,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
                 continue;
             }
 
-            int total_size = size * Tokenizer::SizeOfType(type);
+            int total_size = size * _tokenizer->SizeOfType(type);
             if (total_size == 0)
                 continue;
 
@@ -397,7 +397,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
             const char *varname[3] = {0,0,0};
             varname[1] = Tokenizer::getstr(tok2, ivar);
             int arrsize = atoi(Tokenizer::getstr(tok2, ivar+2));
-            int total_size = arrsize * Tokenizer::SizeOfType(tok2->next->str);
+            int total_size = arrsize * _tokenizer->SizeOfType(tok2->next->str);
             if (total_size == 0)
                 continue;
 

@@ -59,9 +59,8 @@ private:
                                 "            \"def\"\n";
 
         // tokenize..
-        tokens = tokens_back = NULL;
-        std::istringstream istr(filedata);
         Tokenizer tokenizer;
+        std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
         // Expected result..
@@ -85,9 +84,8 @@ private:
         std::string filedata(10000,'a');
 
         // tokenize..
-        tokens = tokens_back = NULL;
-        std::istringstream istr(filedata);
         Tokenizer tokenizer;
+        std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
         // Expected result..
@@ -109,9 +107,8 @@ private:
                                 "}\n";
 
         // tokenize..
-        tokens = tokens_back = NULL;
-        std::istringstream istr(filedata);
         Tokenizer tokenizer;
+        std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
         // Expected result..

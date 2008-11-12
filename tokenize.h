@@ -23,6 +23,7 @@
 //---------------------------------------------------------------------------
 
 #include <string>
+#include <map>
 #include <vector>
 #include <cstdlib>
 #include <cstring>
@@ -65,6 +66,8 @@ extern TOKEN *tokens, *tokens_back;
 class Tokenizer
 {
 public:
+    Tokenizer();
+    ~Tokenizer();
 
     void Tokenize(std::istream &code, const char FileName[]);
 
@@ -83,27 +86,32 @@ public:
     static const char *getstr(const TOKEN *tok, int index);
 
     // Return size.
-    static int SizeOfType(const char type[]);
+    int SizeOfType(const char type[]);
+
+    void initTokens();
 
     std::vector<std::string> _files;
     TOKEN *_tokens;
-    TOKEN *_tokens_back;
+
 private:
 
 
 
 
-    static void Define(const char Name[], const char Value[]);
+    void Define(const char Name[], const char Value[]);
 
-    static void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
+    void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
 
-    static void combine_2tokens(TOKEN *tok, const char str1[], const char str2[]);
+    void combine_2tokens(TOKEN *tok, const char str1[], const char str2[]);
 
-    static void DeleteNextToken(TOKEN *tok);
+    void DeleteNextToken(TOKEN *tok);
 
-    static TOKEN *_gettok(TOKEN *tok, int index);
+    TOKEN *_gettok(TOKEN *tok, int index);
 
-    static void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n);
+    void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n);
+
+    TOKEN *tokens_back;
+    std::map<std::string, unsigned int> TypeSize;
 };
 
 

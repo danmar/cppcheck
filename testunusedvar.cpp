@@ -38,9 +38,8 @@ private:
     void check( const char code[] )
     {
         // Tokenize..
-        tokens = tokens_back = NULL;
-        std::istringstream istr(code);
         Tokenizer tokenizer;
+        std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
         tokenizer.SimplifyTokenList();
 

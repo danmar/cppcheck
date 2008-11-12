@@ -40,9 +40,8 @@ private:
     void check( const char code[] )
     {
         // Tokenize..
-        tokens = tokens_back = NULL;
-        std::istringstream istr(code);
         Tokenizer tokenizer;
+        std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
         //SimplifyTokenList();  <- this can't be used as it removes 'unsigned'
 
