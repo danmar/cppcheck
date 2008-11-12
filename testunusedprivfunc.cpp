@@ -54,7 +54,7 @@ private:
         errout.str("");
 
         // Check for unused private functions..
-        CheckClass checkClass;
+        CheckClass checkClass( &tokenizer );
         checkClass.CheckUnusedPrivateFunctions();
 
         tokenizer.DeallocateTokens();

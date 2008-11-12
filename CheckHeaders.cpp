@@ -35,6 +35,16 @@
 // HEADERS - No implementation in a header
 //---------------------------------------------------------------------------
 
+CheckHeaders::CheckHeaders( Tokenizer *tokenizer )
+{
+    _tokenizer = tokenizer;
+}
+
+CheckHeaders::~CheckHeaders()
+{
+
+}
+
 void CheckHeaders::WarningHeaderWithImplementation()
 {
     for (TOKEN *tok = tokens; tok; tok = tok->next)

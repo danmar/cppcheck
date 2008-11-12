@@ -34,6 +34,9 @@ struct VAR
 class CheckClass
 {
 public:
+    CheckClass( Tokenizer *tokenizer );
+    ~CheckClass();
+
     void CheckConstructors();
 
     void CheckUnusedPrivateFunctions();
@@ -47,6 +50,8 @@ private:
     void InitVar(struct VAR *varlist, const char varname[]);
     const TOKEN *FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel );
     struct VAR *ClassChecking_GetVarList(const TOKEN *tok1);
+
+    Tokenizer *_tokenizer;
 };
 //---------------------------------------------------------------------------
 #endif

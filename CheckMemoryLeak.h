@@ -33,6 +33,8 @@ enum AllocType { No, Malloc, gMalloc, New, NewA };
 class CheckMemoryLeakClass
 {
 public:
+    CheckMemoryLeakClass( Tokenizer *tokenizer );
+    ~CheckMemoryLeakClass();
     void CheckMemoryLeak();
 
 private:
@@ -53,6 +55,8 @@ private:
     AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] );
     AllocType GetAllocationType( const TOKEN *tok2 );
     bool isclass( const std::string &typestr );
+
+    Tokenizer *_tokenizer;
 };
 
 //---------------------------------------------------------------------------

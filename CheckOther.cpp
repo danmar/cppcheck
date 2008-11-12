@@ -35,6 +35,16 @@
 // Warning on C-Style casts.. p = (kalle *)foo;
 //---------------------------------------------------------------------------
 
+CheckOther::CheckOther( Tokenizer *tokenizer )
+{
+    _tokenizer = tokenizer;
+}
+
+CheckOther::~CheckOther()
+{
+
+}
+
 void CheckOther::WarningOldStylePointerCast()
 {
     for (const TOKEN *tok = tokens; tok; tok = tok->next)

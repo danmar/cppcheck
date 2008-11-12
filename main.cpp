@@ -177,13 +177,13 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
-    CheckClass checkClass;
+    CheckClass checkClass( &tokenizer );
     checkClass.CheckMemset();
 
 
     // Check for unsigned divisions where one operand is signed
     // Very important to run it before 'SimplifyTokenList'
-    CheckOther checkOther;
+    CheckOther checkOther( &tokenizer );
     checkOther.CheckUnsignedDivision();
 
     // Give warning when using char variable as array index
@@ -195,7 +195,7 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
     // Including header which is not needed (too many false positives)
 //    if ( CheckCodingStyle )
 //    {
-//        CheckHeaders checkHeaders;
+//        CheckHeaders checkHeaders( &tokenizer );
 //        checkHeaders.WarningIncludeHeader();
 //    }
 
@@ -203,11 +203,11 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
     tokenizer.SimplifyTokenList();
 
     // Memory leak
-    CheckMemoryLeakClass checkMemoryLeak;
+    CheckMemoryLeakClass checkMemoryLeak( &tokenizer );
     checkMemoryLeak.CheckMemoryLeak();
 
     // Buffer overruns..
-    CheckBufferOverrunClass checkBufferOverrun;
+    CheckBufferOverrunClass checkBufferOverrun( &tokenizer );
     checkBufferOverrun.CheckBufferOverrun();
 
     // Check that all class constructors are ok.

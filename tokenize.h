@@ -85,7 +85,9 @@ public:
     // Return size.
     static int SizeOfType(const char type[]);
 
-
+    std::vector<std::string> _files;
+    TOKEN *_tokens;
+    TOKEN *_tokens_back;
 private:
 
 

@@ -101,6 +101,16 @@ struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
 }
 //---------------------------------------------------------------------------
 
+CheckClass::CheckClass( Tokenizer *tokenizer )
+{
+    _tokenizer = tokenizer;
+}
+
+CheckClass::~CheckClass()
+{
+
+}
+
 const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel )
 {
     const char *_classname[2] = {0,0};

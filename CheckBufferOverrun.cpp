@@ -37,6 +37,15 @@ extern bool ShowAll;
 // CallStack used when parsing into subfunctions.
 static std::list<const TOKEN *> CallStack;
 
+CheckBufferOverrunClass::CheckBufferOverrunClass( Tokenizer *tokenizer )
+{
+    _tokenizer = tokenizer;
+}
+
+CheckBufferOverrunClass::~CheckBufferOverrunClass()
+{
+
+}
 
 // Modified version of 'ReportError' that also reports the callstack
 void CheckBufferOverrunClass::ReportError(const TOKEN *tok, const char errmsg[])

@@ -57,7 +57,7 @@ private:
 
         // Check for memory leaks..
         ShowAll = true;
-        CheckOther checkOther;
+        CheckOther checkOther( &tokenizer );
         checkOther.CheckCharVariable();
 
         tokenizer.DeallocateTokens();

@@ -22,12 +22,18 @@
 #define CheckHeadersH
 //---------------------------------------------------------------------------
 
+#include "tokenize.h"
+
 class CheckHeaders
 {
 public:
+    CheckHeaders( Tokenizer *tokenizer );
+    ~CheckHeaders();
     void WarningHeaderWithImplementation();
     void WarningIncludeHeader();
 
+private:
+    Tokenizer *_tokenizer;
 };
 
 //---------------------------------------------------------------------------

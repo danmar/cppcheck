@@ -41,6 +41,16 @@
 
 //---------------------------------------------------------------------------
 
+CheckMemoryLeakClass::CheckMemoryLeakClass( Tokenizer *tokenizer )
+{
+    _tokenizer = tokenizer;
+}
+
+CheckMemoryLeakClass::~CheckMemoryLeakClass()
+{
+
+}
+
 bool CheckMemoryLeakClass::isclass( const std::string &typestr )
 {
     if ( typestr == "char" ||

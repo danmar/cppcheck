@@ -28,6 +28,9 @@
 class CheckOther
 {
 public:
+    CheckOther( Tokenizer *tokenizer );
+    ~CheckOther();
+
     // Casting
     void WarningOldStylePointerCast();
 
@@ -71,6 +74,8 @@ public:
     void CheckIncompleteStatement();
 private:
     void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
+
+    Tokenizer *_tokenizer;
 };
 
 //---------------------------------------------------------------------------
