@@ -38,6 +38,7 @@
 bool Debug = false;
 bool ShowAll = false;
 bool CheckCodingStyle = false;
+bool ErrorsOnly = false;
 //---------------------------------------------------------------------------
 
 static void CppCheck(const std::string &code, const char FileName[], unsigned int FileId);
@@ -64,6 +65,10 @@ int main(int argc, char* argv[])
         // Checking coding style.
         else if (strcmp(argv[i],"--style")==0)
             CheckCodingStyle = true;
+
+        // Only print something when there are errors
+        else if (strcmp(argv[i],"--errorsonly")==0)
+            ErrorsOnly = true;
 
         else if (strcmp(argv[i],"--recursive")==0)
             Recursive = true;
@@ -104,7 +109,7 @@ int main(int argc, char* argv[])
         std::cout << "C/C++ code checking.\n"
                      "\n"
                      "Syntax:\n"
-                     "    cppcheck [--all] [--style] [--recursive] [filename1] [filename2]\n"
+                     "    cppcheck [--all] [--style] [--errorsonly] [--recursive] [filename1] [filename2]\n"
                      "\n"
                      "Options:\n"
                      "    --all    Normally a message is only shown if cppcheck is sure\n"
@@ -112,6 +117,7 @@ int main(int argc, char* argv[])
                      "             When this option is given, all messages are shown.\n"
                      "\n"
                      "    --style  Check coding style.\n"
+                     "    --errorsonly  Only print something when there is an error\n"
                      "    --recursive  Recursively check all *.cpp, *.cc and *.c files\n";
         return 0;
     }
@@ -123,7 +129,9 @@ int main(int argc, char* argv[])
         errout.str("");
         std::string fname = filenames[c];
 
-        std::cout << "Checking " << fname << "...\n";
+        // If only errors are printed, print filename after the check
+        if (!ErrorsOnly)
+            std::cout << "Checking " << fname << "...\n";
 
         std::ifstream fin( fname.c_str() );
         std::map<std::string, std::string> code;
@@ -132,10 +140,21 @@ int main(int argc, char* argv[])
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
             CppCheck(it->second, filenames[c].c_str(), c);
 
-        if ( errout.str().empty() )
-            std::cout << "No errors found\n";
+        if (ErrorsOnly)
+        {
+            if ( !errout.str().empty() )
+            {
+                std::cout << "Errors found in " << fname << ":\n";
+                std::cerr << errout.str();
+            }
+        }
         else
-            std::cerr << errout.str();
+        {
+            if ( errout.str().empty() )
+                std::cout << "No errors found\n";
+            else
+                std::cerr << errout.str();
+        }
     }
 
     // This generates false positives - especially for libraries
