@@ -3,11 +3,52 @@ OBJS=$(SRCS:%.cpp=%.o)
 TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testtokenize.o	testunusedprivfunc.o	testunusedvar.o
 BIN = ${DESTDIR}/usr/bin
 
-%.o:	%.cpp
-	g++ -Wall -pedantic -g -I. -o $@ -c $^
-
 all:	${OBJS} main.o
 	g++ -Wall -g -o cppcheck $^
+CheckBufferOverrun.o: CheckBufferOverrun.cpp CheckBufferOverrun.h tokenize.h CommonCheck.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+CheckClass.o: CheckClass.cpp CheckClass.h tokenize.h CommonCheck.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+CheckHeaders.o: CheckHeaders.cpp CheckHeaders.h tokenize.h CommonCheck.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+CheckMemoryLeak.o: CheckMemoryLeak.cpp CheckMemoryLeak.h tokenize.h CommonCheck.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+CheckOther.o: CheckOther.cpp CheckOther.h tokenize.h CommonCheck.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+CommonCheck.o: CommonCheck.cpp CommonCheck.h tokenize.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+FileLister.o: FileLister.cpp FileLister.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+main.o: main.cpp preprocessor.h tokenize.h CommonCheck.h CheckMemoryLeak.h CheckBufferOverrun.h CheckClass.h CheckHeaders.h CheckOther.h FileLister.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+preprocessor.o: preprocessor.cpp preprocessor.h CommonCheck.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testbufferoverrun.o: testbufferoverrun.cpp tokenize.h CommonCheck.h CheckBufferOverrun.h testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testcharvar.o: testcharvar.cpp tokenize.h CommonCheck.h CheckOther.h testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testconstructors.o: testconstructors.cpp tokenize.h CheckClass.h testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testdivision.o: testdivision.cpp tokenize.h CheckOther.h testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testincompletestatement.o: testincompletestatement.cpp testsuite.h tokenize.h CheckOther.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testmemleak.o: testmemleak.cpp CommonCheck.h tokenize.h CheckMemoryLeak.h testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testpreprocessor.o: testpreprocessor.cpp testsuite.h preprocessor.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testrunner.o: testrunner.cpp testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testsuite.o: testsuite.cpp testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testtokenize.o:testtokenize.cpp  testsuite.h tokenize.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testunusedprivfunc.o: testunusedprivfunc.cpp tokenize.h CheckClass.h testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testunusedvar.o: testunusedvar.cpp testsuite.h tokenize.h CheckOther.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+tokenize.o: tokenize.cpp tokenize.h CommonCheck.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 test:	${OBJS} testrunner.o	testsuite.o	${TESTS}
 	g++ -Wall -g -o testrunner $^
 clean:
