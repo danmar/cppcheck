@@ -59,7 +59,7 @@ TOKEN *Tokenizer::_gettok(TOKEN *tok, int index)
 
 //---------------------------------------------------------------------------
 
-std::vector<std::string> Files;
+
 TOKEN *tokens;
 
 //---------------------------------------------------------------------------
@@ -87,6 +87,11 @@ struct DefineSymbol
     struct DefineSymbol *next;
 };
 static struct DefineSymbol * dsymlist;
+
+std::vector<std::string> *Tokenizer::getFiles()
+{
+    return &Files;
+}
 
 void Tokenizer::Define(const char Name[], const char Value[])
 {

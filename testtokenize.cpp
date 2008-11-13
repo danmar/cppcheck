@@ -60,6 +60,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
+        tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -85,6 +86,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
+        tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -108,6 +110,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
+        tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 

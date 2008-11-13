@@ -56,7 +56,7 @@ void CheckHeaders::WarningHeaderWithImplementation()
         if (Match(tok, ") {"))
         {
             std::ostringstream ostr;
-            ostr << FileLine(tok) << ": Found implementation in header";
+            ostr << FileLine(tok, _tokenizer) << ": Found implementation in header";
             ReportErr(ostr.str());
 
             // Goto next file..
@@ -90,13 +90,13 @@ void CheckHeaders::WarningIncludeHeader()
         // Get fileindex of included file..
         unsigned int hfile = 0;
         const char *includefile = includetok->next->str;
-        while (hfile < Files.size())
+        while (hfile < _tokenizer->getFiles()->size())
         {
-            if ( SameFileName( Files[hfile].c_str(), includefile ) )
+            if ( SameFileName( _tokenizer->getFiles()->at(hfile).c_str(), includefile ) )
                 break;
             hfile++;
         }
-        if (hfile == Files.size())
+        if (hfile == _tokenizer->getFiles()->size())
             continue;
 
         // This header is needed if:
@@ -242,7 +242,7 @@ void CheckHeaders::WarningIncludeHeader()
         if (!Needed)
         {
             std::ostringstream ostr;
-            ostr << FileLine(includetok) << ": The included header '" << includefile << "' is not needed";
+            ostr << FileLine(includetok, _tokenizer) << ": The included header '" << includefile << "' is not needed";
             if (NeedDeclaration)
                 ostr << " (but a forward declaration is needed)";
             ReportErr(ostr.str());

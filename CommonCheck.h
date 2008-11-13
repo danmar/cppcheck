@@ -27,10 +27,11 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include "tokenize.h"
 
-class TOKEN;
 
-std::string FileLine(const TOKEN *tok);
+
+std::string FileLine(const TOKEN *tok, Tokenizer *_tokenizer);
 
 // Are two filenames the same? Case insensitive on windows
 bool SameFileName( const char fname1[], const char fname2[] );

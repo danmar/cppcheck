@@ -59,10 +59,10 @@ static std::list< GlobalFunction > UsedGlobalFunctions;
 
 //---------------------------------------------------------------------------
 
-std::string FileLine(const TOKEN *tok)
+std::string FileLine( const TOKEN *tok, Tokenizer *_tokenizer )
 {
     std::ostringstream ostr;
-    ostr << "[" << Files[tok->FileIndex] << ":" << tok->linenr << "]";
+    ostr << "[" << _tokenizer->getFiles()->at(tok->FileIndex) << ":" << tok->linenr << "]";
     return ostr.str();
 }
 //---------------------------------------------------------------------------

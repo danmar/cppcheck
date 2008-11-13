@@ -249,7 +249,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, const char *varn
 void CheckMemoryLeakClass::MismatchError( const TOKEN *Tok1, const char varname[] )
 {
     std::ostringstream errmsg;
-    errmsg << FileLine(Tok1) << ": Mismatching allocation and deallocation: " << varname;
+    errmsg << FileLine(Tok1, _tokenizer) << ": Mismatching allocation and deallocation: " << varname;
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ void CheckMemoryLeakClass::MismatchError( const TOKEN *Tok1, const char varname[
 void CheckMemoryLeakClass::MemoryLeak( const TOKEN *tok, const char varname[] )
 {
     std::ostringstream errmsg;
-    errmsg << FileLine(tok) << ": Memory leak: " << varname;
+    errmsg << FileLine(tok, _tokenizer) << ": Memory leak: " << varname;
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------

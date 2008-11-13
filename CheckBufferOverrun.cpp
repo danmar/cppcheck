@@ -53,8 +53,8 @@ void CheckBufferOverrunClass::ReportError(const TOKEN *tok, const char errmsg[])
     std::ostringstream ostr;
     std::list<const TOKEN *>::const_iterator it;
     for ( it = CallStack.begin(); it != CallStack.end(); it++ )
-        ostr << FileLine(*it) << " -> ";
-    ostr << FileLine(tok) << ": " << errmsg;
+        ostr << FileLine(*it, _tokenizer ) << " -> ";
+    ostr << FileLine(tok, _tokenizer) << ": " << errmsg;
     ReportErr(ostr.str());
 }
 //---------------------------------------------------------------------------
@@ -479,14 +479,14 @@ void CheckBufferOverrunClass::WarningDangerousFunctions()
         if (Match(tok, "gets ("))
         {
             std::ostringstream ostr;
-            ostr << FileLine(tok) << ": Found 'gets'. You should use 'fgets' instead";
+            ostr << FileLine(tok, _tokenizer) << ": Found 'gets'. You should use 'fgets' instead";
             ReportErr(ostr.str());
         }
 
         else if (Match(tok, "scanf (") && strcmp(Tokenizer::getstr(tok,2),"\"%s\"") == 0)
         {
             std::ostringstream ostr;
-            ostr << FileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";
+            ostr << FileLine(tok, _tokenizer) << ": Found 'scanf'. You should use 'fgets' instead";
             ReportErr(ostr.str());
         }
     }

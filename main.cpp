@@ -184,7 +184,6 @@ static void CppCheck(const std::string &code, const char FileName[], unsigned in
     OnlyReportUniqueErrors = true;
 
     // Tokenize the file
-    Files.clear();
     {
     std::istringstream istr(code);
     tokenizer.Tokenize(istr, FileName);

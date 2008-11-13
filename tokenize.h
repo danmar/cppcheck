@@ -28,9 +28,6 @@
 #include <cstdlib>
 #include <cstring>
 
-extern std::vector<std::string> Files;
-
-
 class TOKEN
 {
 private:
@@ -90,13 +87,11 @@ public:
 
     void initTokens();
 
-    std::vector<std::string> _files;
-    TOKEN *_tokens;
+    std::vector<std::string> *getFiles();
+
+    std::vector<std::string> Files;
 
 private:
-
-
-
 
     void Define(const char Name[], const char Value[]);
 

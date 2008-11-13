@@ -41,6 +41,7 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
+        tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
         //SimplifyTokenList();  <- this can't be used as it removes 'unsigned'
