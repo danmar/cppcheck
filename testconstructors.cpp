@@ -62,6 +62,7 @@ private:
         TEST_CASE( initvar_if );            // BUG 2190290
         TEST_CASE( initvar_operator_eq );   // BUG 2190376
         TEST_CASE( initvar_same_classname );    // BUG 2208157
+        TEST_CASE( initvar_chained_assign );    // BUG 2270433
     }
 
 
@@ -196,6 +197,27 @@ private:
                "        int b;\n"
                "        Fred() { b = 0; }\n"
                "    };\n"
+               "}\n" );
+
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), err );
+    }
+
+    void initvar_chained_assign()
+    {
+        // Bug 2270433 - Uninitialized variable false positive on chained assigns
+
+        check( "class c\n"
+               "{\n"
+               "    c();\n"
+               "\n"
+               "    int m_iMyInt1;\n"
+               "    int m_iMyInt2;\n"
+               "}\n"
+               "\n"
+               "c::c()\n"
+               "{\n"
+               "    m_iMyInt1 = m_iMyInt2 = 0;\n"
                "}\n" );
 
         std::string err( errout.str() );

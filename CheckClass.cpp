@@ -243,8 +243,8 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         if ( indentlevel < 1 )
             continue;
 
-        // Before a new statement there is "[{};)]" or "else"
-        if ( ! Match(ftok, "[{};)]") && ! Match(ftok, "else") )
+        // Before a new statement there is "[{};)=]" or "else"
+        if ( ! Match(ftok, "[{};)=]") && ! Match(ftok, "else") )
             continue;
 
         // Using the operator= function to initialize all variables..
