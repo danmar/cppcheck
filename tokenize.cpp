@@ -1013,6 +1013,23 @@ void Tokenizer::SimplifyTokenList()
             }
         }
     }
+
+    // Replace NULL with 0..
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( Match(tok, "NULL") )
+            tok->setstr("0");
+    }
+
+    // Replace pointer casts of 0.. "(char *)0" => "0"
+    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    {
+        if ( Match(tok->next, "( %type% * ) 0") || Match(tok->next,"( %type% %type% * ) 0") )
+        {
+            while (!Match(tok->next,"0"))
+                DeleteNextToken(tok);
+        }
+    }
 }
 //---------------------------------------------------------------------------
 

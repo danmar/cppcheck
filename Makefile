@@ -1,6 +1,6 @@
 SRCS=CheckBufferOverrun.cpp  CheckClass.cpp  CheckHeaders.cpp  CheckMemoryLeak.cpp  CheckOther.cpp  CommonCheck.cpp  FileLister.cpp preprocessor.cpp tokenize.cpp cppcheck.cpp settings.cpp
 OBJS=$(SRCS:%.cpp=%.o)
-TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testtokenize.o	testunusedprivfunc.o	testunusedvar.o settings.o cppcheck.o
+TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testsimplifytokens.o	testtokenize.o	testunusedprivfunc.o	testunusedvar.o settings.o cppcheck.o
 BIN = ${DESTDIR}/usr/bin
 
 all:	${OBJS} main.o
@@ -46,6 +46,8 @@ testpreprocessor.o: testpreprocessor.cpp testsuite.h preprocessor.h
 testrunner.o: testrunner.cpp testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 testsuite.o: testsuite.cpp testsuite.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testsimplifytokens.o:	testsimplifytokens.cpp	testsuite.h	tokenize.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 testtokenize.o:testtokenize.cpp  testsuite.h tokenize.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
