@@ -34,6 +34,7 @@ private:
     void run()
     {
         TEST_CASE( cast0 );
+        TEST_CASE( sizeof1 );
     }
 
     static std::string tok(const char code[])
@@ -56,6 +57,13 @@ private:
     {
         const char code1[] = " if ( p == (char *)0 ) ";
         const char code2[] = " if ( p == 0 ) ";
+        ASSERT_EQUALS( tok(code1), tok(code2) );
+    }
+
+    void sizeof1()
+    {
+        const char code1[] = " struct ABC *abc = malloc(sizeof(*abc)); ";
+        const char code2[] = " struct ABC *abc = malloc(100); ";
         ASSERT_EQUALS( tok(code1), tok(code2) );
     }
 };

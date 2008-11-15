@@ -114,6 +114,8 @@ private:
 
         TEST_CASE( linux_list_1 );
         // TODO: TEST_CASE( linux_list_2 );
+
+        TEST_CASE( sizeof1 );
     }
 
 
@@ -839,8 +841,6 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
-/*
-    // TODO: Add this test
     void linux_list_2()
     {
         check( "struct AB\n"
@@ -856,7 +856,34 @@ private:
 
         ASSERT_EQUALS( std::string("[test.cpp:10]: Memory leak: ab\n"), errout.str() );
     }
-*/
+
+
+
+
+    void sizeof1()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    struct s_t s1;\n"
+               "    struct s_t cont *p = &s1;\n"
+               "    struct s_t *s2;\n"
+               "\n"
+               "    memset(p, 0, sizeof(*p));\n"
+               "\n"
+               "    s2 = (struct s_t *) malloc(sizeof(*s2));\n"
+               "\n"
+               "    if (s2->value != 0)\n"
+               "        return;\n"
+               "\n"
+               "    free(s2);\n"
+               "\n"
+               "    return;\n"
+               "}\n" );
+
+        std::string err( errout.str() );
+
+        ASSERT_EQUALS( std::string("[test.cpp:12]: Memory leak: s2\n"), err );
+    }
 
 };
 

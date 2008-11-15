@@ -759,6 +759,13 @@ void Tokenizer::SimplifyTokenList()
                 }
             }
         }
+
+        else if (Match(tok, "sizeof ( * %var% )"))
+        {
+            tok->setstr("100");
+            for ( int i = 0; i < 4; ++i )
+                DeleteNextToken(tok);
+        }
     }
 
     // Replace 'sizeof(var)'
