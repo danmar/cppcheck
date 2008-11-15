@@ -113,7 +113,7 @@ private:
         TEST_CASE( throw1 );
 
         TEST_CASE( linux_list_1 );
-        // TODO: TEST_CASE( linux_list_2 );
+        TEST_CASE( linux_list_2 );
 
         TEST_CASE( sizeof1 );
     }

@@ -188,7 +188,7 @@ AllocType CheckMemoryLeakClass::GetDeallocationType( const TOKEN *tok, const cha
 
 static std::list<std::string> callstack;
 
-const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, const char *varnames[] )
+const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, const char typestr[], const char *varnames[] )
 {
     if (Match(tok,"if") || Match(tok,"for") || Match(tok,"while"))
         return 0;
@@ -227,7 +227,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, const char *varn
                 // Check if the function deallocates the variable..
                 while ( ftok && ! Match(ftok,"{") )
                     ftok = ftok->next;
-                TOKEN *func = getcode( Tokenizer::gettok(ftok,1), parname );
+                TOKEN *func = getcode( Tokenizer::gettok(ftok,1), typestr, parname );
                 simplifycode( func );
                 const char *ret = 0;
                 if (findmatch(func, "goto"))
@@ -291,7 +291,7 @@ extern bool ShowAll;
  * varname - name of variable
  */
 
-TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, const char varname[])
+TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, const char typestr[], const char varname[])
 {
     const char *varnames[2];
     varnames[0] = varname;
@@ -454,7 +454,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, const char varname[])
         // Investigate function calls..
         if ( Match(tok, "%var% (") )
         {
-            const char *str = call_func(tok, varnames);
+            const char *str = call_func(tok, typestr, varnames);
             if ( str )
                 addtoken( str );
         }
@@ -462,8 +462,19 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, const char varname[])
         // Linux lists..
         if ( Match( tok, "[=(,] & %var1% [.[]", varnames ) )
         {
-            // todo: better checking
-            addtoken("use");
+            // Linux list -> the first member of the struct
+            std::string pattern("struct " + std::string(typestr) + " {");
+            const TOKEN *tok2 = findmatch(tokens, pattern.c_str());
+            if ( ! tok2 )
+            {
+                addtoken("use");
+            }
+            else
+            {
+                tok2 = findmatch(tok2, "%var% [;,]");
+                if ( !tok2 || Match(tok2, Tokenizer::getstr(tok, 4)) )
+                    addtoken("use");
+            }
         }
     }
 
@@ -766,11 +777,11 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
 
 
 // Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
-void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
+void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char typestr[], const char varname[] )
 {
     callstack.clear();
 
-    TOKEN *tok = getcode( Tok1, varname );
+    TOKEN *tok = getcode( Tok1, typestr, varname );
 
     // If the variable is not allocated at all => no memory leak
     if (findmatch(tok, "alloc") == 0)
@@ -866,10 +877,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
         if (indentlevel>0 && infunc)
         {
             if ( Match(tok, "[{};] %type% * %var% [;=]") )
-                CheckMemoryLeak_CheckScope( tok->next, Tokenizer::getstr(tok, 3) );
+                CheckMemoryLeak_CheckScope( tok->next, Tokenizer::getstr(tok, 1), Tokenizer::getstr(tok, 3) );
 
             else if ( Match(tok, "[{};] %type% %type% * %var% [;=]") )
-                CheckMemoryLeak_CheckScope( tok->next, Tokenizer::getstr(tok, 4) );
+                CheckMemoryLeak_CheckScope( tok->next, Tokenizer::getstr(tok, 2), Tokenizer::getstr(tok, 4) );
         }
     }
 }
