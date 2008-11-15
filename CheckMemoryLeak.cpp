@@ -220,7 +220,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, const char types
                 ++par;
             if ( Match(tok, "[,()] %var1% [,()]", varnames) )
             {
-                const TOKEN *ftok = GetFunctionTokenByName(funcname);
+                const TOKEN *ftok = _tokenizer->GetFunctionTokenByName(funcname);
                 const char *parname = GetParameterName( ftok, par );
                 if ( ! parname )
                     return "use";

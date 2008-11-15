@@ -50,7 +50,10 @@ private:
         tokenizer.TokenizeCode( istr );
 
         // Fill function list
-        FillFunctionList(0);
+        Settings settings;
+        settings._checkCodingStyle = true;
+        tokenizer.settings( settings );
+        tokenizer.FillFunctionList(0);
 
         // Clear the error buffer..
         errout.str("");

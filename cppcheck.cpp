@@ -18,7 +18,7 @@
 #include "cppcheck.h"
 
 #include "preprocessor.h" // preprocessor.
-#include "tokenize.h"   // <- Tokenizer
+
 #include "CommonCheck.h"
 #include "CheckMemoryLeak.h"
 #include "CheckBufferOverrun.h"
@@ -87,6 +87,7 @@ void CppCheck::check(int argc, char* argv[])
     ShowAll = _settings._showAll;
     CheckCodingStyle = _settings._checkCodingStyle;
     ErrorsOnly = _settings._errorsOnly;
+    _tokenizer.settings( _settings );
 
     std::vector<std::string> filenames;
     // --recursive was used
@@ -174,7 +175,7 @@ void CppCheck::check(int argc, char* argv[])
     {
         errout.str("");
         std::cout << "Checking usage of global functions (this may take several minutes)..\n";
-        CheckGlobalFunctionUsage(filenames);
+        _tokenizer.CheckGlobalFunctionUsage(filenames);
         if ( ! errout.str().empty() )
         {
             std::cerr << "\n";
@@ -191,28 +192,27 @@ void CppCheck::check(int argc, char* argv[])
 
 void CppCheck::checkFile(const std::string &code, const char FileName[], unsigned int FileId)
 {
-    Tokenizer tokenizer;
 
     OnlyReportUniqueErrors = true;
 
     // Tokenize the file
     {
     std::istringstream istr(code);
-    tokenizer.Tokenize(istr, FileName);
+    _tokenizer.Tokenize(istr, FileName);
     }
 
-    FillFunctionList(FileId);
+    _tokenizer.FillFunctionList(FileId);
 
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
-    CheckClass checkClass( &tokenizer );
+    CheckClass checkClass( &_tokenizer );
     checkClass.CheckMemset();
 
 
     // Check for unsigned divisions where one operand is signed
     // Very important to run it before 'SimplifyTokenList'
-    CheckOther checkOther( &tokenizer );
+    CheckOther checkOther( &_tokenizer );
     checkOther.CheckUnsignedDivision();
 
     // Give warning when using char variable as array index
@@ -229,14 +229,14 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
 //    }
 
 
-    tokenizer.SimplifyTokenList();
+    _tokenizer.SimplifyTokenList();
 
     // Memory leak
-    CheckMemoryLeakClass checkMemoryLeak( &tokenizer );
+    CheckMemoryLeakClass checkMemoryLeak( &_tokenizer );
     checkMemoryLeak.CheckMemoryLeak();
 
     // Buffer overruns..
-    CheckBufferOverrunClass checkBufferOverrun( &tokenizer );
+    CheckBufferOverrunClass checkBufferOverrun( &_tokenizer );
     checkBufferOverrun.CheckBufferOverrun();
 
     // Check that all class constructors are ok.
@@ -303,7 +303,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
     }
 
     // Clean up tokens..
-    tokenizer.DeallocateTokens();
+    _tokenizer.DeallocateTokens();
 
 }
 //---------------------------------------------------------------------------

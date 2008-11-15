@@ -32,30 +32,9 @@
 #include <ctype.h>
 #endif
 //---------------------------------------------------------------------------
-extern bool CheckCodingStyle;
 bool OnlyReportUniqueErrors;
 std::ostringstream errout;
-static std::list<const TOKEN *> FunctionList;
 
-class GlobalFunction
-{
-private:
-    unsigned int _FileId;
-    std::string  _FuncName;
-
-public:
-    GlobalFunction( const unsigned int FileId, const char FuncName[] )
-    {
-        _FileId = FileId;
-        _FuncName = FuncName;
-    }
-
-    unsigned int file_id() const { return _FileId; }
-    const std::string &name() const { return _FuncName; }
-};
-
-static std::list< GlobalFunction > GlobalFunctions;
-static std::list< GlobalFunction > UsedGlobalFunctions;
 
 //---------------------------------------------------------------------------
 
@@ -122,118 +101,6 @@ bool IsStandardType(const char str[])
 }
 //---------------------------------------------------------------------------
 
-void FillFunctionList(const unsigned int file_id)
-{
-    FunctionList.clear();
-
-    std::list<const char *> _usedfunc;
-    if ( file_id == 0 )
-    {
-        GlobalFunctions.clear();
-    }
-
-    bool staticfunc = false;
-    bool classfunc = false;
-
-    int indentlevel = 0;
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
-    {
-        if ( tok->str[0] == '{' )
-            indentlevel++;
-
-        else if ( tok->str[0] == '}' )
-            indentlevel--;
-
-
-        if (indentlevel > 0)
-        {
-            if ( CheckCodingStyle )
-            {
-                const char *funcname = 0;
-
-                if ( Match(tok,"%var% (") )
-                    funcname = tok->str;
-                else if ( Match(tok, "= %var% ;") ||
-                          Match(tok, "= %var% ,") )
-                    funcname = tok->next->str;
-
-                if ( std::find(_usedfunc.begin(), _usedfunc.end(), funcname) == _usedfunc.end() )
-                    _usedfunc.push_back( funcname );
-            }
-
-            continue;
-        }
-
-        if (strchr("};", tok->str[0]))
-            staticfunc = classfunc = false;
-
-        else if ( strcmp( tok->str, "static" ) == 0 )
-            staticfunc = true;
-
-        else if ( strcmp( tok->str, "::" ) == 0 )
-            classfunc = true;
-
-        else if (Match(tok, "%var% ("))
-        {
-            // Check if this is the first token of a function implementation..
-            for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
-            {
-                if ( tok2->str[0] == ';' )
-                {
-                    tok = tok2;
-                    break;
-                }
-
-                else if ( tok2->str[0] == '{' )
-                {
-                    break;
-                }
-
-                else if ( tok2->str[0] == ')' )
-                {
-                    if ( Match(tok2, ") {") )
-                    {
-                        if (CheckCodingStyle && !staticfunc && !classfunc && tok->FileIndex==0)
-                            GlobalFunctions.push_back( GlobalFunction(file_id, tok->str) );
-                        FunctionList.push_back( tok );
-                        tok = tok2;
-                    }
-                    else
-                    {
-                        tok = tok2;
-                        while (tok->next && !strchr(";{", tok->next->str[0]))
-                            tok = tok->next;
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    for (std::list<const char *>::const_iterator it = _usedfunc.begin(); it != _usedfunc.end(); ++it)
-    {
-        if ( *it != 0 )
-        {
-            UsedGlobalFunctions.push_back( GlobalFunction(file_id, *it) );
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
-const TOKEN *GetFunctionTokenByName( const char funcname[] )
-{
-    std::list<const TOKEN *>::const_iterator it;
-    for ( it = FunctionList.begin(); it != FunctionList.end(); it++ )
-    {
-        if ( strcmp( (*it)->str, funcname ) == 0 )
-        {
-            return *it;
-        }
-    }
-    return NULL;
-}
-//--------------------------------------------------------------------------
-
 const char *GetParameterName( const TOKEN *ftok, int par )
 {
     int _par = 1;
@@ -247,75 +114,6 @@ const char *GetParameterName( const TOKEN *ftok, int par )
     return NULL;
 }
 //--------------------------------------------------------------------------
-
-void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames)
-{
-    // Iterator for GlobalFunctions
-    std::list<GlobalFunction>::const_iterator func;
-
-    // Iterator for UsedGlobalFunctions
-    std::list<GlobalFunction>::const_iterator usedfunc;
-
-    unsigned int i1 = 0;
-    unsigned int i2 = 1;
-
-    // Check that every function in GlobalFunctions are used
-    for ( func = GlobalFunctions.begin(); func != GlobalFunctions.end(); func++ )
-    {
-        if ( GlobalFunctions.size() > 100 )
-        {
-            ++i1;
-            if ( i1 > (i2 * GlobalFunctions.size()) / 100 )
-            {
-                if ( (i2 % 10) == 0 )
-                    std::cout << i2 << "%";
-                else
-                    std::cout << ".";
-                std::cout.flush();
-                ++i2;
-            }
-        }
-
-        const std::string &funcname = func->name();
-
-        if ( funcname == "main" || funcname == "WinMain" )
-            continue;
-
-        // Check if this global function is used in any of the other files..
-        bool UsedOtherFile = false;
-        bool UsedAnyFile = false;
-        for ( usedfunc = UsedGlobalFunctions.begin(); usedfunc != UsedGlobalFunctions.end(); usedfunc++ )
-        {
-            if ( funcname == usedfunc->name() )
-            {
-                UsedAnyFile = true;
-                if (func->file_id() != usedfunc->file_id())
-                {
-                    UsedOtherFile = true;
-                    break;
-                }
-            }
-        }
-
-        if ( ! UsedAnyFile )
-        {
-            std::ostringstream errmsg;
-            errmsg << "[" << filenames[func->file_id()] << "]: "
-                   << "The function '" << func->name() << "' is never used.";
-            ReportErr( errmsg.str() );
-        }
-        else if ( ! UsedOtherFile )
-        {
-            std::ostringstream errmsg;
-            errmsg << "[" << filenames[func->file_id()] << "]: "
-                   << "The linkage of the function '" << func->name() << "' can be local (static) instead of global";
-            ReportErr( errmsg.str() );
-        }
-    }
-
-    std::cout << "\n";
-}
-//---------------------------------------------------------------------------
 
 bool Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
 {

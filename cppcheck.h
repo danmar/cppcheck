@@ -21,7 +21,7 @@
 
 #include <string>
 #include "settings.h"
-
+#include "tokenize.h"   // <- Tokenizer
 /**
  * This is the base class which will use other classes to do
  * static code analysis for C and C++ code to find possible
@@ -37,6 +37,7 @@ class CppCheck
     private:
         void checkFile(const std::string &code, const char FileName[], unsigned int FileId);
         Settings _settings;
+        Tokenizer _tokenizer;
 };
 
 #endif // CPPCHECK_H

@@ -23,7 +23,7 @@
 #define CommonCheckH
 //---------------------------------------------------------------------------
 
-#include <list>
+
 #include <string>
 #include <sstream>
 #include <vector>
@@ -47,10 +47,9 @@ bool IsNumber(const char str[]);
 
 bool IsStandardType(const char str[]);
 
-void FillFunctionList(const unsigned int file_id);
-const TOKEN *GetFunctionTokenByName( const char funcname[] );
+
 const char *GetParameterName( const TOKEN *ftok, int par );
-void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
+
 
 bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
 

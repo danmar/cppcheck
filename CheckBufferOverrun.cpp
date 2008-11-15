@@ -257,7 +257,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
                 continue;
 
             // Find function..
-            const TOKEN *ftok = GetFunctionTokenByName( tok->str );
+            const TOKEN *ftok = _tokenizer->GetFunctionTokenByName( tok->str );
             if ( ! ftok )
                 continue;
 

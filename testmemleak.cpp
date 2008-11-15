@@ -50,7 +50,10 @@ private:
 
         // Check for memory leaks..
         ShowAll = false;
-        FillFunctionList(0);
+        Settings settings;
+        settings._checkCodingStyle = true;
+        tokenizer.settings( settings );
+        tokenizer.FillFunctionList(0);
         CheckMemoryLeakClass checkMemoryLeak( &tokenizer );
         checkMemoryLeak.CheckMemoryLeak();
 

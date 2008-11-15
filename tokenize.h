@@ -21,12 +21,13 @@
 #ifndef tokenizeH
 #define tokenizeH
 //---------------------------------------------------------------------------
-
+#include <list>
 #include <string>
 #include <map>
 #include <vector>
 #include <cstdlib>
 #include <cstring>
+#include "settings.h"
 
 class TOKEN
 {
@@ -89,9 +90,32 @@ public:
 
     std::vector<std::string> *getFiles();
 
-    std::vector<std::string> Files;
 
+
+    void FillFunctionList(const unsigned int file_id);
+    const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
+void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
+    void settings( const Settings &settings );
 private:
+
+
+
+    class GlobalFunction
+    {
+    private:
+        unsigned int _FileId;
+        std::string  _FuncName;
+
+    public:
+        GlobalFunction( const unsigned int FileId, const char FuncName[] )
+        {
+            _FileId = FileId;
+            _FuncName = FuncName;
+        }
+
+        unsigned int file_id() const { return _FileId; }
+        const std::string &name() const { return _FuncName; }
+    };
 
     void Define(const char Name[], const char Value[]);
 
@@ -107,6 +131,11 @@ private:
 
     TOKEN *tokens_back;
     std::map<std::string, unsigned int> TypeSize;
+    std::list<const TOKEN *> FunctionList;
+    std::list< GlobalFunction > GlobalFunctions;
+    std::list< GlobalFunction > UsedGlobalFunctions;
+    std::vector<std::string> Files;
+    Settings _settings;
 };
 
 
