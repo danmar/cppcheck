@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -64,6 +64,7 @@ private:
         TEST_CASE( initvar_operator_eq );   // BUG 2190376
         TEST_CASE( initvar_same_classname );    // BUG 2208157
         TEST_CASE( initvar_chained_assign );    // BUG 2270433
+        // TODO TEST_CASE( initvar_2constructors );     // BUG 2270353
     }
 
 
@@ -225,6 +226,40 @@ private:
         ASSERT_EQUALS( std::string(""), err );
     }
 
+
+    void initvar_2constructors()
+    {
+        check( "class c\n"
+               "{\n"
+               "    c();\n"
+               "    c(bool b);"
+               "\n"
+               "    void InitInt();\n"
+               "\n"
+               "    int m_iMyInt;\n"
+               "    int m_bMyBool;\n"
+               "}\n"
+               "\n"
+               "c::c()\n"
+               "{\n"
+               "    m_bMyBool = false;\n"
+               "    InitInt();"
+               "}\n"
+               "\n"
+               "c::c(bool b)\n"
+               "{\n"
+               "    m_bMyBool = b;\n"
+               "    InitInt();\n"
+               "}\n"
+               "\n"
+               "void c::InitInt()\n"
+               "{\n"
+               "    m_iMyInt = 0;\n"
+               "}\n" );
+
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), err );
+    }
 
 };
 
