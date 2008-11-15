@@ -388,6 +388,7 @@ void CheckClass::CheckConstructors()
                 var->init = false;
 
             constructor_token = FindClassFunction( constructor_token->next, classname, classname, indentlevel );
+            callstack.clear();
             ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, classname, callstack);
         }
 

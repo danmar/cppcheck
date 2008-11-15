@@ -64,7 +64,7 @@ private:
         TEST_CASE( initvar_operator_eq );   // BUG 2190376
         TEST_CASE( initvar_same_classname );    // BUG 2208157
         TEST_CASE( initvar_chained_assign );    // BUG 2270433
-        // TODO TEST_CASE( initvar_2constructors );     // BUG 2270353
+        TEST_CASE( initvar_2constructors );     // BUG 2270353
     }
 
 
