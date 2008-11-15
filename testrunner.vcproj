@@ -2,8 +2,8 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="cppcheck"
-	ProjectGUID="{ECA5D746-4926-48BA-A372-FC888498531F}"
+	Name="testrunner"
+	ProjectGUID="{ABA515EF-1C57-4980-8E40-2C937D212C9D}"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="0"
 	>
@@ -45,7 +45,8 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
+				WarnAsError="true"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -113,7 +114,7 @@
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="false"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -206,6 +207,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\testsuite.h"
+				>
+			</File>
+			<File
 				RelativePath=".\tokenize.h"
 				>
 			</File>
@@ -254,10 +259,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\preprocessor.cpp"
 				>
 			</File>
@@ -266,10 +267,58 @@
 				>
 			</File>
 			<File
+				RelativePath=".\testbufferoverrun.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testcharvar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testconstructors.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testdivision.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testincompletestatement.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testmemleak.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testpreprocessor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testrunner.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testsuite.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testtokenize.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testunusedvar.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\tokenize.cpp"
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\debug\BuildLog.htm"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
