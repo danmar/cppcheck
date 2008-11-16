@@ -699,7 +699,6 @@ private:
 
     void func5()
     {
-        // TODO
         check( "static void foo(char *str)\n"
                "{\n"
                "    delete str;\n"
