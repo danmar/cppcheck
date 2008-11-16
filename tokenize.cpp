@@ -73,7 +73,7 @@ TOKEN *Tokenizer::_gettok(TOKEN *tok, int index)
 }
 //---------------------------------------------------------------------------
 
-TOKEN *Tokenizer::tokens()
+const TOKEN *Tokenizer::tokens() const
 {
     return _tokens;
 }

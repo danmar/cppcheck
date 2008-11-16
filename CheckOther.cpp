@@ -377,7 +377,7 @@ void CheckOther::CheckUnsignedDivision()
 {
     // Check for "ivar / uvar" and "uvar / ivar"
     std::map<std::string, char> varsign;
-    for ( TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
+    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         if ( Match(tok, "[{};(,] %type% %var% [;=,)]") )
         {

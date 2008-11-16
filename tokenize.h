@@ -94,7 +94,7 @@ public:
     const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
     void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
     void settings( const Settings &settings );
-    TOKEN *tokens();
+    const TOKEN *tokens() const;
 private:
 
     struct DefineSymbol
