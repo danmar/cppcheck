@@ -25,8 +25,9 @@
 
 /** \brief Check for memory leaks */
 
-#include <vector>
 #include "tokenize.h"
+#include <list>
+#include <vector>
 
 enum AllocType { No, Malloc, gMalloc, New, NewA };
 
@@ -46,13 +47,13 @@ private:
     void simplifycode(TOKEN *tok);
     void erase(TOKEN *begin, const TOKEN *end);
 
-    TOKEN *getcode(const TOKEN *tok, const char varname[]);
+    TOKEN *getcode(const TOKEN *tok, std::list<const TOKEN *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype);
     bool notvar(const TOKEN *tok, const char *varnames[]);
     void instoken(TOKEN *tok, const char str[]);
     void MemoryLeak( const TOKEN *tok, const char varname[] );
-    void MismatchError( const TOKEN *Tok1, const char varname[] );
-    const char * call_func( const TOKEN *tok, const char *varnames[] );
-    AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] );
+    void MismatchError( const TOKEN *Tok1, const std::list<const TOKEN *> &callstack, const char varname[] );
+    const char * call_func( const TOKEN *tok, std::list<const TOKEN *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype );
+    AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[]);
     AllocType GetAllocationType( const TOKEN *tok2 );
     bool isclass( const std::string &typestr );
 

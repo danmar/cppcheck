@@ -110,7 +110,7 @@ private:
         TEST_CASE( func2 );
         TEST_CASE( func3 );
         TEST_CASE( func4 );
-        // TODO TEST_CASE( func5 );
+        TEST_CASE( func5 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -711,7 +711,8 @@ private:
                "    char *p = new char[100];\n"
                "    foo(p);\n"
                "}\n" );
-        ASSERT_EQUALS( std::string("mismatching allocation and deallocation"), errout.str() );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:9] -> [test.cpp:3]: Mismatching allocation and deallocation: str\n"), err );
     }
 
 
