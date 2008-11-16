@@ -74,7 +74,7 @@ private:
         };
 
         // Compare..
-        ASSERT_EQUALS( true, cmptok(expected, tokens) );
+        ASSERT_EQUALS( true, cmptok(expected, tokenizer.tokens()) );
 
         tokenizer.DeallocateTokens();
     }
@@ -91,7 +91,7 @@ private:
         tokenizer.TokenizeCode(istr, 0);
 
         // Expected result..
-        ASSERT_EQUALS( std::string(10000,'a'), std::string(tokens->str) );
+        ASSERT_EQUALS( std::string(10000,'a'), std::string(tokenizer.tokens()->str) );
 
         tokenizer.DeallocateTokens();
     }
@@ -127,7 +127,7 @@ private:
         };
 
         // Compare..
-        ASSERT_EQUALS( true, cmptok(expected, tokens) );
+        ASSERT_EQUALS( true, cmptok(expected, tokenizer.tokens()) );
 
         tokenizer.DeallocateTokens();
     }

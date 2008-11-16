@@ -47,7 +47,7 @@ CheckOther::~CheckOther()
 
 void CheckOther::WarningOldStylePointerCast()
 {
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         // Old style pointer casting..
         if (!Match(tok, "( %type% * ) %var%"))
@@ -56,7 +56,7 @@ void CheckOther::WarningOldStylePointerCast()
         // Is "type" a class?
         const char *pattern[] = {"class","",NULL};
         pattern[1] = Tokenizer::getstr(tok, 1);
-        if (!Tokenizer::findtoken(tokens, pattern))
+        if (!Tokenizer::findtoken(_tokenizer->tokens(), pattern))
             continue;
 
         std::ostringstream ostr;
@@ -74,7 +74,7 @@ void CheckOther::WarningOldStylePointerCast()
 
 void CheckOther::WarningIsDigit()
 {
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         bool err = false;
         err |= Match(tok, "%var% >= '0' && %var% <= '9'");
@@ -99,7 +99,7 @@ void CheckOther::WarningIsDigit()
 
 void CheckOther::WarningIsAlpha()
 {
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         if ( ! Match(tok, "(") )
             continue;
@@ -159,7 +159,7 @@ void CheckOther::WarningRedundantCode()
 {
 
     // if (p) delete p
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         if (!Match(tok,"if"))
             continue;
@@ -221,7 +221,7 @@ void CheckOther::WarningIf()
 {
 
     // Search for 'if (condition);'
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         if (Match(tok,"if"))
         {
@@ -250,7 +250,7 @@ void CheckOther::WarningIf()
     }
 
     // Search for 'a=b; if (a==b)'
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         // Begin statement?
         if ( ! Match(tok, "[;{}]") )
@@ -310,7 +310,7 @@ void CheckOther::WarningIf()
 
 void CheckOther::InvalidFunctionUsage()
 {
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         if (!Match(tok, "strtol") && !Match(tok, "strtoul"))
             continue;
@@ -354,7 +354,7 @@ void CheckOther::InvalidFunctionUsage()
 
 void CheckOther::CheckIfAssignment()
 {
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         if (Match(tok, "if ( %var% = %num% )") ||
             Match(tok, "if ( %var% = %str% )") ||
@@ -377,7 +377,7 @@ void CheckOther::CheckUnsignedDivision()
 {
     // Check for "ivar / uvar" and "uvar / ivar"
     std::map<std::string, char> varsign;
-    for ( TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         if ( Match(tok, "[{};(,] %type% %var% [;=,)]") )
         {
@@ -444,7 +444,7 @@ void CheckOther::CheckVariableScope()
     // Walk through all tokens..
     bool func = false;
     int indentlevel = 0;
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         // Skip class and struct declarations..
         if ( Match(tok, "class") || Match(tok, "struct") )
@@ -596,7 +596,7 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
 
 void CheckOther::CheckConstantFunctionParameter()
 {
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         if ( Match(tok,"[,(] const std :: %type% %var% [,)]") )
         {
@@ -610,14 +610,14 @@ void CheckOther::CheckConstantFunctionParameter()
             // Check if type is a struct or class.
             const char *pattern[3] = {"class","type",0};
             pattern[1] = Tokenizer::getstr(tok, 2);
-            if ( Tokenizer::findtoken(tokens, pattern) )
+            if ( Tokenizer::findtoken(_tokenizer->tokens(), pattern) )
             {
                 std::ostringstream errmsg;
                 errmsg << FileLine(tok, _tokenizer) << " " << Tokenizer::getstr(tok,3) << " is passed by value, it could be passed by reference/pointer instead";
                 ReportErr( errmsg.str() );
             }
             pattern[0] = "struct";
-            if ( Tokenizer::findtoken(tokens, pattern) )
+            if ( Tokenizer::findtoken(_tokenizer->tokens(), pattern) )
             {
                 std::ostringstream errmsg;
                 errmsg << FileLine(tok, _tokenizer) << " " << Tokenizer::getstr(tok,3) << " is passed by value, it could be passed by reference/pointer instead";
@@ -637,7 +637,7 @@ void CheckOther::CheckStructMemberUsage()
 {
     const char *structname = 0;
 
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         if ( tok->FileIndex != 0 )
             continue;
@@ -664,7 +664,7 @@ void CheckOther::CheckStructMemberUsage()
             varnames[0] = varname;
             varnames[1] = 0;
             bool used = false;
-            for ( const TOKEN *tok2 = tokens; tok2; tok2 = tok2->next )
+            for ( const TOKEN *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next )
             {
                 if ( tok->FileIndex != 0 )
                     continue;
@@ -698,7 +698,7 @@ void CheckOther::CheckStructMemberUsage()
 
 void CheckOther::CheckCharVariable()
 {
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         // Declaring the variable..
         if ( Match(tok, "[{};(,] char %var% [;=,)]") )
@@ -754,7 +754,7 @@ void CheckOther::CheckIncompleteStatement()
 {
     int parlevel = 0;
 
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         if ( Match(tok, "(") )
             ++parlevel;

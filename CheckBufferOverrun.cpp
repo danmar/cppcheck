@@ -308,7 +308,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
 void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
 {
     int indentlevel = 0;
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         if (Match(tok, "{"))
             indentlevel++;
@@ -359,7 +359,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
 void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 {
     const char *declstruct_pattern[] = {"","","{",0};
-    for ( const TOKEN * tok = Tokenizer::findtoken( tokens, declstruct_pattern );
+    for ( const TOKEN * tok = Tokenizer::findtoken( _tokenizer->tokens(), declstruct_pattern );
           tok;
           tok = Tokenizer::findtoken( tok->next, declstruct_pattern ) )
     {
@@ -399,7 +399,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
             if (total_size == 0)
                 continue;
 
-            for ( const TOKEN *tok3 = tokens; tok3; tok3 = tok3->next )
+            for ( const TOKEN *tok3 = _tokenizer->tokens(); tok3; tok3 = tok3->next )
             {
                 if ( strcmp(tok3->str, structname) )
                     continue;
@@ -472,7 +472,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun()
 
 void CheckBufferOverrunClass::WarningDangerousFunctions()
 {
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         if (Match(tok, "gets ("))
         {

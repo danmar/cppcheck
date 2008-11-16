@@ -64,7 +64,7 @@ bool CheckMemoryLeakClass::isclass( const std::string &typestr )
 
     std::ostringstream pattern;
     pattern << "struct " << typestr;
-    if ( findmatch( tokens, pattern.str().c_str() ) )
+    if ( findmatch( _tokenizer->tokens(), pattern.str().c_str() ) )
         return false;
 
     return true;
@@ -822,7 +822,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
 {
     bool infunc = false;
     int indentlevel = 0;
-    for (const TOKEN *tok = tokens; tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         if (tok->str[0]=='{')
             indentlevel++;
@@ -865,7 +865,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
 void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers()
 {
     int indentlevel = 0;
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         if ( tok->str[0] == '{' )
             indentlevel++;
@@ -963,7 +963,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
     // Loop through all tokens. Inspect member functions
     bool memberfunction = false;
     int indentlevel = 0;
-    for ( const TOKEN *tok = tokens; tok; tok = tok->next )
+    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         if ( tok->str[0] == '{' )
             indentlevel++;
@@ -1016,7 +1016,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
 
     if ( Alloc != No && Dealloc == No )
     {
-        MemoryLeak( tokens, FullVariableName.str().c_str() );
+        MemoryLeak( _tokenizer->tokens(), FullVariableName.str().c_str() );
     }
 }
 

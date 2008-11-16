@@ -47,7 +47,7 @@ CheckHeaders::~CheckHeaders()
 
 void CheckHeaders::WarningHeaderWithImplementation()
 {
-    for (TOKEN *tok = tokens; tok; tok = tok->next)
+    for (TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
         // Only interested in included file
         if (tok->FileIndex == 0)
@@ -82,7 +82,7 @@ void CheckHeaders::WarningHeaderWithImplementation()
 void CheckHeaders::WarningIncludeHeader()
 {
     // Including..
-    for (TOKEN *includetok = tokens; includetok; includetok = includetok->next)
+    for (TOKEN *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next)
     {
         if (strcmp(includetok->str, "#include") != 0)
             continue;
@@ -111,7 +111,7 @@ void CheckHeaders::WarningIncludeHeader()
 
         // Extract classes and names in the header..
         int indentlevel = 0;
-        for ( TOKEN *tok1 = tokens; tok1; tok1 = tok1->next )
+        for ( TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next )
         {
             if ( tok1->FileIndex != hfile )
                 continue;
@@ -205,7 +205,7 @@ void CheckHeaders::WarningIncludeHeader()
         // Check if the extracted names are used...
         bool Needed = false;
         bool NeedDeclaration = false;
-        for (TOKEN *tok1 = tokens; tok1; tok1 = tok1->next)
+        for (TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next)
         {
             if (tok1->FileIndex != includetok->FileIndex)
                 continue;

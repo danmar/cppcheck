@@ -59,8 +59,6 @@ public:
     TOKEN *next;
 };
 
-extern TOKEN *tokens, *tokens_back;
-
 class Tokenizer
 {
 public:
@@ -96,6 +94,7 @@ public:
     const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
     void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
     void settings( const Settings &settings );
+    TOKEN *tokens();
 private:
 
     struct DefineSymbol
@@ -144,6 +143,7 @@ private:
 
 
     struct DefineSymbol * dsymlist;
+    TOKEN *_tokens;
 };
 
 
