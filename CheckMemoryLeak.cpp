@@ -380,7 +380,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, const char varname[])
 
         // if else switch
         if ( Match(tok, "if ( %var1% )", varnames) ||
-             Match(tok, "if ( %var1% != NULL )", varnames)   )
+             Match(tok, "if ( %var1% != 0 )", varnames)   )
         {
             addtoken("if(var)");
             tok = Tokenizer::gettok(tok, 3);   // Make sure the "use" will not be added

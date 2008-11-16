@@ -86,6 +86,7 @@ private:
 
         TEST_CASE( if1 );
         TEST_CASE( if2 );
+        TEST_CASE( if3 );
 
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
@@ -408,6 +409,17 @@ private:
                "    if (NULL == smp)\n"
                "        return;\n"
                "    kfree( smp );\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void if3()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char *s = new char[100];\n"
+               "    if (s != NULL)\n"
+               "        foo(s);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
