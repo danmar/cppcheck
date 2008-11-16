@@ -85,6 +85,7 @@ private:
         TEST_CASE( ifelse9 );
 
         TEST_CASE( if1 );
+        TEST_CASE( if2 );
 
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
@@ -397,6 +398,19 @@ private:
                "    foo(p);\n"
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:6]: Memory leak: p\n"), errout.str() );
+    }
+
+    void if2()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    struct smp_alt_module *smp;\n"
+               "    smp = kzalloc(sizeof(*smp), GFP_KERNEL);\n"
+               "    if (NULL == smp)\n"
+               "        return;\n"
+               "    kfree( smp );\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
