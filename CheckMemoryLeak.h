@@ -40,6 +40,20 @@ public:
     void CheckMemoryLeak();
 
 private:
+    // Extra allocation..
+    class AllocFunc
+    {
+        public:
+            const char *funcname;
+            AllocType   alloctype;
+
+            AllocFunc(const char f[], AllocType a)
+            {
+                funcname = f;
+                alloctype = a;
+            }
+    };
+
     void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char *> &classname, const char varname[] );
     void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname );
     void CheckMemoryLeak_ClassMembers();
@@ -60,6 +74,7 @@ private:
 
     Tokenizer *_tokenizer;
     Settings _settings;
+    std::list<AllocFunc> listallocfunc;
 };
 
 //---------------------------------------------------------------------------

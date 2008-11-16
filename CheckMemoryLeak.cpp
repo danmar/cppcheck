@@ -71,24 +71,6 @@ bool CheckMemoryLeakClass::isclass( const std::string &typestr )
 }
 //---------------------------------------------------------------------------
 
-
-
-
-// Extra allocation..
-class AllocFunc
-{
-    public:
-        const char *funcname;
-        AllocType   alloctype;
-
-        AllocFunc(const char f[], AllocType a)
-        {
-            funcname = f;
-            alloctype = a;
-        }
-};
-static std::list<AllocFunc> listallocfunc;
-
 AllocType CheckMemoryLeakClass::GetAllocationType( const TOKEN *tok2 )
 {
     // What we may have...
