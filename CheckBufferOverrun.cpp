@@ -377,9 +377,6 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
             if ( Match(tok2, "}") )
                 break;
 
-            if (!Match(tok2,"[;{,(]"))
-                continue;
-
             int ivar = 0;
             if ( Match(tok2->next, "%type% %var% [ %num% ] ;") )
                 ivar = 2;
@@ -398,6 +395,30 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
             int total_size = arrsize * _tokenizer->SizeOfType(tok2->next->str);
             if (total_size == 0)
                 continue;
+
+
+            // Class member variable => Check functions
+            if ( Match(tok, "class") )
+            {
+                std::string func_pattern(structname + std::string(" :: %var% ("));
+                const TOKEN *tok3 = findmatch(_tokenizer->tokens(), func_pattern.c_str());
+                while ( tok3 )
+                {
+                    for ( const TOKEN *tok4 = tok3; tok4; tok4 = tok4->next )
+                    {
+                        if ( Match(tok4,"[;{}]") )
+                            break;
+
+                        if ( Match(tok4, ") {") )
+                        {
+                            const char *names[2] = {varname[1], 0};
+                            CheckBufferOverrun_CheckScope( Tokenizer::gettok(tok4, 2), names, arrsize, total_size );
+                            break;
+                        }
+                    }
+                    tok3 = findmatch(tok3->next, func_pattern.c_str());
+                }
+            }
 
             for ( const TOKEN *tok3 = _tokenizer->tokens(); tok3; tok3 = tok3->next )
             {
@@ -451,6 +472,8 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
     }
 }
 //---------------------------------------------------------------------------
+
+
 
 void CheckBufferOverrunClass::CheckBufferOverrun()
 {

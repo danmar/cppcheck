@@ -77,7 +77,7 @@ private:
         TEST_CASE( array_index_9 );
         TEST_CASE( array_index_10 );
         TEST_CASE( array_index_11 );
-        //TEST_CASE( array_index_12 );
+        TEST_CASE( array_index_12 );
 
         TEST_CASE( buffer_overrun_1 );
         TEST_CASE( buffer_overrun_2 );
@@ -324,7 +324,8 @@ private:
                "{\n"
                "    str[10] = 0;\n"
                "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:5]: Array index out of bounds\n"), errout.str() );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:10]: Array index out of bounds\n"), err );
     }
 
 
