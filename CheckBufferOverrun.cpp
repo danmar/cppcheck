@@ -31,11 +31,9 @@
 #include <stdlib.h>     // <- strtoul
 
 //---------------------------------------------------------------------------
-extern bool ShowAll;
-//---------------------------------------------------------------------------
 
 // CallStack used when parsing into subfunctions.
-static std::list<const TOKEN *> CallStack;
+
 
 CheckBufferOverrunClass::CheckBufferOverrunClass( Tokenizer *tokenizer )
 {

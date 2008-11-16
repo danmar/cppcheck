@@ -69,6 +69,7 @@ Tokenizer::Tokenizer()
 {
     tokens = 0;
     tokens_back = 0;
+    dsymlist = 0;
 }
 
 Tokenizer::~Tokenizer()
@@ -81,13 +82,7 @@ Tokenizer::~Tokenizer()
 // "#define abc 123" will create a defined symbol "abc" with the value 123
 //---------------------------------------------------------------------------
 
-struct DefineSymbol
-{
-    char *name;
-    char *value;
-    struct DefineSymbol *next;
-};
-static struct DefineSymbol * dsymlist;
+
 
 std::vector<std::string> *Tokenizer::getFiles()
 {

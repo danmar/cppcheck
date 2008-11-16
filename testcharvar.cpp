@@ -25,7 +25,6 @@
 #include <sstream>
 
 extern std::ostringstream errout;
-extern bool ShowAll;
 
 class TestCharVar : public TestFixture
 {
@@ -59,7 +58,6 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        ShowAll = true;
         CheckOther checkOther( &tokenizer );
         checkOther.CheckCharVariable();
 

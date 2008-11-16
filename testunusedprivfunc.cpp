@@ -24,7 +24,6 @@
 #include <sstream>
 
 extern std::ostringstream errout;
-extern bool ShowAll;
 
 class TestUnusedPrivateFunction : public TestFixture
 {
@@ -54,7 +53,9 @@ private:
         errout.str("");
 
         // Check for unused private functions..
-        CheckClass checkClass( &tokenizer );
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckClass checkClass( &tokenizer, settings );
         checkClass.CheckUnusedPrivateFunctions();
 
         tokenizer.DeallocateTokens();

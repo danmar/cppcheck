@@ -21,13 +21,8 @@
 #include <string>
 #include <vector>
 
-extern bool ShowAll;
-extern bool CheckCodingStyle;
-
 int main(int argc, const char *argv[])
 {
-    ShowAll = false;
-    CheckCodingStyle = true;
     TestFixture::runTests( (argc==2) ? argv[1] : NULL );
     return 0;
 }

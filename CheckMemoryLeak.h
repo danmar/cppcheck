@@ -26,6 +26,7 @@
 /** \brief Check for memory leaks */
 
 #include "tokenize.h"
+#include "settings.h"
 #include <list>
 #include <vector>
 
@@ -34,7 +35,7 @@ enum AllocType { No, Malloc, gMalloc, New, NewA };
 class CheckMemoryLeakClass
 {
 public:
-    CheckMemoryLeakClass( Tokenizer *tokenizer );
+    CheckMemoryLeakClass( Tokenizer *tokenizer, const Settings &settings );
     ~CheckMemoryLeakClass();
     void CheckMemoryLeak();
 
@@ -58,6 +59,7 @@ private:
     bool isclass( const std::string &typestr );
 
     Tokenizer *_tokenizer;
+    Settings _settings;
 };
 
 //---------------------------------------------------------------------------

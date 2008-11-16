@@ -46,7 +46,9 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        CheckClass checkClass( &tokenizer );
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckClass checkClass( &tokenizer, settings );
         checkClass.CheckConstructors();
 
         tokenizer.DeallocateTokens();

@@ -26,7 +26,6 @@
 #include <sstream>
 
 extern std::ostringstream errout;
-extern bool ShowAll;
 
 class TestBufferOverrun : public TestFixture
 {
@@ -54,7 +53,6 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        ShowAll = true;
         CheckBufferOverrunClass checkBufferOverrun( &tokenizer );
         checkBufferOverrun.CheckBufferOverrun();
 

@@ -43,6 +43,7 @@ private:
     void ReportError(const TOKEN *tok, const char errmsg[]);
 
     Tokenizer *_tokenizer;
+    std::list<const TOKEN *> CallStack;
 };
 
 //---------------------------------------------------------------------------

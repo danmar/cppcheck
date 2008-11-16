@@ -28,7 +28,6 @@
 #include <sstream>
 
 extern std::ostringstream errout;
-extern bool ShowAll;
 
 class TestDivision : public TestFixture
 {
@@ -50,7 +49,6 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        ShowAll = true;
         CheckOther checkOther( &tokenizer );
         checkOther.CheckUnsignedDivision();
 

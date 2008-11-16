@@ -27,7 +27,6 @@
 #include <sstream>
 
 extern std::ostringstream errout;
-extern bool ShowAll;
 
 class TestMemleak : public TestFixture
 {
@@ -49,12 +48,12 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        ShowAll = false;
         Settings settings;
         settings._checkCodingStyle = true;
+        settings._showAll = false;
         tokenizer.settings( settings );
         tokenizer.FillFunctionList(0);
-        CheckMemoryLeakClass checkMemoryLeak( &tokenizer );
+        CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings );
         checkMemoryLeak.CheckMemoryLeak();
 
         tokenizer.DeallocateTokens();

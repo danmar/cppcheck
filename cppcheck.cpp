@@ -34,12 +34,6 @@
 #include <fstream>
 #include <map>
 
-
-//---------------------------------------------------------------------------
-bool Debug = false;
-bool ShowAll = false;
-bool CheckCodingStyle = false;
-bool ErrorsOnly = false;
 //---------------------------------------------------------------------------
 
 CppCheck::CppCheck()
@@ -83,10 +77,6 @@ void CppCheck::check(int argc, char* argv[])
             pathnames.push_back( argv[i] );
     }
 
-    Debug = _settings._debug;
-    ShowAll = _settings._showAll;
-    CheckCodingStyle = _settings._checkCodingStyle;
-    ErrorsOnly = _settings._errorsOnly;
     _tokenizer.settings( _settings );
 
     std::vector<std::string> filenames;
@@ -206,7 +196,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
-    CheckClass checkClass( &_tokenizer );
+    CheckClass checkClass( &_tokenizer, _settings );
     checkClass.CheckMemset();
 
 
@@ -222,7 +212,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
 
 
     // Including header which is not needed (too many false positives)
-//    if ( CheckCodingStyle )
+//    if ( _settings._checkCodingStyle )
 //    {
 //        CheckHeaders checkHeaders( &tokenizer );
 //        checkHeaders.WarningIncludeHeader();
@@ -232,7 +222,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
     _tokenizer.SimplifyTokenList();
 
     // Memory leak
-    CheckMemoryLeakClass checkMemoryLeak( &_tokenizer );
+    CheckMemoryLeakClass checkMemoryLeak( &_tokenizer, _settings );
     checkMemoryLeak.CheckMemoryLeak();
 
     // Buffer overruns..

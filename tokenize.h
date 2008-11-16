@@ -94,11 +94,16 @@ public:
 
     void FillFunctionList(const unsigned int file_id);
     const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
-void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
+    void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
     void settings( const Settings &settings );
 private:
 
-
+    struct DefineSymbol
+    {
+        char *name;
+        char *value;
+        struct DefineSymbol *next;
+    };
 
     class GlobalFunction
     {
@@ -136,6 +141,9 @@ private:
     std::list< GlobalFunction > UsedGlobalFunctions;
     std::vector<std::string> Files;
     Settings _settings;
+
+
+    struct DefineSymbol * dsymlist;
 };
 
 

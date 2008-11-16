@@ -41,9 +41,10 @@
 
 //---------------------------------------------------------------------------
 
-CheckMemoryLeakClass::CheckMemoryLeakClass( Tokenizer *tokenizer )
+CheckMemoryLeakClass::CheckMemoryLeakClass( Tokenizer *tokenizer, const Settings &settings )
 {
     _tokenizer = tokenizer;
+    _settings = settings;
 }
 
 CheckMemoryLeakClass::~CheckMemoryLeakClass()
@@ -281,9 +282,6 @@ bool CheckMemoryLeakClass::notvar(const TOKEN *tok, const char *varnames[])
                  Match(tok, "%var1% == 0", varnames) );
 }
 
-
-extern bool ShowAll;
-
 /**
  * Extract a new tokens list that is easier to parse than the "tokens"
  * tok - start parse token
@@ -344,7 +342,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             AllocType alloc = GetAllocationType(Tokenizer::gettok(tok,3));
 
             // If "--all" hasn't been given, don't check classes..
-            if ( alloc == New && ! ShowAll )
+            if ( alloc == New && ! _settings._showAll )
             {
                 if ( Match(Tokenizer::gettok(tok,3), "new %type% [(;]") )
                 {
@@ -941,7 +939,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN 
         {
             if ( IsName(tok->str) || strchr(";}", tok->str[0]) )
             {
-                if (ShowAll || !isclass(Tokenizer::getstr(tok,1)))
+                if (_settings._showAll || !isclass(Tokenizer::getstr(tok,1)))
                     CheckMemoryLeak_ClassMembers_Variable( classname, Tokenizer::getstr(tok, 3) );
             }
         }

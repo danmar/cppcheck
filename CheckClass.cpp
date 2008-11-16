@@ -34,8 +34,16 @@
 #endif
 //---------------------------------------------------------------------------
 
-extern bool CheckCodingStyle;
+CheckClass::CheckClass( Tokenizer *tokenizer, const Settings &settings )
+{
+    _tokenizer = tokenizer;
+    _settings = settings;
+}
 
+CheckClass::~CheckClass()
+{
+
+}
 
 //---------------------------------------------------------------------------
 
@@ -100,16 +108,6 @@ struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
     return varlist;
 }
 //---------------------------------------------------------------------------
-
-CheckClass::CheckClass( Tokenizer *tokenizer )
-{
-    _tokenizer = tokenizer;
-}
-
-CheckClass::~CheckClass()
-{
-
-}
 
 const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel )
 {
@@ -332,7 +330,7 @@ void CheckClass::CheckConstructors()
         if ( ! constructor_token )
         {
             // There's no class constructor
-            if ( CheckCodingStyle )
+            if ( _settings._checkCodingStyle )
             {
                 // Check that all member variables are initialized..
                 struct VAR *varlist = ClassChecking_GetVarList(tok1);

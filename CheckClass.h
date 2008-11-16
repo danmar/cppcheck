@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "tokenize.h"
+#include "settings.h"
 #include <list>
 
 struct VAR
@@ -34,7 +35,7 @@ struct VAR
 class CheckClass
 {
 public:
-    CheckClass( Tokenizer *tokenizer );
+    CheckClass( Tokenizer *tokenizer, const Settings &settings );
     ~CheckClass();
 
     void CheckConstructors();
@@ -52,6 +53,7 @@ private:
     struct VAR *ClassChecking_GetVarList(const TOKEN *tok1);
 
     Tokenizer *_tokenizer;
+    Settings _settings;
 };
 //---------------------------------------------------------------------------
 #endif
