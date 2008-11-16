@@ -42,16 +42,16 @@ private:
     void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname );
     void CheckMemoryLeak_ClassMembers();
     void CheckMemoryLeak_InFunction();
-    void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char typestr[], const char varname[] );
+    void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] );
     void simplifycode(TOKEN *tok);
     void erase(TOKEN *begin, const TOKEN *end);
 
-    TOKEN *getcode(const TOKEN *tok, const char typestr[], const char varname[]);
+    TOKEN *getcode(const TOKEN *tok, const char varname[]);
     bool notvar(const TOKEN *tok, const char *varnames[]);
     void instoken(TOKEN *tok, const char str[]);
     void MemoryLeak( const TOKEN *tok, const char varname[] );
     void MismatchError( const TOKEN *Tok1, const char varname[] );
-    const char * call_func( const TOKEN *tok, const char typestr[], const char *varnames[] );
+    const char * call_func( const TOKEN *tok, const char *varnames[] );
     AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[] );
     AllocType GetAllocationType( const TOKEN *tok2 );
     bool isclass( const std::string &typestr );

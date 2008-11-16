@@ -117,7 +117,6 @@ private:
         TEST_CASE( throw1 );
 
         TEST_CASE( linux_list_1 );
-        TEST_CASE( linux_list_2 );
 
         TEST_CASE( sizeof1 );
     }
@@ -857,23 +856,6 @@ private:
 
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
-
-    void linux_list_2()
-    {
-        check( "struct AB\n"
-               "{\n"
-               "    int a;\n"
-               "    int b;\n"
-               "};\n"
-               "void foo()\n"
-               "{\n"
-               "    struct AB *ab = new AB;\n"
-               "    func(&ab->b);\n"
-               "}\n" );
-
-        ASSERT_EQUALS( std::string("[test.cpp:10]: Memory leak: ab\n"), errout.str() );
-    }
-
 
 
 
