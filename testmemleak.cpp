@@ -417,7 +417,7 @@ private:
         check( "void f()\n"
                "{\n"
                "    char *s = new char[100];\n"
-               "    if (s != NULL)\n"
+               "    if (0 != s)\n"
                "        foo(s);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
