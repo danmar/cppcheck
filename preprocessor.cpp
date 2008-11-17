@@ -41,20 +41,23 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     // Get filedata from stream..
     bool ignoreSpace = true;
 
+    int lineno = 1;
+
     std::ostringstream code;
     for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
     {
         if ( ch < 0 )
         {
             // Bad content..
-            errout << "[" << filename << "] Bad character found: " << int((unsigned char)ch) << std::endl;
+            errout << "[" << filename << ":" << lineno << "] Bad character found: " << int((unsigned char)ch) << std::endl;
             result.clear();
             return;
         }
 
+        if ( ch == '\n' )
+            ++lineno;
+
         // Replace assorted special chars with spaces..
-        if ( ch < 0 )
-            ch = ' ';
         if ( (ch != '\n') && (isspace(ch) || iscntrl(ch)) )
             ch = ' ';
 
@@ -73,6 +76,7 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
                 while (istr.good() && ch!='\n')
                     ch = (char)istr.get();
                 code << "\n";
+                ++lineno;
             }
 
             else if ( chNext == '*' )
@@ -83,12 +87,17 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
                     chPrev = ch;
                     ch = (char)istr.get();
                     if (ch == '\n')
+                    {
                         code << "\n";
+                        ++lineno;
+                    }
                 }
             }
 
             else
             {
+                if ( chNext == '\n' )
+                    ++lineno;
                 code << std::string(1,ch) << std::string(1,chNext);
             }
         }
