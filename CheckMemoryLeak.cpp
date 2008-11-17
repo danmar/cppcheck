@@ -177,9 +177,15 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
     if (GetAllocationType(tok)!=No || GetDeallocationType(tok,varnames)!=No)
         return 0;
 
+    if ( callstack.size() > 10 )
+        return 0;
+
     const char *funcname = tok->str;
-    if ( std::find(callstack.begin(), callstack.end(), tok) != callstack.end() )
-        return "use";
+    for ( std::list<const TOKEN *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it )
+    {
+        if ( std::string(funcname) == (*it)->str )
+            return 0;
+    }
     callstack.push_back(tok);
 
     int par = 1;
