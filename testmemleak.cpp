@@ -86,6 +86,7 @@ private:
         TEST_CASE( if1 );
         TEST_CASE( if2 );
         TEST_CASE( if3 );
+        TEST_CASE( if4 );
 
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
@@ -220,12 +221,14 @@ private:
     {
         check( "void foo()\n"
                "{\n"
-               "    char *str = strdup(\"abc\");\n"
+               "    char *str;\n"
+               "    if (somecondition)\n"
+               "        str = strdup(\"abc\");\n"
                "    if (somecondition)\n"
                "        DeleteString(str);\n"
                "}\n" );
 
-        ASSERT_EQUALS( std::string("[test.cpp:6]: Memory leak: str\n"), errout.str() );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
@@ -234,7 +237,7 @@ private:
         check( "void foo()\n"
                "{\n"
                "    char *str = strdup(\"abc\");\n"
-	       "    if ( abc ) { memset(str, 0, 3); }\n"
+	           "    if ( abc ) { memset(str, 0, 3); }\n"
                "    *somestr = str;\n"
                "}\n" );
 
@@ -380,7 +383,7 @@ private:
                "        delete [] s;\n"
                "    }\n"
                "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: s\n"), errout.str() );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
@@ -421,6 +424,21 @@ private:
                "        foo(s);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void if4()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char *s;\n"
+               "    bool b = true;\n"
+               "    if (b && (s = malloc(256)))\n"
+               "        ;\n"
+               "    if (b)\n"
+               "        free(s);\n"
+               "}\n" );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), err );
     }
 
 

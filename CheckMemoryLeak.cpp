@@ -571,7 +571,9 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Delete "if dealloc ;" and "if use ;" that is not followed by an else..
-            if ((Match(tok2, "[;{}] if dealloc ;") || Match(tok2, "[;{}] if use ;")) &&
+            // This may cause false positives
+            if (_settings._showAll &&
+                (Match(tok2, "[;{}] if dealloc ;") || Match(tok2, "[;{}] if use ;")) &&
                 !Match(Tokenizer::gettok(tok2,4), "else"))
             {
                 erase(tok2->next, Tokenizer::gettok(tok2,3));
@@ -609,13 +611,6 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             if (Match(tok2,"[;{}] if { dealloc ; return ; }") && !Match(Tokenizer::gettok(tok2,8),"else"))
             {
                 erase(tok2,Tokenizer::gettok(tok2,8));
-                done = false;
-            }
-
-            // Remove "if dealloc ;" if there is no else after it..
-            if (Match(tok2,"if dealloc ;") && !Match(Tokenizer::gettok(tok2,3),"else"))
-            {
-                erase( tok2, Tokenizer::gettok(tok2, 2) );
                 done = false;
             }
 
