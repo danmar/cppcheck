@@ -115,13 +115,13 @@ void CppCheck::check(int argc, char* argv[])
                      "    cppcheck [--all] [--style] [--errorsonly] [--recursive] [filename1] [filename2]\n"
                      "\n"
                      "Options:\n"
-                     "    --all    Normally a message is only shown if cppcheck is sure\n"
-                     "             it has found a bug.\n"
-                     "             When this option is given, all messages are shown.\n"
+                     "    --all           Normally a message is only shown if cppcheck is sure\n"
+                     "                    it has found a bug.\n"
+                     "                    When this option is given, all messages are shown.\n"
                      "\n"
-                     "    --style  Check coding style.\n"
-                     "    --errorsonly  Only print something when there is an error\n"
-                     "    --recursive  Recursively check all *.cpp, *.cc and *.c files\n";
+                     "    --style         Check coding style.\n"
+                     "    --errorsonly    Only print something when there is an error\n"
+                     "    --recursive     Recursively check all *.cpp, *.cc and *.c files\n";
         return;
     }
 
