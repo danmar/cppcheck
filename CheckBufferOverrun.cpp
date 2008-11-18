@@ -462,6 +462,9 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
                     tok3 = tok3->next;
                 }
 
+                if ( ! tok3 )
+                    break;
+
                 if ( ! CheckTok )
                     continue;
 
