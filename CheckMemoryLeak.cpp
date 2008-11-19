@@ -774,17 +774,17 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         MemoryLeak(findmatch(tok, "loop alloc ;"), varname);
     }
 
-    else if ( findmatch(tok, "alloc ; if continue ;") )
+    else if ( _settings._showAll && findmatch(tok, "alloc ; if continue ;") )
     {
         MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; if continue ;"), 3), varname);
     }
 
-    else if ( findmatch(tok, "alloc ; if break ;") )
+    else if ( _settings._showAll && findmatch(tok, "alloc ; if break ;") )
     {
         MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; if break ;"), 3), varname);
     }
 
-    else if ( findmatch(tok, "alloc ; if return ;") )
+    else if ( _settings._showAll && findmatch(tok, "alloc ; if return ;") )
     {
         MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; if return ;"), 3), varname);
     }
