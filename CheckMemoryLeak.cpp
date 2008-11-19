@@ -589,7 +589,8 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             // Delete empty if that is not followed by an else
             if ( Match(tok2,"[;{}] if ;") ||
                  Match(tok2,"[;{}] if(var) ;") ||
-                 Match(tok2,"[;{}] if(!var) ;") )
+                 Match(tok2,"[;{}] if(!var) ;") ||
+                 Match(tok2,"[;{}] ifv ;") )
             {
                 if ( ! Match(Tokenizer::gettok(tok2,3), "else") )
                 {
