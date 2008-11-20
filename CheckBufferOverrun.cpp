@@ -51,8 +51,8 @@ void CheckBufferOverrunClass::ReportError(const TOKEN *tok, const char errmsg[])
     std::ostringstream ostr;
     std::list<const TOKEN *>::const_iterator it;
     for ( it = CallStack.begin(); it != CallStack.end(); it++ )
-        ostr << FileLine(*it, _tokenizer ) << " -> ";
-    ostr << FileLine(tok, _tokenizer) << ": " << errmsg;
+        ostr << _tokenizer->fileLine(*it ) << " -> ";
+    ostr << _tokenizer->fileLine(tok) << ": " << errmsg;
     ReportErr(ostr.str());
 }
 //---------------------------------------------------------------------------
@@ -401,7 +401,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
             if ( Match(tok, "class") )
             {
                 std::string func_pattern(structname + std::string(" :: %var% ("));
-                const TOKEN *tok3 = findmatch(_tokenizer->tokens(), func_pattern.c_str());
+                const TOKEN *tok3 = Tokenizer::findmatch(_tokenizer->tokens(), func_pattern.c_str());
                 while ( tok3 )
                 {
                     for ( const TOKEN *tok4 = tok3; tok4; tok4 = tok4->next )
@@ -416,7 +416,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
                             break;
                         }
                     }
-                    tok3 = findmatch(tok3->next, func_pattern.c_str());
+                    tok3 = Tokenizer::findmatch(tok3->next, func_pattern.c_str());
                 }
             }
 
@@ -503,14 +503,14 @@ void CheckBufferOverrunClass::WarningDangerousFunctions()
         if (Match(tok, "gets ("))
         {
             std::ostringstream ostr;
-            ostr << FileLine(tok, _tokenizer) << ": Found 'gets'. You should use 'fgets' instead";
+            ostr << _tokenizer->fileLine(tok) << ": Found 'gets'. You should use 'fgets' instead";
             ReportErr(ostr.str());
         }
 
         else if (Match(tok, "scanf (") && strcmp(Tokenizer::getstr(tok,2),"\"%s\"") == 0)
         {
             std::ostringstream ostr;
-            ostr << FileLine(tok, _tokenizer) << ": Found 'scanf'. You should use 'fgets' instead";
+            ostr << _tokenizer->fileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";
             ReportErr(ostr.str());
         }
     }

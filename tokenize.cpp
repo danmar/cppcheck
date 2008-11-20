@@ -1093,28 +1093,7 @@ const char *Tokenizer::getstr(const TOKEN *tok, int index)
 
 
 
-// Deallocate lists..
-void Tokenizer::DeallocateTokens()
-{
-    while (_tokens)
-    {
-        TOKEN *next = _tokens->next;
-        delete _tokens;
-        _tokens = next;
-    }
-    tokens_back = _tokens;
 
-    while (dsymlist)
-    {
-        struct DefineSymbol *next = dsymlist->next;
-        free(dsymlist->name);
-        free(dsymlist->value);
-        delete dsymlist;
-        dsymlist = next;
-    }
-
-    Files.clear();
-}
 
 //---------------------------------------------------------------------------
 
@@ -1332,4 +1311,70 @@ void Tokenizer::CheckGlobalFunctionUsage(const std::vector<std::string> &filenam
 void Tokenizer::settings( const Settings &settings )
 {
     _settings = settings;
+}
+
+// Deallocate lists..
+void Tokenizer::DeallocateTokens()
+{
+    deleteTokens( _tokens );
+    _tokens = 0;
+    tokens_back = 0;
+
+    while (dsymlist)
+    {
+        struct DefineSymbol *next = dsymlist->next;
+        free(dsymlist->name);
+        free(dsymlist->value);
+        delete dsymlist;
+        dsymlist = next;
+    }
+
+    Files.clear();
+}
+
+void Tokenizer::deleteTokens(TOKEN *tok)
+{
+    while (tok)
+    {
+        TOKEN *next = tok->next;
+        delete tok;
+        tok = next;
+    }
+}
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+
+const char *Tokenizer::getParameterName( const TOKEN *ftok, int par )
+{
+    int _par = 1;
+    for ( ; ftok; ftok = ftok->next)
+    {
+        if ( Match(ftok, ",") )
+            ++_par;
+        if ( par==_par && Match(ftok, "%var% [,)]") )
+            return ftok->str;
+    }
+    return NULL;
+}
+
+//---------------------------------------------------------------------------
+
+const TOKEN *Tokenizer::findmatch(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
+{
+    for ( ; tok; tok = tok->next)
+    {
+        if ( Match(tok, pattern, varname1, varname2) )
+            return tok;
+    }
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+
+std::string Tokenizer::fileLine( const TOKEN *tok )
+{
+    std::ostringstream ostr;
+    ostr << "[" << Files.at(tok->FileIndex) << ":" << tok->linenr << "]";
+    return ostr.str();
 }

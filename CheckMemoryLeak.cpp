@@ -64,7 +64,7 @@ bool CheckMemoryLeakClass::isclass( const std::string &typestr )
 
     std::ostringstream pattern;
     pattern << "struct " << typestr;
-    if ( findmatch( _tokenizer->tokens(), pattern.str().c_str() ) )
+    if ( Tokenizer::findmatch( _tokenizer->tokens(), pattern.str().c_str() ) )
         return false;
 
     return true;
@@ -208,7 +208,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
             if ( Match(tok, "[,()] %var1% [,()]", varnames) )
             {
                 const TOKEN *ftok = _tokenizer->GetFunctionTokenByName(funcname);
-                const char *parname = GetParameterName( ftok, par );
+                const char *parname = Tokenizer::getParameterName( ftok, par );
                 if ( ! parname )
                     return "use";
                 // Check if the function deallocates the variable..
@@ -217,13 +217,13 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                 TOKEN *func = getcode( Tokenizer::gettok(ftok,1), callstack, parname, alloctype, dealloctype );
                 simplifycode( func );
                 const char *ret = 0;
-                if (findmatch(func, "goto"))
+                if (Tokenizer::findmatch(func, "goto"))
                     ret = 0;    // TODO : "goto" isn't handled well
-                else if (findmatch(func, "use"))
+                else if (Tokenizer::findmatch(func, "use"))
                     ret = "use";
-                else if (findmatch(func, "dealloc"))
+                else if (Tokenizer::findmatch(func, "dealloc"))
                     ret = "dealloc";
-                deleteTokens(func);
+                Tokenizer::deleteTokens(func);
                 return ret;
             }
         }
@@ -237,8 +237,8 @@ void CheckMemoryLeakClass::MismatchError( const TOKEN *Tok1, const std::list<con
 {
     std::ostringstream errmsg;
     for ( std::list<const TOKEN *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok )
-        errmsg << FileLine(*tok, _tokenizer) << " -> ";
-    errmsg << FileLine(Tok1, _tokenizer) << ": Mismatching allocation and deallocation: " << varname;
+        errmsg << _tokenizer->fileLine(*tok) << " -> ";
+    errmsg << _tokenizer->fileLine(Tok1) << ": Mismatching allocation and deallocation: " << varname;
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
@@ -246,7 +246,7 @@ void CheckMemoryLeakClass::MismatchError( const TOKEN *Tok1, const std::list<con
 void CheckMemoryLeakClass::MemoryLeak( const TOKEN *tok, const char varname[] )
 {
     std::ostringstream errmsg;
-    errmsg << FileLine(tok, _tokenizer) << ": Memory leak: " << varname;
+    errmsg << _tokenizer->fileLine(tok) << ": Memory leak: " << varname;
     ReportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
@@ -778,69 +778,69 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
     TOKEN *tok = getcode( Tok1, callstack, varname, alloctype, dealloctype );
 
     // If the variable is not allocated at all => no memory leak
-    if (findmatch(tok, "alloc") == 0)
+    if (Tokenizer::findmatch(tok, "alloc") == 0)
     {
-        deleteTokens(tok);
+        Tokenizer::deleteTokens(tok);
         return;
     }
 
     // TODO : handle "goto"
-    if (findmatch(tok, "goto"))
+    if (Tokenizer::findmatch(tok, "goto"))
     {
-        deleteTokens(tok);
+        Tokenizer::deleteTokens(tok);
         return;
     }
 
     simplifycode( tok );
 
-    if ( findmatch(tok, "loop alloc ;") )
+    if ( Tokenizer::findmatch(tok, "loop alloc ;") )
     {
-        MemoryLeak(findmatch(tok, "loop alloc ;"), varname);
+        MemoryLeak(Tokenizer::findmatch(tok, "loop alloc ;"), varname);
     }
 
-    else if ( findmatch(tok, "alloc ; if continue ;") )
+    else if ( Tokenizer::findmatch(tok, "alloc ; if continue ;") )
     {
-        MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; if continue ;"), 3), varname);
+        MemoryLeak(Tokenizer::gettok(Tokenizer::findmatch(tok, "alloc ; if continue ;"), 3), varname);
     }
 
-    else if ( findmatch(tok, "alloc ; if break ;") )
+    else if ( Tokenizer::findmatch(tok, "alloc ; if break ;") )
     {
-        MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; if break ;"), 3), varname);
+        MemoryLeak(Tokenizer::gettok(Tokenizer::findmatch(tok, "alloc ; if break ;"), 3), varname);
     }
 
-    else if ( findmatch(tok, "alloc ; if return ;") )
+    else if ( Tokenizer::findmatch(tok, "alloc ; if return ;") )
     {
-        MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; if return ;"), 3), varname);
+        MemoryLeak(Tokenizer::gettok(Tokenizer::findmatch(tok, "alloc ; if return ;"), 3), varname);
     }
 
-    else if ( _settings._showAll && findmatch(tok, "alloc ; ifv continue ;") )
+    else if ( _settings._showAll && Tokenizer::findmatch(tok, "alloc ; ifv continue ;") )
     {
-        MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; ifv continue ;"), 3), varname);
+        MemoryLeak(Tokenizer::gettok(Tokenizer::findmatch(tok, "alloc ; ifv continue ;"), 3), varname);
     }
 
-    else if ( _settings._showAll && findmatch(tok, "alloc ; ifv break ;") )
+    else if ( _settings._showAll && Tokenizer::findmatch(tok, "alloc ; ifv break ;") )
     {
-        MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; ifv break ;"), 3), varname);
+        MemoryLeak(Tokenizer::gettok(Tokenizer::findmatch(tok, "alloc ; ifv break ;"), 3), varname);
     }
 
-    else if ( _settings._showAll && findmatch(tok, "alloc ; ifv return ;") )
+    else if ( _settings._showAll && Tokenizer::findmatch(tok, "alloc ; ifv return ;") )
     {
-        MemoryLeak(Tokenizer::gettok(findmatch(tok, "alloc ; ifv return ;"), 3), varname);
+        MemoryLeak(Tokenizer::gettok(Tokenizer::findmatch(tok, "alloc ; ifv return ;"), 3), varname);
     }
 
-    else if ( findmatch(tok, "alloc ; return ;") )
+    else if ( Tokenizer::findmatch(tok, "alloc ; return ;") )
     {
-        MemoryLeak(Tokenizer::gettok(findmatch(tok,"alloc ; return ;"),2), varname);
+        MemoryLeak(Tokenizer::gettok(Tokenizer::findmatch(tok,"alloc ; return ;"),2), varname);
     }
 
-    else if ( findmatch(tok, "alloc ; alloc") )
+    else if ( Tokenizer::findmatch(tok, "alloc ; alloc") )
     {
-        MemoryLeak(Tokenizer::gettok(findmatch(tok,"alloc ; alloc"),2), varname);
+        MemoryLeak(Tokenizer::gettok(Tokenizer::findmatch(tok,"alloc ; alloc"),2), varname);
     }
 
-    else if ( ! findmatch(tok,"dealloc") &&
-              ! findmatch(tok,"use") &&
-              ! findmatch(tok,"return use ;") )
+    else if ( ! Tokenizer::findmatch(tok,"dealloc") &&
+              ! Tokenizer::findmatch(tok,"use") &&
+              ! Tokenizer::findmatch(tok,"return use ;") )
     {
         const TOKEN *last = tok;
         while (last->next)
@@ -848,7 +848,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         MemoryLeak(last, varname);
     }
 
-    deleteTokens(tok);
+    Tokenizer::deleteTokens(tok);
 }
 //---------------------------------------------------------------------------
 

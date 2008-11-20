@@ -80,6 +80,11 @@ public:
     static const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[]);
     static const TOKEN *gettok(const TOKEN *tok, int index);
     static const char *getstr(const TOKEN *tok, int index);
+    static void deleteTokens(TOKEN *tok);
+    static const char *getParameterName( const TOKEN *ftok, int par );
+    static const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
+
+    std::string fileLine( const TOKEN *tok );
 
     // Return size.
     int SizeOfType(const char type[]);

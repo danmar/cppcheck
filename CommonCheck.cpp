@@ -36,14 +36,7 @@ bool OnlyReportUniqueErrors;
 std::ostringstream errout;
 
 
-//---------------------------------------------------------------------------
 
-std::string FileLine( const TOKEN *tok, Tokenizer *_tokenizer )
-{
-    std::ostringstream ostr;
-    ostr << "[" << _tokenizer->getFiles()->at(tok->FileIndex) << ":" << tok->linenr << "]";
-    return ostr.str();
-}
 //---------------------------------------------------------------------------
 
 bool SameFileName( const char fname1[], const char fname2[] )
@@ -99,20 +92,7 @@ bool IsStandardType(const char str[])
         Ret |= (strcmp(str,type[i])==0);
     return Ret;
 }
-//---------------------------------------------------------------------------
 
-const char *GetParameterName( const TOKEN *ftok, int par )
-{
-    int _par = 1;
-    for ( ; ftok; ftok = ftok->next)
-    {
-        if ( Match(ftok, ",") )
-            ++_par;
-        if ( par==_par && Match(ftok, "%var% [,)]") )
-            return ftok->str;
-    }
-    return NULL;
-}
 //--------------------------------------------------------------------------
 
 bool Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
@@ -207,28 +187,8 @@ bool Match(const TOKEN *tok, const char pattern[], const char *varname1[], const
     // The end of the pattern has been reached and nothing wrong has been found
     return true;
 }
+
 //---------------------------------------------------------------------------
 
-const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
-{
-    for ( ; tok; tok = tok->next)
-    {
-        if ( Match(tok, pattern, varname1, varname2) )
-            return tok;
-    }
-    return 0;
-}
-//---------------------------------------------------------------------------
-
-void deleteTokens(TOKEN *tok)
-{
-    while (tok)
-    {
-        TOKEN *next = tok->next;
-        delete tok;
-        tok = next;
-    }
-}
-//---------------------------------------------------------------------------
 
 

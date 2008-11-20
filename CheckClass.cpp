@@ -337,7 +337,7 @@ void CheckClass::CheckConstructors()
                 if ( varlist )
                 {
                     std::ostringstream ostr;
-                    ostr << FileLine(tok1, _tokenizer);
+                    ostr << _tokenizer->fileLine(tok1);
                     ostr << " The class '" << classname << "' has no constructor";
                     ReportErr(ostr.str());
                 }
@@ -376,7 +376,7 @@ void CheckClass::CheckConstructors()
                 if (!var->init)
                 {
                     std::ostringstream ostr;
-                    ostr << FileLine(constructor_token, _tokenizer);
+                    ostr << _tokenizer->fileLine(constructor_token);
                     ostr << " Uninitialized member variable '" << classname << "::" << var->name << "'";
                     ReportErr(ostr.str());
                 }
@@ -575,7 +575,7 @@ void CheckClass::CheckMemset()
         if (Tokenizer::findtoken(_tokenizer->tokens(),pattern1))
         {
             std::ostringstream ostr;
-            ostr << FileLine(tok, _tokenizer) << ": Using '" << tok->str << "' on class.";
+            ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on class.";
             ReportErr(ostr.str());
             continue;
         }
@@ -591,7 +591,7 @@ void CheckClass::CheckMemset()
             if (Match(tstruct, "std :: %type% %var% ;"))
             {
                 std::ostringstream ostr;
-                ostr << FileLine(tok, _tokenizer) << ": Using '" << tok->str << "' on struct that contains a 'std::" << Tokenizer::getstr(tstruct,2) << "'";
+                ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << Tokenizer::getstr(tstruct,2) << "'";
                 ReportErr(ostr.str());
                 break;
             }
@@ -612,7 +612,7 @@ void CheckClass::CheckOperatorEq1()
     if (const TOKEN *tok = Tokenizer::findtoken(_tokenizer->tokens(),pattern))
     {
         std::ostringstream ostr;
-        ostr << FileLine(tok, _tokenizer) << ": 'operator=' should return something";
+        ostr << _tokenizer->fileLine(tok) << ": 'operator=' should return something";
         ReportErr(ostr.str());
     }
 }
