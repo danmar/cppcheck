@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -95,7 +95,11 @@ public:
     void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
     void settings( const Settings &settings );
     const TOKEN *tokens() const;
+
+
+#ifndef UNIT_TESTING
 private:
+#endif
 
     struct DefineSymbol
     {
@@ -135,7 +139,7 @@ private:
 
     TOKEN *tokens_back;
     std::map<std::string, unsigned int> TypeSize;
-    std::list<const TOKEN *> FunctionList;
+    std::vector<const TOKEN *> FunctionList;
     std::list< GlobalFunction > GlobalFunctions;
     std::list< GlobalFunction > UsedGlobalFunctions;
     std::vector<std::string> Files;

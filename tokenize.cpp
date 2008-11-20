@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -1120,12 +1120,11 @@ void Tokenizer::DeallocateTokens()
 
 const TOKEN *Tokenizer::GetFunctionTokenByName( const char funcname[] ) const
 {
-    std::list<const TOKEN *>::const_iterator it;
-    for ( it = FunctionList.begin(); it != FunctionList.end(); it++ )
+    for ( unsigned int i = 0; i < FunctionList.size(); ++i )
     {
-        if ( strcmp( (*it)->str, funcname ) == 0 )
+        if ( strcmp( FunctionList[i]->str, funcname ) == 0 )
         {
-            return *it;
+            return FunctionList[i];
         }
     }
     return NULL;
@@ -1219,6 +1218,35 @@ void Tokenizer::FillFunctionList(const unsigned int file_id)
             }
         }
     }
+
+    // If the FunctionList functions with duplicate names, remove them
+    // TODO this will need some better handling
+    for ( unsigned int func1 = 0; func1 < FunctionList.size(); )
+    {
+        bool hasDuplicates = false;
+        for ( unsigned int func2 = func1 + 1; func2 < FunctionList.size(); )
+        {
+            if ( strcmp(FunctionList[func1]->str, FunctionList[func2]->str) == 0 )
+            {
+                hasDuplicates = true;
+                FunctionList.erase( FunctionList.begin() + func2 );
+            }
+            else
+            {
+                ++func2;
+            }
+        }
+
+        if ( ! hasDuplicates )
+        {
+            ++func1;
+        }
+        else
+        {
+            FunctionList.erase( FunctionList.begin() + func1 );
+        }
+    }
+
 
     for (std::list<const char *>::const_iterator it = _usedfunc.begin(); it != _usedfunc.end(); ++it)
     {

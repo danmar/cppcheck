@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -22,6 +22,7 @@
 
 
 #include "testsuite.h"
+#define UNIT_TESTING        // Get access to "private" data in Tokenizer
 #include "tokenize.h"
 
 class TestTokenizer : public TestFixture
@@ -38,6 +39,8 @@ private:
         TEST_CASE( longtok );
 
         TEST_CASE( inlineasm );
+
+        TEST_CASE( dupfuncname );
     }
 
 
@@ -130,6 +133,27 @@ private:
         ASSERT_EQUALS( true, cmptok(expected, tokenizer.tokens()) );
 
         tokenizer.DeallocateTokens();
+    }
+
+
+    void dupfuncname()
+    {
+        const char code[] = "void a()\n"
+                            "{ }\n"
+                            "void a(int i)\n"
+                            "{ }\n"
+                            "void b()\n"
+                            "{ }\n";
+        // tokenize..
+        Tokenizer tokenizer;
+        tokenizer.getFiles()->push_back( "test.cpp" );
+        std::istringstream istr(code);
+        tokenizer.TokenizeCode(istr, 0);
+
+        tokenizer.FillFunctionList(0);
+
+        ASSERT_EQUALS( 1, tokenizer.FunctionList.size() );
+        ASSERT_EQUALS( std::string("b"), tokenizer.FunctionList[0]->str );
     }
 };
 
