@@ -38,7 +38,7 @@ private:
     void check( const char code[] )
     {
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
@@ -48,7 +48,7 @@ private:
         errout.str("");
 
         // Check for unused variables..
-        CheckOther checkOther( &tokenizer );
+        CheckOther checkOther( &tokenizer, this );
         checkOther.CheckIncompleteStatement();
 
         tokenizer.DeallocateTokens();

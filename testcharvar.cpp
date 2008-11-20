@@ -21,7 +21,6 @@
 #include "CommonCheck.h"
 #include "CheckOther.h"
 #include "testsuite.h"
-
 #include <sstream>
 
 extern std::ostringstream errout;
@@ -33,6 +32,8 @@ public:
     { }
 
 private:
+
+
     void run()
     {
         TEST_CASE( array_index );
@@ -43,7 +44,7 @@ private:
     void check( const char code[] )
     {
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
@@ -58,7 +59,7 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        CheckOther checkOther( &tokenizer );
+        CheckOther checkOther( &tokenizer, this );
         checkOther.CheckCharVariable();
 
         tokenizer.DeallocateTokens();

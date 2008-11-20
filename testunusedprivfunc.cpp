@@ -44,7 +44,7 @@ private:
     void check( const char code[] )
     {
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
@@ -55,7 +55,7 @@ private:
         // Check for unused private functions..
         Settings settings;
         settings._checkCodingStyle = true;
-        CheckClass checkClass( &tokenizer, settings );
+        CheckClass checkClass( &tokenizer, settings, this );
         checkClass.CheckUnusedPrivateFunctions();
 
         tokenizer.DeallocateTokens();

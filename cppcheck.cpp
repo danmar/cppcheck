@@ -36,7 +36,7 @@
 
 //---------------------------------------------------------------------------
 
-CppCheck::CppCheck()
+CppCheck::CppCheck() : _tokenizer( this )
 {
     _settings._debug = false;
     _settings._showAll = false;
@@ -138,7 +138,7 @@ void CppCheck::check(int argc, char* argv[])
 
         std::ifstream fin( fname.c_str() );
         std::map<std::string, std::string> code;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess(fin, code, fname);
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
             checkFile(it->second, filenames[c].c_str(), c);
@@ -182,9 +182,6 @@ void CppCheck::check(int argc, char* argv[])
 
 void CppCheck::checkFile(const std::string &code, const char FileName[], unsigned int FileId)
 {
-
-    OnlyReportUniqueErrors = true;
-
     // Tokenize the file
     {
     std::istringstream istr(code);
@@ -196,13 +193,13 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
-    CheckClass checkClass( &_tokenizer, _settings );
+    CheckClass checkClass( &_tokenizer, _settings, this );
     checkClass.CheckMemset();
 
 
     // Check for unsigned divisions where one operand is signed
     // Very important to run it before 'SimplifyTokenList'
-    CheckOther checkOther( &_tokenizer );
+    CheckOther checkOther( &_tokenizer, this );
     checkOther.CheckUnsignedDivision();
 
     // Give warning when using char variable as array index
@@ -222,11 +219,11 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
     _tokenizer.SimplifyTokenList();
 
     // Memory leak
-    CheckMemoryLeakClass checkMemoryLeak( &_tokenizer, _settings );
+    CheckMemoryLeakClass checkMemoryLeak( &_tokenizer, _settings, this );
     checkMemoryLeak.CheckMemoryLeak();
 
     // Buffer overruns..
-    CheckBufferOverrunClass checkBufferOverrun( &_tokenizer );
+    CheckBufferOverrunClass checkBufferOverrun( &_tokenizer, this );
     checkBufferOverrun.CheckBufferOverrun();
 
     // Check that all class constructors are ok.
@@ -298,4 +295,19 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
 }
 //---------------------------------------------------------------------------
 
+void CppCheck::reportErr( const std::string &errmsg)
+{
+    if ( /*OnlyReportUniqueErrors*/ true )
+    {
+        if ( std::find( _errorList.begin(), _errorList.end(), errmsg ) != _errorList.end() )
+            return;
+        _errorList.push_back( errmsg );
+    }
+    errout << errmsg << std::endl;
+}
 
+void CppCheck::reportErr( const TOKEN *token, const std::string &errmsg)
+{
+    std::string message = _tokenizer.fileLine( token ) + errmsg;
+    reportErr( message );
+}

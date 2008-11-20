@@ -28,6 +28,7 @@
 #include <list>
 #include <cstring>
 
+
 #include <stdlib.h>     // <- strtoul
 
 //---------------------------------------------------------------------------
@@ -35,9 +36,10 @@
 // CallStack used when parsing into subfunctions.
 
 
-CheckBufferOverrunClass::CheckBufferOverrunClass( Tokenizer *tokenizer )
+CheckBufferOverrunClass::CheckBufferOverrunClass( Tokenizer *tokenizer, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
+    _errorLogger = errorLogger;
 }
 
 CheckBufferOverrunClass::~CheckBufferOverrunClass()
@@ -53,7 +55,7 @@ void CheckBufferOverrunClass::ReportError(const TOKEN *tok, const char errmsg[])
     for ( it = CallStack.begin(); it != CallStack.end(); it++ )
         ostr << _tokenizer->fileLine(*it ) << " -> ";
     ostr << _tokenizer->fileLine(tok) << ": " << errmsg;
-    ReportErr(ostr.str());
+    _errorLogger->reportErr(ostr.str());
 }
 //---------------------------------------------------------------------------
 
@@ -504,14 +506,14 @@ void CheckBufferOverrunClass::WarningDangerousFunctions()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found 'gets'. You should use 'fgets' instead";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
         }
 
         else if (Match(tok, "scanf (") && strcmp(Tokenizer::getstr(tok,2),"\"%s\"") == 0)
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
         }
     }
 }

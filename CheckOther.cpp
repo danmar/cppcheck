@@ -21,6 +21,7 @@
 #include "CheckOther.h"
 
 #include "CommonCheck.h"
+
 #include <list>
 #include <map>
 #include <sstream>
@@ -35,9 +36,10 @@
 // Warning on C-Style casts.. p = (kalle *)foo;
 //---------------------------------------------------------------------------
 
-CheckOther::CheckOther( Tokenizer *tokenizer )
+CheckOther::CheckOther( Tokenizer *tokenizer, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
+    _errorLogger = errorLogger;
 }
 
 CheckOther::~CheckOther()
@@ -61,7 +63,7 @@ void CheckOther::WarningOldStylePointerCast()
 
         std::ostringstream ostr;
         ostr << _tokenizer->fileLine(tok) << ": C-style pointer casting";
-        ReportErr(ostr.str());
+        _errorLogger->reportErr(ostr.str());
     }
 }
 
@@ -85,7 +87,7 @@ void CheckOther::WarningIsDigit()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": The condition can be simplified; use 'isdigit'";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
         }
     }
 }
@@ -114,7 +116,7 @@ void CheckOther::WarningIsAlpha()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": The condition can be simplified; use 'isupper'";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
             continue;
         }
 
@@ -127,7 +129,7 @@ void CheckOther::WarningIsAlpha()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": The condition can be simplified; use 'islower'";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
             continue;
         }
 
@@ -144,7 +146,7 @@ void CheckOther::WarningIsAlpha()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": The condition can be simplified; use 'isalpha'";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
         }
     }
 }
@@ -198,7 +200,7 @@ void CheckOther::WarningRedundantCode()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Redundant condition. It is safe to deallocate a NULL pointer";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
         }
     }
 
@@ -240,7 +242,7 @@ void CheckOther::WarningIf()
                         {
                             std::ostringstream ostr;
                             ostr << _tokenizer->fileLine(tok) << ": Found \"if (condition);\"";
-                            ReportErr(ostr.str());
+                            _errorLogger->reportErr(ostr.str());
                         }
                         break;
                     }
@@ -296,7 +298,7 @@ void CheckOther::WarningIf()
             if (strcmp(cond, p[i]) == 0)
                 ostr << (i < 3 ? "True" : "False");
         }
-        ReportErr(ostr.str());
+        _errorLogger->reportErr(ostr.str());
     }
 }
 //---------------------------------------------------------------------------
@@ -336,7 +338,7 @@ void CheckOther::InvalidFunctionUsage()
                         {
                             std::ostringstream ostr;
                             ostr << _tokenizer->fileLine(tok2) << ": Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
-                            ReportErr(ostr.str());
+                            _errorLogger->reportErr(ostr.str());
                         }
                     }
                     break;
@@ -362,7 +364,7 @@ void CheckOther::CheckIfAssignment()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Possible bug. Should it be '==' instead of '='?";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
         }
     }
 }
@@ -401,7 +403,7 @@ void CheckOther::CheckUnsignedDivision()
                 // One of the operands are signed, the other is unsigned..
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok->next) << ": Warning: Division with signed and unsigned operators";
-                ReportErr(ostr.str());
+                _errorLogger->reportErr(ostr.str());
             }
         }
 
@@ -413,7 +415,7 @@ void CheckOther::CheckUnsignedDivision()
             {
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok->next) << ": Unsigned division. The result will be wrong.";
-                ReportErr(ostr.str());
+                _errorLogger->reportErr(ostr.str());
             }
         }
 
@@ -425,7 +427,7 @@ void CheckOther::CheckUnsignedDivision()
             {
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok->next) << ": Unsigned division. The result will be wrong.";
-                ReportErr(ostr.str());
+                _errorLogger->reportErr(ostr.str());
             }
         }
     }
@@ -585,7 +587,7 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
     // Warning if "used" is true
     std::ostringstream errmsg;
     errmsg << _tokenizer->fileLine(tok1) << " The scope of the variable '" << varname << "' can be limited";
-    ReportErr( errmsg.str() );
+    _errorLogger->reportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
 
@@ -602,7 +604,7 @@ void CheckOther::CheckConstantFunctionParameter()
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok) << " " << Tokenizer::getstr(tok,5) << " is passed by value, it could be passed by reference/pointer instead";
-            ReportErr( errmsg.str() );
+            _errorLogger->reportErr( errmsg.str() );
         }
 
         else if ( Match(tok,"[,(] const %type% %var% [,)]") )
@@ -614,14 +616,14 @@ void CheckOther::CheckConstantFunctionParameter()
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok) << " " << Tokenizer::getstr(tok,3) << " is passed by value, it could be passed by reference/pointer instead";
-                ReportErr( errmsg.str() );
+                _errorLogger->reportErr( errmsg.str() );
             }
             pattern[0] = "struct";
             if ( Tokenizer::findtoken(_tokenizer->tokens(), pattern) )
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok) << " " << Tokenizer::getstr(tok,3) << " is passed by value, it could be passed by reference/pointer instead";
-                ReportErr( errmsg.str() );
+                _errorLogger->reportErr( errmsg.str() );
             }
         }
     }
@@ -682,7 +684,7 @@ void CheckOther::CheckStructMemberUsage()
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok) << ": struct member '" << structname << "::" << varname << "' is never read";
-                ReportErr(errmsg.str());
+                _errorLogger->reportErr(errmsg.str());
             }
         }
     }
@@ -724,7 +726,7 @@ void CheckOther::CheckCharVariable()
                 {
                     std::ostringstream errmsg;
                     errmsg << _tokenizer->fileLine(tok2->next) << ": Warning - using char variable as array index";
-                    ReportErr(errmsg.str());
+                    _errorLogger->reportErr(errmsg.str());
                     break;
                 }
 
@@ -732,7 +734,7 @@ void CheckOther::CheckCharVariable()
                 {
                     std::ostringstream errmsg;
                     errmsg << _tokenizer->fileLine(tok2) << ": Warning - using char variable in bit operation";
-                    ReportErr(errmsg.str());
+                    _errorLogger->reportErr(errmsg.str());
                     break;
                 }
             }
@@ -768,14 +770,14 @@ void CheckOther::CheckIncompleteStatement()
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next) << ": Redundant code: Found a statement that begins with string constant";
-            ReportErr(errmsg.str());
+            _errorLogger->reportErr(errmsg.str());
         }
 
         if ( !Match(tok,"#") && Match(tok->next,"; %num%") && !Match(Tokenizer::gettok(tok,3), ",") )
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next) << ": Redundant code: Found a statement that begins with numeric constant";
-            ReportErr(errmsg.str());
+            _errorLogger->reportErr(errmsg.str());
         }
     }
 }

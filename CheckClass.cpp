@@ -34,10 +34,11 @@
 #endif
 //---------------------------------------------------------------------------
 
-CheckClass::CheckClass( Tokenizer *tokenizer, const Settings &settings )
+CheckClass::CheckClass( Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
     _settings = settings;
+    _errorLogger = errorLogger;
 }
 
 CheckClass::~CheckClass()
@@ -339,7 +340,7 @@ void CheckClass::CheckConstructors()
                     std::ostringstream ostr;
                     ostr << _tokenizer->fileLine(tok1);
                     ostr << " The class '" << classname << "' has no constructor";
-                    ReportErr(ostr.str());
+                    _errorLogger->reportErr(ostr.str());
                 }
                 // Delete the varlist..
                 while (varlist)
@@ -378,7 +379,7 @@ void CheckClass::CheckConstructors()
                     std::ostringstream ostr;
                     ostr << _tokenizer->fileLine(constructor_token);
                     ostr << " Uninitialized member variable '" << classname << "::" << var->name << "'";
-                    ReportErr(ostr.str());
+                    _errorLogger->reportErr(ostr.str());
                 }
             }
 
@@ -533,7 +534,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
             {
                 std::ostringstream ostr;
                 ostr << "Class '" << classname << "', unused private function: '" << FuncList.front() << "'";
-                ReportErr(ostr.str());
+                _errorLogger->reportErr(ostr.str());
             }
             FuncList.pop_front();
         }
@@ -576,7 +577,7 @@ void CheckClass::CheckMemset()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on class.";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
             continue;
         }
 
@@ -592,7 +593,7 @@ void CheckClass::CheckMemset()
             {
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << Tokenizer::getstr(tstruct,2) << "'";
-                ReportErr(ostr.str());
+                _errorLogger->reportErr(ostr.str());
                 break;
             }
         }
@@ -613,7 +614,7 @@ void CheckClass::CheckOperatorEq1()
     {
         std::ostringstream ostr;
         ostr << _tokenizer->fileLine(tok) << ": 'operator=' should return something";
-        ReportErr(ostr.str());
+        _errorLogger->reportErr(ostr.str());
     }
 }
 

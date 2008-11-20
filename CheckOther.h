@@ -24,11 +24,12 @@
 //---------------------------------------------------------------------------
 
 #include "tokenize.h"
+#include "errorlogger.h"
 
 class CheckOther
 {
 public:
-    CheckOther( Tokenizer *tokenizer );
+    CheckOther( Tokenizer *tokenizer, ErrorLogger *errorLogger );
     ~CheckOther();
 
     // Casting
@@ -76,6 +77,7 @@ private:
     void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
 
     Tokenizer *_tokenizer;
+    ErrorLogger *_errorLogger;
 };
 
 //---------------------------------------------------------------------------

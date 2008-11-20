@@ -20,9 +20,11 @@
 
 
 #include <sstream>
+#include "errorlogger.h"
 
+class TOKEN;
 
-class TestFixture
+class TestFixture : public ErrorLogger
 {
 private:
     static std::ostringstream errmsg;
@@ -38,6 +40,10 @@ protected:
     void assertFail(const char *filename, int linenr);
 
 public:
+    void reportErr( const std::string &errmsg);
+
+    void reportErr( const TOKEN *token, const std::string &errmsg);
+
     TestFixture(const std::string &_name);
     virtual ~TestFixture() { }
 

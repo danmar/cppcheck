@@ -29,7 +29,10 @@
 #endif
 
 
-
+Preprocessor::Preprocessor( ErrorLogger *errorLogger )
+{
+    _errorLogger = errorLogger;
+}
 
 /**
  * Extract the code for each configuration
@@ -49,7 +52,9 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
         if ( ch < 0 )
         {
             // Bad content..
-            errout << "[" << filename << ":" << lineno << "] Bad character found: " << int((unsigned char)ch) << std::endl;
+            std::ostringstream oss;
+            oss << "[" << filename << ":" << lineno << "] Bad character found: " << int((unsigned char)ch) << std::endl;
+            _errorLogger->reportErr( oss.str() );
             result.clear();
             return;
         }

@@ -20,24 +20,33 @@
 #define CPPCHECK_H
 
 #include <string>
+#include <list>
+#include <sstream>
 #include "settings.h"
 #include "tokenize.h"   // <- Tokenizer
+#include "errorlogger.h"
+
 /**
  * This is the base class which will use other classes to do
  * static code analysis for C and C++ code to find possible
  * errors or places that could be improved.
  */
-class CppCheck
+class CppCheck : public ErrorLogger
 {
     public:
         CppCheck();
         virtual ~CppCheck();
         void check(int argc, char* argv[]);
 
+        virtual void reportErr( const TOKEN *token, const std::string &errmsg);
+        virtual void reportErr( const std::string &errmsg);
+
     private:
         void checkFile(const std::string &code, const char FileName[], unsigned int FileId);
         Settings _settings;
         Tokenizer _tokenizer;
+        std::list<std::string> _errorList;
+        std::ostringstream errout;
 };
 
 #endif // CPPCHECK_H

@@ -38,7 +38,7 @@ private:
     void check( const char code[] )
     {
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
@@ -53,7 +53,7 @@ private:
         settings._showAll = false;
         tokenizer.settings( settings );
         tokenizer.FillFunctionList(0);
-        CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings );
+        CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings, this );
         checkMemoryLeak.CheckMemoryLeak();
 
         tokenizer.DeallocateTokens();

@@ -21,6 +21,7 @@
 #include "CheckHeaders.h"
 #include "tokenize.h"
 #include "CommonCheck.h"
+
 #include <algorithm>
 #include <list>
 #include <sstream>
@@ -35,9 +36,10 @@
 // HEADERS - No implementation in a header
 //---------------------------------------------------------------------------
 
-CheckHeaders::CheckHeaders( Tokenizer *tokenizer )
+CheckHeaders::CheckHeaders( Tokenizer *tokenizer, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
+    _errorLogger = errorLogger;
 }
 
 CheckHeaders::~CheckHeaders()
@@ -57,7 +59,7 @@ void CheckHeaders::WarningHeaderWithImplementation()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found implementation in header";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
 
             // Goto next file..
             unsigned int fileindex = tok->FileIndex;
@@ -245,7 +247,7 @@ void CheckHeaders::WarningIncludeHeader()
             ostr << _tokenizer->fileLine(includetok) << ": The included header '" << includefile << "' is not needed";
             if (NeedDeclaration)
                 ostr << " (but a forward declaration is needed)";
-            ReportErr(ostr.str());
+            _errorLogger->reportErr(ostr.str());
         }
     }
 }

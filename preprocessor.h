@@ -25,10 +25,12 @@
 #include <istream>
 #include <string>
 #include <list>
+#include "errorlogger.h"
 
 class Preprocessor
 {
 public:
+    Preprocessor( ErrorLogger *errorLogger );
     void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
 private:
     /**
@@ -44,6 +46,8 @@ private:
     std::string getdef(std::string line, bool def);
 
     bool match_cfg_def( std::string cfg, const std::string &def );
+
+    ErrorLogger *_errorLogger;
 };
 
 //---------------------------------------------------------------------------

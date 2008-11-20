@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "tokenize.h"
 #include "CommonCheck.h"    // <- IsName
+
 //---------------------------------------------------------------------------
 
 #include <locale>
@@ -46,11 +47,12 @@
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer()
+Tokenizer::Tokenizer(ErrorLogger *errorLogger)
 {
     _tokens = 0;
     tokens_back = 0;
     dsymlist = 0;
+    _errorLogger = errorLogger;
 }
 
 Tokenizer::~Tokenizer()
@@ -1293,14 +1295,14 @@ void Tokenizer::CheckGlobalFunctionUsage(const std::vector<std::string> &filenam
             std::ostringstream errmsg;
             errmsg << "[" << filenames[func->file_id()] << "]: "
                    << "The function '" << func->name() << "' is never used.";
-            ReportErr( errmsg.str() );
+            _errorLogger->reportErr( errmsg.str() );
         }
         else if ( ! UsedOtherFile )
         {
             std::ostringstream errmsg;
             errmsg << "[" << filenames[func->file_id()] << "]: "
                    << "The linkage of the function '" << func->name() << "' can be local (static) instead of global";
-            ReportErr( errmsg.str() );
+            _errorLogger->reportErr( errmsg.str() );
         }
     }
 

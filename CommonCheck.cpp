@@ -32,8 +32,7 @@
 #include <ctype.h>
 #endif
 //---------------------------------------------------------------------------
-bool OnlyReportUniqueErrors;
-std::ostringstream errout;
+
 
 
 
@@ -56,18 +55,7 @@ bool SameFileName( const char fname1[], const char fname2[] )
 }
 //---------------------------------------------------------------------------
 
-std::list<std::string> ErrorList;
 
-void ReportErr(const std::string &errmsg)
-{
-    if ( OnlyReportUniqueErrors )
-    {
-        if ( std::find( ErrorList.begin(), ErrorList.end(), errmsg ) != ErrorList.end() )
-            return;
-        ErrorList.push_back( errmsg );
-    }
-    errout << errmsg << std::endl;
-}
 //---------------------------------------------------------------------------
 
 bool IsName(const char str[])

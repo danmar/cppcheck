@@ -34,10 +34,13 @@ public:
     { }
 
 private:
+
+
+
     void check( const char code[] )
     {
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
@@ -53,7 +56,7 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        CheckBufferOverrunClass checkBufferOverrun( &tokenizer );
+        CheckBufferOverrunClass checkBufferOverrun( &tokenizer, this );
         checkBufferOverrun.CheckBufferOverrun();
 
         tokenizer.DeallocateTokens();

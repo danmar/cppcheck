@@ -23,11 +23,12 @@
 //---------------------------------------------------------------------------
 
 #include "tokenize.h"
+#include "errorlogger.h"
 
 class CheckBufferOverrunClass
 {
 public:
-    CheckBufferOverrunClass( Tokenizer *tokenizer );
+    CheckBufferOverrunClass( Tokenizer *tokenizer, ErrorLogger *errorLogger );
     ~CheckBufferOverrunClass();
 
     // Buffer overrun..
@@ -43,6 +44,7 @@ private:
     void ReportError(const TOKEN *tok, const char errmsg[]);
 
     Tokenizer *_tokenizer;
+    ErrorLogger *_errorLogger;
     std::list<const TOKEN *> CallStack;
 };
 

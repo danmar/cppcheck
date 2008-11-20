@@ -27,6 +27,7 @@
 
 #include "tokenize.h"
 #include "settings.h"
+#include "errorlogger.h"
 #include <list>
 #include <vector>
 
@@ -35,7 +36,7 @@ enum AllocType { No, Malloc, gMalloc, New, NewA };
 class CheckMemoryLeakClass
 {
 public:
-    CheckMemoryLeakClass( Tokenizer *tokenizer, const Settings &settings );
+    CheckMemoryLeakClass( Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger );
     ~CheckMemoryLeakClass();
     void CheckMemoryLeak();
 
@@ -73,6 +74,7 @@ private:
     bool isclass( const std::string &typestr );
 
     Tokenizer *_tokenizer;
+    ErrorLogger *_errorLogger;
     Settings _settings;
     std::list<AllocFunc> listallocfunc;
 };

@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "settings.h"
+#include "errorlogger.h"
 
 class TOKEN
 {
@@ -62,7 +63,7 @@ public:
 class Tokenizer
 {
 public:
-    Tokenizer();
+    Tokenizer(ErrorLogger *errorLogger);
     ~Tokenizer();
 
     void Tokenize(std::istream &code, const char FileName[]);
@@ -153,6 +154,7 @@ private:
 
     struct DefineSymbol * dsymlist;
     TOKEN *_tokens;
+    ErrorLogger *_errorLogger;
 };
 
 

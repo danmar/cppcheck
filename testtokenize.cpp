@@ -25,6 +25,7 @@
 #define UNIT_TESTING        // Get access to "private" data in Tokenizer
 #include "tokenize.h"
 
+extern std::ostringstream errout;
 class TestTokenizer : public TestFixture
 {
 public:
@@ -62,7 +63,7 @@ private:
                                 "            \"def\"\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
@@ -88,7 +89,7 @@ private:
         std::string filedata(10000,'a');
 
         // tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
@@ -112,7 +113,7 @@ private:
                                 "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
@@ -145,7 +146,7 @@ private:
                             "void b()\n"
                             "{ }\n";
         // tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode(istr, 0);

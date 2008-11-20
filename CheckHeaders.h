@@ -23,17 +23,19 @@
 //---------------------------------------------------------------------------
 
 #include "tokenize.h"
+#include "errorlogger.h"
 
 class CheckHeaders
 {
 public:
-    CheckHeaders( Tokenizer *tokenizer );
+    CheckHeaders( Tokenizer *tokenizer, ErrorLogger *errorLogger );
     ~CheckHeaders();
     void WarningHeaderWithImplementation();
     void WarningIncludeHeader();
 
 private:
     Tokenizer *_tokenizer;
+    ErrorLogger *_errorLogger;
 };
 
 //---------------------------------------------------------------------------

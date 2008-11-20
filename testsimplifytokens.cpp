@@ -22,6 +22,8 @@
 #include "tokenize.h"
 #include <sstream>
 
+extern std::ostringstream errout;
+
 class TestSimplifyTokens : public TestFixture
 {
 public:
@@ -37,10 +39,10 @@ private:
         TEST_CASE( sizeof1 );
     }
 
-    static std::string tok(const char code[])
+    std::string tok(const char code[])
     {
         std::istringstream istr(code);
-        Tokenizer tokenizer;
+        Tokenizer tokenizer( this );
         tokenizer.TokenizeCode( istr );
         tokenizer.SimplifyTokenList();
 

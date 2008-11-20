@@ -25,7 +25,7 @@
 #include <iostream>
 #include <list>
 
-
+std::ostringstream errout;
 
 /**
  * TestRegistry
@@ -130,4 +130,13 @@ void TestFixture::runTests(const char cmd[])
 }
 
 
+void TestFixture::reportErr( const std::string &errmsg)
+{
+    errout << errmsg << std::endl;
+}
+
+void TestFixture::reportErr( const TOKEN *token, const std::string &errmsg)
+{
+    reportErr( errmsg );
+}
 

@@ -23,6 +23,7 @@
 
 #include "tokenize.h"
 #include "settings.h"
+#include "errorlogger.h"
 #include <list>
 
 struct VAR
@@ -35,7 +36,7 @@ struct VAR
 class CheckClass
 {
 public:
-    CheckClass( Tokenizer *tokenizer, const Settings &settings );
+    CheckClass( Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger );
     ~CheckClass();
 
     void CheckConstructors();
@@ -54,6 +55,7 @@ private:
 
     Tokenizer *_tokenizer;
     Settings _settings;
+    ErrorLogger *_errorLogger;
 };
 //---------------------------------------------------------------------------
 #endif

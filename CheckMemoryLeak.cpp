@@ -23,6 +23,7 @@
 
 #include "CommonCheck.h"
 
+
 #include <stdlib.h> // free
 
 #include <algorithm>
@@ -41,10 +42,11 @@
 
 //---------------------------------------------------------------------------
 
-CheckMemoryLeakClass::CheckMemoryLeakClass( Tokenizer *tokenizer, const Settings &settings )
+CheckMemoryLeakClass::CheckMemoryLeakClass( Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
     _settings = settings;
+    _errorLogger = errorLogger;
 }
 
 CheckMemoryLeakClass::~CheckMemoryLeakClass()
@@ -239,7 +241,7 @@ void CheckMemoryLeakClass::MismatchError( const TOKEN *Tok1, const std::list<con
     for ( std::list<const TOKEN *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok )
         errmsg << _tokenizer->fileLine(*tok) << " -> ";
     errmsg << _tokenizer->fileLine(Tok1) << ": Mismatching allocation and deallocation: " << varname;
-    ReportErr( errmsg.str() );
+    _errorLogger->reportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
 
@@ -247,7 +249,7 @@ void CheckMemoryLeakClass::MemoryLeak( const TOKEN *tok, const char varname[] )
 {
     std::ostringstream errmsg;
     errmsg << _tokenizer->fileLine(tok) << ": Memory leak: " << varname;
-    ReportErr( errmsg.str() );
+    _errorLogger->reportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
 

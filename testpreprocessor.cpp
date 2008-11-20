@@ -140,7 +140,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -164,7 +164,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -187,7 +187,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -213,7 +213,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -237,7 +237,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -264,7 +264,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -287,7 +287,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -310,7 +310,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -330,7 +330,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -355,7 +355,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -375,7 +375,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -400,7 +400,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -420,7 +420,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
+        Preprocessor preprocessor( this );
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
