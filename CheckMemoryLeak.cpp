@@ -180,13 +180,13 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
         return 0;
 
     if ( callstack.size() > 2 )
-        return 0;
+        return "dealloc";
 
     const char *funcname = tok->str;
     for ( std::list<const TOKEN *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it )
     {
         if ( std::string(funcname) == (*it)->str )
-            return 0;
+            return "dealloc";
     }
     callstack.push_back(tok);
 
@@ -220,7 +220,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                 simplifycode( func );
                 const char *ret = 0;
                 if (Tokenizer::findmatch(func, "goto"))
-                    ret = 0;    // TODO : "goto" isn't handled well
+                    ret = "dealloc";    // TODO : "goto" isn't handled well
                 else if (Tokenizer::findmatch(func, "use"))
                     ret = "use";
                 else if (Tokenizer::findmatch(func, "dealloc"))

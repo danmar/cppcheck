@@ -112,6 +112,7 @@ private:
         TEST_CASE( func3 );
         TEST_CASE( func4 );
         TEST_CASE( func5 );
+        TEST_CASE( func6 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -743,6 +744,23 @@ private:
                "}\n" );
         std::string err( errout.str() );
         ASSERT_EQUALS( std::string("[test.cpp:9] -> [test.cpp:3]: Mismatching allocation and deallocation: str\n"), err );
+    }
+
+
+    void func6()
+    {
+        check( "static void foo(char *str)\n"
+               "{\n"
+               "    goto abc;\n"
+               "}\n"
+               "\n"
+               "static void f()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    foo(p);\n"
+               "}\n" );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), err );
     }
 
 
