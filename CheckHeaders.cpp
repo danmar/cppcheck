@@ -20,7 +20,6 @@
 //---------------------------------------------------------------------------
 #include "CheckHeaders.h"
 #include "tokenize.h"
-#include "CommonCheck.h"
 
 #include <algorithm>
 #include <list>
@@ -55,7 +54,7 @@ void CheckHeaders::WarningHeaderWithImplementation()
         if (tok->FileIndex == 0)
             continue;
 
-        if (Match(tok, ") {"))
+        if (Tokenizer::Match(tok, ") {"))
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found implementation in header";
@@ -94,7 +93,7 @@ void CheckHeaders::WarningIncludeHeader()
         const char *includefile = includetok->next->str;
         while (hfile < _tokenizer->getFiles()->size())
         {
-            if ( SameFileName( _tokenizer->getFiles()->at(hfile).c_str(), includefile ) )
+            if ( Tokenizer::SameFileName( _tokenizer->getFiles()->at(hfile).c_str(), includefile ) )
                 break;
             hfile++;
         }
@@ -130,21 +129,21 @@ void CheckHeaders::WarningIncludeHeader()
 
             // Class or namespace declaration..
             // --------------------------------------
-            if (Match(tok1,"class %var% {") || Match(tok1,"class %var% :") || Match(tok1,"namespace %var% {"))
+            if (Tokenizer::Match(tok1,"class %var% {") || Tokenizer::Match(tok1,"class %var% :") || Tokenizer::Match(tok1,"namespace %var% {"))
                 classlist.push_back(Tokenizer::getstr(tok1, 1));
 
             // Variable declaration..
             // --------------------------------------
-            else if (Match(tok1, "%type% %var% ;") || Match(tok1, "%type% %var% ["))
+            else if (Tokenizer::Match(tok1, "%type% %var% ;") || Tokenizer::Match(tok1, "%type% %var% ["))
                 namelist.push_back(Tokenizer::getstr(tok1, 1));
 
-            else if (Match(tok1, "%type% * %var% ;") || Match(tok1, "%type% * %var% ["))
+            else if (Tokenizer::Match(tok1, "%type% * %var% ;") || Tokenizer::Match(tok1, "%type% * %var% ["))
                 namelist.push_back(Tokenizer::getstr(tok1, 2));
 
-            else if (Match(tok1, "const %type% %var% =") || Match(tok1, "const %type% %var% ["))
+            else if (Tokenizer::Match(tok1, "const %type% %var% =") || Tokenizer::Match(tok1, "const %type% %var% ["))
                 namelist.push_back(Tokenizer::getstr(tok1, 2));
 
-            else if (Match(tok1, "const %type% * %var% =") || Match(tok1, "const %type% * %var% ["))
+            else if (Tokenizer::Match(tok1, "const %type% * %var% =") || Tokenizer::Match(tok1, "const %type% * %var% ["))
                 namelist.push_back(Tokenizer::getstr(tok1, 3));
 
             // enum..
@@ -154,7 +153,7 @@ void CheckHeaders::WarningIncludeHeader()
                 tok1 = tok1->next;
                 while (tok1->next && tok1->str[0]!=';')
                 {
-                    if ( IsName(tok1->str) )
+                    if ( Tokenizer::IsName(tok1->str) )
                         namelist.push_back(tok1->str);
                     tok1 = tok1->next;
                 }
@@ -162,16 +161,16 @@ void CheckHeaders::WarningIncludeHeader()
 
             // function..
             // --------------------------------------
-            else if (Match(tok1,"%type% %var% ("))
+            else if (Tokenizer::Match(tok1,"%type% %var% ("))
                 namelist.push_back(Tokenizer::getstr(tok1, 1));
 
-            else if (Match(tok1,"%type% * %var% ("))
+            else if (Tokenizer::Match(tok1,"%type% * %var% ("))
                 namelist.push_back(Tokenizer::getstr(tok1, 2));
 
-            else if (Match(tok1,"const %type% %var% ("))
+            else if (Tokenizer::Match(tok1,"const %type% %var% ("))
                 namelist.push_back(Tokenizer::getstr(tok1, 2));
 
-            else if (Match(tok1,"const %type% * %var% ("))
+            else if (Tokenizer::Match(tok1,"const %type% * %var% ("))
                 namelist.push_back(Tokenizer::getstr(tok1, 3));
 
             // typedef..
@@ -194,7 +193,7 @@ void CheckHeaders::WarningIncludeHeader()
                         if ( tok1->str[0] == ';' )
                             break;
 
-                        if ( Match(tok1, "%var% ;") )
+                        if ( Tokenizer::Match(tok1, "%var% ;") )
                             namelist.push_back(tok1->str);
                     }
 
@@ -212,7 +211,7 @@ void CheckHeaders::WarningIncludeHeader()
             if (tok1->FileIndex != includetok->FileIndex)
                 continue;
 
-            if ( Match(tok1, ": %var% {") || Match(tok1, ": %type% %var% {") )
+            if ( Tokenizer::Match(tok1, ": %var% {") || Tokenizer::Match(tok1, ": %type% %var% {") )
             {
                 std::string classname = Tokenizer::getstr(tok1, (strcmp(Tokenizer::getstr(tok1,2),"{")) ? 2 : 1);
                 if (std::find(classlist.begin(),classlist.end(),classname)!=classlist.end())
@@ -222,7 +221,7 @@ void CheckHeaders::WarningIncludeHeader()
                 }
             }
 
-            if ( ! IsName(tok1->str) )
+            if ( ! Tokenizer::IsName(tok1->str) )
                 continue;
 
             if (std::find(namelist.begin(),namelist.end(),tok1->str ) != namelist.end())

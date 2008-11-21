@@ -84,6 +84,12 @@ public:
     static void deleteTokens(TOKEN *tok);
     static const char *getParameterName( const TOKEN *ftok, int par );
     static const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
+    static bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
+    static bool SameFileName( const char fname1[], const char fname2[] );
+    static bool IsName(const char str[]);
+    static bool IsNumber(const char str[]);
+    static bool IsStandardType(const char str[]);
+
 
     std::string fileLine( const TOKEN *tok );
 
@@ -101,6 +107,7 @@ public:
     void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
     void settings( const Settings &settings );
     const TOKEN *tokens() const;
+
 
 
 #ifndef UNIT_TESTING

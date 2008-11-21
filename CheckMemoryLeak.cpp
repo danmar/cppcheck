@@ -19,11 +19,6 @@
 
 #include "CheckMemoryLeak.h"
 
-
-
-#include "CommonCheck.h"
-
-
 #include <stdlib.h> // free
 
 #include <algorithm>
@@ -124,16 +119,16 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
             return gMalloc;
     }
 
-    if ( Match( tok2, "new %type% [;(]" ) )
+    if ( Tokenizer::Match( tok2, "new %type% [;(]" ) )
         return New;
 
-    if ( Match( tok2, "new %type% [" ) )
+    if ( Tokenizer::Match( tok2, "new %type% [" ) )
         return NewA;
 
-    if ( Match( tok2, "fopen (" ) )
+    if ( Tokenizer::Match( tok2, "fopen (" ) )
         return FOPEN;
 
-    if ( Match( tok2, "popen (" ) )
+    if ( Tokenizer::Match( tok2, "popen (" ) )
         return POPEN;
 
     // Userdefined allocation function..
@@ -151,32 +146,32 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
 CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType( const TOKEN *tok, const char *varnames[] )
 {
     // Redundant condition..
-    if ( Match(tok, "if ( %var1% )", varnames) )
+    if ( Tokenizer::Match(tok, "if ( %var1% )", varnames) )
     {
         tok = Tokenizer::gettok( tok, 4 );
-        if ( Match(tok,"{") )
+        if ( Tokenizer::Match(tok,"{") )
             tok = tok->next;
     }
 
-    if ( Match(tok, "delete %var1% ;", varnames) )
+    if ( Tokenizer::Match(tok, "delete %var1% ;", varnames) )
         return New;
 
-    if ( Match(tok, "delete [ ] %var1% ;", varnames) )
+    if ( Tokenizer::Match(tok, "delete [ ] %var1% ;", varnames) )
         return NewA;
 
-    if ( Match(tok, "free ( %var1% ) ;", varnames) ||
-         Match(tok, "kfree ( %var1% ) ;", varnames) )
+    if ( Tokenizer::Match(tok, "free ( %var1% ) ;", varnames) ||
+         Tokenizer::Match(tok, "kfree ( %var1% ) ;", varnames) )
     {
         return Malloc;
     }
 
-    if ( Match(tok, "g_free ( %var1% ) ;", varnames) )
+    if ( Tokenizer::Match(tok, "g_free ( %var1% ) ;", varnames) )
         return gMalloc;
 
-    if ( Match(tok, "fclose ( %var1% )", varnames) )
+    if ( Tokenizer::Match(tok, "fclose ( %var1% )", varnames) )
         return FOPEN;
 
-    if ( Match(tok, "pclose ( %var1% )", varnames) )
+    if ( Tokenizer::Match(tok, "pclose ( %var1% )", varnames) )
         return POPEN;
 
     return No;
@@ -185,7 +180,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType( const
 
 const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const TOKEN *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype )
 {
-    if (Match(tok,"if") || Match(tok,"for") || Match(tok,"while"))
+    if (Tokenizer::Match(tok,"if") || Tokenizer::Match(tok,"for") || Tokenizer::Match(tok,"while"))
         return 0;
 
     if (GetAllocationType(tok)!=No || GetDeallocationType(tok,varnames)!=No)
@@ -206,9 +201,9 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
     int parlevel = 0;
     for ( ; tok; tok = tok->next )
     {
-        if ( Match(tok, "(") )
+        if ( Tokenizer::Match(tok, "(") )
             ++parlevel;
-        else if ( Match(tok, ")") )
+        else if ( Tokenizer::Match(tok, ")") )
         {
             --parlevel;
             if ( parlevel < 1 )
@@ -217,16 +212,16 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
 
         if ( parlevel == 1 )
         {
-            if ( Match(tok, ",") )
+            if ( Tokenizer::Match(tok, ",") )
                 ++par;
-            if ( Match(tok, "[,()] %var1% [,()]", varnames) )
+            if ( Tokenizer::Match(tok, "[,()] %var1% [,()]", varnames) )
             {
                 const TOKEN *ftok = _tokenizer->GetFunctionTokenByName(funcname);
                 const char *parname = Tokenizer::getParameterName( ftok, par );
                 if ( ! parname )
                     return "use";
                 // Check if the function deallocates the variable..
-                while ( ftok && ! Match(ftok,"{") )
+                while ( ftok && ! Tokenizer::Match(ftok,"{") )
                     ftok = ftok->next;
                 TOKEN *func = getcode( Tokenizer::gettok(ftok,1), callstack, parname, alloctype, dealloctype );
                 simplifycode( func );
@@ -276,12 +271,12 @@ void CheckMemoryLeakClass::instoken(TOKEN *tok, const char str[])
 
 bool CheckMemoryLeakClass::notvar(const TOKEN *tok, const char *varnames[])
 {
-    return bool( Match(tok, "! %var1% [;)&|]", varnames) ||
-                 Match(tok, "! ( %var1% )", varnames) ||
-                 Match(tok, "unlikely ( ! %var1% )", varnames) ||
-                 Match(tok, "unlikely ( %var1% == 0 )", varnames) ||
-                 Match(tok, "0 == %var1% [;)&|]", varnames) ||
-                 Match(tok, "%var1% == 0", varnames) );
+    return bool( Tokenizer::Match(tok, "! %var1% [;)&|]", varnames) ||
+                 Tokenizer::Match(tok, "! ( %var1% )", varnames) ||
+                 Tokenizer::Match(tok, "unlikely ( ! %var1% )", varnames) ||
+                 Tokenizer::Match(tok, "unlikely ( %var1% == 0 )", varnames) ||
+                 Tokenizer::Match(tok, "0 == %var1% [;)&|]", varnames) ||
+                 Tokenizer::Match(tok, "%var1% == 0", varnames) );
 }
 
 /**
@@ -339,14 +334,14 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         if ( parlevel == 0 && tok->str[0]==';')
             addtoken(";");
 
-        if (Match(tok, "[(;{}] %var1% =", varnames))
+        if (Tokenizer::Match(tok, "[(;{}] %var1% =", varnames))
         {
             AllocType alloc = GetAllocationType(Tokenizer::gettok(tok,3));
 
             // If "--all" hasn't been given, don't check classes..
             if ( alloc == New && ! _settings._showAll )
             {
-                if ( Match(Tokenizer::gettok(tok,3), "new %type% [(;]") )
+                if ( Tokenizer::Match(Tokenizer::gettok(tok,3), "new %type% [(;]") )
                 {
                     if ( isclass( Tokenizer::getstr(tok, 4) ) )
                         alloc = No;
@@ -376,35 +371,35 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         }
 
         // if else switch
-        if ( Match(tok, "if ( %var1% )", varnames) ||
-             Match(tok, "if ( %var1% != 0 )", varnames) ||
-             Match(tok, "if ( 0 != %var1% )", varnames)  )
+        if ( Tokenizer::Match(tok, "if ( %var1% )", varnames) ||
+             Tokenizer::Match(tok, "if ( %var1% != 0 )", varnames) ||
+             Tokenizer::Match(tok, "if ( 0 != %var1% )", varnames)  )
         {
             addtoken("if(var)");
             tok = Tokenizer::gettok(tok, 3);   // Make sure the "use" will not be added
         }
-        else if ( Match(tok, "if (") && notvar(Tokenizer::gettok(tok,2), varnames) )
+        else if ( Tokenizer::Match(tok, "if (") && notvar(Tokenizer::gettok(tok,2), varnames) )
         {
             addtoken("if(!var)");
         }
-        else if ( Match(tok, "if") )
+        else if ( Tokenizer::Match(tok, "if") )
         {
             // Check if the condition depends on var somehow..
             bool dep = false;
             int parlevel = 0;
             for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
             {
-                if ( Match(tok2,"(") )
+                if ( Tokenizer::Match(tok2,"(") )
                     ++parlevel;
-                if ( Match(tok2,")") )
+                if ( Tokenizer::Match(tok2,")") )
                 {
                     --parlevel;
                     if ( parlevel <= 0 )
                         break;
                 }
-                if ( !Match(tok2,".") &&
-                     Match(tok2->next, "%var1%", varnames) &&
-                     !Match(tok2->next, "%var1% .", varnames) )
+                if ( !Tokenizer::Match(tok2,".") &&
+                     Tokenizer::Match(tok2->next, "%var1%", varnames) &&
+                     !Tokenizer::Match(tok2->next, "%var1% .", varnames) )
                 {
                     dep = true;
                     break;
@@ -412,30 +407,30 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             }
             addtoken( (dep ? "ifv" : "if") );
         }
-        else if ( Match(tok, "else") || Match(tok, "switch") )
+        else if ( Tokenizer::Match(tok, "else") || Tokenizer::Match(tok, "switch") )
         {
             addtoken(tok->str);
         }
 
-        if ( Match(tok, "case") )
+        if ( Tokenizer::Match(tok, "case") )
         {
             addtoken("case");
             addtoken(";");
         }
 
-        if ( Match(tok, "default") )
+        if ( Tokenizer::Match(tok, "default") )
         {
             addtoken("case");
             addtoken(";");
         }
 
         // Loops..
-        if (Match(tok, "for") || Match(tok, "while") )
+        if (Tokenizer::Match(tok, "for") || Tokenizer::Match(tok, "while") )
         {
             addtoken("loop");
             isloop = true;
         }
-        if ( Match(tok, "do") )
+        if ( Tokenizer::Match(tok, "do") )
         {
             addtoken("do");
         }
@@ -443,36 +438,36 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             addtoken("!var");
 
         // continue / break..
-        if ( Match(tok, "continue") )
+        if ( Tokenizer::Match(tok, "continue") )
             addtoken("continue");
-        if ( Match(tok, "break") )
+        if ( Tokenizer::Match(tok, "break") )
             addtoken("break");
 
         // goto..
-        if ( Match(tok, "goto") )
+        if ( Tokenizer::Match(tok, "goto") )
         {
             addtoken("goto");
         }
 
         // Return..
-        if ( Match(tok, "return") )
+        if ( Tokenizer::Match(tok, "return") )
         {
             addtoken("return");
-            if ( Match(tok, "return %var1%", varnames) ||
-                 Match(tok, "return & %var1%", varnames) )
+            if ( Tokenizer::Match(tok, "return %var1%", varnames) ||
+                 Tokenizer::Match(tok, "return & %var1%", varnames) )
                 addtoken("use");
         }
 
         // throw..
-        if ( Match(tok, "throw") )
+        if ( Tokenizer::Match(tok, "throw") )
             addtoken("throw");
 
         // Assignment..
-        if ( Match(tok,"[)=] %var1% [;)]", varnames) )
+        if ( Tokenizer::Match(tok,"[)=] %var1% [;)]", varnames) )
             addtoken("use");
 
         // Investigate function calls..
-        if ( Match(tok, "%var% (") )
+        if ( Tokenizer::Match(tok, "%var% (") )
         {
             const char *str = call_func(tok, callstack, varnames, alloctype, dealloctype);
             if ( str )
@@ -480,7 +475,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         }
 
         // Linux lists..
-        if ( Match( tok, "[=(,] & %var1% [.[]", varnames ) )
+        if ( Tokenizer::Match( tok, "[=(,] & %var1% [.[]", varnames ) )
         {
             // todo: better checking
             addtoken("use");
@@ -517,7 +512,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
     // { x } while(y) { x }"
     for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
     {
-        if ( ! Match(tok2->next, "do") )
+        if ( ! Tokenizer::Match(tok2->next, "do") )
             continue;
 
         // Remove the next token "do"
@@ -529,13 +524,13 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
         int indentlevel = 0;
         for ( tok2_ = tok2; tok2_ && indentlevel>=0; tok2_ = tok2_->next )
         {
-            if ( Match(tok2_, "{") )
+            if ( Tokenizer::Match(tok2_, "{") )
                 ++indentlevel;
 
-            else if ( Match(tok2_, "}") )
+            else if ( Tokenizer::Match(tok2_, "}") )
                 --indentlevel;
 
-            else if ( indentlevel == 0 && Match(tok2_->next, ";") )
+            else if ( indentlevel == 0 && Tokenizer::Match(tok2_->next, ";") )
                 break;
         }
 
@@ -547,9 +542,9 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
         indentlevel = 0;
         do
         {
-            if ( Match( tok2, "{" ) )
+            if ( Tokenizer::Match( tok2, "{" ) )
                 ++indentlevel;
-            else if ( Match(tok2, "}") )
+            else if ( Tokenizer::Match(tok2, "}") )
                 --indentlevel;
 
             // Copy token..
@@ -572,14 +567,14 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
         for (TOKEN *tok2 = tok; tok2; tok2 = tok2 ? tok2->next : NULL )
         {
             // Delete extra ";"
-            while (Match(tok2,"[;{}] ;"))
+            while (Tokenizer::Match(tok2,"[;{}] ;"))
             {
                 erase(tok2, Tokenizer::gettok(tok2,2));
                 done = false;
             }
 
             // Replace "{ }" with ";"
-            if ( Match(tok2->next, "{ }") )
+            if ( Tokenizer::Match(tok2->next, "{ }") )
             {
                 tok2->next->setstr(";");
                 erase(tok2->next, Tokenizer::gettok(tok2,3));
@@ -587,13 +582,13 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Delete braces around a single instruction..
-            if ( Match(tok2->next, "{ %var% ; }") )
+            if ( Tokenizer::Match(tok2->next, "{ %var% ; }") )
             {
                 erase( tok2, Tokenizer::gettok(tok2,2) );
                 erase( tok2->next->next, Tokenizer::gettok(tok2,4) );
                 done = false;
             }
-            if ( Match(tok2->next, "{ return use ; }") )
+            if ( Tokenizer::Match(tok2->next, "{ return use ; }") )
             {
                 erase( tok2, Tokenizer::gettok(tok2,2) );
                 erase( tok2->next->next->next, Tokenizer::gettok(tok2,5) );
@@ -601,12 +596,12 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Delete empty if that is not followed by an else
-            if ( Match(tok2,"[;{}] if ;") ||
-                 Match(tok2,"[;{}] if(var) ;") ||
-                 Match(tok2,"[;{}] if(!var) ;") ||
-                 Match(tok2,"[;{}] ifv ;") )
+            if ( Tokenizer::Match(tok2,"[;{}] if ;") ||
+                 Tokenizer::Match(tok2,"[;{}] if(var) ;") ||
+                 Tokenizer::Match(tok2,"[;{}] if(!var) ;") ||
+                 Tokenizer::Match(tok2,"[;{}] ifv ;") )
             {
-                if ( ! Match(Tokenizer::gettok(tok2,3), "else") )
+                if ( ! Tokenizer::Match(Tokenizer::gettok(tok2,3), "else") )
                 {
                     erase(tok2, Tokenizer::gettok(tok2, 3));
                     done = false;
@@ -617,22 +612,22 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             // Delete "if dealloc ;" and "if use ;" that is not followed by an else..
             // This may cause false positives
             if (_settings._showAll &&
-                (Match(tok2, "[;{}] if dealloc ;") || Match(tok2, "[;{}] if use ;")) &&
-                !Match(Tokenizer::gettok(tok2,4), "else"))
+                (Tokenizer::Match(tok2, "[;{}] if dealloc ;") || Tokenizer::Match(tok2, "[;{}] if use ;")) &&
+                !Tokenizer::Match(Tokenizer::gettok(tok2,4), "else"))
             {
                 erase(tok2->next, Tokenizer::gettok(tok2,3));
                 done = false;
             }
 
             // Delete if block: "alloc; if return use ;"
-            if (Match(tok2,"alloc ; if return use ;") && !Match(Tokenizer::gettok(tok2,6),"else"))
+            if (Tokenizer::Match(tok2,"alloc ; if return use ;") && !Tokenizer::Match(Tokenizer::gettok(tok2,6),"else"))
             {
                 erase(tok2, Tokenizer::gettok(tok2,5));
                 done = false;
             }
 
             // "[;{}] if alloc ; else return ;" => "[;{}] alloc ;"
-            if (Match(tok2,"[;{}] if alloc ; else return ;"))
+            if (Tokenizer::Match(tok2,"[;{}] if alloc ; else return ;"))
             {
                 erase(tok2, Tokenizer::gettok(tok2,2));        // Remove "if"
                 erase(tok2->next, Tokenizer::gettok(tok2,5));  // Remove "; else return"
@@ -640,68 +635,68 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Replace "dealloc use ;" with "dealloc ;"
-            if ( Match(tok2, "dealloc use ;") )
+            if ( Tokenizer::Match(tok2, "dealloc use ;") )
             {
                 erase(tok2, Tokenizer::gettok(tok2,2));
                 done = false;
             }
 
             // Reducing if..
-            if (Match(tok2,"if dealloc ; else") || Match(tok2,"if use ; else"))
+            if (Tokenizer::Match(tok2,"if dealloc ; else") || Tokenizer::Match(tok2,"if use ; else"))
             {
                 erase(tok2, Tokenizer::gettok(tok2, 2));
                 done = false;
             }
-            if (Match(tok2,"[;{}] if { dealloc ; return ; }") && !Match(Tokenizer::gettok(tok2,8),"else"))
+            if (Tokenizer::Match(tok2,"[;{}] if { dealloc ; return ; }") && !Tokenizer::Match(Tokenizer::gettok(tok2,8),"else"))
             {
                 erase(tok2,Tokenizer::gettok(tok2,8));
                 done = false;
             }
 
             // Replace "loop ;" with ";"
-            if ( Match(tok2->next, "loop ;") )
+            if ( Tokenizer::Match(tok2->next, "loop ;") )
             {
                 erase(tok2, Tokenizer::gettok(tok2,2));
                 done = false;
             }
 
             // Replace "loop !var ;" with ";"
-            if ( Match(tok2->next, "loop !var ;") )
+            if ( Tokenizer::Match(tok2->next, "loop !var ;") )
             {
                 erase(tok2, Tokenizer::gettok(tok2,4));
                 done = false;
             }
 
             // Replace "loop !var alloc ;" with " alloc ;"
-            if ( Match(tok2->next, "loop !var alloc ;") )
+            if ( Tokenizer::Match(tok2->next, "loop !var alloc ;") )
             {
                 erase(tok2, Tokenizer::gettok(tok2,3));
                 done = false;
             }
 
             // Delete if block in "alloc ; if(!var) return ;"
-            if ( Match(tok2, "alloc ; if(!var) return ;") )
+            if ( Tokenizer::Match(tok2, "alloc ; if(!var) return ;") )
             {
                 erase(tok2, Tokenizer::gettok(tok2,4));
                 done = false;
             }
 
             // Delete second use in "use ; use ;"
-            while (Match(tok2, "[;{}] use ; use ;"))
+            while (Tokenizer::Match(tok2, "[;{}] use ; use ;"))
             {
                 erase(tok2, Tokenizer::gettok(tok2,3));
                 done = false;
             }
 
             // Delete second case in "case ; case ;"
-            while (Match(tok2, "case ; case ;"))
+            while (Tokenizer::Match(tok2, "case ; case ;"))
             {
                 erase(tok2, Tokenizer::gettok(tok2,3));
                 done = false;
             }
 
             // Replace switch with if (if not complicated)
-            if (Match(tok2, "switch {"))
+            if (Tokenizer::Match(tok2, "switch {"))
             {
                 // Right now, I just handle if there are a few case and perhaps a default.
                 bool valid = false;
@@ -726,11 +721,11 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                     else if (strcmp(_tok->str,"loop")==0)
                         break;
 
-                    else if (incase && Match(_tok,"case"))
+                    else if (incase && Tokenizer::Match(_tok,"case"))
                         break;
 
-                    incase |= Match(_tok,"case");
-                    incase &= !Match(_tok,"break");
+                    incase |= Tokenizer::Match(_tok,"case");
+                    incase &= !Tokenizer::Match(_tok,"break");
                 }
 
                 if ( !incase && valid )
@@ -740,9 +735,9 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                     erase( tok2, Tokenizer::gettok(tok2, 2) );
                     tok2 = tok2->next;
                     bool first = true;
-                    while (Match(tok2,"case") || Match(tok2,"default"))
+                    while (Tokenizer::Match(tok2,"case") || Tokenizer::Match(tok2,"default"))
                     {
-                        bool def = Match(tok2, "default");
+                        bool def = Tokenizer::Match(tok2, "default");
                         tok2->setstr(first ? "if" : "}");
                         if ( first )
                         {
@@ -757,9 +752,9 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                                 instoken( tok2, "if" );
                             instoken( tok2, "else" );
                         }
-                        while ( tok2 && tok2->str[0] != '}' && ! Match(tok2,"break ;") )
+                        while ( tok2 && tok2->str[0] != '}' && ! Tokenizer::Match(tok2,"break ;") )
                             tok2 = tok2->next;
-                        if (Match(tok2,"break ;"))
+                        if (Tokenizer::Match(tok2,"break ;"))
                         {
                             tok2->setstr(";");
                             tok2 = tok2->next->next;
@@ -768,7 +763,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 }
             }
 
-            if ( Match(tok2, "throw") )
+            if ( Tokenizer::Match(tok2, "throw") )
             {
                 tok2->setstr( "return" );
                 done = false;
@@ -889,20 +884,20 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
         // In function..
         if ( indentlevel == 0 )
         {
-            if ( Match(tok, ") {") )
+            if ( Tokenizer::Match(tok, ") {") )
                 infunc = true;
 
-            if ( Match(tok, "[;}]") )
+            if ( Tokenizer::Match(tok, "[;}]") )
                 infunc = false;
         }
 
         // Declare a local variable => Check
         if (indentlevel>0 && infunc)
         {
-            if ( Match(tok, "[{};] %type% * %var% [;=]") )
+            if ( Tokenizer::Match(tok, "[{};] %type% * %var% [;=]") )
                 CheckMemoryLeak_CheckScope( tok->next, Tokenizer::getstr(tok, 3) );
 
-            else if ( Match(tok, "[{};] %type% %type% * %var% [;=]") )
+            else if ( Tokenizer::Match(tok, "[{};] %type% %type% * %var% [;=]") )
                 CheckMemoryLeak_CheckScope( tok->next, Tokenizer::getstr(tok, 4) );
         }
     }
@@ -928,7 +923,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers()
         else if ( tok->str[0] == '}' )
             indentlevel--;
 
-        else if ( indentlevel == 0 && Match(tok, "class %var% [{:]") )
+        else if ( indentlevel == 0 && Tokenizer::Match(tok, "class %var% [{:]") )
         {
             std::vector<const char *> classname;
             classname.push_back( Tokenizer::getstr(tok, 1) );
@@ -964,7 +959,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN 
             continue;
 
         // Declaring subclass.. recursive checking
-        if ( Match(tok, "class %var% [{:]") )
+        if ( Tokenizer::Match(tok, "class %var% [{:]") )
         {
             classname.push_back( Tokenizer::getstr(tok, 1) );
             CheckMemoryLeak_ClassMembers_ParseClass( tok, classname );
@@ -972,9 +967,9 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN 
         }
 
         // Declaring member variable.. check allocations and deallocations
-        if ( Match(tok->next, "%type% * %var% ;") )
+        if ( Tokenizer::Match(tok->next, "%type% * %var% ;") )
         {
-            if ( IsName(tok->str) || strchr(";}", tok->str[0]) )
+            if ( Tokenizer::IsName(tok->str) || strchr(";}", tok->str[0]) )
             {
                 if (_settings._showAll || !isclass(Tokenizer::getstr(tok,1)))
                     CheckMemoryLeak_ClassMembers_Variable( classname, Tokenizer::getstr(tok, 3) );
@@ -1031,7 +1026,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
         {
             if ( strchr(";}", tok->str[0]) )
                 memberfunction = false;
-            else if ( Match( tok, fpattern.str().c_str() ) || Match( tok, destructor.str().c_str() ) )
+            else if ( Tokenizer::Match( tok, fpattern.str().c_str() ) || Tokenizer::Match( tok, destructor.str().c_str() ) )
                 memberfunction = true;
         }
 
@@ -1039,7 +1034,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
         if ( indentlevel > 0 && memberfunction )
         {
             // Allocate..
-            if ( Match( tok, varname_eq.str().c_str() ) )
+            if ( Tokenizer::Match( tok, varname_eq.str().c_str() ) )
             {
                 AllocType alloc = GetAllocationType( Tokenizer::gettok( tok, 2 ) );
                 if ( alloc != No )

@@ -18,7 +18,6 @@
 
 
 #include "tokenize.h"
-#include "CommonCheck.h"
 #include "CheckOther.h"
 #include "testsuite.h"
 #include <sstream>

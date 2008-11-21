@@ -19,7 +19,6 @@
 
 #include "preprocessor.h" // preprocessor.
 
-#include "CommonCheck.h"
 #include "CheckMemoryLeak.h"
 #include "CheckBufferOverrun.h"
 #include "CheckClass.h"

@@ -19,7 +19,6 @@
 
 
 #include "tokenize.h"
-#include "CommonCheck.h"
 #include "CheckBufferOverrun.h"
 #include "testsuite.h"
 

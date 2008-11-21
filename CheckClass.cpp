@@ -19,7 +19,6 @@
 //---------------------------------------------------------------------------
 #include "CheckClass.h"
 
-#include "CommonCheck.h"
 #include <locale>
 
 #include <string>
@@ -75,7 +74,7 @@ struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
             const char *varname = 0;
 
             // Is it a variable declaration?
-            if ( Match(next,"%type% %var% ;") )
+            if ( Tokenizer::Match(next,"%type% %var% ;") )
             {
                 const char *types[] = {"bool", "char", "int", "short", "long", "float", "double", 0};
                 for ( int type = 0; types[type]; type++ )
@@ -89,7 +88,7 @@ struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
             }
 
             // Pointer?
-            else if ( Match(next, "%type% * %var% ;") )
+            else if ( Tokenizer::Match(next, "%type% * %var% ;") )
             {
                 varname = Tokenizer::getstr(next, 2);
             }
@@ -123,10 +122,10 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
     for ( ;tok; tok = tok->next )
     {
         if ( indentlevel == 0 &&
-             ( Match(tok, "class %var1% {", _classname) ||
-               Match(tok, "class %var1% : %type% {", _classname) ) )
+             ( Tokenizer::Match(tok, "class %var1% {", _classname) ||
+               Tokenizer::Match(tok, "class %var1% : %type% {", _classname) ) )
         {
-            if ( Match(tok, "class %var% {") )
+            if ( Tokenizer::Match(tok, "class %var% {") )
                 tok = Tokenizer::gettok(tok, 3);
             else
                 tok = Tokenizer::gettok(tok, 5);
@@ -169,7 +168,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
         if ( indentlevel == 1 )
         {
             // Member function implemented in the class declaration?
-            if ( Match( tok, "%var1% (", _funcname ) )
+            if ( Tokenizer::Match( tok, "%var1% (", _funcname ) )
             {
                 const TOKEN *tok2 = tok;
                 while ( tok2 && tok2->str[0] != '{' && tok2->str[0] != ';' )
@@ -179,7 +178,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             }
         }
 
-        else if ( indentlevel == 0 && Match(tok, "%var1% :: %var2% (", _classname, _funcname) )
+        else if ( indentlevel == 0 && Tokenizer::Match(tok, "%var1% :: %var2% (", _classname, _funcname) )
         {
             return tok;
         }
@@ -217,7 +216,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         // clKalle::clKalle() : var(value) { }
         if (indentlevel==0)
         {
-            if (Assign && Match(ftok, "%var% ("))
+            if (Assign && Tokenizer::Match(ftok, "%var% ("))
             {
                 InitVar( varlist, ftok->str );
             }
@@ -243,29 +242,29 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
             continue;
 
         // Before a new statement there is "[{};)=]" or "else"
-        if ( ! Match(ftok, "[{};)=]") && ! Match(ftok, "else") )
+        if ( ! Tokenizer::Match(ftok, "[{};)=]") && ! Tokenizer::Match(ftok, "else") )
             continue;
 
         // Using the operator= function to initialize all variables..
-        if ( Match(ftok->next, "* this = ") )
+        if ( Tokenizer::Match(ftok->next, "* this = ") )
         {
             for (struct VAR *var = varlist; var; var = var->next)
                 var->init = true;
             break;
         }
 
-        if (!Match(ftok->next, "%var%") && !Match(ftok->next, "this . %var%"))
+        if (!Tokenizer::Match(ftok->next, "%var%") && !Tokenizer::Match(ftok->next, "this . %var%"))
             continue;
 
         // Goto the first token in this statement..
         ftok = ftok->next;
 
         // Skip "this->"
-        if ( Match(ftok, "this .") )
+        if ( Tokenizer::Match(ftok, "this .") )
             ftok = Tokenizer::gettok(ftok, 2);
 
         // Clearing all variables..
-        if (Match(ftok,"memset ( this ,"))
+        if (Tokenizer::Match(ftok,"memset ( this ,"))
         {
             for (struct VAR *var = varlist; var; var = var->next)
                 var->init = true;
@@ -273,7 +272,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         }
 
         // Calling member function?
-        else if (Match(ftok, "%var% ("))
+        else if (Tokenizer::Match(ftok, "%var% ("))
         {
             // No recursive calls!
             if ( std::find(callstack.begin(),callstack.end(),ftok->str) == callstack.end() )
@@ -286,13 +285,13 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         }
 
         // Assignment of member variable?
-        else if (Match(ftok, "%var% ="))
+        else if (Tokenizer::Match(ftok, "%var% ="))
         {
             InitVar( varlist, ftok->str );
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
-        if (Match(ftok,"%var% . clear (") || Match(ftok,"%var% . Clear ("))
+        if (Tokenizer::Match(ftok,"%var% . clear (") || Tokenizer::Match(ftok,"%var% . Clear ("))
         {
             InitVar( varlist, ftok->str );
         }
@@ -316,7 +315,7 @@ void CheckClass::CheckConstructors()
     while (tok1)
     {
         const char *classname = tok1->next->str;
-        if ( ! IsName(classname) )
+        if ( ! Tokenizer::IsName(classname) )
         {
             tok1 = Tokenizer::findtoken( tok1->next, pattern_classname );
             continue;
@@ -431,7 +430,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
         unsigned int indent_level = 0;
         for (const TOKEN *tok = tok1; tok; tok = tok->next)
         {
-            if (Match(tok,"friend %var%"))
+            if (Tokenizer::Match(tok,"friend %var%"))
             {
                 // Todo: Handle friend classes
                 FuncList.clear();
@@ -456,11 +455,11 @@ void CheckClass::CheckUnusedPrivateFunctions()
                 priv = false;
             else if (priv && indent_level == 1)
             {
-                if ( Match(tok, "typedef %type% (") )
+                if ( Tokenizer::Match(tok, "typedef %type% (") )
                     tok = Tokenizer::gettok(tok, 2);
 
-                if (Match(tok, "%var% (") &&
-                    !Match(tok,classname))
+                if (Tokenizer::Match(tok, "%var% (") &&
+                    !Tokenizer::Match(tok,classname))
                 {
                     FuncList.push_back(tok->str);
                 }
@@ -550,20 +549,20 @@ void CheckClass::CheckMemset()
     // Locate all 'memset' tokens..
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
-        if (!Match(tok,"memset") && !Match(tok,"memcpy") && !Match(tok,"memmove"))
+        if (!Tokenizer::Match(tok,"memset") && !Tokenizer::Match(tok,"memcpy") && !Tokenizer::Match(tok,"memmove"))
             continue;
 
         // Todo: Handle memcpy and memmove
         const char *type = NULL;
-        if (Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
+        if (Tokenizer::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
             type = Tokenizer::getstr(tok, 8);
-        else if (Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
+        else if (Tokenizer::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
             type = Tokenizer::getstr(tok, 9);
-        else if (Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
+        else if (Tokenizer::Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
             type = Tokenizer::getstr(tok, 9);
-        else if (Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
+        else if (Tokenizer::Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
             type = Tokenizer::getstr(tok, 10);
-        else if (Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
+        else if (Tokenizer::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
             type = Tokenizer::getstr(tok, 8);
 
         // No type defined => The tokens didn't match
@@ -589,7 +588,7 @@ void CheckClass::CheckMemset()
             if (tstruct->str[0] == '}')
                 break;
 
-            if (Match(tstruct, "std :: %type% %var% ;"))
+            if (Tokenizer::Match(tstruct, "std :: %type% %var% ;"))
             {
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << Tokenizer::getstr(tstruct,2) << "'";

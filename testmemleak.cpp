@@ -19,7 +19,6 @@
 
 
 
-#include "CommonCheck.h"
 #include "tokenize.h"
 #include "CheckMemoryLeak.h"
 #include "testsuite.h"
