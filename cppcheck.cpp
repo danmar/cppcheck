@@ -200,11 +200,12 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
     // Check for unsigned divisions where one operand is signed
     // Very important to run it before 'SimplifyTokenList'
     CheckOther checkOther( &_tokenizer, this );
-    checkOther.CheckUnsignedDivision();
+    if ( _settings._checkCodingStyle )
+        checkOther.CheckUnsignedDivision();
 
     // Give warning when using char variable as array index
     // Doesn't work on simplified token list ('unsigned')
-    if ( _settings._showAll )
+    if ( _settings._checkCodingStyle )
         checkOther.CheckCharVariable();
 
 
