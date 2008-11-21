@@ -31,8 +31,6 @@
 #include <list>
 #include <vector>
 
-enum AllocType { No, Malloc, gMalloc, New, NewA };
-
 class CheckMemoryLeakClass
 {
 public:
@@ -41,6 +39,9 @@ public:
     void CheckMemoryLeak();
 
 private:
+
+    enum AllocType { No, Malloc, gMalloc, New, NewA, FOPEN, POPEN };
+
     // Extra allocation..
     class AllocFunc
     {

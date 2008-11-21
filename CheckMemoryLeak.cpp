@@ -73,7 +73,7 @@ bool CheckMemoryLeakClass::isclass( const std::string &typestr )
 }
 //---------------------------------------------------------------------------
 
-AllocType CheckMemoryLeakClass::GetAllocationType( const TOKEN *tok2 )
+CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const TOKEN *tok2 )
 {
     // What we may have...
     //     * var = (char *)malloc(10);
@@ -130,6 +130,12 @@ AllocType CheckMemoryLeakClass::GetAllocationType( const TOKEN *tok2 )
     if ( Match( tok2, "new %type% [" ) )
         return NewA;
 
+    if ( Match( tok2, "fopen (" ) )
+        return FOPEN;
+
+    if ( Match( tok2, "popen (" ) )
+        return POPEN;
+
     // Userdefined allocation function..
     std::list<AllocFunc>::const_iterator it = listallocfunc.begin();
     while ( it != listallocfunc.end() )
@@ -142,7 +148,7 @@ AllocType CheckMemoryLeakClass::GetAllocationType( const TOKEN *tok2 )
     return No;
 }
 
-AllocType CheckMemoryLeakClass::GetDeallocationType( const TOKEN *tok, const char *varnames[] )
+CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType( const TOKEN *tok, const char *varnames[] )
 {
     // Redundant condition..
     if ( Match(tok, "if ( %var1% )", varnames) )
@@ -166,6 +172,12 @@ AllocType CheckMemoryLeakClass::GetDeallocationType( const TOKEN *tok, const cha
 
     if ( Match(tok, "g_free ( %var1% ) ;", varnames) )
         return gMalloc;
+
+    if ( Match(tok, "fclose ( %var1% )", varnames) )
+        return FOPEN;
+
+    if ( Match(tok, "pclose ( %var1% )", varnames) )
+        return POPEN;
 
     return No;
 }
