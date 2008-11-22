@@ -382,6 +382,14 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         {
             addtoken("if(!var)");
         }
+        else if ( Tokenizer::Match(tok, "if (") && _tokenizer->alwaysTrue(tok->next) )
+        {
+            addtoken("if(true)");
+        }
+        else if ( Tokenizer::Match(tok, "if (") && _tokenizer->alwaysTrue(tok->next) )
+        {
+            addtoken("if(false)");
+        }
         else if ( Tokenizer::Match(tok, "if") )
         {
             // Check if the condition depends on var somehow..
@@ -599,6 +607,8 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             if ( Tokenizer::Match(tok2,"[;{}] if ;") ||
                  Tokenizer::Match(tok2,"[;{}] if(var) ;") ||
                  Tokenizer::Match(tok2,"[;{}] if(!var) ;") ||
+                 Tokenizer::Match(tok2,"[;{}] if(true) ;") ||
+                 Tokenizer::Match(tok2,"[;{}] if(false) ;") ||
                  Tokenizer::Match(tok2,"[;{}] ifv ;") )
             {
                 if ( ! Tokenizer::Match(Tokenizer::gettok(tok2,3), "else") )

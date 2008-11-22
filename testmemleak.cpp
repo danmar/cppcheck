@@ -86,6 +86,8 @@ private:
         TEST_CASE( if4 );
         TEST_CASE( if5 );
 
+        TEST_CASE( alwaysTrue );
+
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
         TEST_CASE( forwhile3 );
@@ -453,6 +455,26 @@ private:
         ASSERT_EQUALS( std::string(""), err );
     }
 
+
+
+
+
+    void alwaysTrue()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char *p = 0;\n"
+               "    for (;;)\n"
+               "    {\n"
+               "        p = malloc(256);\n"
+               "        if (1)\n"
+               "            break;\n"
+               "    }\n"
+               "    free(p);\n"
+               "}\n" );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), err );
+    }
 
 
 
