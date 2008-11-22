@@ -91,10 +91,10 @@ public:
     static bool IsNumber(const char str[]);
     static bool IsStandardType(const char str[]);
 
-    std::string fileLine( const TOKEN *tok );
+    std::string fileLine( const TOKEN *tok ) const;
 
     // Return size.
-    int SizeOfType(const char type[]);
+    int SizeOfType(const char type[]) const;
 
     void initTokens();
 

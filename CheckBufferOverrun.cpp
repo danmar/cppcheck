@@ -35,7 +35,7 @@
 // CallStack used when parsing into subfunctions.
 
 
-CheckBufferOverrunClass::CheckBufferOverrunClass( Tokenizer *tokenizer, ErrorLogger *errorLogger )
+CheckBufferOverrunClass::CheckBufferOverrunClass( const Tokenizer *tokenizer, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
     _errorLogger = errorLogger;

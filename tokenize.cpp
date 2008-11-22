@@ -225,12 +225,16 @@ void Tokenizer::combine_2tokens(TOKEN *tok, const char str1[], const char str2[]
 
 
 
-int Tokenizer::SizeOfType(const char type[])
+int Tokenizer::SizeOfType(const char type[]) const
 {
     if (!type)
         return 0;
 
-    return TypeSize[type];
+    std::map<std::string, unsigned int>::const_iterator it = TypeSize.find(type);
+    if ( it == TypeSize.end() )
+        return 0;
+
+    return it->second;
 }
 //---------------------------------------------------------------------------
 
@@ -1310,7 +1314,7 @@ const TOKEN *Tokenizer::findmatch(const TOKEN *tok, const char pattern[], const 
 
 //---------------------------------------------------------------------------
 
-std::string Tokenizer::fileLine( const TOKEN *tok )
+std::string Tokenizer::fileLine( const TOKEN *tok ) const
 {
     std::ostringstream ostr;
     ostr << "[" << Files.at(tok->FileIndex) << ":" << tok->linenr << "]";

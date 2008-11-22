@@ -28,7 +28,7 @@
 class CheckBufferOverrunClass
 {
 public:
-    CheckBufferOverrunClass( Tokenizer *tokenizer, ErrorLogger *errorLogger );
+    CheckBufferOverrunClass( const Tokenizer *tokenizer, ErrorLogger *errorLogger );
     ~CheckBufferOverrunClass();
 
     // Buffer overrun..
@@ -43,7 +43,7 @@ private:
     void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname[], const int size, const int total_size );
     void ReportError(const TOKEN *tok, const char errmsg[]);
 
-    Tokenizer *_tokenizer;
+    const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
     std::list<const TOKEN *> CallStack;
 };
