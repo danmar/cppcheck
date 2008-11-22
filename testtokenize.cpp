@@ -21,6 +21,7 @@
 // the code for a known configuration, it generates the code for each configuration.
 
 
+#include <cstring>
 #include "testsuite.h"
 #define UNIT_TESTING        // Get access to "private" data in Tokenizer
 #include "tokenize.h"
