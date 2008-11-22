@@ -820,12 +820,8 @@ void Tokenizer::SimplifyTokenList()
 
 
     // Simple calculations..
-
-    bool done = false;
-    while (!done)
+    for ( bool done = false; !done; done = true )
     {
-        done = true;
-
         for (TOKEN *tok = _tokens; tok; tok = tok->next)
         {
             if (Tokenizer::Match(tok->next, "* 1") || Tokenizer::Match(tok->next, "1 *"))
@@ -1037,8 +1033,50 @@ void Tokenizer::SimplifyTokenList()
                 DeleteNextToken(tok);
         }
     }
+
+
+    for ( bool done = false; !done; done = true)
+    {
+        done &= simplifyConditions();
+    };
 }
 //---------------------------------------------------------------------------
+
+
+bool Tokenizer::simplifyConditions()
+{
+    bool ret = true;
+
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next )
+    {
+        if (Match(tok, "( true &&") || Match(tok, "&& true &&") || Match(tok->next, "&& true )"))
+        {
+            DeleteNextToken( tok );
+            DeleteNextToken( tok );
+            ret = false;
+        }
+
+        else if (Match(tok, "( false ||") || Match(tok, "|| false ||") || Match(tok->next, "|| false )"))
+        {
+            DeleteNextToken( tok );
+            DeleteNextToken( tok );
+            ret = false;
+        }
+
+        // Change numeric constant in condition to "true" or "false"
+        const TOKEN *tok2 = gettok(tok, 2);
+        if ((Match(tok, "(") || Match(tok, "&&") || Match(tok, "||")) &&
+            Match(tok->next, "%num%")                                 &&
+            (Match(tok2, ")") || Match(tok2, "&&") || Match(tok2, "||")) )
+        {
+            tok->next->setstr((strcmp(tok->next->str, "0")!=0) ? "true" : "false");
+            ret = false;
+        }
+    }
+
+    return ret;
+}
+
 
 
 
@@ -1516,18 +1554,5 @@ bool Tokenizer::IsStandardType(const char str[])
     for (int i = 0; type[i]; i++)
         Ret |= (strcmp(str,type[i])==0);
     return Ret;
-}
-//---------------------------------------------------------------------------
-
-bool Tokenizer::alwaysTrue( const TOKEN *tok )
-{
-    return (Match(tok,"( 1 [|)]") | Match(tok,"( 1 ||") |
-            Match(tok,"( true [|)]") | Match(tok,"( true ||"));
-}
-//---------------------------------------------------------------------------
-bool Tokenizer::alwaysFalse( const TOKEN *tok )
-{
-    return (Match(tok,"( 0 [&)]") | Match(tok,"( 0 &&") |
-            Match(tok,"( false [&)]") | Match(tok,"( false &&"));
 }
 //---------------------------------------------------------------------------

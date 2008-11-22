@@ -90,9 +90,6 @@ public:
     static bool IsNumber(const char str[]);
     static bool IsStandardType(const char str[]);
 
-    bool alwaysTrue( const TOKEN *tok );
-    bool alwaysFalse( const TOKEN *tok );
-
     std::string fileLine( const TOKEN *tok );
 
     // Return size.
@@ -147,6 +144,8 @@ private:
     void combine_2tokens(TOKEN *tok, const char str1[], const char str2[]);
 
     void DeleteNextToken(TOKEN *tok);
+
+    bool simplifyConditions();
 
     TOKEN *_gettok(TOKEN *tok, int index);
 

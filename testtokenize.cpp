@@ -43,8 +43,7 @@ private:
 
         TEST_CASE( dupfuncname );
 
-        TEST_CASE( alwaysTrue );
-        TEST_CASE( alwaysFalse );
+        TEST_CASE( simplifyConditions );
     }
 
 
@@ -154,45 +153,10 @@ private:
         ASSERT_EQUALS( std::string("b"), tokenizer.FunctionList[0]->str );
     }
 
-
-    bool alwaysTrueCheck(const char condition[])
+    void simplifyConditions()
     {
-        // tokenize..
-        Tokenizer tokenizer( this );
-        tokenizer.getFiles()->push_back( "test.cpp" );
-        std::istringstream istr(condition);
-        tokenizer.TokenizeCode(istr, 0);
+        // TODO Simplify various conditions..
 
-        // check..
-        return tokenizer.alwaysTrue( tokenizer.tokens() );
-    }
-
-    void alwaysTrue()
-    {
-        ASSERT_EQUALS(true, alwaysTrueCheck("(1)"));
-        ASSERT_EQUALS(true, alwaysTrueCheck("(true)"));
-        ASSERT_EQUALS(true, alwaysTrueCheck("(true || false)"));
-        ASSERT_EQUALS(false, alwaysTrueCheck("(true && false)"));
-    }
-
-    bool alwaysFalseCheck(const char condition[])
-    {
-        // tokenize..
-        Tokenizer tokenizer( this );
-        tokenizer.getFiles()->push_back( "test.cpp" );
-        std::istringstream istr(condition);
-        tokenizer.TokenizeCode(istr, 0);
-
-        // check..
-        return tokenizer.alwaysFalse( tokenizer.tokens() );
-    }
-
-    void alwaysFalse()
-    {
-        ASSERT_EQUALS(true, alwaysFalseCheck("(0)"));
-        ASSERT_EQUALS(true, alwaysFalseCheck("(false)"));
-        ASSERT_EQUALS(true, alwaysFalseCheck("(false && true)"));
-        ASSERT_EQUALS(false, alwaysFalseCheck("(false || true)"));
     }
 };
 

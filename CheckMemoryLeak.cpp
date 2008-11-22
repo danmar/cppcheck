@@ -382,11 +382,11 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         {
             addtoken("if(!var)");
         }
-        else if ( Tokenizer::Match(tok, "if (") && _tokenizer->alwaysTrue(tok->next) )
+        else if ( Tokenizer::Match(tok, "if ( true )") )
         {
             addtoken("if(true)");
         }
-        else if ( Tokenizer::Match(tok, "if (") && _tokenizer->alwaysTrue(tok->next) )
+        else if ( Tokenizer::Match(tok, "if ( false )") )
         {
             addtoken("if(false)");
         }
