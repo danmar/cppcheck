@@ -89,6 +89,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
                                 "strdup",
                                 "kmalloc",
                                 "kzalloc",
+                                "kcalloc",
                                 0};
     for ( unsigned int i = 0; mallocfunc[i]; i++ )
     {
