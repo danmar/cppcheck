@@ -1,17 +1,19 @@
-SRCS=CheckBufferOverrun.cpp	CheckClass.cpp	CheckHeaders.cpp	CheckMemoryLeak.cpp	CheckFunctionUsage.cpp	CheckOther.cpp	FileLister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp
+SRCS=CheckBufferOverrun.cpp	CheckClass.cpp	CheckHeaders.cpp	CheckMemoryLeak.cpp	CheckFunctionUsage.cpp	CheckOther.cpp	FileLister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp
 OBJS=$(SRCS:%.cpp=%.o)
-TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testsimplifytokens.o	testtokenize.o	testunusedprivfunc.o	testunusedvar.o	settings.o	cppcheck.o
+TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testsimplifytokens.o	testtokenize.o	testunusedprivfunc.o	testunusedvar.o	settings.o	cppcheck.o token.o
 BIN = ${DESTDIR}/usr/bin
 
 all:	${OBJS} main.o
 	g++ -Wall -g -o cppcheck $^
 test:	${OBJS} testrunner.o	testsuite.o	${TESTS}
 	g++ -Wall -g -o testrunner $^
-cppcheck.o: cppcheck.cpp cppcheck.h preprocessor.h tokenize.h CheckMemoryLeak.h CheckBufferOverrun.h CheckClass.h CheckHeaders.h CheckOther.h FileLister.h settings.h
+cppcheck.o: cppcheck.cpp cppcheck.h preprocessor.h tokenize.h CheckMemoryLeak.h CheckBufferOverrun.h CheckClass.h CheckHeaders.h CheckOther.h FileLister.h settings.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 main.o: main.cpp cppcheck.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 settings.o: settings.cpp
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+token.o: token.cpp
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 CheckBufferOverrun.o: CheckBufferOverrun.cpp CheckBufferOverrun.h tokenize.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
@@ -55,7 +57,7 @@ testunusedprivfunc.o: testunusedprivfunc.cpp tokenize.h CheckClass.h testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 testunusedvar.o: testunusedvar.cpp testsuite.h tokenize.h CheckOther.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-tokenize.o: tokenize.cpp tokenize.h
+tokenize.o: tokenize.cpp tokenize.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 clean:
 	rm -f *.o testrunner cppcheck

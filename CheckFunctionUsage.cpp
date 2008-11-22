@@ -53,12 +53,12 @@ void CheckFunctionUsage::parseTokens( const std::string &filename )
 
         const TOKEN *funcname = 0;
 
-        if ( Tokenizer::Match( tok, "%type% %var% (" )  )
-            funcname = _tokenizer->gettok(tok, 1);
-        else if ( Tokenizer::Match(tok, "%type% * %var% (") )
-            funcname = _tokenizer->gettok(tok, 2);
+        if ( TOKEN::Match( tok, "%type% %var% (" )  )
+            funcname = tok->at(1);
+        else if ( TOKEN::Match(tok, "%type% * %var% (") )
+            funcname = tok->at(2);
 
-        if ( Tokenizer::Match(funcname, "%var% ( )") || Tokenizer::Match(funcname, "%var% ( %type%") )
+        if ( TOKEN::Match(funcname, "%var% ( )") || TOKEN::Match(funcname, "%var% ( %type%") )
         {
             FunctionUsage &func = functions[ funcname->str ];
 
@@ -80,10 +80,10 @@ void CheckFunctionUsage::parseTokens( const std::string &filename )
     {
         const TOKEN *funcname = 0;
 
-        if ( Tokenizer::Match( tok, "[;{}.)[=] %var% (" )  )
+        if ( TOKEN::Match( tok, "[;{}.)[=] %var% (" )  )
             funcname = tok;
 
-        else if ( Tokenizer::Match(tok, "= %var% ;") )
+        else if ( TOKEN::Match(tok, "= %var% ;") )
             funcname = tok->next;
 
         if ( funcname )
