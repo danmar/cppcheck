@@ -86,7 +86,6 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
     // Does tok2 point on "malloc", "strdup" or "kmalloc"..
     const char *mallocfunc[] = {"malloc",
                                 "calloc",
-                                "realloc",
                                 "strdup",
                                 "kmalloc",
                                 "kzalloc",
