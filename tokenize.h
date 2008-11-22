@@ -62,14 +62,15 @@ public:
 
 class Tokenizer
 {
+private:
+    // Deallocate lists..
+    void DeallocateTokens();
+
 public:
-    Tokenizer(ErrorLogger *errorLogger);
+    Tokenizer();
     ~Tokenizer();
 
     void Tokenize(std::istream &code, const char FileName[]);
-
-    // Deallocate lists..
-    void DeallocateTokens();
 
     // Simplify tokenlist
     // -----------------------------
@@ -99,14 +100,10 @@ public:
 
     std::vector<std::string> *getFiles();
 
-
-
     void FillFunctionList(const unsigned int file_id);
     const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
-    void CheckGlobalFunctionUsage(const std::vector<std::string> &filenames);
     void settings( const Settings &settings );
     const TOKEN *tokens() const;
-
 
 
 #ifndef UNIT_TESTING
@@ -118,23 +115,6 @@ private:
         char *name;
         char *value;
         struct DefineSymbol *next;
-    };
-
-    class GlobalFunction
-    {
-    private:
-        unsigned int _FileId;
-        std::string  _FuncName;
-
-    public:
-        GlobalFunction( const unsigned int FileId, const char FuncName[] )
-        {
-            _FileId = FileId;
-            _FuncName = FuncName;
-        }
-
-        unsigned int file_id() const { return _FileId; }
-        const std::string &name() const { return _FuncName; }
     };
 
     void Define(const char Name[], const char Value[]);
@@ -154,15 +134,12 @@ private:
     TOKEN *tokens_back;
     std::map<std::string, unsigned int> TypeSize;
     std::vector<const TOKEN *> FunctionList;
-    std::list< GlobalFunction > GlobalFunctions;
-    std::list< GlobalFunction > UsedGlobalFunctions;
     std::vector<std::string> Files;
     Settings _settings;
 
 
     struct DefineSymbol * dsymlist;
     TOKEN *_tokens;
-    ErrorLogger *_errorLogger;
 };
 
 

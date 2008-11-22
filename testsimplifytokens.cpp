@@ -42,7 +42,7 @@ private:
     std::string tok(const char code[])
     {
         std::istringstream istr(code);
-        Tokenizer tokenizer( this );
+        Tokenizer tokenizer;
         tokenizer.TokenizeCode( istr );
         tokenizer.SimplifyTokenList();
 

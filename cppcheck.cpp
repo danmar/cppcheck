@@ -18,6 +18,7 @@
 #include "cppcheck.h"
 
 #include "preprocessor.h" // preprocessor.
+#include "tokenize.h"   // <- Tokenizer
 
 #include "CheckMemoryLeak.h"
 #include "CheckBufferOverrun.h"
@@ -35,12 +36,9 @@
 
 //---------------------------------------------------------------------------
 
-CppCheck::CppCheck() : _tokenizer( this )
+CppCheck::CppCheck()
 {
-    _settings._debug = false;
-    _settings._showAll = false;
-    _settings._checkCodingStyle = false;
-    _settings._errorsOnly = false;
+
 }
 
 CppCheck::~CppCheck()
@@ -52,6 +50,8 @@ void CppCheck::check(int argc, char* argv[])
 {
     std::vector<std::string> pathnames;
     bool Recursive = false;
+
+    Settings _settings;
 
     for (int i = 1; i < argc; i++)
     {
@@ -75,8 +75,6 @@ void CppCheck::check(int argc, char* argv[])
         else
             pathnames.push_back( argv[i] );
     }
-
-    _tokenizer.settings( _settings );
 
     std::vector<std::string> filenames;
     // --recursive was used
@@ -140,7 +138,7 @@ void CppCheck::check(int argc, char* argv[])
         Preprocessor preprocessor( this );
         preprocessor.preprocess(fin, code, fname);
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
-            checkFile(it->second, filenames[c].c_str(), c);
+            checkFile(it->second, filenames[c].c_str(), c, _settings);
 
         if (_settings._errorsOnly)
         {
@@ -164,7 +162,7 @@ void CppCheck::check(int argc, char* argv[])
     {
         errout.str("");
         std::cout << "Checking usage of global functions (this may take several minutes)..\n";
-        _tokenizer.CheckGlobalFunctionUsage(filenames);
+        //_tokenizer.CheckGlobalFunctionUsage(filenames);
         if ( ! errout.str().empty() )
         {
             std::cerr << "\n";
@@ -179,8 +177,11 @@ void CppCheck::check(int argc, char* argv[])
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
 
-void CppCheck::checkFile(const std::string &code, const char FileName[], unsigned int FileId)
+void CppCheck::checkFile(const std::string &code, const char FileName[], unsigned int FileId, Settings &_settings)
 {
+    Tokenizer _tokenizer;
+    _tokenizer.settings( _settings );
+
     // Tokenize the file
     {
     std::istringstream istr(code);
@@ -288,10 +289,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
         // mean that an ';' has been added by accident
         checkOther.CheckIncompleteStatement();
     }
-
-    // Clean up tokens..
-    _tokenizer.DeallocateTokens();
-
 }
 //---------------------------------------------------------------------------
 
@@ -308,6 +305,12 @@ void CppCheck::reportErr( const std::string &errmsg)
 
 void CppCheck::reportErr( const TOKEN *token, const std::string &errmsg)
 {
+/*
     std::string message = _tokenizer.fileLine( token ) + errmsg;
     reportErr( message );
+*/
+    reportErr( errmsg );
 }
+
+
+

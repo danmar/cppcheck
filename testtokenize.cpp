@@ -65,7 +65,7 @@ private:
                                 "            \"def\"\n";
 
         // tokenize..
-        Tokenizer tokenizer( this );
+        Tokenizer tokenizer;
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
@@ -89,7 +89,7 @@ private:
         std::string filedata(10000,'a');
 
         // tokenize..
-        Tokenizer tokenizer( this );
+        Tokenizer tokenizer;
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
@@ -111,7 +111,7 @@ private:
                                 "}\n";
 
         // tokenize..
-        Tokenizer tokenizer( this );
+        Tokenizer tokenizer;
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
@@ -142,7 +142,7 @@ private:
                             "void b()\n"
                             "{ }\n";
         // tokenize..
-        Tokenizer tokenizer( this );
+        Tokenizer tokenizer;
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode(istr, 0);

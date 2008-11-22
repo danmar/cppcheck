@@ -48,12 +48,11 @@
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer(ErrorLogger *errorLogger)
+Tokenizer::Tokenizer()
 {
     _tokens = 0;
     tokens_back = 0;
     dsymlist = 0;
-    _errorLogger = errorLogger;
 }
 
 Tokenizer::~Tokenizer()
@@ -1155,12 +1154,6 @@ void Tokenizer::FillFunctionList(const unsigned int file_id)
 {
     FunctionList.clear();
 
-    std::list<const char *> _usedfunc;
-    if ( file_id == 0 )
-    {
-        GlobalFunctions.clear();
-    }
-
     bool staticfunc = false;
     bool classfunc = false;
 
@@ -1173,23 +1166,8 @@ void Tokenizer::FillFunctionList(const unsigned int file_id)
         else if ( tok->str[0] == '}' )
             indentlevel--;
 
-
         if (indentlevel > 0)
         {
-            if ( _settings._checkCodingStyle )
-            {
-                const char *funcname = 0;
-
-                if ( Tokenizer::Match(tok,"%var% (") )
-                    funcname = tok->str;
-                else if ( Tokenizer::Match(tok, "= %var% ;") ||
-                          Tokenizer::Match(tok, "= %var% ,") )
-                    funcname = tok->next->str;
-
-                if ( std::find(_usedfunc.begin(), _usedfunc.end(), funcname) == _usedfunc.end() )
-                    _usedfunc.push_back( funcname );
-            }
-
             continue;
         }
 
@@ -1222,8 +1200,6 @@ void Tokenizer::FillFunctionList(const unsigned int file_id)
                 {
                     if ( Tokenizer::Match(tok2, ") {") )
                     {
-                        if (_settings._checkCodingStyle && !staticfunc && !classfunc && tok->FileIndex==0)
-                            GlobalFunctions.push_back( GlobalFunction(file_id, tok->str) );
                         FunctionList.push_back( tok );
                         tok = tok2;
                     }
@@ -1266,87 +1242,8 @@ void Tokenizer::FillFunctionList(const unsigned int file_id)
             FunctionList.erase( FunctionList.begin() + func1 );
         }
     }
-
-
-    for (std::list<const char *>::const_iterator it = _usedfunc.begin(); it != _usedfunc.end(); ++it)
-    {
-        if ( *it != 0 )
-        {
-            UsedGlobalFunctions.push_back( GlobalFunction(file_id, *it) );
-        }
-    }
 }
 
-//--------------------------------------------------------------------------
-
-
-void Tokenizer::CheckGlobalFunctionUsage(const std::vector<std::string> &filenames)
-{
-    // Iterator for GlobalFunctions
-    std::list<GlobalFunction>::const_iterator func;
-
-    // Iterator for UsedGlobalFunctions
-    std::list<GlobalFunction>::const_iterator usedfunc;
-
-    unsigned int i1 = 0;
-    unsigned int i2 = 1;
-
-    // Check that every function in GlobalFunctions are used
-    for ( func = GlobalFunctions.begin(); func != GlobalFunctions.end(); func++ )
-    {
-        if ( GlobalFunctions.size() > 100 )
-        {
-            ++i1;
-            if ( i1 > (i2 * GlobalFunctions.size()) / 100 )
-            {
-                if ( (i2 % 10) == 0 )
-                    std::cout << i2 << "%";
-                else
-                    std::cout << ".";
-                std::cout.flush();
-                ++i2;
-            }
-        }
-
-        const std::string &funcname = func->name();
-
-        if ( funcname == "main" || funcname == "WinMain" )
-            continue;
-
-        // Check if this global function is used in any of the other files..
-        bool UsedOtherFile = false;
-        bool UsedAnyFile = false;
-        for ( usedfunc = UsedGlobalFunctions.begin(); usedfunc != UsedGlobalFunctions.end(); usedfunc++ )
-        {
-            if ( funcname == usedfunc->name() )
-            {
-                UsedAnyFile = true;
-                if (func->file_id() != usedfunc->file_id())
-                {
-                    UsedOtherFile = true;
-                    break;
-                }
-            }
-        }
-
-        if ( ! UsedAnyFile )
-        {
-            std::ostringstream errmsg;
-            errmsg << "[" << filenames[func->file_id()] << "]: "
-                   << "The function '" << func->name() << "' is never used.";
-            _errorLogger->reportErr( errmsg.str() );
-        }
-        else if ( ! UsedOtherFile )
-        {
-            std::ostringstream errmsg;
-            errmsg << "[" << filenames[func->file_id()] << "]: "
-                   << "The linkage of the function '" << func->name() << "' can be local (static) instead of global";
-            _errorLogger->reportErr( errmsg.str() );
-        }
-    }
-
-    std::cout << "\n";
-}
 //---------------------------------------------------------------------------
 
 void Tokenizer::settings( const Settings &settings )

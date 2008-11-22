@@ -23,7 +23,6 @@
 #include <list>
 #include <sstream>
 #include "settings.h"
-#include "tokenize.h"   // <- Tokenizer
 #include "errorlogger.h"
 
 /**
@@ -38,15 +37,13 @@ class CppCheck : public ErrorLogger
         virtual ~CppCheck();
         void check(int argc, char* argv[]);
 
-        virtual void reportErr( const TOKEN *token, const std::string &errmsg);
-        virtual void reportErr( const std::string &errmsg);
-
     private:
-        void checkFile(const std::string &code, const char FileName[], unsigned int FileId);
-        Settings _settings;
-        Tokenizer _tokenizer;
+        void checkFile(const std::string &code, const char FileName[], unsigned int FileId, Settings &_settings);
         std::list<std::string> _errorList;
         std::ostringstream errout;
+
+        void reportErr( const std::string &errmsg);
+        void reportErr( const TOKEN *token, const std::string &errmsg);
 };
 
 #endif // CPPCHECK_H

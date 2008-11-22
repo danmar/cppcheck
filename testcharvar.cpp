@@ -43,7 +43,7 @@ private:
     void check( const char code[] )
     {
         // Tokenize..
-        Tokenizer tokenizer( this );
+        Tokenizer tokenizer;
         tokenizer.getFiles()->push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
