@@ -90,6 +90,8 @@ public:
     static bool IsNumber(const char str[]);
     static bool IsStandardType(const char str[]);
 
+    bool alwaysTrue( const TOKEN *tok );
+    bool alwaysFalse( const TOKEN *tok );
 
     std::string fileLine( const TOKEN *tok );
 

@@ -1468,7 +1468,7 @@ bool Tokenizer::Match(const TOKEN *tok, const char pattern[], const char *varnam
             return false;
 
         tok = tok->next;
-        if (!tok)
+        if (!tok && *p)
             return false;
     }
 
@@ -1517,3 +1517,17 @@ bool Tokenizer::IsStandardType(const char str[])
         Ret |= (strcmp(str,type[i])==0);
     return Ret;
 }
+//---------------------------------------------------------------------------
+
+bool Tokenizer::alwaysTrue( const TOKEN *tok )
+{
+    return (Match(tok,"( 1 [|)]") | Match(tok,"( 1 ||") |
+            Match(tok,"( true [|)]") | Match(tok,"( true ||"));
+}
+//---------------------------------------------------------------------------
+bool Tokenizer::alwaysFalse( const TOKEN *tok )
+{
+    return (Match(tok,"( 0 [&)]") | Match(tok,"( 0 &&") |
+            Match(tok,"( false [&)]") | Match(tok,"( false &&"));
+}
+//---------------------------------------------------------------------------
