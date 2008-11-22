@@ -58,7 +58,7 @@ Tokenizer::Tokenizer(ErrorLogger *errorLogger)
 
 Tokenizer::~Tokenizer()
 {
-
+    DeallocateTokens();
 }
 
 //---------------------------------------------------------------------------

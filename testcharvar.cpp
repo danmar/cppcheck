@@ -60,8 +60,6 @@ private:
         // Check for memory leaks..
         CheckOther checkOther( &tokenizer, this );
         checkOther.CheckCharVariable();
-
-        tokenizer.DeallocateTokens();
     }
 
     void array_index()

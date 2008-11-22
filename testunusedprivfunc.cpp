@@ -57,8 +57,6 @@ private:
         settings._checkCodingStyle = true;
         CheckClass checkClass( &tokenizer, settings, this );
         checkClass.CheckUnusedPrivateFunctions();
-
-        tokenizer.DeallocateTokens();
     }
 
 

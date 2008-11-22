@@ -50,8 +50,6 @@ private:
         // Check for unused variables..
         CheckOther checkOther( &tokenizer, this );
         checkOther.CheckIncompleteStatement();
-
-        tokenizer.DeallocateTokens();
     }
 
     void run()

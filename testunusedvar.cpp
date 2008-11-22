@@ -49,8 +49,6 @@ private:
         // Check for unused variables..
         CheckOther checkOther( &tokenizer, this );
         checkOther.CheckStructMemberUsage();
-
-        tokenizer.DeallocateTokens();
     }
 
     void run()

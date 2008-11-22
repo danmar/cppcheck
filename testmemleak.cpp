@@ -54,8 +54,6 @@ private:
         tokenizer.FillFunctionList(0);
         CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings, this );
         checkMemoryLeak.CheckMemoryLeak();
-
-        tokenizer.DeallocateTokens();
     }
 
     void run()

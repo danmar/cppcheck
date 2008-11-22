@@ -57,8 +57,6 @@ private:
         // Check for memory leaks..
         CheckBufferOverrunClass checkBufferOverrun( &tokenizer, this );
         checkBufferOverrun.CheckBufferOverrun();
-
-        tokenizer.DeallocateTokens();
     }
 
     void run()

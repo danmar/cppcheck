@@ -51,8 +51,6 @@ private:
         // Check for memory leaks..
         CheckOther checkOther( &tokenizer, this );
         checkOther.CheckUnsignedDivision();
-
-        tokenizer.DeallocateTokens();
     }
 
     void run()
