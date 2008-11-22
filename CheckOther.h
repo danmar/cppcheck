@@ -29,7 +29,7 @@
 class CheckOther
 {
 public:
-    CheckOther( Tokenizer *tokenizer, ErrorLogger *errorLogger );
+    CheckOther( const Tokenizer *tokenizer, ErrorLogger *errorLogger );
     ~CheckOther();
 
     // Casting
@@ -76,7 +76,7 @@ public:
 private:
     void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
 
-    Tokenizer *_tokenizer;
+    const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
 };
 

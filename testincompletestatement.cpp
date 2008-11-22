@@ -20,6 +20,7 @@
 
 // Check for unused variables..
 
+#define UNIT_TESTING
 #include "testsuite.h"
 #include "tokenize.h"
 #include "CheckOther.h"
@@ -39,7 +40,7 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer.getFiles()->push_back( "test.cpp" );
+        tokenizer.Files.push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
         tokenizer.SimplifyTokenList();

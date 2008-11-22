@@ -42,8 +42,6 @@ private:
         TEST_CASE( inlineasm );
 
         TEST_CASE( dupfuncname );
-
-        TEST_CASE( simplifyConditions );
     }
 
 
@@ -66,7 +64,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer.getFiles()->push_back( "test.cpp" );
+        tokenizer.Files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -90,7 +88,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer.getFiles()->push_back( "test.cpp" );
+        tokenizer.Files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -112,7 +110,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer.getFiles()->push_back( "test.cpp" );
+        tokenizer.Files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -143,7 +141,7 @@ private:
                             "{ }\n";
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer.getFiles()->push_back( "test.cpp" );
+        tokenizer.Files.push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -151,12 +149,6 @@ private:
 
         ASSERT_EQUALS( 1, tokenizer.FunctionList.size() );
         ASSERT_EQUALS( std::string("b"), tokenizer.FunctionList[0]->str );
-    }
-
-    void simplifyConditions()
-    {
-        // TODO Simplify various conditions..
-
     }
 };
 

@@ -17,6 +17,7 @@
  */
 
 
+#define UNIT_TESTING
 #include "tokenize.h"
 #include "CheckClass.h"
 #include "testsuite.h"
@@ -45,7 +46,7 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer.getFiles()->push_back( "test.cpp" );
+        tokenizer.Files.push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
 

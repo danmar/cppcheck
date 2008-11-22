@@ -98,7 +98,7 @@ public:
 
     void initTokens();
 
-    std::vector<std::string> *getFiles();
+    const std::vector<std::string> *getFiles() const;
 
     void FillFunctionList(const unsigned int file_id);
     const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;

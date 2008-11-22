@@ -21,6 +21,7 @@
 // such as "svar / uvar". Treating "svar" as unsigned data is not good
 
 
+#define UNIT_TESTING
 #include "tokenize.h"
 #include "CheckOther.h"
 #include "testsuite.h"
@@ -40,7 +41,7 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer.getFiles()->push_back( "test.cpp" );
+        tokenizer.Files.push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
         //SimplifyTokenList();  <- this can't be used as it removes 'unsigned'

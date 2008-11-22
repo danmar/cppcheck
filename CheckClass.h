@@ -36,7 +36,7 @@ struct VAR
 class CheckClass
 {
 public:
-    CheckClass( Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger );
+    CheckClass( const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger );
     ~CheckClass();
 
     void CheckConstructors();
@@ -53,7 +53,7 @@ private:
     const TOKEN *FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel );
     struct VAR *ClassChecking_GetVarList(const TOKEN *tok1);
 
-    Tokenizer *_tokenizer;
+    const Tokenizer *_tokenizer;
     Settings _settings;
     ErrorLogger *_errorLogger;
 };

@@ -35,7 +35,7 @@
 // HEADERS - No implementation in a header
 //---------------------------------------------------------------------------
 
-CheckHeaders::CheckHeaders( Tokenizer *tokenizer, ErrorLogger *errorLogger )
+CheckHeaders::CheckHeaders( const Tokenizer *tokenizer, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
     _errorLogger = errorLogger;

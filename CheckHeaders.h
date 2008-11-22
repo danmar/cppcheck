@@ -28,13 +28,13 @@
 class CheckHeaders
 {
 public:
-    CheckHeaders( Tokenizer *tokenizer, ErrorLogger *errorLogger );
+    CheckHeaders( const Tokenizer *tokenizer, ErrorLogger *errorLogger );
     ~CheckHeaders();
     void WarningHeaderWithImplementation();
     void WarningIncludeHeader();
 
 private:
-    Tokenizer *_tokenizer;
+    const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
 };
 

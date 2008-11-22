@@ -33,7 +33,7 @@
 #endif
 //---------------------------------------------------------------------------
 
-CheckClass::CheckClass( Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger )
+CheckClass::CheckClass( const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
     _settings = settings;

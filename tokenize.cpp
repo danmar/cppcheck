@@ -87,7 +87,7 @@ const TOKEN *Tokenizer::tokens() const
 
 
 
-std::vector<std::string> *Tokenizer::getFiles()
+const std::vector<std::string> *Tokenizer::getFiles() const
 {
     return &Files;
 }

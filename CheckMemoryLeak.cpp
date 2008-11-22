@@ -37,7 +37,7 @@
 
 //---------------------------------------------------------------------------
 
-CheckMemoryLeakClass::CheckMemoryLeakClass( Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger )
+CheckMemoryLeakClass::CheckMemoryLeakClass( const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
     _settings = settings;

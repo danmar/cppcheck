@@ -34,7 +34,7 @@
 class CheckMemoryLeakClass
 {
 public:
-    CheckMemoryLeakClass( Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger );
+    CheckMemoryLeakClass( const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger );
     ~CheckMemoryLeakClass();
     void CheckMemoryLeak();
 
@@ -74,7 +74,7 @@ private:
     AllocType GetAllocationType( const TOKEN *tok2 );
     bool isclass( const std::string &typestr );
 
-    Tokenizer *_tokenizer;
+    const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
     Settings _settings;
     std::list<AllocFunc> listallocfunc;

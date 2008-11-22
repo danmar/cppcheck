@@ -34,7 +34,7 @@
 // Warning on C-Style casts.. p = (kalle *)foo;
 //---------------------------------------------------------------------------
 
-CheckOther::CheckOther( Tokenizer *tokenizer, ErrorLogger *errorLogger )
+CheckOther::CheckOther( const Tokenizer *tokenizer, ErrorLogger *errorLogger )
 {
     _tokenizer = tokenizer;
     _errorLogger = errorLogger;
