@@ -3,12 +3,22 @@
 	<FileVersion major="1" minor="6" />
 	<Project>
 		<Option title="cppcheck" />
+		<Option makefile_is_custom="1" />
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="Debug">
-				<Option output="bin/Debug/cppcheck" prefix_auto="1" extension_auto="1" />
-				<Option object_output="obj/Debug/" />
+			<Target title="all">
+				<Option output="cppcheck" prefix_auto="1" extension_auto="1" />
+				<Option object_output="/home/nobackup/cppcheck/.objs" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="test">
+				<Option output="testrunner" prefix_auto="1" extension_auto="1" />
+				<Option object_output="/home/nobackup/cppcheck/.objs" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -37,11 +47,30 @@
 		<Unit filename="cppcheck.cpp" />
 		<Unit filename="cppcheck.h" />
 		<Unit filename="errorlogger.h" />
-		<Unit filename="main.cpp" />
+		<Unit filename="main.cpp">
+			<Option target="all" />
+		</Unit>
 		<Unit filename="preprocessor.cpp" />
 		<Unit filename="preprocessor.h" />
 		<Unit filename="settings.cpp" />
 		<Unit filename="settings.h" />
+		<Unit filename="testbufferoverrun.cpp" />
+		<Unit filename="testcharvar.cpp" />
+		<Unit filename="testconstructors.cpp" />
+		<Unit filename="testdivision.cpp" />
+		<Unit filename="testfunctionusage.cpp" />
+		<Unit filename="testincompletestatement.cpp" />
+		<Unit filename="testmemleak.cpp" />
+		<Unit filename="testpreprocessor.cpp" />
+		<Unit filename="testrunner.cpp">
+			<Option target="test" />
+		</Unit>
+		<Unit filename="testsimplifytokens.cpp" />
+		<Unit filename="testsuite.cpp" />
+		<Unit filename="testsuite.h" />
+		<Unit filename="testtokenize.cpp" />
+		<Unit filename="testunusedprivfunc.cpp" />
+		<Unit filename="testunusedvar.cpp" />
 		<Unit filename="token.cpp" />
 		<Unit filename="token.h" />
 		<Unit filename="tokenize.cpp" />
@@ -49,6 +78,7 @@
 		<Extensions>
 			<code_completion />
 			<debugger />
+			<envvars />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
