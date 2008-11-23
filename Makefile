@@ -7,62 +7,64 @@ all:	${OBJS} main.o
 	g++ -Wall -g -o cppcheck $^
 test:	${OBJS} testrunner.o	testsuite.o	${TESTS}
 	g++ -Wall -g -o testrunner $^
-cppcheck.o: cppcheck.cpp cppcheck.h preprocessor.h tokenize.h CheckMemoryLeak.h CheckBufferOverrun.h CheckClass.h CheckHeaders.h CheckOther.h FileLister.h settings.h token.h
+cppcheck.o: cppcheck.cpp cppcheck.h settings.h errorlogger.h preprocessor.h tokenize.h token.h CheckMemoryLeak.h CheckBufferOverrun.h CheckClass.h CheckHeaders.h CheckOther.h CheckFunctionUsage.h FileLister.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-main.o: main.cpp cppcheck.h
+main.o: main.cpp cppcheck.h settings.h errorlogger.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-settings.o: settings.cpp
+CheckBufferOverrun.o: CheckBufferOverrun.cpp CheckBufferOverrun.h tokenize.h settings.h errorlogger.h token.h 
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-token.o: token.cpp
+CheckClass.o: CheckClass.cpp CheckClass.h tokenize.h settings.h errorlogger.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-CheckBufferOverrun.o: CheckBufferOverrun.cpp CheckBufferOverrun.h tokenize.h
+CheckFunctionUsage.o: CheckFunctionUsage.cpp CheckFunctionUsage.h tokenize.h settings.h errorlogger.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-CheckClass.o: CheckClass.cpp CheckClass.h tokenize.h
+CheckHeaders.o: CheckHeaders.cpp CheckHeaders.h tokenize.h settings.h errorlogger.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-CheckFunctionUsage.o:	CheckFunctionUsage.cpp	CheckFunctionUsage.h	tokenize.h
+CheckMemoryLeak.o: CheckMemoryLeak.cpp CheckMemoryLeak.h tokenize.h settings.h errorlogger.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-CheckHeaders.o: CheckHeaders.cpp CheckHeaders.h tokenize.h
-	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-CheckMemoryLeak.o: CheckMemoryLeak.cpp CheckMemoryLeak.h tokenize.h
-	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-CheckOther.o: CheckOther.cpp CheckOther.h tokenize.h
+CheckOther.o: CheckOther.cpp CheckOther.h tokenize.h settings.h errorlogger.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 FileLister.o: FileLister.cpp FileLister.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-preprocessor.o: preprocessor.cpp preprocessor.h
+preprocessor.o: preprocessor.cpp preprocessor.h errorlogger.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testbufferoverrun.o: testbufferoverrun.cpp tokenize.h CheckBufferOverrun.h testsuite.h
+settings.o: settings.cpp settings.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testcharvar.o: testcharvar.cpp tokenize.h CheckOther.h testsuite.h
+testbufferoverrun.o: testbufferoverrun.cpp tokenize.h settings.h errorlogger.h token.h CheckBufferOverrun.h testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testconstructors.o: testconstructors.cpp tokenize.h CheckClass.h testsuite.h
+testcharvar.o: testcharvar.cpp tokenize.h settings.h errorlogger.h token.h CheckOther.h testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testdivision.o: testdivision.cpp tokenize.h CheckOther.h testsuite.h
+testconstructors.o: testconstructors.cpp tokenize.h settings.h errorlogger.h token.h CheckClass.h testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testfunctionusage.o: testfunctionusage.cpp tokenize.h CheckFunctionUsage.h testsuite.h
+testdivision.o: testdivision.cpp tokenize.h settings.h errorlogger.h token.h CheckOther.h testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testincompletestatement.o: testincompletestatement.cpp testsuite.h tokenize.h CheckOther.h
+testfunctionusage.o: testfunctionusage.cpp tokenize.h settings.h errorlogger.h token.h testsuite.h CheckFunctionUsage.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testmemleak.o: testmemleak.cpp tokenize.h CheckMemoryLeak.h testsuite.h
+testincompletestatement.o: testincompletestatement.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h CheckOther.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testpreprocessor.o: testpreprocessor.cpp testsuite.h preprocessor.h
+testmemleak.o: testmemleak.cpp tokenize.h settings.h errorlogger.h token.h CheckMemoryLeak.h testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testrunner.o: testrunner.cpp testsuite.h
+testpreprocessor.o: testpreprocessor.cpp testsuite.h errorlogger.h preprocessor.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testsuite.o: testsuite.cpp testsuite.h
+testrunner.o: testrunner.cpp testsuite.h errorlogger.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testsimplifytokens.o:	testsimplifytokens.cpp	testsuite.h	tokenize.h
+testsimplifytokens.o: testsimplifytokens.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testtokenize.o:testtokenize.cpp  testsuite.h tokenize.h
+testsuite.o: testsuite.cpp testsuite.h errorlogger.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testunusedprivfunc.o: testunusedprivfunc.cpp tokenize.h CheckClass.h testsuite.h
+testtokenize.o: testtokenize.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-testunusedvar.o: testunusedvar.cpp testsuite.h tokenize.h CheckOther.h
+testunusedprivfunc.o: testunusedprivfunc.cpp tokenize.h settings.h errorlogger.h token.h CheckClass.h testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-tokenize.o: tokenize.cpp tokenize.h token.h
+testunusedvar.o: testunusedvar.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h CheckOther.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+token.o: token.cpp token.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+tokenize.o: tokenize.cpp tokenize.h settings.h errorlogger.h token.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+
 clean:
 	rm -f *.o testrunner cppcheck
 install:	cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}
+
