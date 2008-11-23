@@ -53,11 +53,11 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
         const TOKEN *funcname = 0;
 
         if ( TOKEN::Match( tok, "%type% %var% (" )  )
-            funcname = tok->at(1);
+            funcname = tok->tokAt(1);
         else if ( TOKEN::Match(tok, "%type% * %var% (") )
-            funcname = tok->at(2);
-        else if ( TOKEN::Match(tok, "%type% :: %var% (") && !TOKEN::Match(tok, TOKEN::getstr(tok,2)) )
-            funcname = tok->at(2);
+            funcname = tok->tokAt(2);
+        else if ( TOKEN::Match(tok, "%type% :: %var% (") && !TOKEN::Match(tok, tok->strAt(2)) )
+            funcname = tok->tokAt(2);
 
         // Check that ") {" is found..
         for (const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next)

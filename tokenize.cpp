@@ -537,8 +537,8 @@ void Tokenizer::TokenizeCode(std::istream &code, const unsigned int FileIndex)
     {
         if (TOKEN::Match(tok, "typedef %type% %type% ;"))
         {
-            const char *type1 = TOKEN::getstr(tok, 1);
-            const char *type2 = TOKEN::getstr(tok, 2);
+            const char *type1 = tok->strAt( 1);
+            const char *type2 = tok->strAt( 2);
             for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
             {
                 if (tok2->str!=type1 && tok2->str!=type2 && strcmp(tok2->str,type2)==0)
@@ -550,9 +550,9 @@ void Tokenizer::TokenizeCode(std::istream &code, const unsigned int FileIndex)
 
         else if (TOKEN::Match(tok, "typedef %type% %type% %type% ;"))
         {
-            const char *type1 = TOKEN::getstr(tok, 1);
-            const char *type2 = TOKEN::getstr(tok, 2);
-            const char *type3 = TOKEN::getstr(tok, 3);
+            const char *type1 = tok->strAt( 1);
+            const char *type2 = tok->strAt( 2);
+            const char *type3 = tok->strAt( 3);
 
             TOKEN *tok2 = tok;
             while ( ! TOKEN::Match(tok2, ";") )
@@ -622,8 +622,8 @@ void Tokenizer::SimplifyTokenList()
     {
         if (TOKEN::Match(tok,"const %type% %var% = %num% ;"))
         {
-            const char *sym = TOKEN::getstr(tok,2);
-            const char *num = TOKEN::getstr(tok,4);
+            const char *sym = tok->strAt(2);
+            const char *num = tok->strAt(4);
 
             for (TOKEN *tok2 = _gettok(tok,6); tok2; tok2 = tok2->next)
             {
@@ -648,12 +648,12 @@ void Tokenizer::SimplifyTokenList()
     {
         if (TOKEN::Match(tok,"class %var%"))
         {
-            TypeSize[TOKEN::getstr(tok,1)] = 11;
+            TypeSize[tok->strAt(1)] = 11;
         }
 
         else if (TOKEN::Match(tok, "struct %var%"))
         {
-            TypeSize[TOKEN::getstr(tok,1)] = 13;
+            TypeSize[tok->strAt(1)] = 13;
         }
     }
 
@@ -679,7 +679,7 @@ void Tokenizer::SimplifyTokenList()
 
         else if (TOKEN::Match(tok, "sizeof ( %type% )"))
         {
-            const char *type = TOKEN::getstr(tok, 2);
+            const char *type = tok->strAt( 2);
             int size = SizeOfType(type);
             if (size > 0)
             {
@@ -712,8 +712,8 @@ void Tokenizer::SimplifyTokenList()
         if (size <= 0)
             continue;
 
-        const char *varname = TOKEN::getstr(tok, 1);
-        int total_size = size * atoi( TOKEN::getstr(tok, 3) );
+        const char *varname = tok->strAt( 1);
+        int total_size = size * atoi( tok->strAt( 3) );
 
         // Replace 'sizeof(var)' with number
         int indentlevel = 0;
@@ -734,7 +734,7 @@ void Tokenizer::SimplifyTokenList()
             // Todo: TOKEN::Match varname directly
             else if (TOKEN::Match(tok2, "sizeof ( %var% )"))
             {
-                if (strcmp(TOKEN::getstr(tok2,2), varname) == 0)
+                if (strcmp(tok2->strAt(2), varname) == 0)
                 {
                     std::ostringstream str;
                     str << total_size;
@@ -766,19 +766,19 @@ void Tokenizer::SimplifyTokenList()
 
             // (1-2)
             if (strchr("[,(=<>",tok->str[0]) &&
-                TOKEN::IsNumber(TOKEN::getstr(tok,1))   &&
-                strchr("+-*/",*(TOKEN::getstr(tok,2))) &&
-                TOKEN::IsNumber(TOKEN::getstr(tok,3))   &&
-                strchr("],);=<>",*(TOKEN::getstr(tok,4))) )
+                TOKEN::IsNumber(tok->strAt(1))   &&
+                strchr("+-*/",*(tok->strAt(2))) &&
+                TOKEN::IsNumber(tok->strAt(3))   &&
+                strchr("],);=<>",*(tok->strAt(4))) )
             {
-                int i1 = atoi(TOKEN::getstr(tok,1));
-                int i2 = atoi(TOKEN::getstr(tok,3));
-                if ( i2 == 0 && *(TOKEN::getstr(tok,2)) == '/' )
+                int i1 = atoi(tok->strAt(1));
+                int i2 = atoi(tok->strAt(3));
+                if ( i2 == 0 && *(tok->strAt(2)) == '/' )
                 {
                     continue;
                 }
 
-                switch (*(TOKEN::getstr(tok,2)))
+                switch (*(tok->strAt(2)))
                 {
                     case '+': i1 += i2; break;
                     case '-': i1 -= i2; break;
@@ -813,8 +813,8 @@ void Tokenizer::SimplifyTokenList()
         if (TOKEN::Match(next, "* ( %var% + %num% )"))
         {
             const char *str[4] = {"var","[","num","]"};
-            str[0] = TOKEN::getstr(tok,3);
-            str[2] = TOKEN::getstr(tok,5);
+            str[0] = tok->strAt(3);
+            str[2] = tok->strAt(5);
 
             for (int i = 0; i < 4; i++)
             {
@@ -997,7 +997,7 @@ bool Tokenizer::simplifyConditions()
         }
 
         // Change numeric constant in condition to "true" or "false"
-        const TOKEN *tok2 = tok->at(2);
+        const TOKEN *tok2 = tok->tokAt(2);
         if ((TOKEN::Match(tok, "(") || TOKEN::Match(tok, "&&") || TOKEN::Match(tok, "||")) &&
             TOKEN::Match(tok->next, "%num%")                                 &&
             (TOKEN::Match(tok2, ")") || TOKEN::Match(tok2, "&&") || TOKEN::Match(tok2, "||")) )

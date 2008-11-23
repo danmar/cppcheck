@@ -42,12 +42,13 @@ public:
      * For example index 1 would return next token, and 2
      * would return next from that one.
      */
-    const TOKEN *at(int index) const;
+    const TOKEN *tokAt(int index) const;
+
+    const char *strAt(int index) const;
 
     static bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
     static bool IsName(const char str[]);
     static bool IsNumber(const char str[]);
-    static const char *getstr(const TOKEN *tok, int index);
     static bool IsStandardType(const char str[]);
     static const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
     static const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[]);

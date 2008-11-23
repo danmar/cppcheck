@@ -130,21 +130,21 @@ void CheckHeaders::WarningIncludeHeader()
             // Class or namespace declaration..
             // --------------------------------------
             if (TOKEN::Match(tok1,"class %var% {") || TOKEN::Match(tok1,"class %var% :") || TOKEN::Match(tok1,"namespace %var% {"))
-                classlist.push_back(TOKEN::getstr(tok1, 1));
+                classlist.push_back(tok1->strAt(1));
 
             // Variable declaration..
             // --------------------------------------
             else if (TOKEN::Match(tok1, "%type% %var% ;") || TOKEN::Match(tok1, "%type% %var% ["))
-                namelist.push_back(TOKEN::getstr(tok1, 1));
+                namelist.push_back(tok1->strAt(1));
 
             else if (TOKEN::Match(tok1, "%type% * %var% ;") || TOKEN::Match(tok1, "%type% * %var% ["))
-                namelist.push_back(TOKEN::getstr(tok1, 2));
+                namelist.push_back(tok1->strAt(2));
 
             else if (TOKEN::Match(tok1, "const %type% %var% =") || TOKEN::Match(tok1, "const %type% %var% ["))
-                namelist.push_back(TOKEN::getstr(tok1, 2));
+                namelist.push_back(tok1->strAt(2));
 
             else if (TOKEN::Match(tok1, "const %type% * %var% =") || TOKEN::Match(tok1, "const %type% * %var% ["))
-                namelist.push_back(TOKEN::getstr(tok1, 3));
+                namelist.push_back(tok1->strAt(3));
 
             // enum..
             // --------------------------------------
@@ -162,22 +162,22 @@ void CheckHeaders::WarningIncludeHeader()
             // function..
             // --------------------------------------
             else if (TOKEN::Match(tok1,"%type% %var% ("))
-                namelist.push_back(TOKEN::getstr(tok1, 1));
+                namelist.push_back(tok1->strAt(1));
 
             else if (TOKEN::Match(tok1,"%type% * %var% ("))
-                namelist.push_back(TOKEN::getstr(tok1, 2));
+                namelist.push_back(tok1->strAt(2));
 
             else if (TOKEN::Match(tok1,"const %type% %var% ("))
-                namelist.push_back(TOKEN::getstr(tok1, 2));
+                namelist.push_back(tok1->strAt(2));
 
             else if (TOKEN::Match(tok1,"const %type% * %var% ("))
-                namelist.push_back(TOKEN::getstr(tok1, 3));
+                namelist.push_back(tok1->strAt(3));
 
             // typedef..
             // --------------------------------------
             else if (strcmp(tok1->str,"typedef")==0)
             {
-                if (strcmp(TOKEN::getstr(tok1,1),"enum")==0)
+                if (strcmp(tok1->strAt(1),"enum")==0)
                     continue;
                 int parlevel = 0;
                 while (tok1->next)
@@ -213,7 +213,7 @@ void CheckHeaders::WarningIncludeHeader()
 
             if ( TOKEN::Match(tok1, ": %var% {") || TOKEN::Match(tok1, ": %type% %var% {") )
             {
-                std::string classname = TOKEN::getstr(tok1, (strcmp(TOKEN::getstr(tok1,2),"{")) ? 2 : 1);
+                std::string classname = tok1->strAt((strcmp(tok1->strAt(2),"{")) ? 2 : 1);
                 if (std::find(classlist.begin(),classlist.end(),classname)!=classlist.end())
                 {
                     Needed = true;

@@ -90,7 +90,7 @@ struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
             // Pointer?
             else if ( TOKEN::Match(next, "%type% * %var% ;") )
             {
-                varname = TOKEN::getstr(next, 2);
+                varname = next->strAt(2);
             }
 
             if (varname)
@@ -126,9 +126,9 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
                TOKEN::Match(tok, "class %var1% : %type% {", _classname) ) )
         {
             if ( TOKEN::Match(tok, "class %var% {") )
-                tok = tok->at(3);
+                tok = tok->tokAt(3);
             else
-                tok = tok->at(5);
+                tok = tok->tokAt(5);
             indentlevel = 1;
         }
 
@@ -261,7 +261,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
 
         // Skip "this->"
         if ( TOKEN::Match(ftok, "this .") )
-            ftok = ftok->at(2);
+            ftok = ftok->tokAt(2);
 
         // Clearing all variables..
         if (TOKEN::Match(ftok,"memset ( this ,"))
@@ -456,7 +456,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
             else if (priv && indent_level == 1)
             {
                 if ( TOKEN::Match(tok, "typedef %type% (") )
-                    tok = tok->at(2);
+                    tok = tok->tokAt(2);
 
                 if (TOKEN::Match(tok, "%var% (") &&
                     !TOKEN::Match(tok,classname))
@@ -555,15 +555,15 @@ void CheckClass::CheckMemset()
         // Todo: Handle memcpy and memmove
         const char *type = NULL;
         if (TOKEN::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
-            type = TOKEN::getstr(tok, 8);
+            type = tok->strAt(8);
         else if (TOKEN::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
-            type = TOKEN::getstr(tok, 9);
+            type = tok->strAt(9);
         else if (TOKEN::Match(tok, "memset ( %var% , %num% , sizeof ( struct %type% ) )"))
-            type = TOKEN::getstr(tok, 9);
+            type = tok->strAt(9);
         else if (TOKEN::Match(tok, "memset ( & %var% , %num% , sizeof ( struct %type% ) )"))
-            type = TOKEN::getstr(tok, 10);
+            type = tok->strAt(10);
         else if (TOKEN::Match(tok, "%type% ( %var% , %var% , sizeof ( %type% ) )"))
-            type = TOKEN::getstr(tok, 8);
+            type = tok->strAt(8);
 
         // No type defined => The tokens didn't match
         if (!(type && type[0]))
@@ -591,7 +591,7 @@ void CheckClass::CheckMemset()
             if (TOKEN::Match(tstruct, "std :: %type% %var% ;"))
             {
                 std::ostringstream ostr;
-                ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << TOKEN::getstr(tstruct,2) << "'";
+                ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << tstruct->strAt(2) << "'";
                 _errorLogger->reportErr(ostr.str());
                 break;
             }

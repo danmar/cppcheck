@@ -64,7 +64,7 @@ void TOKEN::deleteNext()
     delete n;
 }
 
-const TOKEN *TOKEN::at(int index) const
+const TOKEN *TOKEN::tokAt(int index) const
 {
     const TOKEN *tok = this;
     while (index>0 && tok)
@@ -75,6 +75,11 @@ const TOKEN *TOKEN::at(int index) const
     return tok;
 }
 
+const char *TOKEN::strAt(int index) const
+{
+    const TOKEN *tok = this->tokAt(index);
+    return tok ? tok->str : "";
+}
 
 bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
 {
@@ -123,16 +128,16 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
 
             for ( int i = 1; varname[i]; i++ )
             {
-                if ( !(tok->at(2)) )
+                if ( !(tok->tokAt(2)) )
                     return false;
 
-                if ( strcmp(TOKEN::getstr(tok, 1), ".") )
+                if ( strcmp(tok->strAt( 1), ".") )
                     return false;
 
-                if ( strcmp(TOKEN::getstr(tok, 2), varname[i]) )
+                if ( strcmp(tok->strAt( 2), varname[i]) )
                     return false;
 
-                tok = tok->at(2);
+                tok = tok->tokAt(2);
             }
         }
 
@@ -179,11 +184,6 @@ bool TOKEN::IsNumber(const char str[])
     return bool(isdigit(str[0]) != 0);
 }
 
-const char *TOKEN::getstr(const TOKEN *tok, int index)
-{
-    tok = tok->at(index);
-    return tok ? tok->str : "";
-}
 
 bool TOKEN::IsStandardType(const char str[])
 {

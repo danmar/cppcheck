@@ -55,7 +55,7 @@ void CheckOther::WarningOldStylePointerCast()
 
         // Is "type" a class?
         const char *pattern[] = {"class","",NULL};
-        pattern[1] = TOKEN::getstr(tok, 1);
+        pattern[1] = tok->strAt(1);
         if (!TOKEN::findtoken(_tokenizer->tokens(), pattern))
             continue;
 
@@ -169,13 +169,13 @@ void CheckOther::WarningRedundantCode()
 
         if (TOKEN::Match(tok,"if ( %var% )"))
         {
-            varname1 = TOKEN::getstr(tok, 2);
-            tok2 = tok->at(4);
+            varname1 = tok->strAt( 2);
+            tok2 = tok->tokAt(4);
         }
         else if (TOKEN::Match(tok,"if ( %var% != NULL )"))
         {
-            varname1 = TOKEN::getstr(tok, 2);
-            tok2 = tok->at(6);
+            varname1 = tok->strAt( 2);
+            tok2 = tok->tokAt(6);
         }
 
         if (varname1==NULL || tok2==NULL)
@@ -186,13 +186,13 @@ void CheckOther::WarningRedundantCode()
 
         bool err = false;
         if (TOKEN::Match(tok2,"delete %var% ;"))
-            err = (strcmp(TOKEN::getstr(tok2,1),varname1)==0);
+            err = (strcmp(tok2->strAt(1),varname1)==0);
         else if (TOKEN::Match(tok2,"delete [ ] %var% ;"))
-            err = (strcmp(TOKEN::getstr(tok2,1),varname1)==0);
+            err = (strcmp(tok2->strAt(1),varname1)==0);
         else if (TOKEN::Match(tok2,"free ( %var% )"))
-            err = (strcmp(TOKEN::getstr(tok2,2),varname1)==0);
+            err = (strcmp(tok2->strAt(2),varname1)==0);
         else if (TOKEN::Match(tok2,"kfree ( %var% )"))
-            err = (strcmp(TOKEN::getstr(tok2,2),varname1)==0);
+            err = (strcmp(tok2->strAt(2),varname1)==0);
 
         if (err)
         {
@@ -235,8 +235,8 @@ void CheckOther::WarningIf()
                     parlevel--;
                     if (parlevel<=0)
                     {
-                        if (strcmp(TOKEN::getstr(tok2,1), ";") == 0 &&
-                            strcmp(TOKEN::getstr(tok2,2), "else") != 0)
+                        if (strcmp(tok2->strAt(1), ";") == 0 &&
+                            strcmp(tok2->strAt(2), "else") != 0)
                         {
                             std::ostringstream ostr;
                             ostr << _tokenizer->fileLine(tok) << ": Found \"if (condition);\"";
@@ -262,15 +262,15 @@ void CheckOther::WarningIf()
         if (!TOKEN::Match(tok,"%var% = %var% ; if ( %var%"))
             continue;
 
-        if ( strcmp(TOKEN::getstr(tok, 9), ")") != 0 )
+        if ( strcmp(tok->strAt( 9), ")") != 0 )
             continue;
 
         // var1 = var2 ; if ( var3 cond var4 )
-        const char *var1 = TOKEN::getstr(tok, 0);
-        const char *var2 = TOKEN::getstr(tok, 2);
-        const char *var3 = TOKEN::getstr(tok, 6);
-        const char *cond = TOKEN::getstr(tok, 7);
-        const char *var4 = TOKEN::getstr(tok, 8);
+        const char *var1 = tok->strAt( 0);
+        const char *var2 = tok->strAt( 2);
+        const char *var3 = tok->strAt( 6);
+        const char *cond = tok->strAt( 7);
+        const char *var4 = tok->strAt( 8);
 
         // Check that var3 is equal with either var1 or var2
         if (strcmp(var1,var3) && strcmp(var2,var3))
@@ -290,7 +290,7 @@ void CheckOther::WarningIf()
 
         // we found the error. Report.
         std::ostringstream ostr;
-        ostr << _tokenizer->fileLine(tok->at(4)) << ": The condition is always ";
+        ostr << _tokenizer->fileLine(tok->tokAt(4)) << ": The condition is always ";
         for (int i = 0; i < 6; i++)
         {
             if (strcmp(cond, p[i]) == 0)
@@ -331,7 +331,7 @@ void CheckOther::InvalidFunctionUsage()
                 {
                     if ( TOKEN::Match(tok2, ", %num% )") )
                     {
-                        int radix = atoi(TOKEN::getstr(tok2, 1));
+                        int radix = atoi(tok2->strAt( 1));
                         if (!(radix==0 || (radix>=2 && radix<=36)))
                         {
                             std::ostringstream ostr;
@@ -381,18 +381,18 @@ void CheckOther::CheckUnsignedDivision()
     {
         if ( TOKEN::Match(tok, "[{};(,] %type% %var% [;=,)]") )
         {
-            const char *type = TOKEN::getstr(tok, 1);
+            const char *type = tok->strAt( 1);
             if (strcmp(type,"char")==0 || strcmp(type,"short")==0 || strcmp(type,"int")==0)
-                varsign[TOKEN::getstr(tok,2)] = 's';
+                varsign[tok->strAt(2)] = 's';
         }
 
         else if ( TOKEN::Match(tok, "[{};(,] unsigned %type% %var% [;=,)]") )
-            varsign[TOKEN::getstr(tok,3)] = 'u';
+            varsign[tok->strAt(3)] = 'u';
 
         else if (!TOKEN::Match(tok,"[).]") && TOKEN::Match(tok->next, "%var% / %var%"))
         {
-            const char *varname1 = TOKEN::getstr(tok,1);
-            const char *varname2 = TOKEN::getstr(tok,3);
+            const char *varname1 = tok->strAt(1);
+            const char *varname2 = tok->strAt(3);
             char sign1 = varsign[varname1];
             char sign2 = varsign[varname2];
 
@@ -407,7 +407,7 @@ void CheckOther::CheckUnsignedDivision()
 
         else if (!TOKEN::Match(tok,"[).]") && TOKEN::Match(tok->next, "%var% / - %num%"))
         {
-            const char *varname1 = TOKEN::getstr(tok,1);
+            const char *varname1 = tok->strAt(1);
             char sign1 = varsign[varname1];
             if ( sign1 == 'u' )
             {
@@ -419,7 +419,7 @@ void CheckOther::CheckUnsignedDivision()
 
         else if (TOKEN::Match(tok, "[([=*/+-] - %num% / %var%"))
         {
-            const char *varname2 = TOKEN::getstr(tok,4);
+            const char *varname2 = tok->strAt(4);
             char sign2 = varsign[varname2];
             if ( sign2 == 'u' )
             {
@@ -513,7 +513,7 @@ void CheckOther::CheckVariableScope()
             if (TOKEN::Match(tok1, "%var% %var% ;") ||
                 TOKEN::Match(tok1, "%var% %var% =") )
             {
-                CheckVariableScope_LookupVar( tok1, TOKEN::getstr(tok1, 1) );
+                CheckVariableScope_LookupVar( tok1, tok1->strAt( 1) );
             }
         }
     }
@@ -564,7 +564,7 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
         }
 
 
-        else if ( strcmp(TOKEN::getstr(tok, 0), varname) == 0 )
+        else if ( strcmp(tok->strAt( 0), varname) == 0 )
         {
             if ( indentlevel == 0 || used1 )
                 return;
@@ -601,7 +601,7 @@ void CheckOther::CheckConstantFunctionParameter()
         if ( TOKEN::Match(tok,"[,(] const std :: %type% %var% [,)]") )
         {
             std::ostringstream errmsg;
-            errmsg << _tokenizer->fileLine(tok) << " " << TOKEN::getstr(tok,5) << " is passed by value, it could be passed by reference/pointer instead";
+            errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(5) << " is passed by value, it could be passed by reference/pointer instead";
             _errorLogger->reportErr( errmsg.str() );
         }
 
@@ -609,18 +609,18 @@ void CheckOther::CheckConstantFunctionParameter()
         {
             // Check if type is a struct or class.
             const char *pattern[3] = {"class","type",0};
-            pattern[1] = TOKEN::getstr(tok, 2);
+            pattern[1] = tok->strAt( 2);
             if ( TOKEN::findtoken(_tokenizer->tokens(), pattern) )
             {
                 std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok) << " " << TOKEN::getstr(tok,3) << " is passed by value, it could be passed by reference/pointer instead";
+                errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(3) << " is passed by value, it could be passed by reference/pointer instead";
                 _errorLogger->reportErr( errmsg.str() );
             }
             pattern[0] = "struct";
             if ( TOKEN::findtoken(_tokenizer->tokens(), pattern) )
             {
                 std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok) << " " << TOKEN::getstr(tok,3) << " is passed by value, it could be passed by reference/pointer instead";
+                errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(3) << " is passed by value, it could be passed by reference/pointer instead";
                 _errorLogger->reportErr( errmsg.str() );
             }
         }
@@ -644,19 +644,19 @@ void CheckOther::CheckStructMemberUsage()
         if ( TOKEN::Match(tok,"}") )
             structname = 0;
         if ( TOKEN::Match(tok, "struct %type% {") )
-            structname = TOKEN::getstr(tok, 1);
+            structname = tok->strAt( 1);
 
         if (structname && TOKEN::Match(tok, "[{;]"))
         {
             const char *varname = 0;
             if (TOKEN::Match(tok->next, "%type% %var% [;[]"))
-                varname = TOKEN::getstr( tok, 2 );
+                varname = tok->strAt( 2 );
             else if (TOKEN::Match(tok->next, "%type% %type% %var% [;[]"))
-                varname = TOKEN::getstr( tok, 2 );
+                varname = tok->strAt( 2 );
             else if (TOKEN::Match(tok->next, "%type% * %var% [;[]"))
-                varname = TOKEN::getstr( tok, 3 );
+                varname = tok->strAt( 3 );
             else if (TOKEN::Match(tok->next, "%type% %type% * %var% [;[]"))
-                varname = TOKEN::getstr( tok, 4 );
+                varname = tok->strAt( 4 );
             else
                 continue;
 
@@ -671,7 +671,7 @@ void CheckOther::CheckStructMemberUsage()
 
                 if (TOKEN::Match(tok2, ". %var%", varnames))
                 {
-                    if ( strcmp("=", TOKEN::getstr(tok2,2)) == 0 )
+                    if ( strcmp("=", tok2->strAt(2)) == 0 )
                         continue;
                     used = true;
                     break;
@@ -704,7 +704,7 @@ void CheckOther::CheckCharVariable()
         if ( TOKEN::Match(tok, "[{};(,] char %var% [;=,)]") )
         {
             const char *varname[2] = {0};
-            varname[0] = TOKEN::getstr(tok, 2);
+            varname[0] = tok->strAt( 2);
 
             // Check usage of char variable..
             int indentlevel = 0;
@@ -764,14 +764,14 @@ void CheckOther::CheckIncompleteStatement()
         if ( parlevel != 0 )
             continue;
 
-        if ( !TOKEN::Match(tok,"#") && TOKEN::Match(tok->next,"; %str%") && !TOKEN::Match(tok->at(3), ",") )
+        if ( !TOKEN::Match(tok,"#") && TOKEN::Match(tok->next,"; %str%") && !TOKEN::Match(tok->tokAt(3), ",") )
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next) << ": Redundant code: Found a statement that begins with string constant";
             _errorLogger->reportErr(errmsg.str());
         }
 
-        if ( !TOKEN::Match(tok,"#") && TOKEN::Match(tok->next,"; %num%") && !TOKEN::Match(tok->at(3), ",") )
+        if ( !TOKEN::Match(tok,"#") && TOKEN::Match(tok->next,"; %num%") && !TOKEN::Match(tok->tokAt(3), ",") )
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next) << ": Redundant code: Found a statement that begins with numeric constant";
