@@ -766,9 +766,9 @@ void Tokenizer::SimplifyTokenList()
 
             // (1-2)
             if (strchr("[,(=<>",tok->str[0]) &&
-                TOKEN::IsNumber(tok->strAt(1))   &&
+                (tok->tokAt(1) && tok->tokAt(1)->isNumber())   &&
                 strchr("+-*/",*(tok->strAt(2))) &&
-                TOKEN::IsNumber(tok->strAt(3))   &&
+                (tok->tokAt(3) && tok->tokAt(3)->isNumber())   &&
                 strchr("],);=<>",*(tok->strAt(4))) )
             {
                 int i1 = atoi(tok->strAt(1));

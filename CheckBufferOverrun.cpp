@@ -369,7 +369,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 
         const char *structname = tok->next->str;
 
-        if ( ! TOKEN::IsName( structname ) )
+        if ( !(tok->next->isName()) )
             continue;
 
         // Found a struct declaration. Search for arrays..

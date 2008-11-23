@@ -27,6 +27,8 @@ TOKEN::TOKEN()
     _str = 0;
     linenr = 0;
     next = 0;
+    _isName = false;
+    _isNumber = false;
 }
 
 TOKEN::~TOKEN()
@@ -43,6 +45,9 @@ void TOKEN::setstr( const char s[] )
     _str = _strdup(s);
 #endif
     str = _str ? _str : "";
+
+    _isName = bool(str[0]=='_' || isalpha(str[0]));
+    _isNumber = bool(isdigit(str[0]) != 0);
 }
 
 void TOKEN::combineWithNext(const char str1[], const char str2[])
@@ -111,7 +116,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         // Any symbolname..
         if (strcmp(str,"%var%")==0 || strcmp(str,"%type%")==0)
         {
-            if (!TOKEN::IsName(tok->str))
+            if (!tok->isName())
                 return false;
         }
 
@@ -143,7 +148,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
 
         else if (strcmp(str,"%num%")==0)
         {
-            if ( ! TOKEN::IsNumber(tok->str) )
+            if ( ! tok->isNumber() )
                 return false;
         }
 
@@ -174,14 +179,14 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
     return true;
 }
 
-bool TOKEN::IsName(const char str[])
+bool TOKEN::isName() const
 {
-    return bool(str[0]=='_' || isalpha(str[0]));
+    return _isName;
 }
 
-bool TOKEN::IsNumber(const char str[])
+bool TOKEN::isNumber() const
 {
-    return bool(isdigit(str[0]) != 0);
+    return _isNumber;
 }
 
 

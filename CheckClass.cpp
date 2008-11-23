@@ -315,7 +315,7 @@ void CheckClass::CheckConstructors()
     while (tok1)
     {
         const char *classname = tok1->next->str;
-        if ( ! TOKEN::IsName(classname) )
+        if ( !(tok1->next->isName()) )
         {
             tok1 = TOKEN::findtoken( tok1->next, pattern_classname );
             continue;

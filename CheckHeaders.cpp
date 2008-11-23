@@ -153,7 +153,7 @@ void CheckHeaders::WarningIncludeHeader()
                 tok1 = tok1->next;
                 while (tok1->next && tok1->str[0]!=';')
                 {
-                    if ( TOKEN::IsName(tok1->str) )
+                    if ( tok1->isName() )
                         namelist.push_back(tok1->str);
                     tok1 = tok1->next;
                 }
@@ -221,7 +221,7 @@ void CheckHeaders::WarningIncludeHeader()
                 }
             }
 
-            if ( ! TOKEN::IsName(tok1->str) )
+            if ( ! tok1->isName() )
                 continue;
 
             if (std::find(namelist.begin(),namelist.end(),tok1->str ) != namelist.end())

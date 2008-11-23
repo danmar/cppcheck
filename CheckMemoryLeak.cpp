@@ -980,7 +980,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN 
         // Declaring member variable.. check allocations and deallocations
         if ( TOKEN::Match(tok->next, "%type% * %var% ;") )
         {
-            if ( TOKEN::IsName(tok->str) || strchr(";}", tok->str[0]) )
+            if ( tok->isName() || strchr(";}", tok->str[0]) )
             {
                 if (_settings._showAll || !isclass(tok->strAt(1)))
                     CheckMemoryLeak_ClassMembers_Variable( classname, tok->strAt(3) );
