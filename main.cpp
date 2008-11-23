@@ -18,6 +18,7 @@
 
 
 #include "cppcheck.h"
+#include <iostream>
 
 //---------------------------------------------------------------------------
 // Main function of cppcheck
@@ -26,7 +27,12 @@
 int main(int argc, char* argv[])
 {
     CppCheck cppCheck;
-    cppCheck.check( argc, argv );
+    std::string result = cppCheck.parseFromArgs( argc, argv );
+    if( result.length() == 0 )
+        cppCheck.check();
+    else
+        std::cout << result;
+
     return 0;
 }
 

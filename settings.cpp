@@ -24,6 +24,7 @@ Settings::Settings()
     _showAll = false;
     _checkCodingStyle = false;
     _errorsOnly = false;
+    _checkFunctionUsage = false;
 }
 
 Settings::~Settings()

@@ -37,7 +37,7 @@
 
 //---------------------------------------------------------------------------
 
-CppCheck::CppCheck()
+CppCheck::CppCheck() : _checkFunctionUsage( this )
 {
 
 }
@@ -47,12 +47,20 @@ CppCheck::~CppCheck()
 
 }
 
-void CppCheck::check(int argc, char* argv[])
+void CppCheck::settings( const Settings &settings )
+{
+    _settings = settings;
+}
+
+void CppCheck::addFile( const std::string &path )
+{
+    _filenames.push_back( path );
+}
+
+std::string CppCheck::parseFromArgs( int argc, char* argv[] )
 {
     std::vector<std::string> pathnames;
     bool Recursive = false;
-
-    Settings _settings;
 
     for (int i = 1; i < argc; i++)
     {
@@ -77,14 +85,13 @@ void CppCheck::check(int argc, char* argv[])
             pathnames.push_back( argv[i] );
     }
 
-    std::vector<std::string> filenames;
     // --recursive was used
     if ( Recursive )
     {
         if( pathnames.size() == 0 )
         {
             // Handle situation: cppcheck --recursive
-            FileLister::RecursiveAddFiles( filenames, "", true );
+            FileLister::RecursiveAddFiles( _filenames, "", true );
         }
         else
         {
@@ -93,47 +100,52 @@ void CppCheck::check(int argc, char* argv[])
             // Execute RecursiveAddFiles() to each given file parameter
             std::vector<std::string>::const_iterator iter;
             for(iter=pathnames.begin(); iter!=pathnames.end(); iter++)
-                FileLister::RecursiveAddFiles( filenames, iter->c_str(), true );
+                FileLister::RecursiveAddFiles( _filenames, iter->c_str(), true );
         }
     }
     else
     {
         std::vector<std::string>::const_iterator iter;
         for(iter=pathnames.begin(); iter!=pathnames.end(); iter++)
-            FileLister::RecursiveAddFiles( filenames, iter->c_str(), false );
+            FileLister::RecursiveAddFiles( _filenames, iter->c_str(), false );
     }
 
-
-
-    if (filenames.empty())
+    if (_filenames.empty())
     {
-        std::cout << "C/C++ code checking.\n"
-                     "\n"
-                     "Syntax:\n"
-                     "    cppcheck [--all] [--style] [--errorsonly] [--recursive] [filename1] [filename2]\n"
-                     "\n"
-                     "Options:\n"
-                     "    --all           Normally a message is only shown if cppcheck is sure\n"
-                     "                    it has found a bug.\n"
-                     "                    When this option is given, all messages are shown.\n"
-                     "\n"
-                     "    --style         Check coding style.\n"
-                     "    --errorsonly    Only print something when there is an error\n"
-                     "    --recursive     Recursively check all *.cpp, *.cc and *.c files\n";
-        return;
+        std::ostringstream oss;
+        oss <<   "C/C++ code checking.\n"
+                 "\n"
+                 "Syntax:\n"
+                 "    cppcheck [--all] [--style] [--errorsonly] [--recursive] [filename1] [filename2]\n"
+                 "\n"
+                 "Options:\n"
+                 "    --all           Normally a message is only shown if cppcheck is sure\n"
+                 "                    it has found a bug.\n"
+                 "                    When this option is given, all messages are shown.\n"
+                 "\n"
+                 "    --style         Check coding style.\n"
+                 "    --errorsonly    Only print something when there is an error\n"
+                 "    --recursive     Recursively check all *.cpp, *.cc and *.c files\n";
+        return oss.str();
     }
 
-    std::sort( filenames.begin(), filenames.end() );
+    if ( _settings._showAll && _settings._checkCodingStyle )
+        _settings._checkFunctionUsage = true;
 
-    // Check function usage if "--recursive", "--style" and "--all" was given.
-    CheckFunctionUsage *checkFunctionUsage = NULL;
-    if ( Recursive && _settings._showAll && _settings._checkCodingStyle )
-        checkFunctionUsage = new CheckFunctionUsage( this );
+    return "";
+}
 
-    for (unsigned int c = 0; c < filenames.size(); c++)
+void CppCheck::check()
+{
+    std::sort( _filenames.begin(), _filenames.end() );
+
+    // Check function usage if "--style" and "--all" was given.
+
+
+    for (unsigned int c = 0; c < _filenames.size(); c++)
     {
         _errout.str("");
-        std::string fname = filenames[c];
+        std::string fname = _filenames[c];
 
         // If only errors are printed, print filename after the check
         if (!_settings._errorsOnly)
@@ -144,7 +156,7 @@ void CppCheck::check(int argc, char* argv[])
         Preprocessor preprocessor( this );
         preprocessor.preprocess(fin, code, fname);
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
-            checkFile(it->second, filenames[c].c_str(), _settings, checkFunctionUsage);
+            checkFile(it->second, _filenames[c].c_str());
 
         if (_settings._errorsOnly)
         {
@@ -164,11 +176,11 @@ void CppCheck::check(int argc, char* argv[])
     }
 
     // This generates false positives - especially for libraries
-    if ( checkFunctionUsage )
+    if ( _settings._checkFunctionUsage )
     {
         _errout.str("");
         std::cout << "Checking usage of global functions (this may take several minutes)..\n";
-        checkFunctionUsage->check();
+        _checkFunctionUsage.check();
         if ( ! _errout.str().empty() )
         {
             std::cerr << "\n";
@@ -176,7 +188,6 @@ void CppCheck::check(int argc, char* argv[])
         }
     }
 
-    delete checkFunctionUsage;
 }
 
 
@@ -184,7 +195,7 @@ void CppCheck::check(int argc, char* argv[])
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
 
-void CppCheck::checkFile(const std::string &code, const char FileName[], Settings &_settings, CheckFunctionUsage *checkFunctionUsage)
+void CppCheck::checkFile(const std::string &code, const char FileName[])
 {
     Tokenizer _tokenizer;
     _tokenizer.settings( _settings );
@@ -227,8 +238,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], Setting
     _tokenizer.SimplifyTokenList();
 
 
-    if ( checkFunctionUsage )
-        checkFunctionUsage->parseTokens(_tokenizer);
+    if ( _settings._checkFunctionUsage )
+        _checkFunctionUsage.parseTokens(_tokenizer);
 
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak( &_tokenizer, _settings, this );

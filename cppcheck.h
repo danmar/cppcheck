@@ -22,30 +22,75 @@
 #include <string>
 #include <list>
 #include <sstream>
+#include <vector>
 #include "settings.h"
 #include "errorlogger.h"
-
-class CheckFunctionUsage;
+#include "CheckFunctionUsage.h"
 
 /**
  * This is the base class which will use other classes to do
  * static code analysis for C and C++ code to find possible
  * errors or places that could be improved.
+ * Usage: See check() for more info.
  */
 class CppCheck : public ErrorLogger
 {
     public:
+        /**
+         * Constructor.
+         */
         CppCheck();
+
+        /**
+         * Destructor.
+         */
         virtual ~CppCheck();
-        void check(int argc, char* argv[]);
+
+        /**
+         * This starts the actual checking. Note that you must call
+         * parseFromArgs() or settings() and addFile() before calling this.
+         */
+        void check();
+
+        /**
+         * Adjust the settings before doing the check. E.g. show only
+         * actual bugs or also coding style issues.
+         *
+         * @param settings New settings which will overwrite the old.
+         */
+        void settings( const Settings &settings );
+
+        /**
+         * Add new file to be checked.
+         *
+         * @param path Relative or absolute path to the file to be checked,
+         * e.g. "cppcheck.cpp". Note that only source files (.c, .cc or .cpp)
+         * should be added to the list. Include filese are gathered automatically.
+         */
+        void addFile( const std::string &path );
+
+        /**
+         * Parse command line args and get settings and file lists
+         * from there.
+         *
+         * @param argc argc from main()
+         * @param argv argv from main()
+         * @return Empty string if parameters were accepted, or
+         * string containing "help" text if no files were found to be
+         * checked.
+         */
+        std::string parseFromArgs( int argc, char* argv[] );
 
     private:
-        void checkFile(const std::string &code, const char FileName[], Settings &_settings, CheckFunctionUsage *checkFunctionUsage);
+        void checkFile(const std::string &code, const char FileName[]);
         void reportErr( const std::string &errmsg);
         void reportErr( const TOKEN *token, const std::string &errmsg);
 
         std::list<std::string> _errorList;
         std::ostringstream _errout;
+        Settings _settings;
+        std::vector<std::string> _filenames;
+        CheckFunctionUsage _checkFunctionUsage;
 };
 
 #endif // CPPCHECK_H

@@ -34,6 +34,7 @@ public:
     bool _showAll;
     bool _checkCodingStyle;
     bool _errorsOnly;
+    bool _checkFunctionUsage;
 };
 
 #endif // SETTINGS_H
