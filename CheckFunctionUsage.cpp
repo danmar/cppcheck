@@ -96,7 +96,8 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
              TOKEN::Match(tok, "|= %var% (") ||
              TOKEN::Match(tok, "&= %var% (") ||
              TOKEN::Match(tok, "&& %var% (") ||
-             TOKEN::Match(tok, "|| %var% (") )
+             TOKEN::Match(tok, "|| %var% (") ||
+             TOKEN::Match(tok, "return %var% (") )
             funcname = tok->next;
 
         // funcname ( => Assert that the end paranthesis isn't followed by {

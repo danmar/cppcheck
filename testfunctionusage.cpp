@@ -37,6 +37,7 @@ private:
     void run()
     {
         TEST_CASE( incondition );
+        TEST_CASE( return1 );
     }
 
     void check( const char code[] )
@@ -60,13 +61,18 @@ private:
     {
         check( "int f1()\n"
                "{\n"
-               "    f2();\n"
-               "}\n"
-               "\n"
-               "void f2()\n"
-               "{\n"
                "    if (f1())\n"
                "    { }\n"
+               "}\n" );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void return1()
+    {
+        check( "int f1()\n"
+               "{\n"
+               "    return f1();\n"
                "}\n" );
         std::string err( errout.str() );
         ASSERT_EQUALS( std::string(""), errout.str() );
