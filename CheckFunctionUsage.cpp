@@ -56,19 +56,21 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
             funcname = tok->at(1);
         else if ( TOKEN::Match(tok, "%type% * %var% (") )
             funcname = tok->at(2);
+        else if ( TOKEN::Match(tok, "%type% :: %var% (") && !TOKEN::Match(tok, TOKEN::getstr(tok,2)) )
+            funcname = tok->at(2);
 
         // Check that ") {" is found..
         for (const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next)
         {
             if ( TOKEN::Match(tok2, ")") )
             {
-                if ( ! TOKEN::Match(tok2, ") {") )
+                if ( ! TOKEN::Match(tok2, ") {") && ! TOKEN::Match(tok2, ") const {") )
                     funcname = NULL;
                 break;
             }
         }
 
-        if ( TOKEN::Match(funcname, "%var% ( )") || TOKEN::Match(funcname, "%var% ( %type%") )
+        if ( funcname )
         {
             FunctionUsage &func = functions[ funcname->str ];
 
@@ -90,8 +92,33 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
     {
         const TOKEN *funcname = 0;
 
-        if ( TOKEN::Match( tok, "[;{}.,()[=] %var% [(),;]" ) )
+        if ( TOKEN::Match( tok, "[;{}.,()[=+-/&|] %var% [(),;]" ) ||
+             TOKEN::Match(tok, ":: %var% (") ||
+             TOKEN::Match(tok, "|= %var% (") ||
+             TOKEN::Match(tok, "&= %var% (") ||
+             TOKEN::Match(tok, "&& %var% (") ||
+             TOKEN::Match(tok, "|| %var% (") )
             funcname = tok->next;
+
+        // funcname ( => Assert that the end paranthesis isn't followed by {
+        if ( TOKEN::Match(funcname, "%var% (") )
+        {
+            int parlevel = 0;
+            for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+            {
+                if (TOKEN::Match(tok2, "("))
+                    ++parlevel;
+
+                else if (TOKEN::Match(tok2, ")"))
+                {
+                    --parlevel;
+                    if (parlevel == 0 && (TOKEN::Match(tok2, ") {") || TOKEN::Match(tok2, ") const")))
+                        funcname = NULL;
+                    if ( parlevel <= 0 )
+                        break;
+                }
+            }
+        }
 
         if ( funcname )
         {
