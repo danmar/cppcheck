@@ -33,7 +33,6 @@
 CheckFunctionUsage::CheckFunctionUsage( ErrorLogger *errorLogger )
 {
     _errorLogger = errorLogger;
-    functions.clear();
 }
 
 CheckFunctionUsage::~CheckFunctionUsage()
@@ -72,7 +71,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 
         if ( funcname )
         {
-            FunctionUsage &func = functions[ funcname->str ];
+            FunctionUsage &func = _functions[ funcname->str ];
 
             // No filename set yet..
             if (func.filename.empty())
@@ -122,7 +121,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 
         if ( funcname )
         {
-            FunctionUsage &func = functions[ funcname->str ];
+            FunctionUsage &func = _functions[ funcname->str ];
 
             if ( func.filename.empty() || func.filename == "+" )
                 func.usedOtherFile = true;
@@ -138,7 +137,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 
 void CheckFunctionUsage::check()
 {
-    for ( std::map<std::string, FunctionUsage>::const_iterator it = functions.begin(); it != functions.end(); ++it )
+    for ( std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it )
     {
         const FunctionUsage &func = it->second;
         if ( func.usedOtherFile || func.filename.empty() )

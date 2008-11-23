@@ -39,7 +39,7 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer.Files.push_back( "test.cpp" );
+        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
         tokenizer.SimplifyTokenList();
@@ -52,7 +52,7 @@ private:
         settings._checkCodingStyle = true;
         settings._showAll = false;
         tokenizer.settings( settings );
-        tokenizer.FillFunctionList();
+        tokenizer.fillFunctionList();
         CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings, this );
         checkMemoryLeak.CheckMemoryLeak();
     }

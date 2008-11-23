@@ -77,7 +77,7 @@ private:
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
     Settings _settings;
-    std::list<AllocFunc> listallocfunc;
+    std::list<AllocFunc> _listAllocFunc;
 };
 
 //---------------------------------------------------------------------------

@@ -32,7 +32,7 @@
 
 //---------------------------------------------------------------------------
 
-// CallStack used when parsing into subfunctions.
+// _callStack used when parsing into subfunctions.
 
 
 CheckBufferOverrunClass::CheckBufferOverrunClass( const Tokenizer *tokenizer, ErrorLogger *errorLogger )
@@ -51,7 +51,7 @@ void CheckBufferOverrunClass::ReportError(const TOKEN *tok, const char errmsg[])
 {
     std::ostringstream ostr;
     std::list<const TOKEN *>::const_iterator it;
-    for ( it = CallStack.begin(); it != CallStack.end(); it++ )
+    for ( it = _callStack.begin(); it != _callStack.end(); it++ )
         ostr << _tokenizer->fileLine(*it ) << " -> ";
     ostr << _tokenizer->fileLine(tok) << ": " << errmsg;
     _errorLogger->reportErr(ostr.str());
@@ -219,7 +219,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
         if ( TOKEN::Match( tok, "%var% (" ) )
         {
             // Don't make recursive checking..
-            if (std::find(CallStack.begin(), CallStack.end(), tok) != CallStack.end())
+            if (std::find(_callStack.begin(), _callStack.end(), tok) != _callStack.end())
                 continue;
 
             unsigned int parlevel = 0, par = 0;
@@ -287,9 +287,9 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
                     ftok = ftok ? ftok->next : 0;
 
                     // Check variable usage in the function..
-                    CallStack.push_back( tok );
+                    _callStack.push_back( tok );
                     CheckBufferOverrun_CheckScope( ftok, parname, size, total_size );
-                    CallStack.pop_back();
+                    _callStack.pop_back();
 
                     // break out..
                     break;
@@ -345,7 +345,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
                 continue;
 
             // The callstack is empty
-            CallStack.clear();
+            _callStack.clear();
             CheckBufferOverrun_CheckScope( tok->tokAt(5), varname, size, total_size );
         }
     }

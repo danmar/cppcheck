@@ -37,6 +37,9 @@
 
 class FileLister
 {
+public:
+    static void RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive );
+
 private:
     static bool AcceptFile( const std::string &filename );
 
@@ -48,8 +51,6 @@ private:
     static void AddFiles( std::vector<std::string> &filenames, const std::string &path, const std::string &pattern );
 #endif
 
-public:
-    static void RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive );
 };
 
 #endif // #ifndef FILELISTER_H

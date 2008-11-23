@@ -51,8 +51,8 @@
 Tokenizer::Tokenizer()
 {
     _tokens = 0;
-    tokens_back = 0;
-    dsymlist = 0;
+    _tokensBack = 0;
+    _dsymlist = 0;
 }
 
 Tokenizer::~Tokenizer()
@@ -90,7 +90,7 @@ const TOKEN *Tokenizer::tokens() const
 
 const std::vector<std::string> *Tokenizer::getFiles() const
 {
-    return &Files;
+    return &_files;
 }
 
 void Tokenizer::Define(const char Name[], const char Value[])
@@ -133,8 +133,8 @@ void Tokenizer::Define(const char Name[], const char Value[])
     memset(NewSym, 0, sizeof(DefineSymbol));
     NewSym->name = _strdup(Name);
     NewSym->value = strValue;
-    NewSym->next = dsymlist;
-    dsymlist = NewSym;
+    NewSym->next = _dsymlist;
+    _dsymlist = NewSym;
 }
 //---------------------------------------------------------------------------
 
@@ -163,18 +163,18 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     newtoken->setstr(str2.str().c_str());
     newtoken->linenr = lineno;
     newtoken->FileIndex = fileno;
-    if (tokens_back)
+    if (_tokensBack)
     {
-        tokens_back->next = newtoken;
-        tokens_back = newtoken;
+        _tokensBack->next = newtoken;
+        _tokensBack = newtoken;
     }
     else
     {
-        _tokens = tokens_back = newtoken;
+        _tokens = _tokensBack = newtoken;
     }
 
     // Check if str is defined..
-    for (DefineSymbol *sym = dsymlist; sym; sym = sym->next)
+    for (DefineSymbol *sym = _dsymlist; sym; sym = sym->next)
     {
         if (strcmp(str,sym->name)==0)
         {
@@ -196,8 +196,8 @@ int Tokenizer::SizeOfType(const char type[]) const
     if (!type)
         return 0;
 
-    std::map<std::string, unsigned int>::const_iterator it = TypeSize.find(type);
-    if ( it == TypeSize.end() )
+    std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type);
+    if ( it == _typeSize.end() )
         return 0;
 
     return it->second;
@@ -234,17 +234,17 @@ void Tokenizer::InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
 void Tokenizer::Tokenize(std::istream &code, const char FileName[])
 {
     // Has this file been tokenized already?
-    for (unsigned int i = 0; i < Files.size(); i++)
+    for (unsigned int i = 0; i < _files.size(); i++)
     {
-        if ( SameFileName( Files[i].c_str(), FileName ) )
+        if ( SameFileName( _files[i].c_str(), FileName ) )
             return;
     }
 
-    // The "Files" vector remembers what files have been tokenized..
-    Files.push_back(FileName);
+    // The "_files" vector remembers what files have been tokenized..
+    _files.push_back(FileName);
 
     // Tokenize the file..
-    TokenizeCode( code, (unsigned int)(Files.size() - 1) );
+    TokenizeCode( code, (unsigned int)(_files.size() - 1) );
 }
 //---------------------------------------------------------------------------
 
@@ -290,9 +290,9 @@ void Tokenizer::TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 line.erase(line.find("\""));
 
                 // Relative path..
-                if (Files.back().find_first_of("\\/") != std::string::npos)
+                if (_files.back().find_first_of("\\/") != std::string::npos)
                 {
-                    std::string path = Files.back();
+                    std::string path = _files.back();
                     path.erase( 1 + path.find_last_of("\\/") );
                     line = path + line;
                 }
@@ -636,24 +636,24 @@ void Tokenizer::SimplifyTokenList()
     }
 
 
-    // Fill the map TypeSize..
-    TypeSize.clear();
-    TypeSize["char"] = sizeof(char);
-    TypeSize["short"] = sizeof(short);
-    TypeSize["int"] = sizeof(int);
-    TypeSize["long"] = sizeof(long);
-    TypeSize["float"] = sizeof(float);
-    TypeSize["double"] = sizeof(double);
+    // Fill the map _typeSize..
+    _typeSize.clear();
+    _typeSize["char"] = sizeof(char);
+    _typeSize["short"] = sizeof(short);
+    _typeSize["int"] = sizeof(int);
+    _typeSize["long"] = sizeof(long);
+    _typeSize["float"] = sizeof(float);
+    _typeSize["double"] = sizeof(double);
     for (TOKEN *tok = _tokens; tok; tok = tok->next)
     {
         if (TOKEN::Match(tok,"class %var%"))
         {
-            TypeSize[tok->strAt(1)] = 11;
+            _typeSize[tok->strAt(1)] = 11;
         }
 
         else if (TOKEN::Match(tok, "struct %var%"))
         {
-            TypeSize[tok->strAt(1)] = 13;
+            _typeSize[tok->strAt(1)] = 13;
         }
     }
 
@@ -1021,20 +1021,20 @@ bool Tokenizer::simplifyConditions()
 
 const TOKEN *Tokenizer::GetFunctionTokenByName( const char funcname[] ) const
 {
-    for ( unsigned int i = 0; i < FunctionList.size(); ++i )
+    for ( unsigned int i = 0; i < _functionList.size(); ++i )
     {
-        if ( strcmp( FunctionList[i]->str, funcname ) == 0 )
+        if ( strcmp( _functionList[i]->str, funcname ) == 0 )
         {
-            return FunctionList[i];
+            return _functionList[i];
         }
     }
     return NULL;
 }
 
 
-void Tokenizer::FillFunctionList()
+void Tokenizer::fillFunctionList()
 {
-    FunctionList.clear();
+    _functionList.clear();
 
     bool staticfunc = false;
     bool classfunc = false;
@@ -1082,7 +1082,7 @@ void Tokenizer::FillFunctionList()
                 {
                     if ( TOKEN::Match(tok2, ") {") )
                     {
-                        FunctionList.push_back( tok );
+                        _functionList.push_back( tok );
                         tok = tok2;
                     }
                     else
@@ -1097,17 +1097,17 @@ void Tokenizer::FillFunctionList()
         }
     }
 
-    // If the FunctionList functions with duplicate names, remove them
+    // If the _functionList functions with duplicate names, remove them
     // TODO this will need some better handling
-    for ( unsigned int func1 = 0; func1 < FunctionList.size(); )
+    for ( unsigned int func1 = 0; func1 < _functionList.size(); )
     {
         bool hasDuplicates = false;
-        for ( unsigned int func2 = func1 + 1; func2 < FunctionList.size(); )
+        for ( unsigned int func2 = func1 + 1; func2 < _functionList.size(); )
         {
-            if ( strcmp(FunctionList[func1]->str, FunctionList[func2]->str) == 0 )
+            if ( strcmp(_functionList[func1]->str, _functionList[func2]->str) == 0 )
             {
                 hasDuplicates = true;
-                FunctionList.erase( FunctionList.begin() + func2 );
+                _functionList.erase( _functionList.begin() + func2 );
             }
             else
             {
@@ -1121,7 +1121,7 @@ void Tokenizer::FillFunctionList()
         }
         else
         {
-            FunctionList.erase( FunctionList.begin() + func1 );
+            _functionList.erase( _functionList.begin() + func1 );
         }
     }
 }
@@ -1138,18 +1138,18 @@ void Tokenizer::DeallocateTokens()
 {
     deleteTokens( _tokens );
     _tokens = 0;
-    tokens_back = 0;
+    _tokensBack = 0;
 
-    while (dsymlist)
+    while (_dsymlist)
     {
-        struct DefineSymbol *next = dsymlist->next;
-        free(dsymlist->name);
-        free(dsymlist->value);
-        delete dsymlist;
-        dsymlist = next;
+        struct DefineSymbol *next = _dsymlist->next;
+        free(_dsymlist->name);
+        free(_dsymlist->value);
+        delete _dsymlist;
+        _dsymlist = next;
     }
 
-    Files.clear();
+    _files.clear();
 }
 
 void Tokenizer::deleteTokens(TOKEN *tok)
@@ -1182,7 +1182,7 @@ const char *Tokenizer::getParameterName( const TOKEN *ftok, int par )
 std::string Tokenizer::fileLine( const TOKEN *tok ) const
 {
     std::ostringstream ostr;
-    ostr << "[" << Files.at(tok->FileIndex) << ":" << tok->linenr << "]";
+    ostr << "[" << _files.at(tok->FileIndex) << ":" << tok->linenr << "]";
     return ostr.str();
 }
 

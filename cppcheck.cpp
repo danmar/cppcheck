@@ -132,7 +132,7 @@ void CppCheck::check(int argc, char* argv[])
 
     for (unsigned int c = 0; c < filenames.size(); c++)
     {
-        errout.str("");
+        _errout.str("");
         std::string fname = filenames[c];
 
         // If only errors are printed, print filename after the check
@@ -148,31 +148,31 @@ void CppCheck::check(int argc, char* argv[])
 
         if (_settings._errorsOnly)
         {
-            if ( !errout.str().empty() )
+            if ( !_errout.str().empty() )
             {
                 std::cout << "Errors found in " << fname << ":\n";
-                std::cerr << errout.str();
+                std::cerr << _errout.str();
             }
         }
         else
         {
-            if ( errout.str().empty() )
+            if ( _errout.str().empty() )
                 std::cout << "No errors found\n";
             else
-                std::cerr << errout.str();
+                std::cerr << _errout.str();
         }
     }
 
     // This generates false positives - especially for libraries
     if ( checkFunctionUsage )
     {
-        errout.str("");
+        _errout.str("");
         std::cout << "Checking usage of global functions (this may take several minutes)..\n";
         checkFunctionUsage->check();
-        if ( ! errout.str().empty() )
+        if ( ! _errout.str().empty() )
         {
             std::cerr << "\n";
-            std::cerr << errout.str();
+            std::cerr << _errout.str();
         }
     }
 
@@ -195,7 +195,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], Setting
     _tokenizer.Tokenize(istr, FileName);
     }
 
-    _tokenizer.FillFunctionList();
+    _tokenizer.fillFunctionList();
 
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
@@ -311,7 +311,7 @@ void CppCheck::reportErr( const std::string &errmsg)
             return;
         _errorList.push_back( errmsg );
     }
-    errout << errmsg << std::endl;
+    _errout << errmsg << std::endl;
 }
 
 void CppCheck::reportErr( const TOKEN *token, const std::string &errmsg)

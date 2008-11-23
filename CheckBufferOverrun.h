@@ -45,7 +45,7 @@ private:
 
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
-    std::list<const TOKEN *> CallStack;
+    std::list<const TOKEN *> _callStack;
 };
 
 //---------------------------------------------------------------------------

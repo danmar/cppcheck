@@ -58,7 +58,7 @@ private:
         bool   usedOtherFile;
     };
 
-    std::map<std::string, FunctionUsage> functions;
+    std::map<std::string, FunctionUsage> _functions;
 };
 
 //---------------------------------------------------------------------------

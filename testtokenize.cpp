@@ -65,7 +65,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer.Files.push_back( "test.cpp" );
+        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -89,7 +89,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer.Files.push_back( "test.cpp" );
+        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -111,7 +111,7 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer.Files.push_back( "test.cpp" );
+        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
         tokenizer.TokenizeCode(istr, 0);
 
@@ -142,14 +142,14 @@ private:
                             "{ }\n";
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer.Files.push_back( "test.cpp" );
+        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode(istr, 0);
 
-        tokenizer.FillFunctionList();
+        tokenizer.fillFunctionList();
 
-        ASSERT_EQUALS( 1, tokenizer.FunctionList.size() );
-        ASSERT_EQUALS( std::string("b"), tokenizer.FunctionList[0]->str );
+        ASSERT_EQUALS( 1, tokenizer._functionList.size() );
+        ASSERT_EQUALS( std::string("b"), tokenizer._functionList[0]->str );
     }
 };
 

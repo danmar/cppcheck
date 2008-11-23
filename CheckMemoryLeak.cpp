@@ -132,8 +132,8 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
         return POPEN;
 
     // Userdefined allocation function..
-    std::list<AllocFunc>::const_iterator it = listallocfunc.begin();
-    while ( it != listallocfunc.end() )
+    std::list<AllocFunc>::const_iterator it = _listAllocFunc.begin();
+    while ( it != _listAllocFunc.end() )
     {
         if ( strcmp(tok2->str, it->funcname) == 0 )
             return it->alloctype;
@@ -1090,7 +1090,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
 
 void CheckMemoryLeakClass::CheckMemoryLeak()
 {
-    listallocfunc.clear();
+    _listAllocFunc.clear();
 
     // Check for memory leaks inside functions..
     CheckMemoryLeak_InFunction();

@@ -41,11 +41,11 @@ class CppCheck : public ErrorLogger
 
     private:
         void checkFile(const std::string &code, const char FileName[], Settings &_settings, CheckFunctionUsage *checkFunctionUsage);
-        std::list<std::string> _errorList;
-        std::ostringstream errout;
-
         void reportErr( const std::string &errmsg);
         void reportErr( const TOKEN *token, const std::string &errmsg);
+
+        std::list<std::string> _errorList;
+        std::ostringstream _errout;
 };
 
 #endif // CPPCHECK_H

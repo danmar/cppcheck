@@ -64,7 +64,7 @@ public:
 
     const std::vector<std::string> *getFiles() const;
 
-    void FillFunctionList();
+    void fillFunctionList();
     const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
     void settings( const Settings &settings );
     const TOKEN *tokens() const;
@@ -91,14 +91,12 @@ private:
 
     void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n);
 
-    TOKEN *tokens_back;
-    std::map<std::string, unsigned int> TypeSize;
-    std::vector<const TOKEN *> FunctionList;
-    std::vector<std::string> Files;
+    TOKEN *_tokensBack;
+    std::map<std::string, unsigned int> _typeSize;
+    std::vector<const TOKEN *> _functionList;
+    std::vector<std::string> _files;
     Settings _settings;
-
-
-    struct DefineSymbol * dsymlist;
+    struct DefineSymbol * _dsymlist;
     TOKEN *_tokens;
 };
 

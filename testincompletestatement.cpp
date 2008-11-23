@@ -40,7 +40,7 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer.Files.push_back( "test.cpp" );
+        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
         tokenizer.SimplifyTokenList();

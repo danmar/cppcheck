@@ -40,7 +40,7 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer.Files.push_back( "test.cpp" );
+        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(code);
         tokenizer.TokenizeCode( istr );
         tokenizer.SimplifyTokenList();
@@ -49,7 +49,7 @@ private:
         Settings settings;
         settings._checkCodingStyle = true;
         tokenizer.settings( settings );
-        tokenizer.FillFunctionList();
+        tokenizer.fillFunctionList();
 
         // Clear the error buffer..
         errout.str("");
