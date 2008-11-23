@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="cppcheck" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/cppcheck" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="CheckBufferOverrun.cpp" />
+		<Unit filename="CheckBufferOverrun.h" />
+		<Unit filename="CheckClass.cpp" />
+		<Unit filename="CheckClass.h" />
+		<Unit filename="CheckFunctionUsage.cpp" />
+		<Unit filename="CheckFunctionUsage.h" />
+		<Unit filename="CheckHeaders.cpp" />
+		<Unit filename="CheckHeaders.h" />
+		<Unit filename="CheckMemoryLeak.cpp" />
+		<Unit filename="CheckMemoryLeak.h" />
+		<Unit filename="CheckOther.cpp" />
+		<Unit filename="CheckOther.h" />
+		<Unit filename="FileLister.cpp" />
+		<Unit filename="FileLister.h" />
+		<Unit filename="cppcheck.cpp" />
+		<Unit filename="cppcheck.h" />
+		<Unit filename="errorlogger.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="preprocessor.cpp" />
+		<Unit filename="preprocessor.h" />
+		<Unit filename="settings.cpp" />
+		<Unit filename="settings.h" />
+		<Unit filename="token.cpp" />
+		<Unit filename="token.h" />
+		<Unit filename="tokenize.cpp" />
+		<Unit filename="tokenize.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
