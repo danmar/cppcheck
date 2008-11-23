@@ -103,7 +103,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
         if ( TOKEN::Match(funcname, "%var% (") )
         {
             int parlevel = 0;
-            for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
+            for ( const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next )
             {
                 if (TOKEN::Match(tok2, "("))
                     ++parlevel;

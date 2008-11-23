@@ -44,6 +44,7 @@
 		<Unit filename="testcharvar.cpp" />
 		<Unit filename="testconstructors.cpp" />
 		<Unit filename="testdivision.cpp" />
+		<Unit filename="testfunctionusage.cpp" />
 		<Unit filename="testincompletestatement.cpp" />
 		<Unit filename="testmemleak.cpp" />
 		<Unit filename="testpreprocessor.cpp" />
