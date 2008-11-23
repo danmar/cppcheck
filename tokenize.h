@@ -64,7 +64,7 @@ public:
 
     const std::vector<std::string> *getFiles() const;
 
-    void FillFunctionList(const unsigned int file_id);
+    void FillFunctionList();
     const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
     void settings( const Settings &settings );
     const TOKEN *tokens() const;

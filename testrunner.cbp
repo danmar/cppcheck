@@ -31,8 +31,6 @@
 		<Unit filename="CheckMemoryLeak.h" />
 		<Unit filename="CheckOther.cpp" />
 		<Unit filename="CheckOther.h" />
-		<Unit filename="CommonCheck.cpp" />
-		<Unit filename="CommonCheck.h" />
 		<Unit filename="FileLister.cpp" />
 		<Unit filename="FileLister.h" />
 		<Unit filename="cppcheck.cpp" />
@@ -56,6 +54,8 @@
 		<Unit filename="testtokenize.cpp" />
 		<Unit filename="testunusedprivfunc.cpp" />
 		<Unit filename="testunusedvar.cpp" />
+		<Unit filename="token.cpp" />
+		<Unit filename="token.h" />
 		<Unit filename="tokenize.cpp" />
 		<Unit filename="tokenize.h" />
 		<Extensions>

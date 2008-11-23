@@ -146,7 +146,7 @@ private:
         std::istringstream istr(code);
         tokenizer.TokenizeCode(istr, 0);
 
-        tokenizer.FillFunctionList(0);
+        tokenizer.FillFunctionList();
 
         ASSERT_EQUALS( 1, tokenizer.FunctionList.size() );
         ASSERT_EQUALS( std::string("b"), tokenizer.FunctionList[0]->str );

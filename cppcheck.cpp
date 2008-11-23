@@ -25,6 +25,7 @@
 #include "CheckClass.h"
 #include "CheckHeaders.h"
 #include "CheckOther.h"
+#include "CheckFunctionUsage.h"
 #include "FileLister.h"
 
 #include <algorithm>
@@ -124,6 +125,11 @@ void CppCheck::check(int argc, char* argv[])
 
     std::sort( filenames.begin(), filenames.end() );
 
+    // Check function usage if "--recursive", "--style" and "--all" was given.
+    CheckFunctionUsage *checkFunctionUsage = NULL;
+    if ( Recursive && _settings._showAll && _settings._checkCodingStyle )
+        checkFunctionUsage = new CheckFunctionUsage( this );
+
     for (unsigned int c = 0; c < filenames.size(); c++)
     {
         errout.str("");
@@ -138,7 +144,7 @@ void CppCheck::check(int argc, char* argv[])
         Preprocessor preprocessor( this );
         preprocessor.preprocess(fin, code, fname);
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
-            checkFile(it->second, filenames[c].c_str(), c, _settings);
+            checkFile(it->second, filenames[c].c_str(), _settings, checkFunctionUsage);
 
         if (_settings._errorsOnly)
         {
@@ -158,11 +164,11 @@ void CppCheck::check(int argc, char* argv[])
     }
 
     // This generates false positives - especially for libraries
-    if ( _settings._showAll && _settings._checkCodingStyle && filenames.size() > 1 )
+    if ( checkFunctionUsage )
     {
         errout.str("");
         std::cout << "Checking usage of global functions (this may take several minutes)..\n";
-        //_tokenizer.CheckGlobalFunctionUsage(filenames);
+        checkFunctionUsage->check();
         if ( ! errout.str().empty() )
         {
             std::cerr << "\n";
@@ -170,6 +176,7 @@ void CppCheck::check(int argc, char* argv[])
         }
     }
 
+    delete checkFunctionUsage;
 }
 
 
@@ -177,7 +184,7 @@ void CppCheck::check(int argc, char* argv[])
 // CppCheck - A function that checks a specified file
 //---------------------------------------------------------------------------
 
-void CppCheck::checkFile(const std::string &code, const char FileName[], unsigned int FileId, Settings &_settings)
+void CppCheck::checkFile(const std::string &code, const char FileName[], Settings &_settings, CheckFunctionUsage *checkFunctionUsage)
 {
     Tokenizer _tokenizer;
     _tokenizer.settings( _settings );
@@ -188,7 +195,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
     _tokenizer.Tokenize(istr, FileName);
     }
 
-    _tokenizer.FillFunctionList(FileId);
+    _tokenizer.FillFunctionList();
 
     // Check that the memsets are valid.
     // The 'memset' function can do dangerous things if used wrong.
@@ -218,6 +225,10 @@ void CppCheck::checkFile(const std::string &code, const char FileName[], unsigne
 
 
     _tokenizer.SimplifyTokenList();
+
+
+    if ( checkFunctionUsage )
+        checkFunctionUsage->parseTokens(_tokenizer);
 
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak( &_tokenizer, _settings, this );

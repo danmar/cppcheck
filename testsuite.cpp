@@ -48,11 +48,6 @@ public:
         _tests.push_back( t );
     }
 
-    void removeTest( TestFixture *t )
-    {
-        _tests.remove( t );
-    }
-
     const std::list<TestFixture *> &tests() const
     {
         return _tests;
@@ -74,12 +69,6 @@ TestFixture::TestFixture(const std::string &_name) : classname(_name)
     TestRegistry::theInstance().addTest(this);
 }
 
-/*
-TestFixture::~TestFixture()
-{
-    TestRegistry::theInstance().removeTest(this);
-}
-*/
 
 bool TestFixture::runTest(const char testname[])
 {

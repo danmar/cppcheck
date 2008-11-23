@@ -30,9 +30,8 @@
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-CheckFunctionUsage::CheckFunctionUsage( const Tokenizer *tokenizer, ErrorLogger *errorLogger )
+CheckFunctionUsage::CheckFunctionUsage( ErrorLogger *errorLogger )
 {
-    _tokenizer = tokenizer;
     _errorLogger = errorLogger;
     functions.clear();
 }
@@ -43,10 +42,10 @@ CheckFunctionUsage::~CheckFunctionUsage()
 }
 
 
-void CheckFunctionUsage::parseTokens( const std::string &filename )
+void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 {
     // Function declarations..
-    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
+    for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )
     {
         if ( tok->FileIndex != 0 )
             continue;
@@ -58,16 +57,27 @@ void CheckFunctionUsage::parseTokens( const std::string &filename )
         else if ( TOKEN::Match(tok, "%type% * %var% (") )
             funcname = tok->at(2);
 
+        // Check that ") {" is found..
+        for (const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next)
+        {
+            if ( TOKEN::Match(tok2, ")") )
+            {
+                if ( ! TOKEN::Match(tok2, ") {") )
+                    funcname = NULL;
+                break;
+            }
+        }
+
         if ( TOKEN::Match(funcname, "%var% ( )") || TOKEN::Match(funcname, "%var% ( %type%") )
         {
             FunctionUsage &func = functions[ funcname->str ];
 
             // No filename set yet..
             if (func.filename.empty())
-                func.filename = filename;
+                func.filename = tokenizer.getFiles()->at(0);
 
             // Multiple files => filename = "+"
-            else if (func.filename != filename)
+            else if (func.filename != tokenizer.getFiles()->at(0))
             {
                 func.filename = "+";
                 func.usedOtherFile |= func.usedSameFile;
@@ -76,14 +86,11 @@ void CheckFunctionUsage::parseTokens( const std::string &filename )
     }
 
     // Function usage..
-    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
+    for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )
     {
         const TOKEN *funcname = 0;
 
-        if ( TOKEN::Match( tok, "[;{}.)[=] %var% (" )  )
-            funcname = tok;
-
-        else if ( TOKEN::Match(tok, "= %var% ;") )
+        if ( TOKEN::Match( tok, "[;{}.,()[=] %var% [(),;]" ) )
             funcname = tok->next;
 
         if ( funcname )

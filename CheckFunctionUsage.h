@@ -28,19 +28,18 @@
 class CheckFunctionUsage
 {
 public:
-    CheckFunctionUsage( const Tokenizer *tokenizer, ErrorLogger *errorLogger );
+    CheckFunctionUsage( ErrorLogger *errorLogger );
     ~CheckFunctionUsage();
 
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
-    void parseTokens( const std::string &filename );
+    void parseTokens( const Tokenizer &tokenizer );
 
 
     void check();
 
 private:
-    const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
 
 

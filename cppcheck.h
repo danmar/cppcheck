@@ -25,6 +25,8 @@
 #include "settings.h"
 #include "errorlogger.h"
 
+class CheckFunctionUsage;
+
 /**
  * This is the base class which will use other classes to do
  * static code analysis for C and C++ code to find possible
@@ -38,7 +40,7 @@ class CppCheck : public ErrorLogger
         void check(int argc, char* argv[]);
 
     private:
-        void checkFile(const std::string &code, const char FileName[], unsigned int FileId, Settings &_settings);
+        void checkFile(const std::string &code, const char FileName[], Settings &_settings, CheckFunctionUsage *checkFunctionUsage);
         std::list<std::string> _errorList;
         std::ostringstream errout;
 

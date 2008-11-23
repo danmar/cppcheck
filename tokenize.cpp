@@ -1032,7 +1032,7 @@ const TOKEN *Tokenizer::GetFunctionTokenByName( const char funcname[] ) const
 }
 
 
-void Tokenizer::FillFunctionList(const unsigned int file_id)
+void Tokenizer::FillFunctionList()
 {
     FunctionList.clear();
 

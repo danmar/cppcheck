@@ -49,7 +49,7 @@ private:
         Settings settings;
         settings._checkCodingStyle = true;
         tokenizer.settings( settings );
-        tokenizer.FillFunctionList(0);
+        tokenizer.FillFunctionList();
 
         // Clear the error buffer..
         errout.str("");
