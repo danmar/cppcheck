@@ -38,6 +38,7 @@ private:
     {
         TEST_CASE( incondition );
         TEST_CASE( return1 );
+        TEST_CASE( callback1 );
     }
 
     void check( const char code[] )
@@ -73,6 +74,16 @@ private:
         check( "int f1()\n"
                "{\n"
                "    return f1();\n"
+               "}\n" );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void callback1()
+    {
+        check( "void f1()\n"
+               "{\n"
+               "    void (*f)() = cond ? f1 : NULL;\n"
                "}\n" );
         std::string err( errout.str() );
         ASSERT_EQUALS( std::string(""), errout.str() );

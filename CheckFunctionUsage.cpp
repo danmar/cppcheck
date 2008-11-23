@@ -91,7 +91,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
     {
         const TOKEN *funcname = 0;
 
-        if ( TOKEN::Match( tok, "[;{}.,()[=+-/&|] %var% [(),;]" ) ||
+        if ( TOKEN::Match( tok, "[;{}.,()[=+-/&|?:] %var% [(),;:]" ) ||
              TOKEN::Match(tok, ":: %var% (") ||
              TOKEN::Match(tok, "|= %var% (") ||
              TOKEN::Match(tok, "&= %var% (") ||
