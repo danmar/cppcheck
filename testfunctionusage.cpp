@@ -39,6 +39,7 @@ private:
         TEST_CASE( incondition );
         TEST_CASE( return1 );
         TEST_CASE( callback1 );
+        TEST_CASE( else1 );
     }
 
     void check( const char code[] )
@@ -84,6 +85,17 @@ private:
         check( "void f1()\n"
                "{\n"
                "    void (*f)() = cond ? f1 : NULL;\n"
+               "}\n" );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void else1()
+    {
+        check( "void f1()\n"
+               "{\n"
+               "    if (cond) ;\n"
+               "    else f1();\n"
                "}\n" );
         std::string err( errout.str() );
         ASSERT_EQUALS( std::string(""), errout.str() );
