@@ -46,6 +46,12 @@
 		<Unit filename="FileLister.h" />
 		<Unit filename="cppcheck.cpp" />
 		<Unit filename="cppcheck.h" />
+		<Unit filename="cppcheckexecutor.cpp">
+			<Option target="all" />
+		</Unit>
+		<Unit filename="cppcheckexecutor.h">
+			<Option target="all" />
+		</Unit>
 		<Unit filename="errorlogger.h" />
 		<Unit filename="main.cpp">
 			<Option target="all" />
