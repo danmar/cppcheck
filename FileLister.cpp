@@ -152,62 +152,50 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
 
 #ifdef _MSC_VER
 
-void FileLister::AddFiles( std::vector<std::string> &filenames, const std::string &path, const std::string &pattern )
-{
-
-    WIN32_FIND_DATA ffd;
-    HANDLE hFind = FindFirstFile(pattern.c_str(), &ffd);
-    if (INVALID_HANDLE_VALUE != hFind)
-    {
-        do
-        {
-            std::ostringstream fname;
-            fname << path << ffd.cFileName;
-            filenames.push_back( fname.str() );
-        }
-        while (FindNextFile(hFind, &ffd) != 0);
-    }
-}
-
-// TODO, this should be complitely rewritten to work similarly like with __GNUC__,
-// but I don't have a compiler to do the work
 void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive )
 {
-    if( !recursive )
+    std::ostringstream oss;
+    oss << path;
+    if (recursive)
     {
-        // Simulate old behaviour
-        if ( path.find( '*' ) == std::string::npos )
-            filenames.push_back( path );
-        else
-            FileLister::AddFiles( filenames, "", path );
+        if ( path.length() > 0 && path[path.length()-1] != '/' )
+            oss << "/";
 
-        return;
+        oss << "*";
     }
-
-    AddFiles( filenames, path, "*.cpp" );
-    AddFiles( filenames, path, "*.cc" );
-    AddFiles( filenames, path, "*.c" );
 
     WIN32_FIND_DATA ffd;
-    HANDLE hFind = FindFirstFile("*", &ffd);
-    if (INVALID_HANDLE_VALUE != hFind)
-    {
-        do
-        {
-            if ( (ffd.cFileName[0]!='.') &&
-                 (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) )
-            {
-                SetCurrentDirectory( ffd.cFileName );
-                std::ostringstream curdir;
-                curdir << path << ffd.cFileName << "/";
-                FileLister::RecursiveAddFiles( filenames, curdir.str().c_str(), true );
-                SetCurrentDirectory( ".." );
-            }
-        }
-        while (FindNextFile(hFind, &ffd) != 0);
-    }
-}
+    HANDLE hFind = FindFirstFile(oss.str().c_str(), &ffd);
+	if ( INVALID_HANDLE_VALUE == hFind )
+		return;
 
+    do
+    {
+		std::ostringstream fname;
+		fname << path << ffd.cFileName;
+
+        if ( ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0' )
+            continue;
+
+		if ( ( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
+		{
+            // File
+
+            // If recursive is not used, accept all files given by user
+            if ( !recursive || FileLister::AcceptFile( ffd.cFileName ) )
+				filenames.push_back( fname.str() );
+		}
+        else if ( recursive )
+        {
+            // Directory
+            fname << "/";
+			FileLister::RecursiveAddFiles( filenames, fname.str().c_str(), recursive );
+        }
+    }
+    while (FindNextFile(hFind, &ffd) != FALSE);
+
+	FindClose(hFind);
+}
 
 #endif
 
