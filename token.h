@@ -19,12 +19,27 @@
 #ifndef TOKEN_H
 #define TOKEN_H
 
+#include <string>
+
 class TOKEN
 {
 public:
     TOKEN();
     ~TOKEN();
     void setstr( const char s[] );
+
+    const std::string &str() const
+    { return _str; }
+    
+    const char *aaaa() const
+    { return _cstr; }
+
+    char aaaa0() const
+    { return _cstr[0]; }
+
+    char aaaa1() const
+    { return _cstr[1]; }
+    
 
     /**
      * Combine two tokens that belong to each other.
@@ -52,13 +67,14 @@ public:
     static bool IsStandardType(const char str[]);
     static const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
     static const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[]);
-    const char *str;
+
     unsigned int FileIndex;
     unsigned int linenr;
     TOKEN *next;
 
 private:
-    char * _str;
+    std::string _str;
+    char * _cstr;
     bool _isName;
     bool _isNumber;
 };

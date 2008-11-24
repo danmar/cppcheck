@@ -51,7 +51,7 @@ private:
         unsigned int i = 0;
         for (; expected[i] && actual; ++i, actual = actual->next)
         {
-            if ( strcmp( expected[i], actual->str ) != 0)
+            if ( strcmp( expected[i], actual->aaaa() ) != 0)
                 return false;
         }
         return (expected[i] == NULL && actual == NULL);
@@ -94,7 +94,7 @@ private:
         tokenizer.TokenizeCode(istr, 0);
 
         // Expected result..
-        ASSERT_EQUALS( std::string(10000,'a'), std::string(tokenizer.tokens()->str) );
+        ASSERT_EQUALS( std::string(10000,'a'), std::string(tokenizer.tokens()->aaaa()) );
     }
 
 
@@ -149,7 +149,7 @@ private:
         tokenizer.fillFunctionList();
 
         ASSERT_EQUALS( 1, tokenizer._functionList.size() );
-        ASSERT_EQUALS( std::string("b"), tokenizer._functionList[0]->str );
+        ASSERT_EQUALS( std::string("b"), tokenizer._functionList[0]->aaaa() );
     }
 };
 

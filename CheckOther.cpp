@@ -101,7 +101,7 @@ void CheckOther::WarningIsAlpha()
 {
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
-        if ( ! TOKEN::Match(tok, "(") )
+        if ( tok->str() != "(" )
             continue;
 
         bool err = false;
@@ -161,7 +161,7 @@ void CheckOther::WarningRedundantCode()
     // if (p) delete p
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
-        if (!TOKEN::Match(tok,"if"))
+        if ( tok->str() != "if" )
             continue;
 
         const char *varname1 = NULL;
@@ -181,7 +181,7 @@ void CheckOther::WarningRedundantCode()
         if (varname1==NULL || tok2==NULL)
             continue;
 
-        if ( TOKEN::Match(tok2, "{") )
+        if ( tok2->str() == "{" )
             tok2 = tok2->next;
 
         bool err = false;
@@ -223,14 +223,14 @@ void CheckOther::WarningIf()
     // Search for 'if (condition);'
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
-        if (TOKEN::Match(tok,"if"))
+        if (tok->str() == "if")
         {
             int parlevel = 0;
             for (const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next)
             {
-                if (TOKEN::Match(tok2,"("))
+                if (tok2->str() == "(")
                     parlevel++;
-                else if (TOKEN::Match(tok2,")"))
+                else if (tok2->str() == ")")
                 {
                     parlevel--;
                     if (parlevel<=0)
@@ -312,7 +312,7 @@ void CheckOther::InvalidFunctionUsage()
 {
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
-        if (!TOKEN::Match(tok, "strtol") && !TOKEN::Match(tok, "strtoul"))
+        if ((tok->str() != "strtol") && (tok->str() != "strtoul"))
             continue;
 
         // Locate the third parameter of the function call..
@@ -447,21 +447,21 @@ void CheckOther::CheckVariableScope()
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
         // Skip class and struct declarations..
-        if ( TOKEN::Match(tok, "class") || TOKEN::Match(tok, "struct") )
+        if ( (tok->str() == "class") || (tok->str() == "struct") )
         {
             for (const TOKEN *tok2 = tok; tok2; tok2 = tok2->next)
             {
-                if ( TOKEN::Match(tok2, "{") )
+                if ( tok2->str() == "{" )
                 {
                     int _indentlevel = 0;
                     tok = tok2;
                     for (tok = tok2; tok; tok = tok->next)
                     {
-                        if ( TOKEN::Match(tok, "{") )
+                        if ( tok->str() == "{" )
                         {
                             _indentlevel++;
                         }
-                        if ( TOKEN::Match(tok, "}") )
+                        if ( tok->str() == "}" )
                         {
                             _indentlevel--;
                             if ( _indentlevel <= 0 )
@@ -482,11 +482,11 @@ void CheckOther::CheckVariableScope()
                 break;
         }
 
-        if ( TOKEN::Match(tok, "{") )
+        if ( tok->str() == "{" )
         {
             indentlevel++;
         }
-        if ( TOKEN::Match(tok, "}") )
+        if ( tok->str() == "}" )
         {
             indentlevel--;
             if ( indentlevel == 0 )
@@ -503,10 +503,10 @@ void CheckOther::CheckVariableScope()
             if ( ! tok1 )
                 continue;
 
-            if (TOKEN::Match(tok1,"return") ||
-                TOKEN::Match(tok1,"delete") ||
-                TOKEN::Match(tok1,"goto") ||
-                TOKEN::Match(tok1,"else"))
+            if ((tok1->str() == "return") ||
+                (tok1->str() == "delete") ||
+                (tok1->str() == "goto") ||
+                (tok1->str() == "else"))
                 continue;
 
             // Variable declaration?
@@ -536,12 +536,12 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
     bool for_or_while = false;
     while ( indentlevel >= 0 && tok )
     {
-        if ( TOKEN::Match(tok, "{") )
+        if ( tok->str() == "{" )
         {
             indentlevel++;
         }
 
-        else if ( TOKEN::Match(tok, "}") )
+        else if ( tok->str() == "}" )
         {
             indentlevel--;
             if ( indentlevel == 0 )
@@ -553,18 +553,18 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
             }
         }
 
-        else if ( TOKEN::Match(tok, "(") )
+        else if ( tok->str() == "(" )
         {
             parlevel++;
         }
 
-        else if ( TOKEN::Match(tok, ")") )
+        else if ( tok->str() == ")" )
         {
             parlevel--;
         }
 
 
-        else if ( strcmp(tok->strAt( 0), varname) == 0 )
+        else if ( tok->str() == varname )
         {
             if ( indentlevel == 0 || used1 )
                 return;
@@ -573,9 +573,9 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
 
         else if ( indentlevel==0 )
         {
-            if ( TOKEN::Match(tok,"for") || TOKEN::Match(tok,"while") )
+            if ( (tok->str() == "for") || (tok->str() == "while") )
                 for_or_while = true;
-            if ( parlevel == 0 && TOKEN::Match(tok, ";") )
+            if ( parlevel == 0 && (tok->str() == ";") )
                 for_or_while = false;
         }
 
@@ -641,7 +641,7 @@ void CheckOther::CheckStructMemberUsage()
     {
         if ( tok->FileIndex != 0 )
             continue;
-        if ( TOKEN::Match(tok,"}") )
+        if ( tok->str() == "}" )
             structname = 0;
         if ( TOKEN::Match(tok, "struct %type% {") )
             structname = tok->strAt( 1);
@@ -710,17 +710,17 @@ void CheckOther::CheckCharVariable()
             int indentlevel = 0;
             for ( const TOKEN *tok2 = tok->next; tok2; tok2 = tok2->next )
             {
-                if ( TOKEN::Match(tok2, "{") )
+                if ( tok2->str() == "{" )
                     ++indentlevel;
 
-                else if ( TOKEN::Match(tok2, "}") )
+                else if ( tok2->str() == "}" )
                 {
                     --indentlevel;
                     if ( indentlevel <= 0 )
                         break;
                 }
 
-                if (!TOKEN::Match(tok2,".") && TOKEN::Match(tok2->next, "%var% [ %var1% ]", varname))
+                if ((tok2->str() != ".") && TOKEN::Match(tok2->next, "%var% [ %var1% ]", varname))
                 {
                     std::ostringstream errmsg;
                     errmsg << _tokenizer->fileLine(tok2->next) << ": Warning - using char variable as array index";
@@ -756,15 +756,15 @@ void CheckOther::CheckIncompleteStatement()
 
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
-        if ( TOKEN::Match(tok, "(") )
+        if ( tok->str() == "(" )
             ++parlevel;
-        else if ( TOKEN::Match(tok, ")") )
+        else if ( tok->str() == ")" )
             --parlevel;
 
         if ( parlevel != 0 )
             continue;
 
-        if ( !TOKEN::Match(tok,"#") && TOKEN::Match(tok->next,"; %str%") && !TOKEN::Match(tok->tokAt(3), ",") )
+        if ( (tok->str() != "#") && TOKEN::Match(tok->next,"; %str%") && !TOKEN::Match(tok->tokAt(3), ",") )
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next) << ": Redundant code: Found a statement that begins with string constant";

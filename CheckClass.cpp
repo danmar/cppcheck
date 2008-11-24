@@ -57,9 +57,9 @@ struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
         if (!tok->next)
             break;
 
-        if (tok->str[0] == '{')
+        if (tok->aaaa0() == '{')
             indentlevel++;
-        if (tok->str[0] == '}')
+        if (tok->aaaa0() == '}')
         {
             if (indentlevel <= 1)
                 break;
@@ -67,7 +67,7 @@ struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
         }
 
 
-        if (indentlevel==1 && (strchr(";{}", tok->str[0]) || (tok->str[0]!=':' && strchr(tok->str, ':'))))
+        if (indentlevel==1 && (strchr(";{}", tok->aaaa0()) || (tok->aaaa0()!=':' && strchr(tok->aaaa(), ':'))))
         {
             const TOKEN *next = tok->next;
 
@@ -79,9 +79,9 @@ struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
                 const char *types[] = {"bool", "char", "int", "short", "long", "float", "double", 0};
                 for ( int type = 0; types[type]; type++ )
                 {
-                    if ( strcmp(next->str, types[type]) == 0)
+                    if ( strcmp(next->aaaa(), types[type]) == 0)
                     {
-                        varname = next->next->str;
+                        varname = next->next->aaaa();
                         break;
                     }
                 }
@@ -132,7 +132,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             indentlevel = 1;
         }
 
-        if ( tok->str[0] == '{' )
+        if ( tok->aaaa0() == '{' )
         {
             // If indentlevel==0 don't go to indentlevel 1. Skip the block.
             if ( indentlevel > 0 )
@@ -142,9 +142,9 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             {
                 for ( ; tok; tok = tok->next )
                 {
-                    if ( tok->str[0] == '{' )
+                    if ( tok->aaaa0() == '{' )
                         ++indentlevel;
-                    else if ( tok->str[0] == '}' )
+                    else if ( tok->aaaa0() == '}' )
                     {
                         --indentlevel;
                         if ( indentlevel <= 0 )
@@ -158,7 +158,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             }
         }
 
-        if ( tok->str[0] == '}' )
+        if ( tok->aaaa0() == '}' )
         {
             indentlevel--;
             if ( indentlevel < 0 )
@@ -171,9 +171,9 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             if ( TOKEN::Match( tok, "%var1% (", _funcname ) )
             {
                 const TOKEN *tok2 = tok;
-                while ( tok2 && tok2->str[0] != '{' && tok2->str[0] != ';' )
+                while ( tok2 && tok2->aaaa0() != '{' && tok2->aaaa0() != ';' )
                     tok2 = tok2->next;
-                if ( tok2 && tok2->str[0] == '{' )
+                if ( tok2 && tok2->aaaa0() == '{' )
                     return tok;
             }
         }
@@ -218,20 +218,20 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         {
             if (Assign && TOKEN::Match(ftok, "%var% ("))
             {
-                InitVar( varlist, ftok->str );
+                InitVar( varlist, ftok->aaaa() );
             }
 
-            Assign |= (ftok->str[0] == ':');
+            Assign |= (ftok->aaaa0() == ':');
         }
 
 
-        if (ftok->str[0] == '{')
+        if (ftok->aaaa0() == '{')
         {
             indentlevel++;
             Assign = false;
         }
 
-        if (ftok->str[0] == '}')
+        if (ftok->aaaa0() == '}')
         {
             if (indentlevel <= 1)
                 break;
@@ -275,11 +275,11 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         else if (TOKEN::Match(ftok, "%var% ("))
         {
             // No recursive calls!
-            if ( std::find(callstack.begin(),callstack.end(),ftok->str) == callstack.end() )
+            if ( std::find(callstack.begin(),callstack.end(),ftok->aaaa()) == callstack.end() )
             {
-                callstack.push_back( ftok->str );
+                callstack.push_back( ftok->aaaa() );
                 int i = 0;
-                const TOKEN *ftok2 = FindClassFunction( tok1, classname, ftok->str, i );
+                const TOKEN *ftok2 = FindClassFunction( tok1, classname, ftok->aaaa(), i );
                 ClassChecking_VarList_Initialize(tok1, ftok2, varlist, classname, callstack);
             }
         }
@@ -287,13 +287,13 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         // Assignment of member variable?
         else if (TOKEN::Match(ftok, "%var% ="))
         {
-            InitVar( varlist, ftok->str );
+            InitVar( varlist, ftok->aaaa() );
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (TOKEN::Match(ftok,"%var% . clear (") || TOKEN::Match(ftok,"%var% . Clear ("))
         {
-            InitVar( varlist, ftok->str );
+            InitVar( varlist, ftok->aaaa() );
         }
     }
 }
@@ -314,7 +314,7 @@ void CheckClass::CheckConstructors()
     const TOKEN *tok1 = TOKEN::findtoken(_tokenizer->tokens(), pattern_classname);
     while (tok1)
     {
-        const char *classname = tok1->next->str;
+        const char *classname = tok1->next->aaaa();
         if ( !(tok1->next->isName()) )
         {
             tok1 = TOKEN::findtoken( tok1->next, pattern_classname );
@@ -325,7 +325,7 @@ void CheckClass::CheckConstructors()
         const char *constructor_pattern[] = {"","clKalle","(",NULL};
         constructor_pattern[1] = classname;
         const TOKEN *constructor_token = TOKEN::findtoken( _tokenizer->tokens(), constructor_pattern );
-        while ( constructor_token && constructor_token->str[0] == '~' )
+        while ( constructor_token && constructor_token->aaaa0() == '~' )
             constructor_token = TOKEN::findtoken( constructor_token->next, constructor_pattern );
         if ( ! constructor_token )
         {
@@ -414,7 +414,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
     const char *pattern_class[] = {"class","","{",NULL};
     for (const TOKEN *tok1 = TOKEN::findtoken(_tokenizer->tokens(), pattern_class); tok1; tok1 = TOKEN::findtoken(tok1->next, pattern_class))
     {
-        const char *classname = tok1->next->str;
+        const char *classname = tok1->next->aaaa();
 
         // The class implementation must be available..
         const char *pattern_classconstructor[] = {"","::","",NULL};
@@ -437,21 +437,21 @@ void CheckClass::CheckUnusedPrivateFunctions()
                 break;
             }
 
-            if (tok->str[0] == '{')
+            if (tok->aaaa0() == '{')
                 indent_level++;
-            if (tok->str[0] == '}')
+            if (tok->aaaa0() == '}')
             {
                 if (indent_level <= 1)
                     break;
                 indent_level--;
             }
-            if (strcmp(tok->str,"};") == 0)
+            if (strcmp(tok->aaaa(),"};") == 0)
                 break;
-            if (strcmp(tok->str,"private:") == 0)
+            if (strcmp(tok->aaaa(),"private:") == 0)
                 priv = true;
-            else if (strcmp(tok->str,"public:") == 0)
+            else if (strcmp(tok->aaaa(),"public:") == 0)
                 priv = false;
-            else if (strcmp(tok->str,"protected:") == 0)
+            else if (strcmp(tok->aaaa(),"protected:") == 0)
                 priv = false;
             else if (priv && indent_level == 1)
             {
@@ -461,7 +461,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
                 if (TOKEN::Match(tok, "%var% (") &&
                     !TOKEN::Match(tok,classname))
                 {
-                    FuncList.push_back(tok->str);
+                    FuncList.push_back(tok->aaaa());
                 }
             }
         }
@@ -475,11 +475,11 @@ void CheckClass::CheckUnusedPrivateFunctions()
         {
             ftok = TOKEN::findtoken(ftok,pattern_function);
             int numpar = 0;
-            while (ftok && ftok->str[0]!=';' && ftok->str[0]!='{')
+            while (ftok && ftok->aaaa0()!=';' && ftok->aaaa0()!='{')
             {
-                if (ftok->str[0] == '(')
+                if (ftok->aaaa0() == '(')
                     numpar++;
-                else if (ftok->str[0] == ')')
+                else if (ftok->aaaa0() == ')')
                     numpar--;
                 ftok = ftok->next;
             }
@@ -487,23 +487,23 @@ void CheckClass::CheckUnusedPrivateFunctions()
             if (!ftok)
                 break;
 
-            if (ftok->str[0] != ';' && numpar == 0)
+            if (ftok->aaaa0() != ';' && numpar == 0)
             {
                 HasFuncImpl = true;
 
                 indent_level = 0;
                 while (ftok)
                 {
-                    if (ftok->str[0] == '{')
+                    if (ftok->aaaa0() == '{')
                         indent_level++;
-                    if (ftok->str[0] == '}')
+                    if (ftok->aaaa0() == '}')
                     {
                         if (indent_level<=1)
                             break;
                         indent_level--;
                     }
-                    if (ftok->next && ftok->next->str[0] == '(')
-                        FuncList.remove(ftok->str);
+                    if (ftok->next && ftok->next->aaaa0() == '(')
+                        FuncList.remove(ftok->aaaa());
                     ftok = ftok->next;
                 }
             }
@@ -575,7 +575,7 @@ void CheckClass::CheckMemset()
         if (TOKEN::findtoken(_tokenizer->tokens(),pattern1))
         {
             std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on class.";
+            ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->aaaa() << "' on class.";
             _errorLogger->reportErr(ostr.str());
             continue;
         }
@@ -585,13 +585,13 @@ void CheckClass::CheckMemset()
         pattern2[1] = type;
         for (const TOKEN *tstruct = TOKEN::findtoken(_tokenizer->tokens(), pattern2); tstruct; tstruct = tstruct->next)
         {
-            if (tstruct->str[0] == '}')
+            if (tstruct->aaaa0() == '}')
                 break;
 
             if (TOKEN::Match(tstruct, "std :: %type% %var% ;"))
             {
                 std::ostringstream ostr;
-                ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str << "' on struct that contains a 'std::" << tstruct->strAt(2) << "'";
+                ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->aaaa() << "' on struct that contains a 'std::" << tstruct->strAt(2) << "'";
                 _errorLogger->reportErr(ostr.str());
                 break;
             }

@@ -28,7 +28,8 @@
 TOKEN::TOKEN()
 {
     FileIndex = 0;
-    _str = 0;
+    _cstr = 0;
+    _str = "";
     linenr = 0;
     next = 0;
     _isName = false;
@@ -37,28 +38,27 @@ TOKEN::TOKEN()
 
 TOKEN::~TOKEN()
 {
-    std::free(_str);
+    std::free(_cstr);
 }
 
 void TOKEN::setstr( const char s[] )
 {
-    std::free(_str);
+    _str = s;
+    std::free(_cstr);
 #ifndef _MSC_VER
-    _str = strdup(s);
+    _cstr = strdup(s);
 #else
-    _str = _strdup(s);
+    _cstr = _strdup(s);
 #endif
-    str = _str ? _str : "";
-
-    _isName = bool(str[0]=='_' || isalpha(str[0]));
-    _isNumber = bool(isdigit(str[0]) != 0);
+    _isName = bool(_str[0]=='_' || isalpha(_str[0]));
+    _isNumber = bool(isdigit(_str[0]) != 0);
 }
 
 void TOKEN::combineWithNext(const char str1[], const char str2[])
 {
     if (!(next))
         return;
-    if (strcmp(str,str1) || strcmp(next->str,str2))
+    if (_str!=str1 || next->_str!=str2)
         return;
 
 	std::string newstr(std::string(str1) + std::string(str2));
@@ -87,7 +87,7 @@ const TOKEN *TOKEN::tokAt(int index) const
 const char *TOKEN::strAt(int index) const
 {
     const TOKEN *tok = this->tokAt(index);
-    return tok ? tok->str : "";
+    return tok ? tok->_cstr : "";
 }
 
 bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
@@ -132,7 +132,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
             if ( ! varname )
                 return false;
 
-            if (strcmp(tok->str, varname[0]) != 0)
+            if (tok->_str != varname[0])
                 return false;
 
             for ( int i = 1; varname[i]; i++ )
@@ -159,19 +159,19 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
 
         else if (strcmp(str,"%str%")==0)
         {
-            if ( tok->str[0] != '\"' )
+            if ( tok->_str[0] != '\"' )
                 return false;
         }
 
         // [.. => search for a one-character token..
-        else if (str[0]=='[' && strchr(str, ']') && tok->str[1] == 0)
+        else if (str[0]=='[' && strchr(str, ']') && tok->_str[1] == 0)
         {
             *strrchr(str, ']') = 0;
-            if ( strchr( str + 1, tok->str[0] ) == 0 )
+            if ( strchr( str + 1, tok->_str[0] ) == 0 )
                 return false;
         }
 
-        else if (strcmp(str, tok->str) != 0)
+        else if (str != tok->_str)
             return false;
 
         tok = tok->next;
@@ -227,7 +227,7 @@ const TOKEN *TOKEN::findtoken(const TOKEN *tok1, const char *tokenstr[])
         {
             if (!tok)
                 return NULL;
-            if (*(tokenstr[i]) && strcmp(tokenstr[i],tok->str))
+            if (*(tokenstr[i]) && (tokenstr[i] != tok->_str))
                 break;
             tok = tok->next;
             i++;

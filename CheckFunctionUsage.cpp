@@ -71,7 +71,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 
         if ( funcname )
         {
-            FunctionUsage &func = _functions[ funcname->str ];
+            FunctionUsage &func = _functions[ funcname->aaaa() ];
 
             // No filename set yet..
             if (func.filename.empty())
@@ -107,10 +107,10 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
             int parlevel = 0;
             for ( const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next )
             {
-                if (TOKEN::Match(tok2, "("))
+                if (tok2->str() == "(")
                     ++parlevel;
 
-                else if (TOKEN::Match(tok2, ")"))
+                else if (tok2->str() == ")")
                 {
                     --parlevel;
                     if (parlevel == 0 && (TOKEN::Match(tok2, ") {") || TOKEN::Match(tok2, ") const")))
@@ -123,7 +123,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 
         if ( funcname )
         {
-            FunctionUsage &func = _functions[ funcname->str ];
+            FunctionUsage &func = _functions[ funcname->aaaa() ];
 
             if ( func.filename.empty() || func.filename == "+" )
                 func.usedOtherFile = true;

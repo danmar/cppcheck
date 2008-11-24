@@ -85,12 +85,12 @@ void CheckHeaders::WarningIncludeHeader()
     // Including..
     for ( const TOKEN *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next)
     {
-        if (strcmp(includetok->str, "#include") != 0)
+        if (strcmp(includetok->aaaa(), "#include") != 0)
             continue;
 
         // Get fileindex of included file..
         unsigned int hfile = 0;
-        const char *includefile = includetok->next->str;
+        const char *includefile = includetok->next->aaaa();
         while (hfile < _tokenizer->getFiles()->size())
         {
             if ( Tokenizer::SameFileName( _tokenizer->getFiles()->at(hfile).c_str(), includefile ) )
@@ -118,10 +118,10 @@ void CheckHeaders::WarningIncludeHeader()
                 continue;
 
             // I'm only interested in stuff that is declared at indentlevel 0
-            if (tok1->str[0] == '{')
+            if (tok1->aaaa0() == '{')
                 indentlevel++;
 
-            else if (tok1->str[0] == '}')
+            else if (tok1->aaaa0() == '}')
                 indentlevel--;
 
             if (indentlevel != 0)
@@ -148,13 +148,13 @@ void CheckHeaders::WarningIncludeHeader()
 
             // enum..
             // --------------------------------------
-            else if (strcmp(tok1->str, "enum") == 0)
+            else if (strcmp(tok1->aaaa(), "enum") == 0)
             {
                 tok1 = tok1->next;
-                while (tok1->next && tok1->str[0]!=';')
+                while (tok1->next && tok1->aaaa0()!=';')
                 {
                     if ( tok1->isName() )
-                        namelist.push_back(tok1->str);
+                        namelist.push_back(tok1->aaaa());
                     tok1 = tok1->next;
                 }
             }
@@ -175,26 +175,26 @@ void CheckHeaders::WarningIncludeHeader()
 
             // typedef..
             // --------------------------------------
-            else if (strcmp(tok1->str,"typedef")==0)
+            else if (strcmp(tok1->aaaa(),"typedef")==0)
             {
                 if (strcmp(tok1->strAt(1),"enum")==0)
                     continue;
                 int parlevel = 0;
                 while (tok1->next)
                 {
-                    if ( strchr("({", tok1->str[0]) )
+                    if ( strchr("({", tok1->aaaa0()) )
                         parlevel++;
 
-                    else if ( strchr(")}", tok1->str[0]) )
+                    else if ( strchr(")}", tok1->aaaa0()) )
                         parlevel--;
 
                     else if (parlevel == 0)
                     {
-                        if ( tok1->str[0] == ';' )
+                        if ( tok1->aaaa0() == ';' )
                             break;
 
                         if ( TOKEN::Match(tok1, "%var% ;") )
-                            namelist.push_back(tok1->str);
+                            namelist.push_back(tok1->aaaa());
                     }
 
                     tok1 = tok1->next;
@@ -224,14 +224,14 @@ void CheckHeaders::WarningIncludeHeader()
             if ( ! tok1->isName() )
                 continue;
 
-            if (std::find(namelist.begin(),namelist.end(),tok1->str ) != namelist.end())
+            if (std::find(namelist.begin(),namelist.end(),tok1->aaaa() ) != namelist.end())
             {
                 Needed = true;
                 break;
             }
 
             if ( ! NeedDeclaration )
-                NeedDeclaration = (std::find(classlist.begin(),classlist.end(),tok1->str ) != classlist.end());
+                NeedDeclaration = (std::find(classlist.begin(),classlist.end(),tok1->aaaa() ) != classlist.end());
         }
 
 
