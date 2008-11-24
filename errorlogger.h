@@ -28,7 +28,20 @@
 class ErrorLogger
 {
 public:
+    /**
+     * Errors and warnings are directed here.
+     *
+     * @param errmsg Errors messages are normally in format
+     * "[filepath:line number] Message", e.g.
+     * "[main.cpp:4] Uninitialized member variable"
+     */
     virtual void reportErr( const std::string &errmsg) = 0;
+
+    /**
+     * Information about progress is directed here.
+     *
+     * @param outmsg, E.g. "Checking main.cpp..."
+     */
     virtual void reportOut( const std::string &outmsg) = 0;
 };
 

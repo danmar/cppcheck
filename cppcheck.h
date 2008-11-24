@@ -83,8 +83,21 @@ class CppCheck : public ErrorLogger
 
     private:
         void checkFile(const std::string &code, const char FileName[]);
+
+        /**
+         * Errors and warnings are directed here.
+         *
+         * @param errmsg Errors messages are normally in format
+         * "[filepath:line number] Message", e.g.
+         * "[main.cpp:4] Uninitialized member variable"
+         */
         virtual void reportErr( const std::string &errmsg);
-        //void reportErr( const TOKEN *token, const std::string &errmsg);
+
+        /**
+         * Information about progress is directed here.
+         *
+         * @param outmsg, E.g. "Checking main.cpp..."
+         */
         virtual void reportOut( const std::string &outmsg);
 
         std::list<std::string> _errorList;
