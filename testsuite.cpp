@@ -124,8 +124,7 @@ void TestFixture::reportErr( const std::string &errmsg)
     errout << errmsg << std::endl;
 }
 
-void TestFixture::reportErr( const TOKEN *token, const std::string &errmsg)
+void TestFixture::reportOut( const std::string &outmsg)
 {
-    reportErr( errmsg );
+    // These can probably be ignored
 }
-

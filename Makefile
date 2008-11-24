@@ -1,12 +1,14 @@
-SRCS=CheckBufferOverrun.cpp	CheckClass.cpp	CheckHeaders.cpp	CheckMemoryLeak.cpp	CheckFunctionUsage.cpp	CheckOther.cpp	FileLister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp
+SRCS=CheckBufferOverrun.cpp	CheckClass.cpp	CheckHeaders.cpp	CheckMemoryLeak.cpp	CheckFunctionUsage.cpp	CheckOther.cpp	FileLister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp cppcheckexecutor.cpp
 OBJS=$(SRCS:%.cpp=%.o)
-TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testsimplifytokens.o	testtokenize.o	testunusedprivfunc.o	testunusedvar.o	settings.o	cppcheck.o token.o
+TESTS=testbufferoverrun.o	testcharvar.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testsimplifytokens.o	testtokenize.o	testunusedprivfunc.o	testunusedvar.o
 BIN = ${DESTDIR}/usr/bin
 
 all:	${OBJS} main.o
 	g++ -Wall -g -o cppcheck $^
 test:	${OBJS} testrunner.o	testsuite.o	${TESTS}
 	g++ -Wall -g -o testrunner $^
+cppcheckexecutor.o: cppcheckexecutor.cpp cppcheckexecutor.h cppcheck.h errorlogger.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 cppcheck.o: cppcheck.cpp cppcheck.h settings.h errorlogger.h preprocessor.h tokenize.h token.h CheckMemoryLeak.h CheckBufferOverrun.h CheckClass.h CheckHeaders.h CheckOther.h CheckFunctionUsage.h FileLister.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 main.o: main.cpp cppcheck.h settings.h errorlogger.h

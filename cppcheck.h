@@ -39,7 +39,7 @@ class CppCheck : public ErrorLogger
         /**
          * Constructor.
          */
-        CppCheck();
+        CppCheck( ErrorLogger &errorLogger );
 
         /**
          * Destructor.
@@ -83,14 +83,16 @@ class CppCheck : public ErrorLogger
 
     private:
         void checkFile(const std::string &code, const char FileName[]);
-        void reportErr( const std::string &errmsg);
-        void reportErr( const TOKEN *token, const std::string &errmsg);
+        virtual void reportErr( const std::string &errmsg);
+        //void reportErr( const TOKEN *token, const std::string &errmsg);
+        virtual void reportOut( const std::string &outmsg);
 
         std::list<std::string> _errorList;
         std::ostringstream _errout;
         Settings _settings;
         std::vector<std::string> _filenames;
         CheckFunctionUsage _checkFunctionUsage;
+        ErrorLogger *_errorLogger;
 };
 
 #endif // CPPCHECK_H

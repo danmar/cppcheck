@@ -19,7 +19,7 @@
 #ifndef ERRORLOGGER_H
 #define ERRORLOGGER_H
 
-class TOKEN;
+#include <string>
 
 /**
  * This is an interface, which the class responsible of error logging
@@ -27,9 +27,9 @@ class TOKEN;
  */
 class ErrorLogger
 {
-    public:
+public:
     virtual void reportErr( const std::string &errmsg) = 0;
-    virtual void reportErr( const TOKEN *token, const std::string &errmsg) = 0;
+    virtual void reportOut( const std::string &outmsg) = 0;
 };
 
 #endif // #ifndef ERRORLOGGER_H

@@ -29,7 +29,6 @@
 #include "FileLister.h"
 
 #include <algorithm>
-#include <iostream>
 #include <sstream>
 #include <cstring>
 #include <fstream>
@@ -37,9 +36,9 @@
 
 //---------------------------------------------------------------------------
 
-CppCheck::CppCheck() : _checkFunctionUsage( this )
+CppCheck::CppCheck( ErrorLogger &errorLogger ) : _checkFunctionUsage( this )
 {
-
+    _errorLogger = &errorLogger;
 }
 
 CppCheck::~CppCheck()
@@ -148,8 +147,8 @@ void CppCheck::check()
         std::string fname = _filenames[c];
 
         // If only errors are printed, print filename after the check
-        if (!_settings._errorsOnly)
-            std::cout << "Checking " << fname << "...\n";
+        if ( _settings._errorsOnly == false )
+            _errorLogger->reportOut( std::string( "Checking " ) + fname + std::string( "..." ) );
 
         std::ifstream fin( fname.c_str() );
         std::map<std::string, std::string> code;
@@ -158,34 +157,18 @@ void CppCheck::check()
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
             checkFile(it->second, _filenames[c].c_str());
 
-        if (_settings._errorsOnly)
-        {
-            if ( !_errout.str().empty() )
-            {
-                std::cout << "Errors found in " << fname << ":\n";
-                std::cerr << _errout.str();
-            }
-        }
-        else
-        {
-            if ( _errout.str().empty() )
-                std::cout << "No errors found\n";
-            else
-                std::cerr << _errout.str();
-        }
+        if ( _settings._errorsOnly == false && _errout.str().empty() )
+            _errorLogger->reportOut( "No errors found" );
     }
 
     // This generates false positives - especially for libraries
     if ( _settings._checkFunctionUsage )
     {
         _errout.str("");
-        std::cout << "Checking usage of global functions (this may take several minutes)..\n";
+        if( _settings._errorsOnly == false )
+            _errorLogger->reportOut( "Checking usage of global functions (this may take several minutes).." );
+
         _checkFunctionUsage.check();
-        if ( ! _errout.str().empty() )
-        {
-            std::cerr << "\n";
-            std::cerr << _errout.str();
-        }
     }
 
 }
@@ -322,17 +305,14 @@ void CppCheck::reportErr( const std::string &errmsg)
             return;
         _errorList.push_back( errmsg );
     }
+
+    _errorLogger->reportErr( errmsg );
+
     _errout << errmsg << std::endl;
 }
 
-void CppCheck::reportErr( const TOKEN *token, const std::string &errmsg)
+void CppCheck::reportOut( const std::string &outmsg)
 {
-/*
-    std::string message = _tokenizer.fileLine( token ) + errmsg;
-    reportErr( message );
-*/
-    reportErr( errmsg );
+    // This is currently never called. It is here just to comply with
+    // the interface.
 }
-
-
-

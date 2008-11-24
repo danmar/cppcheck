@@ -16,24 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
+#include "cppcheckexecutor.h"
 
-#include "cppcheck.h"
-#include <iostream>
-
-//---------------------------------------------------------------------------
-// Main function of cppcheck
-//---------------------------------------------------------------------------
-
+/**
+ * Main function of cppcheck
+ *
+ * @param argc Passed to CppCheck::parseFromArgs()
+ * @param argv Passed to CppCheck::parseFromArgs()
+ * @return 0
+ */
 int main(int argc, char* argv[])
 {
-    CppCheck cppCheck;
-    std::string result = cppCheck.parseFromArgs( argc, argv );
-    if( result.length() == 0 )
-        cppCheck.check();
-    else
-        std::cout << result;
-
+    CppCheckExecutor exec;
+    exec.check( argc, argv );
     return 0;
 }
-
-

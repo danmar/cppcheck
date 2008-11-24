@@ -40,9 +40,9 @@ protected:
     void assertFail(const char *filename, int linenr);
 
 public:
-    void reportErr( const std::string &errmsg);
+    virtual void reportErr( const std::string &errmsg);
 
-    void reportErr( const TOKEN *token, const std::string &errmsg);
+    virtual void reportOut( const std::string &outmsg);
 
     TestFixture(const std::string &_name);
     virtual ~TestFixture() { }
