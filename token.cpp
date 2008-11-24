@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007-2008 Daniel Marjamäki and Reijo Tomperi
  *
@@ -20,6 +20,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+
+#ifdef __BORLANDC__
+#include <ctype.h>  // isalpha, isdigit
+#endif
 
 TOKEN::TOKEN()
 {

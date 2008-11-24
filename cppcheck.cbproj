@@ -18,45 +18,45 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <OutputExt>exe</OutputExt>
     <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
-    <Defines>NO_STRICT</Defines>
+    <OutputExt>exe</OutputExt>
     <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+    <Defines>NO_STRICT</Defines>
     <DynamicRTL>true</DynamicRTL>
     <ILINK_SelectedWarnings>false</ILINK_SelectedWarnings>
-    <ILINK_ObjectSearchPath>C:\cppcheck</ILINK_ObjectSearchPath>
     <ILINK_AllWarnings>true</ILINK_AllWarnings>
-    <NoVCL>true</NoVCL>
+    <ILINK_ObjectSearchPath>C:\cppcheck</ILINK_ObjectSearchPath>
     <ProjectType>CppConsoleApplication</ProjectType>
+    <NoVCL>true</NoVCL>
     <BCC_SelectedWarnings>false</BCC_SelectedWarnings>
-    <PackageImports>vcl.bpi;rtl.bpi;bcbie.bpi;vclx.bpi;vclactnband.bpi;xmlrtl.bpi;bcbsmp.bpi;dbrtl.bpi;vcldb.bpi;vcldbx.bpi;bdertl.bpi;A407_R110.bpi;DreamEdit_C6.bpi</PackageImports>
     <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
+    <PackageImports>vcl.bpi;rtl.bpi;bcbie.bpi;vclx.bpi;vclactnband.bpi;xmlrtl.bpi;bcbsmp.bpi;dbrtl.bpi;vcldb.bpi;vcldbx.bpi;bdertl.bpi;A407_R110.bpi;DreamEdit_C6.bpi</PackageImports>
     <BCC_AllWarnings>true</BCC_AllWarnings>
     <BCC_wpar>false</BCC_wpar>
     <IncludePath>$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck</IncludePath>
     <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck</ILINK_LibraryPath>
-    <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
     <DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
+    <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <DCC_Optimize>false</DCC_Optimize>
     <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
-    <Defines>_DEBUG;$(Defines)</Defines>
+    <DCC_Optimize>false</DCC_Optimize>
     <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+    <Defines>_DEBUG;$(Defines)</Defines>
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
     <BCC_UseRegisterVariables>None</BCC_UseRegisterVariables>
     <DCC_Define>DEBUG</DCC_Define>
     <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
-    <FinalOutputDir>bcb_debug</FinalOutputDir>
     <BCC_SelectedWarnings>false</BCC_SelectedWarnings>
+    <FinalOutputDir>bcb_debug</FinalOutputDir>
     <IntermediateOutputDir>bcb_Debug</IntermediateOutputDir>
     <BCC_AllWarnings>true</BCC_AllWarnings>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
     <BCC_StackFrames>true</BCC_StackFrames>
-    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
+    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
   </PropertyGroup>
@@ -84,6 +84,10 @@
       <DependentOn>CheckClass.h</DependentOn>
       <BuildOrder>1</BuildOrder>
     </CppCompile>
+    <CppCompile Include="CheckFunctionUsage.cpp">
+      <DependentOn>CheckFunctionUsage.h</DependentOn>
+      <BuildOrder>11</BuildOrder>
+    </CppCompile>
     <CppCompile Include="CheckHeaders.cpp">
       <DependentOn>CheckHeaders.h</DependentOn>
       <BuildOrder>2</BuildOrder>
@@ -96,29 +100,28 @@
       <DependentOn>CheckOther.h</DependentOn>
       <BuildOrder>4</BuildOrder>
     </CppCompile>
-    <CppCompile Include="CommonCheck.cpp">
-      <DependentOn>CommonCheck.h</DependentOn>
-      <BuildOrder>5</BuildOrder>
-    </CppCompile>
     <CppCompile Include="cppcheck.cpp">
-      <BuildOrder>11</BuildOrder>
+      <BuildOrder>10</BuildOrder>
     </CppCompile>
     <CppCompile Include="FileLister.cpp">
-      <BuildOrder>8</BuildOrder>
+      <BuildOrder>7</BuildOrder>
     </CppCompile>
     <CppCompile Include="main.cpp">
-      <BuildOrder>6</BuildOrder>
+      <BuildOrder>5</BuildOrder>
     </CppCompile>
     <CppCompile Include="preprocessor.cpp">
       <DependentOn>preprocessor.h</DependentOn>
-      <BuildOrder>9</BuildOrder>
+      <BuildOrder>8</BuildOrder>
     </CppCompile>
     <CppCompile Include="settings.cpp">
-      <BuildOrder>10</BuildOrder>
+      <BuildOrder>9</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="token.cpp">
+      <BuildOrder>12</BuildOrder>
     </CppCompile>
     <CppCompile Include="tokenize.cpp">
       <DependentOn>tokenize.h</DependentOn>
-      <BuildOrder>7</BuildOrder>
+      <BuildOrder>6</BuildOrder>
     </CppCompile>
     <BuildConfiguration Include="Debug">
       <Key>Cfg_1</Key>
