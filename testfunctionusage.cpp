@@ -46,14 +46,13 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(code);
-        tokenizer.TokenizeCode( istr );
+        tokenizer.tokenize( istr, "test.cpp" );
 
         // Clear the error buffer..
         errout.str("");
 
-        // Check for memory leaks..
+        // Check for unused functions..
         CheckFunctionUsage checkFunctionUsage(this);
         checkFunctionUsage.parseTokens( tokenizer );
         checkFunctionUsage.check();

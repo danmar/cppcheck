@@ -39,10 +39,9 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(code);
-        tokenizer.TokenizeCode( istr );
-        tokenizer.SimplifyTokenList();
+        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.simplifyTokenList();
 
         // Clear the error buffer..
         errout.str("");

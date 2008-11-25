@@ -65,9 +65,8 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
-        tokenizer.TokenizeCode(istr, 0);
+        tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
         const char *expected[] =
@@ -89,9 +88,8 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
-        tokenizer.TokenizeCode(istr, 0);
+        tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
         ASSERT_EQUALS( std::string(10000,'a'), std::string(tokenizer.tokens()->aaaa()) );
@@ -111,9 +109,8 @@ private:
 
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(filedata);
-        tokenizer.TokenizeCode(istr, 0);
+        tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
         const char *expected[] =
@@ -142,9 +139,8 @@ private:
                             "{ }\n";
         // tokenize..
         Tokenizer tokenizer;
-        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(code);
-        tokenizer.TokenizeCode(istr, 0);
+        tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.fillFunctionList();
 

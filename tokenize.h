@@ -35,17 +35,25 @@ private:
     // Deallocate lists..
     void DeallocateTokens();
 
+    /**
+     * Helper function for "tokenize". This recursively parses into included header files.
+     */
+    void tokenizeCode(std::istream &code, const unsigned int FileIndex=0);
+
 public:
     Tokenizer();
     ~Tokenizer();
 
-    void Tokenize(std::istream &code, const char FileName[]);
+    /**
+     * Tokenize code
+     * @param code input stream for code
+     * @param FileName The filename
+     */
+    void tokenize(std::istream &code, const char FileName[]);
 
-    // Simplify tokenlist
-    // -----------------------------
-    void SimplifyTokenList();
+    /** Simplify tokenlist */
+    void simplifyTokenList();
 
-    void TokenizeCode(std::istream &code, const unsigned int FileIndex=0);
 
     // Helper functions for handling the tokens list..
 

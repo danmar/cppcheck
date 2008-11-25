@@ -43,8 +43,8 @@ private:
     {
         std::istringstream istr(code);
         Tokenizer tokenizer;
-        tokenizer.TokenizeCode( istr );
-        tokenizer.SimplifyTokenList();
+        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.simplifyTokenList();
 
         std::string ret;
         for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )

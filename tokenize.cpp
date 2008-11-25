@@ -231,7 +231,7 @@ void Tokenizer::InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
-void Tokenizer::Tokenize(std::istream &code, const char FileName[])
+void Tokenizer::tokenize(std::istream &code, const char FileName[])
 {
     // Has this file been tokenized already?
     for (unsigned int i = 0; i < _files.size(); i++)
@@ -244,7 +244,7 @@ void Tokenizer::Tokenize(std::istream &code, const char FileName[])
     _files.push_back(FileName);
 
     // Tokenize the file..
-    TokenizeCode( code, (unsigned int)(_files.size() - 1) );
+    tokenizeCode( code, (unsigned int)(_files.size() - 1) );
 }
 //---------------------------------------------------------------------------
 
@@ -252,7 +252,7 @@ void Tokenizer::Tokenize(std::istream &code, const char FileName[])
 // Tokenize - tokenizes input stream
 //---------------------------------------------------------------------------
 
-void Tokenizer::TokenizeCode(std::istream &code, const unsigned int FileIndex)
+void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
 {
     // Tokenize the file.
     unsigned int lineno = 1;
@@ -301,7 +301,7 @@ void Tokenizer::TokenizeCode(std::istream &code, const unsigned int FileIndex)
                 addtoken(line.c_str(), lineno, FileIndex);
 
                 std::ifstream fin( line.c_str() );
-                Tokenize(fin, line.c_str());
+                tokenize(fin, line.c_str());
             }
 
             else if (strncmp(line.c_str(), "#define", 7) == 0)
@@ -605,7 +605,7 @@ void Tokenizer::TokenizeCode(std::istream &code, const unsigned int FileIndex)
 // Simplify token list
 //---------------------------------------------------------------------------
 
-void Tokenizer::SimplifyTokenList()
+void Tokenizer::simplifyTokenList()
 {
 
     // Remove the keyword 'unsigned'

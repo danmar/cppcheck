@@ -41,15 +41,13 @@ private:
     {
         // Tokenize..
         Tokenizer tokenizer;
-        tokenizer._files.push_back( "test.cpp" );
         std::istringstream istr(code);
-        tokenizer.TokenizeCode( istr );
-        //SimplifyTokenList();  <- this can't be used as it removes 'unsigned'
+        tokenizer.tokenize( istr, "test.cpp" );
 
         // Clear the error buffer..
         errout.str("");
 
-        // Check for memory leaks..
+        // Check for unsigned divisions..
         CheckOther checkOther( &tokenizer, this );
         checkOther.CheckUnsignedDivision();
     }
