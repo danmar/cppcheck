@@ -259,7 +259,7 @@ void Tokenizer::TokenizeCode(std::istream &code, const unsigned int FileIndex)
     std::string CurrentToken;
     for (char ch = (char)code.get(); code.good(); ch = (char)code.get())
     {
-		// Todo
+		// We are not handling UTF and stuff like that. Code is supposed to plain simple text.
 		if ( ch < 0 )
 			continue;
 

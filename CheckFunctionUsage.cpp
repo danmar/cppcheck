@@ -154,11 +154,11 @@ void CheckFunctionUsage::check()
         }
         else if ( ! func.usedOtherFile )
         {
-/*
+            /* TODO - add error message "function is only used in <file> it can be static"
             std::ostringstream errmsg;
             errmsg << "The function '" << it->first << "' is only used in the file it was declared in so it should have local linkage.";
             _errorLogger->reportErr( errmsg.str() );
-*/
+            */
         }
     }
 }
