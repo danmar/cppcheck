@@ -1128,11 +1128,6 @@ void Tokenizer::fillFunctionList()
 
 //---------------------------------------------------------------------------
 
-void Tokenizer::settings( const Settings &settings )
-{
-    _settings = settings;
-}
-
 // Deallocate lists..
 void Tokenizer::DeallocateTokens()
 {

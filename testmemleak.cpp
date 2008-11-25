@@ -50,7 +50,6 @@ private:
         Settings settings;
         settings._checkCodingStyle = true;
         settings._showAll = false;
-        tokenizer.settings( settings );
         tokenizer.fillFunctionList();
         CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings, this );
         checkMemoryLeak.CheckMemoryLeak();

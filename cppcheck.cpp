@@ -181,7 +181,6 @@ void CppCheck::check()
 void CppCheck::checkFile(const std::string &code, const char FileName[])
 {
     Tokenizer _tokenizer;
-    _tokenizer.settings( _settings );
 
     // Tokenize the file
     {

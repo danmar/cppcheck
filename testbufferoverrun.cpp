@@ -45,9 +45,6 @@ private:
         tokenizer.simplifyTokenList();
 
         // Fill function list
-        Settings settings;
-        settings._checkCodingStyle = true;
-        tokenizer.settings( settings );
         tokenizer.fillFunctionList();
 
         // Clear the error buffer..

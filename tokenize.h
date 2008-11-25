@@ -74,7 +74,6 @@ public:
 
     void fillFunctionList();
     const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
-    void settings( const Settings &settings );
     const TOKEN *tokens() const;
 
 
@@ -103,7 +102,6 @@ private:
     std::map<std::string, unsigned int> _typeSize;
     std::vector<const TOKEN *> _functionList;
     std::vector<std::string> _files;
-    Settings _settings;
     struct DefineSymbol * _dsymlist;
     TOKEN *_tokens;
 };

@@ -48,12 +48,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize( istr, "test.cpp" );
 
-        // Fill function list
-        Settings settings;
-        settings._checkCodingStyle = true;
-        tokenizer.settings( settings );
-        tokenizer.fillFunctionList();
-
         // Clear the error buffer..
         errout.str("");
 
