@@ -23,6 +23,7 @@
 #include <list>
 #include <sstream>
 #include <vector>
+#include <map>
 #include "settings.h"
 #include "errorlogger.h"
 #include "CheckFunctionUsage.h"
@@ -70,6 +71,15 @@ class CppCheck : public ErrorLogger
         void addFile( const std::string &path );
 
         /**
+         * Add new unreal file to be checked.
+         *
+         * @param path File name (used for error reporting).
+         * @param content If the file would be a real file, this should be
+         * the content of the file.
+         */
+        void addFile( const std::string &path, const std::string &content );
+
+        /**
          * Parse command line args and get settings and file lists
          * from there.
          *
@@ -104,6 +114,8 @@ class CppCheck : public ErrorLogger
         std::ostringstream _errout;
         Settings _settings;
         std::vector<std::string> _filenames;
+        /** Key is file name, and value is the content of the file */
+        std::map<std::string,std::string> _fileContents;
         CheckFunctionUsage _checkFunctionUsage;
         ErrorLogger *_errorLogger;
 };

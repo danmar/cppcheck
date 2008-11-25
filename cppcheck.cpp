@@ -56,6 +56,12 @@ void CppCheck::addFile( const std::string &path )
     _filenames.push_back( path );
 }
 
+void CppCheck::addFile( const std::string &path, const std::string &content )
+{
+    _filenames.push_back( path );
+    _fileContents[ path ] = content;
+}
+
 std::string CppCheck::parseFromArgs( int argc, char* argv[] )
 {
     std::vector<std::string> pathnames;
@@ -128,6 +134,7 @@ std::string CppCheck::parseFromArgs( int argc, char* argv[] )
         return oss.str();
     }
 
+    // Check function usage if "--style" and "--all" was given.
     if ( _settings._showAll && _settings._checkCodingStyle )
         _settings._checkFunctionUsage = true;
 
@@ -137,10 +144,6 @@ std::string CppCheck::parseFromArgs( int argc, char* argv[] )
 void CppCheck::check()
 {
     std::sort( _filenames.begin(), _filenames.end() );
-
-    // Check function usage if "--style" and "--all" was given.
-
-
     for (unsigned int c = 0; c < _filenames.size(); c++)
     {
         _errout.str("");
@@ -150,12 +153,25 @@ void CppCheck::check()
         if ( _settings._errorsOnly == false )
             _errorLogger->reportOut( std::string( "Checking " ) + fname + std::string( "..." ) );
 
-        std::ifstream fin( fname.c_str() );
-        std::map<std::string, std::string> code;
         Preprocessor preprocessor( this );
-        preprocessor.preprocess(fin, code, fname);
+        std::map<std::string, std::string> code;
+        if( _fileContents.size() > 0 && _fileContents.find( _filenames[c] ) != _fileContents.end() )
+        {
+            // File content was given as a string
+            std::istringstream iss( _fileContents[ _filenames[c] ] );
+            preprocessor.preprocess(iss, code, fname);
+        }
+        else
+        {
+            // Only file name was given, read the content from file
+            std::ifstream fin( fname.c_str() );
+            preprocessor.preprocess(fin, code, fname);
+        }
+
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
+        {
             checkFile(it->second, _filenames[c].c_str());
+        }
 
         if ( _settings._errorsOnly == false && _errout.str().empty() )
             _errorLogger->reportOut( "No errors found" );
