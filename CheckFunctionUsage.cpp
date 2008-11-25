@@ -147,6 +147,8 @@ void CheckFunctionUsage::check()
         if ( ! func.usedSameFile )
         {
             std::ostringstream errmsg;
+            if ( func.filename != "+" )
+                errmsg << "[" << func.filename << "] ";
             errmsg << "The function '" << it->first << "' is never used.";
             _errorLogger->reportErr( errmsg.str() );
         }
