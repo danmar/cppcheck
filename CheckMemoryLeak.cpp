@@ -23,6 +23,7 @@
 
 #include <algorithm>
 
+#include <iostream>
 #include <sstream>
 
 #ifdef __BORLANDC__
@@ -220,13 +221,30 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                     ftok = ftok->next;
                 TOKEN *func = getcode( ftok->tokAt(1), callstack, parname, alloctype, dealloctype );
                 simplifycode( func );
+                const TOKEN *func_ = func;
+                while ( func_ && func_->str() == ";" )
+                    func_ = func_->next;
+                
+                /*
+                for (const TOKEN *t = func_; t; t = t->next)
+                {
+                    std::cout << t->str() << "\n";
+                }
+                */
+                
                 const char *ret = 0;
-                if (TOKEN::findmatch(func, "goto"))
-                    ret = "dealloc";    // TODO : "goto" isn't handled well
-                else if (TOKEN::findmatch(func, "use"))
-                    ret = "use";
-                else if (TOKEN::findmatch(func, "dealloc"))
+                if (TOKEN::findmatch(func_, "goto"))
+                {
+                    // TODO : "goto" isn't handled well
+                    if ( TOKEN::findmatch(func_, "dealloc") )
+                        ret = "dealloc";
+                    else if ( TOKEN::findmatch(func_, "use") )
+                        ret = "use";
+                }    
+                else if (TOKEN::Match(func_, "dealloc"))
                     ret = "dealloc";
+                else if (TOKEN::Match(func_, "use"))
+                    ret = "use";
                 Tokenizer::deleteTokens(func);
                 return ret;
             }
@@ -613,6 +631,22 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                     continue;
                 }
             }
+
+            // Delete "if ; else ;"
+            if ( TOKEN::Match(tok2->next, "if ; else ;") )
+            {
+                erase( tok2, tok2->tokAt(4) );
+                done = false;
+            }
+
+            // TODO Make this more generic. Delete "if ; else use ; use"
+            if ( TOKEN::Match(tok2, "; if ; else use ; use") ||
+                 TOKEN::Match(tok2, "; if use ; else ; use")  )
+            {
+                erase( tok2, tok2->tokAt(4) );
+                done = false;
+            }
+
 
             // Delete "if dealloc ;" and "if use ;" that is not followed by an else..
             // This may cause false positives

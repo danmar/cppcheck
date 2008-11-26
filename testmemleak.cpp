@@ -24,6 +24,7 @@
 #include "CheckMemoryLeak.h"
 #include "testsuite.h"
 
+#include <iostream>
 #include <sstream>
 
 extern std::ostringstream errout;
@@ -111,7 +112,7 @@ private:
         TEST_CASE( func4 );
         TEST_CASE( func5 );
         TEST_CASE( func6 );
-        // TODO TEST_CASE( func7 );
+        TEST_CASE( func7 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -779,7 +780,7 @@ private:
                "    foo(p);\n"
                "}\n" );
         std::string err( errout.str() );
-        ASSERT_EQUALS( std::string(""), err );
+        ASSERT_EQUALS( std::string("[test.cpp:10]: Memory leak: p\n"), err );
     }
 
 
@@ -798,7 +799,8 @@ private:
                "    foo(p);\n"
                "}\n" );
         std::string err( errout.str() );
-        ASSERT_EQUALS( std::string("[test.cpp:4]: Memory leak: p\n"), err );    
+        std::cout << err << "\n";
+        ASSERT_EQUALS( std::string("[test.cpp:11]: Memory leak: p\n"), err );    
     }
 
 
