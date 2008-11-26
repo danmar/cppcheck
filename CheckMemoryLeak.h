@@ -72,7 +72,7 @@ private:
     const char * call_func( const TOKEN *tok, std::list<const TOKEN *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype );
     AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[]);
     AllocType GetAllocationType( const TOKEN *tok2 );
-    bool isclass( const std::string &typestr );
+    bool isclass( const TOKEN *typestr );
 
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;

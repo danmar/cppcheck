@@ -49,18 +49,13 @@ CheckMemoryLeakClass::~CheckMemoryLeakClass()
 
 }
 
-bool CheckMemoryLeakClass::isclass( const std::string &typestr )
+bool CheckMemoryLeakClass::isclass( const TOKEN *tok )
 {
-    if ( typestr == "char" ||
-         typestr == "short" ||
-         typestr == "int" ||
-         typestr == "long" ||
-         typestr == "float" ||
-         typestr == "double" )
+    if ( tok->isStandardType() )
         return false;
 
     std::ostringstream pattern;
-    pattern << "struct " << typestr;
+    pattern << "struct " << tok->str();
     if ( TOKEN::findmatch( _tokenizer->tokens(), pattern.str().c_str() ) )
         return false;
 
@@ -343,7 +338,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             {
                 if ( TOKEN::Match(tok->tokAt(3), "new %type% [(;]") )
                 {
-                    if ( isclass( tok->strAt(4) ) )
+                    if ( isclass( tok->tokAt(4) ) )
                         alloc = No;
                 }
             }
@@ -982,7 +977,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN 
         {
             if ( tok->isName() || strchr(";}", tok->aaaa0()) )
             {
-                if (_settings._showAll || !isclass(tok->strAt(1)))
+                if (_settings._showAll || !isclass(tok->tokAt(1)))
                     CheckMemoryLeak_ClassMembers_Variable( classname, tok->strAt(3) );
             }
         }
