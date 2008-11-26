@@ -64,7 +64,7 @@ public:
     static bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
     bool isName() const;
     bool isNumber() const;
-    static bool IsStandardType(const char str[]);
+    bool isStandardType() const;
     static const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
     static const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[]);
 

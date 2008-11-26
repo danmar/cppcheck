@@ -51,7 +51,7 @@ void TOKEN::setstr( const char s[] )
     _cstr = _strdup(s);
 #endif
     _isName = bool(_str[0]=='_' || isalpha(_str[0]));
-    _isNumber = bool(isdigit(_str[0]) != 0);
+    _isNumber = bool(isdigit(_str[0]) != 0);    
 }
 
 void TOKEN::combineWithNext(const char str1[], const char str2[])
@@ -193,16 +193,13 @@ bool TOKEN::isNumber() const
     return _isNumber;
 }
 
-
-bool TOKEN::IsStandardType(const char str[])
+bool TOKEN::isStandardType() const
 {
-    if (!str)
-        return false;
-    bool Ret = false;
+    bool ret = false;
     const char *type[] = {"bool","char","short","int","long","float","double",0};
     for (int i = 0; type[i]; i++)
-        Ret |= (strcmp(str,type[i])==0);
-    return Ret;
+        ret |= (_str == type[i]);
+    return ret;
 }
 
 //---------------------------------------------------------------------------
