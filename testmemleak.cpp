@@ -111,6 +111,7 @@ private:
         TEST_CASE( func4 );
         TEST_CASE( func5 );
         TEST_CASE( func6 );
+        // TODO TEST_CASE( func7 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -782,6 +783,25 @@ private:
     }
 
 
+    void func7()
+    {
+        check( "static void foo(char *str)\n"
+               "{\n"
+               "    if (abc)\n"
+               "        return;"
+               "    delete [] str;\n"
+               "}\n"
+               "\n"
+               "static void f()\n"
+               "{\n"
+               "    char *p = new char[100];\n"
+               "    foo(p);\n"
+               "}\n" );
+        std::string err( errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Memory leak: p\n"), err );    
+    }
+
+
 
 /*
     void func3()
@@ -812,37 +832,6 @@ private:
                "    delete p;\n"
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:9]: Mismatching allocation and deallocation: p\n"), errout.str() );
-    }
-
-
-    void func5()
-    {
-        check( "static void foo(const char *str)\n"
-               "{ }\n"
-               "\n"
-               "static void f()\n"
-               "{\n"
-               "    char *p = new char[100];\n"
-               "    foo(p);\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:8]: Memory leak: p\n"), errout.str() );
-    }
-
-
-    void func6()
-    {
-        check( "struct ab\n"
-               "{\n"
-               "    int a;\n"
-               "    int b;\n"
-               "};\n"
-               "\n"
-               "static void f()\n"
-               "{\n"
-               "    struct ab *p = malloc(sizeof(struct ab));\n"
-               "    foo(&p->b);\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:11]: Memory leak: p\n"), errout.str() );
     }
 */
 
