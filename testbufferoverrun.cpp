@@ -51,7 +51,9 @@ private:
         errout.str("");
 
         // Check for buffer overruns..
-        CheckBufferOverrunClass checkBufferOverrun( &tokenizer, this );
+        Settings settings;
+        settings._showAll = true;
+        CheckBufferOverrunClass checkBufferOverrun( &tokenizer, settings, this );
         checkBufferOverrun.CheckBufferOverrun();
     }
 

@@ -35,7 +35,8 @@
 // _callStack used when parsing into subfunctions.
 
 
-CheckBufferOverrunClass::CheckBufferOverrunClass( const Tokenizer *tokenizer, ErrorLogger *errorLogger )
+CheckBufferOverrunClass::CheckBufferOverrunClass( const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger )
+  :  _settings(settings)
 {
     _tokenizer = tokenizer;
     _errorLogger = errorLogger;
@@ -220,6 +221,10 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
         {
             // Don't make recursive checking..
             if (std::find(_callStack.begin(), _callStack.end(), tok) != _callStack.end())
+                continue;
+
+            // Only perform this checking if showAll setting is enabled..
+            if ( ! _settings._showAll )
                 continue;
 
             unsigned int parlevel = 0, par = 0;

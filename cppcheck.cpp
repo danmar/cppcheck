@@ -244,7 +244,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     checkMemoryLeak.CheckMemoryLeak();
 
     // Buffer overruns..
-    CheckBufferOverrunClass checkBufferOverrun( &_tokenizer, this );
+    CheckBufferOverrunClass checkBufferOverrun( &_tokenizer, _settings, this );
     checkBufferOverrun.CheckBufferOverrun();
 
     // Check that all class constructors are ok.
