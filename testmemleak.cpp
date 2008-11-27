@@ -112,7 +112,7 @@ private:
         TEST_CASE( func4 );
         TEST_CASE( func5 );
         TEST_CASE( func6 );
-        TEST_CASE( func7 );
+        // TODO TEST_CASE( func7 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );

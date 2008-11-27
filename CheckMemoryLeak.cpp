@@ -225,12 +225,10 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                 while ( func_ && func_->str() == ";" )
                     func_ = func_->next;
                 
-                /*
-                for (const TOKEN *t = func_; t; t = t->next)
+                for (const TOKEN *t = func; t; t = t->next)
                 {
                     std::cout << t->str() << "\n";
                 }
-                */
                 
                 const char *ret = 0;
                 if (TOKEN::findmatch(func_, "goto"))
@@ -240,11 +238,12 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                         ret = "dealloc";
                     else if ( TOKEN::findmatch(func_, "use") )
                         ret = "use";
-                }    
-                else if (TOKEN::Match(func_, "dealloc"))
+                }
+                else if ( TOKEN::findmatch(func_, "dealloc") )
                     ret = "dealloc";
-                else if (TOKEN::Match(func_, "use"))
+                else if ( TOKEN::findmatch(func_, "use") )
                     ret = "use";
+
                 Tokenizer::deleteTokens(func);
                 return ret;
             }
@@ -318,6 +317,11 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             rethead = newtok;               \
         rettail=newtok;                     \
     }
+
+
+    // The first token should be ";"
+    addtoken(";");
+
 
     bool isloop = false;
 
@@ -617,19 +621,13 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Delete empty if that is not followed by an else
-            if ( TOKEN::Match(tok2,"[;{}] if ;") ||
-                 TOKEN::Match(tok2,"[;{}] if(var) ;") ||
-                 TOKEN::Match(tok2,"[;{}] if(!var) ;") ||
-                 TOKEN::Match(tok2,"[;{}] if(true) ;") ||
-                 TOKEN::Match(tok2,"[;{}] if(false) ;") ||
-                 TOKEN::Match(tok2,"[;{}] ifv ;") )
+            if (tok2->tokAt(2) && 
+                (tok2->next->str().find("if") == 0) &&
+                TOKEN::Match(tok2->tokAt(2), ";") && 
+                !TOKEN::Match(tok2->tokAt(3), "else"))                
             {
-                if ( ! TOKEN::Match(tok2->tokAt(3), "else") )
-                {
-                    erase(tok2, tok2->tokAt(3));
-                    done = false;
-                    continue;
-                }
+                erase(tok2, tok2->tokAt(2));
+                done = false;
             }
 
             // Delete "if ; else ;"
