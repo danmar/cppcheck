@@ -224,12 +224,12 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                 const TOKEN *func_ = func;
                 while ( func_ && func_->str() == ";" )
                     func_ = func_->next;
-                
+                /*
                 for (const TOKEN *t = func; t; t = t->next)
                 {
                     std::cout << t->str() << "\n";
-                }
-                
+                }*/
+
                 const char *ret = 0;
                 if (TOKEN::findmatch(func_, "goto"))
                 {
@@ -621,10 +621,10 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Delete empty if that is not followed by an else
-            if (tok2->tokAt(2) && 
+            if (tok2->tokAt(2) &&
                 (tok2->next->str().find("if") == 0) &&
-                TOKEN::Match(tok2->tokAt(2), ";") && 
-                !TOKEN::Match(tok2->tokAt(3), "else"))                
+                TOKEN::Match(tok2->tokAt(2), ";") &&
+                !TOKEN::Match(tok2->tokAt(3), "else"))
             {
                 erase(tok2, tok2->tokAt(2));
                 done = false;
