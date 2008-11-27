@@ -140,7 +140,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <varlistentry>
         <term><option>--recursive</option></term>
         <listitem>
-          <para>Recursively check all *.cpp, *.cc and *.c files.</para>
+          <para>Recursively check all *.cpp, *.cxx, *.cc and *.c files.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

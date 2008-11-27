@@ -130,7 +130,7 @@ std::string CppCheck::parseFromArgs( int argc, char* argv[] )
                  "\n"
                  "    --style         Check coding style.\n"
                  "    --errorsonly    Only print something when there is an error\n"
-                 "    --recursive     Recursively check all *.cpp, *.cc and *.c files\n";
+                 "    --recursive     Recursively check all *.cpp, *.cxx, *.cc and *.c files\n";
         return oss.str();
     }
 

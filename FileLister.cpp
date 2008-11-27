@@ -39,6 +39,7 @@ bool FileLister::AcceptFile( const std::string &filename )
     std::string extension = filename.substr( dotLocation );
 
     if( extension == ".cpp" ||
+        extension == ".cxx" ||
         extension == ".cc" ||
         extension == ".c" )
     {
@@ -127,6 +128,7 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
     }
 
     AddFiles( filenames, path, "*.cpp" );
+    AddFiles( filenames, path, "*.cxx" );
     AddFiles( filenames, path, "*.cc" );
     AddFiles( filenames, path, "*.c" );
 
