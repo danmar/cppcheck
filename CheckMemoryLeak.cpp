@@ -1123,7 +1123,8 @@ void CheckMemoryLeakClass::CheckMemoryLeak()
     CheckMemoryLeak_InFunction();
 
     // Check that all class members are deallocated..
-    CheckMemoryLeak_ClassMembers();
+    if ( _settings._showAll )
+        CheckMemoryLeak_ClassMembers();
 }
 //---------------------------------------------------------------------------
 
