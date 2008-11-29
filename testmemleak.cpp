@@ -113,6 +113,7 @@ private:
         TEST_CASE( func5 );
         TEST_CASE( func6 );
         // TODO TEST_CASE( func7 );
+        // TEST_CASE( func8 );      // Using callback
 
         // TODO TEST_CASE( class1 );
         // TODO TEST_CASE( class2 );
@@ -799,8 +800,18 @@ private:
                "    foo(p);\n"
                "}\n" );
         std::string err( errout.str() );
-        std::cout << err << "\n";
-        ASSERT_EQUALS( std::string("[test.cpp:11]: Memory leak: p\n"), err );    
+        ASSERT_EQUALS( std::string("[test.cpp:11]: Memory leak: p\n"), err );
+    }
+
+
+    void func8()
+    {
+        check( "static void foo()\n"
+               "{\n"
+               "    char *str = new char[100];"
+               "    (*release)(str);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
