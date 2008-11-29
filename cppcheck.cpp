@@ -118,23 +118,24 @@ std::string CppCheck::parseFromArgs( int argc, char* argv[] )
     if (_filenames.empty())
     {
         std::ostringstream oss;
-        oss <<   "C/C++ code checking.\n"
+        oss <<   "c++check 1.26\n"
+                 "\n"
+                 "C/C++ code checking\n"
                  "\n"
                  "Syntax:\n"
                  "    cppcheck [--all] [--style] [--errorsonly] [--recursive] [filename1] [filename2]\n"
                  "\n"
                  "Options:\n"
-                 "    --all           Normally a message is only shown if cppcheck is sure\n"
-                 "                    it has found a bug.\n"
-                 "                    When this option is given, all messages are shown.\n"
-                 "\n"
-                 "    --style         Check coding style.\n"
-                 "    --errorsonly    Only print something when there is an error\n"
+                 "    --all           Make the checking more sensitive. More bugs are detected,\n"
+                 "                    but there are also more false positives\n"
+                 "    --style         Check coding style\n"
+                 "    --errorsonly    Only print error messages\n"
                  "    --recursive     Recursively check all *.cpp, *.cxx, *.cc and *.c files\n";
         return oss.str();
     }
 
     // Check function usage if "--style" and "--all" was given.
+    // There will be false positives for exported library functions
     if ( _settings._showAll && _settings._checkCodingStyle )
         _settings._checkFunctionUsage = true;
 
