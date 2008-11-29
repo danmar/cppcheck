@@ -113,7 +113,7 @@ private:
         TEST_CASE( func5 );
         TEST_CASE( func6 );
         // TODO TEST_CASE( func7 );
-        // TEST_CASE( func8 );      // Using callback
+        TEST_CASE( func8 );      // Using callback
 
         // TODO TEST_CASE( class1 );
         // TODO TEST_CASE( class2 );
