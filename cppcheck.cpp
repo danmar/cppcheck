@@ -69,6 +69,7 @@ std::string CppCheck::parseFromArgs( int argc, char* argv[] )
 
     for (int i = 1; i < argc; i++)
     {
+        // Flag used for various purposes during debugging
         if (strcmp(argv[i],"--debug") == 0)
             _settings._debug = true;
 
