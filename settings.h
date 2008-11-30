@@ -35,6 +35,7 @@ public:
     bool _checkCodingStyle;
     bool _errorsOnly;
     bool _checkFunctionUsage;
+    bool _verbose;
 };
 
 #endif // SETTINGS_H

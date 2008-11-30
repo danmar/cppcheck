@@ -118,6 +118,9 @@ class CppCheck : public ErrorLogger
         std::map<std::string,std::string> _fileContents;
         CheckFunctionUsage _checkFunctionUsage;
         ErrorLogger *_errorLogger;
+
+        /** Current configuration */
+        std::string     cfg;
 };
 
 #endif // CPPCHECK_H

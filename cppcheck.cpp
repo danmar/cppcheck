@@ -76,16 +76,22 @@ std::string CppCheck::parseFromArgs( int argc, char* argv[] )
         else if (strcmp(argv[i],"--all") == 0)
             _settings._showAll = true;
 
-        // Checking coding style.
-        else if (strcmp(argv[i],"--style")==0)
-            _settings._checkCodingStyle = true;
-
         // Only print something when there are errors
         else if (strcmp(argv[i],"--errorsonly")==0)
             _settings._errorsOnly = true;
 
+        // Checking coding style
+        else if (strcmp(argv[i],"--style")==0)
+            _settings._checkCodingStyle = true;
+
+        // Recursively check source files
         else if (strcmp(argv[i],"--recursive")==0)
             Recursive = true;
+
+        // Verbose error messages (configuration info)
+        else if (strcmp(argv[i],"--verbose")==0)
+            _settings._verbose = true;
+
         else
             pathnames.push_back( argv[i] );
     }
@@ -123,14 +129,15 @@ std::string CppCheck::parseFromArgs( int argc, char* argv[] )
                  "C/C++ code checking\n"
                  "\n"
                  "Syntax:\n"
-                 "    cppcheck [--all] [--style] [--errorsonly] [--recursive] [filename1] [filename2]\n"
+                 "    cppcheck [--all] [--errorsonly] [--recursive] [--style] [--verbose] [filename1] [filename2]\n"
                  "\n"
                  "Options:\n"
                  "    --all           Make the checking more sensitive. More bugs are detected,\n"
                  "                    but there are also more false positives\n"
-                 "    --style         Check coding style\n"
                  "    --errorsonly    Only print error messages\n"
-                 "    --recursive     Recursively check all *.cpp, *.cxx, *.cc and *.c files\n";
+                 "    --recursive     Recursively check all *.cpp, *.cxx, *.cc and *.c files\n"
+                 "    --style         Check coding style\n"
+                 "    --verbose       More detailed error reports";
         return oss.str();
     }
 
@@ -171,6 +178,7 @@ void CppCheck::check()
 
         for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
         {
+            cfg = it->first;
             checkFile(it->second, _filenames[c].c_str());
         }
 
@@ -179,6 +187,7 @@ void CppCheck::check()
     }
 
     // This generates false positives - especially for libraries
+    _settings._verbose = false;
     if ( _settings._checkFunctionUsage )
     {
         _errout.str("");
@@ -322,9 +331,16 @@ void CppCheck::reportErr( const std::string &errmsg)
         _errorList.push_back( errmsg );
     }
 
-    _errorLogger->reportErr( errmsg );
+    std::string errmsg2( errmsg );
+    if ( _settings._verbose )
+    {
+        errmsg2 += "\n    Defines=\'" + cfg + "\'\n";
+    }
 
-    _errout << errmsg << std::endl;
+
+    _errorLogger->reportErr( errmsg2 );
+
+    _errout << errmsg2 << std::endl;
 }
 
 void CppCheck::reportOut( const std::string &outmsg)
