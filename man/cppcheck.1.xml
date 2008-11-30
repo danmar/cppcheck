@@ -106,6 +106,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--recursive</option></arg>
       <arg choice="opt"><option>--errorsonly</option></arg>
+      <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>filename</option></arg>
       <arg choice="plain"><option>...</option></arg>
     </cmdsynopsis>
@@ -147,6 +148,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <term><option>--errorsonly</option></term>
         <listitem>
           <para>Only print something when there is an error.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--verbose</option></term>
+        <listitem>
+          <para>More detailed error reports</para>
         </listitem>
       </varlistentry>
     </variablelist>
