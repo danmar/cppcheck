@@ -546,58 +546,6 @@ void CheckMemoryLeakClass::erase(TOKEN *begin, const TOKEN *end)
  */
 void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
 {
-    // Remove "do"...
-    // do { x } while (y);
-    // =>
-    // { x } while(y) { x }"
-    for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
-    {
-        if ( ! TOKEN::Match(tok2->next, "do") )
-            continue;
-
-        // Remove the next token "do"
-        erase( tok2, tok2->tokAt(2) );
-        tok2 = tok2->next;
-
-        // Find the end of the "do" block..
-        TOKEN *tok2_;
-        int indentlevel = 0;
-        for ( tok2_ = tok2; tok2_ && indentlevel>=0; tok2_ = tok2_->next )
-        {
-            if ( tok2_->str() == "{" )
-                ++indentlevel;
-
-            else if ( tok2_->str() == "}" )
-                --indentlevel;
-
-            else if ( indentlevel == 0 && (tok2_->next->str() == ";") )
-                break;
-        }
-
-        // End not found?
-        if ( ! tok2_ )
-            continue;
-
-        // Copy code..
-        indentlevel = 0;
-        do
-        {
-            if ( tok2->str() == "{" )
-                ++indentlevel;
-            else if ( tok2->str() == "}" )
-                --indentlevel;
-
-            // Copy token..
-            instoken( tok2_, tok2->aaaa() );
-
-            // Next token..
-            tok2 = tok2->next;
-            tok2_ = tok2_->next;
-        }
-        while ( tok2 && indentlevel > 0 );
-    }
-
-
     // reduce the code..
     bool done = false;
     while ( ! done )
@@ -702,6 +650,14 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             if (TOKEN::Match(tok2,"[;{}] if { dealloc ; return ; }") && !TOKEN::Match(tok2->tokAt(8),"else"))
             {
                 erase(tok2,tok2->tokAt(8));
+                done = false;
+            }
+
+            // Reduce "do { alloc ; } " => "alloc ;"
+            if ( TOKEN::Match(tok2->next, "do { alloc ; }") )
+            {
+                erase(tok2, tok2->tokAt(3));
+                erase(tok2->next, tok2->tokAt(3));
                 done = false;
             }
 

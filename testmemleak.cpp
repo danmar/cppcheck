@@ -608,7 +608,9 @@ private:
                "    while (!str);\n"
                "    return str;\n"
                "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: str\n"), errout.str() );
+        std::string err( errout.str() );
+        std::cout << err;
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: str\n"), err );
     }
 
 
