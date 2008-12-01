@@ -77,9 +77,25 @@ bool TestFixture::runTest(const char testname[])
     return true;
 }
 
-void TestFixture::assertFail(const char *filename, int linenr)
+void TestFixture::assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual)
 {
-    errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl;
+    if ( expected != actual )
+    {
+        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
+               << "Expected:" << std::endl
+               << expected << std::endl
+               << "Actual:" << std::endl
+               << actual << std::endl;
+    }
+}
+
+void TestFixture::assertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual)
+{
+    std::ostringstream ostr1;
+    ostr1 << expected;
+    std::ostringstream ostr2;
+    ostr2 << actual;
+    assertEquals( filename, linenr, ostr1.str(), ostr2.str() );
 }
 
 void TestFixture::printTests()

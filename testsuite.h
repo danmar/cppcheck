@@ -37,12 +37,13 @@ protected:
     { }
 
     bool runTest(const char testname[]);
-    void assertFail(const char *filename, int linenr);
+    void assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
+    void assertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
 
 public:
     virtual void reportErr( const std::string &errmsg);
 
-    virtual void reportOut( const std::string &outmsg);
+    virtual void reportOut( const std::string &outmsg); 
 
     TestFixture(const std::string &_name);
     virtual ~TestFixture() { }
@@ -53,6 +54,6 @@ public:
 
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
-#define ASSERT_EQUALS( EXPECTED , ACTUAL )  if (EXPECTED!=ACTUAL) assertFail(__FILE__, __LINE__);
+#define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL);
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
