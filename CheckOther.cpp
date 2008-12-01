@@ -284,7 +284,8 @@ void CheckOther::WarningIf()
         const char *p[6] = {"==","<=",">=","!=","<",">"};
         bool iscond = false;
         for (int i = 0; i < 6; i++)
-            iscond |= (strcmp(cond, p[i]) == 0);
+            if (iscond = (strcmp(cond, p[i]) == 0))
+                break;
         if (!iscond)
             break;
 
@@ -454,7 +455,6 @@ void CheckOther::CheckVariableScope()
                 if ( tok2->str() == "{" )
                 {
                     int _indentlevel = 0;
-                    tok = tok2;
                     for (tok = tok2; tok; tok = tok->next)
                     {
                         if ( tok->str() == "{" )
