@@ -50,9 +50,6 @@ public:
     // Assignment in condition
     void CheckIfAssignment();
 
-    // Using dangerous functions
-    void WarningDangerousFunctions();
-
     // Invalid function usage..
     void InvalidFunctionUsage();
 
