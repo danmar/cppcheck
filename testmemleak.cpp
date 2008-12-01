@@ -58,7 +58,7 @@ private:
 
     void run()
     {
-        // TODO TEST_CASE( simple1 );
+        TEST_CASE( simple1 );
         TEST_CASE( simple2 );
         TEST_CASE( simple3 );
         TEST_CASE( simple4 );
@@ -72,7 +72,7 @@ private:
 
         TEST_CASE( ifelse1 );
         TEST_CASE( ifelse2 );
-        // TODO TEST_CASE( ifelse3 );
+        TEST_CASE( ifelse3 );
         TEST_CASE( ifelse4 );
         TEST_CASE( ifelse5 );
         TEST_CASE( ifelse6 );
@@ -93,13 +93,13 @@ private:
         TEST_CASE( forwhile3 );
         TEST_CASE( forwhile4 );
         TEST_CASE( forwhile5 );
-        // TODO TEST_CASE( forwhile6 );
+        TEST_CASE( forwhile6 );
         TEST_CASE( forwhile7 );
 
         TEST_CASE( dowhile1 );
 
         TEST_CASE( switch1 );
-        // TODO TEST_CASE( switch2 );
+        TEST_CASE( switch2 );
 
         TEST_CASE( ret1 );
         TEST_CASE( ret2 );
@@ -108,10 +108,10 @@ private:
 
         TEST_CASE( func1 );
         TEST_CASE( func2 );
-        // TODO TEST_CASE( func3 );
+        TEST_CASE( func3 );
         TEST_CASE( func4 );
         TEST_CASE( func5 );
-        // TODO TEST_CASE( func6 );
+        TEST_CASE( func6 );
         // TODO TEST_CASE( func7 );
         TEST_CASE( func8 );      // Using callback
 
@@ -440,8 +440,7 @@ private:
                "    if (b)\n"
                "        free(s);\n"
                "}\n" );
-        std::string err( errout.str() );
-        ASSERT_EQUALS( std::string(""), err );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
     void if5()
