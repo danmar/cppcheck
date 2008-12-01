@@ -61,9 +61,32 @@ private:
     void CheckMemoryLeak_ClassMembers();
     void CheckMemoryLeak_InFunction();
     void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] );
+
+    /**
+     * Simplify code e.g. by replacing empty "{ }" with ";"
+     * @param tok first token. The tokens list can be modified.
+     */
     void simplifycode(TOKEN *tok);
+
+    /**
+     * Delete tokens between begin and end. E.g. if begin = 1
+     * and end = 5, tokens 2,3 and 4 would be erased.
+     *
+     * @param begin Tokens after this will be erased.
+     * @param end Tokens before this will be erased.
+     */
     void erase(TOKEN *begin, const TOKEN *end);
 
+    /**
+     * Extract a new tokens list that is easier to parse than the "tokens"
+     * @param tok start parse token
+     * @param callstack callstack
+     * @param varname name of variable
+     * @param alloctype
+     * @param dealloctype
+     * @return Newly allocated token array. Caller needs to release reserved
+     * memory by calling Tokenizer::deleteTokens(returnValue);
+     */
     TOKEN *getcode(const TOKEN *tok, std::list<const TOKEN *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype);
     bool notvar(const TOKEN *tok, const char *varnames[]);
     void instoken(TOKEN *tok, const char str[]);

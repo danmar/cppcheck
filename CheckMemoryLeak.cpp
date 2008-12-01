@@ -283,12 +283,6 @@ bool CheckMemoryLeakClass::notvar(const TOKEN *tok, const char *varnames[])
                  TOKEN::Match(tok, "%var1% == 0", varnames) );
 }
 
-/**
- * Extract a new tokens list that is easier to parse than the "tokens"
- * tok - start parse token
- * varname - name of variable
- */
-
 TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype)
 {
     const char *varnames[2];
@@ -385,7 +379,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
              TOKEN::Match(tok, "if ( 0 != %var1% )", varnames)  )
         {
             addtoken("if(var)");
-            
+
             // Make sure the "use" will not be added
             while ( tok->str() != ")" )
                 tok = tok->next;
@@ -533,12 +527,6 @@ void CheckMemoryLeakClass::erase(TOKEN *begin, const TOKEN *end)
     }
 }
 
-
-
-/**
- * Simplify code
- * \param tok first token
- */
 void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
 {
     // reduce the code..
@@ -636,14 +624,14 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             {
                 erase(tok2, tok2->tokAt(2));
                 done = false;
-            }            
+            }
 
             // Delete if block: "alloc; if return use ;"
             if (TOKEN::Match(tok2,"alloc ; if return use ;") && !TOKEN::Match(tok2->tokAt(6),"else"))
             {
                 erase(tok2, tok2->tokAt(5));
                 done = false;
-            }            
+            }
 
 
             // Reduce "if return ; alloc ;" => "alloc ;"
