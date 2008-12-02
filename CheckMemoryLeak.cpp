@@ -672,17 +672,17 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             if ( TOKEN::Match(tok2->next, "do { alloc ; }") )
             {
                 erase(tok2, tok2->tokAt(3));
-                erase(tok2->next, tok2->tokAt(3));
+                erase(tok2->next->next, tok2->tokAt(4));
                 done = false;
             }
 
-            // Reduce "loop { if break ; } => ";"
-            if ( TOKEN::Match( tok2, "loop {" ) &&
-                 strncmp(tok2->strAt(2), "if", 2) == 0 &&
-                 (TOKEN::Match( tok2->tokAt(3), "break ; }") || TOKEN::Match( tok2->tokAt(3), "continue ; }")))
+            // Reduce "loop if break ; => ";"
+            if ( TOKEN::Match( tok2->next, "loop %var%" ) &&
+                 tok2->tokAt(2)->str().find("if") == 0 &&
+                 (TOKEN::Match( tok2->tokAt(3), "break ; ") || TOKEN::Match( tok2->tokAt(3), "continue ;")) &&
+                 !TOKEN::Match(tok2->tokAt(5),"else") )
             {
-                tok2->setstr(";");
-                erase( tok2, tok2->tokAt(6) );
+                erase( tok2, tok2->tokAt(4) );
                 done = false;
             }
 
@@ -728,7 +728,8 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 erase(tok2, tok2->tokAt(4));
                 done = false;
             }
-                        // Delete if block: "alloc; if return use ;"
+                        
+            // Delete if block: "alloc; if return use ;"
             if (TOKEN::Match(tok2,"alloc ; if return use ;") && !TOKEN::Match(tok2->tokAt(6),"else"))
             {
                 erase(tok2, tok2->tokAt(5));
@@ -739,6 +740,20 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             if ( TOKEN::Match(tok2->next, "if return ; if return ;") )
             {
                 erase( tok2, tok2->tokAt(4) );
+                done = false;
+            }
+            
+            // Reduce "[;{}] return ; %var%" => "[;{}] return ;"
+            if ( TOKEN::Match(tok2, "[;{}] return ; %var%") )
+            {
+                erase( tok2->next->next, tok2->tokAt(4) );
+                done = false;
+            }
+
+            // Reduce "[;{}] return use ; %var%" => "[;{}] return use ;"
+            if ( TOKEN::Match(tok2, "[;{}] return use ; %var%") )
+            {
+                erase( tok2->next->next->next, tok2->tokAt(5) );
                 done = false;
             }
 
@@ -940,6 +955,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         MemoryLeak(last, varname);
     }
 
+    // detect cases that "simplifycode" don't handle well..
     else if ( _settings._debug )
     {
         TOKEN *first = tok;
@@ -947,13 +963,15 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
             first = first->next;
 
         bool noerr = false;
-        noerr |= TOKEN::Match( first, "alloc ; dealloc ;" );
-        noerr |= TOKEN::Match( first, "alloc ; return use ;" );
-        noerr |= TOKEN::Match( first, "alloc ; use ;" );
-        noerr |= TOKEN::Match( first, "if alloc ; dealloc ;" );
-        noerr |= TOKEN::Match( first, "if alloc ; return use ;" );
-        noerr |= TOKEN::Match( first, "if alloc ; use ;" );
-        noerr |= TOKEN::Match( first, "alloc ; ifv return ; dealloc ;" );
+        noerr |= TOKEN::Match( first, "alloc ; }" );
+        noerr |= TOKEN::Match( first, "alloc ; dealloc ; }" );
+        noerr |= TOKEN::Match( first, "alloc ; return use ; }" );
+        noerr |= TOKEN::Match( first, "alloc ; use ; }" );
+        noerr |= TOKEN::Match( first, "if alloc ; dealloc ; }" );
+        noerr |= TOKEN::Match( first, "if alloc ; return use ; }" );
+        noerr |= TOKEN::Match( first, "if alloc ; use ; }" );
+        noerr |= TOKEN::Match( first, "alloc ; ifv return ; dealloc ; }" );
+        noerr |= TOKEN::Match( first, "alloc ; if return ; dealloc; }" );
 
         // Unhandled case..
         if ( ! noerr )
@@ -964,7 +982,6 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
             std::cout << "\n";
         }
     }
-
 
     Tokenizer::deleteTokens(tok);
 }
