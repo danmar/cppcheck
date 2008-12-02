@@ -667,6 +667,20 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 erase(tok2,tok2->tokAt(8));
                 done = false;
             }
+            
+            // Reduce "if ; else %var% ;" => "if %var% ;"
+            if ( TOKEN::Match(tok2, "if ; else %var% ;") )
+            {
+                erase( tok2, tok2->tokAt(3) );
+                done = false;
+            }
+
+            // Reduce "if ; else return use ;" => "if return use ;"
+            if ( TOKEN::Match(tok2, "if ; else %var% ;") )
+            {
+                erase( tok2, tok2->tokAt(3) );
+                done = false;
+            }
 
             // Reduce "do { alloc ; } " => "alloc ;"
             if ( TOKEN::Match(tok2->next, "do { alloc ; }") )
@@ -771,6 +785,13 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
+            // Reduce "[;{}] alloc ; dealloc ;" => "[;{}]"
+            if ( TOKEN::Match(tok2, "[;{}] alloc ; dealloc ;") )
+            {
+                erase( tok2, tok2->tokAt(5) );
+                done = false;
+            }
+            
             // Reduce "if* alloc ; dealloc ;" => ";"
             if ( TOKEN::Match(tok2->tokAt(2), "alloc ; dealloc ;") &&
                  tok2->next->str().find("if") == 0 )
@@ -783,6 +804,20 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             while (TOKEN::Match(tok2, "[;{}] use ; use ;"))
             {
                 erase(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
+            // Delete second use in "use ; use ;"
+            if (TOKEN::Match(tok2, "[;{}] use ; dealloc ;"))
+            {
+                erase(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
+            // Delete first use in "use ; return use ;"
+            if (TOKEN::Match(tok2, "[;{}] use ; return use ;"))
+            {
+                erase(tok2, tok2->tokAt(2));
                 done = false;
             }
 
@@ -967,6 +1002,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         noerr |= TOKEN::Match( first, "alloc ; dealloc ; }" );
         noerr |= TOKEN::Match( first, "alloc ; return use ; }" );
         noerr |= TOKEN::Match( first, "alloc ; use ; }" );
+        noerr |= TOKEN::Match( first, "alloc ; use ; return ; }" );
         noerr |= TOKEN::Match( first, "if alloc ; dealloc ; }" );
         noerr |= TOKEN::Match( first, "if alloc ; return use ; }" );
         noerr |= TOKEN::Match( first, "if alloc ; use ; }" );
