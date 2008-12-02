@@ -859,7 +859,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
 
 
 
-// Simpler but less powerful than "CheckMemoryLeak_CheckScope_All"
+// Check for memory leaks for a function variable.
 void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] )
 {
     std::list<const TOKEN *> callstack;
