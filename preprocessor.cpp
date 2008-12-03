@@ -146,17 +146,26 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
 
     std::string codestr( code.str() );
 
+    // Replace all tabs with spaces..
+    std::string::size_type loc = 0;
+    while ( (loc = codestr.find("\t", loc)) != std::string::npos )
+        codestr[loc] = ' ';
+
     // Remove all indentation..
     if ( !codestr.empty() && codestr[0] == ' ' )
         codestr.erase( 0, codestr.find_first_not_of(" ") );
-    std::string::size_type loc = 0;
+    loc = 0;
     while ( (loc = codestr.find("\n ", loc)) != std::string::npos )
         codestr.erase( 1 + loc, 1 );
 
     // Remove all trailing spaces..
     loc = 0;
     while ( (loc = codestr.find(" \n", loc)) != std::string::npos )
+    {
         codestr.erase( loc, 1 );
+        if ( loc > 0 )
+            --loc;
+    }
 
     // Using the backslash at the end of a line..
     while ( (loc = codestr.rfind("\\\n")) != std::string::npos )

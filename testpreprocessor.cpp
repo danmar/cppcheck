@@ -152,9 +152,9 @@ private:
     {
         const char filedata[] = "#ifdef  WIN32 \n"
                                 "    abcdef\n"
-                                "#else\n"
+                                "#else  \n"
                                 "    qwerty\n"
-                                "#endif\n";
+                                "#endif  \n";
 
         // Expected result..
         std::map<std::string, std::string> expected;
@@ -224,7 +224,7 @@ private:
     {
         const char filedata[] = "#ifdef ABC\n"
                                 "A\n"
-                                "#endif\n"
+                                "#endif\t\n"
                                 "#ifdef ABC\n"
                                 "A\n"
                                 "#endif\n";
