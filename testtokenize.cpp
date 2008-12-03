@@ -43,6 +43,8 @@ private:
         TEST_CASE( inlineasm );
 
         TEST_CASE( dupfuncname );
+
+        TEST_CASE( const_and_volatile_functions );
     }
 
 
@@ -146,6 +148,42 @@ private:
 
         ASSERT_EQUALS( 1, tokenizer._functionList.size() );
         ASSERT_EQUALS( std::string("b"), tokenizer._functionList[0]->aaaa() );
+    }
+
+    void const_and_volatile_functions()
+    {
+        const char code[] = "class B\n\
+                            {\n\
+                            public:\n\
+                            void a();\n\
+                            void b() const;\n\
+                            void c() volatile;\n\
+                            };\n\
+                            \n\
+                            void B::a()\n\
+                            {}\n\
+                            \n\
+                            void B::b() const\n\
+                            {}\n\
+                            \n\
+                            void B::c() volatile\n\
+                            {}\n";
+
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.fillFunctionList();
+
+        ASSERT_EQUALS( 3, tokenizer._functionList.size() );
+        if( tokenizer._functionList.size() == 3 )
+        {
+            ASSERT_EQUALS( std::string("a"), tokenizer._functionList[0]->aaaa() );
+            ASSERT_EQUALS( std::string("b"), tokenizer._functionList[1]->aaaa() );
+            ASSERT_EQUALS( std::string("c"), tokenizer._functionList[2]->aaaa() );
+        }
     }
 };
 

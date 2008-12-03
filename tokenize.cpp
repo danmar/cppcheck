@@ -1085,6 +1085,16 @@ void Tokenizer::fillFunctionList()
                         _functionList.push_back( tok );
                         tok = tok2;
                     }
+                    else if ( TOKEN::Match(tok2, ") const {") )
+                    {
+                        _functionList.push_back( tok );
+                        tok = tok2;
+                    }
+                    else if ( TOKEN::Match(tok2, ") volatile {") )
+                    {
+                        _functionList.push_back( tok );
+                        tok = tok2;
+                    }
                     else
                     {
                         tok = tok2;
