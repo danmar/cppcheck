@@ -226,6 +226,7 @@ private:
         // Test for not found
         ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "notfound" ), -1 );
         ASSERT_EQUALS( TOKEN::multiCompare( "verybig|two", "s" ), -1 );
+        ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "ne" ), -1 );
     }
 };
 

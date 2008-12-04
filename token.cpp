@@ -105,6 +105,8 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
 
             continue;
         }
+        else if( findNextOr )
+            continue;
 
         // If this part of needle equals to the haystack
         else if( strncmp( haystack, needle, strlen( haystack ) ) == 0 )
