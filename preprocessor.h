@@ -32,6 +32,10 @@ class Preprocessor
 public:
     Preprocessor( ErrorLogger *errorLogger );
     void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
+    
+    /** Just read the code into a string. Perform simple cleanup of the code */
+    std::string read(std::istream &istr, const std::string &filename);
+
 private:
     /**
      * Get preprocessed code for a given configuration

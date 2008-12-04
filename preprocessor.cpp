@@ -33,16 +33,13 @@ Preprocessor::Preprocessor( ErrorLogger *errorLogger )
     _errorLogger = errorLogger;
 }
 
-/**
- * Extract the code for each configuration
- * \param istr The (file/string) stream to read from.
- * \param result The map that will get the results
- */
-void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
+/** Just read the code into a string. Perform simple cleanup of the code */
+std::string Preprocessor::read(std::istream &istr, const std::string &filename)
 {
     // Get filedata from stream..
     bool ignoreSpace = true;
 
+    // For the error report
     int lineno = 1;
 
     std::ostringstream code;
@@ -54,8 +51,7 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
             std::ostringstream oss;
             oss << "[" << filename << ":" << lineno << "] Bad character found: " << int((unsigned char)ch) << std::endl;
             _errorLogger->reportErr( oss.str() );
-            result.clear();
-            return;
+            return "";
         }
 
         if ( ch == '\n' )
@@ -143,8 +139,18 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
             code << std::string(1, ch);
         }
     }
+    
+    return code.str();
+}
 
-    std::string codestr( code.str() );
+/**
+ * Extract the code for each configuration
+ * \param istr The (file/string) stream to read from.
+ * \param result The map that will get the results
+ */
+void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
+{
+    std::string codestr( read(istr, filename) );
 
     // Replace all tabs with spaces..
     std::string::size_type loc = 0;

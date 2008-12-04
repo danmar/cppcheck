@@ -37,9 +37,11 @@ private:
 
     void run()
     {
+        // Just read the code into a string. Perform simple cleanup of the code
+        TEST_CASE(readCode);
+
         // The bug that started the whole work with the new preprocessor
         TEST_CASE( Bug2190219 );
-
 
         TEST_CASE( test1 );
         TEST_CASE( test2 );
@@ -60,6 +62,18 @@ private:
 
         TEST_CASE( multiline );
     }
+
+
+    void readCode()
+    {
+        const char code[] = " \t a //\n"
+                            "  #aa\t /* remove this */\tb  \r\n";
+        Preprocessor p(NULL);
+        std::istringstream istr(code);
+        std::string codestr( p.read(istr,"") );
+        ASSERT_EQUALS( "a \n#aa b \n", codestr );
+    }
+
 
     bool cmpmaps(const std::map<std::string, std::string> &m1, const std::map<std::string, std::string> &m2)
     {
