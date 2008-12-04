@@ -77,15 +77,35 @@ bool TestFixture::runTest(const char testname[])
     return true;
 }
 
+static std::string writestr( const std::string &str )
+{
+    std::ostringstream ostr;
+    ostr << "\"";
+    for (unsigned int i = 0; i < str.length(); ++i)
+    {
+        char ch = str[i];
+        if ( ch == '\n' )
+            ostr << "\\n";
+        else if ( ch == '\t' )
+            ostr << "\\t";
+        else if ( ch == '\"' )
+            ostr << "\\\"";
+        else
+            ostr << std::string(1, ch);
+    }
+    ostr << "\"";
+    return ostr.str();
+}
+
 void TestFixture::assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual)
 {
     if ( expected != actual )
     {
         errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
                << "Expected:" << std::endl
-               << expected << std::endl
+               << writestr(expected) << std::endl
                << "Actual:" << std::endl
-               << actual << std::endl;
+               << writestr(actual) << std::endl;
     }
 }
 
