@@ -1005,6 +1005,43 @@ bool Tokenizer::simplifyConditions()
             tok->next->setstr((strcmp(tok->next->aaaa(), "0")!=0) ? "true" : "false");
             ret = false;
         }
+        
+        // Reduce "(%num% == %num%)" => "(true)"/"(false)"
+        if ( (TOKEN::Match(tok, "&&") || TOKEN::Match(tok, "||") || TOKEN::Match(tok, "(")) &&
+             TOKEN::Match(tok->tokAt(1), "%num%") &&
+             TOKEN::Match(tok->tokAt(3), "%num%") &&
+             (TOKEN::Match(tok->tokAt(4), "&&") || TOKEN::Match(tok->tokAt(4), "||") || TOKEN::Match(tok->tokAt(4), ")")) )
+        {
+            double op1 = (strstr(tok->strAt(1), "0x")) ? strtol(tok->strAt(1),0,16) : atof( tok->strAt(1) );
+            double op2 = (strstr(tok->strAt(3), "0x")) ? strtol(tok->strAt(3),0,16) : atof( tok->strAt(3) );
+            std::string cmp = tok->strAt(2);
+
+            bool result = false;
+            if ( cmp == "==" )
+                result = (op1 == op2);
+            else if ( cmp == "!=" )
+                result = (op1 != op2);
+            else if ( cmp == ">=" )
+                result = (op1 >= op2);
+            else if ( cmp == ">" )
+                result = (op1 > op2);
+            else if ( cmp == "<=" )
+                result = (op1 <= op2);
+            else if ( cmp == "<" )
+                result = (op1 < op2);
+            else
+                cmp = "";
+            
+            if ( ! cmp.empty() )
+            {
+                tok = tok->next;
+                tok->deleteNext();
+                tok->deleteNext();
+            
+                tok->setstr( result ? "true" : "false" );
+                ret = false;
+            }
+        }
     }
 
     return ret;

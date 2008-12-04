@@ -45,6 +45,8 @@ private:
         TEST_CASE( dupfuncname );
 
         TEST_CASE( const_and_volatile_functions );
+        
+        TEST_CASE( numeric_true_condition );
     }
 
 
@@ -184,6 +186,27 @@ private:
             ASSERT_EQUALS( std::string("b"), tokenizer._functionList[1]->str() );
             ASSERT_EQUALS( std::string("c"), tokenizer._functionList[2]->str() );
         }
+    }
+
+    
+    void numeric_true_condition()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    if (5==5);\n"
+                            "}\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next)
+            ostr << " " << tok->str();
+        ASSERT_EQUALS( std::string(" void f ( ) { if ( true ) ; }"), ostr.str() );
     }
 };
 
