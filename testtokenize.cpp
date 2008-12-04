@@ -180,9 +180,9 @@ private:
         ASSERT_EQUALS( 3, tokenizer._functionList.size() );
         if( tokenizer._functionList.size() == 3 )
         {
-            ASSERT_EQUALS( std::string("a"), tokenizer._functionList[0]->aaaa() );
-            ASSERT_EQUALS( std::string("b"), tokenizer._functionList[1]->aaaa() );
-            ASSERT_EQUALS( std::string("c"), tokenizer._functionList[2]->aaaa() );
+            ASSERT_EQUALS( std::string("a"), tokenizer._functionList[0]->str() );
+            ASSERT_EQUALS( std::string("b"), tokenizer._functionList[1]->str() );
+            ASSERT_EQUALS( std::string("c"), tokenizer._functionList[2]->str() );
         }
     }
 };
