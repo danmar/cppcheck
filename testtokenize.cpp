@@ -45,8 +45,10 @@ private:
         TEST_CASE( dupfuncname );
 
         TEST_CASE( const_and_volatile_functions );
-        
+
         TEST_CASE( numeric_true_condition );
+
+        TEST_CASE( multi_compare );
     }
 
 
@@ -188,7 +190,7 @@ private:
         }
     }
 
-    
+
     void numeric_true_condition()
     {
         const char code[] = "void f()\n"
@@ -207,6 +209,23 @@ private:
         for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next)
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { if ( true ) ; }"), ostr.str() );
+    }
+
+    void multi_compare()
+    {
+        // Test for found
+        ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "one" ), 1 );
+        ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "two" ), 1 );
+        ASSERT_EQUALS( TOKEN::multiCompare( "verybig|two|", "two" ), 1 );
+
+        // Test for empty string found
+        ASSERT_EQUALS( TOKEN::multiCompare( "|one|two", "notfound" ), 0 );
+        ASSERT_EQUALS( TOKEN::multiCompare( "one||two", "notfound" ), 0 );
+        ASSERT_EQUALS( TOKEN::multiCompare( "one|two|", "notfound" ), 0 );
+
+        // Test for not found
+        ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "notfound" ), -1 );
+        ASSERT_EQUALS( TOKEN::multiCompare( "verybig|two", "s" ), -1 );
     }
 };
 

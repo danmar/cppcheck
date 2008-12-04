@@ -1005,7 +1005,7 @@ bool Tokenizer::simplifyConditions()
             tok->next->setstr((strcmp(tok->next->aaaa(), "0")!=0) ? "true" : "false");
             ret = false;
         }
-        
+
         // Reduce "(%num% == %num%)" => "(true)"/"(false)"
         if ( (TOKEN::Match(tok, "&&") || TOKEN::Match(tok, "||") || TOKEN::Match(tok, "(")) &&
              TOKEN::Match(tok->tokAt(1), "%num%") &&
@@ -1031,13 +1031,13 @@ bool Tokenizer::simplifyConditions()
                 result = (op1 < op2);
             else
                 cmp = "";
-            
+
             if ( ! cmp.empty() )
             {
                 tok = tok->next;
                 tok->deleteNext();
                 tok->deleteNext();
-            
+
                 tok->setstr( result ? "true" : "false" );
                 ret = false;
             }
@@ -1117,17 +1117,7 @@ void Tokenizer::fillFunctionList()
 
                 else if ( tok2->aaaa0() == ')' )
                 {
-                    if ( TOKEN::Match(tok2, ") {") )
-                    {
-                        _functionList.push_back( tok );
-                        tok = tok2;
-                    }
-                    else if ( TOKEN::Match(tok2, ") const {") )
-                    {
-                        _functionList.push_back( tok );
-                        tok = tok2;
-                    }
-                    else if ( TOKEN::Match(tok2, ") volatile {") )
+                    if ( TOKEN::Match(tok2, ") const|volatile| {") )
                     {
                         _functionList.push_back( tok );
                         tok = tok2;

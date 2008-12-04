@@ -51,7 +51,7 @@ void TOKEN::setstr( const char s[] )
     _cstr = _strdup(s);
 #endif
     _isName = bool(_str[0]=='_' || isalpha(_str[0]));
-    _isNumber = bool(isdigit(_str[0]) != 0);    
+    _isNumber = bool(isdigit(_str[0]) != 0);
 }
 
 void TOKEN::combineWithNext(const char str1[], const char str2[])
@@ -90,6 +90,37 @@ const char *TOKEN::strAt(int index) const
     return tok ? tok->_cstr : "";
 }
 
+int TOKEN::multiCompare( const char *needle, const char *haystack )
+{
+    bool emptyStringFound = false;
+    bool findNextOr = false;
+    for( ; *needle; ++needle )
+    {
+        if( *needle == '|' )
+        {
+            if( findNextOr )
+                findNextOr = false;
+            else
+                emptyStringFound = true;
+
+            continue;
+        }
+
+        // If this part of needle equals to the haystack
+        else if( strncmp( haystack, needle, strlen( haystack ) ) == 0 )
+            return 1;
+        else
+            findNextOr = true;
+    }
+
+    // If empty string was found or if last character in needle was '|'
+    if( emptyStringFound || findNextOr == false )
+        return 0;
+
+    return -1;
+}
+
+
 bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
 {
     if (!tok)
@@ -122,6 +153,12 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         {
             if (!tok->isName())
                 return false;
+        }
+
+        // Accept any token
+        else if (strcmp(str,"%any%")==0 )
+        {
+
         }
 
         // Variable name..
@@ -169,6 +206,22 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
             *strrchr(str, ']') = 0;
             if ( strchr( str + 1, tok->_str[0] ) == 0 )
                 return false;
+        }
+
+        // Parse multi options, such as void|int|char (accept token which is one of these 3)
+        else if ( strchr(str, '|') && strlen( str ) > 2 )
+        {
+            int res = multiCompare( str, tok->_cstr );
+            if( res == 0 )
+            {
+                // Empty alternative matches, use the same token on next round
+                continue;
+            }
+            else if( res == 2 )
+            {
+                // No match
+                return false;
+            }
         }
 
         else if (str != tok->_str)
