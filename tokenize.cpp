@@ -526,7 +526,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
     // Replace "->" with "."
     for ( TOKEN *tok = _tokens; tok; tok = tok->next )
     {
-        if ( strcmp(tok->aaaa(), "->") == 0 )
+        if ( tok->str() == "->" )
         {
             tok->setstr(".");
         }
@@ -541,7 +541,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             const char *type2 = tok->strAt( 2);
             for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
             {
-                if (tok2->aaaa()!=type1 && tok2->aaaa()!=type2 && strcmp(tok2->aaaa(),type2)==0)
+                if (tok2->aaaa()!=type1 && tok2->aaaa()!=type2 && (tok2->str() == type2))
                 {
                     tok2->setstr(type1);
                 }
@@ -560,7 +560,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
 
             for ( ; tok2; tok2 = tok2->next )
             {
-                if (tok2->aaaa()!=type3 && strcmp(tok2->aaaa(),type3)==0)
+                if (tok2->aaaa()!=type3 && (tok2->str() == type3))
                 {
                     tok2->setstr(type1);
 
@@ -611,7 +611,7 @@ void Tokenizer::simplifyTokenList()
     // Remove the keyword 'unsigned'
     for ( TOKEN *tok = _tokens; tok; tok = tok->next )
     {
-        if (tok->next && strcmp(tok->next->aaaa(),"unsigned")==0)
+        if (tok->next && (tok->next->str() == "unsigned"))
         {
             tok->deleteNext();
         }
@@ -627,7 +627,7 @@ void Tokenizer::simplifyTokenList()
 
             for (TOKEN *tok2 = _gettok(tok,6); tok2; tok2 = tok2->next)
             {
-                if (strcmp(tok2->aaaa(),sym) == 0)
+                if (tok2->str() == sym)
                 {
                     tok2->setstr(num);
                 }
@@ -661,7 +661,7 @@ void Tokenizer::simplifyTokenList()
     // Replace 'sizeof(type)'..
     for (TOKEN *tok = _tokens; tok; tok = tok->next)
     {
-        if (strcmp(tok->aaaa(),"sizeof") != 0)
+        if (tok->str() != "sizeof")
             continue;
 
         if (TOKEN::Match(tok, "sizeof ( %type% * )"))
@@ -719,14 +719,14 @@ void Tokenizer::simplifyTokenList()
         int indentlevel = 0;
         for ( TOKEN *tok2 = _gettok(tok,5); tok2; tok2 = tok2->next )
         {
-            if (tok2->aaaa0() == '{')
+            if (tok2->str() == "{")
             {
-                indentlevel++;
+                ++indentlevel;
             }
 
-            else if (tok2->aaaa0() == '}')
+            else if (tok2->str() == "}")
             {
-                indentlevel--;
+                --indentlevel;
                 if (indentlevel < 0)
                     break;
             }
@@ -936,7 +936,7 @@ void Tokenizer::simplifyTokenList()
                         eq->setstr(";");
 
                         // "= x, "   =>   "= x; type "
-                        if (tok2->aaaa0() == ',')
+                        if (tok2->str() == ",")
                         {
                             tok2->setstr(";");
                             InsertTokens( tok2, type0, typelen );
@@ -1002,7 +1002,7 @@ bool Tokenizer::simplifyConditions()
             TOKEN::Match(tok->next, "%num%")                                 &&
             (TOKEN::Match(tok2, ")") || TOKEN::Match(tok2, "&&") || TOKEN::Match(tok2, "||")) )
         {
-            tok->next->setstr((strcmp(tok->next->aaaa(), "0")!=0) ? "true" : "false");
+            tok->next->setstr((tok->next->str() != "0") ? "true" : "false");
             ret = false;
         }
 
@@ -1059,7 +1059,7 @@ const TOKEN *Tokenizer::GetFunctionTokenByName( const char funcname[] ) const
 {
     for ( unsigned int i = 0; i < _functionList.size(); ++i )
     {
-        if ( strcmp( _functionList[i]->aaaa(), funcname ) == 0 )
+        if ( _functionList[i]->str() == funcname )
         {
             return _functionList[i];
         }
@@ -1078,11 +1078,11 @@ void Tokenizer::fillFunctionList()
     int indentlevel = 0;
     for ( const TOKEN *tok = _tokens; tok; tok = tok->next )
     {
-        if ( tok->aaaa0() == '{' )
-            indentlevel++;
+        if ( tok->str() == "{" )
+            ++indentlevel;
 
-        else if ( tok->aaaa0() == '}' )
-            indentlevel--;
+        else if ( tok->str() == "}" )
+            --indentlevel;
 
         if (indentlevel > 0)
         {
@@ -1092,10 +1092,10 @@ void Tokenizer::fillFunctionList()
         if (strchr("};", tok->aaaa0()))
             staticfunc = classfunc = false;
 
-        else if ( strcmp( tok->aaaa(), "static" ) == 0 )
+        else if ( tok->str() == "static" )
             staticfunc = true;
 
-        else if ( strcmp( tok->aaaa(), "::" ) == 0 )
+        else if ( tok->str() == "::" )
             classfunc = true;
 
         else if (TOKEN::Match(tok, "%var% ("))
@@ -1103,18 +1103,18 @@ void Tokenizer::fillFunctionList()
             // Check if this is the first token of a function implementation..
             for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next )
             {
-                if ( tok2->aaaa0() == ';' )
+                if ( tok2->str() == ";" )
                 {
                     tok = tok2;
                     break;
                 }
 
-                else if ( tok2->aaaa0() == '{' )
+                else if ( tok2->str() == "{" )
                 {
                     break;
                 }
 
-                else if ( tok2->aaaa0() == ')' )
+                else if ( tok2->str() == ")" )
                 {
                     if ( TOKEN::Match(tok2, ") const|volatile| {") )
                     {
@@ -1140,7 +1140,7 @@ void Tokenizer::fillFunctionList()
         bool hasDuplicates = false;
         for ( unsigned int func2 = func1 + 1; func2 < _functionList.size(); )
         {
-            if ( strcmp(_functionList[func1]->aaaa(), _functionList[func2]->aaaa()) == 0 )
+            if ( _functionList[func1]->str() == _functionList[func2]->str() )
             {
                 hasDuplicates = true;
                 _functionList.erase( _functionList.begin() + func2 );
