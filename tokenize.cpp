@@ -765,11 +765,7 @@ void Tokenizer::simplifyTokenList()
             }
 
             // (1-2)
-            if (strchr("[,(=<>",tok->aaaa0()) &&
-                (tok->tokAt(1) && tok->tokAt(1)->isNumber())   &&
-                strchr("+-*/",*(tok->strAt(2))) &&
-                (tok->tokAt(3) && tok->tokAt(3)->isNumber())   &&
-                strchr("],);=<>",*(tok->strAt(4))) )
+            if (TOKEN::Match(tok, "[[,(=<>] %num% [+-*/] %num% [],);=<>]"))
             {
                 int i1 = atoi(tok->strAt(1));
                 int i2 = atoi(tok->strAt(3));
