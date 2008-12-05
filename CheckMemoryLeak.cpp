@@ -70,9 +70,9 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
     //     * var = (char *)malloc(10);
     //     * var = new char[10];
     //     * var = strdup("hello");
-    if ( tok2 && tok2->aaaa0() == '(' )
+    if ( tok2 && tok2->str() == "(" )
     {
-        while ( tok2 && tok2->aaaa0() != ')' )
+        while ( tok2 && tok2->str() != ")" )
             tok2 = tok2->next;
         tok2 = tok2 ? tok2->next : NULL;
     }
@@ -180,7 +180,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
     const char *funcname = tok->aaaa();
     for ( std::list<const TOKEN *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it )
     {
-        if ( std::string(funcname) == (*it)->aaaa() )
+        if ( (*it)->str() == funcname )
             return "dealloc";
     }
     callstack.push_back(tok);
@@ -315,12 +315,12 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
     int parlevel = 0;
     for ( ; tok; tok = tok->next )
     {
-        if ( tok->aaaa0() == '{' )
+        if ( tok->str() == "{" )
         {
             addtoken( "{" );
             indentlevel++;
         }
-        else if ( tok->aaaa0() == '}' )
+        else if ( tok->str() == "}" )
         {
             addtoken( "}" );
             if ( indentlevel <= 0 )
@@ -836,10 +836,10 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 bool incase = false;
                 for ( const TOKEN * _tok = tok2->tokAt(2); _tok; _tok = _tok->next )
                 {
-                    if ( _tok->aaaa0() == '{' )
+                    if ( _tok->str() == "{" )
                         break;
 
-                    else if ( _tok->aaaa0() == '}' )
+                    else if ( _tok->str() == "}" )
                     {
                         valid = true;
                         break;
@@ -848,10 +848,10 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                     else if (strncmp(_tok->aaaa(),"if",2)==0)
                         break;
 
-                    else if (strcmp(_tok->aaaa(),"switch")==0)
+                    else if (_tok->str() == "switch")
                         break;
 
-                    else if (strcmp(_tok->aaaa(),"loop")==0)
+                    else if (_tok->str() == "loop")
                         break;
 
                     else if (incase && TOKEN::Match(_tok,"case"))
@@ -885,7 +885,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                                 instoken( tok2, "if" );
                             instoken( tok2, "else" );
                         }
-                        while ( tok2 && tok2->aaaa0() != '}' && ! TOKEN::Match(tok2,"break ;") )
+                        while ( tok2 && tok2->str() != "}" && ! TOKEN::Match(tok2,"break ;") )
                             tok2 = tok2->next;
                         if (TOKEN::Match(tok2,"break ;"))
                         {
@@ -1036,10 +1036,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
     int indentlevel = 0;
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
     {
-        if (tok->aaaa0()=='{')
+        if (tok->str() == "{")
             indentlevel++;
 
-        else if (tok->aaaa0()=='}')
+        else if (tok->str() == "}")
             indentlevel--;
 
 
@@ -1079,10 +1079,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers()
     int indentlevel = 0;
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
-        if ( tok->aaaa0() == '{' )
+        if ( tok->str() == "{" )
             indentlevel++;
 
-        else if ( tok->aaaa0() == '}' )
+        else if ( tok->str() == "}" )
             indentlevel--;
 
         else if ( indentlevel == 0 && TOKEN::Match(tok, "class %var% [{:]") )
@@ -1098,7 +1098,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers()
 void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname )
 {
     // Go into class.
-    while ( tok1 && tok1->aaaa0() != '{' )
+    while ( tok1 && tok1->str() != "{" )
         tok1 = tok1->next;
     if ( tok1 )
         tok1 = tok1->next;
@@ -1106,10 +1106,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN 
     int indentlevel = 0;
     for ( const TOKEN *tok = tok1; tok; tok = tok->next )
     {
-        if ( tok->aaaa0() == '{' )
+        if ( tok->str() == "{" )
             indentlevel++;
 
-        else if ( tok->aaaa0() == '}' )
+        else if ( tok->str() == "}" )
         {
             indentlevel--;
             if ( indentlevel < 0 )
@@ -1131,7 +1131,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN 
         // Declaring member variable.. check allocations and deallocations
         if ( TOKEN::Match(tok->next, "%type% * %var% ;") )
         {
-            if ( tok->isName() || strchr(";}", tok->aaaa0()) )
+            if ( tok->isName() || TOKEN::Match(tok, "[;}]"))
             {
                 if (_settings._showAll || !isclass(tok->tokAt(1)))
                     CheckMemoryLeak_ClassMembers_Variable( classname, tok->strAt(3) );
@@ -1177,16 +1177,16 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
     int indentlevel = 0;
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next )
     {
-        if ( tok->aaaa0() == '{' )
+        if ( tok->str() == "{" )
             indentlevel++;
 
-        else if ( tok->aaaa0() == '}' )
+        else if ( tok->str() == "}" )
             indentlevel--;
 
         // Set the 'memberfunction' variable..
         if ( indentlevel == 0 )
         {
-            if ( strchr(";}", tok->aaaa0()) )
+            if ( TOKEN::Match(tok, "[;}]") )
                 memberfunction = false;
             else if ( TOKEN::Match( tok, fpattern.str().c_str() ) || TOKEN::Match( tok, destructor.str().c_str() ) )
                 memberfunction = true;
