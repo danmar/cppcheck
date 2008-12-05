@@ -901,7 +901,7 @@ void Tokenizer::simplifyTokenList()
 
         if (tok2)
         {
-            if (tok2->aaaa0() == ',')
+            if (tok2->str() == ",")
             {
                 tok2->setstr(";");
                 InsertTokens(tok2, type0, typelen);
@@ -1008,8 +1008,7 @@ bool Tokenizer::simplifyConditions()
 
         // Reduce "(%num% == %num%)" => "(true)"/"(false)"
         if ( (TOKEN::Match(tok, "&&") || TOKEN::Match(tok, "||") || TOKEN::Match(tok, "(")) &&
-             TOKEN::Match(tok->tokAt(1), "%num%") &&
-             TOKEN::Match(tok->tokAt(3), "%num%") &&
+             TOKEN::Match(tok->tokAt(1), "%num% %any% %num%") &&
              (TOKEN::Match(tok->tokAt(4), "&&") || TOKEN::Match(tok->tokAt(4), "||") || TOKEN::Match(tok->tokAt(4), ")")) )
         {
             double op1 = (strstr(tok->strAt(1), "0x")) ? strtol(tok->strAt(1),0,16) : atof( tok->strAt(1) );
