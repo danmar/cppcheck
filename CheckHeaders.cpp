@@ -85,7 +85,7 @@ void CheckHeaders::WarningIncludeHeader()
     // Including..
     for ( const TOKEN *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next)
     {
-        if (strcmp(includetok->aaaa(), "#include") != 0)
+        if (includetok->str() != "#include")
             continue;
 
         // Get fileindex of included file..
@@ -118,11 +118,11 @@ void CheckHeaders::WarningIncludeHeader()
                 continue;
 
             // I'm only interested in stuff that is declared at indentlevel 0
-            if (tok1->aaaa0() == '{')
-                indentlevel++;
+            if (tok1->str() == "{")
+                ++indentlevel;
 
-            else if (tok1->aaaa0() == '}')
-                indentlevel--;
+            else if (tok1->str() == "}")
+                --indentlevel;
 
             if (indentlevel != 0)
                 continue;
@@ -148,13 +148,13 @@ void CheckHeaders::WarningIncludeHeader()
 
             // enum..
             // --------------------------------------
-            else if (strcmp(tok1->aaaa(), "enum") == 0)
+            else if (tok1->str() == "enum")
             {
                 tok1 = tok1->next;
-                while (tok1->next && tok1->aaaa0()!=';')
+                while ( ! TOKEN::Match( tok1, "; %any%" ) )
                 {
                     if ( tok1->isName() )
-                        namelist.push_back(tok1->aaaa());
+                        namelist.push_back(tok1->str());
                     tok1 = tok1->next;
                 }
             }
@@ -175,26 +175,26 @@ void CheckHeaders::WarningIncludeHeader()
 
             // typedef..
             // --------------------------------------
-            else if (strcmp(tok1->aaaa(),"typedef")==0)
+            else if (tok1->str() == "typedef")
             {
                 if (strcmp(tok1->strAt(1),"enum")==0)
                     continue;
                 int parlevel = 0;
                 while (tok1->next)
                 {
-                    if ( strchr("({", tok1->aaaa0()) )
+                    if ( TOKEN::Match(tok1, "[({]") )
                         parlevel++;
 
-                    else if ( strchr(")}", tok1->aaaa0()) )
+                    else if ( TOKEN::Match(tok1, "[)}]") )
                         parlevel--;
 
                     else if (parlevel == 0)
                     {
-                        if ( tok1->aaaa0() == ';' )
+                        if ( tok1->str() == ";" )
                             break;
 
                         if ( TOKEN::Match(tok1, "%var% ;") )
-                            namelist.push_back(tok1->aaaa());
+                            namelist.push_back(tok1->str());
                     }
 
                     tok1 = tok1->next;
