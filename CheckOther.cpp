@@ -284,8 +284,13 @@ void CheckOther::WarningIf()
         const char *p[6] = {"==","<=",">=","!=","<",">"};
         bool iscond = false;
         for (int i = 0; i < 6; i++)
-            if (iscond = (strcmp(cond, p[i]) == 0))
+        {
+            if (strcmp(cond, p[i]) == 0)
+            {
+                iscond = true;
                 break;
+            }
+        }
         if (!iscond)
             break;
 
