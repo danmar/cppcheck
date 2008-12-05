@@ -89,7 +89,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
                                 0};
     for ( unsigned int i = 0; mallocfunc[i]; i++ )
     {
-        if ( strcmp(mallocfunc[i], tok2->aaaa()) == 0 )
+        if ( tok2->str() == mallocfunc[i] )
             return Malloc;
     }
 
@@ -111,7 +111,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
                                  0};
     for ( unsigned int i = 0; gmallocfunc[i]; i++ )
     {
-        if ( strcmp(gmallocfunc[i], tok2->aaaa()) == 0 )
+        if ( tok2->str() == gmallocfunc[i] )
             return gMalloc;
     }
 
@@ -131,7 +131,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
     std::list<AllocFunc>::const_iterator it = _listAllocFunc.begin();
     while ( it != _listAllocFunc.end() )
     {
-        if ( strcmp(tok2->aaaa(), it->funcname) == 0 )
+        if ( tok2->str() == it->funcname )
             return it->alloctype;
         ++it;
     }
@@ -667,7 +667,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 erase(tok2,tok2->tokAt(8));
                 done = false;
             }
-            
+
             // Reduce "if ; else %var% ;" => "if %var% ;"
             if ( TOKEN::Match(tok2, "if ; else %var% ;") )
             {
@@ -742,7 +742,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 erase(tok2, tok2->tokAt(4));
                 done = false;
             }
-                        
+
             // Delete if block: "alloc; if return use ;"
             if (TOKEN::Match(tok2,"alloc ; if return use ;") && !TOKEN::Match(tok2->tokAt(6),"else"))
             {
@@ -756,7 +756,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 erase( tok2, tok2->tokAt(4) );
                 done = false;
             }
-            
+
             // Reduce "[;{}] return ; %var%" => "[;{}] return ;"
             if ( TOKEN::Match(tok2, "[;{}] return ; %var%") )
             {
@@ -791,7 +791,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 erase( tok2, tok2->tokAt(5) );
                 done = false;
             }
-            
+
             // Reduce "if* alloc ; dealloc ;" => ";"
             if ( TOKEN::Match(tok2->tokAt(2), "alloc ; dealloc ;") &&
                  tok2->next->str().find("if") == 0 )
