@@ -114,6 +114,9 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
                 {
                     ch = (char)istr.get();
                     code << std::string(1,ch);
+
+                    // Avoid exiting loop if string contains "-characters
+                    ch = 0;
                 }
             } while ( istr.good() && ch != '\"' );
         }
@@ -139,7 +142,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
             code << std::string(1, ch);
         }
     }
-    
+
     return code.str();
 }
 
