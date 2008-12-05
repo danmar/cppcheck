@@ -369,7 +369,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
           tok;
           tok = TOKEN::findtoken( tok->next, declstruct_pattern ) )
     {
-        if (!TOKEN::Match(tok,"struct") && !TOKEN::Match(tok,"class"))
+        if ( ! TOKEN::Match(tok,"struct|class") )
             continue;
 
         const char *structname = tok->next->aaaa();
