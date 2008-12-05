@@ -112,12 +112,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
 
 
         // memset, memcmp, memcpy, strncpy, fgets..
-        if (TOKEN::Match(tok,"memset") ||
-            TOKEN::Match(tok,"memcpy") ||
-            TOKEN::Match(tok,"memmove") ||
-            TOKEN::Match(tok,"memcmp") ||
-            TOKEN::Match(tok,"strncpy") ||
-            TOKEN::Match(tok,"fgets") )
+        if (TOKEN::Match(tok,"memset|memcpy|memmove|memcmp|strncpy|fgets") )
         {
             if ( TOKEN::Match( tok->next, "( %var1% , %num% , %num% )", varname ) ||
                  TOKEN::Match( tok->next, "( %var% , %var1% , %num% )", varname ) )

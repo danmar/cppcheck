@@ -219,7 +219,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
                 // Empty alternative matches, use the same token on next round
                 continue;
             }
-            else if( res == 2 )
+            else if( res == -1 )
             {
                 // No match
                 return false;
