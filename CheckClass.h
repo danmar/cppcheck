@@ -39,6 +39,9 @@ public:
 
     void CheckOperatorEq1();    // Warning upon "void operator=(.."
 
+    // The destructor in a base class should be virtual
+    void virtualDestructor();
+
 private:
     struct VAR
     {

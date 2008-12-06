@@ -261,6 +261,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Check that all class constructors are ok.
     checkClass.CheckConstructors();
 
+    // Check that all base classes have virtual destructors
+    checkClass.virtualDestructor();
+
     if (_settings._showAll)
     {
         // Check for "if (a=b)"
