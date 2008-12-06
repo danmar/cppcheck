@@ -670,11 +670,11 @@ void CheckClass::CheckOperatorEq1()
 
 void CheckClass::virtualDestructor()
 {
-    const TOKEN *derived = TOKEN::findmatch(_tokenizer->tokens(), "class %var% : public %var%");
+    const TOKEN *derived = TOKEN::findmatch(_tokenizer->tokens(), "class %var% : public|protected|private %var%");
     while (derived)
     {
         // Iterate through each base class...
-        for ( derived = derived->tokAt(3); TOKEN::Match(derived, "public %var%"); derived = derived->tokAt(3) )
+        for ( derived = derived->tokAt(3); TOKEN::Match(derived, "public|protected|private %var%"); derived = derived->tokAt(3) )
         {
             // Name of base class..
             const char *baseName[2];
