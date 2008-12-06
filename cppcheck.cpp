@@ -62,7 +62,7 @@ void CppCheck::addFile( const std::string &path, const std::string &content )
     _fileContents[ path ] = content;
 }
 
-std::string CppCheck::parseFromArgs( int argc, const char* argv[] )
+std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
 {
     std::vector<std::string> pathnames;
     bool Recursive = false;
