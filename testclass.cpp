@@ -84,7 +84,7 @@ private:
     void virtualDestructor4()
     {
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : public Fred, public Base { };");
+                               "class Derived : private Fred, public Base { };");
         ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
     }
 };
