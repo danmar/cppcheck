@@ -456,6 +456,9 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
                 // Append token..
                 CurrentToken += c;
 
+                if ( c == '\n' )
+                    ++lineno;
+
                 // Special sequence '\.'
                 if (special)
                     special = false;
@@ -472,7 +475,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             continue;
         }
 
-        if (strchr("+-*/%&|^?!=<>[](){};:,.",ch))
+        if (strchr("+-*/%&|^?!=<>[](){};:,.~",ch))
         {
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             CurrentToken.clear();
