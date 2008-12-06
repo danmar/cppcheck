@@ -784,4 +784,37 @@ void CheckOther::CheckIncompleteStatement()
         }
     }
 }
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// Unreachable code below a 'return'
+//---------------------------------------------------------------------------
+
+void CheckOther::unreachableCode()
+{
+    const TOKEN *tok = TOKEN::findmatch( _tokenizer->tokens(), "[;{}] return" );
+    while ( tok )
+    {
+        // Locate the end of the 'return' statement
+        while ( tok && ! TOKEN::Match(tok, ";") )
+            tok = tok->next;
+
+        // Next token should be either "case", "default" or "}"
+        if (tok && tok->next && !TOKEN::Match( tok, "; case|default|}"))
+        {
+            std::ostringstream errmsg;
+            errmsg << _tokenizer->fileLine(tok->next) << ": Unreachable code below a 'return'";
+            _errorLogger->reportErr(errmsg.str());
+        }
+
+        // Find the next 'return' statement
+        tok = TOKEN::findmatch( tok, "[;{}] return" );
+    }
+}
+
 

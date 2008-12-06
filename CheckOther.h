@@ -70,6 +70,9 @@ public:
 
     // Incomplete statement. A statement that only contains a constant or variable
     void CheckIncompleteStatement();
+
+    /** Unreachable code below a 'return' */
+    void unreachableCode();
 private:
     void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
 
