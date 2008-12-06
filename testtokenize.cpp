@@ -216,19 +216,19 @@ private:
     void multi_compare()
     {
         // Test for found
-        ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "one" ), 1 );
-        ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "two" ), 1 );
-        ASSERT_EQUALS( TOKEN::multiCompare( "verybig|two|", "two" ), 1 );
+        ASSERT_EQUALS( 1, TOKEN::multiCompare( "one|two", "one" ) );
+        ASSERT_EQUALS( 1, TOKEN::multiCompare( "one|two", "two" ) );
+        ASSERT_EQUALS( 1, TOKEN::multiCompare( "verybig|two|", "two" ) );
 
         // Test for empty string found
-        ASSERT_EQUALS( TOKEN::multiCompare( "|one|two", "notfound" ), 0 );
-        ASSERT_EQUALS( TOKEN::multiCompare( "one||two", "notfound" ), 0 );
-        ASSERT_EQUALS( TOKEN::multiCompare( "one|two|", "notfound" ), 0 );
+        ASSERT_EQUALS( 0, TOKEN::multiCompare( "|one|two", "notfound" ) );
+        ASSERT_EQUALS( 0, TOKEN::multiCompare( "one||two", "notfound" ) );
+        ASSERT_EQUALS( 0, TOKEN::multiCompare( "one|two|", "notfound" ) );
 
         // Test for not found
-        ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "notfound" ), -1 );
-        ASSERT_EQUALS( TOKEN::multiCompare( "verybig|two", "s" ), -1 );
-        ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "ne" ), -1 );
+        ASSERT_EQUALS( -1, TOKEN::multiCompare( "one|two", "notfound" ) );
+        ASSERT_EQUALS( -1, TOKEN::multiCompare( "verybig|two", "s" ) );
+        ASSERT_EQUALS( -1, TOKEN::multiCompare( "one|two", "ne" ) );
     }
 
     void match1()
