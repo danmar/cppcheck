@@ -638,7 +638,7 @@ void CheckClass::virtualDestructor()
 
         // Find the destructor for the base class.
         const TOKEN *base = TOKEN::findmatch(_tokenizer->tokens(), "%any% ~ %var1% (", baseName);
-        while (base && TOKEN::Match(base, "::"))
+        while (TOKEN::Match(base, "::"))
             base = TOKEN::findmatch(base->next, "%any% ~ %var1% (", baseName);
 
         // Check that there is a destructor..
