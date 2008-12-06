@@ -49,6 +49,8 @@ private:
         TEST_CASE( numeric_true_condition );
 
         TEST_CASE( multi_compare );
+
+        TEST_CASE( match1 );
     }
 
 
@@ -227,6 +229,35 @@ private:
         ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "notfound" ), -1 );
         ASSERT_EQUALS( TOKEN::multiCompare( "verybig|two", "s" ), -1 );
         ASSERT_EQUALS( TOKEN::multiCompare( "one|two", "ne" ), -1 );
+    }
+
+    void match1()
+    {
+        // Match "%var% | %var%"
+        {
+            const std::string code("abc|def");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
+            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "%var% | %var%") );
+        }
+
+        // Match "%var% || %var%"
+        {
+            const std::string code("abc||def");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
+            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "%var% || %var%") );
+        }
     }
 };
 
