@@ -89,7 +89,7 @@ class CppCheck : public ErrorLogger
          * string containing "help" text if no files were found to be
          * checked.
          */
-        std::string parseFromArgs( int argc, char* argv[] );
+        std::string parseFromArgs( int argc, const char* argv[] );
 
     private:
         void checkFile(const std::string &code, const char FileName[]);

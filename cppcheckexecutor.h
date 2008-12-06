@@ -47,7 +47,7 @@ public:
      * @param argc from main()
      * @param argv from main()
      */
-    void check( int argc, char* argv[] );
+    void check( int argc, const char* argv[] );
 
     /**
      * Errors and warnings are directed here. This should be
