@@ -673,38 +673,42 @@ void CheckClass::virtualDestructor()
     const TOKEN *derived = TOKEN::findmatch(_tokenizer->tokens(), "class %var% : public %var%");
     while (derived)
     {
-        // Name of base class..
-        const char *baseName[2];
-        baseName[0] = derived->strAt( 4 );
-        baseName[1] = 0;
-
-        // Find the destructor for the base class.
-        const TOKEN *base = TOKEN::findmatch(_tokenizer->tokens(), "%any% ~ %var1% (", baseName);
-        while (TOKEN::Match(base, "::"))
-            base = TOKEN::findmatch(base->next, "%any% ~ %var1% (", baseName);
-
-        // Check that there is a destructor..
-        if ( ! base )
+        // Iterate through each base class...
+        for ( derived = derived->tokAt(3); TOKEN::Match(derived, "public %var%"); derived = derived->tokAt(3) )
         {
-            // Is the class declaration available?
-            base = TOKEN::findmatch(_tokenizer->tokens(), "class %var1% :|{", baseName);
-            if ( base )
+            // Name of base class..
+            const char *baseName[2];
+            baseName[0] = derived->strAt(1);
+            baseName[1] = 0;
+
+            // Find the destructor for the base class.
+            const TOKEN *base = TOKEN::findmatch(_tokenizer->tokens(), "%any% ~ %var1% (", baseName);
+            while (TOKEN::Match(base, "::"))
+                base = TOKEN::findmatch(base->next, "%any% ~ %var1% (", baseName);
+
+            // Check that there is a destructor..
+            if ( ! base )
+            {
+                // Is the class declaration available?
+                base = TOKEN::findmatch(_tokenizer->tokens(), "class %var1% :|{", baseName);
+                if ( base )
+                {
+                    std::ostringstream errmsg;
+                    errmsg << _tokenizer->fileLine(base) << ": Base class " << baseName[0] << " doesn't have a virtual destructor";
+                    _errorLogger->reportErr(errmsg.str());
+                }
+            }
+
+            // There is a destructor. Check that it's virtual..
+            else if ( ! TOKEN::Match(base, "virtual") )
             {
                 std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(base) << ": Base class " << baseName[0] << " doesn't have a virtual destructor";
+                errmsg << _tokenizer->fileLine(base) << ": The destructor for the base class " << baseName[0] << " is not virtual";
                 _errorLogger->reportErr(errmsg.str());
             }
         }
 
-        // There is a destructor. Check that it's virtual..
-        else if ( ! TOKEN::Match(base, "virtual") )
-        {
-            std::ostringstream errmsg;
-            errmsg << _tokenizer->fileLine(base) << ": The destructor for the base class " << baseName[0] << " is not virtual";
-            _errorLogger->reportErr(errmsg.str());
-        }
-
-        derived = TOKEN::findmatch(derived->next, "class %var% : public %var%");
+        derived = TOKEN::findmatch(derived, "class %var% : public %var%");
     }
 }
 //---------------------------------------------------------------------------

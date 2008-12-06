@@ -39,6 +39,7 @@ private:
         TEST_CASE( virtualDestructor1 );
         TEST_CASE( virtualDestructor2 );
         TEST_CASE( virtualDestructor3 );
+        TEST_CASE( virtualDestructor4 );
     }
 
     // Check that base classes have virtual destructors
@@ -77,6 +78,13 @@ private:
     {
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };");
+        ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
+    }
+
+    void virtualDestructor4()
+    {
+        checkVirtualDestructor("class Base { public: ~Base(); };\n"
+                               "class Derived : public Fred, public Base { };");
         ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
     }
 };
