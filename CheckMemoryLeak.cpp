@@ -93,7 +93,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
             return Malloc;
     }
 
-    // Does tok2 point on "malloc", "strdup" or "kmalloc"..
+    // Does tok2 point on "g_malloc", "g_strdup", ..
     const char *gmallocfunc[] = {"g_new",
                                  "g_new0",
                                  "g_renew",
@@ -102,10 +102,8 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
                                  "g_try_renew",
                                  "g_malloc",
                                  "g_malloc0",
-                                 "g_realloc",
                                  "g_try_malloc",
                                  "g_try_malloc0",
-                                 "g_try_realloc",
                                  "g_strdup",
                                  "g_strndup",
                                  0};
