@@ -598,6 +598,21 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
         }
     }
 
+    // Remove "volatile"
+    while ( TOKEN::Match(_tokens, "volatile") )
+    {
+        TOKEN *tok = _tokens;
+        _tokens = _tokens->next;
+        delete tok;
+    }
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next )
+    {
+        while ( TOKEN::Match(tok->next, "volatile") )
+        {
+            tok->deleteNext();
+        }
+    }
+
 }
 //---------------------------------------------------------------------------
 
@@ -1112,7 +1127,7 @@ void Tokenizer::fillFunctionList()
 
                 else if ( tok2->str() == ")" )
                 {
-                    if ( TOKEN::Match(tok2, ") const|volatile| {") )
+                    if ( TOKEN::Match(tok2, ") const| {") )
                     {
                         _functionList.push_back( tok );
                         tok = tok2;
