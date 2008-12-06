@@ -136,7 +136,8 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
             p++;
 
         // Extract token from pattern..
-        char str[50];
+        // TODO: Refactor this so there can't be buffer overflows
+        char str[500];
         char *s = str;
         while (*p && *p!=' ')
         {
