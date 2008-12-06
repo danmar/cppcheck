@@ -66,6 +66,8 @@ private:
         TEST_CASE( initvar_same_classname );    // BUG 2208157
         TEST_CASE( initvar_chained_assign );    // BUG 2270433
         TEST_CASE( initvar_2constructors );     // BUG 2270353
+
+        TEST_CASE( initvar_private_constructor );   // BUG 2354171 - private constructor
     }
 
 
@@ -260,6 +262,20 @@ private:
 
         std::string err( errout.str() );
         ASSERT_EQUALS( std::string(""), err );
+    }
+
+
+    void initvar_private_constructor()
+    {
+        check( "class Fred\n"
+               "{\n"
+               "private:\n"
+               "    int var;\n"
+               "    Fred();\n"
+               "};\n"
+               "Fred::Fred()\n"
+               "{ }" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 };

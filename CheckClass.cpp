@@ -309,36 +309,79 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
 
 void CheckClass::CheckConstructors()
 {
+    const char pattern_class[] = "class %var% {";
+
     // Locate class
-    const char *pattern_classname[] = {"class","","{",NULL};
-    const TOKEN *tok1 = TOKEN::findtoken(_tokenizer->tokens(), pattern_classname);
+    const TOKEN *tok1 = TOKEN::findmatch( _tokenizer->tokens(), pattern_class );
     while (tok1)
     {
-        const char *classname = tok1->next->aaaa();
-        if ( !(tok1->next->isName()) )
+        const char *className[2];
+        className[0] = tok1->strAt( 1 );
+        className[1] = 0;
+
+        // TODO: handling of private constructors should be improved.
+        bool hasPrivateConstructor = false;
         {
-            tok1 = TOKEN::findtoken( tok1->next, pattern_classname );
+            int indentlevel = 0;
+            bool isPrivate = true;
+            for ( const TOKEN *tok = tok1; tok; tok = tok->next )
+            {
+                // Indentation
+                if ( tok->str() == "{" )
+                    ++indentlevel;
+
+                else if ( tok->str() == "}" )
+                {
+                    --indentlevel;
+                    if (indentlevel <= 0)
+                        break;
+                }
+
+                // Parse class contents (indentlevel == 1)..
+                if ( indentlevel == 1 )
+                {
+                    // What section are we in.. private/non-private
+                    if ( tok->str() == "private:" )
+                        isPrivate = true;
+                    else if ( tok->str() == "protected:" || tok->str() == "public:" )
+                        isPrivate = false;
+
+                    // Is there a private constructor?
+                    else if ( isPrivate && TOKEN::Match(tok, "%var1% (", className) )
+                    {
+                        hasPrivateConstructor = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ( hasPrivateConstructor )
+        {
+            // TODO: Handle private constructors.
+            // Right now to avoid false positives I just bail out
+            tok1 = TOKEN::findmatch( tok1->next, pattern_class );
             continue;
         }
 
         // Are there a class constructor?
-        const char *constructor_pattern[] = {"","clKalle","(",NULL};
-        constructor_pattern[1] = classname;
-        const TOKEN *constructor_token = TOKEN::findtoken( _tokenizer->tokens(), constructor_pattern );
-        while ( constructor_token && constructor_token->aaaa0() == '~' )
-            constructor_token = TOKEN::findtoken( constructor_token->next, constructor_pattern );
+        const TOKEN *constructor_token = TOKEN::findmatch( tok1, "%any% %var1% (", className );
+        while ( TOKEN::Match( constructor_token, "~" ) )
+            constructor_token = TOKEN::findmatch( constructor_token->next, "%any% %var1% (", className );
+
+        // There are no constructor.
         if ( ! constructor_token )
         {
-            // There's no class constructor
+            // If "--style" has been given, give a warning
             if ( _settings._checkCodingStyle )
             {
-                // Check that all member variables are initialized..
+                // If the class has member variables there should be an constructor
                 struct VAR *varlist = ClassChecking_GetVarList(tok1);
                 if ( varlist )
                 {
                     std::ostringstream ostr;
                     ostr << _tokenizer->fileLine(tok1);
-                    ostr << " The class '" << classname << "' has no constructor";
+                    ostr << " The class '" << className[0] << "' has no constructor";
                     _errorLogger->reportErr(ostr.str());
                 }
                 // Delete the varlist..
@@ -350,7 +393,7 @@ void CheckClass::CheckConstructors()
                 }
             }
 
-            tok1 = TOKEN::findtoken( tok1->next, pattern_classname );
+            tok1 = TOKEN::findmatch( tok1->next, pattern_class );
             continue;
         }
 
@@ -358,26 +401,25 @@ void CheckClass::CheckConstructors()
         struct VAR *varlist = ClassChecking_GetVarList(tok1);
 
         int indentlevel = 0;
-        constructor_token = FindClassFunction( tok1, classname, classname, indentlevel );
+        constructor_token = FindClassFunction( tok1, className[0], className[0], indentlevel );
         std::list<std::string> callstack;
-        ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, classname, callstack);
+        ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className[0], callstack);
         while ( constructor_token )
         {
             // Check if any variables are uninitialized
             for (struct VAR *var = varlist; var; var = var->next)
             {
                 // Is it a static member variable?
-                const char *pattern[] = {"","::","","=",NULL};
-                pattern[0] = classname;
-                pattern[2] = var->name;
-                if (TOKEN::findtoken(_tokenizer->tokens(), pattern))
+                std::ostringstream pattern;
+                pattern << className[0] << "::" << var->name << "=";
+                if (TOKEN::findmatch(_tokenizer->tokens(), pattern.str().c_str()))
                     continue;
 
                 if (!var->init)
                 {
                     std::ostringstream ostr;
                     ostr << _tokenizer->fileLine(constructor_token);
-                    ostr << " Uninitialized member variable '" << classname << "::" << var->name << "'";
+                    ostr << " Uninitialized member variable '" << className[0] << "::" << var->name << "'";
                     _errorLogger->reportErr(ostr.str());
                 }
             }
@@ -385,9 +427,9 @@ void CheckClass::CheckConstructors()
             for ( struct VAR *var = varlist; var; var = var->next )
                 var->init = false;
 
-            constructor_token = FindClassFunction( constructor_token->next, classname, classname, indentlevel );
+            constructor_token = FindClassFunction( constructor_token->next, className[0], className[0], indentlevel );
             callstack.clear();
-            ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, classname, callstack);
+            ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className[0], callstack);
         }
 
         // Delete the varlist..
@@ -398,7 +440,7 @@ void CheckClass::CheckConstructors()
             varlist = nextvar;
         }
 
-        tok1 = TOKEN::findtoken( tok1->next, pattern_classname );
+        tok1 = TOKEN::findmatch( tok1->next, pattern_class );
     }
 }
 
