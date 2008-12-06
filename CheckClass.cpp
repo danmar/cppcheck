@@ -47,7 +47,7 @@ CheckClass::~CheckClass()
 
 //---------------------------------------------------------------------------
 
-struct VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
+struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
 {
     // Get variable list..
     struct VAR *varlist = NULL;

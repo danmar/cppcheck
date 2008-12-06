@@ -24,14 +24,6 @@
 #include "tokenize.h"
 #include "settings.h"
 #include "errorlogger.h"
-#include <list>
-
-struct VAR
-{
-    const char *name;
-    bool        init;
-    struct VAR *next;
-};
 
 class CheckClass
 {
@@ -48,6 +40,13 @@ public:
     void CheckOperatorEq1();    // Warning upon "void operator=(.."
 
 private:
+    struct VAR
+    {
+        const char *name;
+        bool        init;
+        struct VAR *next;
+    };
+
     void ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack);
     void InitVar(struct VAR *varlist, const char varname[]);
     const TOKEN *FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel );
