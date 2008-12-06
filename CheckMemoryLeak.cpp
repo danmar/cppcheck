@@ -135,6 +135,32 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
     return No;
 }
 
+
+
+CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetReallocationType( const TOKEN *tok2 )
+{
+    // What we may have...
+    //     * var = (char *)realloc(..;
+    if ( tok2 && tok2->str() == "(" )
+    {
+        while ( tok2 && tok2->str() != ")" )
+            tok2 = tok2->next;
+        tok2 = tok2 ? tok2->next : NULL;
+    }
+    if ( ! tok2 )
+        return No;
+
+    if ( TOKEN::Match(tok2, "realloc") )
+        return Malloc;
+
+    // GTK memory reallocation..
+    if ( TOKEN::Match(tok2, "g_realloc|g_try_realloc|g_renew|g_try_renew") )
+        return gMalloc;
+
+    return No;
+}
+
+
 CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType( const TOKEN *tok, const char *varnames[] )
 {
     if ( TOKEN::Match(tok, "delete %var1% ;", varnames) )
@@ -167,7 +193,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
     if (TOKEN::Match(tok,"if") || TOKEN::Match(tok,"for") || TOKEN::Match(tok,"while"))
         return 0;
 
-    if (GetAllocationType(tok)!=No || GetDeallocationType(tok,varnames)!=No)
+    if (GetAllocationType(tok)!=No || GetReallocationType(tok)!=No || GetDeallocationType(tok,varnames)!=No)
         return 0;
 
     if ( callstack.size() > 2 )
@@ -336,6 +362,16 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         if (TOKEN::Match(tok, "[(;{}] %var1% =", varnames))
         {
             AllocType alloc = GetAllocationType(tok->tokAt(3));
+
+            if ( alloc == No )
+            {
+                alloc = GetReallocationType( tok->tokAt(3) );
+                if ( alloc != No )
+                {
+                    addtoken( "dealloc" );
+                    addtoken( ";" );
+                }
+            }
 
             // If "--all" hasn't been given, don't check classes..
             if ( alloc == New && ! _settings._showAll )

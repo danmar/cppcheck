@@ -123,6 +123,9 @@ private:
         TEST_CASE( linux_list_1 );
 
         TEST_CASE( sizeof1 );
+
+        TEST_CASE( realloc1 );
+        TEST_CASE( realloc2 );
     }
 
 
@@ -964,6 +967,31 @@ private:
 
         ASSERT_EQUALS( std::string("[test.cpp:12]: Memory leak: s2\n"), err );
     }
+
+
+    void realloc1()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *a = (char *)malloc(10);\n"
+               "    a = realloc(a, 100);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: a\n"), errout.str() );
+    }
+
+    void realloc2()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *a = (char *)malloc(10);\n"
+               "    a = (char *)realloc(a, 100);\n"
+               "    free(a);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
 
 };
 
