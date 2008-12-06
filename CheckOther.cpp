@@ -806,9 +806,11 @@ void CheckOther::unreachableCode()
         // Locate the end of the 'return' statement
         while ( tok && ! TOKEN::Match(tok, ";") )
             tok = tok->next;
+        while ( tok && TOKEN::Match(tok->next, ";") )
+            tok = tok->next;
 
         // If there is a statement below the return it is unreachable
-        if (!TOKEN::Match(tok, "; case|default|}") && !TOKEN::Match(tok, "; %var% :"))
+        if (!TOKEN::Match(tok, "; case|default|}|#") && !TOKEN::Match(tok, "; %var% :"))
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next) << ": Unreachable code below a 'return'";
