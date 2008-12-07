@@ -670,18 +670,30 @@ void CheckClass::CheckOperatorEq1()
 
 void CheckClass::virtualDestructor()
 {
-    const TOKEN *derived = TOKEN::findmatch(_tokenizer->tokens(), "class %var% : public|protected|private %var%");
+	const char pattern_classdecl[] = "class %var% : %var%";
+
+    const TOKEN *derived = TOKEN::findmatch(_tokenizer->tokens(), pattern_classdecl);
     while (derived)
     {
         // Iterate through each base class...
-        for ( derived = derived->tokAt(3); TOKEN::Match(derived, "public|protected|private %var%"); derived = derived->tokAt(3) )
+		derived = derived->tokAt(3);
+        while ( TOKEN::Match(derived, "%var%") )
         {
+            // What kind of inheritance is it.. public|protected|private
+            if ( TOKEN::Match( derived, "public|protected|private" ) )
+                derived = derived->next;
+
             // Name of base class..
             const char *baseName[2];
-            baseName[0] = derived->strAt(1);
+            baseName[0] = derived->strAt(0);
             baseName[1] = 0;
 
-            // Find the destructor for the base class.
+            // Update derived so it's ready for the next loop.
+            derived = derived->next;
+            if ( TOKEN::Match(derived, ",") )
+                derived = derived->next;
+
+            // Find the destructor declaration for the base class.
             const TOKEN *base = TOKEN::findmatch(_tokenizer->tokens(), "%any% ~ %var1% (", baseName);
             while (TOKEN::Match(base, "::"))
                 base = TOKEN::findmatch(base->next, "%any% ~ %var1% (", baseName);
@@ -708,7 +720,8 @@ void CheckClass::virtualDestructor()
             }
         }
 
-        derived = TOKEN::findmatch(derived, "class %var% : public %var%");
+		// Goto next class
+        derived = TOKEN::findmatch(derived, pattern_classdecl);
     }
 }
 //---------------------------------------------------------------------------

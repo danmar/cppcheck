@@ -36,10 +36,9 @@ private:
 
     void run()
     {
-        TEST_CASE( virtualDestructor1 );
-        TEST_CASE( virtualDestructor2 );
-        TEST_CASE( virtualDestructor3 );
-        TEST_CASE( virtualDestructor4 );
+        TEST_CASE( virtualDestructor1 );	// Base class not found => no error
+        TEST_CASE( virtualDestructor2 );    // Base class doesn't have a destructor
+        TEST_CASE( virtualDestructor3 );	// Base class has a destructor, but it's not virtual
     }
 
     // Check that base classes have virtual destructors
@@ -63,26 +62,36 @@ private:
 
     void virtualDestructor1()
     {
+		// Base class not found
+
         checkVirtualDestructor("class Derived : public Base { };");
+        ASSERT_EQUALS( std::string(""), errout.str() );
+
+        checkVirtualDestructor("class Derived : Base { };");
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
     void virtualDestructor2()
     {
+		// Base class doesn't have a destructor
+
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : public Base { };");
+        ASSERT_EQUALS( std::string("[test.cpp:1]: Base class Base doesn't have a virtual destructor\n"), errout.str() );
+
+        checkVirtualDestructor("class Base { };\n"
+                               "class Derived : Base { };");
         ASSERT_EQUALS( std::string("[test.cpp:1]: Base class Base doesn't have a virtual destructor\n"), errout.str() );
     }
 
     void virtualDestructor3()
     {
+		// Base class has a destructor, but it's not virtual
+
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };");
         ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
-    }
 
-    void virtualDestructor4()
-    {
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };");
         ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
