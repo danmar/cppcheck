@@ -325,6 +325,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         // Unreachable code below a 'return' statement
         checkOther.unreachableCode();
+
+        // Usage of local functions
+        checkOther.functionVariableUsage();
     }
 }
 //---------------------------------------------------------------------------

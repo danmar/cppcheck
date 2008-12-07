@@ -832,6 +832,21 @@ void CheckOther::unreachableCode()
 // Usage of function variables
 //---------------------------------------------------------------------------
 
+static bool isOp(const TOKEN *tok)
+{
+    return bool(tok &&
+                (tok->str() == "&&" ||
+                 tok->str() == "||" ||
+                 tok->str() == "==" ||
+                 tok->str() == "!=" ||
+                 tok->str() == "<" ||
+                 tok->str() == "<=" ||
+                 tok->str() == ">" ||
+                 tok->str() == ">=" ||
+                 tok->str() == "<<" ||
+                 TOKEN::Match(tok, "[+-*/&|,]")));
+}
+
 void CheckOther::functionVariableUsage()
 {
     // Parse all executing scopes..
@@ -856,18 +871,29 @@ void CheckOther::functionVariableUsage()
                     break;
             }
 
-            if ( TOKEN::Match(tok, "[;{}] %type% %var% ;|=") )
-            {
-                if ( TOKEN::Match(tok->next, "delete|return") )
-                    varUsage[ tok->strAt(2) ] |= USAGE_READ;
-                else
-                    varUsage[ tok->strAt(2) ] = USAGE_DECLARE;
-            }
+            if ( TOKEN::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|=") )
+                varUsage[ tok->strAt(2) ] = USAGE_DECLARE;
 
-            else if ( TOKEN::Match(tok, "[;{}] %var% =") )
-            {
+            else if ( TOKEN::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|=") )
+                varUsage[ tok->strAt(3) ] = USAGE_DECLARE;
+
+            else if ( TOKEN::Match(tok, "delete|return %var%") )
+                varUsage[ tok->strAt(1) ] |= USAGE_READ;
+
+            else if ( TOKEN::Match(tok, "%var% =") )
+                varUsage[ tok->str() ] |= USAGE_WRITE;
+
+            else if ( TOKEN::Match(tok, "else %var% =") )
                 varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
-            }
+
+            else if ( TOKEN::Match(tok, ">>|& %var%") )
+                varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
+
+            else if ((TOKEN::Match(tok,"[(=&]") || isOp(tok)) && TOKEN::Match(tok->next, "%var%"))
+                varUsage[ tok->strAt(1) ] |= USAGE_READ;
+
+            else if (TOKEN::Match(tok, "%var%") && (tok->next->str()==")" || isOp(tok->next)))
+                varUsage[ tok->str() ] |= USAGE_READ;
         }
 
         // Check usage of all variables in the current scope..

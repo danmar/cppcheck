@@ -59,6 +59,8 @@ private:
 
         TEST_CASE( localvar1 );
         TEST_CASE( localvar2 );
+        TEST_CASE( localvar3 );
+        TEST_CASE( localvar4 );
     }
 
     void structmember1()
@@ -150,6 +152,28 @@ private:
                                "    return i;\n"
                                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:2]: Variable 'i' is not assigned a value\n"), errout.str() );
+    }
+
+    void localvar3()
+    {
+        functionVariableUsage( "void foo()\n"
+                               "{\n"
+                               "    int i;\n"
+                               "    if ( abc )\n"
+                               "        ;\n"
+                               "    else i = 0;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:2]: Variable 'i' is assigned a value that is never used\n"), errout.str() );
+    }
+
+    void localvar4()
+    {
+        functionVariableUsage( "void foo()\n"
+                               "{\n"
+                               "    int i = 0;\n"
+                               "    f(i);
+                               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
