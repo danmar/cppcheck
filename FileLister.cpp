@@ -156,12 +156,16 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
 
 void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive )
 {
-    std::ostringstream oss;
+    std::ostringstream bdir, oss;
     oss << path;
     if (recursive)
     {
+		bdir << path;
         if ( path.length() > 0 && path[path.length()-1] != '/' )
+		{
+			bdir << "/";
             oss << "/";
+		}
 
         oss << "*";
     }
@@ -174,7 +178,7 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
     do
     {
 		std::ostringstream fname;
-		fname << path << ffd.cFileName;
+		fname << bdir.str().c_str() << ffd.cFileName;
 
         if ( ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0' )
             continue;
