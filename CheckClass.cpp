@@ -409,19 +409,20 @@ void CheckClass::CheckConstructors()
             // Check if any variables are uninitialized
             for (struct VAR *var = varlist; var; var = var->next)
             {
+                if ( var->init )
+                    continue;
+
                 // Is it a static member variable?
                 std::ostringstream pattern;
                 pattern << className[0] << "::" << var->name << "=";
                 if (TOKEN::findmatch(_tokenizer->tokens(), pattern.str().c_str()))
                     continue;
 
-                if (!var->init)
-                {
-                    std::ostringstream ostr;
-                    ostr << _tokenizer->fileLine(constructor_token);
-                    ostr << " Uninitialized member variable '" << className[0] << "::" << var->name << "'";
-                    _errorLogger->reportErr(ostr.str());
-                }
+                // It's non-static and it's not initialized => error
+                std::ostringstream ostr;
+                ostr << _tokenizer->fileLine(constructor_token);
+                ostr << " Uninitialized member variable '" << className[0] << "::" << var->name << "'";
+                _errorLogger->reportErr(ostr.str());
             }
 
             for ( struct VAR *var = varlist; var; var = var->next )
