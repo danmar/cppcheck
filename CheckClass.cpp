@@ -132,7 +132,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             indentlevel = 1;
         }
 
-        if ( tok->aaaa0() == '{' )
+        if ( tok->str() == "{" )
         {
             // If indentlevel==0 don't go to indentlevel 1. Skip the block.
             if ( indentlevel > 0 )
@@ -142,9 +142,9 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             {
                 for ( ; tok; tok = tok->next )
                 {
-                    if ( tok->aaaa0() == '{' )
+                    if ( tok->str() == "{" )
                         ++indentlevel;
-                    else if ( tok->aaaa0() == '}' )
+                    else if ( tok->str() == "}" )
                     {
                         --indentlevel;
                         if ( indentlevel <= 0 )
@@ -158,7 +158,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             }
         }
 
-        if ( tok->aaaa0() == '}' )
+        if ( tok->str() == "}" )
         {
             indentlevel--;
             if ( indentlevel < 0 )
@@ -171,9 +171,9 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             if ( TOKEN::Match( tok, "%var1% (", _funcname ) )
             {
                 const TOKEN *tok2 = tok;
-                while ( tok2 && tok2->aaaa0() != '{' && tok2->aaaa0() != ';' )
+                while ( tok2 && tok2->str() != "{" && tok2->str() != ";" )
                     tok2 = tok2->next;
-                if ( tok2 && tok2->aaaa0() == '{' )
+                if ( tok2 && tok2->str() == "{" )
                     return tok;
             }
         }
