@@ -73,6 +73,9 @@ public:
 
     /** Unreachable code below a 'return' */
     void unreachableCode();
+
+    /** Unused function variables */
+    void functionVariableUsage();
 private:
     void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
 

@@ -821,5 +821,87 @@ void CheckOther::unreachableCode()
         tok = TOKEN::findmatch( tok, "[;{}] return" );
     }
 }
+//---------------------------------------------------------------------------
 
 
+
+
+
+
+//---------------------------------------------------------------------------
+// Usage of function variables
+//---------------------------------------------------------------------------
+
+void CheckOther::functionVariableUsage()
+{
+    // Parse all executing scopes..
+    const TOKEN *tok1 = TOKEN::findmatch( _tokenizer->tokens(), ") const| {" );
+    while ( tok1 )
+    {
+        // Varname, usage {1=declare, 2=read, 4=write}
+        std::map<std::string, unsigned int> varUsage;
+        static const unsigned int USAGE_DECLARE = 1;
+        static const unsigned int USAGE_READ    = 2;
+        static const unsigned int USAGE_WRITE   = 4;
+
+        int indentlevel = 0;
+        for ( const TOKEN *tok = tok1; tok; tok = tok->next )
+        {
+            if ( tok->str() == "{" )
+                ++indentlevel;
+            else if ( tok->str() == "}" )
+            {
+                --indentlevel;
+                if ( indentlevel <= 0 )
+                    break;
+            }
+
+            if ( TOKEN::Match(tok, "[;{}] %type% %var% ;|=") )
+            {
+                if ( TOKEN::Match(tok->next, "delete|return") )
+                    varUsage[ tok->strAt(2) ] |= USAGE_READ;
+                else
+                    varUsage[ tok->strAt(2) ] = USAGE_DECLARE;
+            }
+
+            else if ( TOKEN::Match(tok, "[;{}] %var% =") )
+            {
+                varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
+            }
+        }
+
+        // Check usage of all variables in the current scope..
+        for ( std::map<std::string, unsigned int>::const_iterator it = varUsage.begin(); it != varUsage.end(); ++it )
+        {
+            std::string varname = it->first;
+            unsigned int usage = it->second;
+
+            if ( ! ( usage & USAGE_DECLARE ) )
+                continue;
+
+            if ( usage == USAGE_DECLARE )
+            {
+                std::ostringstream errmsg;
+                errmsg << _tokenizer->fileLine(tok1->next) << ": Unused variable '" << varname << "'";
+                _errorLogger->reportErr(errmsg.str());
+            }
+
+            else if ( ! (usage & USAGE_READ) )
+            {
+                std::ostringstream errmsg;
+                errmsg << _tokenizer->fileLine(tok1->next) << ": Variable '" << varname << "' is assigned a value that is never used";
+                _errorLogger->reportErr(errmsg.str());
+            }
+
+            else if ( ! (usage & USAGE_WRITE) )
+            {
+                std::ostringstream errmsg;
+                errmsg << _tokenizer->fileLine(tok1->next) << ": Variable '" << varname << "' is not assigned a value";
+                _errorLogger->reportErr(errmsg.str());
+            }
+        }
+
+        // Goto next executing scope..
+        tok1 = TOKEN::findmatch( tok1->next, ") const| {" );
+    }
+}

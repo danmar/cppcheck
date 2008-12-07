@@ -56,6 +56,9 @@ private:
         TEST_CASE( structmember1 );
         TEST_CASE( structmember2 );
         TEST_CASE( structmember3 );
+
+        TEST_CASE( localvar1 );
+        TEST_CASE( localvar2 );
     }
 
     void structmember1()
@@ -108,6 +111,45 @@ private:
                "    int c = abc[0].c;\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+
+
+
+    void functionVariableUsage( const char code[] )
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for unused variables..
+        CheckOther checkOther( &tokenizer, this );
+        checkOther.functionVariableUsage();
+    }
+
+    void localvar1()
+    {
+        functionVariableUsage( "void foo()\n"
+                               "{\n"
+                               "    int i = 0;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:2]: Variable 'i' is assigned a value that is never used\n"), errout.str() );
+    }
+
+    void localvar2()
+    {
+        functionVariableUsage( "void foo()\n"
+                               "{\n"
+                               "    int i;\n"
+                               "    return i;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:2]: Variable 'i' is not assigned a value\n"), errout.str() );
     }
 
 
