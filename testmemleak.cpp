@@ -126,6 +126,8 @@ private:
 
         TEST_CASE( realloc1 );
         TEST_CASE( realloc2 );
+
+        TEST_CASE( assign );
     }
 
 
@@ -992,6 +994,36 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
+
+    void assign()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *a = (char *)malloc(10);\n"
+               "    a = 0;\n"
+               "    free(a);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:3]: Memory leak: a\n"), errout.str() );
+
+        check( "void foo()\n"
+               "{\n"
+               "    char *a = (char *)malloc(10);\n"
+               "    char *p = a;\n"
+               "    free(p);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+
+        check( "void foo()\n"
+               "{\n"
+               "    char *a = (char *)malloc(10);\n"
+               "    a += 10;\n"
+               "    free(a - 10);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
 
 };
 

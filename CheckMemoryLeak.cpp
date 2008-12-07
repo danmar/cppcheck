@@ -392,6 +392,12 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
                     MismatchError(tok, callstack, varname);
                 alloctype = alloc;
             }
+
+            // assignment..
+            else
+            {
+                addtoken( "assign" );
+            }
         }
 
         AllocType dealloc = GetDeallocationType(tok, varnames);
@@ -509,7 +515,8 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             addtoken("throw");
 
         // Assignment..
-        if ( TOKEN::Match(tok,"[)=] %var1% [;)]", varnames) )
+        if ( TOKEN::Match(tok,"[)=] %var1% [;)]", varnames) ||
+             TOKEN::Match(tok, "%var1% +=|-=", varnames) )
             addtoken("use");
 
         // Investigate function calls..
@@ -971,45 +978,20 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         MemoryLeak(TOKEN::findmatch(tok, "loop alloc ;"), varname);
     }
 
-    else if ( TOKEN::findmatch(tok, "alloc ; if continue ;") )
+    else if ( TOKEN::findmatch(tok, "alloc ; if break|continue|return ;") )
     {
         // MemoryLeak(Tokenizer::gettok(TOKEN::findmatch(tok, "alloc ; if continue ;"), 3), varname);
-        MemoryLeak((TOKEN::findmatch(tok, "alloc ; if continue ;"))->tokAt(3), varname);
+        MemoryLeak((TOKEN::findmatch(tok, "alloc ; if break|continue|return ;"))->tokAt(3), varname);
     }
 
-    else if ( TOKEN::findmatch(tok, "alloc ; if break ;") )
+    else if ( _settings._showAll && TOKEN::findmatch(tok, "alloc ; ifv break|continue|return ;") )
     {
-        MemoryLeak((TOKEN::findmatch(tok, "alloc ; if break ;"))->tokAt(3), varname);
+        MemoryLeak((TOKEN::findmatch(tok, "alloc ; ifv break|continue|return ;"))->tokAt(3), varname);
     }
 
-    else if ( TOKEN::findmatch(tok, "alloc ; if return ;") )
+    else if ( TOKEN::findmatch(tok, "alloc ; alloc|assign|return ;") )
     {
-        MemoryLeak((TOKEN::findmatch(tok, "alloc ; if return ;"))->tokAt(3), varname);
-    }
-
-    else if ( _settings._showAll && TOKEN::findmatch(tok, "alloc ; ifv continue ;") )
-    {
-        MemoryLeak((TOKEN::findmatch(tok, "alloc ; ifv continue ;"))->tokAt(3), varname);
-    }
-
-    else if ( _settings._showAll && TOKEN::findmatch(tok, "alloc ; ifv break ;") )
-    {
-        MemoryLeak((TOKEN::findmatch(tok, "alloc ; ifv break ;"))->tokAt(3), varname);
-    }
-
-    else if ( _settings._showAll && TOKEN::findmatch(tok, "alloc ; ifv return ;") )
-    {
-        MemoryLeak((TOKEN::findmatch(tok, "alloc ; ifv return ;"))->tokAt(3), varname);
-    }
-
-    else if ( TOKEN::findmatch(tok, "alloc ; return ;") )
-    {
-        MemoryLeak((TOKEN::findmatch(tok,"alloc ; return ;"))->tokAt(2), varname);
-    }
-
-    else if ( TOKEN::findmatch(tok, "alloc ; alloc") )
-    {
-        MemoryLeak((TOKEN::findmatch(tok,"alloc ; alloc"))->tokAt(2), varname);
+        MemoryLeak((TOKEN::findmatch(tok,"alloc ; alloc|assign|return ;"))->tokAt(2), varname);
     }
 
     else if ( ! TOKEN::findmatch(tok,"dealloc") &&
