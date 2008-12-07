@@ -62,14 +62,15 @@ private:
 
         TEST_CASE( initvar_with_this );     // BUG 2190300
         TEST_CASE( initvar_if );            // BUG 2190290
-        TEST_CASE( initvar_operator_eq );   // BUG 2190376
+        TEST_CASE( initvar_operator_eq1 );   // BUG 2190376
+        TEST_CASE( initvar_operator_eq2 );   // BUG 2190376
         TEST_CASE( initvar_same_classname );    // BUG 2208157
         TEST_CASE( initvar_chained_assign );    // BUG 2270433
         TEST_CASE( initvar_2constructors );     // BUG 2270353
 
         TEST_CASE( initvar_private_constructor );   // BUG 2354171 - private constructor
 
-		TEST_CASE( initvar_destructor );
+		TEST_CASE( initvar_destructor );    // No variables need to be initialized in a destructor
     }
 
 
@@ -160,7 +161,7 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
-    void initvar_operator_eq()
+    void initvar_operator_eq1()
     {
         // Bug 2190376 - False positive, Uninitialized member variable with operator=
 
@@ -183,6 +184,20 @@ private:
         std::string err( errout.str() );
         ASSERT_EQUALS( std::string(""), err );
     }
+
+
+    void initvar_operator_eq2()
+    {
+        check( "class Fred\n"
+               "{\n"
+               "public:\n"
+               "    Fred() { i = 0; }\n"
+               "    void operator=() { }\n"
+               "    int i;\n"
+               "};\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:5] Uninitialized member variable 'Fred::i'\n"), errout.str() );
+    }
+
 
     void initvar_same_classname()
     {

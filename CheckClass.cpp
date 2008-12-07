@@ -111,24 +111,28 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
 
 const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel )
 {
-    const char *_classname[2] = {0,0};
-    const char *_funcname[2] = {0,0};
-    _classname[0] = classname;
-    _funcname[0] = funcname;
-
     if ( indentlevel < 0 || tok == NULL )
         return NULL;
 
+    std::ostringstream classPattern;
+    classPattern << "class " << classname << " :|{";
+
+    std::ostringstream internalPattern;
+    internalPattern << funcname << " (";
+
+    std::ostringstream externalPattern;
+    externalPattern << classname << " :: " << funcname << " (";
+
     for ( ;tok; tok = tok->next )
     {
-        if ( indentlevel == 0 &&
-             ( TOKEN::Match(tok, "class %var1% {", _classname) ||
-               TOKEN::Match(tok, "class %var1% : %type% {", _classname) ) )
+        if ( indentlevel == 0 && TOKEN::Match(tok, classPattern.str().c_str()) )
         {
-            if ( TOKEN::Match(tok, "class %var% {") )
-                tok = tok->tokAt(3);
-            else
-                tok = tok->tokAt(5);
+            while ( tok && tok->str() != "{" )
+                tok = tok->next;
+            if ( tok )
+                tok = tok->next;
+            if ( ! tok )
+                break;
             indentlevel = 1;
         }
 
@@ -168,7 +172,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
         if ( indentlevel == 1 )
         {
             // Member function implemented in the class declaration?
-            if (!TOKEN::Match(tok,"~") && TOKEN::Match(tok->next, "%var1% (", _funcname))
+            if (!TOKEN::Match(tok,"~") && TOKEN::Match(tok->next, internalPattern.str().c_str()))
             {
                 const TOKEN *tok2 = tok;
                 while ( tok2 && tok2->str() != "{" && tok2->str() != ";" )
@@ -178,7 +182,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
             }
         }
 
-        else if ( indentlevel == 0 && TOKEN::Match(tok, "%var1% :: %var2% (", _classname, _funcname) )
+        else if ( indentlevel == 0 && TOKEN::Match(tok, externalPattern.str().c_str()) )
         {
             return tok;
         }
@@ -400,38 +404,11 @@ void CheckClass::CheckConstructors()
         // Check that all member variables are initialized..
         struct VAR *varlist = ClassChecking_GetVarList(tok1);
 
-        int indentlevel = 0;
-        constructor_token = FindClassFunction( tok1, className[0], className[0], indentlevel );
-        std::list<std::string> callstack;
-        ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className[0], callstack);
-        while ( constructor_token )
-        {
-            // Check if any variables are uninitialized
-            for (struct VAR *var = varlist; var; var = var->next)
-            {
-                if ( var->init )
-                    continue;
+        // Check constructors
+        CheckConstructors( tok1, varlist, className[0] );
 
-                // Is it a static member variable?
-                std::ostringstream pattern;
-                pattern << className[0] << "::" << var->name << "=";
-                if (TOKEN::findmatch(_tokenizer->tokens(), pattern.str().c_str()))
-                    continue;
-
-                // It's non-static and it's not initialized => error
-                std::ostringstream ostr;
-                ostr << _tokenizer->fileLine(constructor_token);
-                ostr << " Uninitialized member variable '" << className[0] << "::" << var->name << "'";
-                _errorLogger->reportErr(ostr.str());
-            }
-
-            for ( struct VAR *var = varlist; var; var = var->next )
-                var->init = false;
-
-            constructor_token = FindClassFunction( constructor_token->next, className[0], className[0], indentlevel );
-            callstack.clear();
-            ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className[0], callstack);
-        }
+        // Check assignment operators
+        CheckConstructors( tok1, varlist, "operator =" );
 
         // Delete the varlist..
         while (varlist)
@@ -445,6 +422,43 @@ void CheckClass::CheckConstructors()
     }
 }
 
+void CheckClass::CheckConstructors(const TOKEN *tok1, struct VAR *varlist, const char funcname[])
+{
+    const char * const className = tok1->strAt(1);
+
+    int indentlevel = 0;
+    const TOKEN *constructor_token = FindClassFunction( tok1, className, funcname, indentlevel );
+    std::list<std::string> callstack;
+    ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, funcname, callstack);
+    while ( constructor_token )
+    {
+        // Check if any variables are uninitialized
+        for (struct VAR *var = varlist; var; var = var->next)
+        {
+            if ( var->init )
+                continue;
+
+            // Is it a static member variable?
+            std::ostringstream pattern;
+            pattern << className << "::" << var->name << "=";
+            if (TOKEN::findmatch(_tokenizer->tokens(), pattern.str().c_str()))
+                continue;
+
+            // It's non-static and it's not initialized => error
+            std::ostringstream ostr;
+            ostr << _tokenizer->fileLine(constructor_token);
+            ostr << " Uninitialized member variable '" << className << "::" << var->name << "'";
+            _errorLogger->reportErr(ostr.str());
+        }
+
+        for ( struct VAR *var = varlist; var; var = var->next )
+            var->init = false;
+
+        constructor_token = FindClassFunction( constructor_token->next, className, funcname, indentlevel );
+        callstack.clear();
+        ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className, callstack);
+    }
+}
 
 
 //---------------------------------------------------------------------------

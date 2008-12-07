@@ -55,6 +55,9 @@ private:
     const TOKEN *FindClassFunction( const TOKEN *tok, const char classname[], const char funcname[], int &indentlevel );
     struct VAR *ClassChecking_GetVarList(const TOKEN *tok1);
 
+    // Check constructors for a specified class
+    void CheckConstructors(const TOKEN *tok1, struct VAR *varlist, const char funcname[]);
+
     const Tokenizer *_tokenizer;
     Settings _settings;
     ErrorLogger *_errorLogger;
