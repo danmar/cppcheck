@@ -62,6 +62,9 @@
 		<Unit filename="settings.h" />
 		<Unit filename="testbufferoverrun.cpp" />
 		<Unit filename="testcharvar.cpp" />
+		<Unit filename="testclass.cpp">
+			<Option target="test" />
+		</Unit>
 		<Unit filename="testconstructors.cpp" />
 		<Unit filename="testdivision.cpp" />
 		<Unit filename="testfunctionusage.cpp" />
