@@ -68,6 +68,8 @@ private:
         TEST_CASE( initvar_2constructors );     // BUG 2270353
 
         TEST_CASE( initvar_private_constructor );   // BUG 2354171 - private constructor
+
+		// TODO TEST_CASE( initvar_destructor );
     }
 
 
@@ -278,6 +280,18 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
+	void initvar_destructor()
+	{
+        check( "class Fred\n"
+               "{\n"
+               "private:\n"
+               "    int var;\n"
+               "public:\n"
+			   "    Fred() : var(0) {}\n"
+			   "    ~Fred() {}\n"
+               "};\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+	}
 };
 
 REGISTER_TEST( TestConstructors )
