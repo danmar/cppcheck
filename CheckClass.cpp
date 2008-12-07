@@ -429,7 +429,7 @@ void CheckClass::CheckConstructors(const TOKEN *tok1, struct VAR *varlist, const
     int indentlevel = 0;
     const TOKEN *constructor_token = FindClassFunction( tok1, className, funcname, indentlevel );
     std::list<std::string> callstack;
-    ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, funcname, callstack);
+    ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className, callstack);
     while ( constructor_token )
     {
         // Check if any variables are uninitialized
