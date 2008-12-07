@@ -651,8 +651,7 @@ void CheckClass::CheckMemset()
 
 void CheckClass::CheckOperatorEq1()
 {
-    const char *pattern[] = {"void", "operator", "=", "(", NULL};
-    if (const TOKEN *tok = TOKEN::findtoken(_tokenizer->tokens(),pattern))
+    if (const TOKEN *tok = TOKEN::findmatch(_tokenizer->tokens(), "void operator = ("))
     {
         std::ostringstream ostr;
         ostr << _tokenizer->fileLine(tok) << ": 'operator=' should return something";
