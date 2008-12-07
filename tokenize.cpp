@@ -846,7 +846,7 @@ void Tokenizer::simplifyTokenList()
     // Split up variable declarations if possible..
     for (TOKEN *tok = _tokens; tok; tok = tok->next)
     {
-        if ( ! strchr("{};", tok->aaaa0()) )
+        if ( ! TOKEN::Match(tok, "[{};]") )
             continue;
 
         TOKEN *type0 = tok->next;
@@ -858,60 +858,48 @@ void Tokenizer::simplifyTokenList()
         TOKEN *tok2 = NULL;
         unsigned int typelen = 0;
 
-        if ( TOKEN::Match(type0, "%type% %var% ,") )
+        if ( TOKEN::Match(type0, "%type% %var% ,|=") )
         {
-            tok2 = _gettok(type0, 2);    // The ',' token
-            typelen = 1;
+            if ( type0->next->str() != "operator" )
+            {
+                tok2 = _gettok(type0, 2);    // The ',' or '=' token
+                typelen = 1;
+            }
         }
 
-        else if ( TOKEN::Match(type0, "%type% * %var% ,") )
+        else if ( TOKEN::Match(type0, "%type% * %var% ,|=") )
         {
-            tok2 = _gettok(type0, 3);    // The ',' token
-            typelen = 1;
+            if ( type0->next->next->str() != "operator" )
+            {
+                tok2 = _gettok(type0, 3);    // The ',' token
+                typelen = 1;
+            }
         }
 
-        else if ( TOKEN::Match(type0, "%type% %var% [ %num% ] ,") )
+        else if ( TOKEN::Match(type0, "%type% %var% [ %num% ] ,|=") )
         {
             tok2 = _gettok(type0, 5);    // The ',' token
             typelen = 1;
         }
 
-        else if ( TOKEN::Match(type0, "%type% * %var% [ %num% ] ,") )
+        else if ( TOKEN::Match(type0, "%type% * %var% [ %num% ] ,|=") )
         {
             tok2 = _gettok(type0, 6);    // The ',' token
             typelen = 1;
         }
 
-        else if ( TOKEN::Match(type0, "struct %type% %var% ,") )
+        else if ( TOKEN::Match(type0, "struct %type% %var% ,|=") )
         {
             tok2 = _gettok(type0, 3);
             typelen = 2;
         }
 
-        else if ( TOKEN::Match(type0, "struct %type% * %var% ,") )
+        else if ( TOKEN::Match(type0, "struct %type% * %var% ,|=") )
         {
             tok2 = _gettok(type0, 4);
             typelen = 2;
         }
 
-
-        else if ( TOKEN::Match(type0, "%type% %var% =") )
-        {
-            tok2 = _gettok(type0, 2);
-            typelen = 1;
-        }
-
-        else if ( TOKEN::Match(type0, "%type% * %var% =") )
-        {
-            tok2 = _gettok(type0, 3);
-            typelen = 1;
-        }
-
-        else if ( TOKEN::Match(type0, "struct %type% * %var% =") )
-        {
-            tok2 = _gettok(type0, 4);
-            typelen = 2;
-        }
 
         if (tok2)
         {
