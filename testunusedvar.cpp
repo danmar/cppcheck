@@ -171,7 +171,7 @@ private:
         functionVariableUsage( "void foo()\n"
                                "{\n"
                                "    int i = 0;\n"
-                               "    f(i);
+                               "    f(i);\n"
                                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
