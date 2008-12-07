@@ -94,10 +94,16 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
 {
     bool emptyStringFound = false;
     bool findNextOr = false;
+    const char *haystackPointer = haystack;
     for( ; *needle; ++needle )
     {
         if( *needle == '|' )
         {
+            // If needle and haystack are both at the end, we have a match.
+            if( *haystackPointer == 0 )
+                return 1;
+
+            haystackPointer = haystack;
             if( findNextOr )
                 findNextOr = false;
             else
@@ -105,15 +111,26 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
 
             continue;
         }
-        else if( findNextOr )
+
+        if( findNextOr )
             continue;
 
-        // If this part of needle equals to the haystack
-        else if( strncmp( haystack, needle, strlen( haystack ) ) == 0 )
-            return 1;
-        else
+        // If haystack and needle don't share the same character, reset
+        // haystackpointer and find next '|' character.
+        if( *haystackPointer != *needle )
+        {
+            haystackPointer = haystack;
             findNextOr = true;
+            continue;
+        }
+
+        // All characters in haystack and needle have matched this far
+        haystackPointer++;
     }
+
+    // If both needle and haystack are at the end, then we have a match.
+    if( *haystackPointer == 0 )
+        return 1;
 
     // If empty string was found or if last character in needle was '|'
     if( emptyStringFound || findNextOr == false )

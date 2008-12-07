@@ -229,7 +229,7 @@ private:
         ASSERT_EQUALS( -1, TOKEN::multiCompare( "one|two", "notfound" ) );
         ASSERT_EQUALS( -1, TOKEN::multiCompare( "verybig|two", "s" ) );
         ASSERT_EQUALS( -1, TOKEN::multiCompare( "one|two", "ne" ) );
-        // TODO ASSERT_EQUALS( -1, TOKEN::multiCompare( "abc|def", "a" ) );
+        ASSERT_EQUALS( -1, TOKEN::multiCompare( "abc|def", "a" ) );
     }
 
     void match1()
