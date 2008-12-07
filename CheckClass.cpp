@@ -693,6 +693,8 @@ void CheckClass::virtualDestructor()
 		derived = derived->tokAt(3);
         while ( TOKEN::Match(derived, "%var%") )
         {
+            bool isPublic = TOKEN::Match(derived, "public");
+
             // What kind of inheritance is it.. public|protected|private
             if ( TOKEN::Match( derived, "public|protected|private" ) )
                 derived = derived->next;
@@ -706,6 +708,10 @@ void CheckClass::virtualDestructor()
             derived = derived->next;
             if ( TOKEN::Match(derived, ",") )
                 derived = derived->next;
+
+            // If not public inheritance, skip checking of this base class..
+            if ( ! isPublic )
+                continue;
 
             // Find the destructor declaration for the base class.
             const TOKEN *base = TOKEN::findmatch(_tokenizer->tokens(), "%any% ~ %var1% (", baseName);

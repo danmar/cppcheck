@@ -81,7 +81,7 @@ private:
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : Base { };");
-        ASSERT_EQUALS( std::string("[test.cpp:1]: Base class Base doesn't have a virtual destructor\n"), errout.str() );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
     void virtualDestructor3()
