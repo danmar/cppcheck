@@ -168,13 +168,13 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
         if ( indentlevel == 1 )
         {
             // Member function implemented in the class declaration?
-            if ( TOKEN::Match( tok, "%var1% (", _funcname ) )
+            if (!TOKEN::Match(tok,"~") && TOKEN::Match(tok->next, "%var1% (", _funcname))
             {
                 const TOKEN *tok2 = tok;
                 while ( tok2 && tok2->str() != "{" && tok2->str() != ";" )
                     tok2 = tok2->next;
                 if ( tok2 && tok2->str() == "{" )
-                    return tok;
+                    return tok->next;
             }
         }
 

@@ -69,7 +69,7 @@ private:
 
         TEST_CASE( initvar_private_constructor );   // BUG 2354171 - private constructor
 
-		// TODO TEST_CASE( initvar_destructor );
+		TEST_CASE( initvar_destructor );
     }
 
 
