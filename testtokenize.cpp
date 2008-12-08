@@ -152,7 +152,7 @@ private:
 
         tokenizer.fillFunctionList();
 
-        ASSERT_EQUALS( 1, tokenizer._functionList.size() );
+        ASSERT_EQUALS( 1, static_cast<unsigned int>(tokenizer._functionList.size()) );
         ASSERT_EQUALS( std::string("b"), tokenizer._functionList[0]->aaaa() );
     }
 
@@ -183,7 +183,7 @@ private:
 
         tokenizer.fillFunctionList();
 
-        ASSERT_EQUALS( 3, tokenizer._functionList.size() );
+        ASSERT_EQUALS( 3, static_cast<unsigned int>(tokenizer._functionList.size()) );
         if( tokenizer._functionList.size() == 3 )
         {
             ASSERT_EQUALS( std::string("a"), tokenizer._functionList[0]->str() );
