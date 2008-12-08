@@ -43,7 +43,7 @@ protected:
 public:
     virtual void reportErr( const std::string &errmsg);
 
-    virtual void reportOut( const std::string &outmsg); 
+    virtual void reportOut( const std::string &outmsg);
 
     TestFixture(const std::string &_name);
     virtual ~TestFixture() { }
@@ -54,6 +54,6 @@ public:
 
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
-#define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL);
+#define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
