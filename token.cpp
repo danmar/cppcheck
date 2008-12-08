@@ -169,6 +169,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         if (str[0] == 0)
             return true;
 
+		bool useVar1;
         // Any symbolname..
         if (strcmp(str,"%var%")==0 || strcmp(str,"%type%")==0)
         {
@@ -183,9 +184,9 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         }
 
         // Variable name..
-        else if (strcmp(str,"%var1%")==0 || strcmp(str,"%var2%")==0)
+        else if ((useVar1 = (strcmp(str,"%var1%")==0)) || strcmp(str,"%var2%")==0)
         {
-            const char **varname = (strcmp(str,"%var1%")==0) ? varname1 : varname2;
+            const char **varname = useVar1 ? varname1 : varname2;
 
             if ( ! varname )
                 return false;
