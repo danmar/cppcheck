@@ -27,10 +27,10 @@
 
 TOKEN::TOKEN()
 {
-    FileIndex = 0;
+    _fileIndex = 0;
     _cstr = 0;
     _str = "";
-    linenr = 0;
+    _linenr = 0;
     _next = 0;
     _varId = 0;
     _isName = false;
@@ -329,3 +329,22 @@ void TOKEN::next( TOKEN *next )
     _next = next;
 }
 
+unsigned int TOKEN::fileIndex() const
+{
+    return _fileIndex;
+}
+
+void TOKEN::fileIndex( unsigned int fileIndex )
+{
+    _fileIndex = fileIndex;
+}
+
+unsigned int TOKEN::linenr() const
+{
+    return _linenr;
+}
+
+void TOKEN::linenr( unsigned int linenr )
+{
+    _linenr = linenr;
+}

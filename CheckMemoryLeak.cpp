@@ -316,8 +316,8 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
     {                                       \
         TOKEN *newtok = new TOKEN;          \
         newtok->setstr(_str);               \
-        newtok->linenr = tok->linenr;       \
-        newtok->FileIndex = tok->FileIndex; \
+        newtok->linenr( tok->linenr() );    \
+        newtok->fileIndex( tok->fileIndex() ); \
         newtok->next( 0 );                  \
         if (rettail)                        \
             rettail->next( newtok );        \

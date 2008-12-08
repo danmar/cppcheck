@@ -51,7 +51,7 @@ void CheckHeaders::WarningHeaderWithImplementation()
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Only interested in included file
-        if (tok->FileIndex == 0)
+        if (tok->fileIndex() == 0)
             continue;
 
         if (TOKEN::Match(tok, ") {"))
@@ -61,8 +61,8 @@ void CheckHeaders::WarningHeaderWithImplementation()
             _errorLogger->reportErr(ostr.str());
 
             // Goto next file..
-            unsigned int fileindex = tok->FileIndex;
-            while ( tok->next() && tok->FileIndex == fileindex )
+            unsigned int fileindex = tok->fileIndex();
+            while ( tok->next() && tok->fileIndex() == fileindex )
                 tok = tok->next();
         }
     }
@@ -114,7 +114,7 @@ void CheckHeaders::WarningIncludeHeader()
         int indentlevel = 0;
         for ( const TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next() )
         {
-            if ( tok1->FileIndex != hfile )
+            if ( tok1->fileIndex() != hfile )
                 continue;
 
             // I'm only interested in stuff that is declared at indentlevel 0
@@ -208,7 +208,7 @@ void CheckHeaders::WarningIncludeHeader()
         bool NeedDeclaration = false;
         for ( const TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
         {
-            if (tok1->FileIndex != includetok->FileIndex)
+            if (tok1->fileIndex() != includetok->fileIndex())
                 continue;
 
             if ( TOKEN::Match(tok1, ": %var% {") || TOKEN::Match(tok1, ": %type% %var% {") )
@@ -236,7 +236,7 @@ void CheckHeaders::WarningIncludeHeader()
 
 
         // Not a header file?
-        if (includetok->FileIndex == 0)
+        if (includetok->fileIndex() == 0)
             Needed |= NeedDeclaration;
 
         // Not needed!

@@ -111,8 +111,12 @@ public:
      */
     static int multiCompare( const char *needle, const char *haystack );
 
-    unsigned int FileIndex;
-    unsigned int linenr;
+
+    unsigned int linenr() const;
+    void linenr( unsigned int linenr );
+
+    unsigned int fileIndex() const;
+    void fileIndex( unsigned int fileIndex );
 
     TOKEN *next() const;
     void next( TOKEN *next );
@@ -127,6 +131,8 @@ private:
     bool _isNumber;
     unsigned int _varId;
     TOKEN *_next;
+    unsigned int _fileIndex;
+    unsigned int _linenr;
 };
 
 #endif // TOKEN_H

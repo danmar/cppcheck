@@ -161,8 +161,8 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 
     TOKEN *newtoken  = new TOKEN;
     newtoken->setstr(str2.str().c_str());
-    newtoken->linenr = lineno;
-    newtoken->FileIndex = fileno;
+    newtoken->linenr( lineno );
+    newtoken->fileIndex( fileno );
     if (_tokensBack)
     {
         _tokensBack->next( newtoken );
@@ -213,8 +213,8 @@ void Tokenizer::InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
     while (n > 0)
     {
         TOKEN *NewToken = new TOKEN;
-        NewToken->FileIndex = src->FileIndex;
-        NewToken->linenr = src->linenr;
+        NewToken->fileIndex( src->fileIndex() );
+        NewToken->linenr( src->linenr() );
         NewToken->setstr(src->aaaa());
 
         NewToken->next( dest->next() );
@@ -569,8 +569,8 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
 
                     TOKEN *newtok = new TOKEN;
                     newtok->setstr(type2);
-                    newtok->FileIndex = tok2->FileIndex;
-                    newtok->linenr = tok2->linenr;
+                    newtok->fileIndex( tok2->fileIndex() );
+                    newtok->linenr( tok2->linenr() );
                     newtok->next( tok2->next() );
                     tok2->next( newtok );
                     tok2 = newtok;
@@ -1267,7 +1267,7 @@ const char *Tokenizer::getParameterName( const TOKEN *ftok, int par )
 std::string Tokenizer::fileLine( const TOKEN *tok ) const
 {
     std::ostringstream ostr;
-    ostr << "[" << _files.at(tok->FileIndex) << ":" << tok->linenr << "]";
+    ostr << "[" << _files.at(tok->fileIndex()) << ":" << tok->linenr() << "]";
     return ostr.str();
 }
 

@@ -644,7 +644,7 @@ void CheckOther::CheckStructMemberUsage()
 
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next() )
     {
-        if ( tok->FileIndex != 0 )
+        if ( tok->fileIndex() != 0 )
             continue;
         if ( tok->str() == "}" )
             structname = 0;
@@ -671,7 +671,7 @@ void CheckOther::CheckStructMemberUsage()
             bool used = false;
             for ( const TOKEN *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next() )
             {
-                if ( tok->FileIndex != 0 )
+                if ( tok->fileIndex() != 0 )
                     continue;
 
                 if (TOKEN::Match(tok2, ". %var%", varnames))

@@ -46,7 +46,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
     // Function declarations..
     for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
     {
-        if ( tok->FileIndex != 0 )
+        if ( tok->fileIndex() != 0 )
             continue;
 
         const TOKEN *funcname = 0;
