@@ -874,26 +874,29 @@ void CheckOther::functionVariableUsage()
             if ( TOKEN::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|=") )
                 varUsage[ tok->strAt(2) ] = USAGE_DECLARE;
 
-            else if ( TOKEN::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|=") )
+            if ( TOKEN::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|=") )
                 varUsage[ tok->strAt(3) ] = USAGE_DECLARE;
 
-            else if ( TOKEN::Match(tok, "delete|return %var%") )
+            if ( TOKEN::Match(tok, "delete|return %var%") )
                 varUsage[ tok->strAt(1) ] |= USAGE_READ;
 
-            else if ( TOKEN::Match(tok, "%var% =") )
+            if ( TOKEN::Match(tok, "%var% =") )
                 varUsage[ tok->str() ] |= USAGE_WRITE;
 
-            else if ( TOKEN::Match(tok, "else %var% =") )
+            if ( TOKEN::Match(tok, "else %var% =") )
                 varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
 
-            else if ( TOKEN::Match(tok, ">>|& %var%") )
+            if ( TOKEN::Match(tok, ">>|& %var%") )
                 varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
 
-            else if ((TOKEN::Match(tok,"[(=&]") || isOp(tok)) && TOKEN::Match(tok->next, "%var%"))
+            if ((TOKEN::Match(tok,"[(=&!]") || isOp(tok)) && TOKEN::Match(tok->next, "%var%"))
                 varUsage[ tok->strAt(1) ] |= USAGE_READ;
 
-            else if (TOKEN::Match(tok, "%var%") && (tok->next->str()==")" || isOp(tok->next)))
+            if (TOKEN::Match(tok, "%var%") && (tok->next->str()==")" || isOp(tok->next)))
                 varUsage[ tok->str() ] |= USAGE_READ;
+
+            if ( TOKEN::Match(tok, "[(,] %var% [,)]") )
+                varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
         }
 
         // Check usage of all variables in the current scope..
@@ -901,6 +904,9 @@ void CheckOther::functionVariableUsage()
         {
             std::string varname = it->first;
             unsigned int usage = it->second;
+
+            if (!isalpha(varname[0]))
+                continue;
 
             if ( ! ( usage & USAGE_DECLARE ) )
                 continue;
