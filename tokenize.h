@@ -51,6 +51,9 @@ public:
      */
     void tokenize(std::istream &code, const char FileName[]);
 
+    /** Set variable id */
+    void setVarId();
+
     /** Simplify tokenlist */
     void simplifyTokenList();
 

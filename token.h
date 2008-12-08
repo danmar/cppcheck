@@ -113,6 +113,9 @@ public:
 
     unsigned int FileIndex;
     unsigned int linenr;
+
+    unsigned int varId;
+
     TOKEN *next;
 
 private:

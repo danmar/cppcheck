@@ -51,6 +51,8 @@ private:
         TEST_CASE( multi_compare );
 
         TEST_CASE( match1 );
+
+        TEST_CASE( varid1 );
     }
 
 
@@ -258,6 +260,39 @@ private:
 
             // Match..
             ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "%var% || %var%") );
+        }
+    }
+
+
+    void varid1()
+    {
+        const std::string code(";static int i = 1;\n"
+                               "void f()\n"
+                               "{\n"
+                               "    int i = 2;\n"
+                               "    for (int i = 0; i < 10; ++i)\n"
+                               "        i = 3;\n"
+                               "    i = 4;\n"
+                               "}\n" );
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )
+        {
+            if ( tok->str() != "i" )
+                ASSERT_EQUALS( 0, tok->varId );
+            else if ( TOKEN::Match(tok, "i = 1") )
+                ASSERT_EQUALS( 1, tok->varId );
+            else if ( TOKEN::Match(tok, "i = 2") )
+                ASSERT_EQUALS( 2, tok->varId );
+            else if ( TOKEN::Match(tok, "i = 3") )
+                ASSERT_EQUALS( 3, tok->varId );
+            else if ( TOKEN::Match(tok, "i = 4") )
+                ASSERT_EQUALS( 2, tok->varId );
         }
     }
 };

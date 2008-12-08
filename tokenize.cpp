@@ -619,6 +619,58 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
 }
 //---------------------------------------------------------------------------
 
+
+void Tokenizer::setVarId()
+{
+    // Clear all variable ids
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next )
+        tok->varId = 0;
+
+    // Set variable ids..
+    unsigned int _varId = 0;
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next )
+    {
+        if ( ! TOKEN::Match(tok, "[;{}(] %type% %var%") )
+            continue;
+
+        // Determine name of declared variable..
+        const char *varname = 0;
+        TOKEN *tok2 = tok->next;
+        while ( ! TOKEN::Match( tok2, "[;[=(]" ) )
+        {
+            if ( tok2->isName() )
+                varname = tok2->strAt(0);
+            else if ( tok2->str() != "*" )
+                break;
+            tok2 = tok2->next;
+        }
+
+        // Variable declaration found => Set variable ids
+        if ( TOKEN::Match(tok2, "[;[=]") && varname )
+        {
+            ++_varId;
+            int indentlevel = 0;
+            int parlevel = 0;
+            for ( tok2 = tok->next; tok2 && indentlevel >= 0; tok2 = tok2->next )
+            {
+                if ( tok2->str() == varname )
+                    tok2->varId = _varId;
+                else if ( tok2->str() == "{" )
+                    ++indentlevel;
+                else if ( tok2->str() == "}" )
+                    --indentlevel;
+                else if ( tok2->str() == "(" )
+                    ++parlevel;
+                else if ( tok2->str() == ")" )
+                    --parlevel;
+                else if ( parlevel < 0 && tok2->str() == ";" )
+                    break;
+            }
+        }
+    }
+}
+
+
 //---------------------------------------------------------------------------
 // Simplify token list
 //---------------------------------------------------------------------------
