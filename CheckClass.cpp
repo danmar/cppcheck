@@ -686,8 +686,8 @@ void CheckClass::virtualDestructor()
 {
 	const char pattern_classdecl[] = "class %var% : %var%";
 
-    const TOKEN *derived = TOKEN::findmatch(_tokenizer->tokens(), pattern_classdecl);
-    while (derived)
+    const TOKEN *derived = _tokenizer->tokens();
+	while ((derived = TOKEN::findmatch(derived, pattern_classdecl)) != NULL)
     {
         // Iterate through each base class...
 		derived = derived->tokAt(3);
@@ -739,9 +739,6 @@ void CheckClass::virtualDestructor()
                 _errorLogger->reportErr(errmsg.str());
             }
         }
-
-		// Goto next class
-        derived = TOKEN::findmatch(derived, pattern_classdecl);
     }
 }
 //---------------------------------------------------------------------------
