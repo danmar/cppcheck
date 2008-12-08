@@ -114,9 +114,9 @@ public:
     unsigned int FileIndex;
     unsigned int linenr;
 
+    TOKEN *next() const;
+    void next( TOKEN *next );
 
-
-    TOKEN *next;
     unsigned int varId() const;
     void varId( unsigned int id );
 
@@ -126,6 +126,7 @@ private:
     bool _isName;
     bool _isNumber;
     unsigned int _varId;
+    TOKEN *_next;
 };
 
 #endif // TOKEN_H

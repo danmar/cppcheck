@@ -44,7 +44,7 @@ CheckFunctionUsage::~CheckFunctionUsage()
 void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 {
     // Function declarations..
-    for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )
+    for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
     {
         if ( tok->FileIndex != 0 )
             continue;
@@ -59,7 +59,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
             funcname = tok->tokAt(2);
 
         // Check that ") {" is found..
-        for (const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next)
+        for (const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next())
         {
             if ( TOKEN::Match(tok2, ")") )
             {
@@ -87,7 +87,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
     }
 
     // Function usage..
-    for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )
+    for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
     {
         const TOKEN *funcname = 0;
 
@@ -99,13 +99,13 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
              TOKEN::Match(tok, "|| %var% (") ||
              TOKEN::Match(tok, "else %var% (") ||
              TOKEN::Match(tok, "return %var% (") )
-            funcname = tok->next;
+            funcname = tok->next();
 
         // funcname ( => Assert that the end paranthesis isn't followed by {
         if ( TOKEN::Match(funcname, "%var% (") )
         {
             int parlevel = 0;
-            for ( const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next )
+            for ( const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next() )
             {
                 if (tok2->str() == "(")
                     ++parlevel;

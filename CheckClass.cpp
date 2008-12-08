@@ -52,9 +52,9 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
     // Get variable list..
     struct VAR *varlist = NULL;
     unsigned int indentlevel = 0;
-    for (const TOKEN *tok = tok1; tok; tok = tok->next)
+    for (const TOKEN *tok = tok1; tok; tok = tok->next())
     {
-        if (!tok->next)
+        if (!tok->next())
             break;
 
         if (tok->aaaa0() == '{')
@@ -69,7 +69,7 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
 
         if (indentlevel==1 && (strchr(";{}", tok->aaaa0()) || (tok->aaaa0()!=':' && strchr(tok->aaaa(), ':'))))
         {
-            const TOKEN *next = tok->next;
+            const TOKEN *next = tok->next();
 
             const char *varname = 0;
 
@@ -81,7 +81,7 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const TOKEN *tok1)
                 {
                     if ( strcmp(next->aaaa(), types[type]) == 0)
                     {
-                        varname = next->next->aaaa();
+                        varname = next->next()->aaaa();
                         break;
                     }
                 }
@@ -123,14 +123,14 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
     std::ostringstream externalPattern;
     externalPattern << classname << " :: " << funcname << " (";
 
-    for ( ;tok; tok = tok->next )
+    for ( ;tok; tok = tok->next() )
     {
         if ( indentlevel == 0 && TOKEN::Match(tok, classPattern.str().c_str()) )
         {
             while ( tok && tok->str() != "{" )
-                tok = tok->next;
+                tok = tok->next();
             if ( tok )
-                tok = tok->next;
+                tok = tok->next();
             if ( ! tok )
                 break;
             indentlevel = 1;
@@ -144,7 +144,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
 
             else
             {
-                for ( ; tok; tok = tok->next )
+                for ( ; tok; tok = tok->next() )
                 {
                     if ( tok->str() == "{" )
                         ++indentlevel;
@@ -172,13 +172,13 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
         if ( indentlevel == 1 )
         {
             // Member function implemented in the class declaration?
-            if (!TOKEN::Match(tok,"~") && TOKEN::Match(tok->next, internalPattern.str().c_str()))
+            if (!TOKEN::Match(tok,"~") && TOKEN::Match(tok->next(), internalPattern.str().c_str()))
             {
                 const TOKEN *tok2 = tok;
                 while ( tok2 && tok2->str() != "{" && tok2->str() != ";" )
-                    tok2 = tok2->next;
+                    tok2 = tok2->next();
                 if ( tok2 && tok2->str() == "{" )
-                    return tok->next;
+                    return tok->next();
             }
         }
 
@@ -211,9 +211,9 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
     bool Assign = false;
     unsigned int indentlevel = 0;
 
-    for (; ftok; ftok = ftok->next)
+    for (; ftok; ftok = ftok->next())
     {
-        if (!ftok->next)
+        if (!ftok->next())
             break;
 
         // Class constructor.. initializing variables like this
@@ -250,18 +250,18 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
             continue;
 
         // Using the operator= function to initialize all variables..
-        if ( TOKEN::Match(ftok->next, "* this = ") )
+        if ( TOKEN::Match(ftok->next(), "* this = ") )
         {
             for (struct VAR *var = varlist; var; var = var->next)
                 var->init = true;
             break;
         }
 
-        if (!TOKEN::Match(ftok->next, "%var%") && !TOKEN::Match(ftok->next, "this . %var%"))
+        if (!TOKEN::Match(ftok->next(), "%var%") && !TOKEN::Match(ftok->next(), "this . %var%"))
             continue;
 
         // Goto the first token in this statement..
-        ftok = ftok->next;
+        ftok = ftok->next();
 
         // Skip "this->"
         if ( TOKEN::Match(ftok, "this .") )
@@ -328,7 +328,7 @@ void CheckClass::CheckConstructors()
         {
             int indentlevel = 0;
             bool isPrivate = true;
-            for ( const TOKEN *tok = tok1; tok; tok = tok->next )
+            for ( const TOKEN *tok = tok1; tok; tok = tok->next() )
             {
                 // Indentation
                 if ( tok->str() == "{" )
@@ -364,14 +364,14 @@ void CheckClass::CheckConstructors()
         {
             // TODO: Handle private constructors.
             // Right now to avoid false positives I just bail out
-            tok1 = TOKEN::findmatch( tok1->next, pattern_class );
+            tok1 = TOKEN::findmatch( tok1->next(), pattern_class );
             continue;
         }
 
         // Are there a class constructor?
         const TOKEN *constructor_token = TOKEN::findmatch( tok1, "%any% %var1% (", className );
         while ( TOKEN::Match( constructor_token, "~" ) )
-            constructor_token = TOKEN::findmatch( constructor_token->next, "%any% %var1% (", className );
+            constructor_token = TOKEN::findmatch( constructor_token->next(), "%any% %var1% (", className );
 
         // There are no constructor.
         if ( ! constructor_token )
@@ -397,7 +397,7 @@ void CheckClass::CheckConstructors()
                 }
             }
 
-            tok1 = TOKEN::findmatch( tok1->next, pattern_class );
+            tok1 = TOKEN::findmatch( tok1->next(), pattern_class );
             continue;
         }
 
@@ -418,7 +418,7 @@ void CheckClass::CheckConstructors()
             varlist = nextvar;
         }
 
-        tok1 = TOKEN::findmatch( tok1->next, pattern_class );
+        tok1 = TOKEN::findmatch( tok1->next(), pattern_class );
     }
 }
 
@@ -454,7 +454,7 @@ void CheckClass::CheckConstructors(const TOKEN *tok1, struct VAR *varlist, const
         for ( struct VAR *var = varlist; var; var = var->next )
             var->init = false;
 
-        constructor_token = FindClassFunction( constructor_token->next, className, funcname, indentlevel );
+        constructor_token = FindClassFunction( constructor_token->next(), className, funcname, indentlevel );
         callstack.clear();
         ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className, callstack);
     }
@@ -469,9 +469,9 @@ void CheckClass::CheckUnusedPrivateFunctions()
 {
     // Locate some class
     const char *pattern_class[] = {"class","","{",NULL};
-    for (const TOKEN *tok1 = TOKEN::findtoken(_tokenizer->tokens(), pattern_class); tok1; tok1 = TOKEN::findtoken(tok1->next, pattern_class))
+    for (const TOKEN *tok1 = TOKEN::findtoken(_tokenizer->tokens(), pattern_class); tok1; tok1 = TOKEN::findtoken(tok1->next(), pattern_class))
     {
-        const char *classname = tok1->next->aaaa();
+        const char *classname = tok1->next()->aaaa();
 
         // The class implementation must be available..
         const char *pattern_classconstructor[] = {"","::","",NULL};
@@ -485,7 +485,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
         FuncList.clear();
         bool priv = false;
         unsigned int indent_level = 0;
-        for (const TOKEN *tok = tok1; tok; tok = tok->next)
+        for (const TOKEN *tok = tok1; tok; tok = tok->next())
         {
             if (TOKEN::Match(tok,"friend %var%"))
             {
@@ -538,7 +538,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
                     numpar++;
                 else if (ftok->aaaa0() == ')')
                     numpar--;
-                ftok = ftok->next;
+                ftok = ftok->next();
             }
 
             if (!ftok)
@@ -559,14 +559,14 @@ void CheckClass::CheckUnusedPrivateFunctions()
                             break;
                         indent_level--;
                     }
-                    if (ftok->next && ftok->next->aaaa0() == '(')
+                    if (ftok->next() && ftok->next()->aaaa0() == '(')
                         FuncList.remove(ftok->aaaa());
-                    ftok = ftok->next;
+                    ftok = ftok->next();
                 }
             }
 
             if (ftok)
-                ftok = ftok->next;
+                ftok = ftok->next();
         }
 
         while (HasFuncImpl && !FuncList.empty())
@@ -604,7 +604,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
 void CheckClass::CheckMemset()
 {
     // Locate all 'memset' tokens..
-    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
+    for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (!TOKEN::Match(tok,"memset") && !TOKEN::Match(tok,"memcpy") && !TOKEN::Match(tok,"memmove"))
             continue;
@@ -640,7 +640,7 @@ void CheckClass::CheckMemset()
         // Warn if type is a struct that contains any std::*
         const char *pattern2[] = {"struct","","{",NULL};
         pattern2[1] = type;
-        for (const TOKEN *tstruct = TOKEN::findtoken(_tokenizer->tokens(), pattern2); tstruct; tstruct = tstruct->next)
+        for (const TOKEN *tstruct = TOKEN::findtoken(_tokenizer->tokens(), pattern2); tstruct; tstruct = tstruct->next())
         {
             if (tstruct->aaaa0() == '}')
                 break;
@@ -697,7 +697,7 @@ void CheckClass::virtualDestructor()
 
             // What kind of inheritance is it.. public|protected|private
             if ( TOKEN::Match( derived, "public|protected|private" ) )
-                derived = derived->next;
+                derived = derived->next();
 
             // Name of base class..
             const char *baseName[2];
@@ -705,9 +705,9 @@ void CheckClass::virtualDestructor()
             baseName[1] = 0;
 
             // Update derived so it's ready for the next loop.
-            derived = derived->next;
+            derived = derived->next();
             if ( TOKEN::Match(derived, ",") )
-                derived = derived->next;
+                derived = derived->next();
 
             // If not public inheritance, skip checking of this base class..
             if ( ! isPublic )
@@ -716,7 +716,7 @@ void CheckClass::virtualDestructor()
             // Find the destructor declaration for the base class.
             const TOKEN *base = TOKEN::findmatch(_tokenizer->tokens(), "%any% ~ %var1% (", baseName);
             while (TOKEN::Match(base, "::"))
-                base = TOKEN::findmatch(base->next, "%any% ~ %var1% (", baseName);
+                base = TOKEN::findmatch(base->next(), "%any% ~ %var1% (", baseName);
 
             // Check that there is a destructor..
             if ( ! base )

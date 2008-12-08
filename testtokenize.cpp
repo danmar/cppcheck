@@ -59,7 +59,7 @@ private:
     bool cmptok(const char *expected[], const TOKEN *actual)
     {
         unsigned int i = 0;
-        for (; expected[i] && actual; ++i, actual = actual->next)
+        for (; expected[i] && actual; ++i, actual = actual->next())
         {
             if ( strcmp( expected[i], actual->aaaa() ) != 0)
                 return false;
@@ -210,7 +210,7 @@ private:
         tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next)
+        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { if ( true ) ; }"), ostr.str() );
     }
@@ -281,7 +281,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )
+        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
         {
             if ( tok->str() != "i" )
                 ASSERT_EQUALS( 0, tok->varId() );

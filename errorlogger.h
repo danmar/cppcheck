@@ -28,6 +28,8 @@
 class ErrorLogger
 {
 public:
+    virtual ~ErrorLogger() {}
+
     /**
      * Errors and warnings are directed here.
      *

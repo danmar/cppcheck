@@ -47,7 +47,7 @@ private:
         tokenizer.simplifyTokenList();
 
         std::string ret;
-        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )
+        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
         {
             ret += std::string(tok->aaaa()) + " ";
         }

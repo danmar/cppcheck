@@ -31,7 +31,8 @@ TOKEN::TOKEN()
     _cstr = 0;
     _str = "";
     linenr = 0;
-    next = 0;
+    _next = 0;
+    _varId = 0;
     _isName = false;
     _isNumber = false;
 }
@@ -56,9 +57,9 @@ void TOKEN::setstr( const char s[] )
 
 void TOKEN::combineWithNext(const char str1[], const char str2[])
 {
-    if (!(next))
+    if (!(_next))
         return;
-    if (_str!=str1 || next->_str!=str2)
+    if (_str!=str1 || _next->_str!=str2)
         return;
 
 	std::string newstr(std::string(str1) + std::string(str2));
@@ -68,8 +69,8 @@ void TOKEN::combineWithNext(const char str1[], const char str2[])
 
 void TOKEN::deleteNext()
 {
-    TOKEN *n = next;
-    next = n->next;
+    TOKEN *n = _next;
+    _next = n->next();
     delete n;
 }
 
@@ -78,7 +79,7 @@ const TOKEN *TOKEN::tokAt(int index) const
     const TOKEN *tok = this;
     while (index>0 && tok)
     {
-        tok = tok->next;
+        tok = tok->next();
         index--;
     }
     return tok;
@@ -247,7 +248,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         else if (str != tok->_str)
             return false;
 
-        tok = tok->next;
+        tok = tok->next();
         if (!tok && *p)
             return false;
     }
@@ -279,7 +280,7 @@ bool TOKEN::isStandardType() const
 
 const TOKEN *TOKEN::findmatch(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
 {
-    for ( ; tok; tok = tok->next)
+    for ( ; tok; tok = tok->next())
     {
         if ( TOKEN::Match(tok, pattern, varname1, varname2) )
             return tok;
@@ -289,7 +290,7 @@ const TOKEN *TOKEN::findmatch(const TOKEN *tok, const char pattern[], const char
 
 const TOKEN *TOKEN::findtoken(const TOKEN *tok1, const char *tokenstr[])
 {
-    for (const TOKEN *ret = tok1; ret; ret = ret->next)
+    for (const TOKEN *ret = tok1; ret; ret = ret->next())
     {
         unsigned int i = 0;
         const TOKEN *tok = ret;
@@ -299,7 +300,7 @@ const TOKEN *TOKEN::findtoken(const TOKEN *tok1, const char *tokenstr[])
                 return NULL;
             if (*(tokenstr[i]) && (tokenstr[i] != tok->_str))
                 break;
-            tok = tok->next;
+            tok = tok->next();
             i++;
         }
         if (!tokenstr[i])
@@ -317,3 +318,14 @@ void TOKEN::varId( unsigned int id )
 {
     _varId = id;
 }
+
+TOKEN *TOKEN::next() const
+{
+    return _next;
+}
+
+void TOKEN::next( TOKEN *next )
+{
+    _next = next;
+}
+

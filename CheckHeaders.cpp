@@ -48,7 +48,7 @@ CheckHeaders::~CheckHeaders()
 
 void CheckHeaders::WarningHeaderWithImplementation()
 {
-    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next)
+    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Only interested in included file
         if (tok->FileIndex == 0)
@@ -62,8 +62,8 @@ void CheckHeaders::WarningHeaderWithImplementation()
 
             // Goto next file..
             unsigned int fileindex = tok->FileIndex;
-            while ( tok->next && tok->FileIndex == fileindex )
-                tok = tok->next;
+            while ( tok->next() && tok->FileIndex == fileindex )
+                tok = tok->next();
         }
     }
 }
@@ -83,14 +83,14 @@ void CheckHeaders::WarningHeaderWithImplementation()
 void CheckHeaders::WarningIncludeHeader()
 {
     // Including..
-    for ( const TOKEN *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next)
+    for ( const TOKEN *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next())
     {
         if (includetok->str() != "#include")
             continue;
 
         // Get fileindex of included file..
         unsigned int hfile = 0;
-        const char *includefile = includetok->next->aaaa();
+        const char *includefile = includetok->next()->aaaa();
         while (hfile < _tokenizer->getFiles()->size())
         {
             if ( Tokenizer::SameFileName( _tokenizer->getFiles()->at(hfile).c_str(), includefile ) )
@@ -112,7 +112,7 @@ void CheckHeaders::WarningIncludeHeader()
 
         // Extract classes and names in the header..
         int indentlevel = 0;
-        for ( const TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next )
+        for ( const TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next() )
         {
             if ( tok1->FileIndex != hfile )
                 continue;
@@ -150,12 +150,12 @@ void CheckHeaders::WarningIncludeHeader()
             // --------------------------------------
             else if (tok1->str() == "enum")
             {
-                tok1 = tok1->next;
+                tok1 = tok1->next();
                 while ( ! TOKEN::Match( tok1, "; %any%" ) )
                 {
                     if ( tok1->isName() )
                         namelist.push_back(tok1->str());
-                    tok1 = tok1->next;
+                    tok1 = tok1->next();
                 }
             }
 
@@ -180,7 +180,7 @@ void CheckHeaders::WarningIncludeHeader()
                 if (strcmp(tok1->strAt(1),"enum")==0)
                     continue;
                 int parlevel = 0;
-                while (tok1->next)
+                while (tok1->next())
                 {
                     if ( TOKEN::Match(tok1, "[({]") )
                         parlevel++;
@@ -197,7 +197,7 @@ void CheckHeaders::WarningIncludeHeader()
                             namelist.push_back(tok1->str());
                     }
 
-                    tok1 = tok1->next;
+                    tok1 = tok1->next();
                 }
             }
         }
@@ -206,7 +206,7 @@ void CheckHeaders::WarningIncludeHeader()
         // Check if the extracted names are used...
         bool Needed = false;
         bool NeedDeclaration = false;
-        for ( const TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next)
+        for ( const TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
         {
             if (tok1->FileIndex != includetok->FileIndex)
                 continue;

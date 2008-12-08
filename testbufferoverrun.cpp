@@ -300,7 +300,7 @@ private:
                "\n"
                "static void f()\n"
                "{\n"
-               "    for ( ABC *abc = abc1; abc; abc = abc->next )\n"
+               "    for ( ABC *abc = abc1; abc; abc = abc->next() )\n"
                "    {\n"
                "        abc->str[10] = 0;\n"
                "    }\n"
