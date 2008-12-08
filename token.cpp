@@ -307,3 +307,13 @@ const TOKEN *TOKEN::findtoken(const TOKEN *tok1, const char *tokenstr[])
     }
     return NULL;
 }
+
+unsigned int TOKEN::varId() const
+{
+    return _varId;
+}
+
+void TOKEN::varId( unsigned int id )
+{
+    _varId = id;
+}

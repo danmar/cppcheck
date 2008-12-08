@@ -284,15 +284,15 @@ private:
         for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next )
         {
             if ( tok->str() != "i" )
-                ASSERT_EQUALS( 0, tok->varId );
+                ASSERT_EQUALS( 0, tok->varId() );
             else if ( TOKEN::Match(tok, "i = 1") )
-                ASSERT_EQUALS( 1, tok->varId );
+                ASSERT_EQUALS( 1, tok->varId() );
             else if ( TOKEN::Match(tok, "i = 2") )
-                ASSERT_EQUALS( 2, tok->varId );
+                ASSERT_EQUALS( 2, tok->varId() );
             else if ( TOKEN::Match(tok, "i = 3") )
-                ASSERT_EQUALS( 3, tok->varId );
+                ASSERT_EQUALS( 3, tok->varId() );
             else if ( TOKEN::Match(tok, "i = 4") )
-                ASSERT_EQUALS( 2, tok->varId );
+                ASSERT_EQUALS( 2, tok->varId() );
         }
     }
 };

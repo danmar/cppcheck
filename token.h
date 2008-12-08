@@ -114,15 +114,18 @@ public:
     unsigned int FileIndex;
     unsigned int linenr;
 
-    unsigned int varId;
+
 
     TOKEN *next;
+    unsigned int varId() const;
+    void varId( unsigned int id );
 
 private:
     std::string _str;
     char * _cstr;
     bool _isName;
     bool _isNumber;
+    unsigned int _varId;
 };
 
 #endif // TOKEN_H

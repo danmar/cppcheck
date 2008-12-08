@@ -624,7 +624,7 @@ void Tokenizer::setVarId()
 {
     // Clear all variable ids
     for ( TOKEN *tok = _tokens; tok; tok = tok->next )
-        tok->varId = 0;
+        tok->varId( 0 );
 
     // Set variable ids..
     unsigned int _varId = 0;
@@ -654,7 +654,7 @@ void Tokenizer::setVarId()
             for ( tok2 = tok->next; tok2 && indentlevel >= 0; tok2 = tok2->next )
             {
                 if ( tok2->str() == varname )
-                    tok2->varId = _varId;
+                    tok2->varId( _varId );
                 else if ( tok2->str() == "{" )
                     ++indentlevel;
                 else if ( tok2->str() == "}" )
