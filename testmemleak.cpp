@@ -42,6 +42,7 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         // Clear the error buffer..
@@ -128,6 +129,8 @@ private:
         TEST_CASE( realloc2 );
 
         TEST_CASE( assign );
+        
+        // TODO TEST_CASE( varid );
     }
 
 
@@ -1022,6 +1025,21 @@ private:
                "    free(a - 10);\n"
                "}\n" );
 
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void varid()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *p = malloc(100);\n"
+               "    {\n"
+               "        char *p = 0;\n"
+               "        delete p;\n"
+               "    }\n"
+               "    free(p);\n"
+               "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
