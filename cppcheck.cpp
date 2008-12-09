@@ -215,6 +215,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     _tokenizer.tokenize(istr, FileName);
     }
 
+    // Set variable id
+    _tokenizer.setVarId();
+
     _tokenizer.fillFunctionList();
 
     // Check that the memsets are valid.
