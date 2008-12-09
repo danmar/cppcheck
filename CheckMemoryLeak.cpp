@@ -630,7 +630,8 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
-            // Reduce "if dealloc ;" and "if use ;" that is not followed by an else..
+
+            // Reduce "if dealloc ;" and "if use ;" that is not followed by an else..
             // If "--all" has been given these are deleted
             // Otherwise, ony the "if" will be deleted
             if ((TOKEN::Match(tok2, "[;{}] if dealloc ;") || TOKEN::Match(tok2, "[;{}] if use ;")) &&
