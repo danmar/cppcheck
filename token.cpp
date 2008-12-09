@@ -32,6 +32,7 @@ TOKEN::TOKEN()
     _str = "";
     _linenr = 0;
     _next = 0;
+    _previous = 0;
     _varId = 0;
     _isName = false;
     _isNumber = false;
@@ -334,6 +335,49 @@ TOKEN *TOKEN::next() const
 void TOKEN::next( TOKEN *next )
 {
     _next = next;
+}
+
+TOKEN *TOKEN::previous() const
+{
+    return _previous;
+}
+
+void TOKEN::previous( TOKEN *previous )
+{
+    _previous = previous;
+}
+
+void TOKEN::insertToken( const char *str )
+{
+    TOKEN *newToken = new TOKEN;
+    newToken->setstr( str );
+    if( this->next() )
+    {
+        newToken->next( this->next() );
+        newToken->next()->previous( newToken );
+    }
+
+    this->next( newToken );
+    newToken->previous( this );
+}
+
+void TOKEN::eraseTokens( TOKEN *begin, const TOKEN *end )
+{
+    if ( ! begin )
+        return;
+
+    while ( begin->next() && begin->next() != end )
+    {
+        begin->eraseToken();
+    }
+}
+
+void TOKEN::eraseToken()
+{
+    TOKEN *next = this->next();
+    this->next( next->next() );
+    next->next()->previous( this );
+    delete next;
 }
 
 unsigned int TOKEN::fileIndex() const

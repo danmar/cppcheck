@@ -288,10 +288,7 @@ void CheckMemoryLeakClass::MemoryLeak( const TOKEN *tok, const char varname[] )
 
 void CheckMemoryLeakClass::instoken(TOKEN *tok, const char str[])
 {
-    TOKEN *newtok = new TOKEN;
-    newtok->setstr(str);
-    newtok->next( tok->next() );
-    tok->next( newtok );
+    tok->insertToken( str );
 }
 //---------------------------------------------------------------------------
 
@@ -314,18 +311,21 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
     TOKEN *rethead = 0, *rettail = 0;
     #define addtoken(_str)                  \
     {                                       \
-        TOKEN *newtok = new TOKEN;          \
-        newtok->setstr(_str);               \
-        newtok->linenr( tok->linenr() );    \
-        newtok->fileIndex( tok->fileIndex() ); \
-        newtok->next( 0 );                  \
         if (rettail)                        \
-            rettail->next( newtok );        \
+        {                                   \
+            rettail->insertToken(_str);     \
+            rettail = rettail->next();      \
+        }                                   \
         else                                \
-            rethead = newtok;               \
-        rettail=newtok;                     \
+        {                                   \
+            rethead = new TOKEN;            \
+            rettail = rethead;              \
+            rettail->setstr(_str);          \
+        }                                   \
+                                            \
+        rettail->linenr( tok->linenr() );   \
+        rettail->fileIndex( tok->fileIndex() ); \
     }
-
 
     // The first token should be ";"
     addtoken(";");
@@ -555,15 +555,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
 
 void CheckMemoryLeakClass::erase(TOKEN *begin, const TOKEN *end)
 {
-    if ( ! begin )
-        return;
-
-    while ( begin->next() && begin->next() != end )
-    {
-        TOKEN *next = begin->next();
-        begin->next( begin->next()->next() );
-        delete next;
-    }
+    TOKEN::eraseTokens( begin, end );
 }
 
 void CheckMemoryLeakClass::simplifycode(TOKEN *tok)

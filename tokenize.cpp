@@ -159,26 +159,27 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 		str2 << str;
 	}
 
-    TOKEN *newtoken  = new TOKEN;
-    newtoken->setstr(str2.str().c_str());
-    newtoken->linenr( lineno );
-    newtoken->fileIndex( fileno );
     if (_tokensBack)
     {
-        _tokensBack->next( newtoken );
-        _tokensBack = newtoken;
+        _tokensBack->insertToken( str2.str().c_str() );
+        _tokensBack = _tokensBack->next();
     }
     else
     {
-        _tokens = _tokensBack = newtoken;
+        _tokens = new TOKEN;
+        _tokensBack = _tokens;
+        _tokensBack->setstr( str2.str().c_str() );
     }
+
+    _tokensBack->linenr( lineno );
+    _tokensBack->fileIndex( fileno );
 
     // Check if str is defined..
     for (DefineSymbol *sym = _dsymlist; sym; sym = sym->next)
     {
         if (strcmp(str,sym->name)==0)
         {
-            newtoken->setstr(sym->value);
+            _tokensBack->setstr(sym->value);
             break;
         }
     }
@@ -212,14 +213,9 @@ void Tokenizer::InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
 {
     while (n > 0)
     {
-        TOKEN *NewToken = new TOKEN;
-        NewToken->fileIndex( src->fileIndex() );
-        NewToken->linenr( src->linenr() );
-        NewToken->setstr(src->aaaa());
-
-        NewToken->next( dest->next() );
-        dest->next( NewToken );
-
+        dest->insertToken( src->aaaa() );
+        dest->next()->fileIndex( src->fileIndex() );
+        dest->next()->linenr( src->linenr() );
         dest = dest->next();
         src  = src->next();
         n--;
@@ -566,14 +562,10 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
                 if (tok2->aaaa()!=type3 && (tok2->str() == type3))
                 {
                     tok2->setstr(type1);
-
-                    TOKEN *newtok = new TOKEN;
-                    newtok->setstr(type2);
-                    newtok->fileIndex( tok2->fileIndex() );
-                    newtok->linenr( tok2->linenr() );
-                    newtok->next( tok2->next() );
-                    tok2->next( newtok );
-                    tok2 = newtok;
+                    tok2->insertToken( type2 );
+                    tok2->next()->fileIndex( tok2->fileIndex() );
+                    tok2->next()->linenr( tok2->linenr() );
+                    tok2 = tok2->next();
                 }
             }
         }
@@ -590,9 +582,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
                 bool last = TOKEN::Match( tok->next(), "}" );
 
                 // Unlink and delete tok->next()
-                TOKEN *next = tok->next();
-                tok->next( tok->next()->next() );
-                delete next;
+                tok->eraseToken();
 
                 // break if this was the last token to delete..
                 if (last)

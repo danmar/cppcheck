@@ -122,18 +122,42 @@ public:
     void fileIndex( unsigned int fileIndex );
 
     TOKEN *next() const;
-    void next( TOKEN *next );
+
+
+    /**
+     * Delete tokens between begin and end. E.g. if begin = 1
+     * and end = 5, tokens 2,3 and 4 would be erased.
+     *
+     * @param begin Tokens after this will be erased.
+     * @param end Tokens before this will be erased.
+     */
+    static void eraseTokens( TOKEN *begin, const TOKEN *end );
+
+    void eraseToken();
+
+    /**
+     * Insert new token after this token. This function will handle
+     * relations between next and previous token also.
+     * @param str String for the new token.
+     */
+    void insertToken( const char *str );
+
+    TOKEN *previous() const;
+
 
     unsigned int varId() const;
     void varId( unsigned int id );
 
 private:
+    void next( TOKEN *next );
+    void previous( TOKEN *previous );
     std::string _str;
     char * _cstr;
     bool _isName;
     bool _isNumber;
     unsigned int _varId;
     TOKEN *_next;
+    TOKEN *_previous;
     unsigned int _fileIndex;
     unsigned int _linenr;
 };
