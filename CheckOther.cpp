@@ -844,7 +844,7 @@ static bool isOp(const TOKEN *tok)
                  tok->str() == ">" ||
                  tok->str() == ">=" ||
                  tok->str() == "<<" ||
-                 TOKEN::Match(tok, "[+-*/&|,]")));
+                 TOKEN::Match(tok, "[+-*/&|,[]]")));
 }
 
 void CheckOther::functionVariableUsage()
@@ -890,6 +890,9 @@ void CheckOther::functionVariableUsage()
                 varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
 
             if ((TOKEN::Match(tok,"[(=&!]") || isOp(tok)) && TOKEN::Match(tok->next(), "%var%"))
+                varUsage[ tok->strAt(1) ] |= USAGE_READ;
+
+            if (TOKEN::Match(tok, "-=|+=|*=|/= %var%"))
                 varUsage[ tok->strAt(1) ] |= USAGE_READ;
 
             if (TOKEN::Match(tok, "%var%") && (tok->next()->str()==")" || isOp(tok->next())))
