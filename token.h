@@ -69,6 +69,9 @@ public:
      * "%var%" any token which is a name or type e.g. "hello" or "int"
      * "%num%" Any numeric token, e.g. "23"
      * "%str%" Any token starting with "-character (C-string).
+     * "%var1%" Match with parameter varname1
+     * "%var2%" Match with parameter varname2
+     * "%varid%" Match with parameter varid
      * "[abc]" Any of the characters 'a' or 'b' or 'c'
      * "int|void|char" Any of the strings, int, void or char
      * "int|void|char|" Any of the strings, int, void or char or empty string
@@ -88,7 +91,7 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
+    static bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0, unsigned int varid=0);
 
     bool isName() const;
     bool isNumber() const;

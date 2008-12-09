@@ -141,7 +141,7 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
 }
 
 
-bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
+bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[], unsigned int varid)
 {
     if (!tok)
         return false;
@@ -207,6 +207,12 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
 
                 tok = tok->tokAt(2);
             }
+        }
+
+        else if (strcmp(str,"%varid%")==0)
+        {
+            if ( tok->varId() != varid )
+                return false;
         }
 
         else if (strcmp(str,"%num%")==0)
