@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <iostream>
 
 #ifdef __BORLANDC__
 #include <ctype.h>  // isalpha, isdigit
@@ -398,4 +399,23 @@ unsigned int TOKEN::linenr() const
 void TOKEN::linenr( unsigned int linenr )
 {
     _linenr = linenr;
+}
+
+void TOKEN::printOut( const char *title ) const
+{
+    std::cout << std::endl << "###";
+    if( title )
+        std::cout << " " << title << " ";
+    else
+        std::cout << "########";
+
+    std::cout << "###" << std::endl;
+    for( const TOKEN *t = this; t; t = t->next() )
+    {
+        std::cout << t->linenr() << ": " << t->str();
+        if( t->varId() )
+            std::cout << " ("<< t->varId() <<")";
+
+        std::cout << std::endl;
+    }
 }

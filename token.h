@@ -148,6 +148,14 @@ public:
     unsigned int varId() const;
     void varId( unsigned int id );
 
+    /**
+     * For debugging purposes, prints token and all tokens
+     * followed by it.
+     * @param title Title for the printout or use default parameter or 0
+     * for no title.
+     */
+    void printOut( const char *title = 0 ) const;
+
 private:
     void next( TOKEN *next );
     void previous( TOKEN *previous );
