@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -908,7 +908,7 @@ void CheckOther::functionVariableUsage()
             std::string varname = it->first;
             unsigned int usage = it->second;
 
-            if (!isalpha(varname[0]))
+            if (!std::isalpha(varname[0]))
                 continue;
 
             if ( ! ( usage & USAGE_DECLARE ) )
