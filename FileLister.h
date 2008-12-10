@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007-2008 Daniel Marjamäki and Reijo Tomperi
  *
@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef FILELISTER_H
-#define FILELISTER_H
+#ifndef FileListerH
+#define FileListerH
 
 #include <vector>
 #include <string>
@@ -42,15 +42,6 @@ public:
 
 private:
     static bool AcceptFile( const std::string &filename );
-
-#ifdef  __BORLANDC__
-    static void AddFiles( std::vector<std::string> &filenames, const std::string &path, const std::string &pattern );
-#endif
-
-#ifdef  _MSC_VER
-    static void AddFiles( std::vector<std::string> &filenames, const std::string &path, const std::string &pattern );
-#endif
-
 };
 
 #endif // #ifndef FILELISTER_H

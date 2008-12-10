@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007-2008 Daniel Marjamäki and Reijo Tomperi
  *
@@ -23,10 +23,7 @@
 #include <glob.h>
 #include <unistd.h>
 #endif
-#ifdef __BORLANDC__
-#include <dir.h>
-#endif
-#ifdef _MSC_VER
+#if defined(__BORLANDC__) || defined(_MSC_VER)
 #include <windows.h>
 #endif
 
@@ -93,66 +90,12 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
 }
 #endif
 
-///////////////////////////////////////////////////////////////////////////////
-////// This code is for __BORLANDC__ only /////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef __BORLANDC__
-
-void FileLister::AddFiles( std::vector<std::string> &filenames, const std::string &path, const std::string &pattern )
-{
-    struct ffblk f;
-    for ( int done = findfirst(pattern.c_str(), &f, 0); ! done; done = findnext(&f) )
-    {
-        std::ostringstream fname;
-        fname << path << f.ff_name;
-        filenames.push_back( fname.str() );
-    }
-    findclose(&f);
-}
-
-
-// TODO, this should be complitely rewritten to work similarly like with __GNUC__,
-// but I don't have a compiler to do the work
-void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive )
-{
-    if( !recursive )
-    {
-        // Simulate old behaviour
-        if ( path.find( '*' ) == std::string::npos )
-            filenames.push_back( path );
-        else
-            FileLister::AddFiles( filenames, "", path );
-
-        return;
-    }
-
-    AddFiles( filenames, path, "*.cpp" );
-    AddFiles( filenames, path, "*.cxx" );
-    AddFiles( filenames, path, "*.cc" );
-    AddFiles( filenames, path, "*.c" );
-
-    struct ffblk f ;
-    for ( int done = findfirst("*", &f, FA_DIREC); ! done; done = findnext(&f) )
-    {
-        if ( f.ff_attrib != FA_DIREC || f.ff_name[0] == '.' )
-            continue;
-        chdir( f.ff_name );
-        std::ostringstream curdir;
-        curdir << path << f.ff_name << "/";
-        FileLister::RecursiveAddFiles( filenames, curdir.str().c_str(), true );
-        chdir( ".." );
-    }
-    findclose(&f);
-}
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
-////// This code is for _MSC_VER only /////////////////////////////////////////
+////// This code is for Borland C++ and Visual C++ ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef _MSC_VER
+#if defined(__BORLANDC__) || defined(_MSC_VER)
 
 void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive )
 {
@@ -160,47 +103,47 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
     oss << path;
     if (recursive)
     {
-		bdir << path;
+        bdir << path;
         if ( path.length() > 0 && path[path.length()-1] != '/' )
-		{
-			bdir << "/";
+        {
+            bdir << "/";
             oss << "/";
-		}
+        }
 
         oss << "*";
     }
 
     WIN32_FIND_DATA ffd;
     HANDLE hFind = FindFirstFile(oss.str().c_str(), &ffd);
-	if ( INVALID_HANDLE_VALUE == hFind )
-		return;
+    if ( INVALID_HANDLE_VALUE == hFind )
+        return;
 
     do
     {
-		std::ostringstream fname;
-		fname << bdir.str().c_str() << ffd.cFileName;
+        std::ostringstream fname;
+        fname << bdir.str().c_str() << ffd.cFileName;
 
         if ( ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0' )
             continue;
 
-		if ( ( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
-		{
+        if ( ( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
+        {
             // File
 
             // If recursive is not used, accept all files given by user
             if ( !recursive || FileLister::AcceptFile( ffd.cFileName ) )
-				filenames.push_back( fname.str() );
-		}
+                filenames.push_back( fname.str() );
+        }
         else if ( recursive )
         {
             // Directory
             fname << "/";
-			FileLister::RecursiveAddFiles( filenames, fname.str().c_str(), recursive );
+            FileLister::RecursiveAddFiles( filenames, fname.str().c_str(), recursive );
         }
     }
     while (FindNextFile(hFind, &ffd) != FALSE);
 
-	FindClose(hFind);
+    FindClose(hFind);
 }
 
 #endif
