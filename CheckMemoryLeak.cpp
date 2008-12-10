@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -599,8 +599,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
 
             // Delete empty if that is not followed by an else
             if (tok2->tokAt(2) &&
-                (tok2->next()->str().find("if") == 0) &&
-                TOKEN::Match(tok2->tokAt(2), ";") &&
+                TOKEN::Match(tok2->next(), "if ;") &&
                 !TOKEN::Match(tok2->tokAt(3), "else"))
             {
                 erase(tok2, tok2->tokAt(2));
@@ -615,8 +614,8 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // TODO Make this more generic. Delete "if ; else use ; use"
-            if ( TOKEN::Match(tok2, "; if ; else use ; use") ||
-                 TOKEN::Match(tok2, "; if use ; else ; use")  )
+            if ( TOKEN::Match(tok2, "; if ; else assign|use ; assign|use") ||
+                 TOKEN::Match(tok2, "; if assign|use ; else ; assign|use")  )
             {
                 erase( tok2, tok2->tokAt(4) );
                 done = false;
@@ -626,7 +625,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             // Reduce "if dealloc ;" and "if use ;" that is not followed by an else..
             // If "--all" has been given these are deleted
             // Otherwise, ony the "if" will be deleted
-            if ((TOKEN::Match(tok2, "[;{}] if dealloc ;") || TOKEN::Match(tok2, "[;{}] if use ;")) &&
+            if (TOKEN::Match(tok2, "[;{}] if assign|dealloc|use ;") &&
                 !TOKEN::Match(tok2->tokAt(4), "else"))
             {
                 if ( _settings._showAll )
@@ -637,7 +636,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Reduce "if(var) dealloc ;" and "if(var) use ;" that is not followed by an else..
-            if ((TOKEN::Match(tok2, "[;{}] if(var) dealloc ;") || TOKEN::Match(tok2, "[;{}] if(var) use ;")) &&
+            if (TOKEN::Match(tok2, "[;{}] if(var) assign|dealloc|use ;") &&
                 !TOKEN::Match(tok2->tokAt(4), "else"))
             {
                 erase(tok2, tok2->tokAt(2));
@@ -689,12 +688,12 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Reducing if..
-            if (TOKEN::Match(tok2,"if dealloc ; else") || TOKEN::Match(tok2,"if use ; else"))
+            if (TOKEN::Match(tok2,"if assign|dealloc|use ; else"))
             {
                 erase(tok2, tok2->tokAt(2));
                 done = false;
             }
-            if (TOKEN::Match(tok2,"[;{}] if { dealloc ; return ; }") && !TOKEN::Match(tok2->tokAt(8),"else"))
+            if (TOKEN::Match(tok2,"[;{}] if { assign|dealloc|use ; return ; }") && !TOKEN::Match(tok2->tokAt(8),"else"))
             {
                 erase(tok2,tok2->tokAt(8));
                 done = false;
@@ -715,18 +714,18 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Reduce "do { alloc ; } " => "alloc ;"
+            /* TODO : This could hide memory leaks
             if ( TOKEN::Match(tok2->next(), "do { alloc ; }") )
             {
                 erase(tok2, tok2->tokAt(3));
                 erase(tok2->next()->next(), tok2->tokAt(4));
                 done = false;
             }
+            */
 
             // Reduce "loop if break ; => ";"
-            if ( TOKEN::Match( tok2->next(), "loop %var%" ) &&
-                 tok2->tokAt(2)->str().find("if") == 0 &&
-                 (TOKEN::Match( tok2->tokAt(3), "break ; ") || TOKEN::Match( tok2->tokAt(3), "continue ;")) &&
-                 !TOKEN::Match(tok2->tokAt(5),"else") )
+            if ( TOKEN::Match( tok2->next(), "loop if break|continue ; ") &&
+                 !TOKEN::Match(tok2->tokAt(5), "else") )
             {
                 erase( tok2, tok2->tokAt(4) );
                 done = false;
@@ -810,8 +809,8 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
-            // Reduce "if(var) use ;" => "use ;"
-            if ( TOKEN::Match(tok2->next(), "if(var) use ;") && !TOKEN::Match(tok2->tokAt(4),"else"))
+            // Reduce "if(var) assign|dealloc|use ;" => "assign|dealloc|use ;"
+            if ( TOKEN::Match(tok2->next(), "if(var) assign|dealloc|use ;") && !TOKEN::Match(tok2->tokAt(4),"else"))
             {
                 erase( tok2, tok2->tokAt(2) );
                 done = false;
@@ -839,14 +838,14 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
-            // Delete second use in "use ; use ;"
+            // Delete first part in "use ; dealloc ;"
             if (TOKEN::Match(tok2, "[;{}] use ; dealloc ;"))
             {
                 erase(tok2, tok2->tokAt(3));
                 done = false;
             }
 
-            // Delete first use in "use ; return use ;"
+            // Delete first part in "use ; return use ;"
             if (TOKEN::Match(tok2, "[;{}] use ; return use ;"))
             {
                 erase(tok2, tok2->tokAt(2));
@@ -1164,7 +1163,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
     {
 		destructor << classname[i] << " :: ";
     }
-    destructor << " ~" << classname.back() << " (";
+    destructor << " ~ " << classname.back() << " (";
 
     // Pattern used in member function. "Var = ..."
     std::ostringstream varname_eq;

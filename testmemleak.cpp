@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -36,7 +36,7 @@ public:
     { }
 
 private:
-    void check( const char code[] )
+    void check( const char code[], bool showAll = false )
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -51,7 +51,7 @@ private:
         // Check for memory leaks..
         Settings settings;
         settings._debug = true;
-        settings._showAll = false;
+        settings._showAll = showAll;
         tokenizer.fillFunctionList();
         CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings, this );
         checkMemoryLeak.CheckMemoryLeak();
@@ -116,8 +116,8 @@ private:
         // TODO TEST_CASE( func7 );
         TEST_CASE( func8 );      // Using callback
 
-        // TODO TEST_CASE( class1 );
-        // TODO TEST_CASE( class2 );
+        TEST_CASE( class1 );
+        TEST_CASE( class2 );
 
         TEST_CASE( throw1 );
 
@@ -881,7 +881,7 @@ private:
                "Fred::~Fred()\n"
                "{\n"
                "    delete [] str2;\n"
-               "}\n" );
+               "}\n", true );
 
         ASSERT_EQUALS( std::string("[test.cpp:1]: Memory leak: Fred::str1\n"), errout.str() );
     }
@@ -906,7 +906,7 @@ private:
                "Fred::~Fred()\n"
                "{\n"
                "    free(str1);\n"
-               "}\n" );
+               "}\n", true );
 
         ASSERT_EQUALS( std::string("[test.cpp:17]: Mismatching allocation and deallocation: Fred::str1\n"), errout.str() );
     }
