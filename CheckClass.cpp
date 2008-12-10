@@ -1,4 +1,4 @@
-/*
+﻿/*
  * c++check - c/c++ syntax checking
  * Copyright (C) 2007 Daniel Marjamäki
  *
@@ -684,13 +684,13 @@ void CheckClass::CheckOperatorEq1()
 
 void CheckClass::virtualDestructor()
 {
-	const char pattern_classdecl[] = "class %var% : %var%";
+    const char pattern_classdecl[] = "class %var% : %var%";
 
     const TOKEN *derived = _tokenizer->tokens();
-	while ((derived = TOKEN::findmatch(derived, pattern_classdecl)) != NULL)
+    while ((derived = TOKEN::findmatch(derived, pattern_classdecl)) != NULL)
     {
         // Iterate through each base class...
-		derived = derived->tokAt(3);
+        derived = derived->tokAt(3);
         while ( TOKEN::Match(derived, "%var%") )
         {
             bool isPublic = TOKEN::Match(derived, "public");
@@ -717,6 +717,9 @@ void CheckClass::virtualDestructor()
             const TOKEN *base = TOKEN::findmatch(_tokenizer->tokens(), "%any% ~ %var1% (", baseName);
             while (TOKEN::Match(base, "::"))
                 base = TOKEN::findmatch(base->next(), "%any% ~ %var1% (", baseName);
+
+            while (TOKEN::Match(base, "%var%") && !TOKEN::Match(base, "virtual"))
+                base = base->previous();
 
             // Check that there is a destructor..
             if ( ! base )
