@@ -25,6 +25,7 @@
 #include <sstream>
 #include <stdlib.h>     // <- atoi
 #include <cstring>
+#include <cctype>
 //---------------------------------------------------------------------------
 
 
