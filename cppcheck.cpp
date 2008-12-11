@@ -162,7 +162,7 @@ void CppCheck::check()
         if ( _settings._errorsOnly == false )
             _errorLogger->reportOut( std::string( "Checking " ) + fname + std::string( "..." ) );
 
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         std::map<std::string, std::string> code;
         if( _fileContents.size() > 0 && _fileContents.find( _filenames[c] ) != _fileContents.end() )
         {

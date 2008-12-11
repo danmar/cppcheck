@@ -68,7 +68,7 @@ private:
     {
         const char code[] = " \t a //\n"
                             "  #aa\t /* remove this */\tb  \r\n";
-        Preprocessor p(NULL);
+        Preprocessor p;
         std::istringstream istr(code);
         std::string codestr( p.read(istr,"") );
         ASSERT_EQUALS( "a \n#aa b \n", codestr );
@@ -154,7 +154,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -178,7 +178,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -201,7 +201,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -227,7 +227,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -251,7 +251,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -278,7 +278,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -301,7 +301,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -324,7 +324,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -344,7 +344,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -369,7 +369,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -389,7 +389,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -414,7 +414,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..
@@ -434,7 +434,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor( this );
+        Preprocessor preprocessor;
         preprocessor.preprocess( istr, actual, "" );
 
         // Compare results..

@@ -28,9 +28,9 @@
 #endif
 
 
-Preprocessor::Preprocessor( ErrorLogger *errorLogger )
+Preprocessor::Preprocessor()
 {
-    _errorLogger = errorLogger;
+
 }
 
 /** Just read the code into a string. Perform simple cleanup of the code */
@@ -46,13 +46,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
     {
         if ( ch < 0 )
-        {
-            // Bad content..
-            std::ostringstream oss;
-            oss << "[" << filename << ":" << lineno << "] Bad character found: " << int((unsigned char)ch) << std::endl;
-            _errorLogger->reportErr( oss.str() );
-            return "";
-        }
+            continue;
 
         if ( ch == '\n' )
             ++lineno;

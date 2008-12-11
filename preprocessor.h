@@ -25,12 +25,13 @@
 #include <istream>
 #include <string>
 #include <list>
-#include "errorlogger.h"
+
 
 class Preprocessor
 {
 public:
-    Preprocessor( ErrorLogger *errorLogger );
+    Preprocessor();
+
     void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
     
     /** Just read the code into a string. Perform simple cleanup of the code */
@@ -50,8 +51,6 @@ private:
     std::string getdef(std::string line, bool def);
 
     bool match_cfg_def( std::string cfg, const std::string &def );
-
-    ErrorLogger *_errorLogger;
 };
 
 //---------------------------------------------------------------------------
