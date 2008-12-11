@@ -643,6 +643,14 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
+            // Reduce "if* ;" that is not followed by an else..
+            if (TOKEN::Match(tok2->next(), "if(var)|if(!var)|if(true)|if(false)|ifv ;") &&
+                !TOKEN::Match(tok2->tokAt(3), "else"))
+            {
+                erase(tok2, tok2->tokAt(2));
+                done = false;
+            }
+
             // Reduce "if if" => "if"
             if ( TOKEN::Match(tok2, "if if") )
             {
@@ -707,21 +715,20 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Reduce "if ; else return use ;" => "if return use ;"
-            if ( TOKEN::Match(tok2, "if ; else %var% ;") )
+            if ( TOKEN::Match(tok2, "if ; else return use ;") )
             {
                 erase( tok2, tok2->tokAt(3) );
                 done = false;
             }
 
             // Reduce "do { alloc ; } " => "alloc ;"
-            /* TODO : This could hide memory leaks
+            // TODO: If the loop can be executed twice reduce to "loop alloc ;" instead
             if ( TOKEN::Match(tok2->next(), "do { alloc ; }") )
             {
                 erase(tok2, tok2->tokAt(3));
                 erase(tok2->next()->next(), tok2->tokAt(4));
                 done = false;
             }
-            */
 
             // Reduce "loop if break ; => ";"
             if ( TOKEN::Match( tok2->next(), "loop if break|continue ; ") &&
