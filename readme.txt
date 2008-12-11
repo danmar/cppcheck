@@ -5,54 +5,41 @@ C++ check
 =========
 
 
+About
+
+  The original name of this program is "C++check".
+  The name was changed to "cppcheck" (a google search is more successful now).
+
 
 Compiling
 
-  Any C++ compiler should work. 
-  There are no dependencies.
+  Any C++ compiler should work.
 
   The Makefile works under Linux.
-  To make it work under Windows, change "g++" to "gxx".
-
-  I haven't been able to test it on other platforms.
-
+  To make it work under Windows with DJGPP, change "g++" to "gxx".
 
 
 Usage
 
   The syntax is:
-      cppcheck [--all] [--style] [--recursive] [filename1] [filename2]
+      cppcheck [--all] [--errorsonly] [--style] [--recursive] [filename1] [filename2]
 
   The error messages will be printed to stderr.
 
   Example (Check all files. Use all checks):
-      cppcheck -style --all --recursive
+      cppcheck --style --all --recursive
+
+  To output error messages to a file use this syntax (works both on Windows and Linux):
+      cppcheck file.cpp 2> err.txt
 
 
 Recommendations
 
-  Create a shell script that checks all files.
-  See "checkproj.bat" for an example of how it can be done under Windows.
-
   When the "--all" flag is given you may get a lot of error messages.
 
-  To dump the messages to a textfile you can use a command like this:
-      cppcheck --all filename.cpp 2> messages.txt
 
-  If you want to filter the messages you could use:
-    * grep to filter out specific types of messages
-    * diff to compare old messages with new messages. There are even GUIs for
-      this.
+Webpage
 
+  http://www.sf.net/projects/cppcheck
 
-
-Suggestions
-
-  I'd like to get suggestions about new checks.
-
-
-
-Author
-
-  Daniel Marjamäki   (danielm77@spray.se)
 
