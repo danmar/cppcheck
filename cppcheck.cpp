@@ -198,6 +198,7 @@ void CppCheck::check()
         _checkFunctionUsage.check();
     }
 
+    _errorList.clear();
 }
 
 
