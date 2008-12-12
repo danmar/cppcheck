@@ -104,6 +104,8 @@ private:
 
         TEST_CASE( ret1 );
         TEST_CASE( ret2 );
+        TEST_CASE( ret3 );
+        TEST_CASE( ret4 );
 
         TEST_CASE( mismatch1 );
 
@@ -129,7 +131,7 @@ private:
         TEST_CASE( realloc2 );
 
         TEST_CASE( assign );
-        
+
         // TODO TEST_CASE( varid );
     }
 
@@ -685,8 +687,25 @@ private:
         ASSERT_EQUALS( std::string("[test.cpp:6]: Memory leak: abc\n"), errout.str() );
     }
 
+    void ret3()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    FILE *filep = fopen(\"myfile.txt\",\"w\");\n"
+               "}\n" );
 
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Resource leak: filep\n"), errout.str() );
+    }
 
+    void ret4()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    FILE *p = popen( \"ls -l\", \"r\");\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Resource leak: p\n"), errout.str() );
+    }
 
     void mismatch1()
     {
