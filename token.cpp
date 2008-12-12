@@ -142,18 +142,23 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
     return -1;
 }
 
-
 bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[], unsigned int varid)
 {
-    if (!tok)
-        return false;
-
     const char *p = pattern;
-    while (*p)
+    while ( *p )
     {
         // Skip spaces in pattern..
         while ( *p == ' ' )
             p++;
+
+        if (!tok)
+        {
+            // If we have no tokens, pattern "!!else" should return true
+            if( isNotPattern( p ) )
+                return true;
+            else
+                return false;
+        }
 
         // Extract token from pattern..
         // TODO: Refactor this so there can't be buffer overflows
@@ -254,16 +259,29 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
             }
         }
 
+        // Parse "not" options. Token can be anything except the given one
+        else if( isNotPattern( str ) )
+        {
+            if( strcmp( tok->aaaa(), &(str[2]) ) == 0 )
+                return false;
+        }
+
         else if (str != tok->_str)
             return false;
 
         tok = tok->next();
-        if (!tok && *p)
-            return false;
     }
 
     // The end of the pattern has been reached and nothing wrong has been found
     return true;
+}
+
+bool TOKEN::isNotPattern( const char *pattern )
+{
+    if( pattern && strlen(pattern) > 2 && pattern[0] == '!' && pattern[1] == '!' )
+        return true;
+    else
+        return false;
 }
 
 bool TOKEN::isName() const

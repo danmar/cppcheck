@@ -75,6 +75,7 @@ public:
      * "[abc]" Any of the characters 'a' or 'b' or 'c'
      * "int|void|char" Any of the strings, int, void or char
      * "int|void|char|" Any of the strings, int, void or char or empty string
+     * "!!else" No tokens or any token that is not "else".
      * "someRandomText" If token contains "someRandomText".
      *
      * The patterns can be also combined to compare to multiple tokens at once
@@ -159,6 +160,17 @@ public:
 private:
     void next( TOKEN *next );
     void previous( TOKEN *previous );
+
+    /**
+     * Return true if pattern is e.g. "!!else".
+     * See Match() for more info.
+     *
+     * @param pattern Pattern to match, e.g. "if ; !!else"
+     * @return true if pattern starts with "!!" and contains 3
+     * or more characters.
+     */
+    static bool isNotPattern( const char *pattern );
+
     std::string _str;
     char * _cstr;
     bool _isName;

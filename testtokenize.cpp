@@ -52,6 +52,8 @@ private:
 
         TEST_CASE( match1 );
 
+        TEST_CASE( match2 );
+
         TEST_CASE( varid1 );
     }
 
@@ -263,6 +265,68 @@ private:
         }
     }
 
+    void match2()
+    {
+        {
+            const std::string code("");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
+            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "!!else") );
+        }
+
+        {
+            const std::string code("if ;");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
+            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "if ; !!else") );
+        }
+
+        {
+            const std::string code("if ; something");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
+            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "if ; !!else") );
+        }
+
+        {
+            const std::string code("else");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
+            ASSERT_EQUALS( false, TOKEN::Match(tokenizer.tokens(), "!!else") );
+        }
+
+        {
+            const std::string code("if ; else");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
+            ASSERT_EQUALS( false, TOKEN::Match(tokenizer.tokens(), "if ; !!else") );
+        }
+    }
 
     void varid1()
     {
