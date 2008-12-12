@@ -278,10 +278,18 @@ void CheckMemoryLeakClass::MismatchError( const TOKEN *Tok1, const std::list<con
 }
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeakClass::MemoryLeak( const TOKEN *tok, const char varname[] )
+void CheckMemoryLeakClass::MemoryLeak( const TOKEN *tok, const char varname[], AllocType alloctype )
 {
     std::ostringstream errmsg;
-    errmsg << _tokenizer->fileLine(tok) << ": Memory leak: " << varname;
+    errmsg << _tokenizer->fileLine(tok);
+
+    if( alloctype == CheckMemoryLeakClass::FOPEN ||
+        alloctype == CheckMemoryLeakClass::POPEN )
+        errmsg << ": Resource leak: ";
+    else
+        errmsg << ": Memory leak: ";
+
+    errmsg << varname;
     _errorLogger->reportErr( errmsg.str() );
 }
 //---------------------------------------------------------------------------
@@ -975,23 +983,23 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
 	const TOKEN *result;
     if ( (result = TOKEN::findmatch(tok, "loop alloc ;")) != NULL )
     {
-        MemoryLeak(result, varname);
+        MemoryLeak(result, varname, alloctype);
     }
 
     else if ( (result = TOKEN::findmatch(tok, "alloc ; if break|continue|return ;")) != NULL )
     {
         // MemoryLeak(Tokenizer::gettok(TOKEN::findmatch(tok, "alloc ; if continue ;"), 3), varname);
-        MemoryLeak(result->tokAt(3), varname);
+        MemoryLeak(result->tokAt(3), varname, alloctype);
     }
 
     else if ( _settings._showAll && (result = TOKEN::findmatch(tok, "alloc ; ifv break|continue|return ;")) != NULL )
     {
-        MemoryLeak(result->tokAt(3), varname);
+        MemoryLeak(result->tokAt(3), varname, alloctype);
     }
 
     else if ( (result = TOKEN::findmatch(tok, "alloc ; alloc|assign|return ;")) != NULL )
     {
-        MemoryLeak(result->tokAt(2), varname);
+        MemoryLeak(result->tokAt(2), varname, alloctype);
     }
 
     else if ( ! TOKEN::findmatch(tok,"dealloc") &&
@@ -1001,7 +1009,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         const TOKEN *last = tok;
         while (last->next())
             last = last->next();
-        MemoryLeak(last, varname);
+        MemoryLeak(last, varname, alloctype);
     }
 
     // detect cases that "simplifycode" don't handle well..
@@ -1242,7 +1250,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
 
     if ( Alloc != No && Dealloc == No )
     {
-        MemoryLeak( _tokenizer->tokens(), FullVariableName.str().c_str() );
+        MemoryLeak( _tokenizer->tokens(), FullVariableName.str().c_str(), Alloc );
     }
 }
 
