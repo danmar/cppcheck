@@ -626,7 +626,7 @@ void Tokenizer::setVarId()
         // Determine name of declared variable..
         const char *varname = 0;
         TOKEN *tok2 = tok->next();
-        while ( ! TOKEN::Match( tok2, "[;[=(]" ) )
+        while ( tok2 && ! TOKEN::Match( tok2, "[;[=(]" ) )
         {
             if ( tok2->isName() )
                 varname = tok2->strAt(0);
