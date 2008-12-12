@@ -79,6 +79,8 @@ private:
 
         TEST_CASE( buffer_overrun_1 );
         TEST_CASE( buffer_overrun_2 );
+
+        // TODO TEST_CASE( varid1 );
     }
 
 
@@ -350,6 +352,22 @@ private:
                "    strcpy( abc->str, \"abcdef\" );\n"
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:8]: Buffer overrun\n"), errout.str() );
+    }
+
+
+
+    void varid1()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char str[10];\n"
+               "    if (str[0])\n"
+               "    {\n"
+               "        char str[50];\n"
+               "        str[30] = 0;\n"
+               "    }\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
