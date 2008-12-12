@@ -377,7 +377,8 @@ void TOKEN::eraseToken()
 {
     TOKEN *next = this->next();
     this->next( next->next() );
-    next->next()->previous( this );
+	if ( next->next() )
+		next->next()->previous( this );
     delete next;
 }
 
@@ -404,7 +405,7 @@ void TOKEN::linenr( unsigned int linenr )
 void TOKEN::printOut( const char *title ) const
 {
     std::cout << std::endl << "###";
-    if( title )
+    if ( title )
         std::cout << " " << title << " ";
     else
         std::cout << "########";
@@ -413,7 +414,7 @@ void TOKEN::printOut( const char *title ) const
     for( const TOKEN *t = this; t; t = t->next() )
     {
         std::cout << t->linenr() << ": " << t->str();
-        if( t->varId() )
+        if ( t->varId() )
             std::cout << " ("<< t->varId() <<")";
 
         std::cout << std::endl;
