@@ -1049,7 +1049,7 @@ private:
         check( "void foo()\n"
                "{\n"
                "    char *a = (char *)malloc(10);\n"
-               "    a = a + 10;\n"
+               "    a = (void *)a + 10;\n"
                "    free(a - 10);\n"
                "}\n" );
 
