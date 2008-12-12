@@ -40,7 +40,7 @@ public:
 private:
     void CheckBufferOverrun_StructVariable();
     void CheckBufferOverrun_LocalVariable();
-    void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname[], const int size, const int total_size );
+    void CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname[], const int size, const int total_size, unsigned int varid );
     void ReportError(const TOKEN *tok, const char errmsg[]);
 
     const Tokenizer *_tokenizer;

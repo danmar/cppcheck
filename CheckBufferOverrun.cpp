@@ -64,7 +64,7 @@ void CheckBufferOverrunClass::ReportError(const TOKEN *tok, const char errmsg[])
 // Check array usage..
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname[], const int size, const int total_size )
+void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, const char *varname[], const int size, const int total_size, unsigned int varid )
 {
     unsigned int varc = 1;
     while ( varname[varc] )
@@ -73,7 +73,18 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
 
 
     // Array index..
-    if ( TOKEN::Match(tok, "%var1% [ %num% ]", varname) )
+    if ( varid > 0 )
+    {
+        if ( TOKEN::Match(tok, "%varid% [ %num% ]", 0, 0, varid) )
+        {
+            const char *num = tok->strAt(2);
+            if (strtol(num, NULL, 10) >= size)
+            {
+                ReportError(tok->next(), "Array index out of bounds");
+            }
+        }
+    }
+    else if ( TOKEN::Match(tok, "%var1% [ %num% ]", varname) )
     {
         const char *num = tok->strAt(2 + varc);
         if (strtol(num, NULL, 10) >= size)
@@ -99,7 +110,18 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
         }
 
         // Array index..
-        if ( !tok->isName() && !TOKEN::Match(tok,"[.&]") && TOKEN::Match(tok->next(), "%var1% [ %num% ]", varname) )
+        if ( varid > 0 )
+        {
+            if ( !tok->isName() && !TOKEN::Match(tok,"[.&]") && TOKEN::Match(tok->next(), "%varid% [ %num% ]", 0, 0, varid) )
+            {
+                const char *num = tok->strAt(3);
+                if (strtol(num, NULL, 10) >= size)
+                {
+                    ReportError(tok->next(), "Array index out of bounds");
+                }
+            }
+        }
+        else if ( !tok->isName() && !TOKEN::Match(tok,"[.&]") && TOKEN::Match(tok->next(), "%var1% [ %num% ]", varname) )
         {
             const char *num = tok->next()->strAt(2 + varc);
             if (strtol(num, NULL, 10) >= size)
@@ -288,7 +310,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
 
                     // Check variable usage in the function..
                     _callStack.push_back( tok );
-                    CheckBufferOverrun_CheckScope( ftok, parname, size, total_size );
+                    CheckBufferOverrun_CheckScope( ftok, parname, size, total_size, 0 );
                     _callStack.pop_back();
 
                     // break out..
@@ -322,18 +344,21 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
             const char *varname[2] = {0};
             unsigned int size = 0;
             const char *type = 0;
+            unsigned int varid = 0;
 
             if (TOKEN::Match(tok, "%type% %var% [ %num% ] ;"))
             {
                 varname[0] = tok->strAt(1);
                 size = strtoul(tok->strAt(3), NULL, 10);
                 type = tok->aaaa();
+                varid = tok->tokAt(1)->varId();
             }
             else if (indentlevel > 0 && TOKEN::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
             {
                 varname[0] = tok->strAt(1);
                 size = strtoul(tok->strAt(6), NULL, 10);
                 type = tok->strAt(4);
+                varid = tok->tokAt(1)->varId();
             }
             else
             {
@@ -346,7 +371,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
 
             // The callstack is empty
             _callStack.clear();
-            CheckBufferOverrun_CheckScope( tok->tokAt(5), varname, size, total_size );
+            CheckBufferOverrun_CheckScope( tok->tokAt(5), varname, size, total_size, varid );
         }
     }
 }
@@ -413,7 +438,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
                         if ( TOKEN::Match(tok4, ") {") )
                         {
                             const char *names[2] = {varname[1], 0};
-                            CheckBufferOverrun_CheckScope( tok4->tokAt(2), names, arrsize, total_size );
+                            CheckBufferOverrun_CheckScope( tok4->tokAt(2), names, arrsize, total_size, 0 );
                             break;
                         }
                     }
@@ -470,7 +495,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
                     continue;
 
                 // Check variable usage..
-                CheckBufferOverrun_CheckScope( CheckTok, varname, arrsize, total_size );
+                CheckBufferOverrun_CheckScope( CheckTok, varname, arrsize, total_size, 0 );
             }
         }
     }

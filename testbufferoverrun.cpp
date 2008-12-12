@@ -44,6 +44,9 @@ private:
         tokenizer.tokenize( istr, "test.cpp" );
         tokenizer.simplifyTokenList();
 
+        // Assign variable ids
+        tokenizer.setVarId();
+
         // Fill function list
         tokenizer.fillFunctionList();
 
@@ -80,7 +83,7 @@ private:
         TEST_CASE( buffer_overrun_1 );
         TEST_CASE( buffer_overrun_2 );
 
-        // TODO TEST_CASE( varid1 );
+        TEST_CASE( varid1 );
     }
 
 
