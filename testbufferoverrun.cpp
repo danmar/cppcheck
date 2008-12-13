@@ -84,6 +84,7 @@ private:
         TEST_CASE( buffer_overrun_2 );
 
         TEST_CASE( varid1 );
+        TEST_CASE( varid2 );
     }
 
 
@@ -368,6 +369,21 @@ private:
                "    {\n"
                "        char str[50];\n"
                "        str[30] = 0;\n"
+               "    }\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+    void varid2()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char str[10];\n"
+               "    if (str[0])\n"
+               "    {\n"
+               "        char str[50];\n"
+               "        memset(str,0,50);\n"
                "    }\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
