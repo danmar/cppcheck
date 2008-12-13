@@ -95,9 +95,14 @@ private:
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
 
+    /** Simplify conditions */
     bool simplifyConditions();
 
+    /** Simplify casts */
     bool simplifyCasts();
+
+    /** Simplify function calls - constant return value */
+    bool simplifyFunctionReturn();
 
     TOKEN *_gettok(TOKEN *tok, int index);
 

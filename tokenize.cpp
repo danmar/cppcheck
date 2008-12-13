@@ -1012,11 +1012,14 @@ void Tokenizer::simplifyTokenList()
     }
 
 
-    for ( bool done = false; !done; done = true)
+    bool done = false;
+    while ( ! done )
     {
+        done = true;
         done &= simplifyConditions();
         done &= simplifyCasts();
-    };
+        done &= simplifyFunctionReturn();
+    }
 }
 //---------------------------------------------------------------------------
 
@@ -1129,6 +1132,43 @@ bool Tokenizer::simplifyCasts()
 
     return ret;
 }
+
+
+
+bool Tokenizer::simplifyFunctionReturn()
+{
+    bool ret = true;
+    int indentlevel = 0;
+    for ( const TOKEN *tok = tokens(); tok; tok = tok->next() )
+    {
+        if ( tok->str() == "{" )
+            ++indentlevel;
+
+        else if ( tok->str() == "}" )
+            --indentlevel;
+
+        else if ( indentlevel == 0 && TOKEN::Match(tok, "%var% ( ) { return %num% ; }") )
+        {
+            std::ostringstream pattern;
+            pattern << "[(=+-*/] " << tok->str() << " ( ) [;)+-*/]";
+            for ( TOKEN *tok2 = _tokens; tok2; tok2 = tok2->next() )
+            {
+                if ( TOKEN::Match(tok2, pattern.str().c_str()) )
+                {
+                    tok2 = tok2->next();
+                    tok2->setstr( tok->strAt(5) );
+                    tok2->deleteNext();
+                    tok2->deleteNext();
+                    ret = false;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+
 
 
 //---------------------------------------------------------------------------

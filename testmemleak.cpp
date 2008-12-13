@@ -117,7 +117,7 @@ private:
         TEST_CASE( func6 );
         // TODO TEST_CASE( func7 );
         TEST_CASE( func8 );     // Using callback
-        // TODO TEST_CASE( func9 );     // Embedding the function call in a if-condition
+        TEST_CASE( func9 );     // Embedding the function call in a if-condition
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
