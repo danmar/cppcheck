@@ -71,7 +71,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 
         if ( funcname )
         {
-            FunctionUsage &func = _functions[ funcname->aaaa() ];
+            FunctionUsage &func = _functions[ funcname->str() ];
 
             // No filename set yet..
             if (func.filename.empty())
@@ -123,7 +123,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 
         if ( funcname )
         {
-            FunctionUsage &func = _functions[ funcname->aaaa() ];
+            FunctionUsage &func = _functions[ funcname->str() ];
 
             if ( func.filename.empty() || func.filename == "+" )
                 func.usedOtherFile = true;
