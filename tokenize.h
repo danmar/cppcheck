@@ -113,6 +113,16 @@ private:
      */
     bool simplifyFunctionReturn();
 
+    /**
+     * A simplify function that replaces a variable with its value in cases
+     * when the value is known. e.g. "x=10; if(x)" => "x=10;if(10)"
+     *
+     * @param token The token list to check and modify.
+     * @return true if modifications to token-list are done.
+     *         false if no modifications are done.
+     */
+    bool simplifyKnownVariables();
+
     TOKEN *_gettok(TOKEN *tok, int index);
 
     void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n);

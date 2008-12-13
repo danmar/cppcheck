@@ -48,6 +48,8 @@ private:
 
         TEST_CASE( numeric_true_condition );
 
+        TEST_CASE( simplify_known_variables );
+
         TEST_CASE( multi_compare );
 
         TEST_CASE( match1 );
@@ -215,6 +217,51 @@ private:
         for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { if ( true ) ; }"), ostr.str() );
+    }
+
+    void simplify_known_variables()
+    {
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    int a = 10;\n"
+                                "    if (a);\n"
+                                "}\n";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            // TODO, the actual string should be " void f ( ) { int a ; a = 10 ; if ( true ) ; }"
+            ASSERT_EQUALS( std::string(" void f ( ) { int a ; a = 10 ; if ( a ) ; }"), ostr.str() );
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    int a = 10;\n"
+                                "    a = g();\n"
+                                "    if (a);\n"
+                                "}\n";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS( std::string(" void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) ; }"), ostr.str() );
+        }
     }
 
     void multi_compare()

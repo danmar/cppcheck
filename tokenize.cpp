@@ -1175,8 +1175,23 @@ bool Tokenizer::simplifyFunctionReturn()
     return ret;
 }
 
+bool Tokenizer::simplifyKnownVariables()
+{
+    // TODO, this function should be called from simplifyTokenList()
+    // after the implementation is done.
+    // TODO, this functions needs to be implemented.
+    // TODO, test
+    bool ret = false;
+    for ( const TOKEN *tok = tokens(); tok; tok = tok->next() )
+    {
+        if ( TOKEN::Match(tok, "%var% = %num% ;") )
+        {
 
+        }
+    }
 
+    return ret;
+}
 
 //---------------------------------------------------------------------------
 // Helper functions for handling the tokens list
