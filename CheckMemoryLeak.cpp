@@ -404,7 +404,21 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             // assignment..
             else
             {
-                addtoken( "assign" );
+                // is the pointer in rhs?
+                bool rhs = false;
+                for ( const TOKEN *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next() )
+                {
+                    if ( tok2->str() == ";" )
+                        break;
+
+                    if ( tok2->str() == varname )
+                    {
+                        rhs = true;
+                        break;
+                    }
+                }
+
+                addtoken( rhs ? "use" : "assign" );
             }
         }
 
