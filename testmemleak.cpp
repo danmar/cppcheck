@@ -116,7 +116,8 @@ private:
         TEST_CASE( func5 );
         TEST_CASE( func6 );
         // TODO TEST_CASE( func7 );
-        TEST_CASE( func8 );      // Using callback
+        TEST_CASE( func8 );     // Using callback
+        // TODO TEST_CASE( func9 );     // Embedding the function call in a if-condition
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -841,6 +842,23 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
+
+    void func9()
+    {
+        check( "int b()\n"
+               "{\n"
+               "    return 0;\n"
+               "}\n"
+               "\n"
+               "void a()\n"
+               "{\n"
+               "    char *a = new char[10];\n"
+               "    if (b())\n"
+               "        return;\n"
+               "    delete [] a;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
 
 
 /*
