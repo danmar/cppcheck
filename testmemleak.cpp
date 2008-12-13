@@ -134,6 +134,10 @@ private:
         TEST_CASE( assign );
 
         // TODO TEST_CASE( varid );
+
+		// TODO TEST_CASE( cast1 );
+		// TODO TEST_CASE( cast2 );	// Doesn't fail but for bad reasons
+		// TODO TEST_CASE( cast3 );
     }
 
 
@@ -1089,6 +1093,37 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
+    void cast1()
+    {
+        check( "void foo()\n"
+               "{\n"
+			   "    char *a = reinterpret_cast<char *>(malloc(10));\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:4]: Memory leak: a\n"), errout.str() );
+    }
+
+    void cast2()
+    {
+        check( "void foo()\n"
+               "{\n"
+			   "    char *a = malloc(10);\n"
+			   "    free((void *)a);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void cast3()
+    {
+        check( "void foo()\n"
+               "{\n"
+			   "    char *a = malloc(10);\n"
+			   "    free(reinterpret_cast<void *>(c));\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
 };
 
 REGISTER_TEST( TestMemleak )
