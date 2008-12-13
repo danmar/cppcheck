@@ -1015,6 +1015,7 @@ void Tokenizer::simplifyTokenList()
     for ( bool done = false; !done; done = true)
     {
         done &= simplifyConditions();
+        done &= simplifyCasts();
     };
 }
 //---------------------------------------------------------------------------
@@ -1084,6 +1085,45 @@ bool Tokenizer::simplifyConditions()
                 tok->setstr( result ? "true" : "false" );
                 ret = false;
             }
+        }
+    }
+
+    return ret;
+}
+
+
+bool Tokenizer::simplifyCasts()
+{
+    bool ret = true;
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    {
+        if ( TOKEN::Match(tok->next(), "( %type% * )") )
+        {
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+            ret = false;
+        }
+
+        else if ( TOKEN::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast <" ) )
+        {
+            while ( tok->next() && tok->next()->str() != ">" )
+                tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+            TOKEN *tok2 = tok;
+            int parlevel = 0;
+            while ( tok2->next() && parlevel >= 0 )
+            {
+                tok2 = tok2->next();
+                if ( TOKEN::Match(tok2->next(), "(") )
+                    ++parlevel;
+                else if ( TOKEN::Match(tok2->next(), ")") )
+                    --parlevel;
+            }
+            if (tok2->next())
+                tok2->deleteNext();
         }
     }
 

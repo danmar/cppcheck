@@ -135,9 +135,9 @@ private:
 
         // TODO TEST_CASE( varid );
 
-		// TODO TEST_CASE( cast1 );
-		// TODO TEST_CASE( cast2 );	// Doesn't fail but for bad reasons
-		// TODO TEST_CASE( cast3 );
+		TEST_CASE( cast1 );
+		TEST_CASE( cast2 );
+		TEST_CASE( cast3 );
     }
 
 
@@ -1119,7 +1119,7 @@ private:
         check( "void foo()\n"
                "{\n"
 			   "    char *a = malloc(10);\n"
-			   "    free(reinterpret_cast<void *>(c));\n"
+			   "    free(reinterpret_cast<void *>(a));\n"
                "}\n" );
 
         ASSERT_EQUALS( std::string(""), errout.str() );

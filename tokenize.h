@@ -97,6 +97,8 @@ private:
 
     bool simplifyConditions();
 
+    bool simplifyCasts();
+
     TOKEN *_gettok(TOKEN *tok, int index);
 
     void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n);
