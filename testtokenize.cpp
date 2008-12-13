@@ -239,7 +239,6 @@ private:
             std::ostringstream ostr;
             for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            // TODO, the actual string should be " void f ( ) { int a ; a = 10 ; if ( true ) ; }"
             ASSERT_EQUALS( std::string(" void f ( ) { int a = 10 ; if ( 10 ) ; }"), ostr.str() );
         }
 
