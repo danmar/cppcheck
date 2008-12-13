@@ -190,7 +190,24 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType( const
 
 const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const TOKEN *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype )
 {
-    if (TOKEN::Match(tok,"if") || TOKEN::Match(tok,"for") || TOKEN::Match(tok,"while"))
+    // Keywords that are not function calls..
+    if (TOKEN::Match(tok,"if|for|while"))
+        return 0;
+
+    // String functions that are not allocating nor deallocating memory..
+    if (TOKEN::Match(tok, "strcpy|strncpy|strcat|strncat|strcmp|strncmp|strcasecmp|stricmp|sprintf|strchr|strrchr|strstr"))
+        return 0;
+
+    // Memory functions that are not allocating nor deallocating memory..
+    if (TOKEN::Match(tok, "memset|memcpy|memmove|memchr"))
+        return 0;
+
+    // I/O functions that are not allocating nor deallocating memory..
+    if (TOKEN::Match(tok, "fgets|fgetc|fputs|fputc|printf"))
+        return 0;
+
+    // Convert functions that are not allocating nor deallocating memory..
+    if (TOKEN::Match(tok, "atoi|atof|atol|strtol|strtoul|strtod"))
         return 0;
 
     if (GetAllocationType(tok)!=No || GetReallocationType(tok)!=No || GetDeallocationType(tok,varnames)!=No)
