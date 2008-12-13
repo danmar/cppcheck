@@ -95,13 +95,22 @@ private:
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
 
-    /** Simplify conditions */
+    /** Simplify conditions
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
     bool simplifyConditions();
 
-    /** Simplify casts */
+    /** Simplify casts
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
     bool simplifyCasts();
 
-    /** Simplify function calls - constant return value */
+    /** Simplify function calls - constant return value
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
     bool simplifyFunctionReturn();
 
     TOKEN *_gettok(TOKEN *tok, int index);

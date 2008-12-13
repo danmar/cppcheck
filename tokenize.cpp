@@ -1016,9 +1016,14 @@ void Tokenizer::simplifyTokenList()
     while ( ! done )
     {
         done = true;
-        done &= simplifyConditions();
-        done &= simplifyCasts();
-        done &= simplifyFunctionReturn();
+        if( simplifyConditions() )
+            done = false;
+
+        if( simplifyCasts() )
+            done = false;
+
+        if( simplifyFunctionReturn() )
+            done = false;
     }
 }
 //---------------------------------------------------------------------------
@@ -1026,7 +1031,7 @@ void Tokenizer::simplifyTokenList()
 
 bool Tokenizer::simplifyConditions()
 {
-    bool ret = true;
+    bool ret = false;
 
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
@@ -1034,14 +1039,14 @@ bool Tokenizer::simplifyConditions()
         {
             tok->deleteNext();
             tok->deleteNext();
-            ret = false;
+            ret = true;
         }
 
         else if (TOKEN::Match(tok, "( false ||") || TOKEN::Match(tok, "|| false ||") || TOKEN::Match(tok->next(), "|| false )"))
         {
             tok->deleteNext();
             tok->deleteNext();
-            ret = false;
+            ret = true;
         }
 
         // Change numeric constant in condition to "true" or "false"
@@ -1051,7 +1056,7 @@ bool Tokenizer::simplifyConditions()
             (TOKEN::Match(tok2, ")") || TOKEN::Match(tok2, "&&") || TOKEN::Match(tok2, "||")) )
         {
             tok->next()->setstr((tok->next()->str() != "0") ? "true" : "false");
-            ret = false;
+            ret = true;
         }
 
         // Reduce "(%num% == %num%)" => "(true)"/"(false)"
@@ -1086,7 +1091,7 @@ bool Tokenizer::simplifyConditions()
                 tok->deleteNext();
 
                 tok->setstr( result ? "true" : "false" );
-                ret = false;
+                ret = true;
             }
         }
     }
@@ -1097,7 +1102,7 @@ bool Tokenizer::simplifyConditions()
 
 bool Tokenizer::simplifyCasts()
 {
-    bool ret = true;
+    bool ret = false;
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
         if ( TOKEN::Match(tok->next(), "( %type% * )") )
@@ -1106,7 +1111,7 @@ bool Tokenizer::simplifyCasts()
             tok->deleteNext();
             tok->deleteNext();
             tok->deleteNext();
-            ret = false;
+            ret = true;
         }
 
         else if ( TOKEN::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast <" ) )
@@ -1127,6 +1132,8 @@ bool Tokenizer::simplifyCasts()
             }
             if (tok2->next())
                 tok2->deleteNext();
+
+            ret = true;
         }
     }
 
@@ -1137,7 +1144,7 @@ bool Tokenizer::simplifyCasts()
 
 bool Tokenizer::simplifyFunctionReturn()
 {
-    bool ret = true;
+    bool ret = false;
     int indentlevel = 0;
     for ( const TOKEN *tok = tokens(); tok; tok = tok->next() )
     {
@@ -1159,7 +1166,7 @@ bool Tokenizer::simplifyFunctionReturn()
                     tok2->setstr( tok->strAt(5) );
                     tok2->deleteNext();
                     tok2->deleteNext();
-                    ret = false;
+                    ret = true;
                 }
             }
         }
