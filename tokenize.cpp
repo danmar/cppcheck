@@ -1182,11 +1182,51 @@ bool Tokenizer::simplifyKnownVariables()
     // TODO, this functions needs to be implemented.
     // TODO, test
     bool ret = false;
-    for ( const TOKEN *tok = tokens(); tok; tok = tok->next() )
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
-        if ( TOKEN::Match(tok, "%var% = %num% ;") )
-        {
+        // Search for a block of code
+        if ( ! TOKEN::Match(tok, ") const| {") )
+            continue;
 
+        // parse the block of code..
+        int indentlevel = 0;
+        for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+        {
+            if ( tok2->str() == "{" )
+                ++indentlevel;
+
+            else if ( tok2->str() == "}" )
+            {
+                --indentlevel;
+                if ( indentlevel <= 0 )
+                    continue;
+            }
+
+            else if ( TOKEN::Match(tok2, "%var% = %num% ;") )
+            {
+                unsigned int varid = tok2->varId();
+                TOKEN *tok3 = tok2;
+                while ( tok3 )
+                {
+                    tok3 = tok3->next();
+
+                    // Perhaps it's a loop => bail out
+                    if ( TOKEN::Match(tok3, "[{}]") )
+                        break;
+
+                    // Variable is used somehow in a non-defined pattern => bail out
+                    if ( tok3->varId() == varid )
+                        break;
+
+                    // Replace variable with numeric constant..
+                    if ( TOKEN::Match(tok3, "if ( %varid% )", 0, 0, varid) )
+                    {
+                        tok3 = tok3->next()->next();
+                        tok3->setstr( tok2->strAt(2) );
+                        ret = true;
+                    }
+                }
+            }
         }
     }
 

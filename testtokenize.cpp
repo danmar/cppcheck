@@ -233,13 +233,14 @@ private:
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
 
-            tokenizer.simplifyTokenList();
+            tokenizer.setVarId();
+            tokenizer.simplifyKnownVariables();
 
             std::ostringstream ostr;
             for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
             // TODO, the actual string should be " void f ( ) { int a ; a = 10 ; if ( true ) ; }"
-            ASSERT_EQUALS( std::string(" void f ( ) { int a ; a = 10 ; if ( a ) ; }"), ostr.str() );
+            ASSERT_EQUALS( std::string(" void f ( ) { int a = 10 ; if ( 10 ) ; }"), ostr.str() );
         }
 
         {
@@ -255,12 +256,13 @@ private:
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
 
-            tokenizer.simplifyTokenList();
+            tokenizer.setVarId();
+            tokenizer.simplifyKnownVariables();
 
             std::ostringstream ostr;
             for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS( std::string(" void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) ; }"), ostr.str() );
+            ASSERT_EQUALS( std::string(" void f ( ) { int a = 10 ; a = g ( ) ; if ( a ) ; }"), ostr.str() );
         }
     }
 
