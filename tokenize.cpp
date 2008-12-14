@@ -22,6 +22,8 @@
 
 //---------------------------------------------------------------------------
 
+#include "filelister.h"
+
 #include <locale>
 #include <fstream>
 
@@ -34,7 +36,6 @@
 #include <algorithm>
 #include <stdlib.h>     // <- strtoul
 #include <stdio.h>
-#include <filelister.h>
 
 #ifdef __BORLANDC__
 #include <ctype.h>
