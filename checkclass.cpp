@@ -17,7 +17,7 @@
  */
 
 //---------------------------------------------------------------------------
-#include "CheckClass.h"
+#include "checkclass.h"
 
 #include <locale>
 

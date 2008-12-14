@@ -18,7 +18,7 @@
 
 
 //---------------------------------------------------------------------------
-#include "CheckOther.h"
+#include "checkother.h"
 
 #include <list>
 #include <map>

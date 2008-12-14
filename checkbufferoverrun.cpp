@@ -20,7 +20,7 @@
 // Buffer overrun..
 //---------------------------------------------------------------------------
 
-#include "CheckBufferOverrun.h"
+#include "checkbufferoverrun.h"
 
 #include <algorithm>
 #include <sstream>

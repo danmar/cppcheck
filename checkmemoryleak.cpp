@@ -17,7 +17,7 @@
  */
 
 
-#include "CheckMemoryLeak.h"
+#include "checkmemoryleak.h"
 
 #include <stdlib.h> // free
 

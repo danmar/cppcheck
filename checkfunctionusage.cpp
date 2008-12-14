@@ -18,7 +18,7 @@
 
 
 //---------------------------------------------------------------------------
-#include "CheckFunctionUsage.h"
+#include "checkfunctionusage.h"
 #include "tokenize.h"
 #include <sstream>
 //---------------------------------------------------------------------------

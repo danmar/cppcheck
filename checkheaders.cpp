@@ -18,7 +18,7 @@
 
 
 //---------------------------------------------------------------------------
-#include "CheckHeaders.h"
+#include "checkheaders.h"
 #include "tokenize.h"
 
 #include <algorithm>
