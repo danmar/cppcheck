@@ -1114,7 +1114,7 @@ bool Tokenizer::simplifyCasts()
             ret = true;
         }
 
-        else if ( TOKEN::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast <" ) )
+        else if ( TOKEN::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <" ) )
         {
             while ( tok->next() && tok->next()->str() != ">" )
                 tok->deleteNext();
