@@ -1,0 +1,28 @@
+
+
+Fix a TODO in the code
+
+Refactoring
+ * Rename class "TOKEN" to "Token"
+ * Split large functions into smaller functions.
+   When possible, convert unit tests for these smaller functions
+ * Use %varid% instead of %var1% or %var2% in pattern matches
+ * create a simplify function that converts "void f(x) int x; {" to "void f(int x) {"
+ * improve the variable id so class/struct member variables get a variable id
+
+Preprocessor
+ * Expand preprocessor macros
+
+CheckMemoryleak
+ * Check for more resource leaks
+   - Windows API (CreatePen, GetDC, ..)
+
+New checks
+ * Check if there are static functions or variables that are unused
+
+Unit testing
+ * There are many checks that doesn't have unit tests
+ * Fix any of the tests that are marked as TODO
+ * Add a unit test for one of the issues in the tracker
+ * Each issue that has a unit test should have a comment about it
+
