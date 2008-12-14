@@ -34,7 +34,7 @@
 #include <algorithm>
 #include <stdlib.h>     // <- strtoul
 #include <stdio.h>
-#include <FileLister.h>
+#include <filelister.h>
 
 #ifdef __BORLANDC__
 #include <ctype.h>

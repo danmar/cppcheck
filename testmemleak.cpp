@@ -21,7 +21,7 @@
 
 #define UNIT_TESTING
 #include "tokenize.h"
-#include "CheckMemoryLeak.h"
+#include "checkmemoryleak.h"
 #include "testsuite.h"
 
 #include <iostream>

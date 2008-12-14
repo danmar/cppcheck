@@ -30,50 +30,41 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="CheckBufferOverrun.cpp" />
-		<Unit filename="CheckBufferOverrun.h" />
-		<Unit filename="CheckClass.cpp" />
-		<Unit filename="CheckClass.h" />
-		<Unit filename="CheckFunctionUsage.cpp" />
-		<Unit filename="CheckFunctionUsage.h" />
-		<Unit filename="CheckHeaders.cpp" />
-		<Unit filename="CheckHeaders.h" />
-		<Unit filename="CheckMemoryLeak.cpp" />
-		<Unit filename="CheckMemoryLeak.h" />
-		<Unit filename="CheckOther.cpp" />
-		<Unit filename="CheckOther.h" />
-		<Unit filename="FileLister.cpp" />
-		<Unit filename="FileLister.h" />
+		<Unit filename="checkbufferoverrun.cpp" />
+		<Unit filename="checkbufferoverrun.h" />
+		<Unit filename="checkclass.cpp" />
+		<Unit filename="checkclass.h" />
+		<Unit filename="checkfunctionusage.cpp" />
+		<Unit filename="checkfunctionusage.h" />
+		<Unit filename="checkheaders.cpp" />
+		<Unit filename="checkheaders.h" />
+		<Unit filename="checkmemoryleak.cpp" />
+		<Unit filename="checkmemoryleak.h" />
+		<Unit filename="checkother.cpp" />
+		<Unit filename="checkother.h" />
 		<Unit filename="cppcheck.cpp" />
 		<Unit filename="cppcheck.h" />
-		<Unit filename="cppcheckexecutor.cpp">
-			<Option target="all" />
-		</Unit>
-		<Unit filename="cppcheckexecutor.h">
-			<Option target="all" />
-		</Unit>
+		<Unit filename="cppcheckexecutor.cpp" />
+		<Unit filename="cppcheckexecutor.h" />
 		<Unit filename="errorlogger.h" />
-		<Unit filename="main.cpp">
-			<Option target="all" />
-		</Unit>
+		<Unit filename="filelister.cpp" />
+		<Unit filename="filelister.h" />
+		<Unit filename="main.cpp" />
 		<Unit filename="preprocessor.cpp" />
 		<Unit filename="preprocessor.h" />
 		<Unit filename="settings.cpp" />
 		<Unit filename="settings.h" />
 		<Unit filename="testbufferoverrun.cpp" />
 		<Unit filename="testcharvar.cpp" />
-		<Unit filename="testclass.cpp">
-			<Option target="test" />
-		</Unit>
+		<Unit filename="testclass.cpp" />
 		<Unit filename="testconstructors.cpp" />
 		<Unit filename="testdivision.cpp" />
+		<Unit filename="testfilelister.cpp" />
 		<Unit filename="testfunctionusage.cpp" />
 		<Unit filename="testincompletestatement.cpp" />
 		<Unit filename="testmemleak.cpp" />
 		<Unit filename="testpreprocessor.cpp" />
-		<Unit filename="testrunner.cpp">
-			<Option target="test" />
-		</Unit>
+		<Unit filename="testrunner.cpp" />
 		<Unit filename="testsimplifytokens.cpp" />
 		<Unit filename="testsuite.cpp" />
 		<Unit filename="testsuite.h" />

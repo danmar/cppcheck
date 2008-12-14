@@ -23,7 +23,7 @@
 #define UNIT_TESTING
 #include "testsuite.h"
 #include "tokenize.h"
-#include "CheckOther.h"
+#include "checkother.h"
 
 #include <sstream>
 

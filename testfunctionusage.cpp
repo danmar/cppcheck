@@ -20,7 +20,7 @@
 #define UNIT_TESTING
 #include "tokenize.h"
 #include "testsuite.h"
-#include "CheckFunctionUsage.h"
+#include "checkfunctionusage.h"
 #include <sstream>
 
 extern std::ostringstream errout;

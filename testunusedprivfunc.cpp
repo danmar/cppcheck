@@ -19,7 +19,7 @@
 
 #define UNIT_TESTING
 #include "tokenize.h"
-#include "CheckClass.h"
+#include "checkclass.h"
 #include "testsuite.h"
 
 #include <sstream>

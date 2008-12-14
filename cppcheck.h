@@ -26,7 +26,7 @@
 #include <map>
 #include "settings.h"
 #include "errorlogger.h"
-#include "CheckFunctionUsage.h"
+#include "checkfunctionusage.h"
 
 /**
  * This is the base class which will use other classes to do

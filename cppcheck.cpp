@@ -20,13 +20,13 @@
 #include "preprocessor.h" // preprocessor.
 #include "tokenize.h"   // <- Tokenizer
 
-#include "CheckMemoryLeak.h"
-#include "CheckBufferOverrun.h"
-#include "CheckClass.h"
-#include "CheckHeaders.h"
-#include "CheckOther.h"
-#include "CheckFunctionUsage.h"
-#include "FileLister.h"
+#include "checkmemoryleak.h"
+#include "checkbufferoverrun.h"
+#include "checkclass.h"
+#include "checkheaders.h"
+#include "checkother.h"
+#include "checkfunctionusage.h"
+#include "filelister.h"
 
 #include <algorithm>
 #include <sstream>

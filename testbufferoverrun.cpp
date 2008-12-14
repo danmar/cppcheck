@@ -19,7 +19,7 @@
 
 #define UNIT_TESTING
 #include "tokenize.h"
-#include "CheckBufferOverrun.h"
+#include "checkbufferoverrun.h"
 #include "testsuite.h"
 
 #include <sstream>
