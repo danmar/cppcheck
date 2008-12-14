@@ -18,6 +18,8 @@
 
 #include "FileLister.h"
 #include <sstream>
+#include <vector>
+#include <string>
 
 #ifdef __GNUC__
 #include <glob.h>
@@ -26,6 +28,61 @@
 #if defined(__BORLANDC__) || defined(_MSC_VER)
 #include <windows.h>
 #endif
+
+std::string FileLister::simplifyPath( const char *originalPath )
+{
+    std::string subPath = "";
+    std::vector<std::string> pathParts;
+    for( ; *originalPath; ++originalPath )
+    {
+        if( *originalPath == '/' )
+        {
+            if( subPath.length() > 0 )
+            {
+                pathParts.push_back( subPath );
+                subPath = "";
+            }
+
+            pathParts.push_back( "/" );
+        }
+        else
+            subPath.append( 1, *originalPath );
+    }
+
+    if( subPath.length() > 0 )
+        pathParts.push_back( subPath );
+
+    for( std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i )
+    {
+        if( pathParts[i] == ".." && i > 1 )
+        {
+            pathParts.erase( pathParts.begin() + i );
+            pathParts.erase( pathParts.begin()+i-1 );
+            pathParts.erase( pathParts.begin()+i-2 );
+            i = 0;
+        }
+        else if( i > 0 && pathParts[i] == "." )
+        {
+            pathParts.erase( pathParts.begin()+i );
+            i = 0;
+        }
+        else if( pathParts[i] == "/" && i > 0 && pathParts[i-1] == "/" )
+        {
+            pathParts.erase( pathParts.begin()+i-1 );
+            i = 0;
+        }
+    }
+
+    std::ostringstream oss;
+    for( std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i )
+    {
+        oss << pathParts[i];
+    }
+
+    return oss.str();
+}
+
+
 
 bool FileLister::AcceptFile( const std::string &filename )
 {

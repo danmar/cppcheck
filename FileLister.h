@@ -39,7 +39,7 @@ class FileLister
 {
 public:
     static void RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive );
-
+    static std::string simplifyPath( const char *originalPath );
 private:
     static bool AcceptFile( const std::string &filename );
 };

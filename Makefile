@@ -1,6 +1,6 @@
 SRCS=CheckBufferOverrun.cpp	CheckClass.cpp	CheckHeaders.cpp	CheckMemoryLeak.cpp	CheckFunctionUsage.cpp	CheckOther.cpp	FileLister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp cppcheckexecutor.cpp
 OBJS=$(SRCS:%.cpp=%.o)
-TESTS=testbufferoverrun.o	testcharvar.o	testclass.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testsimplifytokens.o	testtokenize.o	testtoken.o	testunusedprivfunc.o	testunusedvar.o
+TESTS=testbufferoverrun.o	testcharvar.o	testclass.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testsimplifytokens.o	testtokenize.o	testtoken.o	testunusedprivfunc.o	testunusedvar.o	testfilelister.o
 BIN = ${DESTDIR}/usr/bin
 
 all:	${OBJS} main.o
@@ -63,9 +63,11 @@ testunusedprivfunc.o: testunusedprivfunc.cpp tokenize.h settings.h errorlogger.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 testunusedvar.o: testunusedvar.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h CheckOther.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testfilelister.o: testfilelister.cpp FileLister.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 token.o: token.cpp token.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
-tokenize.o: tokenize.cpp tokenize.h settings.h errorlogger.h token.h
+tokenize.o: tokenize.cpp tokenize.h settings.h errorlogger.h token.h FileLister.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 
 clean:

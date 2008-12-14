@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <stdlib.h>     // <- strtoul
 #include <stdio.h>
+#include <FileLister.h>
 
 #ifdef __BORLANDC__
 #include <ctype.h>
@@ -237,7 +238,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     }
 
     // The "_files" vector remembers what files have been tokenized..
-    _files.push_back(FileName);
+    _files.push_back( FileLister::simplifyPath( FileName ) );
 
     // Tokenize the file..
     tokenizeCode( code, (unsigned int)(_files.size() - 1) );
