@@ -204,10 +204,45 @@ void CheckOther::WarningRedundantCode()
     }
 
 
-    // TODO: Redundant condition
+
+    // Redundant condition
     // if (haystack.find(needle) != haystack.end())
     //    haystack.remove(needle);
+    redundantCondition2();
+}
+//---------------------------------------------------------------------------
 
+void CheckOther::redundantCondition2()
+{
+    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end ( ) )"
+                           "{|{|"
+                           "    %var% . remove ( %any% ) ;"
+                           "}|}|";
+    const TOKEN *tok = TOKEN::findmatch( _tokenizer->tokens(), pattern );
+    while ( tok )
+    {
+        bool b = TOKEN::Match( tok->tokAt(15), "{" );
+
+        // Get tokens for the fields %var% and %any%
+        const TOKEN *var1 = tok->tokAt(2);
+        const TOKEN *any1 = tok->tokAt(6);
+        const TOKEN *var2 = tok->tokAt(9);
+        const TOKEN *var3 = tok->tokAt(b ? 16 : 15);
+        const TOKEN *any2 = tok->tokAt(b ? 20 : 19);
+        
+        // Check if all the "%var%" fields are the same and if all the "%any%" are the same..
+        if (var1->str() == var2->str() && 
+            var2->str() == var3->str() && 
+            any1->str() == any2->str() )
+        {
+            std::ostringstream errmsg;
+            errmsg << _tokenizer->fileLine(tok) 
+                   << ": Redundant condition found. The remove function in the STL will not do anything if element doesn't exist";
+            _errorLogger->reportErr(errmsg.str());
+        }
+
+        tok = TOKEN::findmatch( tok->next(), pattern );
+    }
 }
 //---------------------------------------------------------------------------
 

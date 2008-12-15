@@ -76,8 +76,16 @@ public:
 
     /** Unused function variables */
     void functionVariableUsage();
+    
+#ifndef UNIT_TESTING
 private:
+#endif
     void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
+
+    // Redundant condition
+    // if (haystack.find(needle) != haystack.end())
+    //    haystack.remove(needle);
+    void redundantCondition2();
 
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
