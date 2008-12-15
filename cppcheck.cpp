@@ -302,10 +302,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         if (ext && strcmp(ext,".cpp")==0)
             checkOther.WarningOldStylePointerCast();
 
-        // Use standard functions instead
-        checkOther.WarningIsDigit();
-        checkOther.WarningIsAlpha();
-
         checkClass.CheckOperatorEq1();
 
         // if (a) delete a;
