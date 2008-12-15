@@ -54,8 +54,8 @@ private:
 
     void run()
     {
-        // TODO TEST_CASE( remove1 );
-        // TODO TEST_CASE( remove2 );
+        TEST_CASE( remove1 );
+        TEST_CASE( remove2 );
     }
 
     void remove1()
@@ -65,7 +65,7 @@ private:
                "    if (haystack.find(needle) != haystack.end())\n"
                "        haystack.remove(needle);"
                "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant condition.\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant condition found. The remove function in the STL will not do anything if element doesn't exist\n"), errout.str() );
     }
 
     void remove2()
@@ -77,7 +77,7 @@ private:
                "        haystack.remove(needle);\n"
                "    }\n"
                "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant condition.\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant condition found. The remove function in the STL will not do anything if element doesn't exist\n"), errout.str() );
     }
 
 };

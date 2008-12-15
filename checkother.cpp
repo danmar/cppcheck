@@ -214,9 +214,9 @@ void CheckOther::WarningRedundantCode()
 
 void CheckOther::redundantCondition2()
 {
-    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end ( ) )"
+    const char pattern[] = "if ( %var% . find ( %any% ) != %var% . end ( ) ) "
                            "{|{|"
-                           "    %var% . remove ( %any% ) ;"
+                           "    %var% . remove ( %any% ) ; "
                            "}|}|";
     const TOKEN *tok = TOKEN::findmatch( _tokenizer->tokens(), pattern );
     while ( tok )
