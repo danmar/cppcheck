@@ -366,10 +366,12 @@ void TOKEN::previous( TOKEN *previous )
     _previous = previous;
 }
 
-void TOKEN::insertToken( const char *str )
+void TOKEN::insertToken( const char str[] )
 {
     TOKEN *newToken = new TOKEN;
     newToken->setstr( str );
+    newToken->_linenr = _linenr;
+    newToken->_fileIndex = _fileIndex;
     if( this->next() )
     {
         newToken->next( this->next() );

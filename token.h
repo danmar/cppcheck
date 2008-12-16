@@ -141,7 +141,7 @@ public:
      * relations between next and previous token also.
      * @param str String for the new token.
      */
-    void insertToken( const char *str );
+    void insertToken( const char str[] );
 
     TOKEN *previous() const;
 
