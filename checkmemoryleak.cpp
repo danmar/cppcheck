@@ -78,6 +78,8 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType( const T
     }
     if ( ! tok2 )
         return No;
+    if ( ! tok2->isName() )
+        return No;
 
     // Does tok2 point on "malloc", "strdup" or "kmalloc"..
     const char *mallocfunc[] = {"malloc",
@@ -435,7 +437,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
                     }
                 }
 
-                addtoken( rhs ? "use" : "assign" );
+                addtoken( (rhs ? "use" : "assign") );
             }
         }
 
@@ -648,6 +650,19 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             if ( TOKEN::Match(tok2->next(), "if ; else ;") )
             {
                 erase( tok2, tok2->tokAt(4) );
+                done = false;
+            }
+
+            // Reduce "; if(!var) alloc ; !!else" => "; dealloc ; alloc ;"
+            if ( TOKEN::Match(tok2, "; if(!var) alloc ; !!else") )
+            {
+                // Remove the "if(!var)"
+                erase( tok2, tok2->tokAt(2) );
+
+                // Insert "dealloc ;" before the "alloc ;"
+                tok2->insertToken( ";" );
+                tok2->insertToken( "dealloc" );
+
                 done = false;
             }
 

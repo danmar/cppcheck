@@ -86,6 +86,7 @@ private:
         TEST_CASE( if3 );
         TEST_CASE( if4 );
         TEST_CASE( if5 );
+        TEST_CASE( if6 );   // Bug 2432631
 
         TEST_CASE( alwaysTrue );
 
@@ -467,8 +468,23 @@ private:
                "        return;\n"
                "    free(p);\n"
                "}\n" );
-        std::string err( errout.str() );
-        ASSERT_EQUALS( std::string(""), err );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void if6()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    FILE *a = 0;\n"
+               "    a = fopen(\"test.txt\", \"rw\");\n"
+               "    if( a == 0 )\n"
+               "    {\n"
+               "        a = fopen(\"test.txt\", \"r\");\n"
+               "    }\n"
+               "\n"
+               "    fclose( a );\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
