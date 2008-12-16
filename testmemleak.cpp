@@ -97,7 +97,7 @@ private:
         TEST_CASE( forwhile5 );
         TEST_CASE( forwhile6 );
         TEST_CASE( forwhile7 );
-        // TODO TEST_CASE( forwhile8 );     // Bug 2429936
+        TEST_CASE( forwhile8 );     // Bug 2429936
 
         TEST_CASE( dowhile1 );
 

@@ -787,6 +787,17 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
+            // Reduce "loop { assign|dealloc|use ; alloc ; if break ; }" to "assign|dealloc|use ; alloc ;"
+            if ( TOKEN::Match( tok2->next(), "loop { assign|dealloc|use ; alloc ; if break|continue ; }" ) )
+            {
+                // erase "loop {"
+                erase( tok2, tok2->tokAt(3) );
+                // erase "if break|continue ; }"
+                tok2 = tok2->next()->next()->next()->next();
+                erase( tok2, tok2->tokAt(5) );
+                done = false;
+            }
+
             // Reduce "if(true) X ;" => "X ;"
             if (TOKEN::Match(tok2->next(), "if(true) %var% ; !!else") )
             {
