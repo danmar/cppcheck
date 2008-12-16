@@ -140,6 +140,9 @@ private:
 		TEST_CASE( cast1 );
 		TEST_CASE( cast2 );
 		TEST_CASE( cast3 );
+
+
+        // TODO TEST_CASE( structmember1 );
     }
 
 
@@ -1162,6 +1165,23 @@ private:
 
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
+
+
+
+
+
+    void structmember1()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    struct ABC *abc = new ABC;\n"
+               "    abc->a = new char[100];\n"
+               "    delete abc;\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: abc.a\n"), errout.str() );
+    }
+
 };
 
 REGISTER_TEST( TestMemleak )
