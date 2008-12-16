@@ -97,6 +97,7 @@ private:
         TEST_CASE( forwhile5 );
         TEST_CASE( forwhile6 );
         TEST_CASE( forwhile7 );
+        // TODO TEST_CASE( forwhile8 );     // Bug 2429936
 
         TEST_CASE( dowhile1 );
 
@@ -622,6 +623,28 @@ private:
     }
 
 
+    void forwhile8()
+    {
+        check("char *f()\n"
+              "{\n"
+              "    char *a = 0;\n"
+              "    int i = 0;\n"
+              "    for( ;; )\n"
+              "    {\n"
+              "    i++;\n"
+              "    a = realloc( a, i );\n"
+              "    if( !a )\n"
+              "        return 0;\n"
+              "\n"
+              "    if( i > 10 )\n"
+              "        break;\n"
+              "    }\n"
+              "\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
 
 
 
@@ -638,8 +661,7 @@ private:
                "    while (!str);\n"
                "    return str;\n"
                "}\n" );
-        std::string err( errout.str() );
-        ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: str\n"), err );
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: str\n"), errout.str() );
     }
 
 
