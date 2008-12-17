@@ -74,6 +74,8 @@ void TOKEN::deleteNext()
     TOKEN *n = _next;
     _next = n->next();
     delete n;
+    if (_next)
+        _next->previous(this);
 }
 
 const TOKEN *TOKEN::tokAt(int index) const
@@ -389,17 +391,8 @@ void TOKEN::eraseTokens( TOKEN *begin, const TOKEN *end )
 
     while ( begin->next() && begin->next() != end )
     {
-        begin->eraseToken();
+        begin->deleteNext();
     }
-}
-
-void TOKEN::eraseToken()
-{
-    TOKEN *next = this->next();
-    this->next( next->next() );
-	if ( next->next() )
-		next->next()->previous( this );
-    delete next;
 }
 
 unsigned int TOKEN::fileIndex() const

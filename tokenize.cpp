@@ -584,7 +584,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
                 bool last = TOKEN::Match( tok->next(), "}" );
 
                 // Unlink and delete tok->next()
-                tok->eraseToken();
+                tok->deleteNext();
 
                 // break if this was the last token to delete..
                 if (last)

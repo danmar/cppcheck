@@ -134,8 +134,6 @@ public:
      */
     static void eraseTokens( TOKEN *begin, const TOKEN *end );
 
-    void eraseToken();
-
     /**
      * Insert new token after this token. This function will handle
      * relations between next and previous token also.
