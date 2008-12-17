@@ -39,6 +39,7 @@ private:
         TEST_CASE( virtualDestructor1 );	// Base class not found => no error
         TEST_CASE( virtualDestructor2 );    // Base class doesn't have a destructor
         TEST_CASE( virtualDestructor3 );	// Base class has a destructor, but it's not virtual
+        TEST_CASE( virtualDestructor4 );	// Derived class doesn't have a destructor => no error
     }
 
     // Check that base classes have virtual destructors
@@ -76,11 +77,11 @@ private:
 		// Base class doesn't have a destructor
 
         checkVirtualDestructor("class Base { };\n"
-                               "class Derived : public Base { };");
+                               "class Derived : public Base { public: ~Derived() { (void)11; } };");
         ASSERT_EQUALS( std::string("[test.cpp:1]: Base class Base doesn't have a virtual destructor\n"), errout.str() );
 
         checkVirtualDestructor("class Base { };\n"
-                               "class Derived : Base { };");
+                               "class Derived : Base { public: ~Derived() { (void)11; } };");
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
@@ -89,12 +90,25 @@ private:
 		// Base class has a destructor, but it's not virtual
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : public Base { };");
+                               "class Derived : public Base { public: ~Derived() { (void)11; } };");
         ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
-                               "class Derived : private Fred, public Base { };");
+                               "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };");
         ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
+    }
+
+    void virtualDestructor4()
+    {
+		// Derived class doesn't have a destructor => no error
+
+        checkVirtualDestructor("class Base { public: ~Base(); };\n"
+                               "class Derived : public Base { };");
+        ASSERT_EQUALS( std::string(""), errout.str() );
+
+        checkVirtualDestructor("class Base { public: ~Base(); };\n"
+                               "class Derived : private Fred, public Base { };");
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 };
 

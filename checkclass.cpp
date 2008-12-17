@@ -689,6 +689,27 @@ void CheckClass::virtualDestructor()
     const TOKEN *derived = _tokenizer->tokens();
     while ((derived = TOKEN::findmatch(derived, pattern_classdecl)) != NULL)
     {
+        // Check that the derived class has a non empty destructor..
+        {
+            std::ostringstream destructorPattern;
+            destructorPattern << "~ " << derived->strAt(1) << " ( ) {";
+            const TOKEN *derived_destructor = TOKEN::findmatch( _tokenizer->tokens(), destructorPattern.str().c_str() );
+
+            // No destructor..
+            if ( ! derived_destructor )
+            {
+                derived = derived->next();
+                continue;
+            }
+            
+            // Empty destructor..
+            if ( TOKEN::Match(derived_destructor, "~ %var% ( ) { }") )
+            {
+                derived = derived->next();
+                continue;
+            }
+        }
+    
         // Iterate through each base class...
         derived = derived->tokAt(3);
         while ( TOKEN::Match(derived, "%var%") )
