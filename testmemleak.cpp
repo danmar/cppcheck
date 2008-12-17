@@ -67,6 +67,7 @@ private:
         TEST_CASE( simple6 );
         TEST_CASE( simple7 );
         TEST_CASE( simple8 );
+        TEST_CASE( simple9 );   // Bug 2435468 - member function "free"
 
         TEST_CASE( use1 );
         TEST_CASE( use2 );
@@ -87,6 +88,7 @@ private:
         TEST_CASE( if4 );
         TEST_CASE( if5 );
         TEST_CASE( if6 );   // Bug 2432631
+        TEST_CASE( if7 );   // Bug 2401436
 
         TEST_CASE( alwaysTrue );
 
@@ -237,6 +239,20 @@ private:
     }
 
 
+    void simple9()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    MyClass *c = new MyClass();\n"
+               "    c->free(c);\n"
+               "    delete c;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
+
+
 
 
 
@@ -312,6 +328,17 @@ private:
                "        return;\n"
                "    }\n"
                "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+
+        check( "void f()\n"
+               "{\n"
+               "    char *str = strdup(\"hello\");\n"
+               "    if (a==b)\n"
+               "    {\n"
+               "        free(str);\n"
+               "        return;\n"
+               "    }\n"
+               "}\n", true );
         ASSERT_EQUALS( std::string("[test.cpp:9]: Memory leak: str\n"), errout.str() );
     }
 
@@ -487,6 +514,23 @@ private:
                "    }\n"
                "\n"
                "    fclose( a );\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void if7()
+    {
+        check( "void f( bool b )\n"
+               "{\n"
+               "    int *a=0;\n"
+               "    if( b )\n"
+               "    {\n"
+               "        a = new int[10];\n"
+               "    }\n"
+               "\n"
+               "    if( b )\n"
+               "        delete [] a;\n"
+               "    else {}\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }

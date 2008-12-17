@@ -357,7 +357,6 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
     // The first token should be ";"
     addtoken(";");
 
-
     bool isloop = false;
 
     int indentlevel = 0;
@@ -441,15 +440,19 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             }
         }
 
-        AllocType dealloc = GetDeallocationType(tok, varnames);
-        if ( dealloc != No )
+        if ( TOKEN::Match(tok->previous(), "[;{})] %var%") )
         {
-            addtoken("dealloc");
-            if (alloctype!=No && alloctype!=dealloc)
-                MismatchError(tok, callstack, varname);
-            if (dealloctype!=No && dealloctype!=dealloc)
-                MismatchError(tok, callstack, varname);
-            dealloctype = dealloc;
+            AllocType dealloc = GetDeallocationType(tok, varnames);
+            if ( dealloc != No )
+            {
+                addtoken("dealloc");
+                if (alloctype!=No && alloctype!=dealloc)
+                    MismatchError(tok, callstack, varname);
+                if (dealloctype!=No && dealloctype!=dealloc)
+                    MismatchError(tok, callstack, varname);
+                dealloctype = dealloc;
+                continue;
+            }
         }
 
         // if else switch
@@ -675,9 +678,9 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
 
-            // Reduce "if dealloc ;" and "if use ;" that is not followed by an else..
+            // Reduce "if assign|dealloc|use ;" that is not followed by an else..
             // If "--all" has been given these are deleted
-            // Otherwise, ony the "if" will be deleted
+            // Otherwise, only the "if" will be deleted
             if (TOKEN::Match(tok2, "[;{}] if assign|dealloc|use ; !!else") )
             {
                 if ( _settings._showAll )
@@ -746,15 +749,18 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Reducing if..
-            if (TOKEN::Match(tok2,"if assign|dealloc|use ; else"))
+            if ( _settings._showAll )
             {
-                erase(tok2, tok2->tokAt(2));
-                done = false;
-            }
-            if (TOKEN::Match(tok2,"[;{}] if { assign|dealloc|use ; return ; } !!else") )
-            {
-                erase(tok2,tok2->tokAt(8));
-                done = false;
+                if (TOKEN::Match(tok2,"if assign|dealloc|use ; else"))
+                {
+                    erase(tok2, tok2->tokAt(2));
+                    done = false;
+                }
+                if (TOKEN::Match(tok2,"[;{}] if { assign|dealloc|use ; return ; } !!else") )
+                {
+                    erase(tok2,tok2->tokAt(8));
+                    done = false;
+                }
             }
 
             // Reduce "if ; else %var% ;" => "if %var% ;"
@@ -1016,7 +1022,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
     AllocType dealloctype = No;
 
     TOKEN *tok = getcode( Tok1, callstack, varname, alloctype, dealloctype );
+    //tok->printOut( "getcode result" );
+
     simplifycode( tok );
+    //tok->printOut( "simplifycode result" );
 
     // If the variable is not allocated at all => no memory leak
     if (TOKEN::findmatch(tok, "alloc") == 0)
@@ -1040,7 +1049,6 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
 
     else if ( (result = TOKEN::findmatch(tok, "alloc ; if break|continue|return ;")) != NULL )
     {
-        // MemoryLeak(Tokenizer::gettok(TOKEN::findmatch(tok, "alloc ; if continue ;"), 3), varname);
         MemoryLeak(result->tokAt(3), varname, alloctype);
     }
 
