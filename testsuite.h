@@ -32,9 +32,9 @@ private:
 
 protected:
     std::string classname;
+    std::string testToRun;
 
-    virtual void run()
-    { }
+    virtual void run() = 0;
 
     bool runTest(const char testname[]);
     void assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
@@ -44,6 +44,8 @@ public:
     virtual void reportErr( const std::string &errmsg);
 
     virtual void reportOut( const std::string &outmsg);
+
+    void run(const std::string &str);
 
     TestFixture(const std::string &_name);
     virtual ~TestFixture() { }

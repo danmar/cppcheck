@@ -72,9 +72,13 @@ TestFixture::TestFixture(const std::string &_name) : classname(_name)
 
 bool TestFixture::runTest(const char testname[])
 {
-    countTests++;
-    std::cout << classname << "::" << testname << "\n";
-    return true;
+    if ( testToRun.empty() || testToRun == testname )
+    {
+        countTests++;
+        std::cout << classname << "::" << testname << "\n";
+        return true;
+    }
+    return false;
 }
 
 static std::string writestr( const std::string &str )
@@ -128,6 +132,12 @@ void TestFixture::printTests()
     }
 }
 
+void TestFixture::run(const std::string &str)
+{ 
+    testToRun = str; 
+    run(); 
+}
+
 void TestFixture::runTests(const char cmd[])
 {
     std::string classname(cmd ? cmd : "");
@@ -146,7 +156,9 @@ void TestFixture::runTests(const char cmd[])
     for ( std::list<TestFixture *>::const_iterator it = tests.begin(); it != tests.end(); ++it )
     {
         if ( classname.empty() || (*it)->classname == classname )
-            (*it)->run();
+        {
+            (*it)->run(testname);
+        }
     }
 
     std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << "\n";
