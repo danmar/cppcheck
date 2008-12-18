@@ -763,6 +763,14 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 }
             }
 
+            // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
+            if ( ! _settings._showAll && TOKEN::Match(tok2, "dealloc ; alloc ; if break|continue ;") )
+            {
+                tok2 = tok2->next()->next()->next();
+                erase(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
             // Reduce "if ; else %var% ;" => "if %var% ;"
             if ( TOKEN::Match(tok2, "if ; else %var% ;") )
             {
