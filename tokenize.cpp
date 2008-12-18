@@ -1013,19 +1013,14 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
-
-    bool done = false;
-    while ( ! done )
+    bool modified = true;
+    while ( modified )
     {
-        done = true;
-        if( simplifyConditions() )
-            done = false;
-
-        if( simplifyCasts() )
-            done = false;
-
-        if( simplifyFunctionReturn() )
-            done = false;
+        modified = false;
+        modified |= simplifyConditions();
+        modified |= simplifyCasts();
+        modified |= simplifyFunctionReturn();
+        modified |= simplifyKnownVariables();
     }
 }
 //---------------------------------------------------------------------------
@@ -1179,10 +1174,6 @@ bool Tokenizer::simplifyFunctionReturn()
 
 bool Tokenizer::simplifyKnownVariables()
 {
-    // TODO, this function should be called from simplifyTokenList()
-    // after the implementation is done.
-    // TODO, this functions needs to be implemented.
-    // TODO, test
     bool ret = false;
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
