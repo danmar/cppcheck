@@ -55,6 +55,7 @@ void TOKEN::setstr( const char s[] )
 #endif
     _isName = bool(_str[0]=='_' || isalpha(_str[0]));
     _isNumber = bool(isdigit(_str[0]) != 0);
+    _varId = 0;
 }
 
 void TOKEN::combineWithNext(const char str1[], const char str2[])
