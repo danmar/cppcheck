@@ -57,6 +57,7 @@ private:
         TEST_CASE( match2 );
 
         TEST_CASE( varid1 );
+        TEST_CASE( varid2 );
     }
 
 
@@ -472,6 +473,32 @@ private:
                 ASSERT_EQUALS( 3, tok->varId() );
             else if ( TOKEN::Match(tok, "i = 4") )
                 ASSERT_EQUALS( 2, tok->varId() );
+        }
+    }
+
+    void varid2()
+    {
+        const std::string code("void f()\n"
+                               "{\n"
+                               "    struct ABC abc;\n"
+                               "    abc.a = 3;\n"
+                               "    i = abc.a;\n"
+                               "}\n" );
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
+        {
+            if ( tok->str() == "abc" )
+                ASSERT_EQUALS( 1, tok->varId() );
+            else if ( tok->str() == "a" )
+                ASSERT_EQUALS( 2, tok->varId() );
+            else
+                ASSERT_EQUALS( 0, tok->varId() );
         }
     }
 };

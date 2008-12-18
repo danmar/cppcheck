@@ -660,6 +660,23 @@ void Tokenizer::setVarId()
             }
         }
     }
+    
+    // Struct/Class members
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    {
+        if ( TOKEN::Match(tok, "%var% . %var%") &&
+             tok->varId() != 0 &&
+             tok->tokAt(2)->varId() == 0 )
+        {
+            ++_varId;
+            const std::string pattern(std::string("%varid% . ") + tok->strAt(2));
+            for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+            {
+                if ( TOKEN::Match(tok2, pattern.c_str(), 0, 0, tok->varId()) )
+                    tok2->next()->next()->varId( _varId );
+            }
+        }
+    }
 }
 
 
