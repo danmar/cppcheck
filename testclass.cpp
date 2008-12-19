@@ -40,6 +40,7 @@ private:
         TEST_CASE( virtualDestructor2 );    // Base class doesn't have a destructor
         TEST_CASE( virtualDestructor3 );	// Base class has a destructor, but it's not virtual
         TEST_CASE( virtualDestructor4 );	// Derived class doesn't have a destructor => no error
+        TEST_CASE( virtualDestructor5 );	// Derived class has empty destructor => no error
     }
 
     // Check that base classes have virtual destructors
@@ -108,6 +109,19 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };");
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void virtualDestructor5()
+    {
+		// Derived class has empty destructor => no error
+
+        checkVirtualDestructor("class Base { public: ~Base(); };\n"
+                               "class Derived : public Base { public: ~Derived() {} };");
+        ASSERT_EQUALS( std::string(""), errout.str() );
+
+        checkVirtualDestructor("class Base { public: ~Base(); };\n"
+                               "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}");
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 };
