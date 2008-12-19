@@ -78,7 +78,7 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
             _settings._showAll = true;
 
         // Only print something when there are errors
-        else if (strcmp(argv[i],"--errorsonly")==0)
+        else if (strcmp(argv[i],"--quiet")==0)
             _settings._errorsOnly = true;
 
         // Checking coding style
@@ -113,7 +113,7 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
                  "C/C++ code checking\n"
                  "\n"
                  "Syntax:\n"
-                 "    cppcheck [--all] [--errorsonly] [--style] [--verbose] [path1] [path2]\n"
+                 "    cppcheck [--all] [--quiet] [--style] [--verbose] [file or path1] [file or path]\n"
                  "\n"
                  "If path is given instead of filename, *.cpp, *.cxx, *.cc and *.c files are \n"
                  "checked recursively from given directory.\n\n"
@@ -126,7 +126,7 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
                  "\n"
                  "Example usage:\n"
                  "  # Recursively check ../myproject/ and print only most fatal errors:\n"
-                 "    cppcheck --errorsonly ../myproject/\n"
+                 "    cppcheck --quiet ../myproject/\n"
                  "  # Check only files one.cpp and two.cpp and give all information there is:\n"
                  "    cppcheck --verbose --all --style one.cpp two.cpp\n";
         return oss.str();
