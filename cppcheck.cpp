@@ -97,29 +97,12 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
             pathnames.push_back( argv[i] );
     }
 
-    // --recursive was used
-    if ( Recursive )
+    if( pathnames.size() > 0 )
     {
-        if( pathnames.size() == 0 )
-        {
-            // Handle situation: cppcheck --recursive
-            FileLister::RecursiveAddFiles( _filenames, "", true );
-        }
-        else
-        {
-            // Handle situation: cppcheck --recursive path1 path2
-
-            // Execute RecursiveAddFiles() to each given file parameter
-            std::vector<std::string>::const_iterator iter;
-            for(iter=pathnames.begin(); iter!=pathnames.end(); iter++)
-                FileLister::RecursiveAddFiles( _filenames, iter->c_str(), true );
-        }
-    }
-    else
-    {
+        // Execute RecursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for(iter=pathnames.begin(); iter!=pathnames.end(); iter++)
-            FileLister::RecursiveAddFiles( _filenames, iter->c_str(), false );
+            FileLister::RecursiveAddFiles( _filenames, iter->c_str(), true );
     }
 
     if (_filenames.empty())
@@ -130,15 +113,22 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
                  "C/C++ code checking\n"
                  "\n"
                  "Syntax:\n"
-                 "    cppcheck [--all] [--errorsonly] [--recursive] [--style] [--verbose] [filename1] [filename2]\n"
+                 "    cppcheck [--all] [--errorsonly] [--style] [--verbose] [path1] [path2]\n"
                  "\n"
+                 "If path is given instead of filename, *.cpp, *.cxx, *.cc and *.c files are \n"
+                 "checked recursively from given directory.\n\n"
                  "Options:\n"
                  "    --all           Make the checking more sensitive. More bugs are detected,\n"
                  "                    but there are also more false positives\n"
                  "    --errorsonly    Only print error messages\n"
-                 "    --recursive     Recursively check all *.cpp, *.cxx, *.cc and *.c files\n"
                  "    --style         Check coding style\n"
-                 "    --verbose       More detailed error reports\n";
+                 "    --verbose       More detailed error reports\n"
+                 "\n"
+                 "Example usage:\n"
+                 "  # Recursively check ../myproject/ and print only most fatal errors:\n"
+                 "    cppcheck --errorsonly ../myproject/\n"
+                 "  # Check only files one.cpp and two.cpp and give all information there is:\n"
+                 "    cppcheck --verbose --all --style one.cpp two.cpp\n";
         return oss.str();
     }
 
