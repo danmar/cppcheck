@@ -1,6 +1,6 @@
 /*
- * c++check - c/c++ syntax checking
- * Copyright (C) 2007 Daniel Marjamäki
+ * cppcheck - c/c++ syntax checking
+ * Copyright (C) 2007-2008 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ public:
 
     /** Unused function variables */
     void functionVariableUsage();
-    
+
 #ifndef UNIT_TESTING
 private:
 #endif

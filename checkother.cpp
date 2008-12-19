@@ -1,6 +1,6 @@
 /*
- * c++check - c/c++ syntax checking
- * Copyright (C) 2007 Daniel Marjamäki
+ * cppcheck - c/c++ syntax checking
+ * Copyright (C) 2007-2008 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -146,14 +146,14 @@ void CheckOther::redundantCondition2()
         const TOKEN *var2 = tok->tokAt(9);
         const TOKEN *var3 = tok->tokAt(b ? 16 : 15);
         const TOKEN *any2 = tok->tokAt(b ? 20 : 19);
-        
+
         // Check if all the "%var%" fields are the same and if all the "%any%" are the same..
-        if (var1->str() == var2->str() && 
-            var2->str() == var3->str() && 
+        if (var1->str() == var2->str() &&
+            var2->str() == var3->str() &&
             any1->str() == any2->str() )
         {
             std::ostringstream errmsg;
-            errmsg << _tokenizer->fileLine(tok) 
+            errmsg << _tokenizer->fileLine(tok)
                    << ": Redundant condition found. The remove function in the STL will not do anything if element doesn't exist";
             _errorLogger->reportErr(errmsg.str());
         }

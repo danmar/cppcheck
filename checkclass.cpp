@@ -1,6 +1,6 @@
 /*
- * c++check - c/c++ syntax checking
- * Copyright (C) 2007 Daniel Marjamäki
+ * cppcheck - c/c++ syntax checking
+ * Copyright (C) 2007-2008 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -701,7 +701,7 @@ void CheckClass::virtualDestructor()
                 derived = derived->next();
                 continue;
             }
-            
+
             // Empty destructor..
             if ( TOKEN::Match(derived_destructor, "~ %var% ( ) { }") )
             {
@@ -709,7 +709,7 @@ void CheckClass::virtualDestructor()
                 continue;
             }
         }
-    
+
         // Iterate through each base class...
         derived = derived->tokAt(3);
         while ( TOKEN::Match(derived, "%var%") )
