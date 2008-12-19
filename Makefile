@@ -1,6 +1,6 @@
 SRCS=checkbufferoverrun.cpp	checkclass.cpp	checkheaders.cpp	checkmemoryleak.cpp	checkfunctionusage.cpp	checkother.cpp	filelister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp cppcheckexecutor.cpp
 OBJS=$(SRCS:%.cpp=%.o)
-TESTS=testbufferoverrun.o	testcharvar.o	testclass.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testmemleak.o	testpreprocessor.o	testredundantif.o	testsimplifytokens.o	testtokenize.o	testtoken.o	testunusedprivfunc.o	testunusedvar.o	testfilelister.o
+TESTS=testbufferoverrun.o	testcharvar.o	testclass.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testother.o	testmemleak.o	testpreprocessor.o	testredundantif.o	testsimplifytokens.o	testtokenize.o	testtoken.o	testunusedprivfunc.o	testunusedvar.o	testfilelister.o
 BIN = ${DESTDIR}/usr/bin
 
 all:	${OBJS} main.o
@@ -44,6 +44,8 @@ testdivision.o: testdivision.cpp tokenize.h settings.h errorlogger.h token.h che
 testfunctionusage.o: testfunctionusage.cpp tokenize.h settings.h errorlogger.h token.h testsuite.h checkfunctionusage.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 testincompletestatement.o: testincompletestatement.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h checkother.h
+	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
+testother.o: testother.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h checkother.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
 testmemleak.o: testmemleak.cpp tokenize.h settings.h errorlogger.h token.h checkmemoryleak.h testsuite.h
 	g++ -Wall -pedantic -g -I. -o $@ -c $*.cpp
