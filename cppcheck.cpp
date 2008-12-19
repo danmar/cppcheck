@@ -65,7 +65,6 @@ void CppCheck::addFile( const std::string &path, const std::string &content )
 std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
 {
     std::vector<std::string> pathnames;
-    bool Recursive = false;
 
     for (int i = 1; i < argc; i++)
     {
@@ -74,23 +73,19 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
             _settings._debug = true;
 
         // Show all messages
-        else if (strcmp(argv[i],"--all") == 0)
+        else if (strcmp(argv[i],"-a") == 0 || strcmp(argv[i],"--all") == 0)
             _settings._showAll = true;
 
         // Only print something when there are errors
-        else if (strcmp(argv[i],"--quiet")==0)
+        else if (strcmp(argv[i],"-q")==0 || strcmp(argv[i],"--quiet")==0)
             _settings._errorsOnly = true;
 
         // Checking coding style
-        else if (strcmp(argv[i],"--style")==0)
+        else if (strcmp(argv[i],"-s")==0 || strcmp(argv[i],"--style")==0)
             _settings._checkCodingStyle = true;
 
-        // Recursively check source files
-        else if (strcmp(argv[i],"--recursive")==0)
-            Recursive = true;
-
         // Verbose error messages (configuration info)
-        else if (strcmp(argv[i],"--verbose")==0)
+        else if (strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--verbose")==0)
             _settings._verbose = true;
 
         else
@@ -118,17 +113,17 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
                  "If path is given instead of filename, *.cpp, *.cxx, *.cc and *.c files are \n"
                  "checked recursively from given directory.\n\n"
                  "Options:\n"
-                 "    --all           Make the checking more sensitive. More bugs are detected,\n"
-                 "                    but there are also more false positives\n"
-                 "    --errorsonly    Only print error messages\n"
-                 "    --style         Check coding style\n"
-                 "    --verbose       More detailed error reports\n"
+                 "    -a, --all        Make the checking more sensitive. More bugs are detected,\n"
+                 "                     but there are also more false positives\n"
+                 "    -q, --quiet      Only print error messages\n"
+                 "    -s, --style      Check coding style\n"
+                 "    -v, --verbose    More detailed error reports\n"
                  "\n"
                  "Example usage:\n"
                  "  # Recursively check ../myproject/ and print only most fatal errors:\n"
                  "    cppcheck --quiet ../myproject/\n"
                  "  # Check only files one.cpp and two.cpp and give all information there is:\n"
-                 "    cppcheck --verbose --all --style one.cpp two.cpp\n";
+                 "    cppcheck -v -a -s one.cpp two.cpp\n";
         return oss.str();
     }
 
