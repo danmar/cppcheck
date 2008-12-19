@@ -166,27 +166,27 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\CheckBufferOverrun.h"
+				RelativePath=".\checkbufferoverrun.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckClass.h"
+				RelativePath=".\checkclass.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckFunctionUsage.h"
+				RelativePath=".\checkfunctionusage.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckHeaders.h"
+				RelativePath=".\checkheaders.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckMemoryLeak.h"
+				RelativePath=".\checkmemoryleak.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckOther.h"
+				RelativePath=".\checkother.h"
 				>
 			</File>
 			<File
@@ -194,7 +194,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FileLister.h"
+				RelativePath=".\cppcheckexecutor.h"
+				>
+			</File>
+			<File
+				RelativePath=".\errorlogger.h"
+				>
+			</File>
+			<File
+				RelativePath=".\filelister.h"
 				>
 			</File>
 			<File
@@ -226,27 +234,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\CheckBufferOverrun.cpp"
+				RelativePath=".\checkbufferoverrun.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckClass.cpp"
+				RelativePath=".\checkclass.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckFunctionUsage.cpp"
+				RelativePath=".\checkfunctionusage.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckHeaders.cpp"
+				RelativePath=".\checkheaders.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckMemoryLeak.cpp"
+				RelativePath=".\checkmemoryleak.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckOther.cpp"
+				RelativePath=".\checkother.cpp"
 				>
 			</File>
 			<File
@@ -254,7 +262,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\FileLister.cpp"
+				RelativePath=".\cppcheckexecutor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\filelister.cpp"
 				>
 			</File>
 			<File
