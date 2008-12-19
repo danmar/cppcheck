@@ -102,22 +102,10 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <group choise="opt">
-        <arg choice="opt"><option>-a</option></arg>
-        <arg choice="opt"><option>--all</option></arg>
-      </group>
-      <group choise="opt">
-        <arg choice="opt"><option>-q</option></arg>
-        <arg choice="opt"><option>--quiet</option></arg>
-      </group>
-      <group choise="opt">
-        <arg choice="opt"><option>-s</option></arg>
-        <arg choice="opt"><option>--style</option></arg>
-      </group>
-      <group choise="opt">
-        <arg choice="opt"><option>-v</option></arg>
-        <arg choice="opt"><option>--verbose</option></arg>
-      </group>
+      <arg choice="opt"><option>--all</option></arg>
+      <arg choice="opt"><option>--quiet</option></arg>
+      <arg choice="opt"><option>--style</option></arg>
+      <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>file or path</option></arg>
       <arg choice="plain"><option>...</option></arg>
     </cmdsynopsis>
@@ -137,6 +125,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
            variablelist.term.break.after parameters to
            control the term elements. -->
       <varlistentry>
+        <term><option>-a</option></term>
         <term><option>--all</option></term>
         <listitem>
           <para>Normally a message is only shown if cppcheck is sure it has 
@@ -144,18 +133,21 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>-q</option></term>
         <term><option>--quiet</option></term>
         <listitem>
           <para>Only print something when there is an error.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>-s</option></term>
         <term><option>--style</option></term>
         <listitem>
           <para>Check coding style.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>-v</option></term>
         <term><option>--verbose</option></term>
         <listitem>
           <para>More detailed error reports</para>
