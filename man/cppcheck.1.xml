@@ -165,7 +165,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   </refsect1>
   <refsect1 id="author">
     <title>AUTHOR</title>
-    <para>The program was written by Daniel Marjamäki</para>
+    <para>The program was written by Daniel Marjamäki, Reijo Tomperi and Nicolas Le Cam</para>
   </refsect1>
   <refsect1 id="see_also">
     <title>SEE ALSO</title>
