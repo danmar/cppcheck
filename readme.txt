@@ -1,7 +1,7 @@
 
 
 =========
-C++ check
+Cppcheck
 =========
 
 
@@ -22,12 +22,12 @@ Compiling
 Usage
 
   The syntax is:
-      cppcheck [--all] [--errorsonly] [--style] [--recursive] [filename1] [filename2]
+      cppcheck [--all] [--quiet] [--style] [file or path] [file or path]
 
   The error messages will be printed to stderr.
 
   Example (Check all files. Use all checks):
-      cppcheck --style --all --recursive
+      cppcheck --style --all ./
 
   To output error messages to a file use this syntax (works both on Windows and Linux):
       cppcheck file.cpp 2> err.txt
