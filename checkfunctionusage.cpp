@@ -40,6 +40,10 @@ CheckFunctionUsage::~CheckFunctionUsage()
 
 }
 
+void CheckFunctionUsage::setErrorLogger( ErrorLogger *errorLogger )
+{
+    _errorLogger = errorLogger;
+}
 
 void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 {

@@ -36,7 +36,7 @@
 
 //---------------------------------------------------------------------------
 
-CppCheck::CppCheck( ErrorLogger &errorLogger ) : _checkFunctionUsage( this )
+CppCheck::CppCheck( ErrorLogger &errorLogger )
 {
     _errorLogger = &errorLogger;
 }
@@ -137,6 +137,7 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
 
 void CppCheck::check()
 {
+    _checkFunctionUsage.setErrorLogger( this );
     std::sort( _filenames.begin(), _filenames.end() );
     for (unsigned int c = 0; c < _filenames.size(); c++)
     {

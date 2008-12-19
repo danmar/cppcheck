@@ -28,8 +28,15 @@
 class CheckFunctionUsage
 {
 public:
-    CheckFunctionUsage( ErrorLogger *errorLogger );
+    CheckFunctionUsage( ErrorLogger *errorLogger = 0 );
     ~CheckFunctionUsage();
+
+    /**
+     * Errors found by this class are forwarded to the given
+     * errorlogger.
+     * @param errorLogger The errorlogger to be used.
+     */
+    void setErrorLogger( ErrorLogger *errorLogger );
 
     // Parse current tokens and determine..
     // * Check what functions are used
