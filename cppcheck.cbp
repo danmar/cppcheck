@@ -63,7 +63,9 @@
 		<Unit filename="testfunctionusage.cpp" />
 		<Unit filename="testincompletestatement.cpp" />
 		<Unit filename="testmemleak.cpp" />
+		<Unit filename="testother.cpp" />
 		<Unit filename="testpreprocessor.cpp" />
+		<Unit filename="testredundantif.cpp" />
 		<Unit filename="testrunner.cpp" />
 		<Unit filename="testsimplifytokens.cpp" />
 		<Unit filename="testsuite.cpp" />
