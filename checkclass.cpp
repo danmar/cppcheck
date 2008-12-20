@@ -689,6 +689,8 @@ void CheckClass::virtualDestructor()
             }
         }
 
+        const TOKEN *derivedClass = derived->tokAt(1);
+
         // Iterate through each base class...
         derived = derived->tokAt(3);
         while ( TOKEN::Match(derived, "%var%") )
@@ -729,7 +731,7 @@ void CheckClass::virtualDestructor()
                 if ( base )
                 {
                     std::ostringstream errmsg;
-                    errmsg << _tokenizer->fileLine(base) << ": Base class " << baseName[0] << " doesn't have a virtual destructor";
+                    errmsg << _tokenizer->fileLine(base) << ": Class " << baseName[0] << " which is inherited by class " << derivedClass->str() << " does not have a virtual destructor";
                     _errorLogger->reportErr(errmsg.str());
                 }
             }
@@ -738,7 +740,7 @@ void CheckClass::virtualDestructor()
             else if ( ! TOKEN::Match(base, "virtual") )
             {
                 std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(base) << ": The destructor for the base class " << baseName[0] << " is not virtual";
+                errmsg << _tokenizer->fileLine(base) << ": Class " << baseName[0] << " which is inherited by class " << derivedClass->str() << " does not have a virtual destructor";
                 _errorLogger->reportErr(errmsg.str());
             }
         }
