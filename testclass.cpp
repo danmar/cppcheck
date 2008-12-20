@@ -79,7 +79,7 @@ private:
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS( std::string("[test.cpp:1]: Base class Base doesn't have a virtual destructor\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:1]: Class Base which is inherited by class Derived does not have a virtual destructor\n"), errout.str() );
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : Base { public: ~Derived() { (void)11; } };");
@@ -92,11 +92,11 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:1]: Class Base which is inherited by class Derived does not have a virtual destructor\n"), errout.str() );
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS( std::string("[test.cpp:1]: The destructor for the base class Base is not virtual\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:1]: Class Base which is inherited by class Derived does not have a virtual destructor\n"), errout.str() );
     }
 
     void virtualDestructor4()
