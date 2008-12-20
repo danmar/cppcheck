@@ -34,7 +34,9 @@ private:
 
     void run()
     {
-        // TODO TEST_CASE( delete1 );
+        TEST_CASE( delete1 );
+
+        TEST_CASE( delete2 );
     }
 
     void check( const char code[] )
@@ -59,10 +61,29 @@ private:
                "    if (p)\n"
                "    {\n"
                "        delete p;\n"
-               "        abc = 123;\n"
+               "        p = 0;\n"
                "    }\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void delete2()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    if (p)\n"
+               "    {\n"
+               "        delete p;\n"
+               "    }\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str() );
+
+        check( "void foo()\n"
+               "{\n"
+               "    if (p)\n"
+               "        delete p;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str() );
     }
 };
 

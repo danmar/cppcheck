@@ -98,18 +98,47 @@ void CheckOther::WarningRedundantCode()
         if (varname1==NULL || tok2==NULL)
             continue;
 
+        bool err = false;
         if ( tok2->str() == "{" )
+        {
             tok2 = tok2->next();
 
-        bool err = false;
-        if (TOKEN::Match(tok2,"delete %var% ;"))
-            err = (strcmp(tok2->strAt(1),varname1)==0);
-        else if (TOKEN::Match(tok2,"delete [ ] %var% ;"))
-            err = (strcmp(tok2->strAt(1),varname1)==0);
-        else if (TOKEN::Match(tok2,"free ( %var% )"))
-            err = (strcmp(tok2->strAt(2),varname1)==0);
-        else if (TOKEN::Match(tok2,"kfree ( %var% )"))
-            err = (strcmp(tok2->strAt(2),varname1)==0);
+            if (TOKEN::Match(tok2,"delete %var% ; }"))
+            {
+                err = (strcmp(tok2->strAt(1),varname1)==0);
+            }
+            else if (TOKEN::Match(tok2,"delete [ ] %var% ; }"))
+            {
+                err = (strcmp(tok2->strAt(1),varname1)==0);
+            }
+            else if (TOKEN::Match(tok2,"free ( %var% ) ; }"))
+            {
+                err = (strcmp(tok2->strAt(2),varname1)==0);
+            }
+            else if (TOKEN::Match(tok2,"kfree ( %var% ) ; }"))
+            {
+                err = (strcmp(tok2->strAt(2),varname1)==0);
+            }
+        }
+        else
+        {
+            if (TOKEN::Match(tok2,"delete %var% ;"))
+            {
+                err = (strcmp(tok2->strAt(1),varname1)==0);
+            }
+            else if (TOKEN::Match(tok2,"delete [ ] %var% ;"))
+            {
+                err = (strcmp(tok2->strAt(1),varname1)==0);
+            }
+            else if (TOKEN::Match(tok2,"free ( %var% ) ;"))
+            {
+                err = (strcmp(tok2->strAt(2),varname1)==0);
+            }
+            else if (TOKEN::Match(tok2,"kfree ( %var% ) ;"))
+            {
+                err = (strcmp(tok2->strAt(2),varname1)==0);
+            }
+        }
 
         if (err)
         {
