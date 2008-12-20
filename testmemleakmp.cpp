@@ -36,12 +36,16 @@ private:
 
     void run()
     {
-        // TODO TEST_CASE( alloc1 );
+        TEST_CASE( param1 );
     }
 
-    // Check that base classes have virtual destructors
-    std::string functionCode(const char code[], const char funcname[])
+    void param1()
     {
+        const char code[] = "void f(char *s)\n"
+                            "{\n"
+                            "    ;\n"
+                            "}\n";
+
         // Tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
@@ -54,28 +58,13 @@ private:
         // Check..
         Settings settings;
         CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings, this );
-        TOKEN *tok = checkMemoryLeak.functionCode(funcname);
+        TOKEN *tok = checkMemoryLeak.functionParameterCode(tokenizer.tokens(), 1);
 
-        // Return tokens..
-        std::ostringstream ret;
+        // Compare tokens..
+        std::string s;
         for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
-            ret << tok2->str() << " ";
-        while ( tok )
-        {
-            TOKEN *tok_ = tok;
-            tok = tok->next();
-            delete tok_;
-        }
-        return ret.str();
-    }
-
-    void alloc1()
-    {
-        const char code[] = "char *f()\n"
-                            "{\n"
-                            "    return malloc(100);\n"
-                            "}\n";
-        ASSERT_EQUALS( "alloc ;", functionCode(code, "f") );
+            s += tok2->str() + " ";
+        ASSERT_EQUALS( "; } ", s );
     }
 
 };

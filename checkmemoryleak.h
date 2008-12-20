@@ -107,7 +107,7 @@ private:
 #ifdef UNIT_TESTING
 public:
 #endif
-    TOKEN * functionCode(const char funcname[]);
+    TOKEN *functionParameterCode(const TOKEN *ftok, int parameter);
 };
 
 //---------------------------------------------------------------------------

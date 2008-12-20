@@ -1348,8 +1348,45 @@ void CheckMemoryLeakClass::CheckMemoryLeak()
 // Non-recursive function analysis
 //---------------------------------------------------------------------------
 
-TOKEN * CheckMemoryLeakClass::functionCode(const char funcname[])
+TOKEN * CheckMemoryLeakClass::functionParameterCode(const TOKEN *ftok, int parameter)
 {
+    int param = 1;  // First parameter has index 1
+
+    // Extract the code for specified parameter...
+    for ( ; ftok; ftok = ftok->next() )
+    {
+        if ( ftok->str() == ")" )
+            break;
+
+        if ( ftok->str() == "," )
+        {
+            ++param;
+            if ( param > parameter )
+                break;
+        }
+
+        if ( param != parameter )
+            continue;
+
+        if ( ! TOKEN::Match(ftok, "* %var% [,)]") )
+            continue;
+
+        // Extract and return the code for this parameter..
+        const char *parname = ftok->strAt(1);
+
+        // Goto function implementation..
+        while ( ftok && ftok->str() != "{" )
+            ftok = ftok->next();
+        ftok = ftok ? ftok->next() : NULL;
+
+        // Return the code..
+        AllocType alloc=No, dealloc=No;
+        std::list<const TOKEN *> callstack;
+        TOKEN *code = getcode( ftok, callstack, parname, alloc, dealloc );
+        simplifycode( code );
+        return code;
+    }
+
     return NULL;
 }
 
