@@ -400,18 +400,12 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
 
 void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 {
-    const char *declstruct_pattern[] = {"","","{",0};
-    for ( const TOKEN * tok = TOKEN::findtoken( _tokenizer->tokens(), declstruct_pattern );
+    const char declstruct[] = "struct|class %var% {";
+    for ( const TOKEN * tok = TOKEN::findmatch( _tokenizer->tokens(), declstruct );
           tok;
-          tok = TOKEN::findtoken( tok->next(), declstruct_pattern ) )
+          tok = TOKEN::findmatch( tok->next(), declstruct ) )
     {
-        if ( ! TOKEN::Match(tok,"struct|class") )
-            continue;
-
-        const char *structname = tok->next()->aaaa();
-
-        if ( !(tok->next()->isName()) )
-            continue;
+        const std::string &structname = tok->next()->str();
 
         // Found a struct declaration. Search for arrays..
         for ( const TOKEN * tok2 = tok->next()->next(); tok2; tok2 = tok2->next() )
@@ -442,7 +436,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
             // Class member variable => Check functions
             if ( TOKEN::Match(tok, "class") )
             {
-                std::string func_pattern(structname + std::string(" :: %var% ("));
+                std::string func_pattern(structname + " :: %var% (");
                 const TOKEN *tok3 = TOKEN::findmatch(_tokenizer->tokens(), func_pattern.c_str());
                 while ( tok3 )
                 {
@@ -464,7 +458,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 
             for ( const TOKEN *tok3 = _tokenizer->tokens(); tok3; tok3 = tok3->next() )
             {
-                if ( strcmp(tok3->aaaa(), structname) )
+                if ( tok3->str() != structname )
                     continue;
 
                 // Declare variable: Fred fred1;
