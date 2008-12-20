@@ -1344,5 +1344,12 @@ void CheckMemoryLeakClass::CheckMemoryLeak()
 
 
 
+//---------------------------------------------------------------------------
+// Non-recursive function analysis
+//---------------------------------------------------------------------------
 
+TOKEN * CheckMemoryLeakClass::functionCode(const char funcname[])
+{
+    return NULL;
+}
 

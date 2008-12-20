@@ -102,6 +102,12 @@ private:
     ErrorLogger *_errorLogger;
     const Settings _settings;
     std::list<AllocFunc> _listAllocFunc;
+
+// Experimental functionality..
+#ifdef UNIT_TESTING
+public:
+#endif
+    TOKEN * functionCode(const char funcname[]);
 };
 
 //---------------------------------------------------------------------------

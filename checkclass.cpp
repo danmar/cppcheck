@@ -491,21 +491,21 @@ void CheckClass::privateFunctions()
                 break;
             }
 
-            if (tok->aaaa0() == '{')
+            if (tok->str() == "{")
                 indent_level++;
-            if (tok->aaaa0() == '}')
+            else if (tok->str() == "}")
             {
                 if (indent_level <= 1)
                     break;
                 indent_level--;
             }
-            if (strcmp(tok->aaaa(),"};") == 0)
+            else if (tok->str() == "};")
                 break;
-            if (strcmp(tok->aaaa(),"private:") == 0)
+            else if (tok->str() == "private:")
                 priv = true;
-            else if (strcmp(tok->aaaa(),"public:") == 0)
+            else if (tok->str() == "public:")
                 priv = false;
-            else if (strcmp(tok->aaaa(),"protected:") == 0)
+            else if (tok->str() == "protected:")
                 priv = false;
             else if (priv && indent_level == 1)
             {
@@ -515,7 +515,7 @@ void CheckClass::privateFunctions()
                 if (TOKEN::Match(tok, "%var% (") &&
                     !TOKEN::Match(tok,classname.c_str()))
                 {
-                    FuncList.push_back(tok->aaaa());
+                    FuncList.push_back(tok->str());
                 }
             }
         }
