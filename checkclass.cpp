@@ -468,16 +468,13 @@ void CheckClass::CheckConstructors(const TOKEN *tok1, struct VAR *varlist, const
 void CheckClass::privateFunctions()
 {
     // Locate some class
-    const char *pattern_class[] = {"class","","{",NULL};
-    for (const TOKEN *tok1 = TOKEN::findtoken(_tokenizer->tokens(), pattern_class); tok1; tok1 = TOKEN::findtoken(tok1->next(), pattern_class))
+    for (const TOKEN *tok1 = TOKEN::findmatch(_tokenizer->tokens(), "class %var% {"); tok1; tok1 = TOKEN::findmatch(tok1->next(), "class %var% {"))
     {
-        const char *classname = tok1->next()->aaaa();
+        const std::string &classname = tok1->next()->str();
 
         // The class implementation must be available..
-        const char *pattern_classconstructor[] = {"","::","",NULL};
-        pattern_classconstructor[0] = classname;
-        pattern_classconstructor[2] = classname;
-        if (!TOKEN::findtoken(_tokenizer->tokens(),pattern_classconstructor))
+        const std::string classconstructor(classname + " :: " + classname);
+        if (!TOKEN::findmatch(_tokenizer->tokens(), classconstructor.c_str()))
             continue;
 
         // Get private functions..
@@ -516,7 +513,7 @@ void CheckClass::privateFunctions()
                     tok = tok->tokAt(2);
 
                 if (TOKEN::Match(tok, "%var% (") &&
-                    !TOKEN::Match(tok,classname))
+                    !TOKEN::Match(tok,classname.c_str()))
                 {
                     FuncList.push_back(tok->aaaa());
                 }
@@ -524,13 +521,12 @@ void CheckClass::privateFunctions()
         }
 
         // Check that all private functions are used..
-        const char *pattern_function[] = {"","::",NULL};
-        pattern_function[0] = classname;
+        const std::string pattern_function(classname + " ::");
         bool HasFuncImpl = false;
         const TOKEN *ftok = _tokenizer->tokens();
         while (ftok)
         {
-            ftok = TOKEN::findtoken(ftok,pattern_function);
+            ftok = TOKEN::findmatch(ftok,pattern_function.c_str());
             int numpar = 0;
             while (ftok && ftok->aaaa0()!=';' && ftok->aaaa0()!='{')
             {
@@ -571,22 +567,9 @@ void CheckClass::privateFunctions()
 
         while (HasFuncImpl && !FuncList.empty())
         {
-            bool fp = false;
-
             // Final check; check if the function pointer is used somewhere..
-            const char *_pattern[] = {"=","",NULL};
-            _pattern[1] = FuncList.front().c_str();
-            fp |= (TOKEN::findtoken(_tokenizer->tokens(), _pattern) != NULL);
-            _pattern[0] = "return";
-            fp |= (TOKEN::findtoken(_tokenizer->tokens(), _pattern) != NULL);
-            _pattern[0] = "(";
-            fp |= (TOKEN::findtoken(_tokenizer->tokens(), _pattern) != NULL);
-            _pattern[0] = ")";
-            fp |= (TOKEN::findtoken(_tokenizer->tokens(), _pattern) != NULL);
-            _pattern[0] = ",";
-            fp |= (TOKEN::findtoken(_tokenizer->tokens(), _pattern) != NULL);
-
-            if (!fp)
+            const std::string _pattern("return|(|)|,|= " + FuncList.front());
+            if (!TOKEN::findmatch(_tokenizer->tokens(), _pattern.c_str()))
             {
                 std::ostringstream ostr;
                 ostr << "Class '" << classname << "', unused private function: '" << FuncList.front() << "'";
@@ -627,9 +610,8 @@ void CheckClass::noMemset()
             continue;
 
         // Warn if type is a class..
-        const char *pattern1[] = {"class","",NULL};
-        pattern1[1] = type;
-        if (TOKEN::findtoken(_tokenizer->tokens(),pattern1))
+        const std::string pattern1(std::string("class ") + type);
+        if (TOKEN::findmatch(_tokenizer->tokens(),pattern1.c_str()))
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->aaaa() << "' on class.";
@@ -638,9 +620,8 @@ void CheckClass::noMemset()
         }
 
         // Warn if type is a struct that contains any std::*
-        const char *pattern2[] = {"struct","","{",NULL};
-        pattern2[1] = type;
-        for (const TOKEN *tstruct = TOKEN::findtoken(_tokenizer->tokens(), pattern2); tstruct; tstruct = tstruct->next())
+        const std::string pattern2(std::string("struct ") + type);
+        for (const TOKEN *tstruct = TOKEN::findmatch(_tokenizer->tokens(), pattern2.c_str()); tstruct; tstruct = tstruct->next())
         {
             if (tstruct->aaaa0() == '}')
                 break;
