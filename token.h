@@ -98,7 +98,6 @@ public:
     bool isNumber() const;
     bool isStandardType() const;
     static const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
-    static const TOKEN *findtoken(const TOKEN *tok1, const char *tokenstr[]);
 
     /**
      * Needle is build from multiple alternatives. If one of
