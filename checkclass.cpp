@@ -311,7 +311,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
 // ClassCheck: Check that all class constructors are ok.
 //---------------------------------------------------------------------------
 
-void CheckClass::CheckConstructors()
+void CheckClass::constructors()
 {
     const char pattern_class[] = "class %var% {";
 
@@ -465,7 +465,7 @@ void CheckClass::CheckConstructors(const TOKEN *tok1, struct VAR *varlist, const
 // ClassCheck: Unused private functions
 //---------------------------------------------------------------------------
 
-void CheckClass::CheckUnusedPrivateFunctions()
+void CheckClass::privateFunctions()
 {
     // Locate some class
     const char *pattern_class[] = {"class","","{",NULL};
@@ -601,7 +601,7 @@ void CheckClass::CheckUnusedPrivateFunctions()
 // ClassCheck: Check that memset is not used on classes
 //---------------------------------------------------------------------------
 
-void CheckClass::CheckMemset()
+void CheckClass::noMemset()
 {
     // Locate all 'memset' tokens..
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -664,7 +664,7 @@ void CheckClass::CheckMemset()
 // ClassCheck: "void operator=("
 //---------------------------------------------------------------------------
 
-void CheckClass::CheckOperatorEq1()
+void CheckClass::operatorEq()
 {
     if (const TOKEN *tok = TOKEN::findmatch(_tokenizer->tokens(), "void operator = ("))
     {

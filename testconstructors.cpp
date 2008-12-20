@@ -50,7 +50,7 @@ private:
         Settings settings;
         settings._checkCodingStyle = true;
         CheckClass checkClass( &tokenizer, settings, this );
-        checkClass.CheckConstructors();
+        checkClass.constructors();
     }
 
     void run()

@@ -211,7 +211,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
     CheckClass checkClass( &_tokenizer, _settings, this );
-    checkClass.CheckMemset();
+    checkClass.noMemset();
 
 
     // Check for unsigned divisions where one operand is signed
@@ -249,7 +249,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     checkBufferOverrun.CheckBufferOverrun();
 
     // Check that all class constructors are ok.
-    checkClass.CheckConstructors();
+    checkClass.constructors();
 
     // Check that all base classes have virtual destructors
     checkClass.virtualDestructor();
@@ -281,14 +281,14 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (_settings._checkCodingStyle)
     {
         // Check that all private functions are called.
-        checkClass.CheckUnusedPrivateFunctions();
+        checkClass.privateFunctions();
 
         // Warning upon c-style pointer casts
         const char *ext = strrchr(FileName, '.');
         if (ext && strcmp(ext,".cpp")==0)
             checkOther.WarningOldStylePointerCast();
 
-        checkClass.CheckOperatorEq1();
+        checkClass.operatorEq();
 
         // if (a) delete a;
         checkOther.WarningRedundantCode();

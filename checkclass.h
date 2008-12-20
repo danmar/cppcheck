@@ -31,13 +31,13 @@ public:
     CheckClass( const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger );
     ~CheckClass();
 
-    void CheckConstructors();
+    void constructors();
 
-    void CheckUnusedPrivateFunctions();
+    void privateFunctions();
 
-    void CheckMemset();
+    void noMemset();
 
-    void CheckOperatorEq1();    // Warning upon "void operator=(.."
+    void operatorEq();    // Warning upon "void operator=(.."
 
     // The destructor in a base class should be virtual
     void virtualDestructor();
