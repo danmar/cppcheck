@@ -55,9 +55,8 @@ void CheckOther::WarningOldStylePointerCast()
             continue;
 
         // Is "type" a class?
-        const char *pattern[] = {"class","",NULL};
-        pattern[1] = tok->strAt(1);
-        if (!TOKEN::findtoken(_tokenizer->tokens(), pattern))
+        const std::string pattern("class " + tok->next()->str());
+        if (!TOKEN::findmatch(_tokenizer->tokens(), pattern.c_str()))
             continue;
 
         std::ostringstream ostr;
@@ -566,16 +565,8 @@ void CheckOther::CheckConstantFunctionParameter()
         else if ( TOKEN::Match(tok,"[,(] const %type% %var% [,)]") )
         {
             // Check if type is a struct or class.
-            const char *pattern[3] = {"class","type",0};
-            pattern[1] = tok->strAt( 2);
-            if ( TOKEN::findtoken(_tokenizer->tokens(), pattern) )
-            {
-                std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(3) << " is passed by value, it could be passed by reference/pointer instead";
-                _errorLogger->reportErr( errmsg.str() );
-            }
-            pattern[0] = "struct";
-            if ( TOKEN::findtoken(_tokenizer->tokens(), pattern) )
+            const std::string pattern(std::string("class|struct ") + tok->strAt(2));
+            if ( TOKEN::findmatch(_tokenizer->tokens(), pattern.c_str()) )
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(3) << " is passed by value, it could be passed by reference/pointer instead";
