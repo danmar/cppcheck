@@ -246,7 +246,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Buffer overruns..
     CheckBufferOverrunClass checkBufferOverrun( &_tokenizer, _settings, this );
-    checkBufferOverrun.CheckBufferOverrun();
+    checkBufferOverrun.bufferOverrun();
 
     // Check that all class constructors are ok.
     checkClass.constructors();
@@ -271,7 +271,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
 
     // Dangerous functions, such as 'gets' and 'scanf'
-    checkBufferOverrun.WarningDangerousFunctions();
+    checkBufferOverrun.dangerousFunctions();
 
 
     // Invalid function usage..

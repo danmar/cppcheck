@@ -57,7 +57,7 @@ private:
         Settings settings;
         settings._showAll = true;
         CheckBufferOverrunClass checkBufferOverrun( &tokenizer, settings, this );
-        checkBufferOverrun.CheckBufferOverrun();
+        checkBufferOverrun.bufferOverrun();
     }
 
     void run()

@@ -520,7 +520,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 
 
 
-void CheckBufferOverrunClass::CheckBufferOverrun()
+void CheckBufferOverrunClass::bufferOverrun()
 {
     CheckBufferOverrun_LocalVariable();
     CheckBufferOverrun_StructVariable();
@@ -538,21 +538,14 @@ void CheckBufferOverrunClass::CheckBufferOverrun()
 // Dangerous functions
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::WarningDangerousFunctions()
+void CheckBufferOverrunClass::dangerousFunctions()
 {
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (TOKEN::Match(tok, "gets ("))
+        if (TOKEN::Match(tok, "gets|scanf ("))
         {
             std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Found 'gets'. You should use 'fgets' instead";
-            _errorLogger->reportErr(ostr.str());
-        }
-
-        else if (TOKEN::Match(tok, "scanf (") && strcmp(tok->strAt(2),"\"%s\"") == 0)
-        {
-            std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Found 'scanf'. You should use 'fgets' instead";
+            ostr << _tokenizer->fileLine(tok) << ": Found '" << tok->str() << "'. You should use 'fgets' instead";
             _errorLogger->reportErr(ostr.str());
         }
     }

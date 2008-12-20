@@ -32,11 +32,11 @@ public:
     ~CheckBufferOverrunClass();
 
     // Buffer overrun..
-    void CheckBufferOverrun();
+    void bufferOverrun();
 
 
     // Dangerous functions that can cause buffer overruns
-    void WarningDangerousFunctions();
+    void dangerousFunctions();
 private:
     void CheckBufferOverrun_StructVariable();
     void CheckBufferOverrun_LocalVariable();
