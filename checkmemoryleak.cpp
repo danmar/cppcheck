@@ -1139,7 +1139,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
             if ( TOKEN::Match(tok, ") {") )
                 infunc = true;
 
-            if ( TOKEN::Match(tok, "[;}]") )
+            else if ( TOKEN::Match(tok, "[;}]") )
                 infunc = false;
         }
 

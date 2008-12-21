@@ -193,6 +193,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
             // Goto the end of the for loop..
             while (tok2 && !TOKEN::Match(tok2,")"))
                 tok2 = tok2->next();
+            if (!tok2 || !(tok2->tokAt(5)))
             if (!(tok2->tokAt(5)))
                 break;
 
@@ -200,7 +201,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
             pattern << "%var1% [ " << strindex << " ]";
 
             int indentlevel2 = 0;
-            while (tok2)
+            while (tok2 = tok2->next())
             {
                 if ( (tok2->str() == ";") && indentlevel2 == 0 )
                     break;
@@ -221,7 +222,6 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
                     break;
                 }
 
-                tok2 = tok2->next();
             }
             continue;
         }
@@ -361,6 +361,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
             unsigned int size = 0;
             const char *type = 0;
             unsigned int varid = 0;
+            int nextTok = 0;
 
             if (TOKEN::Match(tok, "%type% %var% [ %num% ] ;"))
             {
@@ -368,13 +369,15 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
                 size = strtoul(tok->strAt(3), NULL, 10);
                 type = tok->aaaa();
                 varid = tok->tokAt(1)->varId();
+                nextTok = 6;
             }
-            else if (indentlevel > 0 && TOKEN::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
+            else if (TOKEN::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
             {
                 varname[0] = tok->strAt(1);
                 size = strtoul(tok->strAt(6), NULL, 10);
                 type = tok->strAt(4);
                 varid = tok->tokAt(1)->varId();
+                nextTok = 8;
             }
             else
             {
@@ -387,7 +390,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
 
             // The callstack is empty
             _callStack.clear();
-            CheckBufferOverrun_CheckScope( tok->tokAt(5), varname, size, total_size, varid );
+            CheckBufferOverrun_CheckScope( tok->tokAt(nextTok), varname, size, total_size, varid );
         }
     }
 }

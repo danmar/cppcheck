@@ -1294,7 +1294,7 @@ void Tokenizer::fillFunctionList()
         else if (TOKEN::Match(tok, "%var% ("))
         {
             // Check if this is the first token of a function implementation..
-            for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+            for ( const TOKEN *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next() )
             {
                 if ( tok2->str() == ";" )
                 {
