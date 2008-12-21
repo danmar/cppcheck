@@ -522,11 +522,11 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             { "public", ":", "public:" }
         };
 
-        for (int i = 0; i < sizeof(combineWithNext) / sizeof(combineWithNext[0]); i++)
+        for (unsigned ui = 0; ui < sizeof(combineWithNext) / sizeof(combineWithNext[0]); ui++)
         {
-            if ( tok->str() == combineWithNext[i][0] && tok->next()->str() == combineWithNext[i][1] )
+            if ( tok->str() == combineWithNext[ui][0] && tok->next()->str() == combineWithNext[ui][1] )
             {
-                tok->setstr(combineWithNext[i][2]);
+                tok->setstr(combineWithNext[ui][2]);
                 tok->deleteNext();
             }
         }
