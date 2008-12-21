@@ -135,6 +135,17 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
     return -1;
 }
 
+bool TOKEN::simpleMatch(const TOKEN *tok, const char pattern[])
+{
+    for ( const char *current = pattern, *next = strchr(pattern, ' '), *tmp; *current; current = next,
+         next = *next ? ((tmp = strchr(++current, ' ')) ? tmp : (current + strlen(current))) : next, tok = tok->next() )
+    {
+        if ( !tok || (next-current) != tok->_str.length() || strncmp( current, tok->_cstr, next-current) )
+            return false;
+    }
+    return true;
+}
+
 bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[], unsigned int varid)
 {
     const char *p = pattern;

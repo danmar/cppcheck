@@ -54,6 +54,8 @@ public:
 
     const char *strAt(int index) const;
 
+    static bool simpleMatch(const TOKEN *tok, const char pattern[]);
+
     /**
      * Match given token (or list of tokens) to a pattern list.
      *
