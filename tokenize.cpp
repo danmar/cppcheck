@@ -1215,11 +1215,8 @@ bool Tokenizer::simplifyKnownVariables()
             else if ( TOKEN::Match(tok2, "%var% = %num% ;") )
             {
                 unsigned int varid = tok2->varId();
-                TOKEN *tok3 = tok2;
-                while ( tok3 )
+                for ( TOKEN *tok3 = tok2->next(); tok3; tok3 = tok3->next() )
                 {
-                    tok3 = tok3->next();
-
                     // Perhaps it's a loop => bail out
                     if ( TOKEN::Match(tok3, "[{}]") )
                         break;
