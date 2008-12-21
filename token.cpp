@@ -37,6 +37,7 @@ TOKEN::TOKEN()
     _varId = 0;
     _isName = false;
     _isNumber = false;
+    _isBoolean = false;
 }
 
 TOKEN::~TOKEN()
@@ -55,6 +56,11 @@ void TOKEN::setstr( const char s[] )
 #endif
     _isName = bool(_str[0]=='_' || isalpha(_str[0]));
     _isNumber = bool(isdigit(_str[0]) != 0);
+    if( _str == "true" || _str == "false" )
+        _isBoolean = true;
+    else
+        _isBoolean = false;
+
     _varId = 0;
 }
 
@@ -227,10 +233,15 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
 
         else if (strcmp(str,"%num%")==0)
         {
-            if ( ! tok->isNumber() )
+            if ( !tok->isNumber() )
                 return false;
         }
 
+        else if (strcmp(str,"%bool%")==0)
+        {
+            if ( !tok->isBoolean() )
+                return false;
+        }
 
         else if (strcmp(str,"%str%")==0)
         {
@@ -295,6 +306,11 @@ bool TOKEN::isName() const
 bool TOKEN::isNumber() const
 {
     return _isNumber;
+}
+
+bool TOKEN::isBoolean() const
+{
+    return _isBoolean;
 }
 
 bool TOKEN::isStandardType() const

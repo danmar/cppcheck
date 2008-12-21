@@ -1200,8 +1200,10 @@ bool Tokenizer::simplifyKnownVariables()
 
         // parse the block of code..
         int indentlevel = 0;
+
         for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
         {
+
             if ( tok2->str() == "{" )
                 ++indentlevel;
 
@@ -1212,7 +1214,8 @@ bool Tokenizer::simplifyKnownVariables()
                     continue;
             }
 
-            else if ( TOKEN::Match(tok2, "%var% = %num% ;") )
+            else if ( TOKEN::Match(tok2, "%var% = %num% ;") ||
+                      TOKEN::Match(tok2, "%var% = %bool% ;"))
             {
                 unsigned int varid = tok2->varId();
                 for ( TOKEN *tok3 = tok2->next(); tok3; tok3 = tok3->next() )

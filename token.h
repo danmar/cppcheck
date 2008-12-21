@@ -68,6 +68,7 @@ public:
      * "%any%" any token
      * "%var%" any token which is a name or type e.g. "hello" or "int"
      * "%num%" Any numeric token, e.g. "23"
+     * "%bool%" true or false
      * "%str%" Any token starting with "-character (C-string).
      * "%var1%" Match with parameter varname1
      * "%var2%" Match with parameter varname2
@@ -96,6 +97,7 @@ public:
 
     bool isName() const;
     bool isNumber() const;
+    bool isBoolean() const;
     bool isStandardType() const;
     static const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0, const char *varname2[]=0);
 
@@ -172,6 +174,7 @@ private:
     char * _cstr;
     bool _isName;
     bool _isNumber;
+    bool _isBoolean;
     unsigned int _varId;
     TOKEN *_next;
     TOKEN *_previous;
