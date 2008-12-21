@@ -1038,6 +1038,34 @@ void Tokenizer::simplifyTokenList()
 }
 //---------------------------------------------------------------------------
 
+const TOKEN *Tokenizer::findClosing( const TOKEN *tok )
+{
+    if( !tok )
+        return 0;
+
+    // Find the closing "}"
+    int indentLevel = 0;
+    for ( const TOKEN *closing = tok->next(); closing; closing = closing->next() )
+    {
+        if( TOKEN::Match( closing, "{" ) )
+        {
+            indentLevel++;
+            continue;
+        }
+
+        if( TOKEN::Match( closing, "}" ) )
+            indentLevel--;
+
+        if( indentLevel >= 0 )
+            continue;
+
+        // Closing } is found.
+        return closing;
+    }
+
+    return 0;
+}
+
 bool Tokenizer::removeReduntantConditions()
 {
     bool ret = false;
@@ -1052,25 +1080,9 @@ bool Tokenizer::removeReduntantConditions()
         if( TOKEN::Match( tok->tokAt( 4 ), "{" ) )
         {
             // Find the closing "}"
-            int indentLevel = 0;
-            for ( const TOKEN *closing = tok->tokAt( 5 ); closing; closing = closing->next() )
-            {
-                if( TOKEN::Match( closing, "{" ) )
-                {
-                    indentLevel++;
-                    continue;
-                }
-
-                if( TOKEN::Match( closing, "}" ) )
-                    indentLevel--;
-
-                if( indentLevel >= 0 )
-                    continue;
-
-                // Closing } is found.
-                elseTag = closing->next();
-                break;
-            }
+            elseTag = Tokenizer::findClosing( tok->tokAt( 4 ) );
+            if( elseTag )
+                elseTag = elseTag->next();
         }
         else
         {
@@ -1089,6 +1101,7 @@ bool Tokenizer::removeReduntantConditions()
         if( tok->tokAt( 2 )->str() == "true" )
             boolValue = true;
 
+        // Handle if with else
         if( elseTag && TOKEN::Match( elseTag, "else" ) )
         {
             if( TOKEN::Match( elseTag->next(), "if" ) )
@@ -1097,7 +1110,7 @@ bool Tokenizer::removeReduntantConditions()
                 if( boolValue == false )
                 {
                     // Convert "if( false ) {aaa;} else if() {bbb;}" => "if() {bbb;}"
-                    TOKEN::eraseTokens( tok, elseTag->tokAt( 1 ) );
+                    TOKEN::eraseTokens( tok, elseTag->tokAt( 2 ) );
                     ret = true;
                 }
                 else
@@ -1123,15 +1136,58 @@ bool Tokenizer::removeReduntantConditions()
                 }
                 else
                 {
-                    // Convert "if( true ) {aaa;} else {bbb;}" => "{aaa;}"
+                    if( TOKEN::Match( elseTag->tokAt( 1 ), "{" ) )
+                    {
+                        // Convert "if( true ) {aaa;} else {bbb;}" => "{aaa;}"
+                        const TOKEN *end = Tokenizer::findClosing( elseTag->tokAt( 1 ) );
+                        if( !end )
+                        {
+                            // Possibly syntax error in code
+                            return false;
+                        }
 
-                    // TODO, implement
+                        // Remove the "else { aaa; }"
+                        TOKEN::eraseTokens( elseTag->previous(), end->tokAt( 1 ) );
+                    }
+                    else
+                    {
+                        // Convert "if( true ) {aaa;} else bbb;" => "{aaa;}"
+
+                        // Find the closing ";"
+                        const TOKEN *end = 0;
+                        for ( const TOKEN *closing = elseTag->tokAt( 1 ); closing; closing = closing->next() )
+                        {
+                            if( TOKEN::Match( closing, ";" ) )
+                            {
+                                end = closing;
+                                break;
+                            }
+                        }
+
+                        if( !end )
+                        {
+                            // Possibly syntax error
+                            return false;
+                        }
+
+                        TOKEN::eraseTokens( elseTag->previous(), end->next() );
+                    }
+
+                    // Remove "if( true )"
+                    if( tok->previous() )
+                        tok = tok->previous();
+                    else
+                        tok->setstr( ";" );
+
+                    TOKEN::eraseTokens( tok, tok->tokAt(5) );
+                    ret = true;
                 }
             }
         }
+
+        // Handle if without else
         else
         {
-            // Handle if without else
             if( boolValue == false )
             {
                 // Remove if and its content

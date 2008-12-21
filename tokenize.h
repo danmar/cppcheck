@@ -91,6 +91,13 @@ private:
         struct DefineSymbol *next;
     };
 
+    /**
+     * Finds matching "}" for "{".
+     * @param tok The "{"
+     * @return The "}" that matches given parameter or 0 if not found.
+     */
+    static const TOKEN *findClosing( const TOKEN *tok );
+
     void Define(const char Name[], const char Value[]);
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
