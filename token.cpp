@@ -64,18 +64,6 @@ void TOKEN::setstr( const char s[] )
     _varId = 0;
 }
 
-void TOKEN::combineWithNext(const char str1[], const char str2[])
-{
-    if (!(_next))
-        return;
-    if (_str!=str1 || _next->_str!=str2)
-        return;
-
-	std::string newstr(std::string(str1) + std::string(str2));
-	setstr( newstr.c_str() );
-    deleteNext();
-}
-
 void TOKEN::deleteNext()
 {
     TOKEN *n = _next;

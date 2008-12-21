@@ -40,13 +40,6 @@ public:
     char aaaa1() const
     { return _cstr[1]; }
 
-
-    /**
-     * Combine two tokens that belong to each other.
-     * Ex: "<" and "=" may become "<="
-     */
-    void combineWithNext(const char str1[], const char str2[]);
-
     /**
      * Unlink and delete next token.
      */

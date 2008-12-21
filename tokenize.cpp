@@ -499,38 +499,41 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
     // Combine tokens..
     for (TOKEN *tok = _tokens; tok && tok->next(); tok = tok->next())
     {
-        tok->combineWithNext("<", "<");
-        tok->combineWithNext(">", ">");
-
-        tok->combineWithNext("&", "&");
-        tok->combineWithNext("|", "|");
-
-        tok->combineWithNext("+", "=");
-        tok->combineWithNext("-", "=");
-        tok->combineWithNext("*", "=");
-        tok->combineWithNext("/", "=");
-        tok->combineWithNext("&", "=");
-        tok->combineWithNext("|", "=");
-
-        tok->combineWithNext("=", "=");
-        tok->combineWithNext("!", "=");
-        tok->combineWithNext("<", "=");
-        tok->combineWithNext(">", "=");
-
-        tok->combineWithNext(":", ":");
-        tok->combineWithNext("-", ">");
-
-        tok->combineWithNext("private", ":");
-        tok->combineWithNext("protected", ":");
-        tok->combineWithNext("public", ":");
-    }
-
-    // Replace "->" with "."
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
-    {
-        if ( tok->str() == "->" )
+        static const char* combineWithNext[][3] =
         {
-            tok->setstr(".");
+            { "<", "<", "<<" },
+            { ">", ">", ">>" },
+
+            { "&", "&", "&&" },
+            { "|", "|", "||" },
+
+            { "+", "=", "+=" },
+            { "-", "=", "-=" },
+            { "*", "=", "*=" },
+            { "/", "=", "/=" },
+            { "&", "=", "&=" },
+            { "|", "=", "|=" },
+
+            { "=", "=", "==" },
+            { "!", "=", "!=" },
+            { "<", "=", "<=" },
+            { ">", "=", ">=" },
+
+            { ":", ":", "::" },
+            { "-", ">", "." },  // Replace "->" with "."
+
+            { "private", ":", "private:" },
+            { "protected", ":", "protected:" },
+            { "public", ":", "public:" }
+        };
+
+        for (int i = 0; i < sizeof(combineWithNext) / sizeof(combineWithNext[0]); i++)
+        {
+            if ( tok->str() == combineWithNext[i][0] && tok->next()->str() == combineWithNext[i][1] )
+            {
+                tok->setstr(combineWithNext[i][2]);
+                tok->deleteNext();
+            }
         }
     }
 
