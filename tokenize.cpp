@@ -533,45 +533,41 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
     }
 
     // typedef..
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( TOKEN *tok = _tokens; tok; )
     {
-        if (TOKEN::Match(tok, "typedef %type% %type% ;"))
+        if ( TOKEN::Match(tok, "typedef %type% %type% ;") )
         {
-            const char *type1 = tok->strAt( 1);
-            const char *type2 = tok->strAt( 2);
+            const char *type1 = tok->strAt(1);
+            const char *type2 = tok->strAt(2);
+            tok = const_cast<TOKEN*>(tok->tokAt(4));
             for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
             {
-                if (tok2->aaaa()!=type1 && tok2->aaaa()!=type2 && (tok2->str() == type2))
-                {
+                if ( tok2->str() == type2 )
                     tok2->setstr(type1);
-                }
             }
+            continue;
         }
 
-        else if (TOKEN::Match(tok, "typedef %type% %type% %type% ;"))
+        else if ( TOKEN::Match(tok, "typedef %type% %type% %type% ;") )
         {
-            const char *type1 = tok->strAt( 1);
-            const char *type2 = tok->strAt( 2);
-            const char *type3 = tok->strAt( 3);
-
-            TOKEN *tok2 = tok;
-            while ( ! TOKEN::Match(tok2, ";") )
-                tok2 = tok2->next();
-
-            for ( ; tok2; tok2 = tok2->next() )
+            const char *type1 = tok->strAt(1);
+            const char *type2 = tok->strAt(2);
+            const char *type3 = tok->strAt(3);
+            tok = const_cast<TOKEN*>(tok->tokAt(5));
+            for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
             {
-                if (tok2->aaaa()!=type3 && (tok2->str() == type3))
+                if ( tok2->str() == type3 )
                 {
                     tok2->setstr(type1);
-                    tok2->insertToken( type2 );
-                    tok2->next()->fileIndex( tok2->fileIndex() );
-                    tok2->next()->linenr( tok2->linenr() );
+                    tok2->insertToken(type2);
                     tok2 = tok2->next();
                 }
             }
+            continue;
         }
-    }
 
+        tok = tok->next();
+    }
 
     // Remove __asm..
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
