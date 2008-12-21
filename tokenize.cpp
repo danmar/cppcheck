@@ -216,9 +216,10 @@ void Tokenizer::InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
     while (n > 0)
     {
         dest->insertToken( src->aaaa() );
-        dest->next()->fileIndex( src->fileIndex() );
-        dest->next()->linenr( src->linenr() );
         dest = dest->next();
+        dest->fileIndex( src->fileIndex() );
+        dest->linenr( src->linenr() );
+        dest->varId( src->varId() );
         src  = src->next();
         n--;
     }
@@ -1200,7 +1201,6 @@ bool Tokenizer::simplifyKnownVariables()
 
         // parse the block of code..
         int indentlevel = 0;
-
         for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
         {
 
@@ -1218,6 +1218,9 @@ bool Tokenizer::simplifyKnownVariables()
                       TOKEN::Match(tok2, "%var% = %bool% ;"))
             {
                 unsigned int varid = tok2->varId();
+                if( varid == 0 )
+                    continue;
+
                 for ( TOKEN *tok3 = tok2->next(); tok3; tok3 = tok3->next() )
                 {
                     // Perhaps it's a loop => bail out
