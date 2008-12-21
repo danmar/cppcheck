@@ -1033,10 +1033,132 @@ void Tokenizer::simplifyTokenList()
         modified |= simplifyCasts();
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
+        modified |= removeReduntantConditions();
     }
 }
 //---------------------------------------------------------------------------
 
+bool Tokenizer::removeReduntantConditions()
+{
+    bool ret = false;
+
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    {
+        if (!TOKEN::Match(tok, "if ( %bool% )"))
+            continue;
+
+        // Find matching else
+        const TOKEN *elseTag = 0;
+        if( TOKEN::Match( tok->tokAt( 4 ), "{" ) )
+        {
+            // Find the closing "}"
+            int indentLevel = 0;
+            for ( const TOKEN *closing = tok->tokAt( 5 ); closing; closing = closing->next() )
+            {
+                if( TOKEN::Match( closing, "{" ) )
+                {
+                    indentLevel++;
+                    continue;
+                }
+
+                if( TOKEN::Match( closing, "}" ) )
+                    indentLevel--;
+
+                if( indentLevel >= 0 )
+                    continue;
+
+                // Closing } is found.
+                elseTag = closing->next();
+                break;
+            }
+        }
+        else
+        {
+            // Find the closing ";"
+            for ( const TOKEN *closing = tok->tokAt( 4 ); closing; closing = closing->next() )
+            {
+                if( TOKEN::Match( closing, ";" ) )
+                {
+                    elseTag = closing->next();
+                    break;
+                }
+            }
+        }
+
+        bool boolValue = false;
+        if( tok->tokAt( 2 )->str() == "true" )
+            boolValue = true;
+
+        if( elseTag && TOKEN::Match( elseTag, "else" ) )
+        {
+            if( TOKEN::Match( elseTag->next(), "if" ) )
+            {
+                // Handle "else if"
+                if( boolValue == false )
+                {
+                    // Convert "if( false ) {aaa;} else if() {bbb;}" => "if() {bbb;}"
+                    TOKEN::eraseTokens( tok, elseTag->tokAt( 1 ) );
+                    ret = true;
+                }
+                else
+                {
+                    // Keep first if, remove every else if and else after it
+
+                    // TODO, implement
+                }
+            }
+            else
+            {
+                // Handle else
+                if( boolValue == false )
+                {
+                    // Convert "if( false ) {aaa;} else {bbb;}" => "{bbb;}" or ";{bbb;}"
+                    if( tok->previous() )
+                        tok = tok->previous();
+                    else
+                        tok->setstr( ";" );
+
+                    TOKEN::eraseTokens( tok, elseTag->tokAt( 1 ) );
+                    ret = true;
+                }
+                else
+                {
+                    // Convert "if( true ) {aaa;} else {bbb;}" => "{aaa;}"
+
+                    // TODO, implement
+                }
+            }
+        }
+        else
+        {
+            // Handle if without else
+            if( boolValue == false )
+            {
+                // Remove if and its content
+                if( tok->previous() )
+                    tok = tok->previous();
+                else
+                    tok->setstr( ";" );
+
+                TOKEN::eraseTokens( tok, elseTag );
+            }
+            else
+            {
+                // convert "if( true ) {aaa;}" => "{aaa;}"
+                if( tok->previous() )
+                    tok = tok->previous();
+                else
+                    tok->setstr( ";" );
+
+                TOKEN::eraseTokens( tok, tok->tokAt( 5 ) );
+            }
+
+            ret = true;
+        }
+    }
+
+    return ret;
+}
 
 bool Tokenizer::simplifyConditions()
 {

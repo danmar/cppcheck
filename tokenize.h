@@ -101,6 +101,13 @@ private:
      */
     bool simplifyConditions();
 
+    /** Remove reduntant code, e.g. if( false ) { int a; } should be
+     * removed, because it is never executed.
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
+    bool removeReduntantConditions();
+
     /** Simplify casts
      * @return true if something is modified
      *         false if nothing is done.

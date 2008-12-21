@@ -217,7 +217,7 @@ private:
         std::ostringstream ostr;
         for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { if ( true ) ; }"), ostr.str() );
+        ASSERT_EQUALS( std::string(" void f ( ) { ; }"), ostr.str() );
     }
 
     void simplify_known_variables()
