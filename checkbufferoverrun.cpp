@@ -200,7 +200,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
             pattern << "%var1% [ " << strindex << " ]";
 
             int indentlevel2 = 0;
-            while (tok2 = tok2->next())
+            while ((tok2 = tok2->next()))
             {
                 if ( (tok2->str() == ";") && indentlevel2 == 0 )
                     break;
