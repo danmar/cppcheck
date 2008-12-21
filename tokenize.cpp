@@ -42,11 +42,6 @@
 #include <mem.h>
 #endif
 
-#ifndef _MSC_VER
-#define _strdup(str) strdup(str)
-#endif
-
-
 
 //---------------------------------------------------------------------------
 
@@ -117,7 +112,7 @@ void Tokenizer::Define(const char Name[], const char Value[])
     if (!dec && !hex)
         return;
 
-    char *strValue = _strdup(Value);
+    char *strValue = strdup(Value);
 
     if (!dec && hex)
     {
@@ -128,12 +123,12 @@ void Tokenizer::Define(const char Name[], const char Value[])
 		std::ostringstream ostr;
 		ostr << value;
         free(strValue);
-        strValue = _strdup(ostr.str().c_str());
+        strValue = strdup(ostr.str().c_str());
     }
 
     DefineSymbol *NewSym = new DefineSymbol;
     memset(NewSym, 0, sizeof(DefineSymbol));
-    NewSym->name = _strdup(Name);
+    NewSym->name = strdup(Name);
     NewSym->value = strValue;
     NewSym->next = _dsymlist;
     _dsymlist = NewSym;

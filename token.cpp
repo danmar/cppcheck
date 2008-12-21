@@ -49,11 +49,7 @@ void TOKEN::setstr( const char s[] )
 {
     _str = s;
     std::free(_cstr);
-#ifndef _MSC_VER
     _cstr = strdup(s);
-#else
-    _cstr = _strdup(s);
-#endif
     _isName = bool(_str[0]=='_' || isalpha(_str[0]));
     _isNumber = bool(isdigit(_str[0]) != 0);
     if( _str == "true" || _str == "false" )

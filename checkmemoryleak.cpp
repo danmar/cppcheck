@@ -32,9 +32,6 @@
 #include <string.h>
 #endif
 
-#ifndef _MSC_VER
-#define _strdup(str) strdup(str)
-#endif
 
 //---------------------------------------------------------------------------
 
