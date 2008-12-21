@@ -194,7 +194,6 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope( const TOKEN *tok, c
             while (tok2 && !TOKEN::Match(tok2,")"))
                 tok2 = tok2->next();
             if (!tok2 || !(tok2->tokAt(5)))
-            if (!(tok2->tokAt(5)))
                 break;
 
             std::ostringstream pattern;
