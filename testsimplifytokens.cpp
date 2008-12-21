@@ -37,6 +37,7 @@ private:
     {
         TEST_CASE( cast0 );
         TEST_CASE( sizeof1 );
+        TEST_CASE( iftruefalse );
     }
 
     std::string tok(const char code[])
@@ -44,8 +45,8 @@ private:
         std::istringstream istr(code);
         Tokenizer tokenizer;
         tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
-
         std::string ret;
         for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
         {
@@ -67,6 +68,33 @@ private:
         const char code1[] = " struct ABC *abc = malloc(sizeof(*abc)); ";
         const char code2[] = " struct ABC *abc = malloc(100); ";
         ASSERT_EQUALS( tok(code1), tok(code2) );
+    }
+
+    void iftruefalse()
+    {
+        {
+            const char code1[] = " void f() { int a; bool use = false; if( use ) { a=0; } else {a=1;} } ";
+            const char code2[] = " void f() { int a; bool use = false; if( false ) { a=0; } else {a=1;} } ";
+            ASSERT_EQUALS( tok(code1), tok(code2) );
+        }
+
+        {
+            const char code1[] = " void f() { int a; bool use = true; if( use ) { a=0; } else {a=1;} } ";
+            const char code2[] = " void f() { int a; bool use = true; if( true ) { a=0; } else {a=1;} } ";
+            ASSERT_EQUALS( tok(code1), tok(code2) );
+        }
+
+        {
+            const char code1[] = " void f() { int a; int use = 5; if( use ) { a=0; } else {a=1;} } ";
+            const char code2[] = " void f() { int a; int use = 5; if( true ) { a=0; } else {a=1;} } ";
+            ASSERT_EQUALS( tok(code1), tok(code2) );
+        }
+
+        {
+            const char code1[] = " void f() { int a; int use = 0; if( use ) { a=0; } else {a=1;} } ";
+            const char code2[] = " void f() { int a; int use = 0; if( false ) { a=0; } else {a=1;} } ";
+            ASSERT_EQUALS( tok(code1), tok(code2) );
+        }
     }
 };
 
