@@ -1237,7 +1237,7 @@ bool Tokenizer::simplifyIfAddBraces()
         }
 
         // ')' should be followed by '{'
-        if ( TOKEN::Match(tok, ") {") )
+        if (!tok || TOKEN::Match(tok, ") {"))
             continue;
 
         // insert open brace..
