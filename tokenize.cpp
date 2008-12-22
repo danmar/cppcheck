@@ -1220,7 +1220,7 @@ bool Tokenizer::simplifyIfAddBraces()
 {
     bool ret = false;
 
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( TOKEN *tok = _tokens; tok; tok = tok ? tok->next() : NULL )
     {
         if ( ! TOKEN::Match(tok, "if|for|while (") )
             continue;
