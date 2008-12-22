@@ -153,9 +153,9 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
 {
     std::ostringstream bdir, oss;
     oss << path;
-    bdir << path;
     if ( path.length() > 0 && path[path.length()-1] == '/' )
     {
+        bdir << path;
         oss << "*";
     }
 
