@@ -89,6 +89,7 @@ private:
         TEST_CASE( if5 );
         TEST_CASE( if6 );   // Bug 2432631
         TEST_CASE( if7 );   // Bug 2401436
+        TEST_CASE( if8 );   // Bug 2458532
 
         TEST_CASE( alwaysTrue );
 
@@ -533,6 +534,25 @@ private:
                "    else {}\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void if8()
+    {
+        check( "static void f(int i)\n"
+               "{\n"
+               "    char *c = malloc(50);\n"
+               "    if (i == 1)\n"
+               "    {\n"
+               "        free(c);\n"
+               "        return;\n"
+               "    }\n"
+               "    if (i == 2)\n"
+               "    {\n"
+               "        return;\n"
+               "    }\n"
+               "    free(c);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:11]: Memory leak: c\n"), errout.str() );
     }
 
 

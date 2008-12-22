@@ -930,6 +930,13 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
+            // Delete first if in .. "if { dealloc|assign|use ; return ; } if return ;"
+            if ( TOKEN::Match(tok2, "[;{}] if { dealloc|assign|use ; return ; } if return ;") )
+            {
+                erase(tok2, tok2->tokAt(8));
+                done = false;
+            }
+
             // Delete second case in "case ; case ;"
             while (TOKEN::Match(tok2, "case ; case ;"))
             {
