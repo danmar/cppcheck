@@ -102,6 +102,12 @@ private:
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
 
+    /** Add braces to an if-block
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
+    bool simplifyIfAddBraces();
+
     /** Simplify conditions
      * @return true if something is modified
      *         false if nothing is done.

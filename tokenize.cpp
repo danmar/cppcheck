@@ -1216,6 +1216,72 @@ bool Tokenizer::removeReduntantConditions()
     return ret;
 }
 
+bool Tokenizer::simplifyIfAddBraces()
+{
+    bool ret = false;
+
+    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    {
+        if ( ! TOKEN::Match(tok, "if|for|while (") )
+            continue;
+
+        // Goto the ending ')'
+        int parlevel = 1;
+        tok = tok->next();
+        while ( parlevel >= 1 && (tok = tok->next()) )
+        {
+            if ( tok->str() == "(" )
+                ++parlevel;
+            else if ( tok->str() == ")" )
+                --parlevel;
+        }
+
+        // ')' should be followed by '{'
+        if ( TOKEN::Match(tok, ") {") )
+            continue;
+
+        // insert open brace..
+        tok->insertToken("{");
+
+        // insert close brace..
+        // In most cases it would work to just search for the next ';' and insert a closing brace after it.
+        // But here are special cases..
+        // * if (cond) for (;;) break;
+        // * if (cond1) if (cond2) { }
+        parlevel = 0;
+        int indentlevel = 0;
+        while ( (tok = tok->next()) != NULL )
+        {
+            if ( tok->str() == "{" )
+                ++indentlevel;
+
+            else if ( tok->str() == "}" )
+            {
+                --indentlevel;
+                if ( indentlevel == 0 )
+                    break;
+            }
+
+            else if ( tok->str() == "(" )
+                ++parlevel;
+
+            else if ( tok->str() == ")" )
+                --parlevel;
+
+            else if ( indentlevel == 0 && parlevel == 0 && tok->str() == ";" )
+                break;
+        }
+
+        if ( tok )
+        {
+            tok->insertToken("}");
+            ret = true;
+        }
+    }
+
+    return ret;
+}
+
 bool Tokenizer::simplifyConditions()
 {
     bool ret = false;
