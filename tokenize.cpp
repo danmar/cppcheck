@@ -1025,6 +1025,8 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
+    simplifyIfAddBraces();
+
     bool modified = true;
     while ( modified )
     {

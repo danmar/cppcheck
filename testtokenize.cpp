@@ -226,7 +226,7 @@ private:
         std::ostringstream ostr;
         for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { ; }"), ostr.str() );
+        ASSERT_EQUALS( std::string(" void f ( ) { { ; } }"), ostr.str() );
     }
 
     void ifAddBraces1()
