@@ -49,6 +49,7 @@ private:
         TEST_CASE( ifAddBraces1 );
         TEST_CASE( ifAddBraces2 );
         TEST_CASE( ifAddBraces3 );
+        TEST_CASE( ifAddBraces4 );
 
         TEST_CASE( numeric_true_condition );
 
@@ -286,6 +287,31 @@ private:
         for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { for ( ; ; ) { } } }"), ostr.str() );
+    }
+
+    void ifAddBraces4()
+    {
+        const char code[] = "char * foo ()\n"
+                            "{\n"
+                            "    char *str = malloc(10);\n"
+                            "    if (somecondition)\n"
+                            "        for ( ; ; )\n"
+                            "        { }\n"
+                            "    return str;\n"
+                            "}\n";
+
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
+
+        std::ostringstream ostr;
+        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS( std::string(" char * foo ( ) { char * str = malloc ( 10 ) ; if ( somecondition ) { for ( ; ; ) { } } return str ; }"), ostr.str() );
     }
 
     void simplifyKnownVariables1()

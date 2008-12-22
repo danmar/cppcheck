@@ -1242,6 +1242,7 @@ bool Tokenizer::simplifyIfAddBraces()
 
         // insert open brace..
         tok->insertToken("{");
+        tok = tok->next();
 
         // insert close brace..
         // In most cases it would work to just search for the next ';' and insert a closing brace after it.
