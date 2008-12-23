@@ -137,13 +137,30 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
 
 bool TOKEN::simpleMatch(const TOKEN *tok, const char pattern[])
 {
-    for ( const char *current = pattern, *tmp = strchr(pattern, ' '), *next = tmp ? tmp : (pattern + strlen(pattern));
-         *current; current = next,
-         next = *next ? ((tmp = strchr(++current, ' ')) ? tmp : (current + strlen(current))) : next, tok = tok->next() )
+    const char *current, *next;
+
+    current = pattern;
+    next = strchr(pattern, ' ');
+    if ( !next )
+        next = pattern + strlen(pattern);
+
+    while ( *current )
     {
-        if ( !tok || static_cast<size_t>(next-current) != tok->_str.length() || strncmp( current, tok->_cstr, next-current) )
+        size_t length = static_cast<size_t>(next-current);
+
+        if ( !tok || length != tok->_str.length() || strncmp(current, tok->_cstr, length) )
             return false;
+
+        current = next;
+        if ( *next )
+        {
+            next = strchr(++current, ' ');
+            if ( !next )
+                next = current + strlen(current);
+        }
+        tok = tok->next();
     }
+
     return true;
 }
 
