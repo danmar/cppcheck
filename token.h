@@ -54,6 +54,25 @@ public:
 
     const char *strAt(int index) const;
 
+    /**
+     * Match given token (or list of tokens) to a pattern list.
+     *
+     * Possible patterns
+     * "someRandomText" If token contains "someRandomText".
+     * @note Use Match() if you want to use flags in patterns
+     *
+     * The patterns can be also combined to compare to multiple tokens at once
+     * by separating tokens with a space, e.g.
+     * ") void {" will return true if first token is ')' next token
+     * is "void" and token after that is '{'. If even one of the tokens does
+     * not match its pattern, false is returned.
+     *
+     * @param tok List of tokens to be compared to the pattern
+     * @param pattern The pattern against which the tokens are compared,
+     * e.g. "const" or ") void {".
+     * @return true if given token matches with given pattern
+     *         false if given token does not match with given pattern
+     */
     static bool simpleMatch(const TOKEN *tok, const char pattern[]);
 
     /**
@@ -81,8 +100,8 @@ public:
      * match its pattern, false is returned.
      *
      * @param tok List of tokens to be compared to the pattern
-     * @param pattern The pattern where tokens are compared, e.g. "const"
-     * or ") const|volatile| {".
+     * @param pattern The pattern against which the tokens are compared,
+     * e.g. "const" or ") const|volatile| {".
      * @param varname1 Used with pattern "%var1%" and "%var2%"
      * @param varname2 Used with pattern "%var1%" and "%var2%"
      * @return true if given token matches with given pattern
