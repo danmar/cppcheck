@@ -159,7 +159,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         if (!tok)
         {
             // If we have no tokens, pattern "!!else" should return true
-            if( isNotPattern( p ) )
+            if( p[1] == '!' && p[0] == '!' && strlen(p) > 2 )
                 return true;
             else
                 return false;
@@ -294,7 +294,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         }
 
         // Parse "not" options. Token can be anything except the given one
-        else if( isNotPattern( str ) )
+        else if( str[1] == '!' && str[0] == '!' && strlen(str) > 2 )
         {
             if( strcmp( tok->aaaa(), &(str[2]) ) == 0 )
                 return false;
@@ -308,14 +308,6 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
 
     // The end of the pattern has been reached and nothing wrong has been found
     return true;
-}
-
-bool TOKEN::isNotPattern( const char *pattern )
-{
-    if( pattern && strlen(pattern) > 2 && pattern[0] == '!' && pattern[1] == '!' )
-        return true;
-    else
-        return false;
 }
 
 bool TOKEN::isName() const

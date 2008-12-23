@@ -155,16 +155,6 @@ private:
     void next( TOKEN *next );
     void previous( TOKEN *previous );
 
-    /**
-     * Return true if pattern is e.g. "!!else".
-     * See Match() for more info.
-     *
-     * @param pattern Pattern to match, e.g. "if ; !!else"
-     * @return true if pattern starts with "!!" and contains 3
-     * or more characters.
-     */
-    static bool isNotPattern( const char *pattern );
-
     std::string _str;
     char * _cstr;
     bool _isName;
