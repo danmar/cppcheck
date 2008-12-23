@@ -182,67 +182,91 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
             return true;
 
 		bool useVar1;
-        // Any symbolname..
-        if (strcmp(str,"%var%")==0 || strcmp(str,"%type%")==0)
+
+		// Compare the first character of the string for optimization reasons
+		// before doing more detailed checks.
+        bool patternIdentified = false;
+        if( str[0] == '%' )
         {
-            if (!tok->isName())
-                return false;
-        }
-
-        // Accept any token
-        else if (strcmp(str,"%any%")==0 )
-        {
-
-        }
-
-        // Variable name..
-        else if ((useVar1 = (strcmp(str,"%var1%")==0)) || strcmp(str,"%var2%")==0)
-        {
-            const char **varname = useVar1 ? varname1 : varname2;
-
-            if ( ! varname )
-                return false;
-
-            if (tok->_str != varname[0])
-                return false;
-
-            for ( int i = 1; varname[i]; i++ )
+            // Any symbolname..
+            if (strcmp(str,"%var%")==0 || strcmp(str,"%type%")==0)
             {
-                if ( !(tok->tokAt(2)) )
+                if (!tok->isName())
                     return false;
 
-                if ( strcmp(tok->strAt( 1), ".") )
+                patternIdentified = true;
+            }
+
+            // Accept any token
+            else if (strcmp(str,"%any%")==0 )
+            {
+                patternIdentified = true;
+            }
+
+            // Variable name..
+            else if ((useVar1 = (strcmp(str,"%var1%")==0)) || strcmp(str,"%var2%")==0)
+            {
+                const char **varname = useVar1 ? varname1 : varname2;
+
+                if ( ! varname )
                     return false;
 
-                if ( strcmp(tok->strAt( 2), varname[i]) )
+                if (tok->_str != varname[0])
                     return false;
 
-                tok = tok->tokAt(2);
+                for ( int i = 1; varname[i]; i++ )
+                {
+                    if ( !(tok->tokAt(2)) )
+                        return false;
+
+                    if ( strcmp(tok->strAt( 1), ".") )
+                        return false;
+
+                    if ( strcmp(tok->strAt( 2), varname[i]) )
+                        return false;
+
+                    tok = tok->tokAt(2);
+                }
+
+                patternIdentified = true;
+            }
+
+            else if (strcmp(str,"%varid%")==0)
+            {
+                if ( tok->varId() != varid )
+                    return false;
+
+                patternIdentified = true;
+            }
+
+            else if (strcmp(str,"%num%")==0)
+            {
+                if ( !tok->isNumber() )
+                    return false;
+
+                patternIdentified = true;
+            }
+
+            else if (strcmp(str,"%bool%")==0)
+            {
+                if ( !tok->isBoolean() )
+                    return false;
+
+                patternIdentified = true;
+            }
+
+            else if (strcmp(str,"%str%")==0)
+            {
+                if ( tok->_str[0] != '\"' )
+                    return false;
+
+                patternIdentified = true;
             }
         }
 
-        else if (strcmp(str,"%varid%")==0)
+        if( patternIdentified )
         {
-            if ( tok->varId() != varid )
-                return false;
-        }
-
-        else if (strcmp(str,"%num%")==0)
-        {
-            if ( !tok->isNumber() )
-                return false;
-        }
-
-        else if (strcmp(str,"%bool%")==0)
-        {
-            if ( !tok->isBoolean() )
-                return false;
-        }
-
-        else if (strcmp(str,"%str%")==0)
-        {
-            if ( tok->_str[0] != '\"' )
-                return false;
+            // Pattern was identified already above.
         }
 
         // [.. => search for a one-character token..
