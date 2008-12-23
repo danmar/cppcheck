@@ -234,6 +234,7 @@ private:
         const char code[] = "void f()\n"
                             "{\n"
                             "    if (a);\n"
+                            "    else ;\n"
                             "}\n";
 
         // tokenize..
@@ -246,7 +247,7 @@ private:
         std::ostringstream ostr;
         for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { ; } }"), ostr.str() );
+        ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { ; } else { ; } }"), ostr.str() );
     }
 
     void ifAddBraces2()

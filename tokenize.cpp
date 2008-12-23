@@ -1224,23 +1224,35 @@ bool Tokenizer::simplifyIfAddBraces()
 
     for ( TOKEN *tok = _tokens; tok; tok = tok ? tok->next() : NULL )
     {
-        if ( ! TOKEN::Match(tok, "if|for|while (") )
-            continue;
-
-        // Goto the ending ')'
-        int parlevel = 1;
-        tok = tok->next();
-        while ( parlevel >= 1 && (tok = tok->next()) )
+        if ( TOKEN::Match(tok, "if|for|while (") )
         {
-            if ( tok->str() == "(" )
-                ++parlevel;
-            else if ( tok->str() == ")" )
-                --parlevel;
+            // Goto the ending ')'
+            int parlevel = 1;
+            tok = tok->next();
+            while ( parlevel >= 1 && (tok = tok->next()) )
+            {
+                if ( tok->str() == "(" )
+                    ++parlevel;
+                else if ( tok->str() == ")" )
+                    --parlevel;
+            }
+
+            // ')' should be followed by '{'
+            if (!tok || TOKEN::Match(tok, ") {"))
+                continue;
         }
 
-        // ')' should be followed by '{'
-        if (!tok || TOKEN::Match(tok, ") {"))
+        else if ( tok->str() == "else" )
+        {
+            // An else followed by an if or brace don't need to be processed further
+            if ( TOKEN::Match( tok, "else if|{" ) )
+                continue;
+        }
+
+        else
+        {
             continue;
+        }
 
         // insert open brace..
         tok->insertToken("{");
@@ -1251,7 +1263,7 @@ bool Tokenizer::simplifyIfAddBraces()
         // But here are special cases..
         // * if (cond) for (;;) break;
         // * if (cond1) if (cond2) { }
-        parlevel = 0;
+        int parlevel = 0;
         int indentlevel = 0;
         while ( (tok = tok->next()) != NULL )
         {

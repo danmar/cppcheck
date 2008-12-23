@@ -98,7 +98,7 @@ private:
 
         {
             const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else a=1; int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = false; a=1; int c=1; } ";
+            const char code2[] = " void f() { int a; bool use = false; { a=1; } int c=1; } ";
             ASSERT_EQUALS( tok(code2), tok(code1) );
         }
 
