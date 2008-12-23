@@ -141,7 +141,7 @@ bool TOKEN::simpleMatch(const TOKEN *tok, const char pattern[])
          *current; current = next,
          next = *next ? ((tmp = strchr(++current, ' ')) ? tmp : (current + strlen(current))) : next, tok = tok->next() )
     {
-        if ( !tok || (next-current) != tok->_str.length() || strncmp( current, tok->_cstr, next-current) )
+        if ( !tok || static_cast<size_t>(next-current) != tok->_str.length() || strncmp( current, tok->_cstr, next-current) )
             return false;
     }
     return true;
