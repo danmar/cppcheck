@@ -573,7 +573,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         {
             for ( const TOKEN *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next() )
             {
-                if ( TOKEN::Match(tok2, ";{") )
+                if ( TOKEN::Match(tok2, "[;{]") )
                     break;
                 else if ( tok2->str() == varname )
                 {
