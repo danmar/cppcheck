@@ -1464,7 +1464,7 @@ bool Tokenizer::simplifyKnownVariables()
             {
                 --indentlevel;
                 if ( indentlevel <= 0 )
-                    continue;
+                    break;
             }
 
             else if ( TOKEN::Match(tok2, "%var% = %num% ;") ||
