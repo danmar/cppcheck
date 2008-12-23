@@ -191,7 +191,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
                 continue;
 
             // Goto the end of the for loop..
-            while ( tok && tok2->str() != ")" )
+            while ( tok2 && tok2->str() != ")" )
                 tok2 = tok2->next();
             if ( !tok2 || !tok2->tokAt(5) )
                 break;
@@ -311,7 +311,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
                 else if ( ftok->str() == "," )
                     par--;
 
-                else if ( par==1 && parlevel==1 && (TOKEN::Match(ftok, "%var% ,") || TOKEN::Match(ftok, "%var% )")) )
+                else if ( par==1 && parlevel==1 && TOKEN::Match(ftok, "%var% [,)]") )
                 {
                     // Parameter name..
                     const char *parname[2];
