@@ -1078,30 +1078,16 @@ bool Tokenizer::removeReduntantConditions()
 
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
-        if (!TOKEN::Match(tok, "if ( %bool% )"))
+        if (!TOKEN::Match(tok, "if ( %bool% ) {"))
             continue;
 
         // Find matching else
         const TOKEN *elseTag = 0;
-        if( TOKEN::simpleMatch( tok->tokAt( 4 ), "{" ) )
-        {
-            // Find the closing "}"
-            elseTag = Tokenizer::findClosing( tok->tokAt( 4 ) );
-            if( elseTag )
-                elseTag = elseTag->next();
-        }
-        else
-        {
-            // Find the closing ";"
-            for ( const TOKEN *closing = tok->tokAt( 4 ); closing; closing = closing->next() )
-            {
-                if( closing->str() == ";" )
-                {
-                    elseTag = closing->next();
-                    break;
-                }
-            }
-        }
+
+        // Find the closing "}"
+        elseTag = Tokenizer::findClosing( tok->tokAt( 4 ) );
+        if( elseTag )
+            elseTag = elseTag->next();
 
         bool boolValue = false;
         if( tok->tokAt( 2 )->str() == "true" )
