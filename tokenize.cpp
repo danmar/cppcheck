@@ -1078,7 +1078,10 @@ bool Tokenizer::removeReduntantConditions()
 
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
-        if (!TOKEN::Match(tok, "if ( %bool% ) {"))
+        if (!TOKEN::simpleMatch(tok, "if"))
+            continue;
+
+        if (!TOKEN::Match(tok->tokAt(1), "( %bool% ) {"))
             continue;
 
         // Find matching else
@@ -1140,29 +1143,6 @@ bool Tokenizer::removeReduntantConditions()
 
                         // Remove the "else { aaa; }"
                         TOKEN::eraseTokens( elseTag->previous(), end->tokAt( 1 ) );
-                    }
-                    else
-                    {
-                        // Convert "if( true ) {aaa;} else bbb;" => "{aaa;}"
-
-                        // Find the closing ";"
-                        const TOKEN *end = 0;
-                        for ( const TOKEN *closing = elseTag->tokAt( 1 ); closing; closing = closing->next() )
-                        {
-                            if( closing->str() == ";" )
-                            {
-                                end = closing;
-                                break;
-                            }
-                        }
-
-                        if( !end )
-                        {
-                            // Possibly syntax error
-                            return false;
-                        }
-
-                        TOKEN::eraseTokens( elseTag->previous(), end->next() );
                     }
 
                     // Remove "if( true )"
