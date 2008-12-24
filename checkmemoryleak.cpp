@@ -638,18 +638,116 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
-            // Delete empty if that is not followed by an else
-            if (tok2->tokAt(2) &&
-                TOKEN::Match(tok2->next(), "if ; !!else") )
+
+            if ( TOKEN::simpleMatch(tok2->next(), "if") )
             {
-                erase(tok2, tok2->tokAt(2));
-                done = false;
+                // Delete empty if that is not followed by an else
+                if (TOKEN::Match(tok2->next(), "if ; !!else") )
+                {
+                    erase(tok2, tok2->tokAt(2));
+                    done = false;
+                }
+
+                // Delete "if ; else ;"
+                else if ( TOKEN::Match(tok2->next(), "if ; else ;") )
+                {
+                    erase( tok2, tok2->tokAt(4) );
+                    done = false;
+                }
+
+                // TODO Make this more generic. Delete "if ; else use ; use"
+                else if ( TOKEN::Match(tok2, "; if ; else assign|use ; assign|use") ||
+                     TOKEN::Match(tok2, "; if assign|use ; else ; assign|use")  )
+                {
+                    erase( tok2, tok2->tokAt(4) );
+                    done = false;
+                }
+
+
+                // Reduce "if assign|dealloc|use ;" that is not followed by an else..
+                // If "--all" has been given these are deleted
+                // Otherwise, only the "if" will be deleted
+                else if (TOKEN::Match(tok2, "[;{}] if assign|dealloc|use ; !!else") )
+                {
+                    if ( _settings._showAll )
+                        erase(tok2, tok2->tokAt(3));
+                    else
+                        erase( tok2, tok2->tokAt(2) );
+                    done = false;
+                }
+
+                // Reduce "if if" => "if"
+                else if ( TOKEN::Match(tok2, "if if") )
+                {
+                    erase(tok2, tok2->tokAt(2));
+                    done = false;
+                }
+
+                // Reduce "if return ; alloc ;" => "alloc ;"
+                else if (TOKEN::Match(tok2, "[;{}] if return ; alloc ;"))
+                {
+                    erase(tok2, tok2->tokAt(4));
+                    done = false;
+                }
+
+                // "[;{}] if alloc ; else return ;" => "[;{}] alloc ;"
+                else if (TOKEN::Match(tok2,"[;{}] if alloc ; else return ;"))
+                {
+                    erase(tok2, tok2->tokAt(2));        // Remove "if"
+                    erase(tok2->next(), tok2->tokAt(5));  // Remove "; else return"
+                    done = false;
+                }
+
+                // Reduce "if ; else %var% ;" => "if %var% ;"
+                else if ( TOKEN::Match(tok2->next(), "if ; else %var% ;") )
+                {
+                    erase( tok2->next(), tok2->tokAt(4) );
+                    done = false;
+                }
+
+                // Reduce "if ; else return use ;" => "if return use ;"
+                else if ( TOKEN::Match(tok2->next(), "if ; else return use ;") )
+                {
+                    erase( tok2->next(), tok2->tokAt(4) );
+                    done = false;
+                }
+
+                // Reduce "if return ; if return ;" => "if return ;"
+                else if ( TOKEN::Match(tok2->next(), "if return ; if return ;") )
+                {
+                    erase( tok2, tok2->tokAt(4) );
+                    done = false;
+                }
+
+                // Delete first if in .. "if { dealloc|assign|use ; return ; } if return ;"
+                else if ( TOKEN::Match(tok2, "[;{}] if { dealloc|assign|use ; return ; } if return ;") )
+                {
+                    erase(tok2, tok2->tokAt(8));
+                    done = false;
+                }
+
+                // Reducing if..
+                else if ( _settings._showAll )
+                {
+                    if (TOKEN::Match(tok2->next(), "if assign|dealloc|use ; else"))
+                    {
+                        erase(tok2->next(), tok2->tokAt(3));
+                        done = false;
+                    }
+                    if (TOKEN::Match(tok2,"[;{}] if { assign|dealloc|use ; return ; } !!else") )
+                    {
+                        erase(tok2,tok2->tokAt(8));
+                        done = false;
+                    }
+                }
+
+                continue;
             }
 
-            // Delete "if ; else ;"
-            if ( TOKEN::Match(tok2->next(), "if ; else ;") )
+            // Reduce "if(var) dealloc ;" and "if(var) use ;" that is not followed by an else..
+            if (TOKEN::Match(tok2, "[;{}] if(var) assign|dealloc|use ; !!else") )
             {
-                erase( tok2, tok2->tokAt(4) );
+                erase(tok2, tok2->tokAt(2));
                 done = false;
             }
 
@@ -666,43 +764,9 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
-            // TODO Make this more generic. Delete "if ; else use ; use"
-            if ( TOKEN::Match(tok2, "; if ; else assign|use ; assign|use") ||
-                 TOKEN::Match(tok2, "; if assign|use ; else ; assign|use")  )
-            {
-                erase( tok2, tok2->tokAt(4) );
-                done = false;
-            }
-
-
-            // Reduce "if assign|dealloc|use ;" that is not followed by an else..
-            // If "--all" has been given these are deleted
-            // Otherwise, only the "if" will be deleted
-            if (TOKEN::Match(tok2, "[;{}] if assign|dealloc|use ; !!else") )
-            {
-                if ( _settings._showAll )
-                    erase(tok2, tok2->tokAt(3));
-                else
-                    erase( tok2, tok2->tokAt(2) );
-                done = false;
-            }
-
-            // Reduce "if(var) dealloc ;" and "if(var) use ;" that is not followed by an else..
-            if (TOKEN::Match(tok2, "[;{}] if(var) assign|dealloc|use ; !!else") )
-            {
-                erase(tok2, tok2->tokAt(2));
-                done = false;
-            }
 
             // Reduce "if* ;" that is not followed by an else..
             if (TOKEN::Match(tok2->next(), "if(var)|if(!var)|if(true)|if(false)|ifv ; !!else") )
-            {
-                erase(tok2, tok2->tokAt(2));
-                done = false;
-            }
-
-            // Reduce "if if" => "if"
-            if ( TOKEN::Match(tok2, "if if") )
             {
                 erase(tok2, tok2->tokAt(2));
                 done = false;
@@ -723,21 +787,6 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
 
-            // Reduce "if return ; alloc ;" => "alloc ;"
-            if (TOKEN::Match(tok2, "[;{}] if return ; alloc ;"))
-            {
-                erase(tok2, tok2->tokAt(4));
-                done = false;
-            }
-
-            // "[;{}] if alloc ; else return ;" => "[;{}] alloc ;"
-            if (TOKEN::Match(tok2,"[;{}] if alloc ; else return ;"))
-            {
-                erase(tok2, tok2->tokAt(2));        // Remove "if"
-                erase(tok2->next(), tok2->tokAt(5));  // Remove "; else return"
-                done = false;
-            }
-
             // Replace "dealloc use ;" with "dealloc ;"
             if ( TOKEN::Match(tok2, "dealloc use ;") )
             {
@@ -745,40 +794,11 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
-            // Reducing if..
-            if ( _settings._showAll )
-            {
-                if (TOKEN::Match(tok2,"if assign|dealloc|use ; else"))
-                {
-                    erase(tok2, tok2->tokAt(2));
-                    done = false;
-                }
-                if (TOKEN::Match(tok2,"[;{}] if { assign|dealloc|use ; return ; } !!else") )
-                {
-                    erase(tok2,tok2->tokAt(8));
-                    done = false;
-                }
-            }
-
             // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
             if ( ! _settings._showAll && TOKEN::Match(tok2, "dealloc ; alloc ; if break|continue ;") )
             {
                 tok2 = tok2->next()->next()->next();
                 erase(tok2, tok2->tokAt(3));
-                done = false;
-            }
-
-            // Reduce "if ; else %var% ;" => "if %var% ;"
-            if ( TOKEN::Match(tok2, "if ; else %var% ;") )
-            {
-                erase( tok2, tok2->tokAt(3) );
-                done = false;
-            }
-
-            // Reduce "if ; else return use ;" => "if return use ;"
-            if ( TOKEN::Match(tok2, "if ; else return use ;") )
-            {
-                erase( tok2, tok2->tokAt(3) );
                 done = false;
             }
 
@@ -859,13 +879,6 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
-            // Reduce "if return ; if return ;" => "if return ;"
-            if ( TOKEN::Match(tok2->next(), "if return ; if return ;") )
-            {
-                erase( tok2, tok2->tokAt(4) );
-                done = false;
-            }
-
             // Reduce "[;{}] return ; %var%" => "[;{}] return ;"
             if ( TOKEN::Match(tok2, "[;{}] return ; %var%") )
             {
@@ -927,13 +940,6 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             if (TOKEN::Match(tok2, "[;{}] use ; return use ;"))
             {
                 erase(tok2, tok2->tokAt(2));
-                done = false;
-            }
-
-            // Delete first if in .. "if { dealloc|assign|use ; return ; } if return ;"
-            if ( TOKEN::Match(tok2, "[;{}] if { dealloc|assign|use ; return ; } if return ;") )
-            {
-                erase(tok2, tok2->tokAt(8));
                 done = false;
             }
 
