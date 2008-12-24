@@ -638,14 +638,18 @@ void Tokenizer::setVarId()
             ++_varId;
             int indentlevel = 0;
             int parlevel = 0;
-            for ( tok2 = tok->next(); tok2 && indentlevel >= 0; tok2 = tok2->next() )
+            for ( tok2 = tok->next(); tok2; tok2 = tok2->next() )
             {
                 if ( tok2->str() == varname )
                     tok2->varId( _varId );
                 else if ( tok2->str() == "{" )
                     ++indentlevel;
                 else if ( tok2->str() == "}" )
+                {
                     --indentlevel;
+                    if ( indentlevel < 0 )
+                        break;
+                }
                 else if ( tok2->str() == "(" )
                     ++parlevel;
                 else if ( tok2->str() == ")" )
@@ -659,8 +663,8 @@ void Tokenizer::setVarId()
     // Struct/Class members
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
-        if ( TOKEN::Match(tok, "%var% . %var%") &&
-             tok->varId() != 0 &&
+        if ( tok->varId() != 0 &&
+             TOKEN::Match(tok, "%var% . %var%") &&
              tok->tokAt(2)->varId() == 0 )
         {
             ++_varId;
