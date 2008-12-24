@@ -172,7 +172,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
         if ( indentlevel == 1 )
         {
             // Member function implemented in the class declaration?
-            if (!TOKEN::Match(tok,"~") && TOKEN::Match(tok->next(), internalPattern.str().c_str()))
+            if (tok->str()!="~" && TOKEN::Match(tok->next(), internalPattern.str().c_str()))
             {
                 const TOKEN *tok2 = tok;
                 while ( tok2 && tok2->str() != "{" && tok2->str() != ";" )
@@ -246,11 +246,11 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
             continue;
 
         // Before a new statement there is "[{};)=]" or "else"
-        if ( ! TOKEN::Match(ftok, "[{};)=]") && ! TOKEN::Match(ftok, "else") )
+        if ( ! TOKEN::Match(ftok, "[{};)=]") && ftok->str() != "else" )
             continue;
 
         // Using the operator= function to initialize all variables..
-        if ( TOKEN::Match(ftok->next(), "* this = ") )
+        if ( TOKEN::simpleMatch(ftok->next(), "* this = ") )
         {
             for (struct VAR *var = varlist; var; var = var->next)
                 var->init = true;
@@ -264,11 +264,11 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         ftok = ftok->next();
 
         // Skip "this->"
-        if ( TOKEN::Match(ftok, "this .") )
+        if ( TOKEN::simpleMatch(ftok, "this .") )
             ftok = ftok->tokAt(2);
 
         // Clearing all variables..
-        if (TOKEN::Match(ftok,"memset ( this ,"))
+        if (TOKEN::simpleMatch(ftok,"memset ( this ,"))
         {
             for (struct VAR *var = varlist; var; var = var->next)
                 var->init = true;
@@ -295,7 +295,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
-        if (TOKEN::Match(ftok,"%var% . clear (") || TOKEN::Match(ftok,"%var% . Clear ("))
+        if (TOKEN::Match(ftok,"%var% . clear|Clear ("))
         {
             InitVar( varlist, ftok->aaaa() );
         }
@@ -737,7 +737,7 @@ void CheckClass::virtualDestructor()
             }
 
             // There is a destructor. Check that it's virtual..
-            else if ( ! TOKEN::Match(base, "virtual") )
+            else if ( base->str() != "virtual" )
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(base) << ": Class " << baseName[0] << " which is inherited by class " << derivedClass->str() << " does not have a virtual destructor";
