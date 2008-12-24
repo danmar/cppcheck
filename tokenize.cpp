@@ -1333,9 +1333,12 @@ bool Tokenizer::simplifyConditions()
         }
 
         // Reduce "(%num% == %num%)" => "(true)"/"(false)"
+        const TOKEN *tok4 = tok->tokAt(4);
+        if ( ! tok4 )
+            break;
         if ( (tok->str()=="&&" || tok->str()=="||" || tok->str()=="(") &&
              TOKEN::Match(tok->tokAt(1), "%num% %any% %num%") &&
-             (TOKEN::simpleMatch(tok->tokAt(4), "&&") || TOKEN::simpleMatch(tok->tokAt(4), "||") || TOKEN::simpleMatch(tok->tokAt(4), ")")) )
+             (tok4->str()=="&&" || tok4->str()=="||" || tok4->str()==")") )
         {
             double op1 = (strstr(tok->strAt(1), "0x")) ? strtol(tok->strAt(1),0,16) : atof( tok->strAt(1) );
             double op2 = (strstr(tok->strAt(3), "0x")) ? strtol(tok->strAt(3),0,16) : atof( tok->strAt(3) );
