@@ -123,6 +123,7 @@ private:
         // TODO TEST_CASE( func7 );
         TEST_CASE( func8 );     // Using callback
         TEST_CASE( func9 );     // Embedding the function call in a if-condition
+        TEST_CASE( func10 );    // Bug 2458510 - Function pointer
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -965,6 +966,16 @@ private:
                "    if (b())\n"
                "        return;\n"
                "    delete [] a;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void func10()
+    {
+        check( "static void f(void (*fnc)(char*))\n"
+               "{\n"
+               "    char *c = malloc(50);\n"
+               "    (fnc)(c);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }

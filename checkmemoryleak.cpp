@@ -569,9 +569,10 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         }
 
         // Callback..
-        if ( TOKEN::Match(tok, "( * %var% ) (") )
+        if ( TOKEN::Match(tok, "( * %var% ) (") ||
+             TOKEN::Match(tok, "( %var% ) (") )
         {
-            for ( const TOKEN *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next() )
+            for ( const TOKEN *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next() )
             {
                 if ( TOKEN::Match(tok2, "[;{]") )
                     break;
