@@ -1498,7 +1498,6 @@ void Tokenizer::fillFunctionList()
 {
     _functionList.clear();
 
-    bool staticfunc = false;
     bool classfunc = false;
 
     int indentlevel = 0;
@@ -1516,10 +1515,7 @@ void Tokenizer::fillFunctionList()
         }
 
         if (strchr("};", tok->aaaa0()))
-            staticfunc = classfunc = false;
-
-        else if ( tok->str() == "static" )
-            staticfunc = true;
+            classfunc = false;
 
         else if ( tok->str() == "::" )
             classfunc = true;
