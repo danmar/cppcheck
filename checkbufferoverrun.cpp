@@ -75,7 +75,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
     // Array index..
     if ( varid > 0 )
     {
-        if ( TOKEN::Match(tok, "%varid% [ %num% ]", 0, 0, varid) )
+        if ( TOKEN::Match(tok, "%varid% [ %num% ]", 0, varid) )
         {
             const char *num = tok->strAt(2);
             if (strtol(num, NULL, 10) >= size)
@@ -112,7 +112,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
         // Array index..
         if ( varid > 0 )
         {
-            if ( !tok->isName() && !TOKEN::Match(tok, "[.&]") && TOKEN::Match(tok->next(), "%varid% [ %num% ]", 0, 0, varid) )
+            if ( !tok->isName() && !TOKEN::Match(tok, "[.&]") && TOKEN::Match(tok->next(), "%varid% [ %num% ]", 0, varid) )
             {
                 const char *num = tok->strAt(3);
                 if (strtol(num, NULL, 10) >= size)
@@ -138,8 +138,8 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
         {
             if ( TOKEN::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets") )
             {
-                if ( TOKEN::Match(tok->next(), "( %varid% , %num% , %num% )", 0, 0, varid) ||
-                     TOKEN::Match(tok->next(), "( %var% , %varid% , %num% )", 0, 0, varid) )
+                if ( TOKEN::Match(tok->next(), "( %varid% , %num% , %num% )", 0, varid) ||
+                     TOKEN::Match(tok->next(), "( %var% , %varid% , %num% )", 0, varid) )
                 {
                     const char *num  = tok->strAt(6);
                     if ( atoi(num) > total_size )

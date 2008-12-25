@@ -671,7 +671,7 @@ void Tokenizer::setVarId()
             const std::string pattern(std::string("%varid% . ") + tok->strAt(2));
             for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
             {
-                if ( TOKEN::Match(tok2, pattern.c_str(), 0, 0, tok->varId()) )
+                if ( TOKEN::Match(tok2, pattern.c_str(), 0, tok->varId()) )
                     tok2->next()->next()->varId( _varId );
             }
         }
@@ -1459,7 +1459,7 @@ bool Tokenizer::simplifyKnownVariables()
                         break;
 
                     // Replace variable with numeric constant..
-                    if ( TOKEN::Match(tok3, "if ( %varid% )", 0, 0, varid) )
+                    if ( TOKEN::Match(tok3, "if ( %varid% )", 0, varid) )
                     {
                         tok3 = tok3->next()->next();
                         tok3->setstr( tok2->strAt(2) );

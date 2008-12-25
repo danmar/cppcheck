@@ -164,7 +164,7 @@ bool TOKEN::simpleMatch(const TOKEN *tok, const char pattern[])
     return true;
 }
 
-bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[], unsigned int varid)
+bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], unsigned int varid)
 {
     const char *p = pattern;
     while ( *p )
@@ -198,8 +198,6 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         if (str[0] == 0)
             return true;
 
-		bool useVar1;
-
 		// Compare the first character of the string for optimization reasons
 		// before doing more detailed checks.
         bool patternIdentified = false;
@@ -221,25 +219,23 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
             }
 
             // Variable name..
-            else if ((useVar1 = (strcmp(str,"%var1%")==0)) || strcmp(str,"%var2%")==0)
+            else if (strcmp(str, "%var1%") == 0)
             {
-                const char **varname = useVar1 ? varname1 : varname2;
-
-                if ( ! varname )
+                if ( ! varname1 )
                     return false;
 
-                if (tok->_str != varname[0])
+                if (tok->_str != varname1[0])
                     return false;
 
-                for ( int i = 1; varname[i]; i++ )
+                for ( int i = 1; varname1[i]; i++ )
                 {
                     if ( !(tok->tokAt(2)) )
                         return false;
 
-                    if ( strcmp(tok->strAt( 1), ".") )
+                    if ( strcmp(tok->strAt(1), ".") )
                         return false;
 
-                    if ( strcmp(tok->strAt( 2), varname[i]) )
+                    if ( strcmp(tok->strAt(2), varname1[i]) )
                         return false;
 
                     tok = tok->tokAt(2);
@@ -353,11 +349,11 @@ bool TOKEN::isStandardType() const
 
 //---------------------------------------------------------------------------
 
-const TOKEN *TOKEN::findmatch(const TOKEN *tok, const char pattern[], const char *varname1[], const char *varname2[])
+const TOKEN *TOKEN::findmatch(const TOKEN *tok, const char pattern[], const char *varname1[])
 {
     for ( ; tok; tok = tok->next())
     {
-        if ( TOKEN::Match(tok, pattern, varname1, varname2) )
+        if ( TOKEN::Match(tok, pattern, varname1) )
             return tok;
     }
     return 0;
