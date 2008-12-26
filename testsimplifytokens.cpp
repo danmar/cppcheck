@@ -125,13 +125,12 @@ private:
             const char code2[] = " void f() { int a; bool use = true; { a=0; }int c=1; } ";
             ASSERT_EQUALS( tok(code2), tok(code1) );
         }
-/* TODO: Uncomment and make this work
+
         {
-            const char code1[] = " void f() { int a; bool use = true; if( bb ) a=0; else if( use ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = true; if( bb ) {a=0;} else { a=1; } int c=1; } ";
+            const char code1[] = " void f() { if( aa ) { a=0; } else if( true ) a=1; else { a=2; } } ";
+            const char code2[] = " void f() { if( aa ) { a=0; } else { a=1; } } ";
             ASSERT_EQUALS( tok(code2), tok(code1) );
         }
-*/
     }
 };
 
