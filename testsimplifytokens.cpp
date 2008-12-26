@@ -131,6 +131,12 @@ private:
             const char code2[] = " void f() { if( aa ) { a=0; } else { a=1; } } ";
             ASSERT_EQUALS( tok(code2), tok(code1) );
         }
+
+        {
+            const char code1[] = " void f() { if( aa ) { a=0; } else if( false ) a=1; else { a=2; } } ";
+            const char code2[] = " void f() { if( aa ) { a=0; } else { a=2; } } ";
+            ASSERT_EQUALS( tok(code2), tok(code1) );
+        }
     }
 };
 
