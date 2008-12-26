@@ -140,55 +140,52 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     return code.str();
 }
 
-/**
- * Extract the code for each configuration
- * \param istr The (file/string) stream to read from.
- * \param result The map that will get the results
- */
 void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
 {
-    std::string codestr( read(istr, filename) );
+        std::list<std::string> configs;
+        std::string data;
+        preprocess( istr, filename, data, configs );
+        for ( std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it )
+            result[ *it ] = Preprocessor::getcode( data, *it );
+}
+
+void Preprocessor::preprocess(std::istream &istr, const std::string &filename, std::string &processedFile, std::list<std::string> &resultConfigurations)
+{
+    processedFile = read(istr, filename);
 
     // Replace all tabs with spaces..
     std::string::size_type loc = 0;
-    while ( (loc = codestr.find("\t", loc)) != std::string::npos )
-        codestr[loc] = ' ';
+    while ( (loc = processedFile.find("\t", loc)) != std::string::npos )
+        processedFile[loc] = ' ';
 
     // Remove all indentation..
-    if ( !codestr.empty() && codestr[0] == ' ' )
-        codestr.erase( 0, codestr.find_first_not_of(" ") );
+    if ( !processedFile.empty() && processedFile[0] == ' ' )
+        processedFile.erase( 0, processedFile.find_first_not_of(" ") );
     loc = 0;
-    while ( (loc = codestr.find("\n ", loc)) != std::string::npos )
-        codestr.erase( 1 + loc, 1 );
+    while ( (loc = processedFile.find("\n ", loc)) != std::string::npos )
+        processedFile.erase( 1 + loc, 1 );
 
     // Remove all trailing spaces..
     loc = 0;
-    while ( (loc = codestr.find(" \n", loc)) != std::string::npos )
+    while ( (loc = processedFile.find(" \n", loc)) != std::string::npos )
     {
-        codestr.erase( loc, 1 );
+        processedFile.erase( loc, 1 );
         if ( loc > 0 )
             --loc;
     }
 
     // Using the backslash at the end of a line..
-    while ( (loc = codestr.rfind("\\\n")) != std::string::npos )
+    while ( (loc = processedFile.rfind("\\\n")) != std::string::npos )
     {
-        codestr.erase(loc, 2);
-        if (loc > 0 && codestr[loc-1] != ' ')
-            codestr.insert(loc, " ");
-        if ( (loc = codestr.find("\n", loc)) != std::string::npos)
-            codestr.insert( loc, "\n" );
+        processedFile.erase(loc, 2);
+        if (loc > 0 && processedFile[loc-1] != ' ')
+            processedFile.insert(loc, " ");
+        if ( (loc = processedFile.find("\n", loc)) != std::string::npos)
+            processedFile.insert( loc, "\n" );
     }
 
     // Get all possible configurations..
-    std::list<std::string> cfgs = getcfgs( codestr );
-
-    // Extract the code for each possible configuration..
-    result.clear();
-    for ( std::list<std::string>::const_iterator it = cfgs.begin(); it != cfgs.end(); ++it )
-    {
-        result[ *it ] = getcode( codestr, *it );
-    }
+    resultConfigurations = getcfgs( processedFile );
 }
 
 

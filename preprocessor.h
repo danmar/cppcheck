@@ -32,25 +32,45 @@ class Preprocessor
 public:
     Preprocessor();
 
+    /**
+     * Extract the code for each configuration
+     * \param istr The (file/string) stream to read from.
+     * \param result The map that will get the results
+     */
     void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
+
+    /**
+     * Extract the code for each configuration. Use this with getcode() to get the
+     * file data for each individual configuration.
+     *
+     * @param istr The (file/string) stream to read from.
+     * @param filename
+     * @param processedFile Give reference to empty string as a parameter,
+     * function will fill processed file here. Use this also as a filedata parameter
+     * to getcode() if you recieved more than once configurations.
+     * @param resultConfigurations List of configurations. Pass these one by one
+     * to getcode() with processedFile.
+     */
+    void preprocess(std::istream &istr, const std::string &filename, std::string &processedFile, std::list<std::string> &resultConfigurations );
 
     /** Just read the code into a string. Perform simple cleanup of the code */
     std::string read(std::istream &istr, const std::string &filename);
 
-private:
     /**
      * Get preprocessed code for a given configuration
      */
-    std::string getcode(const std::string &filedata, std::string cfg);
+    static std::string getcode(const std::string &filedata, std::string cfg);
+
+private:
 
     /**
      * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
      */
     std::list<std::string> getcfgs( const std::string &filedata );
 
-    std::string getdef(std::string line, bool def);
+    static std::string getdef(std::string line, bool def);
 
-    bool match_cfg_def( std::string cfg, const std::string &def );
+    static bool match_cfg_def( std::string cfg, const std::string &def );
 };
 
 //---------------------------------------------------------------------------

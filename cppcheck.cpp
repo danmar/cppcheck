@@ -144,29 +144,33 @@ void CppCheck::check()
         _errout.str("");
         std::string fname = _filenames[c];
 
-        // If only errors are printed, print filename after the check
-        if ( _settings._errorsOnly == false )
-            _errorLogger->reportOut( std::string( "Checking " ) + fname + std::string( "..." ) );
 
         Preprocessor preprocessor;
-        std::map<std::string, std::string> code;
+        std::list<std::string> configurations;
+        std::string filedata = "";
         if( _fileContents.size() > 0 && _fileContents.find( _filenames[c] ) != _fileContents.end() )
         {
             // File content was given as a string
             std::istringstream iss( _fileContents[ _filenames[c] ] );
-            preprocessor.preprocess(iss, code, fname);
+            preprocessor.preprocess(iss, fname, filedata, configurations );
         }
         else
         {
             // Only file name was given, read the content from file
             std::ifstream fin( fname.c_str() );
-            preprocessor.preprocess(fin, code, fname);
+            preprocessor.preprocess(fin, fname, filedata, configurations );
         }
 
-        for ( std::map<std::string,std::string>::const_iterator it = code.begin(); it != code.end(); ++it )
+        for ( std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it )
         {
-            cfg = it->first;
-            checkFile(it->second, _filenames[c].c_str());
+            cfg = *it;
+            std::string codeWithoutCfg = Preprocessor::getcode( filedata, *it );
+
+            // If only errors are printed, print filename after the check
+            if ( _settings._errorsOnly == false )
+                _errorLogger->reportOut( std::string( "Checking " ) + fname + ": "+cfg+std::string( "..." ) );
+
+            checkFile( codeWithoutCfg, _filenames[c].c_str());
         }
 
         if ( _settings._errorsOnly == false && _errout.str().empty() )
