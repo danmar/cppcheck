@@ -128,6 +128,7 @@ private:
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
+        // TODO TEST_CASE( class3 );
 
         TEST_CASE( throw1 );
 
@@ -1081,6 +1082,45 @@ private:
 
         ASSERT_EQUALS( std::string("[test.cpp:17]: Mismatching allocation and deallocation: Fred::str1\n"), errout.str() );
     }
+
+    void class3()
+    {
+        check( "class TOKEN;\n"
+               "\n"
+               "class Tokenizer\n"
+               "{\n"
+               "private:\n"
+               "    TOKEN *_tokens;\n"
+               "\n"
+               "public:\n"
+               "    Tokenizer();\n"
+               "    ~Tokenizer();\n"
+               "    void deleteTokens(TOKEN *tok);\n"
+               "};\n"
+               "\n"
+               "Tokenizer::Tokenizer()\n"
+               "{\n"
+               "    _tokens = new TOKEN;\n"
+               "}\n"
+               "\n"
+               "Tokenizer::~Tokenizer()\n"
+               "{\n"
+               "    deleteTokens(_tokens);\n"
+               "}\n"
+               "\n"
+               "void Tokenizer::deleteTokens(TOKEN *tok)\n"
+               "{\n"
+               "    while (tok)\n"
+               "    {\n"
+               "        TOKEN *next = tok->next();\n"
+               "        delete tok;\n"
+               "        tok = next;\n"
+               "    }\n"
+               "}\n", true );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
 
 
 
