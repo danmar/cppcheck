@@ -1232,6 +1232,15 @@ private:
         check( "void foo()\n"
                "{\n"
                "    char *a = (char *)malloc(10);\n"
+               "    char *p = a + 1;\n"
+               "    free(p);\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
+
+        check( "void foo()\n"
+               "{\n"
+               "    char *a = (char *)malloc(10);\n"
                "    a += 10;\n"
                "    free(a - 10);\n"
                "}\n" );
