@@ -114,19 +114,17 @@ private:
             ASSERT_EQUALS( tok(code2), tok(code1) );
         }
 
-        // TODO, uncomment below and fix
-            /*
         {
             const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = true; if( use ) a=0; int c=1; } ";
+            const char code2[] = " void f() { int a; bool use = true; { a=0;} int c=1; } ";
             ASSERT_EQUALS( tok(code2), tok(code1) );
         }
 
         {
             const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = true; if( use ) a=0; int c=1; } ";
+            const char code2[] = " void f() { int a; bool use = true; { a=0; }int c=1; } ";
             ASSERT_EQUALS( tok(code2), tok(code1) );
-        }*/
+        }
     }
 };
 

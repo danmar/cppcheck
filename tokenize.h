@@ -92,11 +92,13 @@ private:
     };
 
     /**
-     * Finds matching "}" for "{".
-     * @param tok The "{"
-     * @return The "}" that matches given parameter or 0 if not found.
+     * Finds matching "end" for "start".
+     * @param tok The start tag
+     * @param start e.g. "{"
+     * @param end e.g. "}"
+     * @return The end tag that matches given parameter or 0 if not found.
      */
-    static const TOKEN *findClosing( const TOKEN *tok );
+    static const TOKEN *findClosing( const TOKEN *tok, const char *start, const char *end );
 
     void Define(const char Name[], const char Value[]);
 
