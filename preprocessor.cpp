@@ -154,14 +154,14 @@ void Preprocessor::preprocess(std::istream &istr, const std::string &filename, s
     processedFile = read(istr, filename);
 
     // Replace all tabs with spaces..
-    std::string::size_type loc = 0;
-    while ( (loc = processedFile.find("\t", loc)) != std::string::npos )
-        processedFile[loc] = ' ';
+    std::replace( processedFile.begin(), processedFile.end(), '\t', ' ' );
 
     // Remove all indentation..
     if ( !processedFile.empty() && processedFile[0] == ' ' )
         processedFile.erase( 0, processedFile.find_first_not_of(" ") );
-    loc = 0;
+
+    // TODO, this is very slow with very big files, make it faster
+    std::string::size_type loc = 0;
     while ( (loc = processedFile.find("\n ", loc)) != std::string::npos )
         processedFile.erase( 1 + loc, 1 );
 
