@@ -106,6 +106,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
+      <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>file or path</option></arg>
       <arg choice="plain"><option>...</option></arg>
     </cmdsynopsis>
@@ -151,6 +152,14 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <term><option>--verbose</option></term>
         <listitem>
           <para>More detailed error reports</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-f</option></term>
+        <term><option>--force</option></term>
+        <listitem>
+          <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by 
+default.</para>
         </listitem>
       </varlistentry>
     </variablelist>

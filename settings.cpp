@@ -26,6 +26,7 @@ Settings::Settings()
     _errorsOnly = false;
     _checkFunctionUsage = false;
     _verbose = false;
+    _force = false;
 }
 
 Settings::~Settings()

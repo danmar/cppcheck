@@ -22,7 +22,7 @@ Compiling
 Usage
 
   The syntax is:
-      cppcheck [--all] [--quiet] [--style] [file or path] [file or path]
+      cppcheck [--all] [--quiet] [--style] [--verbose] [--force] [file or path] [file or path]
 
   The error messages will be printed to stderr.
 

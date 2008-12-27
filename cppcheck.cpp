@@ -88,6 +88,10 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
         else if (strcmp(argv[i],"-v")==0 || strcmp(argv[i],"--verbose")==0)
             _settings._verbose = true;
 
+        // Force checking of files that have "too many" configurations
+        else if (strcmp(argv[i],"-f")==0 || strcmp(argv[i],"--force")==0)
+            _settings._force = true;
+
         else
             pathnames.push_back( argv[i] );
     }
@@ -118,6 +122,7 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
                  "    -q, --quiet      Only print error messages\n"
                  "    -s, --style      Check coding style\n"
                  "    -v, --verbose    More detailed error reports\n"
+                 "    -f, --force      Force checking on files that have \"too many\" configurations\n"
                  "\n"
                  "Example usage:\n"
                  "  # Recursively check ../myproject/ and print only most fatal errors:\n"
@@ -161,8 +166,17 @@ void CppCheck::check()
             preprocessor.preprocess(fin, fname, filedata, configurations );
         }
 
+        int checkCount = 0;
         for ( std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it )
         {
+            // Check only 12 first configurations, after that bail out, unless --force
+            // was used.
+            if( !_settings._force && checkCount > 11 )
+            {
+                _errorLogger->reportErr( std::string( "Bailing out from checking " ) + fname + ": Too many configurations. Recheck this file with --force if you want to check them all." );
+                break;
+            }
+
             cfg = *it;
             std::string codeWithoutCfg = Preprocessor::getcode( filedata, *it );
 
@@ -171,6 +185,7 @@ void CppCheck::check()
                 _errorLogger->reportOut( std::string( "Checking " ) + fname + ": "+cfg+std::string( "..." ) );
 
             checkFile( codeWithoutCfg, _filenames[c].c_str());
+            checkCount++;
         }
 
         if ( _settings._errorsOnly == false && _errout.str().empty() )

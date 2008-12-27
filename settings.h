@@ -36,6 +36,9 @@ public:
     bool _errorsOnly;
     bool _checkFunctionUsage;
     bool _verbose;
+
+    /** Force checking t he files with "too many" configurations. */
+    bool _force;
 };
 
 #endif // SETTINGS_H
