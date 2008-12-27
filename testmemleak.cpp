@@ -131,6 +131,7 @@ private:
         // TODO TEST_CASE( class3 );
 
         TEST_CASE( throw1 );
+        TEST_CASE( throw2 );
 
         TEST_CASE( linux_list_1 );
 
@@ -1136,6 +1137,27 @@ private:
                "}\n" );
 
         ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: str\n"), errout.str() );
+    }
+
+    void throw2()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *str = 0;\n"
+               "    try\n"
+               "    {\n"
+               "        str = new char[100];\n"
+               "        if ( somecondition )\n"
+               "            throw exception;\n"
+               "        delete [] str;\n"
+               "    }\n"
+               "    catch ( ... )\n"
+               "    {\n"
+               "        delete [] str;\n"
+               "    }\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 

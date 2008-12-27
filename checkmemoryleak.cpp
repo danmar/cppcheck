@@ -566,8 +566,8 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         }
 
         // throw..
-        if ( tok->str() == "throw" )
-            addtoken("throw");
+        if ( TOKEN::Match(tok, "try|throw|catch") )
+            addtoken(tok->strAt(0));
 
         // Assignment..
         if ( TOKEN::Match(tok,"[)=] %var1% [+;)]", varnames) ||
@@ -616,6 +616,25 @@ void CheckMemoryLeakClass::erase(TOKEN *begin, const TOKEN *end)
 
 void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
 {
+    // Replace "throw" that is not in a try block with "return"
+    int indentlevel = 0;
+    int trylevel = -1;
+    for (TOKEN *tok2 = tok; tok2; tok2 = tok2->next())
+    {
+        if ( tok2->str() == "{" )
+            ++indentlevel;
+        else if ( tok2->str() == "}" )
+        {
+            --indentlevel;
+            if ( indentlevel <= trylevel )
+                trylevel = -1;
+        }
+        else if ( trylevel == -1 && tok2->str() == "try" )
+            trylevel = indentlevel;
+        else if ( trylevel == -1 && tok2->str() == "throw" )
+            tok2->setstr("return");
+    }
+
     // reduce the code..
     bool done = false;
     while ( ! done )
@@ -779,6 +798,12 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 done = false;
             }
 
+            // Remove "catch ;"
+            if ( TOKEN::simpleMatch(tok2->next(), "catch ;") )
+            {
+                erase(tok2, tok2->tokAt(3));
+                done = false;
+            }
 
             // Reduce "if* ;" that is not followed by an else..
             if (TOKEN::Match(tok2->next(), "if(var)|if(!var)|if(true)|if(false)|ifv ; !!else") )
@@ -1031,12 +1056,6 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                         }
                     }
                 }
-            }
-
-            if ( TOKEN::Match(tok2, "throw") )
-            {
-                tok2->setstr( "return" );
-                done = false;
             }
         }
     }
