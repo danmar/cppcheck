@@ -664,14 +664,15 @@ void Tokenizer::setVarId()
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
         if ( tok->varId() != 0 &&
-             TOKEN::Match(tok, "%var% . %var%") &&
+             TOKEN::Match(tok->next(), ". %var%") &&
              tok->tokAt(2)->varId() == 0 )
         {
             ++_varId;
-            const std::string pattern(std::string("%varid% . ") + tok->strAt(2));
+
+            const std::string pattern(std::string(". ") + tok->strAt(2));
             for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
             {
-                if ( TOKEN::Match(tok2, pattern.c_str(), 0, tok->varId()) )
+                if ( tok2->varId() == tok->varId() && TOKEN::simpleMatch( tok->next(), pattern.c_str() ) )
                     tok2->next()->next()->varId( _varId );
             }
         }
