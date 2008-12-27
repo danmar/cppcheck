@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;"
+				PreprocessorDefinitions="UNIT_TESTING"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -110,7 +110,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;"
+				PreprocessorDefinitions="UNIT_TESTING"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -175,6 +175,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\checkfunctionusage.h"
+				>
+			</File>
+			<File
 				RelativePath=".\CheckHeaders.h"
 				>
 			</File>
@@ -184,10 +188,6 @@
 			</File>
 			<File
 				RelativePath=".\CheckOther.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CommonCheck.h"
 				>
 			</File>
 			<File
@@ -208,6 +208,10 @@
 			</File>
 			<File
 				RelativePath=".\testsuite.h"
+				>
+			</File>
+			<File
+				RelativePath=".\token.h"
 				>
 			</File>
 			<File
@@ -235,6 +239,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\checkfunctionusage.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CheckHeaders.cpp"
 				>
 			</File>
@@ -244,10 +252,6 @@
 			</File>
 			<File
 				RelativePath=".\CheckOther.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CommonCheck.cpp"
 				>
 			</File>
 			<File
@@ -275,11 +279,23 @@
 				>
 			</File>
 			<File
+				RelativePath=".\testclass.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\testconstructors.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\testdivision.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testfilelister.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testfunctionusage.cpp"
 				>
 			</File>
 			<File
@@ -291,7 +307,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\testmemleakmp.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testother.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\testpreprocessor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testredundantif.cpp"
 				>
 			</File>
 			<File
@@ -299,7 +327,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\testsimplifytokens.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\testsuite.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\testtoken.cpp"
 				>
 			</File>
 			<File
@@ -307,7 +343,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\testunusedprivfunc.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\testunusedvar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\token.cpp"
 				>
 			</File>
 			<File
