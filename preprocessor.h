@@ -64,6 +64,14 @@ public:
 private:
 
     /**
+     * Remove space that has new line character on left or right side of it.
+     *
+     * @param str The string to be converted
+     * @return The string where space characters have been removed.
+     */
+    static std::string removeSpaceNearNL( const std::string &str );
+
+    /**
      * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
      */
     std::list<std::string> getcfgs( const std::string &filedata );

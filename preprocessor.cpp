@@ -149,6 +149,30 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
             result[ *it ] = Preprocessor::getcode( data, *it );
 }
 
+std::string Preprocessor::removeSpaceNearNL( const std::string &str )
+{
+    std::string tmp;
+    int prev = -1;
+    for( unsigned int i = 0; i < str.size(); i++ )
+    {
+        if( str[i] == ' ' &&
+            ( ( i > 0 && tmp[prev] == '\n' ) ||
+              ( i+1 < str.size() && str[i+1] == '\n' )
+            )
+          )
+        {
+            // Ignore space that has new line in either side of it
+        }
+        else
+        {
+            tmp.append( 1,str[i] );
+            prev++;
+        }
+    }
+
+    return tmp;
+}
+
 void Preprocessor::preprocess(std::istream &istr, const std::string &filename, std::string &processedFile, std::list<std::string> &resultConfigurations)
 {
     processedFile = read(istr, filename);
@@ -160,21 +184,11 @@ void Preprocessor::preprocess(std::istream &istr, const std::string &filename, s
     if ( !processedFile.empty() && processedFile[0] == ' ' )
         processedFile.erase( 0, processedFile.find_first_not_of(" ") );
 
-    // TODO, this is very slow with very big files, make it faster
-    std::string::size_type loc = 0;
-    while ( (loc = processedFile.find("\n ", loc)) != std::string::npos )
-        processedFile.erase( 1 + loc, 1 );
-
-    // Remove all trailing spaces..
-    loc = 0;
-    while ( (loc = processedFile.find(" \n", loc)) != std::string::npos )
-    {
-        processedFile.erase( loc, 1 );
-        if ( loc > 0 )
-            --loc;
-    }
+    // Remove space characters that are after or before new line character
+    processedFile = removeSpaceNearNL( processedFile );
 
     // Using the backslash at the end of a line..
+    std::string::size_type loc = 0;
     while ( (loc = processedFile.rfind("\\\n")) != std::string::npos )
     {
         processedFile.erase(loc, 2);
