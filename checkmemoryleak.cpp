@@ -578,7 +578,8 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
 
         // Assignment..
         if ( TOKEN::Match(tok,"[)=] %var1% [+;)]", varnames) ||
-             TOKEN::Match(tok, "%var1% +=|-=", varnames) )
+             TOKEN::Match(tok, "%var1% +=|-=", varnames) ||
+             TOKEN::Match(tok, "+= %var1% ;", varnames) )
             addtoken("use");
 
         // Investigate function calls..

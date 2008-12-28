@@ -1288,6 +1288,14 @@ private:
                "}\n" );
 
         ASSERT_EQUALS( std::string(""), errout.str() );
+
+        check( "void foo()\n"
+               "{\n"
+               "    char *a = new char[100];\n"
+               "    list += a;\n"
+               "}\n" );
+
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 
