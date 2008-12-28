@@ -697,6 +697,13 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                     done = false;
                 }
 
+                // Two "if alloc ;" after one another.. perhaps only one of them can be executed each time
+                else if (!_settings._showAll && TOKEN::Match(tok2, "[;{}] if alloc ; if alloc ;"))
+                {
+                    erase(tok2, tok2->tokAt(4));
+                    done = false;
+                }
+
                 // TODO Make this more generic. Delete "if ; else use ; use"
                 else if ( TOKEN::Match(tok2, "; if ; else assign|use ; assign|use") ||
                      TOKEN::Match(tok2, "; if assign|use ; else ; assign|use")  )
