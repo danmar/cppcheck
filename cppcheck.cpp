@@ -173,7 +173,9 @@ void CppCheck::check()
             // was used.
             if( !_settings._force && checkCount > 11 )
             {
-                _errorLogger->reportErr( std::string( "Bailing out from checking " ) + fname + ": Too many configurations. Recheck this file with --force if you want to check them all." );
+                if( _settings._errorsOnly == false )
+                    _errorLogger->reportOut( std::string( "Bailing out from checking " ) + fname + ": Too many configurations. Recheck this file with --force if you want to check them all." );
+
                 break;
             }
 
