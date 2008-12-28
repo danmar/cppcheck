@@ -490,6 +490,13 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
                     if ( parlevel <= 0 )
                         break;
                 }
+                if ( TOKEN::Match(tok2, "fclose ( %var1% )", varnames) )
+                {
+                    addtoken( "dealloc" );
+                    addtoken( ";" );
+                    dep = true;
+                    break;
+                }
                 if ( (tok2->str() != ".") &&
                      TOKEN::Match(tok2->next(), "%var1%", varnames) &&
                      !TOKEN::Match(tok2->next(), "%var1% .", varnames) )
@@ -1074,10 +1081,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
     AllocType dealloctype = No;
 
     TOKEN *tok = getcode( Tok1, callstack, varname, alloctype, dealloctype );
-    //tok->printOut( "getcode result" );
+    // tok->printOut( "getcode result" );
 
     simplifycode( tok );
-    //tok->printOut( "simplifycode result" );
+    // tok->printOut( "simplifycode result" );
 
     // If the variable is not allocated at all => no memory leak
     if (TOKEN::findmatch(tok, "alloc") == 0)

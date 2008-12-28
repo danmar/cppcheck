@@ -68,6 +68,7 @@ private:
         TEST_CASE( simple7 );
         TEST_CASE( simple8 );
         TEST_CASE( simple9 );   // Bug 2435468 - member function "free"
+        TEST_CASE( simple10 );  // fclose in a if condition
 
         TEST_CASE( use1 );
         TEST_CASE( use2 );
@@ -251,6 +252,16 @@ private:
                "    MyClass *c = new MyClass();\n"
                "    c->free(c);\n"
                "    delete c;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void simple10()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    FILE * f = fopen(fname, str);\n"
+               "    if ( fclose(f) != NULL );\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
