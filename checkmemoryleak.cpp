@@ -467,14 +467,6 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         {
             addtoken("if(!var)");
         }
-        else if ( TOKEN::Match(tok, "if ( true )") )
-        {
-            addtoken("if(true)");
-        }
-        else if ( TOKEN::Match(tok, "if ( false )") )
-        {
-            addtoken("if(false)");
-        }
         else if ( TOKEN::Match(tok, "if") )
         {
             // Check if the condition depends on var somehow..
@@ -821,7 +813,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             }
 
             // Reduce "if* ;" that is not followed by an else..
-            if (TOKEN::Match(tok2->next(), "if(var)|if(!var)|if(true)|if(false)|ifv ; !!else") )
+            if (TOKEN::Match(tok2->next(), "if(var)|if(!var)|ifv ; !!else") )
             {
                 erase(tok2, tok2->tokAt(2));
                 done = false;
@@ -863,13 +855,6 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             {
                 erase(tok2, tok2->tokAt(3));
                 erase(tok2->next()->next(), tok2->tokAt(4));
-                done = false;
-            }
-
-            // Reduce "if(true) X ;" => "X ;"
-            if (TOKEN::Match(tok2->next(), "if(true) %var% ; !!else") )
-            {
-                erase( tok2, tok2->tokAt(2) );
                 done = false;
             }
 
