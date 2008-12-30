@@ -8,7 +8,7 @@ Cppcheck
 About
 
   The original name of this program is "C++check".
-  The name was changed to "cppcheck" (a google search is more successful now).
+  The name was changed to "cppcheck".
 
 
 Compiling
@@ -21,16 +21,7 @@ Compiling
 
 Usage
 
-  The syntax is:
-      cppcheck [--all] [--quiet] [--style] [--verbose] [--force] [file or path] [file or path]
-
-  The error messages will be printed to stderr.
-
-  Example (Check all files. Use all checks):
-      cppcheck --style --all ./
-
-  To output error messages to a file use this syntax (works both on Windows and Linux):
-      cppcheck file.cpp 2> err.txt
+  Run the cppcheck program without parameters and a help text will be shown.
 
 
 Recommendations
