@@ -107,7 +107,7 @@ std::string CppCheck::parseFromArgs( int argc, const char* const argv[] )
     if (_filenames.empty())
     {
         std::ostringstream oss;
-        oss <<   "c++check 1.26\n"
+        oss <<   "c++check 1.27\n"
                  "\n"
                  "C/C++ code checking\n"
                  "\n"
