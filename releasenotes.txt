@@ -1,11 +1,12 @@
 Release notes for 1.27
 
-Biggest news:
- * A new C++ check was added that detects non-virtual destructors of base classes.
- * Command line changed. 
- ** --recursive is no longer available. 
- ** --errorsonly was renamed to --quiet.
- ** --force was added
- ** Short versions -a, -q, -s, -v, -f created. 
- * This version is more accurate than previous versions
- 
+A new C++ check was added that detects when a base class has a non-virtual destructor
+
+The command line options have changed.
+ * --recursive was removed
+ * --errorsonly was renamed to --quiet
+ * --force was added
+
+Improvements in the core functionality that makes the checks more accurate.
+
+Many small updates in the memory leak checking.
