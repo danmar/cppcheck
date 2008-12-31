@@ -200,31 +200,30 @@ void CheckOther::redundantCondition2()
 
 void CheckOther::WarningIf()
 {
-
     // Search for 'if (condition);'
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (tok->str() == "if")
+        if (!TOKEN::simpleMatch(tok, "if ("))
+            continue;
+
+        // Search for the end paranthesis for the condition..
+        int parlevel = 0;
+        for (const TOKEN *tok2 = tok->next(); tok2; tok2 = tok2->next())
         {
-            int parlevel = 0;
-            for (const TOKEN *tok2 = tok->next(); tok2; tok2 = tok2->next())
+            if (tok2->str() == "(")
+                ++parlevel++;
+            else if (tok2->str() == ")")
             {
-                if (tok2->str() == "(")
-                    parlevel++;
-                else if (tok2->str() == ")")
+                --parlevel;
+                if ( parlevel <= 0 )
                 {
-                    parlevel--;
-                    if (parlevel<=0)
+                    if ( TOKEN::Match(tok2, ") ; !!else") )
                     {
-                        if (strcmp(tok2->strAt(1), ";") == 0 &&
-                            strcmp(tok2->strAt(2), "else") != 0)
-                        {
-                            std::ostringstream ostr;
-                            ostr << _tokenizer->fileLine(tok) << ": Found \"if (condition);\"";
-                            _errorLogger->reportErr(ostr.str());
-                        }
-                        break;
+                        std::ostringstream ostr;
+                        ostr << _tokenizer->fileLine(tok) << ": Found \"if (condition);\"";
+                        _errorLogger->reportErr(ostr.str());
                     }
+                    break;
                 }
             }
         }
