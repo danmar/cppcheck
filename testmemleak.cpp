@@ -151,6 +151,8 @@ private:
 
 
         // TODO TEST_CASE( structmember1 );
+
+        TEST_CASE( dealloc_use_1 );     // Deallocate and then use memory
     }
 
 
@@ -1360,6 +1362,21 @@ private:
 
         ASSERT_EQUALS( std::string("[test.cpp:5]: Memory leak: abc.a\n"), errout.str() );
     }
+
+
+
+
+    void dealloc_use_1()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char *s = new char[100];\n"
+               "    delete [] s;\n"
+               "    p = s;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Using \"s\" after it has been deallocated / released\n"), errout.str() );
+    }
+
 
 };
 

@@ -1088,11 +1088,26 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
     AllocType alloctype = No;
     AllocType dealloctype = No;
 
+    const TOKEN *result;
+
     TOKEN *tok = getcode( Tok1, callstack, varname, alloctype, dealloctype );
-    // tok->printOut( "getcode result" );
+    //tok->printOut( "getcode result" );
+
+    // Simplify the code and check if freed memory is used..
+    for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+    {
+        while ( TOKEN::Match(tok2, "[;{}] ;") )
+            erase(tok2, tok2->tokAt(2));
+    }
+    if ( (result = TOKEN::findmatch(tok, "dealloc [;{}] use ;")) != NULL )
+    {
+        std::ostringstream errmsg;
+        errmsg << _tokenizer->fileLine(result->tokAt(2)) << ": Using \"" << varname << "\" after it has been deallocated / released";
+        _errorLogger->reportErr( errmsg.str() );
+    }
 
     simplifycode( tok );
-    // tok->printOut( "simplifycode result" );
+    //tok->printOut( "simplifycode result" );
 
     // If the variable is not allocated at all => no memory leak
     if (TOKEN::findmatch(tok, "alloc") == 0)
@@ -1108,7 +1123,6 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         return;
     }
 
-	const TOKEN *result;
     if ( (result = TOKEN::findmatch(tok, "loop alloc ;")) != NULL )
     {
         MemoryLeak(result, varname, alloctype);
