@@ -211,7 +211,7 @@ void CheckOther::WarningIf()
         for (const TOKEN *tok2 = tok->next(); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "(")
-                ++parlevel++;
+                ++parlevel;
             else if (tok2->str() == ")")
             {
                 --parlevel;
