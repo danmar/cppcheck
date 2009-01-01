@@ -421,12 +421,13 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
             {
                 // is the pointer in rhs?
                 bool rhs = false;
-                for ( const TOKEN *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next() )
+                std::string pattern("[=+] " + std::string(varname));
+                for ( const TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
                 {
                     if ( tok2->str() == ";" )
                         break;
 
-                    if ( tok2->str() == varname )
+                    if ( TOKEN::Match(tok2, pattern.c_str()) )
                     {
                         rhs = true;
                         break;
