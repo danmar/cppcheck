@@ -38,7 +38,7 @@ private:
     void nextprevious()
     {
         TOKEN *token = new TOKEN;
-        token->setstr( "1" );
+        token->str( "1" );
         token->insertToken( "2" );
         token->next()->insertToken( "3" );
         TOKEN *last = token->next()->next();

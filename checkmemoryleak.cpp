@@ -344,7 +344,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         {                                   \
             rethead = new TOKEN;            \
             rettail = rethead;              \
-            rettail->setstr(_str);          \
+            rettail->str(_str);             \
         }                                   \
                                             \
         rettail->linenr( tok->linenr() );   \
@@ -632,7 +632,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
         else if ( trylevel == -1 && tok2->str() == "try" )
             trylevel = indentlevel;
         else if ( trylevel == -1 && tok2->str() == "throw" )
-            tok2->setstr("return");
+            tok2->str("return");
     }
 
     // reduce the code..
@@ -653,7 +653,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
             // Replace "{ }" with ";"
             if ( TOKEN::Match(tok2->next(), "{ }") )
             {
-                tok2->next()->setstr(";");
+                tok2->next()->str(";");
                 erase(tok2->next(), tok2->tokAt(3));
                 done = false;
             }
@@ -1026,14 +1026,14 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                 if ( !incase && valid )
                 {
                     done = false;
-                    tok2->setstr(";");
+                    tok2->str(";");
                     erase( tok2, tok2->tokAt(2) );
                     tok2 = tok2->next();
                     bool first = true;
                     while (TOKEN::Match(tok2,"case") || TOKEN::Match(tok2,"default"))
                     {
                         bool def = TOKEN::Match(tok2, "default");
-                        tok2->setstr(first ? "if" : "}");
+                        tok2->str(first ? "if" : "}");
                         if ( first )
                         {
                             first = false;
@@ -1051,7 +1051,7 @@ void CheckMemoryLeakClass::simplifycode(TOKEN *tok)
                             tok2 = tok2->next();
                         if (TOKEN::Match(tok2,"break ;"))
                         {
-                            tok2->setstr(";");
+                            tok2->str(";");
                             tok2 = tok2->next()->next();
                         }
                     }
@@ -1095,7 +1095,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
     for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
     {
         if (tok2->str() == "&use")
-            tok2->setstr("use");
+            tok2->str("use");
     }
 
     simplifycode( tok );

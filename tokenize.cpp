@@ -165,7 +165,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     {
         _tokens = new TOKEN;
         _tokensBack = _tokens;
-        _tokensBack->setstr( str2.str().c_str() );
+        _tokensBack->str( str2.str().c_str() );
     }
 
     _tokensBack->linenr( lineno );
@@ -176,7 +176,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     {
         if (strcmp(str,sym->name)==0)
         {
-            _tokensBack->setstr(sym->value);
+            _tokensBack->str(sym->value);
             break;
         }
     }
@@ -526,7 +526,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
         {
             if ( tok->str() == combineWithNext[ui][0] && tok->next()->str() == combineWithNext[ui][1] )
             {
-                tok->setstr(combineWithNext[ui][2]);
+                tok->str(combineWithNext[ui][2]);
                 tok->deleteNext();
             }
         }
@@ -543,7 +543,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
             {
                 if ( tok2->str() == type2 )
-                    tok2->setstr(type1);
+                    tok2->str(type1);
             }
             continue;
         }
@@ -558,7 +558,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             {
                 if ( tok2->str() == type3 )
                 {
-                    tok2->setstr(type1);
+                    tok2->str(type1);
                     tok2->insertToken(type2);
                     tok2 = tok2->next();
                 }
@@ -708,7 +708,7 @@ void Tokenizer::simplifyTokenList()
             {
                 if (tok2->str() == sym)
                 {
-                    tok2->setstr(num);
+                    tok2->str(num);
                 }
             }
         }
@@ -748,7 +748,7 @@ void Tokenizer::simplifyTokenList()
             std::ostringstream str;
             // 'sizeof(type *)' has the same size as 'sizeof(char *)'
             str << sizeof(char *);
-            tok->setstr( str.str().c_str() );
+            tok->str( str.str().c_str() );
 
             for (int i = 0; i < 4; i++)
             {
@@ -764,7 +764,7 @@ void Tokenizer::simplifyTokenList()
             {
                 std::ostringstream str;
                 str << size;
-                tok->setstr( str.str().c_str() );
+                tok->str( str.str().c_str() );
                 for (int i = 0; i < 3; i++)
                 {
                     tok->deleteNext();
@@ -774,7 +774,7 @@ void Tokenizer::simplifyTokenList()
 
         else if (TOKEN::Match(tok, "sizeof ( * %var% )"))
         {
-            tok->setstr("100");
+            tok->str("100");
             for ( int i = 0; i < 4; ++i )
                 tok->deleteNext();
         }
@@ -817,7 +817,7 @@ void Tokenizer::simplifyTokenList()
                 {
                     std::ostringstream str;
                     str << total_size;
-                    tok2->setstr(str.str().c_str());
+                    tok2->str(str.str().c_str());
                     // Delete the other tokens..
                     for (int i = 0; i < 3; i++)
                     {
@@ -863,7 +863,7 @@ void Tokenizer::simplifyTokenList()
                 tok = tok->next();
                 std::ostringstream str;
                 str <<  i1;
-                tok->setstr(str.str().c_str());
+                tok->str(str.str().c_str());
                 for (int i = 0; i < 2; i++)
                 {
                     tok->deleteNext();
@@ -894,7 +894,7 @@ void Tokenizer::simplifyTokenList()
             for (int i = 0; i < 4; i++)
             {
                 tok = tok->next();
-                tok->setstr(str[i]);
+                tok->str(str[i]);
             }
 
             tok->deleteNext();
@@ -966,7 +966,7 @@ void Tokenizer::simplifyTokenList()
         {
             if (tok2->str() == ",")
             {
-                tok2->setstr(";");
+                tok2->str(";");
                 InsertTokens(tok2, type0, typelen);
             }
 
@@ -996,12 +996,12 @@ void Tokenizer::simplifyTokenList()
                         if (VarTok->aaaa0()=='*')
                             VarTok = VarTok->next();
                         InsertTokens(eq, VarTok, 2);
-                        eq->setstr(";");
+                        eq->str(";");
 
                         // "= x, "   =>   "= x; type "
                         if (tok2->str() == ",")
                         {
-                            tok2->setstr(";");
+                            tok2->str(";");
                             InsertTokens( tok2, type0, typelen );
                         }
                         break;
@@ -1017,7 +1017,7 @@ void Tokenizer::simplifyTokenList()
     for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
     {
         if ( tok->str() == "NULL" )
-            tok->setstr("0");
+            tok->str("0");
     }
 
     // Replace pointer casts of 0.. "(char *)0" => "0"
@@ -1144,7 +1144,7 @@ bool Tokenizer::removeReduntantConditions()
                     if( tok->previous() )
                         tok = tok->previous();
                     else
-                        tok->setstr( ";" );
+                        tok->str( ";" );
 
                     TOKEN::eraseTokens( tok, elseTag->tokAt( 1 ) );
                 }
@@ -1168,7 +1168,7 @@ bool Tokenizer::removeReduntantConditions()
                     if( tok->previous() )
                         tok = tok->previous();
                     else
-                        tok->setstr( ";" );
+                        tok->str( ";" );
 
                     TOKEN::eraseTokens( tok, tok->tokAt(5) );
                 }
@@ -1186,7 +1186,7 @@ bool Tokenizer::removeReduntantConditions()
                 if( tok->previous() )
                     tok = tok->previous();
                 else
-                    tok->setstr( ";" );
+                    tok->str( ";" );
 
                 TOKEN::eraseTokens( tok, elseTag );
             }
@@ -1196,7 +1196,7 @@ bool Tokenizer::removeReduntantConditions()
                 if( tok->previous() )
                     tok = tok->previous();
                 else
-                    tok->setstr( ";" );
+                    tok->str( ";" );
 
                 TOKEN::eraseTokens( tok, tok->tokAt( 5 ) );
             }
@@ -1314,7 +1314,7 @@ bool Tokenizer::simplifyConditions()
             tok2                                                       &&
             (tok2->str()==")" || tok2->str()=="&&" || tok2->str()=="||"))
         {
-            tok->next()->setstr((tok->next()->str() != "0") ? "true" : "false");
+            tok->next()->str((tok->next()->str() != "0") ? "true" : "false");
             ret = true;
         }
 
@@ -1352,7 +1352,7 @@ bool Tokenizer::simplifyConditions()
                 tok->deleteNext();
                 tok->deleteNext();
 
-                tok->setstr( result ? "true" : "false" );
+                tok->str( result ? "true" : "false" );
                 ret = true;
             }
         }
@@ -1425,7 +1425,7 @@ bool Tokenizer::simplifyFunctionReturn()
                 if ( TOKEN::Match(tok2, pattern.str().c_str()) )
                 {
                     tok2 = tok2->next();
-                    tok2->setstr( tok->strAt(5) );
+                    tok2->str( tok->strAt(5) );
                     tok2->deleteNext();
                     tok2->deleteNext();
                     ret = true;
@@ -1482,7 +1482,7 @@ bool Tokenizer::simplifyKnownVariables()
                     if ( TOKEN::Match(tok3, "if ( %varid% )", 0, varid) )
                     {
                         tok3 = tok3->next()->next();
-                        tok3->setstr( tok2->strAt(2) );
+                        tok3->str( tok2->strAt(2) );
                         ret = true;
                     }
                 }

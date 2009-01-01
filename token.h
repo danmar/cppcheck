@@ -26,7 +26,7 @@ class TOKEN
 public:
     TOKEN();
     ~TOKEN();
-    void setstr( const char s[] );
+    void str( const char s[] );
 
     const std::string &str() const
     { return _str; }

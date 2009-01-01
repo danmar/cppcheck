@@ -45,7 +45,7 @@ TOKEN::~TOKEN()
     std::free(_cstr);
 }
 
-void TOKEN::setstr( const char s[] )
+void TOKEN::str( const char s[] )
 {
     _str = s;
     std::free(_cstr);
@@ -392,7 +392,7 @@ void TOKEN::previous( TOKEN *previous )
 void TOKEN::insertToken( const char str[] )
 {
     TOKEN *newToken = new TOKEN;
-    newToken->setstr( str );
+    newToken->str( str );
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
     if( this->next() )
