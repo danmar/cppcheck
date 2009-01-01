@@ -602,8 +602,11 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         // Linux lists..
         if ( TOKEN::Match( tok, "[=(,] & %var1% [.[]", varnames ) )
         {
-            // todo: better checking
             addtoken("&use");
+        }
+        else if ( TOKEN::Match( tok, "[=(,] & %var1% [,)]", varnames ) )
+        {
+            addtoken("&use2");
         }
     }
 
@@ -1092,11 +1095,13 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         _errorLogger->reportErr( errmsg.str() );
     }
 
-    // Replace "&use" with "use"
+    // Replace "&use" with "use". Replace "&use2" with ";"
     for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
     {
         if (tok2->str() == "&use")
             tok2->str("use");
+        else if (tok2->str() == "&use2")
+            tok2->str(";");
     }
 
     simplifycode( tok );

@@ -154,6 +154,7 @@ private:
 
         TEST_CASE( dealloc_use_1 );     // Deallocate and then use memory
         TEST_CASE( dealloc_use_2 );     // Deallocate and then use memory. No error if "use" is &var
+        TEST_CASE( dealloc_use_3 );     // Deallocate and then use memory. No error
     }
 
 
@@ -1385,6 +1386,18 @@ private:
                "    char *str;\n"
                "    free(str);\n"
                "    foo(&str);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void dealloc_use_3()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *str = 0;\n"
+               "    free(str);\n"
+               "    f1(&str);\n"
+               "    f2(str);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
