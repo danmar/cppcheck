@@ -219,7 +219,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
     for ( std::list<const TOKEN *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it )
     {
         if ( (*it)->str() == funcname )
-            return "dealloc";
+            return "recursive";
     }
     callstack.push_back(tok);
 
@@ -1102,6 +1102,8 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
             tok2->str("use");
         else if (tok2->str() == "&use2")
             tok2->str(";");
+        else if (tok2->str() == "recursive")
+            tok2->str("dealloc");
     }
 
     simplifycode( tok );

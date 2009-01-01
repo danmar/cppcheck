@@ -155,6 +155,7 @@ private:
         TEST_CASE( dealloc_use_1 );     // Deallocate and then use memory
         TEST_CASE( dealloc_use_2 );     // Deallocate and then use memory. No error if "use" is &var
         TEST_CASE( dealloc_use_3 );     // Deallocate and then use memory. No error
+        TEST_CASE( dealloc_use_4 );
     }
 
 
@@ -1402,6 +1403,16 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
+    void dealloc_use_4()
+    {
+        check( "static void ReadDir(DIR *d)\n"
+               "{\n"
+               "    DIR *subdir = OpenDir();\n"
+               "    ReadDir( subdir );\n"
+               "    closedir(subdir);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
 
 };
 
