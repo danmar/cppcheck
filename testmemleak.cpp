@@ -153,6 +153,7 @@ private:
         // TODO TEST_CASE( structmember1 );
 
         TEST_CASE( dealloc_use_1 );     // Deallocate and then use memory
+        TEST_CASE( dealloc_use_2 );     // Deallocate and then use memory. No error if "use" is &var
     }
 
 
@@ -1375,6 +1376,17 @@ private:
                "    p = s;\n"
                "}\n" );
         ASSERT_EQUALS( std::string("[test.cpp:5]: Using \"s\" after it has been deallocated / released\n"), errout.str() );
+    }
+
+    void dealloc_use_2()
+    {
+        check( "void f()\n"
+               "{\n"
+               "    char *str;\n"
+               "    free(str);\n"
+               "    foo(&str);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
 

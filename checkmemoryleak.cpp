@@ -602,7 +602,7 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         if ( TOKEN::Match( tok, "[=(,] & %var1% [.[]", varnames ) )
         {
             // todo: better checking
-            addtoken("use");
+            addtoken("&use");
         }
     }
 
@@ -1089,6 +1089,13 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         std::ostringstream errmsg;
         errmsg << _tokenizer->fileLine(result->tokAt(2)) << ": Using \"" << varname << "\" after it has been deallocated / released";
         _errorLogger->reportErr( errmsg.str() );
+    }
+
+    // Replace "&use" with "use"
+    for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+    {
+        if (tok2->str() == "&use")
+            tok2->setstr("use");
     }
 
     simplifycode( tok );
