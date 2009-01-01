@@ -385,14 +385,16 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         if (TOKEN::Match(tok, "[(;{}] %var1% =", varnames))
         {
             AllocType alloc = GetAllocationType(tok->tokAt(3));
+            bool realloc = false;
 
             if ( alloc == No )
             {
                 alloc = GetReallocationType( tok->tokAt(3) );
                 if ( alloc != No )
                 {
-                    addtoken( "dealloc" );
+                    addtoken( "realloc" );
                     addtoken( ";" );
+                    realloc = true;
                 }
             }
 
@@ -408,7 +410,8 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
 
             if ( alloc != No )
             {
-                addtoken("alloc");
+                if ( ! realloc )
+                    addtoken("alloc");
                 if (alloctype!=No && alloctype!=alloc)
                     MismatchError(tok, callstack, varname);
                 if (dealloctype!=No && dealloctype!=alloc)
@@ -1104,6 +1107,12 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
             tok2->str(";");
         else if (tok2->str() == "recursive" || tok2->str() == "dealloc_")
             tok2->str("dealloc");
+        else if (tok2->str() == "realloc")
+        {
+            tok2->str("dealloc");
+            tok2->insertToken("alloc");
+            tok2->insertToken(";");
+        }
     }
 
     simplifycode( tok );
