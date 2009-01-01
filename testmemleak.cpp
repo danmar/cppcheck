@@ -718,7 +718,7 @@ private:
               "    int i = 0;\n"
               "    for( ;; )\n"
               "    {\n"
-              "    i++;\n"
+              "    ++i;\n"
               "    a = realloc( a, i );\n"
               "    if( !a )\n"
               "        return 0;\n"

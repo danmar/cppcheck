@@ -166,7 +166,7 @@ std::string Preprocessor::removeSpaceNearNL( const std::string &str )
         else
         {
             tmp.append( 1,str[i] );
-            prev++;
+            ++prev;
         }
     }
 

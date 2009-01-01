@@ -164,7 +164,7 @@ const TOKEN * CheckClass::FindClassFunction( const TOKEN *tok, const char classn
 
         if ( tok->str() == "}" )
         {
-            indentlevel--;
+            --indentlevel;
             if ( indentlevel < 0 )
                 return NULL;
         }
@@ -231,7 +231,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
 
         if (ftok->str() == "{")
         {
-            indentlevel++;
+            ++indentlevel;
             Assign = false;
         }
 
@@ -239,7 +239,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const TOKEN *tok1, const TOKEN
         {
             if (indentlevel <= 1)
                 break;
-            indentlevel--;
+            --indentlevel;
         }
 
         if ( indentlevel < 1 )
@@ -492,12 +492,12 @@ void CheckClass::privateFunctions()
             }
 
             if (tok->str() == "{")
-                indent_level++;
+                ++indent_level;
             else if (tok->str() == "}")
             {
                 if (indent_level <= 1)
                     break;
-                indent_level--;
+                --indent_level;
             }
             else if (tok->str() == "private:")
                 priv = true;
@@ -546,12 +546,12 @@ void CheckClass::privateFunctions()
                 while (ftok)
                 {
                     if (ftok->str() == "{")
-                        indent_level++;
+                        ++indent_level;
                     if (ftok->str() == "}")
                     {
                         if (indent_level<=1)
                             break;
-                        indent_level--;
+                        --indent_level;
                     }
                     if (TOKEN::Match( ftok->next(), "(") )
                         FuncList.remove(ftok->str());

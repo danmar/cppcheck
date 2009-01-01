@@ -68,7 +68,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
 {
     unsigned int varc = 1;
     while ( varname[varc] )
-        varc++;
+        ++varc;
     varc = 2 * (varc - 1);
 
 
@@ -99,12 +99,12 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
     {
         if (tok->str() == "{")
         {
-            indentlevel++;
+            ++indentlevel;
         }
 
         else if (tok->str() == "}")
         {
-            indentlevel--;
+            --indentlevel;
             if ( indentlevel < 0 )
                 return;
         }
@@ -206,11 +206,11 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
                     break;
 
                 if ( tok2->str() == "{" )
-                    indentlevel2++;
+                    ++indentlevel2;
 
                 if ( tok2->str() == "}" )
                 {
-                    indentlevel2--;
+                    --indentlevel2;
                     if ( indentlevel2 <= 0 )
                         break;
                 }
@@ -234,9 +234,9 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
             while ( *str )
             {
                 if (*str=='\\')
-                    str++;
-                str++;
-                len++;
+                    ++str;
+                ++str;
+                ++len;
             }
             if (len > 2 && len >= (int)size + 2)
             {
@@ -264,12 +264,12 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
             {
                 if ( tok2->str() == "(" )
                 {
-                    parlevel++;
+                    ++parlevel;
                 }
 
                 else if ( tok2->str() == ")" )
                 {
-                    parlevel--;
+                    --parlevel;
                     if ( parlevel < 1 )
                     {
                         par = 0;
@@ -279,12 +279,12 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
 
                 else if ( parlevel == 1 && (tok2->str() == ",") )
                 {
-                    par++;
+                    ++par;
                 }
 
                 if ( parlevel == 1 && TOKEN::Match(tok2, "[(,] %var1% [,)]", varname) )
                 {
-                    par++;
+                    ++par;
                     break;
                 }
             }
@@ -303,13 +303,13 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const TOKEN *tok, co
             while ( ftok && parlevel == 1 && par >= 1 )
             {
                 if ( ftok->str() == "(" )
-                    parlevel++;
+                    ++parlevel;
 
                 else if ( ftok->str() == ")" )
-                    parlevel--;
+                    --parlevel;
 
                 else if ( ftok->str() == "," )
-                    par--;
+                    --par;
 
                 else if ( par==1 && parlevel==1 && TOKEN::Match(ftok, "%var% [,)]") )
                 {
@@ -349,10 +349,10 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "{")
-            indentlevel++;
+            ++indentlevel;
 
         else if (tok->str() == "}")
-            indentlevel--;
+            --indentlevel;
 
         else if (indentlevel > 0)
         {

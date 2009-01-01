@@ -363,20 +363,20 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         if ( tok->str() == "{" )
         {
             addtoken( "{" );
-            indentlevel++;
+            ++indentlevel;
         }
         else if ( tok->str() == "}" )
         {
             addtoken( "}" );
             if ( indentlevel <= 0 )
                 break;
-            indentlevel--;
+            --indentlevel;
         }
 
         if ( tok->str() == "(" )
-            parlevel++;
+            ++parlevel;
         else if ( tok->str() == ")" )
-            parlevel--;
+            --parlevel;
         isloop &= ( parlevel > 0 );
 
         if ( parlevel == 0 && tok->str()==";")
@@ -1209,10 +1209,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
     for (const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "{")
-            indentlevel++;
+            ++indentlevel;
 
         else if (tok->str() == "}")
-            indentlevel--;
+            --indentlevel;
 
 
         // In function..
@@ -1252,10 +1252,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers()
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next() )
     {
         if ( tok->str() == "{" )
-            indentlevel++;
+            ++indentlevel;
 
         else if ( tok->str() == "}" )
-            indentlevel--;
+            --indentlevel;
 
         else if ( indentlevel == 0 && TOKEN::Match(tok, "class %var% [{:]") )
         {
@@ -1279,11 +1279,11 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN 
     for ( const TOKEN *tok = tok1; tok; tok = tok->next() )
     {
         if ( tok->str() == "{" )
-            indentlevel++;
+            ++indentlevel;
 
         else if ( tok->str() == "}" )
         {
-            indentlevel--;
+            --indentlevel;
             if ( indentlevel < 0 )
                 return;
         }
@@ -1350,10 +1350,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable( const std::vec
     for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next() )
     {
         if ( tok->str() == "{" )
-            indentlevel++;
+            ++indentlevel;
 
         else if ( tok->str() == "}" )
-            indentlevel--;
+            --indentlevel;
 
         // Set the 'memberfunction' variable..
         if ( indentlevel == 0 )

@@ -66,7 +66,7 @@ TOKEN *Tokenizer::_gettok(TOKEN *tok, int index)
     while (tok && index>0)
     {
         tok = tok->next();
-        index--;
+        --index;
     }
     return tok;
 }
@@ -216,7 +216,7 @@ void Tokenizer::InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
         dest->linenr( src->linenr() );
         dest->varId( src->varId() );
         src  = src->next();
-        n--;
+        --n;
     }
 }
 //---------------------------------------------------------------------------
@@ -347,7 +347,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
                 addtoken(";", lineno, FileIndex);
             }
 
-            lineno++;
+            ++lineno;
             continue;
         }
 
@@ -394,7 +394,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
                     addtoken( ";", lineno, FileIndex );
                 }
 
-                lineno++;
+                ++lineno;
                 continue;
             }
 
@@ -408,7 +408,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
                     chPrev = ch;
                     ch = (char)code.get();
                     if (ch == '\n')
-                        lineno++;
+                        ++lineno;
                 }
                 continue;
             }
@@ -979,14 +979,14 @@ void Tokenizer::simplifyTokenList()
                 {
                     if ( strchr("{(", tok2->aaaa0()) )
                     {
-                        parlevel++;
+                        ++parlevel;
                     }
 
                     else if ( strchr("})", tok2->aaaa0()) )
                     {
                         if (parlevel<0)
                             break;
-                        parlevel--;
+                        --parlevel;
                     }
 
                     else if ( parlevel==0 && strchr(";,",tok2->aaaa0()) )
@@ -1056,12 +1056,12 @@ const TOKEN *Tokenizer::findClosing( const TOKEN *tok, const char *start, const 
     {
         if( closing->str() == start )
         {
-            indentLevel++;
+            ++indentLevel;
             continue;
         }
 
         if( closing->str() == end )
-            indentLevel--;
+            --indentLevel;
 
         if( indentLevel >= 0 )
             continue;

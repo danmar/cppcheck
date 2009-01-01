@@ -74,7 +74,7 @@ bool TestFixture::runTest(const char testname[])
 {
     if ( testToRun.empty() || testToRun == testname )
     {
-        countTests++;
+        ++countTests;
         std::cout << classname << "::" << testname << "\n";
         return true;
     }

@@ -95,7 +95,7 @@ void CheckHeaders::WarningIncludeHeader()
         {
             if ( Tokenizer::SameFileName( _tokenizer->getFiles()->at(hfile).c_str(), includefile ) )
                 break;
-            hfile++;
+            ++hfile;
         }
         if (hfile == _tokenizer->getFiles()->size())
             continue;
@@ -183,10 +183,10 @@ void CheckHeaders::WarningIncludeHeader()
                 while (tok1->next())
                 {
                     if ( TOKEN::Match(tok1, "[({]") )
-                        parlevel++;
+                        ++parlevel;
 
                     else if ( TOKEN::Match(tok1, "[)}]") )
-                        parlevel--;
+                        --parlevel;
 
                     else if (parlevel == 0)
                     {

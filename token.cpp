@@ -75,7 +75,7 @@ const TOKEN *TOKEN::tokAt(int index) const
     while (index>0 && tok)
     {
         tok = tok->next();
-        index--;
+        --index;
     }
     return tok;
 }
@@ -121,7 +121,7 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
         }
 
         // All characters in haystack and needle have matched this far
-        haystackPointer++;
+        ++haystackPointer;
     }
 
     // If both needle and haystack are at the end, then we have a match.
@@ -171,7 +171,7 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
     {
         // Skip spaces in pattern..
         while ( *p == ' ' )
-            p++;
+            ++p;
 
         if (!tok)
         {
@@ -189,8 +189,8 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
         while (*p && *p!=' ')
         {
             *s = *p;
-            s++;
-            p++;
+            ++s;
+            ++p;
         }
         *s = 0;
 

@@ -307,12 +307,12 @@ void CheckOther::InvalidFunctionUsage()
         for ( const TOKEN *tok2 = tok->next(); tok2; tok2 = tok2->next() )
         {
             if ( TOKEN::Match(tok2, "(") )
-                parlevel++;
+                ++parlevel;
             else if (TOKEN::Match(tok2, ")"))
-                parlevel--;
+                --parlevel;
             else if (parlevel == 1 && TOKEN::Match(tok2, ","))
             {
-                param++;
+                ++param;
                 if (param==3)
                 {
                     if ( TOKEN::Match(tok2, ", %num% )") )
@@ -439,17 +439,17 @@ void CheckOther::CheckVariableScope()
             {
                 if ( tok2->str() == "{" )
                 {
-                    int _indentlevel = 0;
+                    int indentlevel2 = 0;
                     for (tok = tok2; tok; tok = tok->next())
                     {
                         if ( tok->str() == "{" )
                         {
-                            _indentlevel++;
+                            ++indentlevel2;
                         }
                         if ( tok->str() == "}" )
                         {
-                            _indentlevel--;
-                            if ( _indentlevel <= 0 )
+                            --indentlevel2;
+                            if ( indentlevel2 <= 0 )
                             {
                                 tok = tok->next();
                                 break;

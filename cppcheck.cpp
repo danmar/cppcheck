@@ -189,7 +189,7 @@ void CppCheck::check()
                 _errorLogger->reportOut( std::string( "Checking " ) + fname + ": "+cfg+std::string( "..." ) );
 
             checkFile( codeWithoutCfg, _filenames[c].c_str());
-            checkCount++;
+            ++checkCount;
         }
 
         if ( _settings._errorsOnly == false && _errout.str().empty() )
