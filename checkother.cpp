@@ -469,11 +469,11 @@ void CheckOther::CheckVariableScope()
 
         if ( tok->str() == "{" )
         {
-            indentlevel++;
+            ++indentlevel;
         }
         if ( tok->str() == "}" )
         {
-            indentlevel--;
+            --indentlevel;
             if ( indentlevel == 0 )
                 func = false;
         }
@@ -523,12 +523,12 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
     {
         if ( tok->str() == "{" )
         {
-            indentlevel++;
+            ++indentlevel;
         }
 
         else if ( tok->str() == "}" )
         {
-            indentlevel--;
+            --indentlevel;
             if ( indentlevel == 0 )
             {
                 if ( for_or_while && used )
@@ -540,12 +540,12 @@ void CheckOther::CheckVariableScope_LookupVar( const TOKEN *tok1, const char var
 
         else if ( tok->str() == "(" )
         {
-            parlevel++;
+            ++parlevel;
         }
 
         else if ( tok->str() == ")" )
         {
-            parlevel--;
+            --parlevel;
         }
 
 
