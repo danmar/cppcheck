@@ -91,8 +91,7 @@ private:
         TEST_CASE( if6 );   // Bug 2432631
         TEST_CASE( if7 );   // Bug 2401436
         TEST_CASE( if8 );   // Bug 2458532
-
-        TEST_CASE( alwaysTrue );
+        //TODO TEST_CASE( if9 );
 
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
@@ -127,7 +126,6 @@ private:
         TEST_CASE( func9 );     // Embedding the function call in a if-condition
         TEST_CASE( func10 );    // Bug 2458510 - Function pointer
         TEST_CASE( func11 );    // Bug 2458510 - Function pointer
-        // TODO TEST_CASE( func12 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -577,26 +575,24 @@ private:
         ASSERT_EQUALS( std::string("[test.cpp:11]: Memory leak: c\n"), errout.str() );
     }
 
-
-
-
-
-    void alwaysTrue()
+    void if9()
     {
-        check( "void f()\n"
+        check( "static void f()\n"
                "{\n"
-               "    char *p = 0;\n"
-               "    for (;;)\n"
-               "    {\n"
-               "        p = malloc(256);\n"
-               "        if (1)\n"
-               "            break;\n"
-               "    }\n"
-               "    free(p);\n"
+               "	char *buf = NULL, *tmp;\n"
+               "	if (!(tmp = realloc(buf, 50)))\n"
+               "	{\n"
+               "		free(buf);\n"
+               "		return NULL;\n"
+               "	}\n"
+               "	buf = tmp;\n"
+               "	return buf;\n"
                "}\n" );
-        std::string err( errout.str() );
-        ASSERT_EQUALS( std::string(""), err );
+        ASSERT_EQUALS( std::string(""), errout.str() );
     }
+
+
+
 
 
 
@@ -1020,22 +1016,6 @@ private:
                "{\n"
                "    char *c = malloc(50);\n"
                "    (s1->fnc)(c);\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string(""), errout.str() );
-    }
-
-    void func12()
-    {
-        check( "static void f()\n"
-               "{\n"
-               "	char *buf = NULL, *tmp;\n"
-               "	if (!(tmp = realloc(buf, 50)))\n"
-               "	{\n"
-               "		free(buf);\n"
-               "		return NULL;\n"
-               "	}\n"
-               "	buf = tmp;\n"
-               "	return buf;\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
