@@ -22,6 +22,7 @@
 
 
 #include "testsuite.h"
+#define UNIT_TESTING
 #include "preprocessor.h"
 
 #include <map>
@@ -61,6 +62,8 @@ private:
         TEST_CASE( if_cond1 );
 
         TEST_CASE( multiline );
+
+        TEST_CASE( if_defined );    // "#if defined(AAA)" => "#ifdef AAA"
     }
 
 
@@ -440,6 +443,20 @@ private:
         // Compare results..
         ASSERT_EQUALS( true, cmpmaps(actual, expected));
     }
+
+
+    void if_defined()
+    {
+        const char filedata[] = "#if defined(AAA)\n"
+                                "#endif\n";
+
+        // Expected result..
+        std::string expected( "#ifdef AAA\n#endif\n" );
+
+        // Compare result..
+        ASSERT_EQUALS( expected, Preprocessor::replaceIfDefined(filedata) );
+    }
+
 
 };
 

@@ -173,6 +173,27 @@ std::string Preprocessor::removeSpaceNearNL( const std::string &str )
     return tmp;
 }
 
+std::string Preprocessor::replaceIfDefined( const std::string &str )
+{
+    std::string ret(str);
+    std::string::size_type pos = 0;
+    while ((pos = ret.find("#if defined(", pos)) != std::string::npos)
+    {
+        std::string::size_type pos2 = ret.find(")", pos+9);
+        if (pos2 > ret.length() - 1)
+            break;
+        if (ret[pos2+1] == '\n')
+        {
+            ret.erase( pos2, 1 );
+            ret.erase( pos + 3, 9 );
+            ret.insert( pos + 3, "def " );
+        }
+        ++pos;
+    }
+
+    return ret;
+}
+
 void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations)
 {
     processedFile = read(istr);
@@ -197,6 +218,8 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
         if ( (loc = processedFile.find("\n", loc)) != std::string::npos)
             processedFile.insert( loc, "\n" );
     }
+
+    processedFile = replaceIfDefined(processedFile);
 
     // Get all possible configurations..
     resultConfigurations = getcfgs( processedFile );

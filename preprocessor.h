@@ -60,7 +60,9 @@ public:
      */
     static std::string getcode(const std::string &filedata, std::string cfg);
 
+#ifndef UNIT_TESTING
 private:
+#endif
 
     /**
      * Remove space that has new line character on left or right side of it.
@@ -69,6 +71,14 @@ private:
      * @return The string where space characters have been removed.
      */
     static std::string removeSpaceNearNL( const std::string &str );
+
+    /**
+     * Replace "#if defined" with "#ifdef" where possible
+     *
+     * @param str The string to be converted
+     * @return The replaced string
+     */
+    static std::string replaceIfDefined( const std::string &str );
 
     /**
      * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
