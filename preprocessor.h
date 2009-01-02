@@ -37,24 +37,23 @@ public:
      * \param istr The (file/string) stream to read from.
      * \param result The map that will get the results
      */
-    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
+    void preprocess(std::istream &istr, std::map<std::string, std::string> &result);
 
     /**
      * Extract the code for each configuration. Use this with getcode() to get the
      * file data for each individual configuration.
      *
      * @param istr The (file/string) stream to read from.
-     * @param filename
      * @param processedFile Give reference to empty string as a parameter,
      * function will fill processed file here. Use this also as a filedata parameter
      * to getcode() if you recieved more than once configurations.
      * @param resultConfigurations List of configurations. Pass these one by one
      * to getcode() with processedFile.
      */
-    void preprocess(std::istream &istr, const std::string &filename, std::string &processedFile, std::list<std::string> &resultConfigurations );
+    void preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations );
 
     /** Just read the code into a string. Perform simple cleanup of the code */
-    std::string read(std::istream &istr, const std::string &filename);
+    std::string read(std::istream &istr);
 
     /**
      * Get preprocessed code for a given configuration

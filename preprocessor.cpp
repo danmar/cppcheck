@@ -34,7 +34,7 @@ Preprocessor::Preprocessor()
 }
 
 /** Just read the code into a string. Perform simple cleanup of the code */
-std::string Preprocessor::read(std::istream &istr, const std::string &filename)
+std::string Preprocessor::read(std::istream &istr)
 {
     // Get filedata from stream..
     bool ignoreSpace = true;
@@ -140,11 +140,11 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename)
     return code.str();
 }
 
-void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
+void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result)
 {
         std::list<std::string> configs;
         std::string data;
-        preprocess( istr, filename, data, configs );
+        preprocess( istr, data, configs );
         for ( std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it )
             result[ *it ] = Preprocessor::getcode( data, *it );
 }
@@ -173,9 +173,9 @@ std::string Preprocessor::removeSpaceNearNL( const std::string &str )
     return tmp;
 }
 
-void Preprocessor::preprocess(std::istream &istr, const std::string &filename, std::string &processedFile, std::list<std::string> &resultConfigurations)
+void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations)
 {
-    processedFile = read(istr, filename);
+    processedFile = read(istr);
 
     // Replace all tabs with spaces..
     std::replace( processedFile.begin(), processedFile.end(), '\t', ' ' );
