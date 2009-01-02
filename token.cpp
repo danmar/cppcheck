@@ -26,18 +26,18 @@
 #include <ctype.h>  // isalpha, isdigit
 #endif
 
-TOKEN::TOKEN()
+TOKEN::TOKEN() :
+    _str(""),
+    _cstr(0),
+    _isName(false),
+    _isNumber(false),
+    _isBoolean(false),
+    _varId(0),
+    _next(0),
+    _previous(0),
+    _fileIndex(0),
+    _linenr(0)
 {
-    _fileIndex = 0;
-    _cstr = 0;
-    _str = "";
-    _linenr = 0;
-    _next = 0;
-    _previous = 0;
-    _varId = 0;
-    _isName = false;
-    _isNumber = false;
-    _isBoolean = false;
 }
 
 TOKEN::~TOKEN()
