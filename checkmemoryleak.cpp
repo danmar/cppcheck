@@ -587,17 +587,27 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         }
 
         // Callback..
-        if ( TOKEN::Match(tok, "( * %var% ) (") ||
-             TOKEN::Match(tok, "( %var% ) (") )
+        bool matchFirst;
+        if ( (matchFirst = TOKEN::Match(tok, "( %var%")) ||
+             TOKEN::Match(tok, "( * %var%") )
         {
-            for ( const TOKEN *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next() )
+            int tokIdx = matchFirst ? 2 : 3;
+
+            while ( TOKEN::simpleMatch(tok->tokAt(tokIdx), ".") &&
+                    TOKEN::Match(tok->tokAt(tokIdx + 1), "%var%") )
+                tokIdx += 2;
+
+            if ( TOKEN::simpleMatch(tok->tokAt(tokIdx), ") (") )
             {
-                if ( TOKEN::Match(tok2, "[;{]") )
-                    break;
-                else if ( tok2->str() == varname )
+                for ( const TOKEN *tok2 = tok->tokAt(tokIdx + 2); tok2; tok2 = tok2->next() )
                 {
-                    addtoken("use");
-                    break;
+                    if ( TOKEN::Match(tok2, "[;{]") )
+                        break;
+                    else if ( tok2->str() == varname )
+                    {
+                        addtoken("use");
+                        break;
+                    }
                 }
             }
         }
