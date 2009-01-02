@@ -576,7 +576,13 @@ TOKEN *CheckMemoryLeakClass::getcode(const TOKEN *tok, std::list<const TOKEN *> 
         if ( TOKEN::Match(tok,"[)=] %var1% [+;)]", varnames) ||
              TOKEN::Match(tok, "%var1% +=|-=", varnames) ||
              TOKEN::Match(tok, "+=|<< %var1% ;", varnames) )
+        {
             addtoken("use");
+        }
+        else if ( TOKEN::Match(tok, "[;{}=(,+-*/] %var1% [", varnames) )
+        {
+            addtoken("use_");
+        }
 
         // Investigate function calls..
         if ( TOKEN::Match(tok, "%var% (") )
@@ -1101,7 +1107,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
         while ( TOKEN::Match(tok2, "[;{}] ;") )
             erase(tok2, tok2->tokAt(2));
     }
-    if ( (result = TOKEN::findmatch(tok, "dealloc [;{}] use ;")) != NULL )
+    if ( (result = TOKEN::findmatch(tok, "dealloc [;{}] use|use_ ;")) != NULL )
     {
         std::ostringstream errmsg;
         errmsg << _tokenizer->fileLine(result->tokAt(2)) << ": Using \"" << varname << "\" after it has been deallocated / released";
@@ -1113,7 +1119,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const 
     {
         if (tok2->str() == "&use")
             tok2->str("use");
-        else if (tok2->str() == "&use2")
+        else if (tok2->str() == "&use2" || tok2->str() == "use_")
             tok2->str(";");
         else if (tok2->str() == "recursive" || tok2->str() == "dealloc_")
             tok2->str("dealloc");

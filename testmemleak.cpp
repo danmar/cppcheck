@@ -156,6 +156,7 @@ private:
         TEST_CASE( dealloc_use_2 );     // Deallocate and then use memory. No error if "use" is &var
         TEST_CASE( dealloc_use_3 );     // Deallocate and then use memory. No error
         TEST_CASE( dealloc_use_4 );
+        TEST_CASE( dealloc_use_5 );
     }
 
 
@@ -1420,6 +1421,17 @@ private:
                "    closedir(subdir);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void dealloc_use_5()
+    {
+        check( "void foo()\n"
+               "{\n"
+               "    char *str = 0;\n"
+               "    free(str);\n"
+               "    char c = str[10];\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:5]: Using \"str\" after it has been deallocated / released\n"), errout.str() );
     }
 
 };
