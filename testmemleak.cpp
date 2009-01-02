@@ -91,7 +91,8 @@ private:
         TEST_CASE( if6 );   // Bug 2432631
         TEST_CASE( if7 );   // Bug 2401436
         TEST_CASE( if8 );   // Bug 2458532
-        //TODO TEST_CASE( if9 );
+        // TODO TEST_CASE( if9 );   // if (realloc)
+        TEST_CASE( if10 );          // else if (realloc)
 
         TEST_CASE( forwhile1 );
         TEST_CASE( forwhile2 );
@@ -588,6 +589,20 @@ private:
                "	}\n"
                "	buf = tmp;\n"
                "	return buf;\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void if10()
+    {
+        check( "static void f()\n"
+               "{\n"
+               "	char *buf = malloc(10);\n"
+               "	if (aa)\n"
+               "	    ;\n"
+               "    else if (buf = realloc(buf, 100))\n"
+               "		;\n"
+               "    free(buf);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
