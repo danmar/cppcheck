@@ -680,8 +680,8 @@ void CheckOther::CheckCharVariable()
         // Declaring the variable..
         if ( Token::Match(tok, "[{};(,] char %var% [;=,)]") )
         {
-            const char *varname[2] = {0};
-            varname[0] = tok->strAt( 2);
+            // Set tok to point to the variable name
+            tok = tok->tokAt( 2 );
 
             // Check usage of char variable..
             int indentlevel = 0;
@@ -697,7 +697,7 @@ void CheckOther::CheckCharVariable()
                         break;
                 }
 
-                if ((tok2->str() != ".") && Token::Match(tok2->next(), "%var% [ %var1% ]", varname))
+                if ((tok2->str() != ".") && Token::Match(tok2->next(), "%var% [ %varid% ]", 0, tok->varId()))
                 {
                     std::ostringstream errmsg;
                     errmsg << _tokenizer->fileLine(tok2->next()) << ": Warning - using char variable as array index";
@@ -705,7 +705,7 @@ void CheckOther::CheckCharVariable()
                     break;
                 }
 
-                if ( Token::Match(tok2, "%var% [&|] %var1%", varname) || Token::Match(tok2, "%var1% [&|]", varname) )
+                if ( Token::Match(tok2, "%var% [&|] %varid%", 0, tok->varId()) || Token::Match(tok2, "%varid% [&|]", 0, tok->varId()) )
                 {
                     std::ostringstream errmsg;
                     errmsg << _tokenizer->fileLine(tok2) << ": Warning - using char variable in bit operation";
