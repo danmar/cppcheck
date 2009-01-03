@@ -127,6 +127,7 @@ private:
         TEST_CASE( func9 );     // Embedding the function call in a if-condition
         TEST_CASE( func10 );    // Bug 2458510 - Function pointer
         TEST_CASE( func11 );    // Bug 2458510 - Function pointer
+        TEST_CASE( func12 );
 
         TEST_CASE( class1 );
         TEST_CASE( class2 );
@@ -1032,6 +1033,26 @@ private:
                "{\n"
                "    char *c = malloc(50);\n"
                "    (s1->fnc)(c);\n"
+               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void func12()
+    {
+        check( "void add_list(struct mmtimer *n)\n"
+               "{\n"
+               "    rb_link_node(&n->list, parent, link);\n"
+               "}\n"
+               "\n"
+               "int foo()\n"
+               "{\n"
+               "    struct mmtimer *base;\n"
+               "\n"
+               "    base = kmalloc(sizeof(struct mmtimer), GFP_KERNEL);\n"
+               "    if (base == NULL)\n"
+               "        return -ENOMEM;\n"
+               "\n"
+               "    add_list(base);\n"
                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }

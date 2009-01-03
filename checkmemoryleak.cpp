@@ -261,18 +261,13 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                 }*/
 
                 const char *ret = 0;
-                if (TOKEN::findmatch(func_, "goto"))
-                {
-                    // TODO : "goto" isn't handled well
-                    if ( TOKEN::findmatch(func_, "dealloc") )
-                        ret = "dealloc";
-                    else if ( TOKEN::findmatch(func_, "use") )
-                        ret = "use";
-                }
-                else if ( TOKEN::findmatch(func_, "dealloc") )
+                // TODO : "goto" isn't handled well
+                if ( TOKEN::findmatch(func_, "dealloc") )
                     ret = "dealloc";
                 else if ( TOKEN::findmatch(func_, "use") )
                     ret = "use";
+                else if ( TOKEN::findmatch(func_, "&use") )
+                    ret = "&use";
 
                 Tokenizer::deleteTokens(func);
                 return ret;
