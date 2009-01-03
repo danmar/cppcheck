@@ -254,11 +254,6 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                 const TOKEN *func_ = func;
                 while ( func_ && func_->str() == ";" )
                     func_ = func_->next();
-                /*
-                for (const TOKEN *t = func; t; t = t->next())
-                {
-                    std::cout << t->str() << "\n";
-                }*/
 
                 const char *ret = 0;
                 // TODO : "goto" isn't handled well
