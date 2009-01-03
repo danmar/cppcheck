@@ -1,4 +1,4 @@
-SRCS=checkbufferoverrun.cpp	checkclass.cpp	checkheaders.cpp	checkmemoryleak.cpp	checkfunctionusage.cpp	checkother.cpp	filelister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp cppcheckexecutor.cpp
+SRCS=checkbufferoverrun.cpp	checkclass.cpp	checkheaders.cpp	checkmemoryleak.cpp	checkfunctionusage.cpp	checkother.cpp	filelister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp cppcheckexecutor.cpp	errormessage.cpp
 OBJS=$(SRCS:%.cpp=%.o)
 TESTS=testbufferoverrun.o	testcharvar.o	testclass.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testother.o	testmemleak.o	testmemleakmp.o	testpreprocessor.o	testredundantif.o	testsimplifytokens.o	testtokenize.o	testtoken.o	testunusedprivfunc.o	testunusedvar.o	testfilelister.o
 BIN = ${DESTDIR}/usr/bin
@@ -31,6 +31,8 @@ filelister.o: filelister.cpp filelister.h
 preprocessor.o: preprocessor.cpp preprocessor.h errorlogger.h
 	g++ $(CFLAGS) -c $*.cpp
 settings.o: settings.cpp settings.h
+	g++ $(CFLAGS) -c $*.cpp
+errormessage.o: errormessage.cpp errormessage.h
 	g++ $(CFLAGS) -c $*.cpp
 testbufferoverrun.o: testbufferoverrun.cpp tokenize.h settings.h errorlogger.h token.h checkbufferoverrun.h testsuite.h
 	g++ $(CFLAGS) -c $*.cpp

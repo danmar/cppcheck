@@ -47,6 +47,8 @@
 		<Unit filename="cppcheckexecutor.cpp" />
 		<Unit filename="cppcheckexecutor.h" />
 		<Unit filename="errorlogger.h" />
+		<Unit filename="errormessage.cpp" />
+		<Unit filename="errormessage.h" />
 		<Unit filename="filelister.cpp" />
 		<Unit filename="filelister.h" />
 		<Unit filename="main.cpp" />
