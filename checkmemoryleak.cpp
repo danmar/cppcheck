@@ -245,7 +245,7 @@ const char * CheckMemoryLeakClass::call_func( const TOKEN *tok, std::list<const 
                 const TOKEN *ftok = _tokenizer->GetFunctionTokenByName(funcname);
                 const char *parname = Tokenizer::getParameterName( ftok, par );
                 if ( ! parname )
-                    return "use";
+                    return "recursive";
                 // Check if the function deallocates the variable..
                 while ( ftok && (ftok->str() != "{") )
                     ftok = ftok->next();
