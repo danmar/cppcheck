@@ -263,13 +263,12 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if ( _settings._checkFunctionUsage )
         _checkFunctionUsage.parseTokens(_tokenizer);
 
+    // Class for detecting buffer overruns and related problems
+    CheckBufferOverrunClass checkBufferOverrun( &_tokenizer, _settings, this );
+
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak( &_tokenizer, _settings, this );
     checkMemoryLeak.CheckMemoryLeak();
-
-    // Buffer overruns..
-    CheckBufferOverrunClass checkBufferOverrun( &_tokenizer, _settings, this );
-    checkBufferOverrun.bufferOverrun();
 
     // Check that all class constructors are ok.
     checkClass.constructors();
@@ -279,6 +278,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     if (_settings._showAll)
     {
+        // Buffer overruns..
+        checkBufferOverrun.bufferOverrun();
+
         // Check for "if (a=b)"
         checkOther.CheckIfAssignment();
 
