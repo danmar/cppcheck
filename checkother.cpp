@@ -646,7 +646,7 @@ void CheckOther::CheckStructMemberUsage()
                 if ( tok->fileIndex() != 0 )
                     continue;
 
-                if (Token::Match(tok2, ". %var%", 0, varnames))
+                if (Token::Match(tok2, ". %var1%", 0, varnames))
                 {
                     if ( strcmp("=", tok2->strAt(2)) == 0 )
                         continue;
