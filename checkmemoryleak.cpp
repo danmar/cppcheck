@@ -162,25 +162,25 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetReallocationType( const
 
 CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType( const Token *tok, const char *varnames[] )
 {
-    if ( Token::Match(tok, "delete %var1% ;", varnames) )
+    if ( Token::Match(tok, "delete %var1% ;", 0, varnames) )
         return New;
 
-    if ( Token::Match(tok, "delete [ ] %var1% ;", varnames) )
+    if ( Token::Match(tok, "delete [ ] %var1% ;", 0, varnames) )
         return NewA;
 
-    if ( Token::Match(tok, "free ( %var1% ) ;", varnames) ||
-         Token::Match(tok, "kfree ( %var1% ) ;", varnames) )
+    if ( Token::Match(tok, "free ( %var1% ) ;", 0, varnames) ||
+         Token::Match(tok, "kfree ( %var1% ) ;", 0, varnames) )
     {
         return Malloc;
     }
 
-    if ( Token::Match(tok, "g_free ( %var1% ) ;", varnames) )
+    if ( Token::Match(tok, "g_free ( %var1% ) ;", 0, varnames) )
         return gMalloc;
 
-    if ( Token::Match(tok, "fclose ( %var1% )", varnames) )
+    if ( Token::Match(tok, "fclose ( %var1% )", 0, varnames) )
         return FOPEN;
 
-    if ( Token::Match(tok, "pclose ( %var1% )", varnames) )
+    if ( Token::Match(tok, "pclose ( %var1% )", 0, varnames) )
         return POPEN;
 
     return No;
@@ -240,7 +240,7 @@ const char * CheckMemoryLeakClass::call_func( const Token *tok, std::list<const 
         {
             if ( tok->str() == "," )
                 ++par;
-            if ( Token::Match(tok, "[,()] %var1% [,()]", varnames) )
+            if ( Token::Match(tok, "[,()] %var1% [,()]", 0, varnames) )
             {
                 const Token *ftok = _tokenizer->GetFunctionTokenByName(funcname);
                 const char *parname = Tokenizer::getParameterName( ftok, par );
@@ -308,12 +308,12 @@ void CheckMemoryLeakClass::instoken(Token *tok, const char str[])
 
 bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
 {
-    return bool( Token::Match(tok, "! %var1% [;)&|]", varnames) ||
-                 Token::Match(tok, "! ( %var1% )", varnames) ||
-                 Token::Match(tok, "unlikely ( ! %var1% )", varnames) ||
-                 Token::Match(tok, "unlikely ( %var1% == 0 )", varnames) ||
-                 Token::Match(tok, "0 == %var1% [;)&|]", varnames) ||
-                 Token::Match(tok, "%var1% == 0", varnames) );
+    return bool( Token::Match(tok, "! %var1% [;)&|]", 0, varnames) ||
+                 Token::Match(tok, "! ( %var1% )", 0, varnames) ||
+                 Token::Match(tok, "unlikely ( ! %var1% )", 0, varnames) ||
+                 Token::Match(tok, "unlikely ( %var1% == 0 )", 0, varnames) ||
+                 Token::Match(tok, "0 == %var1% [;)&|]", 0, varnames) ||
+                 Token::Match(tok, "%var1% == 0", 0, varnames) );
 }
 
 Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype)
@@ -372,7 +372,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         if ( parlevel == 0 && tok->str()==";")
             addtoken(";");
 
-        if (Token::Match(tok, "[(;{}] %var1% =", varnames))
+        if (Token::Match(tok, "[(;{}] %var1% =", 0, varnames))
         {
             AllocType alloc = GetAllocationType(tok->tokAt(3));
             bool realloc = false;
@@ -447,9 +447,9 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         }
 
         // if else switch
-        if ( Token::Match(tok, "if ( %var1% )", varnames) ||
-             Token::Match(tok, "if ( %var1% != 0 )", varnames) ||
-             Token::Match(tok, "if ( 0 != %var1% )", varnames)  )
+        if ( Token::Match(tok, "if ( %var1% )", 0, varnames) ||
+             Token::Match(tok, "if ( %var1% != 0 )", 0, varnames) ||
+             Token::Match(tok, "if ( 0 != %var1% )", 0, varnames)  )
         {
             addtoken("if(var)");
 
@@ -476,7 +476,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                     if ( parlevel <= 0 )
                         break;
                 }
-                if ( Token::Match(tok2, "fclose ( %var1% )", varnames) )
+                if ( Token::Match(tok2, "fclose ( %var1% )", 0, varnames) )
                 {
                     addtoken( "dealloc" );
                     addtoken( ";" );
@@ -484,8 +484,8 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                     break;
                 }
                 if ( (tok2->str() != ".") &&
-                     Token::Match(tok2->next(), "%var1%", varnames) &&
-                     !Token::Match(tok2->next(), "%var1% .", varnames) )
+                     Token::Match(tok2->next(), "%var1%", 0, varnames) &&
+                     !Token::Match(tok2->next(), "%var1% .", 0, varnames) )
                 {
                     dep = true;
                     break;
@@ -539,8 +539,8 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         if ( tok->str() == "return" )
         {
             addtoken("return");
-            if ( Token::Match(tok, "return %var1%", varnames) ||
-                 Token::Match(tok, "return & %var1%", varnames) )
+            if ( Token::Match(tok, "return %var1%", 0, varnames) ||
+                 Token::Match(tok, "return & %var1%", 0, varnames) )
                 addtoken("use");
             if (Token::simpleMatch(tok->next(), "("))
             {
@@ -563,13 +563,13 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
             addtoken(tok->strAt(0));
 
         // Assignment..
-        if ( Token::Match(tok,"[)=] %var1% [+;)]", varnames) ||
-             Token::Match(tok, "%var1% +=|-=", varnames) ||
-             Token::Match(tok, "+=|<< %var1% ;", varnames) )
+        if ( Token::Match(tok,"[)=] %var1% [+;)]", 0, varnames) ||
+             Token::Match(tok, "%var1% +=|-=", 0, varnames) ||
+             Token::Match(tok, "+=|<< %var1% ;", 0, varnames) )
         {
             addtoken("use");
         }
-        else if ( Token::Match(tok, "[;{}=(,+-*/] %var1% [", varnames) )
+        else if ( Token::Match(tok, "[;{}=(,+-*/] %var1% [", 0, varnames) )
         {
             addtoken("use_");
         }
@@ -609,11 +609,11 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         }
 
         // Linux lists..
-        if ( Token::Match( tok, "[=(,] & %var1% [.[]", varnames ) )
+        if ( Token::Match( tok, "[=(,] & %var1% [.[]", 0, varnames ) )
         {
             addtoken("&use");
         }
-        else if ( Token::Match( tok, "[=(,] & %var1% [,)]", varnames ) )
+        else if ( Token::Match( tok, "[=(,] & %var1% [,)]", 0, varnames ) )
         {
             addtoken("&use2");
         }

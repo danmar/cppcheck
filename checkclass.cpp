@@ -351,7 +351,7 @@ void CheckClass::constructors()
                         isPrivate = false;
 
                     // Is there a private constructor?
-                    else if ( isPrivate && Token::Match(tok, "%var1% (", className) )
+                    else if ( isPrivate && Token::Match(tok, "%var1% (", 0, className) )
                     {
                         hasPrivateConstructor = true;
                         break;

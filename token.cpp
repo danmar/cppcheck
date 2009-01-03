@@ -164,7 +164,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
     return true;
 }
 
-bool Token::Match(const Token *tok, const char pattern[], const char *varname1[], unsigned int varid)
+bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, const char *varname1[] )
 {
     const char *p = pattern;
     while ( *p )
@@ -353,7 +353,7 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], const char
 {
     for ( ; tok; tok = tok->next())
     {
-        if ( Token::Match(tok, pattern, varname1) )
+        if ( Token::Match(tok, pattern, 0, varname1) )
             return tok;
     }
     return 0;

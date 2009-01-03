@@ -1479,7 +1479,7 @@ bool Tokenizer::simplifyKnownVariables()
                         break;
 
                     // Replace variable with numeric constant..
-                    if ( Token::Match(tok3, "if ( %varid% )", 0, varid) )
+                    if ( Token::Match(tok3, "if ( %varid% )", varid) )
                     {
                         tok3 = tok3->next()->next();
                         tok3->str( tok2->strAt(2) );

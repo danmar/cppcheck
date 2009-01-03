@@ -105,7 +105,7 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const Token *tok, const char pattern[], const char *varname1[]=0, unsigned int varid=0);
+    static bool Match(const Token *tok, const char pattern[], unsigned int varid=0, const char *varname1[]=0 );
 
     bool isName() const;
     bool isNumber() const;

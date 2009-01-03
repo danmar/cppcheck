@@ -646,7 +646,7 @@ void CheckOther::CheckStructMemberUsage()
                 if ( tok->fileIndex() != 0 )
                     continue;
 
-                if (Token::Match(tok2, ". %var%", varnames))
+                if (Token::Match(tok2, ". %var%", 0, varnames))
                 {
                     if ( strcmp("=", tok2->strAt(2)) == 0 )
                         continue;
@@ -697,7 +697,7 @@ void CheckOther::CheckCharVariable()
                         break;
                 }
 
-                if ((tok2->str() != ".") && Token::Match(tok2->next(), "%var% [ %varid% ]", 0, tok->varId()))
+                if ((tok2->str() != ".") && Token::Match(tok2->next(), "%var% [ %varid% ]", tok->varId()))
                 {
                     std::ostringstream errmsg;
                     errmsg << _tokenizer->fileLine(tok2->next()) << ": Warning - using char variable as array index";
@@ -705,7 +705,7 @@ void CheckOther::CheckCharVariable()
                     break;
                 }
 
-                if ( Token::Match(tok2, "%var% [&|] %varid%", 0, tok->varId()) || Token::Match(tok2, "%varid% [&|]", 0, tok->varId()) )
+                if ( Token::Match(tok2, "%var% [&|] %varid%", tok->varId()) || Token::Match(tok2, "%varid% [&|]", tok->varId()) )
                 {
                     std::ostringstream errmsg;
                     errmsg << _tokenizer->fileLine(tok2) << ": Warning - using char variable in bit operation";

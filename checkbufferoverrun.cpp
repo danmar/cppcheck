@@ -75,7 +75,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
     // Array index..
     if ( varid > 0 )
     {
-        if ( Token::Match(tok, "%varid% [ %num% ]", 0, varid) )
+        if ( Token::Match(tok, "%varid% [ %num% ]", varid) )
         {
             const char *num = tok->strAt(2);
             if (strtol(num, NULL, 10) >= size)
@@ -84,7 +84,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
         }
     }
-    else if ( Token::Match(tok, "%var1% [ %num% ]", varname) )
+    else if ( Token::Match(tok, "%var1% [ %num% ]", 0, varname) )
     {
         const char *num = tok->strAt(2 + varc);
         if (strtol(num, NULL, 10) >= size)
@@ -112,7 +112,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         // Array index..
         if ( varid > 0 )
         {
-            if ( !tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", 0, varid) )
+            if ( !tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", varid) )
             {
                 const char *num = tok->strAt(3);
                 if (strtol(num, NULL, 10) >= size)
@@ -121,7 +121,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 }
             }
         }
-        else if ( !tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%var1% [ %num% ]", varname) )
+        else if ( !tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%var1% [ %num% ]", 0, varname) )
         {
             const char *num = tok->next()->strAt(2 + varc);
             if (strtol(num, NULL, 10) >= size)
@@ -138,8 +138,8 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         {
             if ( Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets") )
             {
-                if ( Token::Match(tok->next(), "( %varid% , %num% , %num% )", 0, varid) ||
-                     Token::Match(tok->next(), "( %var% , %varid% , %num% )", 0, varid) )
+                if ( Token::Match(tok->next(), "( %varid% , %num% , %num% )", varid) ||
+                     Token::Match(tok->next(), "( %var% , %varid% , %num% )", varid) )
                 {
                     const char *num  = tok->strAt(6);
                     if ( atoi(num) > total_size )
@@ -152,8 +152,8 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         }
         else if (Token::Match(tok,"memset|memcpy|memmove|memcmp|strncpy|fgets") )
         {
-            if ( Token::Match(tok->next(), "( %var1% , %num% , %num% )", varname) ||
-                 Token::Match(tok->next(), "( %var% , %var1% , %num% )", varname) )
+            if ( Token::Match(tok->next(), "( %var1% , %num% , %num% )", 0, varname) ||
+                 Token::Match(tok->next(), "( %var% , %var1% , %num% )", 0, varname) )
             {
                 const char *num  = tok->strAt(varc + 6);
                 if ( atoi(num) > total_size )
@@ -215,7 +215,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                         break;
                 }
 
-                if ( Token::Match(tok2, pattern.str().c_str(), varname) )
+                if ( Token::Match(tok2, pattern.str().c_str(), 0, varname) )
                 {
                     ReportError(tok2, "Buffer overrun");
                     break;
@@ -227,7 +227,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
 
         // Writing data into array..
-        if ( Token::Match(tok, "strcpy ( %var1% , %str% )", varname) )
+        if ( Token::Match(tok, "strcpy ( %var1% , %str% )", 0, varname) )
         {
             int len = 0;
             const char *str = tok->strAt(varc + 4 );
@@ -282,7 +282,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                     ++par;
                 }
 
-                if ( parlevel == 1 && Token::Match(tok2, "[(,] %var1% [,)]", varname) )
+                if ( parlevel == 1 && Token::Match(tok2, "[(,] %var1% [,)]", 0, varname) )
                 {
                     ++par;
                     break;
