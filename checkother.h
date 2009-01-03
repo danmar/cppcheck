@@ -74,7 +74,7 @@ public:
 #ifndef UNIT_TESTING
 private:
 #endif
-    void CheckVariableScope_LookupVar( const TOKEN *tok1, const char varname[] );
+    void CheckVariableScope_LookupVar( const Token *tok1, const char varname[] );
 
     // Redundant condition
     // if (haystack.find(needle) != haystack.end())

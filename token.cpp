@@ -26,7 +26,7 @@
 #include <ctype.h>  // isalpha, isdigit
 #endif
 
-TOKEN::TOKEN() :
+Token::Token() :
     _str(""),
     _cstr(0),
     _isName(false),
@@ -40,12 +40,12 @@ TOKEN::TOKEN() :
 {
 }
 
-TOKEN::~TOKEN()
+Token::~Token()
 {
     std::free(_cstr);
 }
 
-void TOKEN::str( const char s[] )
+void Token::str( const char s[] )
 {
     _str = s;
     std::free(_cstr);
@@ -60,18 +60,18 @@ void TOKEN::str( const char s[] )
     _varId = 0;
 }
 
-void TOKEN::deleteNext()
+void Token::deleteNext()
 {
-    TOKEN *n = _next;
+    Token *n = _next;
     _next = n->next();
     delete n;
     if (_next)
         _next->previous(this);
 }
 
-const TOKEN *TOKEN::tokAt(int index) const
+const Token *Token::tokAt(int index) const
 {
-    const TOKEN *tok = this;
+    const Token *tok = this;
     while (index>0 && tok)
     {
         tok = tok->next();
@@ -80,13 +80,13 @@ const TOKEN *TOKEN::tokAt(int index) const
     return tok;
 }
 
-const char *TOKEN::strAt(int index) const
+const char *Token::strAt(int index) const
 {
-    const TOKEN *tok = this->tokAt(index);
+    const Token *tok = this->tokAt(index);
     return tok ? tok->_cstr : "";
 }
 
-int TOKEN::multiCompare( const char *needle, const char *haystack )
+int Token::multiCompare( const char *needle, const char *haystack )
 {
     bool emptyStringFound = false;
     bool findNextOr = false;
@@ -135,7 +135,7 @@ int TOKEN::multiCompare( const char *needle, const char *haystack )
     return -1;
 }
 
-bool TOKEN::simpleMatch(const TOKEN *tok, const char pattern[])
+bool Token::simpleMatch(const Token *tok, const char pattern[])
 {
     const char *current, *next;
 
@@ -164,7 +164,7 @@ bool TOKEN::simpleMatch(const TOKEN *tok, const char pattern[])
     return true;
 }
 
-bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[], unsigned int varid)
+bool Token::Match(const Token *tok, const char pattern[], const char *varname1[], unsigned int varid)
 {
     const char *p = pattern;
     while ( *p )
@@ -323,22 +323,22 @@ bool TOKEN::Match(const TOKEN *tok, const char pattern[], const char *varname1[]
     return true;
 }
 
-bool TOKEN::isName() const
+bool Token::isName() const
 {
     return _isName;
 }
 
-bool TOKEN::isNumber() const
+bool Token::isNumber() const
 {
     return _isNumber;
 }
 
-bool TOKEN::isBoolean() const
+bool Token::isBoolean() const
 {
     return _isBoolean;
 }
 
-bool TOKEN::isStandardType() const
+bool Token::isStandardType() const
 {
     bool ret = false;
     const char *type[] = {"bool","char","short","int","long","float","double",0};
@@ -349,49 +349,49 @@ bool TOKEN::isStandardType() const
 
 //---------------------------------------------------------------------------
 
-const TOKEN *TOKEN::findmatch(const TOKEN *tok, const char pattern[], const char *varname1[])
+const Token *Token::findmatch(const Token *tok, const char pattern[], const char *varname1[])
 {
     for ( ; tok; tok = tok->next())
     {
-        if ( TOKEN::Match(tok, pattern, varname1) )
+        if ( Token::Match(tok, pattern, varname1) )
             return tok;
     }
     return 0;
 }
 
-unsigned int TOKEN::varId() const
+unsigned int Token::varId() const
 {
     return _varId;
 }
 
-void TOKEN::varId( unsigned int id )
+void Token::varId( unsigned int id )
 {
     _varId = id;
 }
 
-TOKEN *TOKEN::next() const
+Token *Token::next() const
 {
     return _next;
 }
 
-void TOKEN::next( TOKEN *next )
+void Token::next( Token *next )
 {
     _next = next;
 }
 
-TOKEN *TOKEN::previous() const
+Token *Token::previous() const
 {
     return _previous;
 }
 
-void TOKEN::previous( TOKEN *previous )
+void Token::previous( Token *previous )
 {
     _previous = previous;
 }
 
-void TOKEN::insertToken( const char str[] )
+void Token::insertToken( const char str[] )
 {
-    TOKEN *newToken = new TOKEN;
+    Token *newToken = new Token;
     newToken->str( str );
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
@@ -405,7 +405,7 @@ void TOKEN::insertToken( const char str[] )
     newToken->previous( this );
 }
 
-void TOKEN::eraseTokens( TOKEN *begin, const TOKEN *end )
+void Token::eraseTokens( Token *begin, const Token *end )
 {
     if ( ! begin )
         return;
@@ -416,27 +416,27 @@ void TOKEN::eraseTokens( TOKEN *begin, const TOKEN *end )
     }
 }
 
-unsigned int TOKEN::fileIndex() const
+unsigned int Token::fileIndex() const
 {
     return _fileIndex;
 }
 
-void TOKEN::fileIndex( unsigned int fileIndex )
+void Token::fileIndex( unsigned int fileIndex )
 {
     _fileIndex = fileIndex;
 }
 
-unsigned int TOKEN::linenr() const
+unsigned int Token::linenr() const
 {
     return _linenr;
 }
 
-void TOKEN::linenr( unsigned int linenr )
+void Token::linenr( unsigned int linenr )
 {
     _linenr = linenr;
 }
 
-void TOKEN::printOut( const char *title ) const
+void Token::printOut( const char *title ) const
 {
     std::cout << std::endl << "###";
     if ( title )
@@ -445,7 +445,7 @@ void TOKEN::printOut( const char *title ) const
         std::cout << "########";
 
     std::cout << "###" << std::endl;
-    for( const TOKEN *t = this; t; t = t->next() )
+    for( const Token *t = this; t; t = t->next() )
     {
         std::cout << t->linenr() << ": " << t->str();
         if ( t->varId() )

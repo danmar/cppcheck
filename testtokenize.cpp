@@ -70,7 +70,7 @@ private:
     }
 
 
-    bool cmptok(const char *expected[], const TOKEN *actual)
+    bool cmptok(const char *expected[], const Token *actual)
     {
         unsigned int i = 0;
         for (; expected[i] && actual; ++i, actual = actual->next())
@@ -224,7 +224,7 @@ private:
         tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { { ; } }"), ostr.str() );
     }
@@ -245,7 +245,7 @@ private:
         ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { ; } else { ; } }"), ostr.str() );
     }
@@ -265,7 +265,7 @@ private:
         ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { if ( b ) { } } }"), ostr.str() );
     }
@@ -285,7 +285,7 @@ private:
         ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { for ( ; ; ) { } } }"), ostr.str() );
     }
@@ -310,7 +310,7 @@ private:
         ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" char * foo ( ) { char * str = malloc ( 10 ) ; if ( somecondition ) { for ( ; ; ) { } } return str ; }"), ostr.str() );
     }
@@ -332,7 +332,7 @@ private:
         tokenizer.simplifyKnownVariables();
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { int a = 10 ; if ( 10 ) ; }"), ostr.str() );
     }
@@ -355,7 +355,7 @@ private:
         tokenizer.simplifyKnownVariables();
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { int a = 10 ; a = g ( ) ; if ( a ) ; }"), ostr.str() );
     }
@@ -381,7 +381,7 @@ private:
         tokenizer.simplifyKnownVariables();
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { int a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) ; }"), ostr.str() );
     }
@@ -403,7 +403,7 @@ private:
         tokenizer.simplifyKnownVariables();
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { int a = 4 ; if ( g ( a ) ) ; }"), ostr.str() );
     }
@@ -425,7 +425,7 @@ private:
         tokenizer.simplifyKnownVariables();
 
         std::ostringstream ostr;
-        for (const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS( std::string(" void f ( ) { int a = 4 ; if ( a = 5 ) ; }"), ostr.str() );
     }
@@ -433,20 +433,20 @@ private:
     void multiCompare()
     {
         // Test for found
-        ASSERT_EQUALS( 1, TOKEN::multiCompare( "one|two", "one" ) );
-        ASSERT_EQUALS( 1, TOKEN::multiCompare( "one|two", "two" ) );
-        ASSERT_EQUALS( 1, TOKEN::multiCompare( "verybig|two|", "two" ) );
+        ASSERT_EQUALS( 1, Token::multiCompare( "one|two", "one" ) );
+        ASSERT_EQUALS( 1, Token::multiCompare( "one|two", "two" ) );
+        ASSERT_EQUALS( 1, Token::multiCompare( "verybig|two|", "two" ) );
 
         // Test for empty string found
-        ASSERT_EQUALS( 0, TOKEN::multiCompare( "|one|two", "notfound" ) );
-        ASSERT_EQUALS( 0, TOKEN::multiCompare( "one||two", "notfound" ) );
-        ASSERT_EQUALS( 0, TOKEN::multiCompare( "one|two|", "notfound" ) );
+        ASSERT_EQUALS( 0, Token::multiCompare( "|one|two", "notfound" ) );
+        ASSERT_EQUALS( 0, Token::multiCompare( "one||two", "notfound" ) );
+        ASSERT_EQUALS( 0, Token::multiCompare( "one|two|", "notfound" ) );
 
         // Test for not found
-        ASSERT_EQUALS( -1, TOKEN::multiCompare( "one|two", "notfound" ) );
-        ASSERT_EQUALS( -1, TOKEN::multiCompare( "verybig|two", "s" ) );
-        ASSERT_EQUALS( -1, TOKEN::multiCompare( "one|two", "ne" ) );
-        ASSERT_EQUALS( -1, TOKEN::multiCompare( "abc|def", "a" ) );
+        ASSERT_EQUALS( -1, Token::multiCompare( "one|two", "notfound" ) );
+        ASSERT_EQUALS( -1, Token::multiCompare( "verybig|two", "s" ) );
+        ASSERT_EQUALS( -1, Token::multiCompare( "one|two", "ne" ) );
+        ASSERT_EQUALS( -1, Token::multiCompare( "abc|def", "a" ) );
     }
 
     void match1()
@@ -461,7 +461,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "%var% | %var%") );
+            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "%var% | %var%") );
         }
 
         // Match "%var% || %var%"
@@ -474,7 +474,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "%var% || %var%") );
+            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "%var% || %var%") );
         }
     }
 
@@ -489,7 +489,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "!!else") );
+            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "!!else") );
         }
 
         {
@@ -501,7 +501,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "if ; !!else") );
+            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "if ; !!else") );
         }
 
         {
@@ -513,7 +513,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, TOKEN::Match(tokenizer.tokens(), "if ; !!else") );
+            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "if ; !!else") );
         }
 
         {
@@ -525,7 +525,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( false, TOKEN::Match(tokenizer.tokens(), "!!else") );
+            ASSERT_EQUALS( false, Token::Match(tokenizer.tokens(), "!!else") );
         }
 
         {
@@ -537,7 +537,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( false, TOKEN::Match(tokenizer.tokens(), "if ; !!else") );
+            ASSERT_EQUALS( false, Token::Match(tokenizer.tokens(), "if ; !!else") );
         }
     }
 
@@ -558,17 +558,17 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
+        for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
         {
             if ( tok->str() != "i" )
                 ASSERT_EQUALS( 0, tok->varId() );
-            else if ( TOKEN::Match(tok, "i = 1") )
+            else if ( Token::Match(tok, "i = 1") )
                 ASSERT_EQUALS( 1, tok->varId() );
-            else if ( TOKEN::Match(tok, "i = 2") )
+            else if ( Token::Match(tok, "i = 2") )
                 ASSERT_EQUALS( 2, tok->varId() );
-            else if ( TOKEN::Match(tok, "i = 3") )
+            else if ( Token::Match(tok, "i = 3") )
                 ASSERT_EQUALS( 3, tok->varId() );
-            else if ( TOKEN::Match(tok, "i = 4") )
+            else if ( Token::Match(tok, "i = 4") )
                 ASSERT_EQUALS( 2, tok->varId() );
         }
     }
@@ -588,7 +588,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
+        for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
         {
             if ( tok->str() == "abc" )
                 ASSERT_EQUALS( 1, tok->varId() );

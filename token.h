@@ -16,16 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef TOKEN_H
-#define TOKEN_H
+#ifndef TokenH
+#define TokenH
 
 #include <string>
 
-class TOKEN
+class Token
 {
 public:
-    TOKEN();
-    ~TOKEN();
+    Token();
+    ~Token();
     void str( const char s[] );
 
     const std::string &str() const
@@ -50,7 +50,7 @@ public:
      * For example index 1 would return next token, and 2
      * would return next from that one.
      */
-    const TOKEN *tokAt(int index) const;
+    const Token *tokAt(int index) const;
 
     const char *strAt(int index) const;
 
@@ -73,7 +73,7 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool simpleMatch(const TOKEN *tok, const char pattern[]);
+    static bool simpleMatch(const Token *tok, const char pattern[]);
 
     /**
      * Match given token (or list of tokens) to a pattern list.
@@ -105,13 +105,13 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const TOKEN *tok, const char pattern[], const char *varname1[]=0, unsigned int varid=0);
+    static bool Match(const Token *tok, const char pattern[], const char *varname1[]=0, unsigned int varid=0);
 
     bool isName() const;
     bool isNumber() const;
     bool isBoolean() const;
     bool isStandardType() const;
-    static const TOKEN *findmatch(const TOKEN *tok, const char pattern[], const char *varname1[]=0);
+    static const Token *findmatch(const Token *tok, const char pattern[], const char *varname1[]=0);
 
     /**
      * Needle is build from multiple alternatives. If one of
@@ -135,7 +135,7 @@ public:
     unsigned int fileIndex() const;
     void fileIndex( unsigned int fileIndex );
 
-    TOKEN *next() const;
+    Token *next() const;
 
 
     /**
@@ -145,7 +145,7 @@ public:
      * @param begin Tokens after this will be erased.
      * @param end Tokens before this will be erased.
      */
-    static void eraseTokens( TOKEN *begin, const TOKEN *end );
+    static void eraseTokens( Token *begin, const Token *end );
 
     /**
      * Insert new token after this token. This function will handle
@@ -154,7 +154,7 @@ public:
      */
     void insertToken( const char str[] );
 
-    TOKEN *previous() const;
+    Token *previous() const;
 
 
     unsigned int varId() const;
@@ -169,8 +169,8 @@ public:
     void printOut( const char *title = 0 ) const;
 
 private:
-    void next( TOKEN *next );
-    void previous( TOKEN *previous );
+    void next( Token *next );
+    void previous( Token *previous );
 
     std::string _str;
     char * _cstr;
@@ -178,10 +178,10 @@ private:
     bool _isNumber;
     bool _isBoolean;
     unsigned int _varId;
-    TOKEN *_next;
-    TOKEN *_previous;
+    Token *_next;
+    Token *_previous;
     unsigned int _fileIndex;
     unsigned int _linenr;
 };
 
-#endif // TOKEN_H
+#endif // TokenH

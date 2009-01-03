@@ -60,13 +60,13 @@ public:
 
     // Helper functions for handling the tokens list..
 
-    static void deleteTokens(TOKEN *tok);
-    static const char *getParameterName( const TOKEN *ftok, int par );
+    static void deleteTokens(Token *tok);
+    static const char *getParameterName( const Token *ftok, int par );
 
     static bool SameFileName( const char fname1[], const char fname2[] );
 
 
-    std::string fileLine( const TOKEN *tok ) const;
+    std::string fileLine( const Token *tok ) const;
 
     // Return size.
     int SizeOfType(const char type[]) const;
@@ -76,8 +76,8 @@ public:
     const std::vector<std::string> *getFiles() const;
 
     void fillFunctionList();
-    const TOKEN *GetFunctionTokenByName( const char funcname[] ) const;
-    const TOKEN *tokens() const;
+    const Token *GetFunctionTokenByName( const char funcname[] ) const;
+    const Token *tokens() const;
 
 
 #ifndef UNIT_TESTING
@@ -98,7 +98,7 @@ private:
      * @param end e.g. "}"
      * @return The end tag that matches given parameter or 0 if not found.
      */
-    static const TOKEN *findClosing( const TOKEN *tok, const char *start, const char *end );
+    static const Token *findClosing( const Token *tok, const char *start, const char *end );
 
     void Define(const char Name[], const char Value[]);
 
@@ -145,16 +145,16 @@ private:
      */
     bool simplifyKnownVariables();
 
-    TOKEN *_gettok(TOKEN *tok, int index);
+    Token *_gettok(Token *tok, int index);
 
-    void InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n);
+    void InsertTokens(Token *dest, Token *src, unsigned int n);
 
-    TOKEN *_tokensBack;
+    Token *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
-    std::vector<const TOKEN *> _functionList;
+    std::vector<const Token *> _functionList;
     std::vector<std::string> _files;
     struct DefineSymbol * _dsymlist;
-    TOKEN *_tokens;
+    Token *_tokens;
 };
 
 //---------------------------------------------------------------------------

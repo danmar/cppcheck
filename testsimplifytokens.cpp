@@ -48,7 +48,7 @@ private:
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
         std::string ret;
-        for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
+        for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
         {
             ret += tok->str() + " ";
         }

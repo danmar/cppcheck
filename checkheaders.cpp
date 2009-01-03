@@ -48,13 +48,13 @@ CheckHeaders::~CheckHeaders()
 
 void CheckHeaders::WarningHeaderWithImplementation()
 {
-    for ( const TOKEN *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    for ( const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Only interested in included file
         if (tok->fileIndex() == 0)
             continue;
 
-        if (TOKEN::Match(tok, ") {"))
+        if (Token::Match(tok, ") {"))
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found implementation in header";
@@ -83,7 +83,7 @@ void CheckHeaders::WarningHeaderWithImplementation()
 void CheckHeaders::WarningIncludeHeader()
 {
     // Including..
-    for ( const TOKEN *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next())
+    for ( const Token *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next())
     {
         if (includetok->str() != "#include")
             continue;
@@ -112,7 +112,7 @@ void CheckHeaders::WarningIncludeHeader()
 
         // Extract classes and names in the header..
         int indentlevel = 0;
-        for ( const TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next() )
+        for ( const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next() )
         {
             if ( tok1->fileIndex() != hfile )
                 continue;
@@ -129,21 +129,21 @@ void CheckHeaders::WarningIncludeHeader()
 
             // Class or namespace declaration..
             // --------------------------------------
-            if (TOKEN::Match(tok1,"class %var% {") || TOKEN::Match(tok1,"class %var% :") || TOKEN::Match(tok1,"namespace %var% {"))
+            if (Token::Match(tok1,"class %var% {") || Token::Match(tok1,"class %var% :") || Token::Match(tok1,"namespace %var% {"))
                 classlist.push_back(tok1->strAt(1));
 
             // Variable declaration..
             // --------------------------------------
-            else if (TOKEN::Match(tok1, "%type% %var% ;") || TOKEN::Match(tok1, "%type% %var% ["))
+            else if (Token::Match(tok1, "%type% %var% ;") || Token::Match(tok1, "%type% %var% ["))
                 namelist.push_back(tok1->strAt(1));
 
-            else if (TOKEN::Match(tok1, "%type% * %var% ;") || TOKEN::Match(tok1, "%type% * %var% ["))
+            else if (Token::Match(tok1, "%type% * %var% ;") || Token::Match(tok1, "%type% * %var% ["))
                 namelist.push_back(tok1->strAt(2));
 
-            else if (TOKEN::Match(tok1, "const %type% %var% =") || TOKEN::Match(tok1, "const %type% %var% ["))
+            else if (Token::Match(tok1, "const %type% %var% =") || Token::Match(tok1, "const %type% %var% ["))
                 namelist.push_back(tok1->strAt(2));
 
-            else if (TOKEN::Match(tok1, "const %type% * %var% =") || TOKEN::Match(tok1, "const %type% * %var% ["))
+            else if (Token::Match(tok1, "const %type% * %var% =") || Token::Match(tok1, "const %type% * %var% ["))
                 namelist.push_back(tok1->strAt(3));
 
             // enum..
@@ -151,7 +151,7 @@ void CheckHeaders::WarningIncludeHeader()
             else if (tok1->str() == "enum")
             {
                 tok1 = tok1->next();
-                while ( ! TOKEN::Match( tok1, "; %any%" ) )
+                while ( ! Token::Match( tok1, "; %any%" ) )
                 {
                     if ( tok1->isName() )
                         namelist.push_back(tok1->str());
@@ -161,16 +161,16 @@ void CheckHeaders::WarningIncludeHeader()
 
             // function..
             // --------------------------------------
-            else if (TOKEN::Match(tok1,"%type% %var% ("))
+            else if (Token::Match(tok1,"%type% %var% ("))
                 namelist.push_back(tok1->strAt(1));
 
-            else if (TOKEN::Match(tok1,"%type% * %var% ("))
+            else if (Token::Match(tok1,"%type% * %var% ("))
                 namelist.push_back(tok1->strAt(2));
 
-            else if (TOKEN::Match(tok1,"const %type% %var% ("))
+            else if (Token::Match(tok1,"const %type% %var% ("))
                 namelist.push_back(tok1->strAt(2));
 
-            else if (TOKEN::Match(tok1,"const %type% * %var% ("))
+            else if (Token::Match(tok1,"const %type% * %var% ("))
                 namelist.push_back(tok1->strAt(3));
 
             // typedef..
@@ -182,10 +182,10 @@ void CheckHeaders::WarningIncludeHeader()
                 int parlevel = 0;
                 while (tok1->next())
                 {
-                    if ( TOKEN::Match(tok1, "[({]") )
+                    if ( Token::Match(tok1, "[({]") )
                         ++parlevel;
 
-                    else if ( TOKEN::Match(tok1, "[)}]") )
+                    else if ( Token::Match(tok1, "[)}]") )
                         --parlevel;
 
                     else if (parlevel == 0)
@@ -193,7 +193,7 @@ void CheckHeaders::WarningIncludeHeader()
                         if ( tok1->str() == ";" )
                             break;
 
-                        if ( TOKEN::Match(tok1, "%var% ;") )
+                        if ( Token::Match(tok1, "%var% ;") )
                             namelist.push_back(tok1->str());
                     }
 
@@ -206,12 +206,12 @@ void CheckHeaders::WarningIncludeHeader()
         // Check if the extracted names are used...
         bool Needed = false;
         bool NeedDeclaration = false;
-        for ( const TOKEN *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
+        for ( const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
         {
             if (tok1->fileIndex() != includetok->fileIndex())
                 continue;
 
-            if ( TOKEN::Match(tok1, ": %var% {") || TOKEN::Match(tok1, ": %type% %var% {") )
+            if ( Token::Match(tok1, ": %var% {") || Token::Match(tok1, ": %type% %var% {") )
             {
                 std::string classname = tok1->strAt((strcmp(tok1->strAt(2),"{")) ? 2 : 1);
                 if (std::find(classlist.begin(),classlist.end(),classname)!=classlist.end())

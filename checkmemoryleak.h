@@ -57,16 +57,16 @@ private:
     };
 
     void CheckMemoryLeak_ClassMembers_Variable( const std::vector<const char *> &classname, const char varname[] );
-    void CheckMemoryLeak_ClassMembers_ParseClass( const TOKEN *tok1, std::vector<const char *> &classname );
+    void CheckMemoryLeak_ClassMembers_ParseClass( const Token *tok1, std::vector<const char *> &classname );
     void CheckMemoryLeak_ClassMembers();
     void CheckMemoryLeak_InFunction();
-    void CheckMemoryLeak_CheckScope( const TOKEN *Tok1, const char varname[] );
+    void CheckMemoryLeak_CheckScope( const Token *Tok1, const char varname[] );
 
     /**
      * Simplify code e.g. by replacing empty "{ }" with ";"
      * @param tok first token. The tokens list can be modified.
      */
-    void simplifycode(TOKEN *tok);
+    void simplifycode(Token *tok);
 
     /**
      * Delete tokens between begin and end. E.g. if begin = 1
@@ -75,7 +75,7 @@ private:
      * @param begin Tokens after this will be erased.
      * @param end Tokens before this will be erased.
      */
-    void erase(TOKEN *begin, const TOKEN *end);
+    void erase(Token *begin, const Token *end);
 
     /**
      * Extract a new tokens list that is easier to parse than the "tokens"
@@ -87,16 +87,16 @@ private:
      * @return Newly allocated token array. Caller needs to release reserved
      * memory by calling Tokenizer::deleteTokens(returnValue);
      */
-    TOKEN *getcode(const TOKEN *tok, std::list<const TOKEN *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype);
-    bool notvar(const TOKEN *tok, const char *varnames[]);
-    void instoken(TOKEN *tok, const char str[]);
-    void MemoryLeak( const TOKEN *tok, const char varname[], AllocType alloctype );
-    void MismatchError( const TOKEN *Tok1, const std::list<const TOKEN *> &callstack, const char varname[] );
-    const char * call_func( const TOKEN *tok, std::list<const TOKEN *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype );
-    AllocType GetDeallocationType( const TOKEN *tok, const char *varnames[]);
-    AllocType GetAllocationType( const TOKEN *tok2 );
-    AllocType GetReallocationType( const TOKEN *tok2 );
-    bool isclass( const TOKEN *typestr );
+    Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype);
+    bool notvar(const Token *tok, const char *varnames[]);
+    void instoken(Token *tok, const char str[]);
+    void MemoryLeak( const Token *tok, const char varname[], AllocType alloctype );
+    void MismatchError( const Token *Tok1, const std::list<const Token *> &callstack, const char varname[] );
+    const char * call_func( const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype );
+    AllocType GetDeallocationType( const Token *tok, const char *varnames[]);
+    AllocType GetAllocationType( const Token *tok2 );
+    AllocType GetReallocationType( const Token *tok2 );
+    bool isclass( const Token *typestr );
 
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
@@ -107,7 +107,7 @@ private:
 #ifdef UNIT_TESTING
 public:
 #endif
-    TOKEN *functionParameterCode(const TOKEN *ftok, int parameter);
+    Token *functionParameterCode(const Token *ftok, int parameter);
 };
 
 //---------------------------------------------------------------------------

@@ -6,7 +6,6 @@ Optimisations
  * Create a function similar to TOKEN::Match. That first "compiles" a pattern.
 
 Refactoring
- * Rename class "TOKEN" to "Token"
  * Split large functions into smaller functions.
    When possible, convert unit tests for these smaller functions
  * Use %varid% instead of %var1% or %var2% in pattern matches

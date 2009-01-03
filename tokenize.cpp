@@ -61,7 +61,7 @@ Tokenizer::~Tokenizer()
 
 // Helper functions..
 
-TOKEN *Tokenizer::_gettok(TOKEN *tok, int index)
+Token *Tokenizer::_gettok(Token *tok, int index)
 {
     while (tok && index>0)
     {
@@ -73,7 +73,7 @@ TOKEN *Tokenizer::_gettok(TOKEN *tok, int index)
 
 //---------------------------------------------------------------------------
 
-const TOKEN *Tokenizer::tokens() const
+const Token *Tokenizer::tokens() const
 {
     return _tokens;
 }
@@ -163,7 +163,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     }
     else
     {
-        _tokens = new TOKEN;
+        _tokens = new Token;
         _tokensBack = _tokens;
         _tokensBack->str( str2.str().c_str() );
     }
@@ -206,7 +206,7 @@ int Tokenizer::SizeOfType(const char type[]) const
 // InsertTokens - Copy and insert tokens
 //---------------------------------------------------------------------------
 
-void Tokenizer::InsertTokens(TOKEN *dest, TOKEN *src, unsigned int n)
+void Tokenizer::InsertTokens(Token *dest, Token *src, unsigned int n)
 {
     while (n > 0)
     {
@@ -492,7 +492,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
     addtoken( CurrentToken.c_str(), lineno, FileIndex );
 
     // Combine tokens..
-    for (TOKEN *tok = _tokens; tok && tok->next(); tok = tok->next())
+    for (Token *tok = _tokens; tok && tok->next(); tok = tok->next())
     {
         static const char* combineWithNext[][3] =
         {
@@ -533,14 +533,14 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
     }
 
     // typedef..
-    for ( TOKEN *tok = _tokens; tok; )
+    for ( Token *tok = _tokens; tok; )
     {
-        if ( TOKEN::Match(tok, "typedef %type% %type% ;") )
+        if ( Token::Match(tok, "typedef %type% %type% ;") )
         {
             const char *type1 = tok->strAt(1);
             const char *type2 = tok->strAt(2);
-            tok = const_cast<TOKEN*>(tok->tokAt(4));
-            for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+            tok = const_cast<Token*>(tok->tokAt(4));
+            for ( Token *tok2 = tok; tok2; tok2 = tok2->next() )
             {
                 if ( tok2->str() == type2 )
                     tok2->str(type1);
@@ -548,13 +548,13 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             continue;
         }
 
-        else if ( TOKEN::Match(tok, "typedef %type% %type% %type% ;") )
+        else if ( Token::Match(tok, "typedef %type% %type% %type% ;") )
         {
             const char *type1 = tok->strAt(1);
             const char *type2 = tok->strAt(2);
             const char *type3 = tok->strAt(3);
-            tok = const_cast<TOKEN*>(tok->tokAt(5));
-            for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+            tok = const_cast<Token*>(tok->tokAt(5));
+            for ( Token *tok2 = tok; tok2; tok2 = tok2->next() )
             {
                 if ( tok2->str() == type3 )
                 {
@@ -570,13 +570,13 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
     }
 
     // Remove __asm..
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
-        if ( TOKEN::simpleMatch(tok->next(), "__asm {") )
+        if ( Token::simpleMatch(tok->next(), "__asm {") )
         {
             while ( tok->next() )
             {
-                bool last = TOKEN::simpleMatch( tok->next(), "}" );
+                bool last = Token::simpleMatch( tok->next(), "}" );
 
                 // Unlink and delete tok->next()
                 tok->deleteNext();
@@ -589,15 +589,15 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
     }
 
     // Remove "volatile"
-    while ( TOKEN::simpleMatch(_tokens, "volatile") )
+    while ( Token::simpleMatch(_tokens, "volatile") )
     {
-        TOKEN *tok = _tokens;
+        Token *tok = _tokens;
         _tokens = _tokens->next();
         delete tok;
     }
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
-        while ( TOKEN::simpleMatch(tok->next(), "volatile") )
+        while ( Token::simpleMatch(tok->next(), "volatile") )
         {
             tok->deleteNext();
         }
@@ -610,20 +610,20 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
 void Tokenizer::setVarId()
 {
     // Clear all variable ids
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
         tok->varId( 0 );
 
     // Set variable ids..
     unsigned int _varId = 0;
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
-        if ( ! TOKEN::Match(tok, "[;{}(] %type% %var%") )
+        if ( ! Token::Match(tok, "[;{}(] %type% %var%") )
             continue;
 
         // Determine name of declared variable..
         const char *varname = 0;
-        TOKEN *tok2 = tok->next();
-        while ( tok2 && ! TOKEN::Match( tok2, "[;[=(]" ) )
+        Token *tok2 = tok->next();
+        while ( tok2 && ! Token::Match( tok2, "[;[=(]" ) )
         {
             if ( tok2->isName() )
                 varname = tok2->strAt(0);
@@ -633,7 +633,7 @@ void Tokenizer::setVarId()
         }
 
         // Variable declaration found => Set variable ids
-        if ( TOKEN::Match(tok2, "[;[=]") && varname )
+        if ( Token::Match(tok2, "[;[=]") && varname )
         {
             ++_varId;
             int indentlevel = 0;
@@ -661,18 +661,18 @@ void Tokenizer::setVarId()
     }
 
     // Struct/Class members
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
         if ( tok->varId() != 0 &&
-             TOKEN::Match(tok->next(), ". %var%") &&
+             Token::Match(tok->next(), ". %var%") &&
              tok->tokAt(2)->varId() == 0 )
         {
             ++_varId;
 
             const std::string pattern(std::string(". ") + tok->strAt(2));
-            for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+            for ( Token *tok2 = tok; tok2; tok2 = tok2->next() )
             {
-                if ( tok2->varId() == tok->varId() && TOKEN::simpleMatch( tok2->next(), pattern.c_str() ) )
+                if ( tok2->varId() == tok->varId() && Token::simpleMatch( tok2->next(), pattern.c_str() ) )
                     tok2->next()->next()->varId( _varId );
             }
         }
@@ -688,7 +688,7 @@ void Tokenizer::simplifyTokenList()
 {
 
     // Remove the keyword 'unsigned'
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
         if (tok->next() && (tok->next()->str() == "unsigned"))
         {
@@ -697,14 +697,14 @@ void Tokenizer::simplifyTokenList()
     }
 
     // Replace constants..
-    for (TOKEN *tok = _tokens; tok; tok = tok->next())
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (TOKEN::Match(tok,"const %type% %var% = %num% ;"))
+        if (Token::Match(tok,"const %type% %var% = %num% ;"))
         {
             const char *sym = tok->strAt(2);
             const char *num = tok->strAt(4);
 
-            for (TOKEN *tok2 = _gettok(tok,6); tok2; tok2 = tok2->next())
+            for (Token *tok2 = _gettok(tok,6); tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == sym)
                 {
@@ -723,14 +723,14 @@ void Tokenizer::simplifyTokenList()
     _typeSize["long"] = sizeof(long);
     _typeSize["float"] = sizeof(float);
     _typeSize["double"] = sizeof(double);
-    for (TOKEN *tok = _tokens; tok; tok = tok->next())
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (TOKEN::Match(tok,"class %var%"))
+        if (Token::Match(tok,"class %var%"))
         {
             _typeSize[tok->strAt(1)] = 11;
         }
 
-        else if (TOKEN::Match(tok, "struct %var%"))
+        else if (Token::Match(tok, "struct %var%"))
         {
             _typeSize[tok->strAt(1)] = 13;
         }
@@ -738,12 +738,12 @@ void Tokenizer::simplifyTokenList()
 
 
     // Replace 'sizeof(type)'..
-    for (TOKEN *tok = _tokens; tok; tok = tok->next())
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() != "sizeof")
             continue;
 
-        if (TOKEN::Match(tok, "sizeof ( %type% * )"))
+        if (Token::Match(tok, "sizeof ( %type% * )"))
         {
             std::ostringstream str;
             // 'sizeof(type *)' has the same size as 'sizeof(char *)'
@@ -756,7 +756,7 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
-        else if (TOKEN::Match(tok, "sizeof ( %type% )"))
+        else if (Token::Match(tok, "sizeof ( %type% )"))
         {
             const char *type = tok->strAt( 2);
             int size = SizeOfType(type);
@@ -772,7 +772,7 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
-        else if (TOKEN::Match(tok, "sizeof ( * %var% )"))
+        else if (Token::Match(tok, "sizeof ( * %var% )"))
         {
             tok->str("100");
             for ( int i = 0; i < 4; ++i )
@@ -781,10 +781,10 @@ void Tokenizer::simplifyTokenList()
     }
 
     // Replace 'sizeof(var)'
-    for (TOKEN *tok = _tokens; tok; tok = tok->next())
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
         // type array [ num ] ;
-        if ( ! TOKEN::Match(tok, "%type% %var% [ %num% ] ;") )
+        if ( ! Token::Match(tok, "%type% %var% [ %num% ] ;") )
             continue;
 
         int size = SizeOfType(tok->aaaa());
@@ -796,7 +796,7 @@ void Tokenizer::simplifyTokenList()
 
         // Replace 'sizeof(var)' with number
         int indentlevel = 0;
-        for ( TOKEN *tok2 = _gettok(tok,5); tok2; tok2 = tok2->next() )
+        for ( Token *tok2 = _gettok(tok,5); tok2; tok2 = tok2->next() )
         {
             if (tok2->str() == "{")
             {
@@ -810,8 +810,8 @@ void Tokenizer::simplifyTokenList()
                     break;
             }
 
-            // Todo: TOKEN::Match varname directly
-            else if (TOKEN::Match(tok2, "sizeof ( %var% )"))
+            // Todo: Token::Match varname directly
+            else if (Token::Match(tok2, "sizeof ( %var% )"))
             {
                 if (strcmp(tok2->strAt(2), varname) == 0)
                 {
@@ -834,9 +834,9 @@ void Tokenizer::simplifyTokenList()
     // Simple calculations..
     for ( bool done = false; !done; done = true )
     {
-        for (TOKEN *tok = _tokens; tok; tok = tok->next())
+        for (Token *tok = _tokens; tok; tok = tok->next())
         {
-            if (TOKEN::simpleMatch(tok->next(), "* 1") || TOKEN::simpleMatch(tok->next(), "1 *"))
+            if (Token::simpleMatch(tok->next(), "* 1") || Token::simpleMatch(tok->next(), "1 *"))
             {
                 for (int i = 0; i < 2; i++)
                     tok->deleteNext();
@@ -844,7 +844,7 @@ void Tokenizer::simplifyTokenList()
             }
 
             // (1-2)
-            if (TOKEN::Match(tok, "[[,(=<>] %num% [+-*/] %num% [],);=<>]"))
+            if (Token::Match(tok, "[[,(=<>] %num% [+-*/] %num% [],);=<>]"))
             {
                 int i1 = atoi(tok->strAt(1));
                 int i2 = atoi(tok->strAt(3));
@@ -876,16 +876,16 @@ void Tokenizer::simplifyTokenList()
 
 
     // Replace "*(str + num)" => "str[num]"
-    for (TOKEN *tok = _tokens; tok; tok = tok->next())
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if ( ! strchr(";{}(=<>", tok->aaaa0()) )
             continue;
 
-        TOKEN *next = tok->next();
+        Token *next = tok->next();
         if ( ! next )
             break;
 
-        if (TOKEN::Match(next, "* ( %var% + %num% )"))
+        if (Token::Match(next, "* ( %var% + %num% )"))
         {
             const char *str[4] = {"var","[","num","]"};
             str[0] = tok->strAt(3);
@@ -905,21 +905,21 @@ void Tokenizer::simplifyTokenList()
 
 
     // Split up variable declarations if possible..
-    for (TOKEN *tok = _tokens; tok; tok = tok->next())
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if ( ! TOKEN::Match(tok, "[{};]") )
+        if ( ! Token::Match(tok, "[{};]") )
             continue;
 
-        TOKEN *type0 = tok->next();
-        if (!TOKEN::Match(type0, "%type%"))
+        Token *type0 = tok->next();
+        if (!Token::Match(type0, "%type%"))
             continue;
-        if (TOKEN::Match(type0, "else|return"))
+        if (Token::Match(type0, "else|return"))
             continue;
 
-        TOKEN *tok2 = NULL;
+        Token *tok2 = NULL;
         unsigned int typelen = 0;
 
-        if ( TOKEN::Match(type0, "%type% %var% ,|=") )
+        if ( Token::Match(type0, "%type% %var% ,|=") )
         {
             if ( type0->next()->str() != "operator" )
             {
@@ -928,7 +928,7 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
-        else if ( TOKEN::Match(type0, "%type% * %var% ,|=") )
+        else if ( Token::Match(type0, "%type% * %var% ,|=") )
         {
             if ( type0->next()->next()->str() != "operator" )
             {
@@ -937,25 +937,25 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
-        else if ( TOKEN::Match(type0, "%type% %var% [ %num% ] ,|=") )
+        else if ( Token::Match(type0, "%type% %var% [ %num% ] ,|=") )
         {
             tok2 = _gettok(type0, 5);    // The ',' token
             typelen = 1;
         }
 
-        else if ( TOKEN::Match(type0, "%type% * %var% [ %num% ] ,|=") )
+        else if ( Token::Match(type0, "%type% * %var% [ %num% ] ,|=") )
         {
             tok2 = _gettok(type0, 6);    // The ',' token
             typelen = 1;
         }
 
-        else if ( TOKEN::Match(type0, "struct %type% %var% ,|=") )
+        else if ( Token::Match(type0, "struct %type% %var% ,|=") )
         {
             tok2 = _gettok(type0, 3);
             typelen = 2;
         }
 
-        else if ( TOKEN::Match(type0, "struct %type% * %var% ,|=") )
+        else if ( Token::Match(type0, "struct %type% * %var% ,|=") )
         {
             tok2 = _gettok(type0, 4);
             typelen = 2;
@@ -972,7 +972,7 @@ void Tokenizer::simplifyTokenList()
 
             else
             {
-                TOKEN *eq = tok2;
+                Token *eq = tok2;
 
                 int parlevel = 0;
                 while (tok2)
@@ -992,7 +992,7 @@ void Tokenizer::simplifyTokenList()
                     else if ( parlevel==0 && strchr(";,",tok2->aaaa0()) )
                     {
                         // "type var ="   =>   "type var; var ="
-                        TOKEN *VarTok = _gettok(type0,typelen);
+                        Token *VarTok = _gettok(type0,typelen);
                         if (VarTok->aaaa0()=='*')
                             VarTok = VarTok->next();
                         InsertTokens(eq, VarTok, 2);
@@ -1014,18 +1014,18 @@ void Tokenizer::simplifyTokenList()
     }
 
     // Replace NULL with 0..
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
         if ( tok->str() == "NULL" )
             tok->str("0");
     }
 
     // Replace pointer casts of 0.. "(char *)0" => "0"
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
-        if ( TOKEN::Match(tok->next(), "( %type% * ) 0") || TOKEN::Match(tok->next(),"( %type% %type% * ) 0") )
+        if ( Token::Match(tok->next(), "( %type% * ) 0") || Token::Match(tok->next(),"( %type% %type% * ) 0") )
         {
-            while (!TOKEN::simpleMatch(tok->next(),"0"))
+            while (!Token::simpleMatch(tok->next(),"0"))
                 tok->deleteNext();
         }
     }
@@ -1045,14 +1045,14 @@ void Tokenizer::simplifyTokenList()
 }
 //---------------------------------------------------------------------------
 
-const TOKEN *Tokenizer::findClosing( const TOKEN *tok, const char *start, const char *end )
+const Token *Tokenizer::findClosing( const Token *tok, const char *start, const char *end )
 {
     if( !tok )
         return 0;
 
     // Find the closing "}"
     int indentLevel = 0;
-    for ( const TOKEN *closing = tok->next(); closing; closing = closing->next() )
+    for ( const Token *closing = tok->next(); closing; closing = closing->next() )
     {
         if( closing->str() == start )
         {
@@ -1077,16 +1077,16 @@ bool Tokenizer::removeReduntantConditions()
 {
     bool ret = false;
 
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
-        if (!TOKEN::simpleMatch(tok, "if"))
+        if (!Token::simpleMatch(tok, "if"))
             continue;
 
-        if (!TOKEN::Match(tok->tokAt(1), "( %bool% ) {"))
+        if (!Token::Match(tok->tokAt(1), "( %bool% ) {"))
             continue;
 
         // Find matching else
-        const TOKEN *elseTag = 0;
+        const Token *elseTag = 0;
 
         // Find the closing "}"
         elseTag = Tokenizer::findClosing( tok->tokAt( 4 ), "{", "}" );
@@ -1100,19 +1100,19 @@ bool Tokenizer::removeReduntantConditions()
         // Handle if with else
         if( elseTag && elseTag->str()=="else" )
         {
-            if( TOKEN::simpleMatch( elseTag->next(), "if" ) )
+            if( Token::simpleMatch( elseTag->next(), "if" ) )
             {
                 // Handle "else if"
                 if( boolValue == false )
                 {
                     // Convert "if( false ) {aaa;} else if() {bbb;}" => "if() {bbb;}"
-                    TOKEN::eraseTokens( tok, elseTag->tokAt( 2 ) );
+                    Token::eraseTokens( tok, elseTag->tokAt( 2 ) );
                     ret = true;
                 }
                 else
                 {
                     // Keep first if, remove every else if and else after it
-                    const TOKEN *lastTagInIf = elseTag->tokAt( 2 );
+                    const Token *lastTagInIf = elseTag->tokAt( 2 );
                     while( lastTagInIf )
                     {
                         if( lastTagInIf->str() == "(" )
@@ -1123,15 +1123,15 @@ bool Tokenizer::removeReduntantConditions()
 
                         lastTagInIf = Tokenizer::findClosing( lastTagInIf, "{", "}" );
                         lastTagInIf = lastTagInIf->next();
-                        if( !TOKEN::simpleMatch( lastTagInIf, "else" ) )
+                        if( !Token::simpleMatch( lastTagInIf, "else" ) )
                             break;
 
                         lastTagInIf = lastTagInIf->next();
-                        if( TOKEN::simpleMatch( lastTagInIf, "if" ) )
+                        if( Token::simpleMatch( lastTagInIf, "if" ) )
                             lastTagInIf = lastTagInIf->next();
                     }
 
-                    TOKEN::eraseTokens( elseTag->previous(), lastTagInIf );
+                    Token::eraseTokens( elseTag->previous(), lastTagInIf );
                     ret = true;
                 }
             }
@@ -1146,14 +1146,14 @@ bool Tokenizer::removeReduntantConditions()
                     else
                         tok->str( ";" );
 
-                    TOKEN::eraseTokens( tok, elseTag->tokAt( 1 ) );
+                    Token::eraseTokens( tok, elseTag->tokAt( 1 ) );
                 }
                 else
                 {
-                    if( TOKEN::simpleMatch( elseTag->tokAt( 1 ), "{" ) )
+                    if( Token::simpleMatch( elseTag->tokAt( 1 ), "{" ) )
                     {
                         // Convert "if( true ) {aaa;} else {bbb;}" => "{aaa;}"
-                        const TOKEN *end = Tokenizer::findClosing( elseTag->tokAt( 1 ), "{", "}" );
+                        const Token *end = Tokenizer::findClosing( elseTag->tokAt( 1 ), "{", "}" );
                         if( !end )
                         {
                             // Possibly syntax error in code
@@ -1161,7 +1161,7 @@ bool Tokenizer::removeReduntantConditions()
                         }
 
                         // Remove the "else { aaa; }"
-                        TOKEN::eraseTokens( elseTag->previous(), end->tokAt( 1 ) );
+                        Token::eraseTokens( elseTag->previous(), end->tokAt( 1 ) );
                     }
 
                     // Remove "if( true )"
@@ -1170,7 +1170,7 @@ bool Tokenizer::removeReduntantConditions()
                     else
                         tok->str( ";" );
 
-                    TOKEN::eraseTokens( tok, tok->tokAt(5) );
+                    Token::eraseTokens( tok, tok->tokAt(5) );
                 }
 
                 ret = true;
@@ -1188,7 +1188,7 @@ bool Tokenizer::removeReduntantConditions()
                 else
                     tok->str( ";" );
 
-                TOKEN::eraseTokens( tok, elseTag );
+                Token::eraseTokens( tok, elseTag );
             }
             else
             {
@@ -1198,7 +1198,7 @@ bool Tokenizer::removeReduntantConditions()
                 else
                     tok->str( ";" );
 
-                TOKEN::eraseTokens( tok, tok->tokAt( 5 ) );
+                Token::eraseTokens( tok, tok->tokAt( 5 ) );
             }
 
             ret = true;
@@ -1212,9 +1212,9 @@ bool Tokenizer::simplifyIfAddBraces()
 {
     bool ret = false;
 
-    for ( TOKEN *tok = _tokens; tok; tok = tok ? tok->next() : NULL )
+    for ( Token *tok = _tokens; tok; tok = tok ? tok->next() : NULL )
     {
-        if ( TOKEN::Match(tok, "if|for|while (") )
+        if ( Token::Match(tok, "if|for|while (") )
         {
             // Goto the ending ')'
             int parlevel = 1;
@@ -1228,14 +1228,14 @@ bool Tokenizer::simplifyIfAddBraces()
             }
 
             // ')' should be followed by '{'
-            if (!tok || TOKEN::simpleMatch(tok, ") {"))
+            if (!tok || Token::simpleMatch(tok, ") {"))
                 continue;
         }
 
         else if ( tok->str() == "else" )
         {
             // An else followed by an if or brace don't need to be processed further
-            if ( TOKEN::Match( tok, "else if|{" ) )
+            if ( Token::Match( tok, "else if|{" ) )
                 continue;
         }
 
@@ -1291,16 +1291,16 @@ bool Tokenizer::simplifyConditions()
 {
     bool ret = false;
 
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
-        if (TOKEN::simpleMatch(tok, "( true &&") || TOKEN::simpleMatch(tok, "&& true &&") || TOKEN::simpleMatch(tok->next(), "&& true )"))
+        if (Token::simpleMatch(tok, "( true &&") || Token::simpleMatch(tok, "&& true &&") || Token::simpleMatch(tok->next(), "&& true )"))
         {
             tok->deleteNext();
             tok->deleteNext();
             ret = true;
         }
 
-        else if (TOKEN::simpleMatch(tok, "( false ||") || TOKEN::simpleMatch(tok, "|| false ||") || TOKEN::simpleMatch(tok->next(), "|| false )"))
+        else if (Token::simpleMatch(tok, "( false ||") || Token::simpleMatch(tok, "|| false ||") || Token::simpleMatch(tok->next(), "|| false )"))
         {
             tok->deleteNext();
             tok->deleteNext();
@@ -1308,9 +1308,9 @@ bool Tokenizer::simplifyConditions()
         }
 
         // Change numeric constant in condition to "true" or "false"
-        const TOKEN *tok2 = tok->tokAt(2);
+        const Token *tok2 = tok->tokAt(2);
         if ((tok->str()=="(" || tok->str()=="&&" || tok->str()=="||")  &&
-            TOKEN::Match(tok->next(), "%num%")                         &&
+            Token::Match(tok->next(), "%num%")                         &&
             tok2                                                       &&
             (tok2->str()==")" || tok2->str()=="&&" || tok2->str()=="||"))
         {
@@ -1319,11 +1319,11 @@ bool Tokenizer::simplifyConditions()
         }
 
         // Reduce "(%num% == %num%)" => "(true)"/"(false)"
-        const TOKEN *tok4 = tok->tokAt(4);
+        const Token *tok4 = tok->tokAt(4);
         if ( ! tok4 )
             break;
         if ( (tok->str()=="&&" || tok->str()=="||" || tok->str()=="(") &&
-             TOKEN::Match(tok->tokAt(1), "%num% %any% %num%") &&
+             Token::Match(tok->tokAt(1), "%num% %any% %num%") &&
              (tok4->str()=="&&" || tok4->str()=="||" || tok4->str()==")") )
         {
             double op1 = (strstr(tok->strAt(1), "0x")) ? strtol(tok->strAt(1),0,16) : atof( tok->strAt(1) );
@@ -1365,9 +1365,9 @@ bool Tokenizer::simplifyConditions()
 bool Tokenizer::simplifyCasts()
 {
     bool ret = false;
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
-        if ( TOKEN::Match(tok->next(), "( %type% * )") )
+        if ( Token::Match(tok->next(), "( %type% * )") )
         {
             tok->deleteNext();
             tok->deleteNext();
@@ -1376,20 +1376,20 @@ bool Tokenizer::simplifyCasts()
             ret = true;
         }
 
-        else if ( TOKEN::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <" ) )
+        else if ( Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <" ) )
         {
             while ( tok->next() && tok->next()->str() != ">" )
                 tok->deleteNext();
             tok->deleteNext();
             tok->deleteNext();
-            TOKEN *tok2 = tok;
+            Token *tok2 = tok;
             int parlevel = 0;
             while ( tok2->next() && parlevel >= 0 )
             {
                 tok2 = tok2->next();
-                if ( TOKEN::simpleMatch(tok2->next(), "(") )
+                if ( Token::simpleMatch(tok2->next(), "(") )
                     ++parlevel;
-                else if ( TOKEN::simpleMatch(tok2->next(), ")") )
+                else if ( Token::simpleMatch(tok2->next(), ")") )
                     --parlevel;
             }
             if (tok2->next())
@@ -1408,7 +1408,7 @@ bool Tokenizer::simplifyFunctionReturn()
 {
     bool ret = false;
     int indentlevel = 0;
-    for ( const TOKEN *tok = tokens(); tok; tok = tok->next() )
+    for ( const Token *tok = tokens(); tok; tok = tok->next() )
     {
         if ( tok->str() == "{" )
             ++indentlevel;
@@ -1416,13 +1416,13 @@ bool Tokenizer::simplifyFunctionReturn()
         else if ( tok->str() == "}" )
             --indentlevel;
 
-        else if ( indentlevel == 0 && TOKEN::Match(tok, "%var% ( ) { return %num% ; }") )
+        else if ( indentlevel == 0 && Token::Match(tok, "%var% ( ) { return %num% ; }") )
         {
             std::ostringstream pattern;
             pattern << "[(=+-*/] " << tok->str() << " ( ) [;)+-*/]";
-            for ( TOKEN *tok2 = _tokens; tok2; tok2 = tok2->next() )
+            for ( Token *tok2 = _tokens; tok2; tok2 = tok2->next() )
             {
-                if ( TOKEN::Match(tok2, pattern.str().c_str()) )
+                if ( Token::Match(tok2, pattern.str().c_str()) )
                 {
                     tok2 = tok2->next();
                     tok2->str( tok->strAt(5) );
@@ -1440,15 +1440,15 @@ bool Tokenizer::simplifyFunctionReturn()
 bool Tokenizer::simplifyKnownVariables()
 {
     bool ret = false;
-    for ( TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( Token *tok = _tokens; tok; tok = tok->next() )
     {
         // Search for a block of code
-        if ( ! TOKEN::Match(tok, ") const| {") )
+        if ( ! Token::Match(tok, ") const| {") )
             continue;
 
         // parse the block of code..
         int indentlevel = 0;
-        for ( TOKEN *tok2 = tok; tok2; tok2 = tok2->next() )
+        for ( Token *tok2 = tok; tok2; tok2 = tok2->next() )
         {
 
             if ( tok2->str() == "{" )
@@ -1461,17 +1461,17 @@ bool Tokenizer::simplifyKnownVariables()
                     break;
             }
 
-            else if ( TOKEN::Match(tok2, "%var% = %num% ;") ||
-                      TOKEN::Match(tok2, "%var% = %bool% ;"))
+            else if ( Token::Match(tok2, "%var% = %num% ;") ||
+                      Token::Match(tok2, "%var% = %bool% ;"))
             {
                 unsigned int varid = tok2->varId();
                 if( varid == 0 )
                     continue;
 
-                for ( TOKEN *tok3 = tok2->next(); tok3; tok3 = tok3->next() )
+                for ( Token *tok3 = tok2->next(); tok3; tok3 = tok3->next() )
                 {
                     // Perhaps it's a loop => bail out
-                    if ( TOKEN::Match(tok3, "[{}]") )
+                    if ( Token::Match(tok3, "[{}]") )
                         break;
 
                     // Variable is used somehow in a non-defined pattern => bail out
@@ -1479,7 +1479,7 @@ bool Tokenizer::simplifyKnownVariables()
                         break;
 
                     // Replace variable with numeric constant..
-                    if ( TOKEN::Match(tok3, "if ( %varid% )", 0, varid) )
+                    if ( Token::Match(tok3, "if ( %varid% )", 0, varid) )
                     {
                         tok3 = tok3->next()->next();
                         tok3->str( tok2->strAt(2) );
@@ -1501,7 +1501,7 @@ bool Tokenizer::simplifyKnownVariables()
 
 //---------------------------------------------------------------------------
 
-const TOKEN *Tokenizer::GetFunctionTokenByName( const char funcname[] ) const
+const Token *Tokenizer::GetFunctionTokenByName( const char funcname[] ) const
 {
     for ( unsigned int i = 0; i < _functionList.size(); ++i )
     {
@@ -1521,7 +1521,7 @@ void Tokenizer::fillFunctionList()
     bool classfunc = false;
 
     int indentlevel = 0;
-    for ( const TOKEN *tok = _tokens; tok; tok = tok->next() )
+    for ( const Token *tok = _tokens; tok; tok = tok->next() )
     {
         if ( tok->str() == "{" )
             ++indentlevel;
@@ -1540,10 +1540,10 @@ void Tokenizer::fillFunctionList()
         else if ( tok->str() == "::" )
             classfunc = true;
 
-        else if (TOKEN::Match(tok, "%var% ("))
+        else if (Token::Match(tok, "%var% ("))
         {
             // Check if this is the first token of a function implementation..
-            for ( const TOKEN *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next() )
+            for ( const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next() )
             {
                 if ( tok2->str() == ";" )
                 {
@@ -1558,7 +1558,7 @@ void Tokenizer::fillFunctionList()
 
                 else if ( tok2->str() == ")" )
                 {
-                    if ( TOKEN::Match(tok2, ") const| {") )
+                    if ( Token::Match(tok2, ") const| {") )
                     {
                         _functionList.push_back( tok );
                         tok = tok2;
@@ -1625,11 +1625,11 @@ void Tokenizer::DeallocateTokens()
     _files.clear();
 }
 
-void Tokenizer::deleteTokens(TOKEN *tok)
+void Tokenizer::deleteTokens(Token *tok)
 {
     while (tok)
     {
-        TOKEN *next = tok->next();
+        Token *next = tok->next();
         delete tok;
         tok = next;
     }
@@ -1637,14 +1637,14 @@ void Tokenizer::deleteTokens(TOKEN *tok)
 
 //---------------------------------------------------------------------------
 
-const char *Tokenizer::getParameterName( const TOKEN *ftok, int par )
+const char *Tokenizer::getParameterName( const Token *ftok, int par )
 {
     int _par = 1;
     for ( ; ftok; ftok = ftok->next())
     {
         if ( ftok->str()=="," )
             ++_par;
-        if ( par==_par && TOKEN::Match(ftok, "%var% [,)]") )
+        if ( par==_par && Token::Match(ftok, "%var% [,)]") )
             return ftok->aaaa();
     }
     return NULL;
@@ -1652,7 +1652,7 @@ const char *Tokenizer::getParameterName( const TOKEN *ftok, int par )
 
 //---------------------------------------------------------------------------
 
-std::string Tokenizer::fileLine( const TOKEN *tok ) const
+std::string Tokenizer::fileLine( const Token *tok ) const
 {
     std::ostringstream ostr;
     ostr << "[" << _files.at(tok->fileIndex()) << ":" << tok->linenr() << "]";

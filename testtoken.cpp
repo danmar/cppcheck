@@ -37,11 +37,11 @@ private:
 
     void nextprevious()
     {
-        TOKEN *token = new TOKEN;
+        Token *token = new Token;
         token->str( "1" );
         token->insertToken( "2" );
         token->next()->insertToken( "3" );
-        TOKEN *last = token->next()->next();
+        Token *last = token->next()->next();
         ASSERT_EQUALS( token->str(), "1" );
         ASSERT_EQUALS( token->next()->str(), "2" );
         ASSERT_EQUALS( token->next()->next()->str(), "3" );

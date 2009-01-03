@@ -48,26 +48,26 @@ void CheckFunctionUsage::setErrorLogger( ErrorLogger *errorLogger )
 void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 {
     // Function declarations..
-    for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
+    for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
     {
         if ( tok->fileIndex() != 0 )
             continue;
 
-        const TOKEN *funcname = 0;
+        const Token *funcname = 0;
 
-        if ( TOKEN::Match( tok, "%type% %var% (" )  )
+        if ( Token::Match( tok, "%type% %var% (" )  )
             funcname = tok->tokAt(1);
-        else if ( TOKEN::Match(tok, "%type% * %var% (") )
+        else if ( Token::Match(tok, "%type% * %var% (") )
             funcname = tok->tokAt(2);
-        else if ( TOKEN::Match(tok, "%type% :: %var% (") && !TOKEN::Match(tok, tok->strAt(2)) )
+        else if ( Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2)) )
             funcname = tok->tokAt(2);
 
         // Check that ") {" is found..
-        for (const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next())
+        for (const Token *tok2 = funcname; tok2; tok2 = tok2->next())
         {
-            if ( TOKEN::Match(tok2, ")") )
+            if ( Token::Match(tok2, ")") )
             {
-                if ( ! TOKEN::Match(tok2, ") {") && ! TOKEN::Match(tok2, ") const {") )
+                if ( ! Token::Match(tok2, ") {") && ! Token::Match(tok2, ") const {") )
                     funcname = NULL;
                 break;
             }
@@ -91,25 +91,25 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
     }
 
     // Function usage..
-    for ( const TOKEN *tok = tokenizer.tokens(); tok; tok = tok->next() )
+    for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
     {
-        const TOKEN *funcname = 0;
+        const Token *funcname = 0;
 
-        if ( TOKEN::Match( tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]" ) ||
-             TOKEN::Match(tok, ":: %var% (") ||
-             TOKEN::Match(tok, "|= %var% (") ||
-             TOKEN::Match(tok, "&= %var% (") ||
-             TOKEN::Match(tok, "&& %var% (") ||
-             TOKEN::Match(tok, "|| %var% (") ||
-             TOKEN::Match(tok, "else %var% (") ||
-             TOKEN::Match(tok, "return %var% (") )
+        if ( Token::Match( tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]" ) ||
+             Token::Match(tok, ":: %var% (") ||
+             Token::Match(tok, "|= %var% (") ||
+             Token::Match(tok, "&= %var% (") ||
+             Token::Match(tok, "&& %var% (") ||
+             Token::Match(tok, "|| %var% (") ||
+             Token::Match(tok, "else %var% (") ||
+             Token::Match(tok, "return %var% (") )
             funcname = tok->next();
 
         // funcname ( => Assert that the end paranthesis isn't followed by {
-        if ( TOKEN::Match(funcname, "%var% (") )
+        if ( Token::Match(funcname, "%var% (") )
         {
             int parlevel = 0;
-            for ( const TOKEN *tok2 = funcname; tok2; tok2 = tok2->next() )
+            for ( const Token *tok2 = funcname; tok2; tok2 = tok2->next() )
             {
                 if (tok2->str() == "(")
                     ++parlevel;
@@ -117,7 +117,7 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
                 else if (tok2->str() == ")")
                 {
                     --parlevel;
-                    if (parlevel == 0 && (TOKEN::Match(tok2, ") {") || TOKEN::Match(tok2, ") const")))
+                    if (parlevel == 0 && (Token::Match(tok2, ") {") || Token::Match(tok2, ") const")))
                         funcname = NULL;
                     if ( parlevel <= 0 )
                         break;

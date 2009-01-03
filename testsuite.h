@@ -22,7 +22,7 @@
 #include <sstream>
 #include "errorlogger.h"
 
-class TOKEN;
+class Token;
 
 class TestFixture : public ErrorLogger
 {
