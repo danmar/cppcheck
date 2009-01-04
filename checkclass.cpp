@@ -352,7 +352,7 @@ void CheckClass::constructors()
                         isPrivate = false;
 
                     // Is there a private constructor?
-                    else if ( isPrivate && Token::Match(tok, "%varid% (", classNameToken->varId()) )
+                    else if ( isPrivate && tok->next() && tok->str() == classNameToken->str() && tok->next()->str() == "(" )
                     {
                         hasPrivateConstructor = true;
                         break;
@@ -370,9 +370,10 @@ void CheckClass::constructors()
         }
 
         // Are there a class constructor?
-        const Token *constructor_token = Token::findmatch( tok1, "%any% %varid% (", classNameToken->varId() );
+        std::string tempPattern = "%any% " + classNameToken->str() + " (";
+        const Token *constructor_token = Token::findmatch( tok1, tempPattern.c_str() );
         while ( Token::Match( constructor_token, "~" ) )
-            constructor_token = Token::findmatch( constructor_token->next(), "%any% %varid% (", classNameToken->varId() );
+            constructor_token = Token::findmatch( constructor_token->next(), tempPattern.c_str() );
 
         // There are no constructor.
         if ( ! constructor_token )

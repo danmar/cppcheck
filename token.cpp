@@ -246,6 +246,11 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, co
 
             else if (strcmp(str,"%varid%")==0)
             {
+                if( varid == 0 )
+                {
+                    std::cout << "\n###### If you see this, there is a bug ###### Token::Match() - varid was 0" << std::endl;
+                }
+
                 if ( tok->varId() != varid )
                     return false;
 
