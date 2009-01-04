@@ -718,9 +718,9 @@ void CheckClass::virtualDestructor()
                 continue;
 
             // Find the destructor declaration for the base class.
-            const Token *base = Token::findmatch(_tokenizer->tokens(), "%any% ~ %var1% (", baseName);
+            const Token *base = Token::findmatch(_tokenizer->tokens(), (std::string( "%any% ~ " )+baseName[0]+" (" ).c_str());
             while (Token::Match(base, "::"))
-                base = Token::findmatch(base->next(), "%any% ~ %var1% (", baseName);
+                base = Token::findmatch(base->next(), (std::string( "%any% ~ " ) + baseName[0] + +" (").c_str());
 
             while (Token::Match(base, "%var%") && !Token::Match(base, "virtual"))
                 base = base->previous();
@@ -729,7 +729,7 @@ void CheckClass::virtualDestructor()
             if ( ! base )
             {
                 // Is the class declaration available?
-                base = Token::findmatch(_tokenizer->tokens(), "class %var1% :|{", baseName);
+                base = Token::findmatch(_tokenizer->tokens(), (std::string( "class ")+baseName[0]+" :|{").c_str());
                 if ( base )
                 {
                     std::ostringstream errmsg;
