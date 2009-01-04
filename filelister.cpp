@@ -23,11 +23,11 @@
 #include <cctype>
 #include <algorithm>
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__MINGW32__)
 #include <glob.h>
 #include <unistd.h>
 #endif
-#if defined(__BORLANDC__) || defined(_MSC_VER)
+#if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #endif
 
@@ -110,7 +110,7 @@ bool FileLister::AcceptFile( const std::string &filename )
 ////// This code is for __GNUC__ only /////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__MINGW32__)
 // gcc / cygwin..
 void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive )
 {
@@ -150,7 +150,7 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
 ////// This code is for Borland C++ and Visual C++ ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__BORLANDC__) || defined(_MSC_VER)
+#if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
 
 void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive )
 {
