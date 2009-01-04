@@ -648,7 +648,7 @@ void CheckOther::CheckStructMemberUsage()
 
                 if (Token::Match(tok2, ". %var1%", 0, varnames))
                 {
-                    if ( strcmp("=", tok2->strAt(2)) == 0 )
+                    if ( Token::simpleMatch(tok2->tokAt(2), "=") )
                         continue;
                     used = true;
                     break;
