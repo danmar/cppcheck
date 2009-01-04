@@ -869,7 +869,7 @@ void CheckOther::functionVariableUsage()
             if ((Token::Match(tok,"[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
                 varUsage[ tok->strAt(1) ] |= USAGE_READ;
 
-            if (Token::Match(tok, "-=|+=|*=|/= %var%") || Token::Match(tok, "|= %var%"))
+            if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
                 varUsage[ tok->strAt(1) ] |= USAGE_READ;
 
             if (Token::Match(tok, "%var%") && (tok->next()->str()==")" || isOp(tok->next())))
