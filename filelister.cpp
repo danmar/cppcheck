@@ -93,7 +93,7 @@ bool FileLister::AcceptFile( const std::string &filename )
         return false;
 
     std::string extension = filename.substr( dotLocation );
-    std::transform( extension.begin(), extension.end(), extension.begin(), tolower );
+    std::transform( extension.begin(), extension.end(), extension.begin(), static_cast<int(*)(int)> (std::tolower) );
 
     if( extension == ".cpp" ||
         extension == ".cxx" ||
