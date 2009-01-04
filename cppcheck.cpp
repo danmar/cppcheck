@@ -237,17 +237,19 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     checkClass.noMemset();
 
 
-    // Check for unsigned divisions where one operand is signed
-    // Very important to run it before 'SimplifyTokenList'
+    // Coding style checks that must be run before the simplifyTokenList
     CheckOther checkOther( &_tokenizer, this );
     if ( _settings._checkCodingStyle )
+    {
+        // Check for unsigned divisions where one operand is signed
         checkOther.CheckUnsignedDivision();
 
-    // Give warning when using char variable as array index
-    // Doesn't work on simplified token list ('unsigned')
-    if ( _settings._checkCodingStyle )
+        // Give warning when using char variable as array index
         checkOther.CheckCharVariable();
 
+        // Usage of local variables
+        checkOther.functionVariableUsage();
+    }
 
     // Including header which is not needed (too many false positives)
 //    if ( _settings._checkCodingStyle )
@@ -255,6 +257,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 //        CheckHeaders checkHeaders( &tokenizer );
 //        checkHeaders.WarningIncludeHeader();
 //    }
+
 
 
     _tokenizer.simplifyTokenList();
@@ -336,9 +339,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         // Unreachable code below a 'return' statement
         checkOther.unreachableCode();
-
-        // Usage of local functions
-        checkOther.functionVariableUsage();
     }
 }
 //---------------------------------------------------------------------------
