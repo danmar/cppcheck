@@ -359,6 +359,16 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], const char
     return 0;
 }
 
+const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned int varId )
+{
+    for ( ; tok; tok = tok->next())
+    {
+        if ( Token::Match(tok, pattern, varId) )
+            return tok;
+    }
+    return 0;
+}
+
 unsigned int Token::varId() const
 {
     return _varId;

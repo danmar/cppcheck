@@ -322,6 +322,7 @@ void CheckClass::constructors()
         const char *className[2];
         className[0] = tok1->strAt( 1 );
         className[1] = 0;
+        const Token *classNameToken = tok1->tokAt( 1 );
 
         // TODO: handling of private constructors should be improved.
         bool hasPrivateConstructor = false;
@@ -351,7 +352,7 @@ void CheckClass::constructors()
                         isPrivate = false;
 
                     // Is there a private constructor?
-                    else if ( isPrivate && Token::Match(tok, "%var1% (", 0, className) )
+                    else if ( isPrivate && Token::Match(tok, "%varid% (", classNameToken->varId()) )
                     {
                         hasPrivateConstructor = true;
                         break;
@@ -369,9 +370,9 @@ void CheckClass::constructors()
         }
 
         // Are there a class constructor?
-        const Token *constructor_token = Token::findmatch( tok1, "%any% %var1% (", className );
+        const Token *constructor_token = Token::findmatch( tok1, "%any% %varid% (", classNameToken->varId() );
         while ( Token::Match( constructor_token, "~" ) )
-            constructor_token = Token::findmatch( constructor_token->next(), "%any% %var1% (", className );
+            constructor_token = Token::findmatch( constructor_token->next(), "%any% %varid% (", classNameToken->varId() );
 
         // There are no constructor.
         if ( ! constructor_token )
@@ -385,7 +386,7 @@ void CheckClass::constructors()
                 {
                     std::ostringstream ostr;
                     ostr << _tokenizer->fileLine(tok1);
-                    ostr << " The class '" << className[0] << "' has no constructor";
+                    ostr << " The class '" << classNameToken->str() << "' has no constructor";
                     _errorLogger->reportErr(ostr.str());
                 }
                 // Delete the varlist..

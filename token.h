@@ -112,6 +112,7 @@ public:
     bool isBoolean() const;
     bool isStandardType() const;
     static const Token *findmatch(const Token *tok, const char pattern[], const char *varname1[]=0);
+    static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId );
 
     /**
      * Needle is build from multiple alternatives. If one of
