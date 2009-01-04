@@ -1518,8 +1518,6 @@ void Tokenizer::fillFunctionList()
 {
     _functionList.clear();
 
-    bool classfunc = false;
-
     int indentlevel = 0;
     for ( const Token *tok = _tokens; tok; tok = tok->next() )
     {
@@ -1534,13 +1532,7 @@ void Tokenizer::fillFunctionList()
             continue;
         }
 
-        if (strchr("};", tok->aaaa0()))
-            classfunc = false;
-
-        else if ( tok->str() == "::" )
-            classfunc = true;
-
-        else if (Token::Match(tok, "%var% ("))
+        if (Token::Match(tok, "%var% ("))
         {
             // Check if this is the first token of a function implementation..
             for ( const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next() )
