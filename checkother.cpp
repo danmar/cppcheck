@@ -835,7 +835,7 @@ void CheckOther::functionVariableUsage()
                 if ( indentlevel <= 0 )
                     break;
             }
-            else if ( Token::simpleMatch(tok, "struct {") )
+            else if ( Token::Match(tok, "struct|union|class {") )
             {
                 while ( tok && tok->str() != "}" )
                     tok = tok->next();
