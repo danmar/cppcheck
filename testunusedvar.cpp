@@ -62,6 +62,7 @@ private:
         TEST_CASE( localvar3 );
         TEST_CASE( localvar4 );
         TEST_CASE( localvar5 );
+        TEST_CASE( localvar6 );
     }
 
     void structmember1()
@@ -186,6 +187,17 @@ private:
                                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
+
+    void localvar6()
+    {
+        functionVariableUsage( "void foo()\n"
+                               "{\n"
+                               "    static const struct{ int x, y, w, h; } bounds = {1,2,3,4};\n"
+                               "    return bounds.x + bounds.y + bounds.w + bounds.h;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
 };
 
 REGISTER_TEST( TestUnusedVar )

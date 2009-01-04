@@ -842,6 +842,14 @@ void CheckOther::functionVariableUsage()
                 if ( indentlevel <= 0 )
                     break;
             }
+            else if ( Token::simpleMatch(tok, "struct {") )
+            {
+                while ( tok && tok->str() != "}" )
+                    tok = tok->next();
+                if ( tok )
+                    continue;
+                break;
+            }
 
             if ( Token::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|=") )
                 varUsage[ tok->strAt(2) ] = USAGE_DECLARE;
