@@ -65,6 +65,7 @@ private:
         TEST_CASE( localvar6 );
 
         TEST_CASE( localvarMod );   // Usage with modulo
+        TEST_CASE( localvarIf );    // Usage in if
     }
 
     void structmember1()
@@ -206,6 +207,18 @@ private:
                                "{\n"
                                "    int tmp = 10;\n"
                                "    return 123 % tmp;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void localvarIf()
+    {
+        functionVariableUsage( "int main()\n"
+                               "{\n"
+                               "    int tmp = 10;\n"
+                               "    if ( tmp )\n"
+                               "        return 1;\n"
+                               "    return 0;\n"
                                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
