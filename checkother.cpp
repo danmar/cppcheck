@@ -620,7 +620,7 @@ void CheckOther::CheckStructMemberUsage()
             continue;
         if ( tok->str() == "}" )
             structname = 0;
-        if ( Token::Match(tok, "struct %type% {") )
+        if ( Token::Match(tok, "struct|union %type% {") )
             structname = tok->strAt( 1);
 
         if (structname && Token::Match(tok, "[{;]"))
@@ -651,7 +651,7 @@ void CheckOther::CheckStructMemberUsage()
             if ( ! used )
             {
                 std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok->next()) << ": struct member '" << structname << "::" << varname << "' is never used";
+                errmsg << _tokenizer->fileLine(tok->next()) << ": struct or union member '" << structname << "::" << varname << "' is never used";
                 _errorLogger->reportErr(errmsg.str());
             }
         }
