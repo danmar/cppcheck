@@ -20,6 +20,8 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <cctype>
+#include <algorithm>
 
 #ifdef __GNUC__
 #include <glob.h>
@@ -91,6 +93,7 @@ bool FileLister::AcceptFile( const std::string &filename )
         return false;
 
     std::string extension = filename.substr( dotLocation );
+    std::transform( extension.begin(), extension.end(), extension.begin(), tolower );
 
     if( extension == ".cpp" ||
         extension == ".cxx" ||
