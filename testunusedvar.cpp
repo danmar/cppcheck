@@ -71,6 +71,7 @@ private:
         TEST_CASE( localvarInvert );    // Usage with inverted variable
         TEST_CASE( localvarIf );        // Usage in if
         TEST_CASE( localvarIfElse );    // return tmp1 ? tmp2 : tmp3;
+        TEST_CASE( localvarOpAssign );  // a |= b;
     }
 
     void structmember1()
@@ -262,6 +263,17 @@ private:
                                "    return tmp1 ? tmp2 : tmp3;\n"
                                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void localvarOpAssign()
+    {
+        functionVariableUsage( "void foo()\n"
+                               "{\n"
+                               "    int a = 1;\n"
+                               "    int b = 2;\n"
+                               "    a |= b;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string("[test.cpp:2]: Variable 'a' is assigned a value that is never used\n"), errout.str() );
     }
 
 
