@@ -62,7 +62,10 @@ private:
         TEST_CASE( localvar3 );
         TEST_CASE( localvar4 );
         TEST_CASE( localvar5 );
-        TEST_CASE( localvar6 );
+
+        // Don't give false positives for variables in structs/unions
+        TEST_CASE( localvarStruct1 );
+        TEST_CASE( localvarStruct2 );
 
         TEST_CASE( localvarMod );       // Usage with modulo
         TEST_CASE( localvarInvert );    // Usage with inverted variable
@@ -193,7 +196,9 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
-    void localvar6()
+
+
+    void localvarStruct1()
     {
         functionVariableUsage( "void foo()\n"
                                "{\n"
@@ -202,6 +207,18 @@ private:
                                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
+
+    void localvarStruct2()
+    {
+        functionVariableUsage( "void foo()\n"
+                               "{\n"
+                               "    struct ABC { int a, b, c; };\n"
+                               "    struct ABC abc = { 1, 2, 3 };\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+
 
     void localvarMod()
     {
