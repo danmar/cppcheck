@@ -61,6 +61,7 @@ private:
         TEST_CASE( localvar2 );
         TEST_CASE( localvar3 );
         TEST_CASE( localvar4 );
+        TEST_CASE( localvar5 );
     }
 
     void structmember1()
@@ -176,7 +177,15 @@ private:
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
 
-
+    void localvar5()
+    {
+        functionVariableUsage( "void foo()\n"
+                               "{\n"
+                               "    int a = 0;\n"
+                               "    b = (char)a;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
 };
 
 REGISTER_TEST( TestUnusedVar )

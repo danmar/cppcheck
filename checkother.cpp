@@ -816,14 +816,14 @@ static bool isOp(const Token *tok)
                  tok->str() == ">" ||
                  tok->str() == ">=" ||
                  tok->str() == "<<" ||
-                 Token::Match(tok, "[+-*/&|,[]]")));
+                 Token::Match(tok, "[+-*/&|,[])]")));
 }
 
 void CheckOther::functionVariableUsage()
 {
     // Parse all executing scopes..
-    const Token *tok1 = Token::findmatch( _tokenizer->tokens(), ") const| {" );
-    while ( tok1 )
+    const Token *tok1 = _tokenizer->tokens();
+    while ((tok1 = Token::findmatch( tok1->next(), ") const| {" )) != NULL)
     {
         // Varname, usage {1=declare, 2=read, 4=write}
         std::map<std::string, unsigned int> varUsage;
@@ -907,8 +907,5 @@ void CheckOther::functionVariableUsage()
                 _errorLogger->reportErr(errmsg.str());
             }
         }
-
-        // Goto next executing scope..
-        tok1 = Token::findmatch( tok1->next(), ") const| {" );
     }
 }
