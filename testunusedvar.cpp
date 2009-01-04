@@ -67,7 +67,7 @@ private:
         TEST_CASE( localvarStruct1 );
         TEST_CASE( localvarStruct2 );
 
-        TEST_CASE( localvarMod );       // Usage with modulo
+        TEST_CASE( localvarOp );        // Usage with arithmetic operators
         TEST_CASE( localvarInvert );    // Usage with inverted variable
         TEST_CASE( localvarIf );        // Usage in if
         TEST_CASE( localvarIfElse );    // return tmp1 ? tmp2 : tmp3;
@@ -221,14 +221,19 @@ private:
 
 
 
-    void localvarMod()
+    void localvarOp()
     {
-        functionVariableUsage( "int main()\n"
-                               "{\n"
-                               "    int tmp = 10;\n"
-                               "    return 123 % tmp;\n"
-                               "}\n" );
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        const char op[] = "+-*/%&|^";
+        for (const char *p = op; *p; ++p)
+        {
+            std::string code( "int main()\n"
+                              "{\n"
+                              "    int tmp = 10;\n"
+                              "    return 123 " + std::string(1, *p) + " tmp;\n"
+                              "}\n" );
+            functionVariableUsage( code.c_str() );
+            ASSERT_EQUALS( std::string(""), errout.str() );
+        }
     }
 
     void localvarInvert()
