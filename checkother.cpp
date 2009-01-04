@@ -625,28 +625,24 @@ void CheckOther::CheckStructMemberUsage()
 
         if (structname && Token::Match(tok, "[{;]"))
         {
-            const Token *variableToken = 0;
+            const char *varname = 0;
             if (Token::Match(tok->next(), "%type% %var% [;[]"))
-                variableToken = tok->tokAt( 2 );
+                varname = tok->strAt( 2 );
             else if (Token::Match(tok->next(), "%type% %type% %var% [;[]"))
-                variableToken = tok->tokAt( 2 );
+                varname = tok->strAt( 2 );
             else if (Token::Match(tok->next(), "%type% * %var% [;[]"))
-                variableToken = tok->tokAt( 3 );
+                varname = tok->strAt( 3 );
             else if (Token::Match(tok->next(), "%type% %type% * %var% [;[]"))
-                variableToken = tok->tokAt( 4 );
+                varname = tok->strAt( 4 );
             else
                 continue;
 
+            const std::string usagePattern( ". " + std::string(varname) );
             bool used = false;
             for ( const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next() )
             {
-                if ( tok->fileIndex() != 0 )
-                    continue;
-
-                if (Token::Match(tok2, ". %varid%", variableToken->varId() ))
+                if (Token::simpleMatch(tok2, usagePattern.c_str() ))
                 {
-                    if ( Token::simpleMatch(tok2->tokAt(2), "=") )
-                        continue;
                     used = true;
                     break;
                 }
@@ -655,7 +651,7 @@ void CheckOther::CheckStructMemberUsage()
             if ( ! used )
             {
                 std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok) << ": struct member '" << structname << "::" << variableToken->str() << "' is never read";
+                errmsg << _tokenizer->fileLine(tok->next()) << ": struct member '" << structname << "::" << varname << "' is never used";
                 _errorLogger->reportErr(errmsg.str());
             }
         }

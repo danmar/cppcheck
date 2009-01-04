@@ -73,9 +73,9 @@ private:
                "    int b;\n"
                "    int c;\n"
                "};\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:2]: struct member 'abc::a' is never read\n"
-                                   "[test.cpp:3]: struct member 'abc::b' is never read\n"
-                                   "[test.cpp:4]: struct member 'abc::c' is never read\n"), errout.str() );
+        ASSERT_EQUALS( std::string("[test.cpp:3]: struct member 'abc::a' is never used\n"
+                                   "[test.cpp:4]: struct member 'abc::b' is never used\n"
+                                   "[test.cpp:5]: struct member 'abc::c' is never used\n"), errout.str() );
     }
 
     void structmember2()
