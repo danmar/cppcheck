@@ -816,6 +816,9 @@ void CheckOther::functionVariableUsage()
 {
     // Parse all executing scopes..
     const Token *tok1 = _tokenizer->tokens();
+    if (!tok1)
+        return;
+
     while ((tok1 = Token::findmatch( tok1->next(), ") const| {" )) != NULL)
     {
         // Varname, usage {1=declare, 2=read, 4=write}
