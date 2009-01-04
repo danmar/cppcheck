@@ -65,6 +65,7 @@ private:
         TEST_CASE( localvar6 );
 
         TEST_CASE( localvarMod );       // Usage with modulo
+        TEST_CASE( localvarInvert );    // Usage with inverted variable
         TEST_CASE( localvarIf );        // Usage in if
         TEST_CASE( localvarIfElse );    // return tmp1 ? tmp2 : tmp3;
     }
@@ -208,6 +209,16 @@ private:
                                "{\n"
                                "    int tmp = 10;\n"
                                "    return 123 % tmp;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
+    void localvarInvert()
+    {
+        functionVariableUsage( "int main()\n"
+                               "{\n"
+                               "    int tmp = 10;\n"
+                               "    return ~tmp;\n"
                                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
