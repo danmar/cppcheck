@@ -625,28 +625,25 @@ void CheckOther::CheckStructMemberUsage()
 
         if (structname && Token::Match(tok, "[{;]"))
         {
-            const char *varname = 0;
+            const Token *variableToken = 0;
             if (Token::Match(tok->next(), "%type% %var% [;[]"))
-                varname = tok->strAt( 2 );
+                variableToken = tok->tokAt( 2 );
             else if (Token::Match(tok->next(), "%type% %type% %var% [;[]"))
-                varname = tok->strAt( 2 );
+                variableToken = tok->tokAt( 2 );
             else if (Token::Match(tok->next(), "%type% * %var% [;[]"))
-                varname = tok->strAt( 3 );
+                variableToken = tok->tokAt( 3 );
             else if (Token::Match(tok->next(), "%type% %type% * %var% [;[]"))
-                varname = tok->strAt( 4 );
+                variableToken = tok->tokAt( 4 );
             else
                 continue;
 
-            const char *varnames[2];
-            varnames[0] = varname;
-            varnames[1] = 0;
             bool used = false;
             for ( const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next() )
             {
                 if ( tok->fileIndex() != 0 )
                     continue;
 
-                if (Token::Match(tok2, ". %var1%", 0, varnames))
+                if (Token::Match(tok2, ". %varid%", variableToken->varId() ))
                 {
                     if ( Token::simpleMatch(tok2->tokAt(2), "=") )
                         continue;
@@ -658,7 +655,7 @@ void CheckOther::CheckStructMemberUsage()
             if ( ! used )
             {
                 std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok) << ": struct member '" << structname << "::" << varname << "' is never read";
+                errmsg << _tokenizer->fileLine(tok) << ": struct member '" << structname << "::" << variableToken->str() << "' is never read";
                 _errorLogger->reportErr(errmsg.str());
             }
         }
