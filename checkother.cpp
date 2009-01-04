@@ -809,7 +809,7 @@ static bool isOp(const Token *tok)
                  tok->str() == ">" ||
                  tok->str() == ">=" ||
                  tok->str() == "<<" ||
-                 Token::Match(tok, "[+-*/&|,[])]")));
+                 Token::Match(tok, "[+-*/%&|,[])]")));
 }
 
 void CheckOther::functionVariableUsage()

@@ -63,6 +63,8 @@ private:
         TEST_CASE( localvar4 );
         TEST_CASE( localvar5 );
         TEST_CASE( localvar6 );
+
+        TEST_CASE( localvarMod );   // Usage with modulo
     }
 
     void structmember1()
@@ -197,6 +199,17 @@ private:
                                "}\n" );
         ASSERT_EQUALS( std::string(""), errout.str() );
     }
+
+    void localvarMod()
+    {
+        functionVariableUsage( "int main()\n"
+                               "{\n"
+                               "    int tmp = 10;\n"
+                               "    return 123 % tmp;\n"
+                               "}\n" );
+        ASSERT_EQUALS( std::string(""), errout.str() );
+    }
+
 
 };
 
