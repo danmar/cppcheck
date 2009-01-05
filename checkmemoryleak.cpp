@@ -164,25 +164,36 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetReallocationType(const 
 
 CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType(const Token *tok, const char *varnames[])
 {
-    if (Token::Match(tok, "delete %var1% ;", 0, varnames))
+    int i = 0;
+    std::string names;
+    while (varnames[i])
+    {
+        if (i > 0)
+            names += " . ";
+
+        names += varnames[i];
+        i++;
+    }
+
+    if (Token::simpleMatch(tok, std::string("delete " + names + " ;").c_str()))
         return New;
 
-    if (Token::Match(tok, "delete [ ] %var1% ;", 0, varnames))
+    if (Token::simpleMatch(tok, std::string("delete [ ] " + names + " ;").c_str()))
         return NewA;
 
-    if (Token::Match(tok, "free ( %var1% ) ;", 0, varnames) ||
-        Token::Match(tok, "kfree ( %var1% ) ;", 0, varnames))
+    if (Token::simpleMatch(tok, std::string("free ( " + names + " ) ;").c_str()) ||
+        Token::simpleMatch(tok, std::string("kfree ( " + names + " ) ;").c_str()))
     {
         return Malloc;
     }
 
-    if (Token::Match(tok, "g_free ( %var1% ) ;", 0, varnames))
+    if (Token::simpleMatch(tok, std::string("g_free ( " + names + " ) ;").c_str()))
         return gMalloc;
 
-    if (Token::Match(tok, "fclose ( %var1% )", 0, varnames))
+    if (Token::simpleMatch(tok, std::string("fclose ( " + names + " )").c_str()))
         return FOPEN;
 
-    if (Token::Match(tok, "pclose ( %var1% )", 0, varnames))
+    if (Token::simpleMatch(tok, std::string("pclose ( " + names + " )").c_str()))
         return POPEN;
 
     return No;
