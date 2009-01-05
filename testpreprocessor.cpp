@@ -67,6 +67,8 @@ private:
 
         // Macros..
         TEST_CASE(macro1);
+        TEST_CASE(macro2);
+        TEST_CASE(macro3);
     }
 
 
@@ -463,7 +465,23 @@ private:
 
     void macro1()
     {
-        ASSERT_EQUALS("\nf(5);\n", Preprocessor::expandMacros("#define AAA(aa) f(aa)\nAAA(5);\n"));
+        const char filedata[] = "#define AAA(aa) f(aa)\n"
+                                "AAA(5);\n";
+        ASSERT_EQUALS("\nf(5);\n", Preprocessor::expandMacros(filedata));
+    }
+
+    void macro2()
+    {
+        const char filedata[] = "#define min(x,y) x<y?x:y\n"
+                                "min(a(),b());\n";
+        ASSERT_EQUALS("\na()<b()?a():b();\n", Preprocessor::expandMacros(filedata));
+    }
+
+    void macro3()
+    {
+        const char filedata[] = "#define AAA(aa,bb) f(aa)\n"
+                                "AAA(5);\n";
+        ASSERT_EQUALS("\nAAA(5);\n", Preprocessor::expandMacros(filedata));
     }
 
 
