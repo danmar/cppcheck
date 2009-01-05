@@ -407,3 +407,37 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
     return ret.str();
 }
 
+
+
+static std::string Preprocessor::expandMacros( std::string code )
+{
+    std::list<std::string> macros;
+
+    // Get macros..
+    std::string::size_type defpos = 0;
+    while ((defpos = code.find("#define", defpos)) != std::string::npos)
+    {
+        // Get macro..
+        std::string::size_type endpos = code.find("\n", defpos + 6);
+        while (endpos != std::string::npos && code[endpos-1] == '\\')
+            endpos = code.find("\n", endpos + 1);
+        if (endpos == std::string::npos)
+        {
+            code.erase( defpos );
+            break;
+        }
+
+        macros.push_back( code.substr( defpos, endpos - defpos ) );
+        code.erase( defpos, endpos + 1 - defpos );
+    }
+
+    // Expand macros..
+    for (std::list<std::string>::const_iterator it = macros.begin(); it != macros.end(); ++it)
+    {
+        const std::string &macro(*it);
+
+    }
+
+    return code;
+}
+

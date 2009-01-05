@@ -64,6 +64,9 @@ private:
         TEST_CASE( multiline );
 
         TEST_CASE( if_defined );    // "#if defined(AAA)" => "#ifdef AAA"
+
+        // Macros..
+        TEST_CASE( macro1 );
     }
 
 
@@ -455,6 +458,19 @@ private:
 
         // Compare result..
         ASSERT_EQUALS( expected, Preprocessor::replaceIfDefined(filedata) );
+    }
+
+
+    void macro1()
+    {
+        const char filedata[] = "#define AAA(aa) f(aa)\n"
+                                "AAA(5);\n";
+
+        // Expected result..
+        std::string expected( "\nf(5);\n" );
+
+        // Compare result..
+        //ASSERT_EQUALS( expected, Preprocessor::expandMacros(filedata) );
     }
 
 
