@@ -9,11 +9,11 @@
  */
 class ErrorMessage
 {
-    public:
-        ErrorMessage();
-        virtual ~ErrorMessage();
-    protected:
-    private:
+public:
+    ErrorMessage();
+    virtual ~ErrorMessage();
+protected:
+private:
 };
 
 #endif // ErrorMessageH

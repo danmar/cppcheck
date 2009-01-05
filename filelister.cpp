@@ -31,52 +31,52 @@
 #include <windows.h>
 #endif
 
-std::string FileLister::simplifyPath( const char *originalPath )
+std::string FileLister::simplifyPath(const char *originalPath)
 {
     std::string subPath = "";
     std::vector<std::string> pathParts;
-    for( ; *originalPath; ++originalPath )
+    for (; *originalPath; ++originalPath)
     {
-        if( *originalPath == '/' )
+        if (*originalPath == '/')
         {
-            if( subPath.length() > 0 )
+            if (subPath.length() > 0)
             {
-                pathParts.push_back( subPath );
+                pathParts.push_back(subPath);
                 subPath = "";
             }
 
-            pathParts.push_back( "/" );
+            pathParts.push_back("/");
         }
         else
-            subPath.append( 1, *originalPath );
+            subPath.append(1, *originalPath);
     }
 
-    if( subPath.length() > 0 )
-        pathParts.push_back( subPath );
+    if (subPath.length() > 0)
+        pathParts.push_back(subPath);
 
-    for( std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i )
+    for (std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i)
     {
-        if( pathParts[i] == ".." && i > 1 )
+        if (pathParts[i] == ".." && i > 1)
         {
-            pathParts.erase( pathParts.begin() + i );
-            pathParts.erase( pathParts.begin()+i-1 );
-            pathParts.erase( pathParts.begin()+i-2 );
+            pathParts.erase(pathParts.begin() + i);
+            pathParts.erase(pathParts.begin() + i - 1);
+            pathParts.erase(pathParts.begin() + i - 2);
             i = 0;
         }
-        else if( i > 0 && pathParts[i] == "." )
+        else if (i > 0 && pathParts[i] == ".")
         {
-            pathParts.erase( pathParts.begin()+i );
+            pathParts.erase(pathParts.begin() + i);
             i = 0;
         }
-        else if( pathParts[i] == "/" && i > 0 && pathParts[i-1] == "/" )
+        else if (pathParts[i] == "/" && i > 0 && pathParts[i-1] == "/")
         {
-            pathParts.erase( pathParts.begin()+i-1 );
+            pathParts.erase(pathParts.begin() + i - 1);
             i = 0;
         }
     }
 
     std::ostringstream oss;
-    for( std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i )
+    for (std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i)
     {
         oss << pathParts[i];
     }
@@ -86,19 +86,19 @@ std::string FileLister::simplifyPath( const char *originalPath )
 
 
 
-bool FileLister::AcceptFile( const std::string &filename )
+bool FileLister::AcceptFile(const std::string &filename)
 {
-    std::string::size_type dotLocation = filename.find_last_of ( '.' );
-    if ( dotLocation == std::string::npos )
+    std::string::size_type dotLocation = filename.find_last_of('.');
+    if (dotLocation == std::string::npos)
         return false;
 
-    std::string extension = filename.substr( dotLocation );
-    std::transform( extension.begin(), extension.end(), extension.begin(), static_cast<int(*)(int)> (std::tolower) );
+    std::string extension = filename.substr(dotLocation);
+    std::transform(extension.begin(), extension.end(), extension.begin(), static_cast < int(*)(int) > (std::tolower));
 
-    if( extension == ".cpp" ||
+    if (extension == ".cpp" ||
         extension == ".cxx" ||
         extension == ".cc" ||
-        extension == ".c" )
+        extension == ".c")
     {
         return true;
     }
@@ -112,33 +112,33 @@ bool FileLister::AcceptFile( const std::string &filename )
 
 #if defined(__GNUC__) && !defined(__MINGW32__)
 // gcc / cygwin..
-void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive )
+void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
     std::ostringstream oss;
     oss << path;
-    if ( path.length() > 0 && path[path.length()-1] == '/' )
+    if (path.length() > 0 && path[path.length()-1] == '/')
         oss << "*";
 
     glob_t glob_results;
-    glob( oss.str().c_str(), GLOB_MARK, 0, &glob_results);
-    for ( unsigned int i = 0; i < glob_results.gl_pathc; i++ )
+    glob(oss.str().c_str(), GLOB_MARK, 0, &glob_results);
+    for (unsigned int i = 0; i < glob_results.gl_pathc; i++)
     {
         std::string filename = glob_results.gl_pathv[i];
-        if ( filename == "." || filename == ".." || filename.length() == 0 )
+        if (filename == "." || filename == ".." || filename.length() == 0)
             continue;
 
-        if ( filename[filename.length()-1] != '/' )
+        if (filename[filename.length()-1] != '/')
         {
             // File
 
             // If recursive is not used, accept all files given by user
-            if( !recursive || FileLister::AcceptFile( filename ) )
-                filenames.push_back( filename );
+            if (!recursive || FileLister::AcceptFile(filename))
+                filenames.push_back(filename);
         }
-        else if( recursive )
+        else if (recursive)
         {
             // Directory
-            FileLister::RecursiveAddFiles( filenames, filename, recursive );
+            FileLister::RecursiveAddFiles(filenames, filename, recursive);
         }
     }
     globfree(&glob_results);
@@ -152,11 +152,11 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
 
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
 
-void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const std::string &path, bool recursive )
+void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
     std::ostringstream bdir, oss;
     oss << path;
-    if ( path.length() > 0 && path[path.length()-1] == '/' )
+    if (path.length() > 0 && path[path.length()-1] == '/')
     {
         bdir << path;
         oss << "*";
@@ -164,7 +164,7 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
 
     WIN32_FIND_DATA ffd;
     HANDLE hFind = FindFirstFile(oss.str().c_str(), &ffd);
-    if ( INVALID_HANDLE_VALUE == hFind )
+    if (INVALID_HANDLE_VALUE == hFind)
         return;
 
     do
@@ -172,22 +172,22 @@ void FileLister::RecursiveAddFiles( std::vector<std::string> &filenames, const s
         std::ostringstream fname;
         fname << bdir.str().c_str() << ffd.cFileName;
 
-        if ( ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0' )
+        if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
             continue;
 
-        if ( ( ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) == 0 )
+        if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
         {
             // File
 
             // If recursive is not used, accept all files given by user
-            if ( !recursive || FileLister::AcceptFile( ffd.cFileName ) )
-                filenames.push_back( fname.str() );
+            if (!recursive || FileLister::AcceptFile(ffd.cFileName))
+                filenames.push_back(fname.str());
         }
-        else if ( recursive )
+        else if (recursive)
         {
             // Directory
             fname << "/";
-            FileLister::RecursiveAddFiles( filenames, fname.str().c_str(), recursive );
+            FileLister::RecursiveAddFiles(filenames, fname.str().c_str(), recursive);
         }
     }
     while (FindNextFile(hFind, &ffd) != FALSE);

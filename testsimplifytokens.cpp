@@ -35,20 +35,20 @@ private:
 
     void run()
     {
-        TEST_CASE( cast0 );
-        TEST_CASE( sizeof1 );
-        TEST_CASE( iftruefalse );
+        TEST_CASE(cast0);
+        TEST_CASE(sizeof1);
+        TEST_CASE(iftruefalse);
     }
 
     std::string tok(const char code[])
     {
         std::istringstream istr(code);
         Tokenizer tokenizer;
-        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
         std::string ret;
-        for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
             ret += tok->str() + " ";
         }
@@ -60,14 +60,14 @@ private:
     {
         const char code1[] = " if ( p == (char *)0 ) ";
         const char code2[] = " if ( p == 0 ) ";
-        ASSERT_EQUALS( tok(code1), tok(code2) );
+        ASSERT_EQUALS(tok(code1), tok(code2));
     }
 
     void sizeof1()
     {
         const char code1[] = " struct ABC *abc = malloc(sizeof(*abc)); ";
         const char code2[] = " struct ABC *abc = malloc(100); ";
-        ASSERT_EQUALS( tok(code1), tok(code2) );
+        ASSERT_EQUALS(tok(code1), tok(code2));
     }
 
     void iftruefalse()
@@ -75,69 +75,69 @@ private:
         {
             const char code1[] = " void f() { int a; bool use = false; if( use ) { a=0; } else {a=1;} } ";
             const char code2[] = " void f() { int a; bool use = false; {a=1;} } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { int a; bool use = true; if( use ) { a=0; } else {a=1;} } ";
             const char code2[] = " void f() { int a; bool use = true; { a=0; } } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { int a; int use = 5; if( use ) { a=0; } else {a=1;} } ";
             const char code2[] = " void f() { int a; int use = 5; { a=0; } } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { int a; int use = 0; if( use ) { a=0; } else {a=1;} } ";
             const char code2[] = " void f() { int a; int use = 0; {a=1;} } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else a=1; int c=1; } ";
             const char code2[] = " void f() { int a; bool use = false; { a=1; } int c=1; } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else a=1; int c=1; } ";
             const char code2[] = " void f() { int a; bool use = true; { a=0; } int c=1; } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else if( bb ) a=1; int c=1; } ";
             const char code2[] = " void f() { int a; bool use = false; if( bb ) a=1; int c=1; } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; int c=1; } ";
             const char code2[] = " void f() { int a; bool use = true; { a=0;} int c=1; } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; } ";
             const char code2[] = " void f() { int a; bool use = true; { a=0; }int c=1; } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { if( aa ) { a=0; } else if( true ) a=1; else { a=2; } } ";
             const char code2[] = " void f() { if( aa ) { a=0; } else { a=1; } } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { if( aa ) { a=0; } else if( false ) a=1; else { a=2; } } ";
             const char code2[] = " void f() { if( aa ) { a=0; } else { a=2; } } ";
-            ASSERT_EQUALS( tok(code2), tok(code1) );
+            ASSERT_EQUALS(tok(code2), tok(code1));
         }
     }
 };
 
-REGISTER_TEST( TestSimplifyTokens )
+REGISTER_TEST(TestSimplifyTokens)

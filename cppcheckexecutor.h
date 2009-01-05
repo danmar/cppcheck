@@ -47,7 +47,7 @@ public:
      * @param argc from main()
      * @param argv from main()
      */
-    void check( int argc, const char* const argv[] );
+    void check(int argc, const char* const argv[]);
 
     /**
      * Errors and warnings are directed here. This should be
@@ -57,7 +57,7 @@ public:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr( const std::string &errmsg);
+    virtual void reportErr(const std::string &errmsg);
 
     /**
      * Information about progress is directed here. This should be
@@ -65,7 +65,7 @@ public:
      *
      * @param outmsg, E.g. "Checking main.cpp..."
      */
-    virtual void reportOut( const std::string &outmsg);
+    virtual void reportOut(const std::string &outmsg);
 };
 
 #endif // CPPCHECKEXECUTOR_H

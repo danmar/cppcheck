@@ -35,19 +35,19 @@ public:
 private:
     void run()
     {
-        TEST_CASE( test1 );
+        TEST_CASE(test1);
 
         // [ 2236547 ] False positive --style unused function, called via pointer
-        TEST_CASE( func_pointer );
+        TEST_CASE(func_pointer);
     }
 
 
-    void check( const char code[] )
+    void check(const char code[])
     {
         // Tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
-        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.tokenize(istr, "test.cpp");
 
         // Clear the error buffer..
         errout.str("");
@@ -55,7 +55,7 @@ private:
         // Check for unused private functions..
         Settings settings;
         settings._checkCodingStyle = true;
-        CheckClass checkClass( &tokenizer, settings, this );
+        CheckClass checkClass(&tokenizer, settings, this);
         checkClass.privateFunctions();
     }
 
@@ -63,21 +63,21 @@ private:
 
     void test1()
     {
-        check( "class Fred\n"
-               "{\n"
-               "private:\n"
-               "    unsigned int f();\n"
-               "public:\n"
-               "    Fred();\n"
-               "};\n"
-               "\n"
-               "Fred::Fred()\n"
-               "{ }\n"
-               "\n"
-               "unsigned int Fred::f()\n"
-               "{ }\n" );
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    unsigned int f();\n"
+              "public:\n"
+              "    Fred();\n"
+              "};\n"
+              "\n"
+              "Fred::Fred()\n"
+              "{ }\n"
+              "\n"
+              "unsigned int Fred::f()\n"
+              "{ }\n");
 
-        ASSERT_EQUALS( std::string("Class 'Fred', unused private function: 'f'\n"), errout.str() );
+        ASSERT_EQUALS(std::string("Class 'Fred', unused private function: 'f'\n"), errout.str());
     }
 
 
@@ -87,34 +87,34 @@ private:
 
     void func_pointer()
     {
-        check( "class Fred\n"
-               "{\n"
-               "private:\n"
-               "    typedef void (*testfp)();\n"
-               "\n"
-               "    testfp get()\n"
-               "    {\n"
-               "        return test;\n"
-               "    }\n"
-               "\n"
-               "    static void test()\n"
-               "    { }\n"
-               "\n"
-               "public:\n"
-               "    Fred();\n"
-               "};\n"
-               "\n"
-               "Fred::Fred()\n"
-               "{}\n" );
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    typedef void (*testfp)();\n"
+              "\n"
+              "    testfp get()\n"
+              "    {\n"
+              "        return test;\n"
+              "    }\n"
+              "\n"
+              "    static void test()\n"
+              "    { }\n"
+              "\n"
+              "public:\n"
+              "    Fred();\n"
+              "};\n"
+              "\n"
+              "Fred::Fred()\n"
+              "{}\n");
 
-        std::string str( errout.str() );
+        std::string str(errout.str());
 
-        ASSERT_EQUALS( std::string("Class 'Fred', unused private function: 'get'\n"), str );
+        ASSERT_EQUALS(std::string("Class 'Fred', unused private function: 'get'\n"), str);
     }
 
 
 
 };
 
-REGISTER_TEST( TestUnusedPrivateFunction )
+REGISTER_TEST(TestUnusedPrivateFunction)
 

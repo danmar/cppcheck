@@ -37,36 +37,36 @@ private:
 
     void run()
     {
-        TEST_CASE( multiline );
-        TEST_CASE( longtok );
+        TEST_CASE(multiline);
+        TEST_CASE(longtok);
 
-        TEST_CASE( inlineasm );
+        TEST_CASE(inlineasm);
 
-        TEST_CASE( dupfuncname );
+        TEST_CASE(dupfuncname);
 
-        TEST_CASE( const_and_volatile_functions );
+        TEST_CASE(const_and_volatile_functions);
 
-        TEST_CASE( ifAddBraces1 );
-        TEST_CASE( ifAddBraces2 );
-        TEST_CASE( ifAddBraces3 );
-        TEST_CASE( ifAddBraces4 );
+        TEST_CASE(ifAddBraces1);
+        TEST_CASE(ifAddBraces2);
+        TEST_CASE(ifAddBraces3);
+        TEST_CASE(ifAddBraces4);
 
-        TEST_CASE( numeric_true_condition );
+        TEST_CASE(numeric_true_condition);
 
-        TEST_CASE( simplifyKnownVariables1 );
-        TEST_CASE( simplifyKnownVariables2 );
-        TEST_CASE( simplifyKnownVariables3 );
-        TEST_CASE( simplifyKnownVariables4 );
-        TEST_CASE( simplifyKnownVariables5 );
+        TEST_CASE(simplifyKnownVariables1);
+        TEST_CASE(simplifyKnownVariables2);
+        TEST_CASE(simplifyKnownVariables3);
+        TEST_CASE(simplifyKnownVariables4);
+        TEST_CASE(simplifyKnownVariables5);
 
-        TEST_CASE( multiCompare );
+        TEST_CASE(multiCompare);
 
-        TEST_CASE( match1 );
+        TEST_CASE(match1);
 
-        TEST_CASE( match2 );
+        TEST_CASE(match2);
 
-        TEST_CASE( varid1 );
-        TEST_CASE( varid2 );
+        TEST_CASE(varid1);
+        TEST_CASE(varid2);
     }
 
 
@@ -75,7 +75,7 @@ private:
         unsigned int i = 0;
         for (; expected[i] && actual; ++i, actual = actual->next())
         {
-            if ( strcmp( expected[i], actual->aaaa() ) != 0)
+            if (strcmp(expected[i], actual->aaaa()) != 0)
                 return false;
         }
         return (expected[i] == NULL && actual == NULL);
@@ -102,13 +102,13 @@ private:
         };
 
         // Compare..
-        ASSERT_EQUALS( true, cmptok(expected, tokenizer.tokens()) );
+        ASSERT_EQUALS(true, cmptok(expected, tokenizer.tokens()));
     }
 
 
     void longtok()
     {
-        std::string filedata(10000,'a');
+        std::string filedata(10000, 'a');
 
         // tokenize..
         Tokenizer tokenizer;
@@ -116,7 +116,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS( std::string(10000,'a'), std::string(tokenizer.tokens()->aaaa()) );
+        ASSERT_EQUALS(std::string(10000, 'a'), std::string(tokenizer.tokens()->aaaa()));
     }
 
 
@@ -149,7 +149,7 @@ private:
         };
 
         // Compare..
-        ASSERT_EQUALS( true, cmptok(expected, tokenizer.tokens()) );
+        ASSERT_EQUALS(true, cmptok(expected, tokenizer.tokens()));
     }
 
 
@@ -168,8 +168,8 @@ private:
 
         tokenizer.fillFunctionList();
 
-        ASSERT_EQUALS( 1, static_cast<unsigned int>(tokenizer._functionList.size()) );
-        ASSERT_EQUALS( std::string("b"), tokenizer._functionList[0]->aaaa() );
+        ASSERT_EQUALS(1, static_cast<unsigned int>(tokenizer._functionList.size()));
+        ASSERT_EQUALS(std::string("b"), tokenizer._functionList[0]->aaaa());
     }
 
     void const_and_volatile_functions()
@@ -199,12 +199,12 @@ private:
 
         tokenizer.fillFunctionList();
 
-        ASSERT_EQUALS( 3, static_cast<unsigned int>(tokenizer._functionList.size()) );
-        if( tokenizer._functionList.size() == 3 )
+        ASSERT_EQUALS(3, static_cast<unsigned int>(tokenizer._functionList.size()));
+        if (tokenizer._functionList.size() == 3)
         {
-            ASSERT_EQUALS( std::string("a"), tokenizer._functionList[0]->str() );
-            ASSERT_EQUALS( std::string("b"), tokenizer._functionList[1]->str() );
-            ASSERT_EQUALS( std::string("c"), tokenizer._functionList[2]->str() );
+            ASSERT_EQUALS(std::string("a"), tokenizer._functionList[0]->str());
+            ASSERT_EQUALS(std::string("b"), tokenizer._functionList[1]->str());
+            ASSERT_EQUALS(std::string("c"), tokenizer._functionList[2]->str());
         }
     }
 
@@ -226,7 +226,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { { ; } }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { { ; } }"), ostr.str());
     }
 
     void ifAddBraces1()
@@ -242,12 +242,12 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
+        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
 
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { ; } else { ; } }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { if ( a ) { ; } else { ; } }"), ostr.str());
     }
 
     void ifAddBraces2()
@@ -262,12 +262,12 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
+        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
 
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { if ( b ) { } } }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { if ( a ) { if ( b ) { } } }"), ostr.str());
     }
 
     void ifAddBraces3()
@@ -282,12 +282,12 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
+        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
 
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { if ( a ) { for ( ; ; ) { } } }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { if ( a ) { for ( ; ; ) { } } }"), ostr.str());
     }
 
     void ifAddBraces4()
@@ -307,12 +307,12 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        ASSERT_EQUALS( true, tokenizer.simplifyIfAddBraces() );
+        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
 
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" char * foo ( ) { char * str = malloc ( 10 ) ; if ( somecondition ) { for ( ; ; ) { } } return str ; }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" char * foo ( ) { char * str = malloc ( 10 ) ; if ( somecondition ) { for ( ; ; ) { } } return str ; }"), ostr.str());
     }
 
     void simplifyKnownVariables1()
@@ -334,7 +334,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { int a = 10 ; if ( 10 ) ; }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { int a = 10 ; if ( 10 ) ; }"), ostr.str());
     }
 
     void simplifyKnownVariables2()
@@ -357,7 +357,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { int a = 10 ; a = g ( ) ; if ( a ) ; }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { int a = 10 ; a = g ( ) ; if ( a ) ; }"), ostr.str());
     }
 
     void simplifyKnownVariables3()
@@ -383,7 +383,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { int a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) ; }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { int a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) ; }"), ostr.str());
     }
 
     void simplifyKnownVariables4()
@@ -405,7 +405,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { int a = 4 ; if ( g ( a ) ) ; }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { int a = 4 ; if ( g ( a ) ) ; }"), ostr.str());
     }
 
     void simplifyKnownVariables5()
@@ -427,26 +427,26 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS( std::string(" void f ( ) { int a = 4 ; if ( a = 5 ) ; }"), ostr.str() );
+        ASSERT_EQUALS(std::string(" void f ( ) { int a = 4 ; if ( a = 5 ) ; }"), ostr.str());
     }
 
     void multiCompare()
     {
         // Test for found
-        ASSERT_EQUALS( 1, Token::multiCompare( "one|two", "one" ) );
-        ASSERT_EQUALS( 1, Token::multiCompare( "one|two", "two" ) );
-        ASSERT_EQUALS( 1, Token::multiCompare( "verybig|two|", "two" ) );
+        ASSERT_EQUALS(1, Token::multiCompare("one|two", "one"));
+        ASSERT_EQUALS(1, Token::multiCompare("one|two", "two"));
+        ASSERT_EQUALS(1, Token::multiCompare("verybig|two|", "two"));
 
         // Test for empty string found
-        ASSERT_EQUALS( 0, Token::multiCompare( "|one|two", "notfound" ) );
-        ASSERT_EQUALS( 0, Token::multiCompare( "one||two", "notfound" ) );
-        ASSERT_EQUALS( 0, Token::multiCompare( "one|two|", "notfound" ) );
+        ASSERT_EQUALS(0, Token::multiCompare("|one|two", "notfound"));
+        ASSERT_EQUALS(0, Token::multiCompare("one||two", "notfound"));
+        ASSERT_EQUALS(0, Token::multiCompare("one|two|", "notfound"));
 
         // Test for not found
-        ASSERT_EQUALS( -1, Token::multiCompare( "one|two", "notfound" ) );
-        ASSERT_EQUALS( -1, Token::multiCompare( "verybig|two", "s" ) );
-        ASSERT_EQUALS( -1, Token::multiCompare( "one|two", "ne" ) );
-        ASSERT_EQUALS( -1, Token::multiCompare( "abc|def", "a" ) );
+        ASSERT_EQUALS(-1, Token::multiCompare("one|two", "notfound"));
+        ASSERT_EQUALS(-1, Token::multiCompare("verybig|two", "s"));
+        ASSERT_EQUALS(-1, Token::multiCompare("one|two", "ne"));
+        ASSERT_EQUALS(-1, Token::multiCompare("abc|def", "a"));
     }
 
     void match1()
@@ -461,7 +461,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "%var% | %var%") );
+            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "%var% | %var%"));
         }
 
         // Match "%var% || %var%"
@@ -474,7 +474,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "%var% || %var%") );
+            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "%var% || %var%"));
         }
     }
 
@@ -489,7 +489,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "!!else") );
+            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "!!else"));
         }
 
         {
@@ -501,7 +501,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "if ; !!else") );
+            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "if ; !!else"));
         }
 
         {
@@ -513,7 +513,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( true, Token::Match(tokenizer.tokens(), "if ; !!else") );
+            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "if ; !!else"));
         }
 
         {
@@ -525,7 +525,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( false, Token::Match(tokenizer.tokens(), "!!else") );
+            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "!!else"));
         }
 
         {
@@ -537,7 +537,7 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
-            ASSERT_EQUALS( false, Token::Match(tokenizer.tokens(), "if ; !!else") );
+            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "if ; !!else"));
         }
     }
 
@@ -550,7 +550,7 @@ private:
                                "    for (int i = 0; i < 10; ++i)\n"
                                "        i = 3;\n"
                                "    i = 4;\n"
-                               "}\n" );
+                               "}\n");
 
         // tokenize..
         Tokenizer tokenizer;
@@ -558,18 +558,18 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
-            if ( tok->str() != "i" )
-                ASSERT_EQUALS( 0, tok->varId() );
-            else if ( Token::Match(tok, "i = 1") )
-                ASSERT_EQUALS( 1, tok->varId() );
-            else if ( Token::Match(tok, "i = 2") )
-                ASSERT_EQUALS( 2, tok->varId() );
-            else if ( Token::Match(tok, "i = 3") )
-                ASSERT_EQUALS( 3, tok->varId() );
-            else if ( Token::Match(tok, "i = 4") )
-                ASSERT_EQUALS( 2, tok->varId() );
+            if (tok->str() != "i")
+                ASSERT_EQUALS(0, tok->varId());
+            else if (Token::Match(tok, "i = 1"))
+                ASSERT_EQUALS(1, tok->varId());
+            else if (Token::Match(tok, "i = 2"))
+                ASSERT_EQUALS(2, tok->varId());
+            else if (Token::Match(tok, "i = 3"))
+                ASSERT_EQUALS(3, tok->varId());
+            else if (Token::Match(tok, "i = 4"))
+                ASSERT_EQUALS(2, tok->varId());
         }
     }
 
@@ -580,7 +580,7 @@ private:
                                "    struct ABC abc;\n"
                                "    abc.a = 3;\n"
                                "    i = abc.a;\n"
-                               "}\n" );
+                               "}\n");
 
         // tokenize..
         Tokenizer tokenizer;
@@ -588,16 +588,16 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
-            if ( tok->str() == "abc" )
-                ASSERT_EQUALS( 1, tok->varId() );
-            else if ( tok->str() == "a" )
-                ASSERT_EQUALS( 2, tok->varId() );
+            if (tok->str() == "abc")
+                ASSERT_EQUALS(1, tok->varId());
+            else if (tok->str() == "a")
+                ASSERT_EQUALS(2, tok->varId());
             else
-                ASSERT_EQUALS( 0, tok->varId() );
+                ASSERT_EQUALS(0, tok->varId());
         }
     }
 };
 
-REGISTER_TEST( TestTokenizer )
+REGISTER_TEST(TestTokenizer)

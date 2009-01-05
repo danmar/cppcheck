@@ -28,7 +28,7 @@
 class CheckFunctionUsage
 {
 public:
-    CheckFunctionUsage( ErrorLogger *errorLogger = 0 );
+    CheckFunctionUsage(ErrorLogger *errorLogger = 0);
     ~CheckFunctionUsage();
 
     /**
@@ -36,12 +36,12 @@ public:
      * errorlogger.
      * @param errorLogger The errorlogger to be used.
      */
-    void setErrorLogger( ErrorLogger *errorLogger );
+    void setErrorLogger(ErrorLogger *errorLogger);
 
     // Parse current tokens and determine..
     // * Check what functions are used
     // * What functions are declared
-    void parseTokens( const Tokenizer &tokenizer );
+    void parseTokens(const Tokenizer &tokenizer);
 
 
     void check();

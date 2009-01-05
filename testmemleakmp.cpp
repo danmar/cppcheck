@@ -36,7 +36,7 @@ private:
 
     void run()
     {
-        TEST_CASE( param1 );
+        TEST_CASE(param1);
     }
 
     void param1()
@@ -49,7 +49,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
-        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
         // Clear the error log
@@ -57,16 +57,16 @@ private:
 
         // Check..
         Settings settings;
-        CheckMemoryLeakClass checkMemoryLeak( &tokenizer, settings, this );
+        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
         Token *tok = checkMemoryLeak.functionParameterCode(tokenizer.tokens(), 1);
 
         // Compare tokens..
         std::string s;
-        for ( const Token *tok2 = tok; tok2; tok2 = tok2->next() )
+        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
             s += tok2->str() + " ";
-        ASSERT_EQUALS( "; } ", s );
+        ASSERT_EQUALS("; } ", s);
     }
 
 };
 
-REGISTER_TEST( TestMemleakMultiPass )
+REGISTER_TEST(TestMemleakMultiPass)

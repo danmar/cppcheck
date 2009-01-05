@@ -36,70 +36,70 @@ private:
 
     void run()
     {
-        TEST_CASE( incondition );
-        TEST_CASE( return1 );
-        TEST_CASE( callback1 );
-        TEST_CASE( else1 );
+        TEST_CASE(incondition);
+        TEST_CASE(return1);
+        TEST_CASE(callback1);
+        TEST_CASE(else1);
     }
 
-    void check( const char code[] )
+    void check(const char code[])
     {
         // Tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
-        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.tokenize(istr, "test.cpp");
 
         // Clear the error buffer..
         errout.str("");
 
         // Check for unused functions..
         CheckFunctionUsage checkFunctionUsage(this);
-        checkFunctionUsage.parseTokens( tokenizer );
+        checkFunctionUsage.parseTokens(tokenizer);
         checkFunctionUsage.check();
     }
 
     void incondition()
     {
-        check( "int f1()\n"
-               "{\n"
-               "    if (f1())\n"
-               "    { }\n"
-               "}\n" );
-        std::string err( errout.str() );
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        check("int f1()\n"
+              "{\n"
+              "    if (f1())\n"
+              "    { }\n"
+              "}\n");
+        std::string err(errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void return1()
     {
-        check( "int f1()\n"
-               "{\n"
-               "    return f1();\n"
-               "}\n" );
-        std::string err( errout.str() );
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        check("int f1()\n"
+              "{\n"
+              "    return f1();\n"
+              "}\n");
+        std::string err(errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void callback1()
     {
-        check( "void f1()\n"
-               "{\n"
-               "    void (*f)() = cond ? f1 : NULL;\n"
-               "}\n" );
-        std::string err( errout.str() );
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        check("void f1()\n"
+              "{\n"
+              "    void (*f)() = cond ? f1 : NULL;\n"
+              "}\n");
+        std::string err(errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void else1()
     {
-        check( "void f1()\n"
-               "{\n"
-               "    if (cond) ;\n"
-               "    else f1();\n"
-               "}\n" );
-        std::string err( errout.str() );
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        check("void f1()\n"
+              "{\n"
+              "    if (cond) ;\n"
+              "    else f1();\n"
+              "}\n");
+        std::string err(errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
-REGISTER_TEST( TestFunctionUsage )
+REGISTER_TEST(TestFunctionUsage)
 

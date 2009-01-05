@@ -30,7 +30,7 @@
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-CheckFunctionUsage::CheckFunctionUsage( ErrorLogger *errorLogger )
+CheckFunctionUsage::CheckFunctionUsage(ErrorLogger *errorLogger)
 {
     _errorLogger = errorLogger;
 }
@@ -40,42 +40,42 @@ CheckFunctionUsage::~CheckFunctionUsage()
 
 }
 
-void CheckFunctionUsage::setErrorLogger( ErrorLogger *errorLogger )
+void CheckFunctionUsage::setErrorLogger(ErrorLogger *errorLogger)
 {
     _errorLogger = errorLogger;
 }
 
-void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
+void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
 {
     // Function declarations..
-    for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
+    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
     {
-        if ( tok->fileIndex() != 0 )
+        if (tok->fileIndex() != 0)
             continue;
 
         const Token *funcname = 0;
 
-        if ( Token::Match( tok, "%type% %var% (" )  )
+        if (Token::Match(tok, "%type% %var% ("))
             funcname = tok->tokAt(1);
-        else if ( Token::Match(tok, "%type% * %var% (") )
+        else if (Token::Match(tok, "%type% * %var% ("))
             funcname = tok->tokAt(2);
-        else if ( Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2)) )
+        else if (Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2)))
             funcname = tok->tokAt(2);
 
         // Check that ") {" is found..
         for (const Token *tok2 = funcname; tok2; tok2 = tok2->next())
         {
-            if ( Token::Match(tok2, ")") )
+            if (Token::Match(tok2, ")"))
             {
-                if ( ! Token::Match(tok2, ") {") && ! Token::Match(tok2, ") const {") )
+                if (! Token::Match(tok2, ") {") && ! Token::Match(tok2, ") const {"))
                     funcname = NULL;
                 break;
             }
         }
 
-        if ( funcname )
+        if (funcname)
         {
-            FunctionUsage &func = _functions[ funcname->str() ];
+            FunctionUsage &func = _functions[ funcname->str()];
 
             // No filename set yet..
             if (func.filename.empty())
@@ -91,25 +91,25 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
     }
 
     // Function usage..
-    for ( const Token *tok = tokenizer.tokens(); tok; tok = tok->next() )
+    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
     {
         const Token *funcname = 0;
 
-        if ( Token::Match( tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]" ) ||
-             Token::Match(tok, ":: %var% (") ||
-             Token::Match(tok, "|= %var% (") ||
-             Token::Match(tok, "&= %var% (") ||
-             Token::Match(tok, "&& %var% (") ||
-             Token::Match(tok, "|| %var% (") ||
-             Token::Match(tok, "else %var% (") ||
-             Token::Match(tok, "return %var% (") )
+        if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]") ||
+            Token::Match(tok, ":: %var% (") ||
+            Token::Match(tok, "|= %var% (") ||
+            Token::Match(tok, "&= %var% (") ||
+            Token::Match(tok, "&& %var% (") ||
+            Token::Match(tok, "|| %var% (") ||
+            Token::Match(tok, "else %var% (") ||
+            Token::Match(tok, "return %var% ("))
             funcname = tok->next();
 
         // funcname ( => Assert that the end paranthesis isn't followed by {
-        if ( Token::Match(funcname, "%var% (") )
+        if (Token::Match(funcname, "%var% ("))
         {
             int parlevel = 0;
-            for ( const Token *tok2 = funcname; tok2; tok2 = tok2->next() )
+            for (const Token *tok2 = funcname; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "(")
                     ++parlevel;
@@ -119,17 +119,17 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
                     --parlevel;
                     if (parlevel == 0 && (Token::Match(tok2, ") {") || Token::Match(tok2, ") const")))
                         funcname = NULL;
-                    if ( parlevel <= 0 )
+                    if (parlevel <= 0)
                         break;
                 }
             }
         }
 
-        if ( funcname )
+        if (funcname)
         {
-            FunctionUsage &func = _functions[ funcname->str() ];
+            FunctionUsage &func = _functions[ funcname->str()];
 
-            if ( func.filename.empty() || func.filename == "+" )
+            if (func.filename.empty() || func.filename == "+")
                 func.usedOtherFile = true;
 
             else
@@ -143,20 +143,20 @@ void CheckFunctionUsage::parseTokens( const Tokenizer &tokenizer )
 
 void CheckFunctionUsage::check()
 {
-    for ( std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it )
+    for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it)
     {
         const FunctionUsage &func = it->second;
-        if ( func.usedOtherFile || func.filename.empty() )
+        if (func.usedOtherFile || func.filename.empty())
             continue;
-        if ( ! func.usedSameFile )
+        if (! func.usedSameFile)
         {
             std::ostringstream errmsg;
-            if ( func.filename != "+" )
+            if (func.filename != "+")
                 errmsg << "[" << func.filename << "] ";
             errmsg << "The function '" << it->first << "' is never used.";
-            _errorLogger->reportErr( errmsg.str() );
+            _errorLogger->reportErr(errmsg.str());
         }
-        else if ( ! func.usedOtherFile )
+        else if (! func.usedOtherFile)
         {
             /* TODO - add error message "function is only used in <file> it can be static"
             std::ostringstream errmsg;

@@ -28,6 +28,6 @@
 int main(int argc, char* argv[])
 {
     CppCheckExecutor exec;
-    exec.check( argc, argv );
+    exec.check(argc, argv);
     return 0;
 }

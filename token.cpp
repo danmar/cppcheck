@@ -27,16 +27,16 @@
 #endif
 
 Token::Token() :
-    _str(""),
-    _cstr(0),
-    _isName(false),
-    _isNumber(false),
-    _isBoolean(false),
-    _varId(0),
-    _next(0),
-    _previous(0),
-    _fileIndex(0),
-    _linenr(0)
+        _str(""),
+        _cstr(0),
+        _isName(false),
+        _isNumber(false),
+        _isBoolean(false),
+        _varId(0),
+        _next(0),
+        _previous(0),
+        _fileIndex(0),
+        _linenr(0)
 {
 }
 
@@ -45,14 +45,14 @@ Token::~Token()
     std::free(_cstr);
 }
 
-void Token::str( const char s[] )
+void Token::str(const char s[])
 {
     _str = s;
     std::free(_cstr);
     _cstr = strdup(s);
-    _isName = bool(_str[0]=='_' || isalpha(_str[0]));
+    _isName = bool(_str[0] == '_' || isalpha(_str[0]));
     _isNumber = bool(isdigit(_str[0]) != 0);
-    if( _str == "true" || _str == "false" )
+    if (_str == "true" || _str == "false")
         _isBoolean = true;
     else
         _isBoolean = false;
@@ -72,7 +72,7 @@ void Token::deleteNext()
 const Token *Token::tokAt(int index) const
 {
     const Token *tok = this;
-    while (index>0 && tok)
+    while (index > 0 && tok)
     {
         tok = tok->next();
         --index;
@@ -86,21 +86,21 @@ const char *Token::strAt(int index) const
     return tok ? tok->_cstr : "";
 }
 
-int Token::multiCompare( const char *needle, const char *haystack )
+int Token::multiCompare(const char *needle, const char *haystack)
 {
     bool emptyStringFound = false;
     bool findNextOr = false;
     const char *haystackPointer = haystack;
-    for( ; *needle; ++needle )
+    for (; *needle; ++needle)
     {
-        if( *needle == '|' )
+        if (*needle == '|')
         {
             // If needle and haystack are both at the end, we have a match.
-            if( *haystackPointer == 0 )
+            if (*haystackPointer == 0)
                 return 1;
 
             haystackPointer = haystack;
-            if( findNextOr )
+            if (findNextOr)
                 findNextOr = false;
             else
                 emptyStringFound = true;
@@ -108,12 +108,12 @@ int Token::multiCompare( const char *needle, const char *haystack )
             continue;
         }
 
-        if( findNextOr )
+        if (findNextOr)
             continue;
 
         // If haystack and needle don't share the same character, reset
         // haystackpointer and find next '|' character.
-        if( *haystackPointer != *needle )
+        if (*haystackPointer != *needle)
         {
             haystackPointer = haystack;
             findNextOr = true;
@@ -125,11 +125,11 @@ int Token::multiCompare( const char *needle, const char *haystack )
     }
 
     // If both needle and haystack are at the end, then we have a match.
-    if( *haystackPointer == 0 )
+    if (*haystackPointer == 0)
         return 1;
 
     // If empty string was found or if last character in needle was '|'
-    if( emptyStringFound || findNextOr == false )
+    if (emptyStringFound || findNextOr == false)
         return 0;
 
     return -1;
@@ -141,21 +141,21 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
 
     current = pattern;
     next = strchr(pattern, ' ');
-    if ( !next )
+    if (!next)
         next = pattern + strlen(pattern);
 
-    while ( *current )
+    while (*current)
     {
-        size_t length = static_cast<size_t>(next-current);
+        size_t length = static_cast<size_t>(next - current);
 
-        if ( !tok || length != tok->_str.length() || strncmp(current, tok->_cstr, length) )
+        if (!tok || length != tok->_str.length() || strncmp(current, tok->_cstr, length))
             return false;
 
         current = next;
-        if ( *next )
+        if (*next)
         {
             next = strchr(++current, ' ');
-            if ( !next )
+            if (!next)
                 next = current + strlen(current);
         }
         tok = tok->next();
@@ -164,19 +164,19 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
     return true;
 }
 
-bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, const char *varname1[] )
+bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, const char *varname1[])
 {
     const char *p = pattern;
-    while ( *p )
+    while (*p)
     {
         // Skip spaces in pattern..
-        while ( *p == ' ' )
+        while (*p == ' ')
             ++p;
 
         if (!tok)
         {
             // If we have no tokens, pattern "!!else" should return true
-            if( p[1] == '!' && p[0] == '!' && strlen(p) > 2 )
+            if (p[1] == '!' && p[0] == '!' && strlen(p) > 2)
                 return true;
             else
                 return false;
@@ -186,7 +186,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, co
         // TODO: Refactor this so there can't be buffer overflows
         char str[500];
         char *s = str;
-        while (*p && *p!=' ')
+        while (*p && *p != ' ')
         {
             *s = *p;
             ++s;
@@ -198,13 +198,13 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, co
         if (str[0] == 0)
             return true;
 
-		// Compare the first character of the string for optimization reasons
-		// before doing more detailed checks.
+        // Compare the first character of the string for optimization reasons
+        // before doing more detailed checks.
         bool patternIdentified = false;
-        if( str[0] == '%' )
+        if (str[0] == '%')
         {
             // Any symbolname..
-            if (strcmp(str,"%var%")==0 || strcmp(str,"%type%")==0)
+            if (strcmp(str, "%var%") == 0 || strcmp(str, "%type%") == 0)
             {
                 if (!tok->isName())
                     return false;
@@ -213,7 +213,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, co
             }
 
             // Accept any token
-            else if (strcmp(str,"%any%")==0 )
+            else if (strcmp(str, "%any%") == 0)
             {
                 patternIdentified = true;
             }
@@ -221,21 +221,21 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, co
             // Variable name..
             else if (strcmp(str, "%var1%") == 0)
             {
-                if ( ! varname1 )
+                if (! varname1)
                     return false;
 
                 if (tok->_str != varname1[0])
                     return false;
 
-                for ( int i = 1; varname1[i]; i++ )
+                for (int i = 1; varname1[i]; i++)
                 {
-                    if ( !(tok->tokAt(2)) )
+                    if (!(tok->tokAt(2)))
                         return false;
 
-                    if ( strcmp(tok->strAt(1), ".") )
+                    if (strcmp(tok->strAt(1), "."))
                         return false;
 
-                    if ( strcmp(tok->strAt(2), varname1[i]) )
+                    if (strcmp(tok->strAt(2), varname1[i]))
                         return false;
 
                     tok = tok->tokAt(2);
@@ -244,67 +244,67 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, co
                 patternIdentified = true;
             }
 
-            else if (strcmp(str,"%varid%")==0)
+            else if (strcmp(str, "%varid%") == 0)
             {
-                if( varid == 0 )
+                if (varid == 0)
                 {
                     std::cout << "\n###### If you see this, there is a bug ###### Token::Match() - varid was 0" << std::endl;
                 }
 
-                if ( tok->varId() != varid )
+                if (tok->varId() != varid)
                     return false;
 
                 patternIdentified = true;
             }
 
-            else if (strcmp(str,"%num%")==0)
+            else if (strcmp(str, "%num%") == 0)
             {
-                if ( !tok->isNumber() )
+                if (!tok->isNumber())
                     return false;
 
                 patternIdentified = true;
             }
 
-            else if (strcmp(str,"%bool%")==0)
+            else if (strcmp(str, "%bool%") == 0)
             {
-                if ( !tok->isBoolean() )
+                if (!tok->isBoolean())
                     return false;
 
                 patternIdentified = true;
             }
 
-            else if (strcmp(str,"%str%")==0)
+            else if (strcmp(str, "%str%") == 0)
             {
-                if ( tok->_str[0] != '\"' )
+                if (tok->_str[0] != '\"')
                     return false;
 
                 patternIdentified = true;
             }
         }
 
-        if( patternIdentified )
+        if (patternIdentified)
         {
             // Pattern was identified already above.
         }
 
         // [.. => search for a one-character token..
-        else if (str[0]=='[' && strchr(str, ']') && tok->_str[1] == 0)
+        else if (str[0] == '[' && strchr(str, ']') && tok->_str[1] == 0)
         {
             *strrchr(str, ']') = 0;
-            if ( strchr( str + 1, tok->_str[0] ) == 0 )
+            if (strchr(str + 1, tok->_str[0]) == 0)
                 return false;
         }
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
-        else if ( strchr(str, '|') && strlen( str ) > 2 )
+        else if (strchr(str, '|') && strlen(str) > 2)
         {
-            int res = multiCompare( str, tok->_cstr );
-            if( res == 0 )
+            int res = multiCompare(str, tok->_cstr);
+            if (res == 0)
             {
                 // Empty alternative matches, use the same token on next round
                 continue;
             }
-            else if( res == -1 )
+            else if (res == -1)
             {
                 // No match
                 return false;
@@ -312,9 +312,9 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, co
         }
 
         // Parse "not" options. Token can be anything except the given one
-        else if( str[1] == '!' && str[0] == '!' && strlen(str) > 2 )
+        else if (str[1] == '!' && str[0] == '!' && strlen(str) > 2)
         {
-            if( strcmp( tok->aaaa(), &(str[2]) ) == 0 )
+            if (strcmp(tok->aaaa(), &(str[2])) == 0)
                 return false;
         }
 
@@ -346,7 +346,7 @@ bool Token::isBoolean() const
 bool Token::isStandardType() const
 {
     bool ret = false;
-    const char *type[] = {"bool","char","short","int","long","float","double",0};
+    const char *type[] = {"bool", "char", "short", "int", "long", "float", "double", 0};
     for (int i = 0; type[i]; i++)
         ret |= (_str == type[i]);
     return ret;
@@ -356,19 +356,19 @@ bool Token::isStandardType() const
 
 const Token *Token::findmatch(const Token *tok, const char pattern[], const char *varname1[])
 {
-    for ( ; tok; tok = tok->next())
+    for (; tok; tok = tok->next())
     {
-        if ( Token::Match(tok, pattern, 0, varname1) )
+        if (Token::Match(tok, pattern, 0, varname1))
             return tok;
     }
     return 0;
 }
 
-const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned int varId )
+const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned int varId)
 {
-    for ( ; tok; tok = tok->next())
+    for (; tok; tok = tok->next())
     {
-        if ( Token::Match(tok, pattern, varId) )
+        if (Token::Match(tok, pattern, varId))
             return tok;
     }
     return 0;
@@ -379,7 +379,7 @@ unsigned int Token::varId() const
     return _varId;
 }
 
-void Token::varId( unsigned int id )
+void Token::varId(unsigned int id)
 {
     _varId = id;
 }
@@ -389,7 +389,7 @@ Token *Token::next() const
     return _next;
 }
 
-void Token::next( Token *next )
+void Token::next(Token *next)
 {
     _next = next;
 }
@@ -399,33 +399,33 @@ Token *Token::previous() const
     return _previous;
 }
 
-void Token::previous( Token *previous )
+void Token::previous(Token *previous)
 {
     _previous = previous;
 }
 
-void Token::insertToken( const char str[] )
+void Token::insertToken(const char str[])
 {
     Token *newToken = new Token;
-    newToken->str( str );
+    newToken->str(str);
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
-    if( this->next() )
+    if (this->next())
     {
-        newToken->next( this->next() );
-        newToken->next()->previous( newToken );
+        newToken->next(this->next());
+        newToken->next()->previous(newToken);
     }
 
-    this->next( newToken );
-    newToken->previous( this );
+    this->next(newToken);
+    newToken->previous(this);
 }
 
-void Token::eraseTokens( Token *begin, const Token *end )
+void Token::eraseTokens(Token *begin, const Token *end)
 {
-    if ( ! begin )
+    if (! begin)
         return;
 
-    while ( begin->next() && begin->next() != end )
+    while (begin->next() && begin->next() != end)
     {
         begin->deleteNext();
     }
@@ -436,7 +436,7 @@ unsigned int Token::fileIndex() const
     return _fileIndex;
 }
 
-void Token::fileIndex( unsigned int fileIndex )
+void Token::fileIndex(unsigned int fileIndex)
 {
     _fileIndex = fileIndex;
 }
@@ -446,25 +446,25 @@ unsigned int Token::linenr() const
     return _linenr;
 }
 
-void Token::linenr( unsigned int linenr )
+void Token::linenr(unsigned int linenr)
 {
     _linenr = linenr;
 }
 
-void Token::printOut( const char *title ) const
+void Token::printOut(const char *title) const
 {
     std::cout << std::endl << "###";
-    if ( title )
+    if (title)
         std::cout << " " << title << " ";
     else
         std::cout << "########";
 
     std::cout << "###" << std::endl;
-    for( const Token *t = this; t; t = t->next() )
+    for (const Token *t = this; t; t = t->next())
     {
         std::cout << t->linenr() << ": " << t->str();
-        if ( t->varId() )
-            std::cout << " ("<< t->varId() <<")";
+        if (t->varId())
+            std::cout << " (" << t->varId() << ")";
 
         std::cout << std::endl;
     }

@@ -36,7 +36,7 @@
 
 
 CheckBufferOverrunClass::CheckBufferOverrunClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
-  :  _settings(settings)
+        :  _settings(settings)
 {
     _tokenizer = tokenizer;
     _errorLogger = errorLogger;
@@ -52,8 +52,8 @@ void CheckBufferOverrunClass::ReportError(const Token *tok, const char errmsg[])
 {
     std::ostringstream ostr;
     std::list<const Token *>::const_iterator it;
-    for ( it = _callStack.begin(); it != _callStack.end(); it++ )
-        ostr << _tokenizer->fileLine(*it ) << " -> ";
+    for (it = _callStack.begin(); it != _callStack.end(); it++)
+        ostr << _tokenizer->fileLine(*it) << " -> ";
     ostr << _tokenizer->fileLine(tok) << ": " << errmsg;
     _errorLogger->reportErr(ostr.str());
 }
@@ -69,9 +69,9 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
     unsigned int varc = 0;
 
     std::string varnames;
-    while ( varname[varc] )
+    while (varname[varc])
     {
-        if( varc > 0 )
+        if (varc > 0)
             varnames += " . ";
 
         varnames += varname[varc];
@@ -79,15 +79,15 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         ++varc;
     }
 
-    if( varc == 0 )
+    if (varc == 0)
         varc = 1;
 
     varc = 2 * (varc - 1);
 
     // Array index..
-    if ( varid > 0 )
+    if (varid > 0)
     {
-        if ( Token::Match(tok, "%varid% [ %num% ]", varid) )
+        if (Token::Match(tok, "%varid% [ %num% ]", varid))
         {
             const char *num = tok->strAt(2);
             if (strtol(num, NULL, 10) >= size)
@@ -96,7 +96,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
         }
     }
-    else if ( Token::Match(tok, std::string( varnames + " [ %num% ]" ).c_str() ) )
+    else if (Token::Match(tok, std::string(varnames + " [ %num% ]").c_str()))
     {
         const char *num = tok->strAt(2 + varc);
         if (strtol(num, NULL, 10) >= size)
@@ -107,7 +107,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
 
     int indentlevel = 0;
-    for ( ; tok; tok = tok->next() )
+    for (; tok; tok = tok->next())
     {
         if (tok->str() == "{")
         {
@@ -117,14 +117,14 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         else if (tok->str() == "}")
         {
             --indentlevel;
-            if ( indentlevel < 0 )
+            if (indentlevel < 0)
                 return;
         }
 
         // Array index..
-        if ( varid > 0 )
+        if (varid > 0)
         {
-            if ( !tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", varid) )
+            if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", varid))
             {
                 const char *num = tok->strAt(3);
                 if (strtol(num, NULL, 10) >= size)
@@ -133,7 +133,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 }
             }
         }
-        else if ( !tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), std::string( varnames + " [ %num% ]" ).c_str() ) )
+        else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), std::string(varnames + " [ %num% ]").c_str()))
         {
             const char *num = tok->next()->strAt(2 + varc);
             if (strtol(num, NULL, 10) >= size)
@@ -146,15 +146,15 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
 
         // memset, memcmp, memcpy, strncpy, fgets..
-        if ( varid > 0 )
+        if (varid > 0)
         {
-            if ( Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets") )
+            if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets"))
             {
-                if ( Token::Match(tok->next(), "( %varid% , %num% , %num% )", varid) ||
-                     Token::Match(tok->next(), "( %var% , %varid% , %num% )", varid) )
+                if (Token::Match(tok->next(), "( %varid% , %num% , %num% )", varid) ||
+                    Token::Match(tok->next(), "( %var% , %varid% , %num% )", varid))
                 {
                     const char *num  = tok->strAt(6);
-                    if ( atoi(num) > total_size )
+                    if (atoi(num) > total_size)
                     {
                         ReportError(tok, "Buffer overrun");
                     }
@@ -162,13 +162,13 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 continue;
             }
         }
-        else if (Token::Match(tok,"memset|memcpy|memmove|memcmp|strncpy|fgets") )
+        else if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets"))
         {
-            if ( Token::Match(tok->next(), std::string( "( "+varnames+" , %num% , %num% )" ).c_str()) ||
-                 Token::Match(tok->next(), std::string( "( %var% , "+varnames+" , %num% )" ).c_str()) )
+            if (Token::Match(tok->next(), std::string("( " + varnames + " , %num% , %num% )").c_str()) ||
+                Token::Match(tok->next(), std::string("( %var% , " + varnames + " , %num% )").c_str()))
             {
                 const char *num  = tok->strAt(varc + 6);
-                if ( atoi(num) > total_size )
+                if (atoi(num) > total_size)
                 {
                     ReportError(tok, "Buffer overrun");
                 }
@@ -178,56 +178,56 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
 
         // Loop..
-        if ( Token::simpleMatch(tok, "for (") )
+        if (Token::simpleMatch(tok, "for ("))
         {
             const Token *tok2 = tok->tokAt(2);
 
             // for - setup..
-            if ( Token::Match(tok2, "%var% = 0 ;") )
+            if (Token::Match(tok2, "%var% = 0 ;"))
                 tok2 = tok2->tokAt(4);
-            else if ( Token::Match(tok2, "%type% %var% = 0 ;") )
+            else if (Token::Match(tok2, "%type% %var% = 0 ;"))
                 tok2 = tok2->tokAt(5);
-            else if ( Token::Match(tok2, "%type% %type% %var% = 0 ;") )
+            else if (Token::Match(tok2, "%type% %type% %var% = 0 ;"))
                 tok2 = tok2->tokAt(6);
             else
                 continue;
 
             // for - condition..
-            if ( !Token::Match(tok2, "%var% < %num% ;") && !Token::Match(tok2, "%var% <= %num% ;"))
+            if (!Token::Match(tok2, "%var% < %num% ;") && !Token::Match(tok2, "%var% <= %num% ;"))
                 continue;
 
             // Get index variable and stopsize.
             const char *strindex = tok2->aaaa();
             int value = ((tok2->next()->aaaa1() == '=') ? 1 : 0) + atoi(tok2->strAt(2));
-            if ( value <= size )
+            if (value <= size)
                 continue;
 
             // Goto the end of the for loop..
-            while ( tok2 && tok2->str() != ")" )
+            while (tok2 && tok2->str() != ")")
                 tok2 = tok2->next();
-            if ( !tok2 || !tok2->tokAt(5) )
+            if (!tok2 || !tok2->tokAt(5))
                 break;
 
             std::ostringstream pattern;
             pattern << varnames << " [ " << strindex << " ]";
 
             int indentlevel2 = 0;
-            while ( (tok2 = tok2->next()) )
+            while ((tok2 = tok2->next()))
             {
-                if ( tok2->str() == ";" && indentlevel2 == 0 )
+                if (tok2->str() == ";" && indentlevel2 == 0)
                     break;
 
-                if ( tok2->str() == "{" )
+                if (tok2->str() == "{")
                     ++indentlevel2;
 
-                if ( tok2->str() == "}" )
+                if (tok2->str() == "}")
                 {
                     --indentlevel2;
-                    if ( indentlevel2 <= 0 )
+                    if (indentlevel2 <= 0)
                         break;
                 }
 
-                if ( Token::Match(tok2, pattern.str().c_str()) )
+                if (Token::Match(tok2, pattern.str().c_str()))
                 {
                     ReportError(tok2, "Buffer overrun");
                     break;
@@ -239,20 +239,20 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
 
         // Writing data into array..
-        if ( Token::Match(tok, std::string( "strcpy ( "+varnames+" , %str% )" ).c_str()) )
+        if (Token::Match(tok, std::string("strcpy ( " + varnames + " , %str% )").c_str()))
         {
             int len = 0;
-            const char *str = tok->strAt(varc + 4 );
-            while ( *str )
+            const char *str = tok->strAt(varc + 4);
+            while (*str)
             {
-                if (*str=='\\')
+                if (*str == '\\')
                     ++str;
                 ++str;
                 ++len;
             }
             if (len > 2 && len >= (int)size + 2)
             {
-                 ReportError(tok, "Buffer overrun");
+                ReportError(tok, "Buffer overrun");
             }
             continue;
         }
@@ -261,69 +261,69 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         // Function call..
         // It's not interesting to check what happens when the whole struct is
         // sent as the parameter, that is checked separately anyway.
-        if ( Token::Match(tok, "%var% (") )
+        if (Token::Match(tok, "%var% ("))
         {
             // Don't make recursive checking..
             if (std::find(_callStack.begin(), _callStack.end(), tok) != _callStack.end())
                 continue;
 
             // Only perform this checking if showAll setting is enabled..
-            if ( !_settings._showAll )
+            if (!_settings._showAll)
                 continue;
 
             unsigned int parlevel = 0, par = 0;
-            for ( const Token *tok2 = tok; tok2; tok2 = tok2->next() )
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
-                if ( tok2->str() == "(" )
+                if (tok2->str() == "(")
                 {
                     ++parlevel;
                 }
 
-                else if ( tok2->str() == ")" )
+                else if (tok2->str() == ")")
                 {
                     --parlevel;
-                    if ( parlevel < 1 )
+                    if (parlevel < 1)
                     {
                         par = 0;
                         break;
                     }
                 }
 
-                else if ( parlevel == 1 && (tok2->str() == ",") )
+                else if (parlevel == 1 && (tok2->str() == ","))
                 {
                     ++par;
                 }
 
-                if ( parlevel == 1 && Token::Match(tok2, std::string( "[(,] "+varnames+" [,)]" ).c_str()) )
+                if (parlevel == 1 && Token::Match(tok2, std::string("[(,] " + varnames + " [,)]").c_str()))
                 {
                     ++par;
                     break;
                 }
             }
 
-            if ( par == 0 )
+            if (par == 0)
                 continue;
 
             // Find function..
             const Token *ftok = _tokenizer->GetFunctionTokenByName(tok->aaaa());
-            if ( !ftok )
+            if (!ftok)
                 continue;
 
             // Parse head of function..
             ftok = ftok->tokAt(2);
             parlevel = 1;
-            while ( ftok && parlevel == 1 && par >= 1 )
+            while (ftok && parlevel == 1 && par >= 1)
             {
-                if ( ftok->str() == "(" )
+                if (ftok->str() == "(")
                     ++parlevel;
 
-                else if ( ftok->str() == ")" )
+                else if (ftok->str() == ")")
                     --parlevel;
 
-                else if ( ftok->str() == "," )
+                else if (ftok->str() == ",")
                     --par;
 
-                else if ( par==1 && parlevel==1 && Token::Match(ftok, "%var% [,)]") )
+                else if (par == 1 && parlevel == 1 && Token::Match(ftok, "%var% [,)]"))
                 {
                     // Parameter name..
                     const char *parname[2];
@@ -331,7 +331,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                     parname[1] = 0;
 
                     // Goto function body..
-                    while ( ftok && (ftok->str() != "{") )
+                    while (ftok && (ftok->str() != "{"))
                         ftok = ftok->next();
                     ftok = ftok ? ftok->next() : 0;
 
@@ -415,50 +415,50 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
 void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 {
     const char declstruct[] = "struct|class %var% {";
-    for ( const Token *tok = Token::findmatch(_tokenizer->tokens(), declstruct);
-          tok; tok = Token::findmatch(tok->next(), declstruct) )
+    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), declstruct);
+         tok; tok = Token::findmatch(tok->next(), declstruct))
     {
         const std::string &structname = tok->next()->str();
 
         // Found a struct declaration. Search for arrays..
-        for ( const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next() )
+        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
         {
-            if ( tok2->str() == "}" )
+            if (tok2->str() == "}")
                 break;
 
             int ivar = 0;
-            if ( Token::Match(tok2->next(), "%type% %var% [ %num% ] ;") )
+            if (Token::Match(tok2->next(), "%type% %var% [ %num% ] ;"))
                 ivar = 2;
-            else if ( Token::Match(tok2->next(), "%type% %type% %var% [ %num% ] ;") )
+            else if (Token::Match(tok2->next(), "%type% %type% %var% [ %num% ] ;"))
                 ivar = 3;
-            else if ( Token::Match(tok2->next(), "%type% * %var% [ %num% ] ;") )
+            else if (Token::Match(tok2->next(), "%type% * %var% [ %num% ] ;"))
                 ivar = 3;
-            else if ( Token::Match(tok2->next(), "%type% %type% * %var% [ %num% ] ;") )
+            else if (Token::Match(tok2->next(), "%type% %type% * %var% [ %num% ] ;"))
                 ivar = 4;
             else
                 continue;
 
-            const char *varname[3] = {0,0,0};
+            const char *varname[3] = {0, 0, 0};
             varname[1] = tok2->strAt(ivar);
-            int arrsize = atoi(tok2->strAt(ivar+2));
+            int arrsize = atoi(tok2->strAt(ivar + 2));
             int total_size = arrsize * _tokenizer->SizeOfType(tok2->next()->aaaa());
             if (total_size == 0)
                 continue;
 
 
             // Class member variable => Check functions
-            if ( tok->str() == "class" )
+            if (tok->str() == "class")
             {
                 std::string func_pattern(structname + " :: %var% (");
                 const Token *tok3 = Token::findmatch(_tokenizer->tokens(), func_pattern.c_str());
-                while ( tok3 )
+                while (tok3)
                 {
-                    for ( const Token *tok4 = tok3; tok4; tok4 = tok4->next() )
+                    for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
                     {
-                        if ( Token::Match(tok4, "[;{}]") )
+                        if (Token::Match(tok4, "[;{}]"))
                             break;
 
-                        if ( Token::simpleMatch(tok4, ") {") )
+                        if (Token::simpleMatch(tok4, ") {"))
                         {
                             const char *names[2] = {varname[1], 0};
                             CheckBufferOverrun_CheckScope(tok4->tokAt(2), names, arrsize, total_size, 0);
@@ -469,17 +469,17 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
                 }
             }
 
-            for ( const Token *tok3 = _tokenizer->tokens(); tok3; tok3 = tok3->next() )
+            for (const Token *tok3 = _tokenizer->tokens(); tok3; tok3 = tok3->next())
             {
-                if ( tok3->str() != structname )
+                if (tok3->str() != structname)
                     continue;
 
                 // Declare variable: Fred fred1;
-                if ( Token::Match( tok3->next(), "%var% ;" ) )
+                if (Token::Match(tok3->next(), "%var% ;"))
                     varname[0] = tok3->strAt(1);
 
                 // Declare pointer: Fred *fred1
-                else if ( Token::Match(tok3->next(), "* %var% [,);=]") )
+                else if (Token::Match(tok3->next(), "* %var% [,);=]"))
                     varname[0] = tok3->strAt(2);
 
                 else
@@ -488,21 +488,21 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 
                 // Goto end of statement.
                 const Token *CheckTok = NULL;
-                while ( tok3 )
+                while (tok3)
                 {
                     // End of statement.
-                    if ( tok3->str() == ";" )
+                    if (tok3->str() == ";")
                     {
                         CheckTok = tok3;
                         break;
                     }
 
                     // End of function declaration..
-                    if ( Token::simpleMatch(tok3, ") ;") )
+                    if (Token::simpleMatch(tok3, ") ;"))
                         break;
 
                     // Function implementation..
-                    if ( Token::simpleMatch(tok3, ") {") )
+                    if (Token::simpleMatch(tok3, ") {"))
                     {
                         CheckTok = tok3->tokAt(2);
                         break;
@@ -511,10 +511,10 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
                     tok3 = tok3->next();
                 }
 
-                if ( !tok3 )
+                if (!tok3)
                     break;
 
-                if ( !CheckTok )
+                if (!CheckTok)
                     continue;
 
                 // Check variable usage..

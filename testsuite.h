@@ -41,9 +41,9 @@ protected:
     void assertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
 
 public:
-    virtual void reportErr( const std::string &errmsg);
+    virtual void reportErr(const std::string &errmsg);
 
-    virtual void reportOut( const std::string &outmsg);
+    virtual void reportOut(const std::string &outmsg);
 
     void run(const std::string &str);
 

@@ -50,7 +50,7 @@ public:
      * @param resultConfigurations List of configurations. Pass these one by one
      * to getcode() with processedFile.
      */
-    void preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations );
+    void preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations);
 
     /** Just read the code into a string. Perform simple cleanup of the code */
     std::string read(std::istream &istr);
@@ -70,7 +70,7 @@ private:
      * @param str The string to be converted
      * @return The string where space characters have been removed.
      */
-    static std::string removeSpaceNearNL( const std::string &str );
+    static std::string removeSpaceNearNL(const std::string &str);
 
     /**
      * Replace "#if defined" with "#ifdef" where possible
@@ -78,18 +78,18 @@ private:
      * @param str The string to be converted
      * @return The replaced string
      */
-    static std::string replaceIfDefined( const std::string &str );
+    static std::string replaceIfDefined(const std::string &str);
 
     /**
      * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
      */
-    std::list<std::string> getcfgs( const std::string &filedata );
+    std::list<std::string> getcfgs(const std::string &filedata);
 
     static std::string getdef(std::string line, bool def);
 
-    static bool match_cfg_def( std::string cfg, const std::string &def );
+    static bool match_cfg_def(std::string cfg, const std::string &def);
 
-    static std::string expandMacros( const std::string &code );
+    static std::string expandMacros(std::string code);
 };
 
 //---------------------------------------------------------------------------

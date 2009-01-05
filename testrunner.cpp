@@ -22,7 +22,7 @@
 
 int main(int argc, const char *argv[])
 {
-    TestFixture::runTests( (argc==2) ? argv[1] : NULL );
+    TestFixture::runTests((argc == 2) ? argv[1] : NULL);
     return 0;
 }
 

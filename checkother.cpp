@@ -35,7 +35,7 @@
 // Warning on C-Style casts.. p = (kalle *)foo;
 //---------------------------------------------------------------------------
 
-CheckOther::CheckOther( const Tokenizer *tokenizer, ErrorLogger *errorLogger )
+CheckOther::CheckOther(const Tokenizer *tokenizer, ErrorLogger *errorLogger)
 {
     _tokenizer = tokenizer;
     _errorLogger = errorLogger;
@@ -78,65 +78,65 @@ void CheckOther::WarningRedundantCode()
     // if (p) delete p
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if ( tok->str() != "if" )
+        if (tok->str() != "if")
             continue;
 
         const char *varname1 = NULL;
         const Token *tok2 = NULL;
 
-        if (Token::Match(tok,"if ( %var% )"))
+        if (Token::Match(tok, "if ( %var% )"))
         {
-            varname1 = tok->strAt( 2);
+            varname1 = tok->strAt(2);
             tok2 = tok->tokAt(4);
         }
-        else if (Token::Match(tok,"if ( %var% != NULL )"))
+        else if (Token::Match(tok, "if ( %var% != NULL )"))
         {
-            varname1 = tok->strAt( 2);
+            varname1 = tok->strAt(2);
             tok2 = tok->tokAt(6);
         }
 
-        if (varname1==NULL || tok2==NULL)
+        if (varname1 == NULL || tok2 == NULL)
             continue;
 
         bool err = false;
-        if ( tok2->str() == "{" )
+        if (tok2->str() == "{")
         {
             tok2 = tok2->next();
 
-            if (Token::Match(tok2,"delete %var% ; }"))
+            if (Token::Match(tok2, "delete %var% ; }"))
             {
-                err = (strcmp(tok2->strAt(1),varname1)==0);
+                err = (strcmp(tok2->strAt(1), varname1) == 0);
             }
-            else if (Token::Match(tok2,"delete [ ] %var% ; }"))
+            else if (Token::Match(tok2, "delete [ ] %var% ; }"))
             {
-                err = (strcmp(tok2->strAt(1),varname1)==0);
+                err = (strcmp(tok2->strAt(1), varname1) == 0);
             }
-            else if (Token::Match(tok2,"free ( %var% ) ; }"))
+            else if (Token::Match(tok2, "free ( %var% ) ; }"))
             {
-                err = (strcmp(tok2->strAt(2),varname1)==0);
+                err = (strcmp(tok2->strAt(2), varname1) == 0);
             }
-            else if (Token::Match(tok2,"kfree ( %var% ) ; }"))
+            else if (Token::Match(tok2, "kfree ( %var% ) ; }"))
             {
-                err = (strcmp(tok2->strAt(2),varname1)==0);
+                err = (strcmp(tok2->strAt(2), varname1) == 0);
             }
         }
         else
         {
-            if (Token::Match(tok2,"delete %var% ;"))
+            if (Token::Match(tok2, "delete %var% ;"))
             {
-                err = (strcmp(tok2->strAt(1),varname1)==0);
+                err = (strcmp(tok2->strAt(1), varname1) == 0);
             }
-            else if (Token::Match(tok2,"delete [ ] %var% ;"))
+            else if (Token::Match(tok2, "delete [ ] %var% ;"))
             {
-                err = (strcmp(tok2->strAt(1),varname1)==0);
+                err = (strcmp(tok2->strAt(1), varname1) == 0);
             }
-            else if (Token::Match(tok2,"free ( %var% ) ;"))
+            else if (Token::Match(tok2, "free ( %var% ) ;"))
             {
-                err = (strcmp(tok2->strAt(2),varname1)==0);
+                err = (strcmp(tok2->strAt(2), varname1) == 0);
             }
-            else if (Token::Match(tok2,"kfree ( %var% ) ;"))
+            else if (Token::Match(tok2, "kfree ( %var% ) ;"))
             {
-                err = (strcmp(tok2->strAt(2),varname1)==0);
+                err = (strcmp(tok2->strAt(2), varname1) == 0);
             }
         }
 
@@ -163,10 +163,10 @@ void CheckOther::redundantCondition2()
                            "{|{|"
                            "    %var% . remove ( %any% ) ; "
                            "}|}|";
-    const Token *tok = Token::findmatch( _tokenizer->tokens(), pattern );
-    while ( tok )
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
+    while (tok)
     {
-        bool b = Token::Match( tok->tokAt(15), "{" );
+        bool b = Token::Match(tok->tokAt(15), "{");
 
         // Get tokens for the fields %var% and %any%
         const Token *var1 = tok->tokAt(2);
@@ -178,15 +178,15 @@ void CheckOther::redundantCondition2()
         // Check if all the "%var%" fields are the same and if all the "%any%" are the same..
         if (var1->str() == var2->str() &&
             var2->str() == var3->str() &&
-            any1->str() == any2->str() )
+            any1->str() == any2->str())
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok)
-                   << ": Redundant condition found. The remove function in the STL will not do anything if element doesn't exist";
+            << ": Redundant condition found. The remove function in the STL will not do anything if element doesn't exist";
             _errorLogger->reportErr(errmsg.str());
         }
 
-        tok = Token::findmatch( tok->next(), pattern );
+        tok = Token::findmatch(tok->next(), pattern);
     }
 }
 //---------------------------------------------------------------------------
@@ -215,9 +215,9 @@ void CheckOther::WarningIf()
             else if (tok2->str() == ")")
             {
                 --parlevel;
-                if ( parlevel <= 0 )
+                if (parlevel <= 0)
                 {
-                    if ( Token::Match(tok2, ") ; !!else") )
+                    if (Token::Match(tok2, ") ; !!else"))
                     {
                         std::ostringstream ostr;
                         ostr << _tokenizer->fileLine(tok) << ": Found \"if (condition);\"";
@@ -233,35 +233,35 @@ void CheckOther::WarningIf()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Begin statement?
-        if ( ! Token::Match(tok, "[;{}]") )
+        if (! Token::Match(tok, "[;{}]"))
             continue;
         tok = tok->next();
-        if ( ! tok )
+        if (! tok)
             break;
 
-        if (!Token::Match(tok,"%var% = %var% ; if ( %var%"))
+        if (!Token::Match(tok, "%var% = %var% ; if ( %var%"))
             continue;
 
-        if ( strcmp(tok->strAt( 9), ")") != 0 )
+        if (strcmp(tok->strAt(9), ")") != 0)
             continue;
 
         // var1 = var2 ; if ( var3 cond var4 )
-        const char *var1 = tok->strAt( 0);
-        const char *var2 = tok->strAt( 2);
-        const char *var3 = tok->strAt( 6);
-        const char *cond = tok->strAt( 7);
-        const char *var4 = tok->strAt( 8);
+        const char *var1 = tok->strAt(0);
+        const char *var2 = tok->strAt(2);
+        const char *var3 = tok->strAt(6);
+        const char *cond = tok->strAt(7);
+        const char *var4 = tok->strAt(8);
 
         // Check that var3 is equal with either var1 or var2
-        if (strcmp(var1,var3) && strcmp(var2,var3))
+        if (strcmp(var1, var3) && strcmp(var2, var3))
             continue;
 
         // Check that var4 is equal with either var1 or var2
-        if (strcmp(var1,var4) && strcmp(var2,var4))
+        if (strcmp(var1, var4) && strcmp(var2, var4))
             continue;
 
         // Check that there is a condition..
-        const char *p[6] = {"==","<=",">=","!=","<",">"};
+        const char *p[6] = {"==", "<=", ">=", "!=", "<", ">"};
         bool iscond = false;
         for (int i = 0; i < 6; i++)
         {
@@ -296,7 +296,7 @@ void CheckOther::WarningIf()
 
 void CheckOther::InvalidFunctionUsage()
 {
-    for ( const Token *tok = _tokenizer->tokens(); tok; tok = tok->next() )
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if ((tok->str() != "strtol") && (tok->str() != "strtoul"))
             continue;
@@ -304,21 +304,21 @@ void CheckOther::InvalidFunctionUsage()
         // Locate the third parameter of the function call..
         int parlevel = 0;
         int param = 1;
-        for ( const Token *tok2 = tok->next(); tok2; tok2 = tok2->next() )
+        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
         {
-            if ( Token::Match(tok2, "(") )
+            if (Token::Match(tok2, "("))
                 ++parlevel;
             else if (Token::Match(tok2, ")"))
                 --parlevel;
             else if (parlevel == 1 && Token::Match(tok2, ","))
             {
                 ++param;
-                if (param==3)
+                if (param == 3)
                 {
-                    if ( Token::Match(tok2, ", %num% )") )
+                    if (Token::Match(tok2, ", %num% )"))
                     {
-                        int radix = atoi(tok2->strAt( 1));
-                        if (!(radix==0 || (radix>=2 && radix<=36)))
+                        int radix = atoi(tok2->strAt(1));
+                        if (!(radix == 0 || (radix >= 2 && radix <= 36)))
                         {
                             std::ostringstream ostr;
                             ostr << _tokenizer->fileLine(tok2) << ": Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
@@ -344,7 +344,7 @@ void CheckOther::CheckIfAssignment()
     {
         if (Token::Match(tok, "if ( %var% = %num% )") ||
             Token::Match(tok, "if ( %var% = %str% )") ||
-            Token::Match(tok, "if ( %var% = %var% )") )
+            Token::Match(tok, "if ( %var% = %var% )"))
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Possible bug. Should it be '==' instead of '='?";
@@ -363,26 +363,26 @@ void CheckOther::CheckUnsignedDivision()
 {
     // Check for "ivar / uvar" and "uvar / ivar"
     std::map<std::string, char> varsign;
-    for ( const Token *tok = _tokenizer->tokens(); tok; tok = tok->next() )
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if ( Token::Match(tok, "[{};(,] %type% %var% [;=,)]") )
+        if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]"))
         {
-            const char *type = tok->strAt( 1);
-            if (strcmp(type,"char")==0 || strcmp(type,"short")==0 || strcmp(type,"int")==0)
+            const char *type = tok->strAt(1);
+            if (strcmp(type, "char") == 0 || strcmp(type, "short") == 0 || strcmp(type, "int") == 0)
                 varsign[tok->strAt(2)] = 's';
         }
 
-        else if ( Token::Match(tok, "[{};(,] unsigned %type% %var% [;=,)]") )
+        else if (Token::Match(tok, "[{};(,] unsigned %type% %var% [;=,)]"))
             varsign[tok->strAt(3)] = 'u';
 
-        else if (!Token::Match(tok,"[).]") && Token::Match(tok->next(), "%var% / %var%"))
+        else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %var%"))
         {
             const char *varname1 = tok->strAt(1);
             const char *varname2 = tok->strAt(3);
             char sign1 = varsign[varname1];
             char sign2 = varsign[varname2];
 
-            if ( sign1 && sign2 && sign1 != sign2 )
+            if (sign1 && sign2 && sign1 != sign2)
             {
                 // One of the operands are signed, the other is unsigned..
                 std::ostringstream ostr;
@@ -391,11 +391,11 @@ void CheckOther::CheckUnsignedDivision()
             }
         }
 
-        else if (!Token::Match(tok,"[).]") && Token::Match(tok->next(), "%var% / - %num%"))
+        else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / - %num%"))
         {
             const char *varname1 = tok->strAt(1);
             char sign1 = varsign[varname1];
-            if ( sign1 == 'u' )
+            if (sign1 == 'u')
             {
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok->next()) << ": Unsigned division. The result will be wrong.";
@@ -407,7 +407,7 @@ void CheckOther::CheckUnsignedDivision()
         {
             const char *varname2 = tok->strAt(4);
             char sign2 = varsign[varname2];
-            if ( sign2 == 'u' )
+            if (sign2 == 'u')
             {
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok->next()) << ": Unsigned division. The result will be wrong.";
@@ -430,26 +430,26 @@ void CheckOther::CheckVariableScope()
     // Walk through all tokens..
     bool func = false;
     int indentlevel = 0;
-    for ( const Token *tok = _tokenizer->tokens(); tok; tok = tok->next() )
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Skip class and struct declarations..
-        if ( (tok->str() == "class") || (tok->str() == "struct") )
+        if ((tok->str() == "class") || (tok->str() == "struct"))
         {
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
-                if ( tok2->str() == "{" )
+                if (tok2->str() == "{")
                 {
                     int indentlevel2 = 0;
                     for (tok = tok2; tok; tok = tok->next())
                     {
-                        if ( tok->str() == "{" )
+                        if (tok->str() == "{")
                         {
                             ++indentlevel2;
                         }
-                        if ( tok->str() == "}" )
+                        if (tok->str() == "}")
                         {
                             --indentlevel2;
-                            if ( indentlevel2 <= 0 )
+                            if (indentlevel2 <= 0)
                             {
                                 tok = tok->next();
                                 break;
@@ -463,29 +463,29 @@ void CheckOther::CheckVariableScope()
                     break;
                 }
             }
-            if ( ! tok )
+            if (! tok)
                 break;
         }
 
-        if ( tok->str() == "{" )
+        if (tok->str() == "{")
         {
             ++indentlevel;
         }
-        if ( tok->str() == "}" )
+        if (tok->str() == "}")
         {
             --indentlevel;
-            if ( indentlevel == 0 )
+            if (indentlevel == 0)
                 func = false;
         }
-        if ( indentlevel == 0 && Token::Match(tok, ") {") )
+        if (indentlevel == 0 && Token::Match(tok, ") {"))
         {
             func = true;
         }
-        if ( indentlevel > 0 && func && Token::Match(tok, "[{};]") )
+        if (indentlevel > 0 && func && Token::Match(tok, "[{};]"))
         {
             // First token of statement..
             const Token *tok1 = tok->next();
-            if ( ! tok1 )
+            if (! tok1)
                 continue;
 
             if ((tok1->str() == "return") ||
@@ -496,9 +496,9 @@ void CheckOther::CheckVariableScope()
 
             // Variable declaration?
             if (Token::Match(tok1, "%var% %var% ;") ||
-                Token::Match(tok1, "%var% %var% =") )
+                Token::Match(tok1, "%var% %var% ="))
             {
-                CheckVariableScope_LookupVar( tok1, tok1->strAt( 1) );
+                CheckVariableScope_LookupVar(tok1, tok1->strAt(1));
             }
         }
     }
@@ -506,12 +506,12 @@ void CheckOther::CheckVariableScope()
 }
 //---------------------------------------------------------------------------
 
-void CheckOther::CheckVariableScope_LookupVar( const Token *tok1, const char varname[] )
+void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varname[])
 {
     const Token *tok = tok1;
 
     // Skip the variable declaration..
-    while (tok && !Token::Match(tok,";"))
+    while (tok && !Token::Match(tok, ";"))
         tok = tok->next();
 
     // Check if the variable is used in this indentlevel..
@@ -519,48 +519,48 @@ void CheckOther::CheckVariableScope_LookupVar( const Token *tok1, const char var
     int indentlevel = 0;
     int parlevel = 0;
     bool for_or_while = false;
-    while ( indentlevel >= 0 && tok )
+    while (indentlevel >= 0 && tok)
     {
-        if ( tok->str() == "{" )
+        if (tok->str() == "{")
         {
             ++indentlevel;
         }
 
-        else if ( tok->str() == "}" )
+        else if (tok->str() == "}")
         {
             --indentlevel;
-            if ( indentlevel == 0 )
+            if (indentlevel == 0)
             {
-                if ( for_or_while && used )
+                if (for_or_while && used)
                     return;
                 used1 = used;
                 used = false;
             }
         }
 
-        else if ( tok->str() == "(" )
+        else if (tok->str() == "(")
         {
             ++parlevel;
         }
 
-        else if ( tok->str() == ")" )
+        else if (tok->str() == ")")
         {
             --parlevel;
         }
 
 
-        else if ( tok->str() == varname )
+        else if (tok->str() == varname)
         {
-            if ( indentlevel == 0 || used1 )
+            if (indentlevel == 0 || used1)
                 return;
             used = true;
         }
 
-        else if ( indentlevel==0 )
+        else if (indentlevel == 0)
         {
-            if ( (tok->str() == "for") || (tok->str() == "while") )
+            if ((tok->str() == "for") || (tok->str() == "while"))
                 for_or_while = true;
-            if ( parlevel == 0 && (tok->str() == ";") )
+            if (parlevel == 0 && (tok->str() == ";"))
                 for_or_while = false;
         }
 
@@ -570,7 +570,7 @@ void CheckOther::CheckVariableScope_LookupVar( const Token *tok1, const char var
     // Warning if "used" is true
     std::ostringstream errmsg;
     errmsg << _tokenizer->fileLine(tok1) << " The scope of the variable '" << varname << "' can be limited";
-    _errorLogger->reportErr( errmsg.str() );
+    _errorLogger->reportErr(errmsg.str());
 }
 //---------------------------------------------------------------------------
 
@@ -583,22 +583,22 @@ void CheckOther::CheckConstantFunctionParameter()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if ( Token::Match(tok,"[,(] const std :: %type% %var% [,)]") )
+        if (Token::Match(tok, "[,(] const std :: %type% %var% [,)]"))
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(5) << " is passed by value, it could be passed by reference/pointer instead";
-            _errorLogger->reportErr( errmsg.str() );
+            _errorLogger->reportErr(errmsg.str());
         }
 
-        else if ( Token::Match(tok,"[,(] const %type% %var% [,)]") )
+        else if (Token::Match(tok, "[,(] const %type% %var% [,)]"))
         {
             // Check if type is a struct or class.
             const std::string pattern(std::string("class|struct ") + tok->strAt(2));
-            if ( Token::findmatch(_tokenizer->tokens(), pattern.c_str()) )
+            if (Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(3) << " is passed by value, it could be passed by reference/pointer instead";
-                _errorLogger->reportErr( errmsg.str() );
+                _errorLogger->reportErr(errmsg.str());
             }
         }
     }
@@ -614,41 +614,41 @@ void CheckOther::CheckStructMemberUsage()
 {
     const char *structname = 0;
 
-    for ( const Token *tok = _tokenizer->tokens(); tok; tok = tok->next() )
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if ( tok->fileIndex() != 0 )
+        if (tok->fileIndex() != 0)
             continue;
-        if ( tok->str() == "}" )
+        if (tok->str() == "}")
             structname = 0;
-        if ( Token::Match(tok, "struct|union %type% {") )
-            structname = tok->strAt( 1);
+        if (Token::Match(tok, "struct|union %type% {"))
+            structname = tok->strAt(1);
 
         if (structname && Token::Match(tok, "[{;]"))
         {
             const char *varname = 0;
             if (Token::Match(tok->next(), "%type% %var% [;[]"))
-                varname = tok->strAt( 2 );
+                varname = tok->strAt(2);
             else if (Token::Match(tok->next(), "%type% %type% %var% [;[]"))
-                varname = tok->strAt( 2 );
+                varname = tok->strAt(2);
             else if (Token::Match(tok->next(), "%type% * %var% [;[]"))
-                varname = tok->strAt( 3 );
+                varname = tok->strAt(3);
             else if (Token::Match(tok->next(), "%type% %type% * %var% [;[]"))
-                varname = tok->strAt( 4 );
+                varname = tok->strAt(4);
             else
                 continue;
 
-            const std::string usagePattern( ". " + std::string(varname) );
+            const std::string usagePattern(". " + std::string(varname));
             bool used = false;
-            for ( const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next() )
+            for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
             {
-                if (Token::simpleMatch(tok2, usagePattern.c_str() ))
+                if (Token::simpleMatch(tok2, usagePattern.c_str()))
                 {
                     used = true;
                     break;
                 }
             }
 
-            if ( ! used )
+            if (! used)
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok->next()) << ": struct or union member '" << structname << "::" << varname << "' is never used";
@@ -671,22 +671,22 @@ void CheckOther::CheckCharVariable()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring the variable..
-        if ( Token::Match(tok, "[{};(,] char %var% [;=,)]") )
+        if (Token::Match(tok, "[{};(,] char %var% [;=,)]"))
         {
             // Set tok to point to the variable name
-            tok = tok->tokAt( 2 );
+            tok = tok->tokAt(2);
 
             // Check usage of char variable..
             int indentlevel = 0;
-            for ( const Token *tok2 = tok->next(); tok2; tok2 = tok2->next() )
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
-                if ( tok2->str() == "{" )
+                if (tok2->str() == "{")
                     ++indentlevel;
 
-                else if ( tok2->str() == "}" )
+                else if (tok2->str() == "}")
                 {
                     --indentlevel;
-                    if ( indentlevel <= 0 )
+                    if (indentlevel <= 0)
                         break;
                 }
 
@@ -701,7 +701,7 @@ void CheckOther::CheckCharVariable()
 
                 std::string tempFirst = "%var% [&|] " + tok->str();
                 std::string tempSecond = tok->str() + " [&|]";
-                if ( Token::Match(tok2, tempFirst.c_str()) || Token::Match(tok2, tempSecond.c_str()) )
+                if (Token::Match(tok2, tempFirst.c_str()) || Token::Match(tok2, tempSecond.c_str()))
                 {
                     std::ostringstream errmsg;
                     errmsg << _tokenizer->fileLine(tok2) << ": Warning - using char variable in bit operation";
@@ -727,24 +727,24 @@ void CheckOther::CheckIncompleteStatement()
 {
     int parlevel = 0;
 
-    for ( const Token *tok = _tokenizer->tokens(); tok; tok = tok->next() )
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if ( tok->str() == "(" )
+        if (tok->str() == "(")
             ++parlevel;
-        else if ( tok->str() == ")" )
+        else if (tok->str() == ")")
             --parlevel;
 
-        if ( parlevel != 0 )
+        if (parlevel != 0)
             continue;
 
-        if ( (tok->str() != "#") && Token::Match(tok->next(),"; %str%") && !Token::Match(tok->tokAt(3), ",") )
+        if ((tok->str() != "#") && Token::Match(tok->next(), "; %str%") && !Token::Match(tok->tokAt(3), ","))
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next()) << ": Redundant code: Found a statement that begins with string constant";
             _errorLogger->reportErr(errmsg.str());
         }
 
-        if ( !Token::Match(tok,"#") && Token::Match(tok->next(),"; %num%") && !Token::Match(tok->tokAt(3), ",") )
+        if (!Token::Match(tok, "#") && Token::Match(tok->next(), "; %num%") && !Token::Match(tok->tokAt(3), ","))
         {
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next()) << ": Redundant code: Found a statement that begins with numeric constant";
@@ -765,16 +765,16 @@ void CheckOther::CheckIncompleteStatement()
 
 void CheckOther::unreachableCode()
 {
-    const Token *tok = Token::findmatch( _tokenizer->tokens(), "[;{}] return" );
-    while ( tok )
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), "[;{}] return");
+    while (tok)
     {
         // Goto the 'return' token
         tok = tok->next();
 
         // Locate the end of the 'return' statement
-        while ( tok && ! Token::Match(tok, ";") )
+        while (tok && ! Token::Match(tok, ";"))
             tok = tok->next();
-        while ( tok && Token::Match(tok->next(), ";") )
+        while (tok && Token::Match(tok->next(), ";"))
             tok = tok->next();
 
         // If there is a statement below the return it is unreachable
@@ -786,7 +786,7 @@ void CheckOther::unreachableCode()
         }
 
         // Find the next 'return' statement
-        tok = Token::findmatch( tok, "[;{}] return" );
+        tok = Token::findmatch(tok, "[;{}] return");
     }
 }
 //---------------------------------------------------------------------------
@@ -822,7 +822,7 @@ void CheckOther::functionVariableUsage()
     if (!tok1)
         return;
 
-    while ((tok1 = Token::findmatch( tok1->next(), ") const| {" )) != NULL)
+    while ((tok1 = Token::findmatch(tok1->next(), ") const| {")) != NULL)
     {
         // Varname, usage {1=declare, 2=read, 4=write}
         std::map<std::string, unsigned int> varUsage;
@@ -831,59 +831,59 @@ void CheckOther::functionVariableUsage()
         static const unsigned int USAGE_WRITE   = 4;
 
         int indentlevel = 0;
-        for ( const Token *tok = tok1; tok; tok = tok->next() )
+        for (const Token *tok = tok1; tok; tok = tok->next())
         {
-            if ( tok->str() == "{" )
+            if (tok->str() == "{")
                 ++indentlevel;
-            else if ( tok->str() == "}" )
+            else if (tok->str() == "}")
             {
                 --indentlevel;
-                if ( indentlevel <= 0 )
+                if (indentlevel <= 0)
                     break;
             }
-            else if ( Token::Match(tok, "struct|union|class {") ||
-                      Token::Match(tok, "struct|union|class %type% {") )
+            else if (Token::Match(tok, "struct|union|class {") ||
+                     Token::Match(tok, "struct|union|class %type% {"))
             {
-                while ( tok && tok->str() != "}" )
+                while (tok && tok->str() != "}")
                     tok = tok->next();
-                if ( tok )
+                if (tok)
                     continue;
                 break;
             }
 
-            if ( Token::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|=") )
-                varUsage[ tok->strAt(2) ] = USAGE_DECLARE;
+            if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|="))
+                varUsage[ tok->strAt(2)] = USAGE_DECLARE;
 
-            if ( Token::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|=") )
-                varUsage[ tok->strAt(3) ] = USAGE_DECLARE;
+            if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|="))
+                varUsage[ tok->strAt(3)] = USAGE_DECLARE;
 
-            if ( Token::Match(tok, "delete|return %var%") )
-                varUsage[ tok->strAt(1) ] |= USAGE_READ;
+            if (Token::Match(tok, "delete|return %var%"))
+                varUsage[ tok->strAt(1)] |= USAGE_READ;
 
-            if ( Token::Match(tok, "%var% =") )
-                varUsage[ tok->str() ] |= USAGE_WRITE;
+            if (Token::Match(tok, "%var% ="))
+                varUsage[ tok->str()] |= USAGE_WRITE;
 
-            if ( Token::Match(tok, "else %var% =") )
-                varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
+            if (Token::Match(tok, "else %var% ="))
+                varUsage[ tok->strAt(1)] |= USAGE_WRITE;
 
-            if ( Token::Match(tok, ">>|& %var%") )
-                varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
+            if (Token::Match(tok, ">>|& %var%"))
+                varUsage[ tok->strAt(1)] |= USAGE_WRITE;
 
-            if ((Token::Match(tok,"[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
-                varUsage[ tok->strAt(1) ] |= USAGE_READ;
+            if ((Token::Match(tok, "[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
+                varUsage[ tok->strAt(1)] |= USAGE_READ;
 
             if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
-                varUsage[ tok->strAt(1) ] |= USAGE_READ;
+                varUsage[ tok->strAt(1)] |= USAGE_READ;
 
-            if (Token::Match(tok, "%var%") && (tok->next()->str()==")" || isOp(tok->next())))
-                varUsage[ tok->str() ] |= USAGE_READ;
+            if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
+                varUsage[ tok->str()] |= USAGE_READ;
 
-            if ( Token::Match(tok, "[(,] %var% [,)]") )
-                varUsage[ tok->strAt(1) ] |= USAGE_WRITE;
+            if (Token::Match(tok, "[(,] %var% [,)]"))
+                varUsage[ tok->strAt(1)] |= USAGE_WRITE;
         }
 
         // Check usage of all variables in the current scope..
-        for ( std::map<std::string, unsigned int>::const_iterator it = varUsage.begin(); it != varUsage.end(); ++it )
+        for (std::map<std::string, unsigned int>::const_iterator it = varUsage.begin(); it != varUsage.end(); ++it)
         {
             std::string varname = it->first;
             unsigned int usage = it->second;
@@ -891,24 +891,24 @@ void CheckOther::functionVariableUsage()
             if (!std::isalpha(varname[0]))
                 continue;
 
-            if ( ! ( usage & USAGE_DECLARE ) )
+            if (!(usage & USAGE_DECLARE))
                 continue;
 
-            if ( usage == USAGE_DECLARE )
+            if (usage == USAGE_DECLARE)
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok1->next()) << ": Unused variable '" << varname << "'";
                 _errorLogger->reportErr(errmsg.str());
             }
 
-            else if ( ! (usage & USAGE_READ) )
+            else if (!(usage & USAGE_READ))
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok1->next()) << ": Variable '" << varname << "' is assigned a value that is never used";
                 _errorLogger->reportErr(errmsg.str());
             }
 
-            else if ( ! (usage & USAGE_WRITE) )
+            else if (!(usage & USAGE_WRITE))
             {
                 std::ostringstream errmsg;
                 errmsg << _tokenizer->fileLine(tok1->next()) << ": Variable '" << varname << "' is not assigned a value";

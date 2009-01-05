@@ -37,14 +37,14 @@ public:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr( const std::string &errmsg) = 0;
+    virtual void reportErr(const std::string &errmsg) = 0;
 
     /**
      * Information about progress is directed here.
      *
      * @param outmsg, E.g. "Checking main.cpp..."
      */
-    virtual void reportOut( const std::string &outmsg) = 0;
+    virtual void reportOut(const std::string &outmsg) = 0;
 };
 
 #endif // #ifndef ERRORLOGGER_H

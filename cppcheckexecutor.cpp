@@ -30,22 +30,22 @@ CppCheckExecutor::~CppCheckExecutor()
     //dtor
 }
 
-void CppCheckExecutor::check( int argc, const char* const argv[] )
+void CppCheckExecutor::check(int argc, const char* const argv[])
 {
-    CppCheck cppCheck( *this );
-    std::string result = cppCheck.parseFromArgs( argc, argv );
-    if( result.length() == 0 )
+    CppCheck cppCheck(*this);
+    std::string result = cppCheck.parseFromArgs(argc, argv);
+    if (result.length() == 0)
         cppCheck.check();
     else
         std::cout << result;
 }
 
-void CppCheckExecutor::reportErr( const std::string &errmsg)
+void CppCheckExecutor::reportErr(const std::string &errmsg)
 {
     std::cerr << errmsg << std::endl;
 }
 
-void CppCheckExecutor::reportOut( const std::string &outmsg)
+void CppCheckExecutor::reportOut(const std::string &outmsg)
 {
     std::cout << outmsg << std::endl;
 }

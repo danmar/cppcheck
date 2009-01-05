@@ -36,71 +36,71 @@ private:
 
     void run()
     {
-        TEST_CASE( array_index );
-        TEST_CASE( bitop1 );
-        TEST_CASE( bitop2 );
+        TEST_CASE(array_index);
+        TEST_CASE(bitop1);
+        TEST_CASE(bitop2);
     }
 
-    void check( const char code[] )
+    void check(const char code[])
     {
         // Tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
-        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
         // Clear the error buffer..
         errout.str("");
 
         // Check char variable usage..
-        CheckOther checkOther( &tokenizer, this );
+        CheckOther checkOther(&tokenizer, this);
         checkOther.CheckCharVariable();
     }
 
     void array_index()
     {
-        check( "void foo()\n"
-               "{\n"
-               "    unsigned char ch = 0x80;\n"
-               "    buf[ch] = 0;\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        check("void foo()\n"
+              "{\n"
+              "    unsigned char ch = 0x80;\n"
+              "    buf[ch] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
 
-        check( "void foo()\n"
-               "{\n"
-               "    char ch = 0x80;\n"
-               "    buf[ch] = 0;\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str() );
+        check("void foo()\n"
+              "{\n"
+              "    char ch = 0x80;\n"
+              "    buf[ch] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str());
 
-        check( "void foo(char ch)\n"
-               "{\n"
-               "    buf[ch] = 0;\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:3]: Warning - using char variable as array index\n"), errout.str() );
+        check("void foo(char ch)\n"
+              "{\n"
+              "    buf[ch] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:3]: Warning - using char variable as array index\n"), errout.str());
     }
 
 
     void bitop1()
     {
-        check( "void foo()\n"
-               "{\n"
-               "    char ch;\n"
-               "    result = a | ch;\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:4]: Warning - using char variable in bit operation\n"), errout.str() );
+        check("void foo()\n"
+              "{\n"
+              "    char ch;\n"
+              "    result = a | ch;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable in bit operation\n"), errout.str());
     }
 
     void bitop2()
     {
-        check( "void foo()\n"
-               "{\n"
-               "    char ch;\n"
-               "    func(&ch);\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        check("void foo()\n"
+              "{\n"
+              "    char ch;\n"
+              "    func(&ch);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
-REGISTER_TEST( TestCharVar )
+REGISTER_TEST(TestCharVar)
 

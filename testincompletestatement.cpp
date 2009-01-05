@@ -36,56 +36,56 @@ public:
     { }
 
 private:
-    void check( const char code[] )
+    void check(const char code[])
     {
         // Tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
-        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
         // Clear the error buffer..
         errout.str("");
 
         // Check for unused variables..
-        CheckOther checkOther( &tokenizer, this );
+        CheckOther checkOther(&tokenizer, this);
         checkOther.CheckIncompleteStatement();
     }
 
     void run()
     {
-        TEST_CASE( test1 );
-        TEST_CASE( test2 );
+        TEST_CASE(test1);
+        TEST_CASE(test2);
     }
 
     void test1()
     {
-        check( "void foo()\n"
-               "{\n"
-               "    const char def[] =\n"
-               "#ifdef ABC\n"
-               "    \"abc\";\n"
-               "#else\n"
-               "    \"not abc\";\n"
-               "#endif\n"
-               "}\n" );
+        check("void foo()\n"
+              "{\n"
+              "    const char def[] =\n"
+              "#ifdef ABC\n"
+              "    \"abc\";\n"
+              "#else\n"
+              "    \"not abc\";\n"
+              "#endif\n"
+              "}\n");
 
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void test2()
     {
         // Todo: remove the ';' before the string
 
-        check( "void foo()\n"
-               "{\n"
-               "    ;\"abc\";\n"
-               "}\n" );
+        check("void foo()\n"
+              "{\n"
+              "    ;\"abc\";\n"
+              "}\n");
 
-        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant code: Found a statement that begins with string constant\n"), errout.str() );
+        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant code: Found a statement that begins with string constant\n"), errout.str());
     }
 };
 
-REGISTER_TEST( TestIncompleteStatement )
+REGISTER_TEST(TestIncompleteStatement)
 
 

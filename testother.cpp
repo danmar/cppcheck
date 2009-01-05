@@ -34,58 +34,58 @@ private:
 
     void run()
     {
-        TEST_CASE( delete1 );
+        TEST_CASE(delete1);
 
-        TEST_CASE( delete2 );
+        TEST_CASE(delete2);
     }
 
-    void check( const char code[] )
+    void check(const char code[])
     {
         // Tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
-        tokenizer.tokenize( istr, "test.cpp" );
+        tokenizer.tokenize(istr, "test.cpp");
 
         // Clear the error buffer..
         errout.str("");
 
         // Check for redundant code..
-        CheckOther checkOther( &tokenizer, this );
+        CheckOther checkOther(&tokenizer, this);
         checkOther.WarningRedundantCode();
     }
 
     void delete1()
     {
-        check( "void foo()\n"
-               "{\n"
-               "    if (p)\n"
-               "    {\n"
-               "        delete p;\n"
-               "        p = 0;\n"
-               "    }\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string(""), errout.str() );
+        check("void foo()\n"
+              "{\n"
+              "    if (p)\n"
+              "    {\n"
+              "        delete p;\n"
+              "        p = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void delete2()
     {
-        check( "void foo()\n"
-               "{\n"
-               "    if (p)\n"
-               "    {\n"
-               "        delete p;\n"
-               "    }\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str() );
+        check("void foo()\n"
+              "{\n"
+              "    if (p)\n"
+              "    {\n"
+              "        delete p;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
 
-        check( "void foo()\n"
-               "{\n"
-               "    if (p)\n"
-               "        delete p;\n"
-               "}\n" );
-        ASSERT_EQUALS( std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str() );
+        check("void foo()\n"
+              "{\n"
+              "    if (p)\n"
+              "        delete p;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
     }
 };
 
-REGISTER_TEST( TestOther )
+REGISTER_TEST(TestOther)
 

@@ -28,7 +28,7 @@
 class CheckBufferOverrunClass
 {
 public:
-    CheckBufferOverrunClass( const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger );
+    CheckBufferOverrunClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
     ~CheckBufferOverrunClass();
 
     // Buffer overrun..
@@ -40,7 +40,7 @@ public:
 private:
     void CheckBufferOverrun_StructVariable();
     void CheckBufferOverrun_LocalVariable();
-    void CheckBufferOverrun_CheckScope( const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid );
+    void CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
     void ReportError(const Token *tok, const char errmsg[]);
 
     const Tokenizer *_tokenizer;

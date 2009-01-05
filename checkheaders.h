@@ -28,7 +28,7 @@
 class CheckHeaders
 {
 public:
-    CheckHeaders( const Tokenizer *tokenizer, ErrorLogger *errorLogger );
+    CheckHeaders(const Tokenizer *tokenizer, ErrorLogger *errorLogger);
     ~CheckHeaders();
     void WarningHeaderWithImplementation();
     void WarningIncludeHeader();

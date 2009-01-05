@@ -36,91 +36,91 @@
  */
 class CppCheck : public ErrorLogger
 {
-    public:
-        /**
-         * Constructor.
-         */
-        CppCheck( ErrorLogger &errorLogger );
+public:
+    /**
+     * Constructor.
+     */
+    CppCheck(ErrorLogger &errorLogger);
 
-        /**
-         * Destructor.
-         */
-        virtual ~CppCheck();
+    /**
+     * Destructor.
+     */
+    virtual ~CppCheck();
 
-        /**
-         * This starts the actual checking. Note that you must call
-         * parseFromArgs() or settings() and addFile() before calling this.
-         */
-        void check();
+    /**
+     * This starts the actual checking. Note that you must call
+     * parseFromArgs() or settings() and addFile() before calling this.
+     */
+    void check();
 
-        /**
-         * Adjust the settings before doing the check. E.g. show only
-         * actual bugs or also coding style issues.
-         *
-         * @param settings New settings which will overwrite the old.
-         */
-        void settings( const Settings &settings );
+    /**
+     * Adjust the settings before doing the check. E.g. show only
+     * actual bugs or also coding style issues.
+     *
+     * @param settings New settings which will overwrite the old.
+     */
+    void settings(const Settings &settings);
 
-        /**
-         * Add new file to be checked.
-         *
-         * @param path Relative or absolute path to the file to be checked,
-         * e.g. "cppcheck.cpp". Note that only source files (.c, .cc or .cpp)
-         * should be added to the list. Include filese are gathered automatically.
-         */
-        void addFile( const std::string &path );
+    /**
+     * Add new file to be checked.
+     *
+     * @param path Relative or absolute path to the file to be checked,
+     * e.g. "cppcheck.cpp". Note that only source files (.c, .cc or .cpp)
+     * should be added to the list. Include filese are gathered automatically.
+     */
+    void addFile(const std::string &path);
 
-        /**
-         * Add new unreal file to be checked.
-         *
-         * @param path File name (used for error reporting).
-         * @param content If the file would be a real file, this should be
-         * the content of the file.
-         */
-        void addFile( const std::string &path, const std::string &content );
+    /**
+     * Add new unreal file to be checked.
+     *
+     * @param path File name (used for error reporting).
+     * @param content If the file would be a real file, this should be
+     * the content of the file.
+     */
+    void addFile(const std::string &path, const std::string &content);
 
-        /**
-         * Parse command line args and get settings and file lists
-         * from there.
-         *
-         * @param argc argc from main()
-         * @param argv argv from main()
-         * @return Empty string if parameters were accepted, or
-         * string containing "help" text if no files were found to be
-         * checked.
-         */
-        std::string parseFromArgs( int argc, const char* const argv[] );
+    /**
+     * Parse command line args and get settings and file lists
+     * from there.
+     *
+     * @param argc argc from main()
+     * @param argv argv from main()
+     * @return Empty string if parameters were accepted, or
+     * string containing "help" text if no files were found to be
+     * checked.
+     */
+    std::string parseFromArgs(int argc, const char* const argv[]);
 
-    private:
-        void checkFile(const std::string &code, const char FileName[]);
+private:
+    void checkFile(const std::string &code, const char FileName[]);
 
-        /**
-         * Errors and warnings are directed here.
-         *
-         * @param errmsg Errors messages are normally in format
-         * "[filepath:line number] Message", e.g.
-         * "[main.cpp:4] Uninitialized member variable"
-         */
-        virtual void reportErr( const std::string &errmsg);
+    /**
+     * Errors and warnings are directed here.
+     *
+     * @param errmsg Errors messages are normally in format
+     * "[filepath:line number] Message", e.g.
+     * "[main.cpp:4] Uninitialized member variable"
+     */
+    virtual void reportErr(const std::string &errmsg);
 
-        /**
-         * Information about progress is directed here.
-         *
-         * @param outmsg, E.g. "Checking main.cpp..."
-         */
-        virtual void reportOut( const std::string &outmsg);
+    /**
+     * Information about progress is directed here.
+     *
+     * @param outmsg, E.g. "Checking main.cpp..."
+     */
+    virtual void reportOut(const std::string &outmsg);
 
-        std::list<std::string> _errorList;
-        std::ostringstream _errout;
-        Settings _settings;
-        std::vector<std::string> _filenames;
-        /** Key is file name, and value is the content of the file */
-        std::map<std::string,std::string> _fileContents;
-        CheckFunctionUsage _checkFunctionUsage;
-        ErrorLogger *_errorLogger;
+    std::list<std::string> _errorList;
+    std::ostringstream _errout;
+    Settings _settings;
+    std::vector<std::string> _filenames;
+    /** Key is file name, and value is the content of the file */
+    std::map<std::string, std::string> _fileContents;
+    CheckFunctionUsage _checkFunctionUsage;
+    ErrorLogger *_errorLogger;
 
-        /** Current configuration */
-        std::string     cfg;
+    /** Current configuration */
+    std::string     cfg;
 };
 
 #endif // CPPCHECK_H

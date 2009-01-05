@@ -26,19 +26,27 @@ class Token
 public:
     Token();
     ~Token();
-    void str( const char s[] );
+    void str(const char s[]);
 
     const std::string &str() const
-    { return _str; }
+    {
+        return _str;
+    }
 
     const char *aaaa() const
-    { return _cstr; }
+    {
+        return _cstr;
+    }
 
     char aaaa0() const
-    { return _cstr[0]; }
+    {
+        return _cstr[0];
+    }
 
     char aaaa1() const
-    { return _cstr[1]; }
+    {
+        return _cstr[1];
+    }
 
     /**
      * Unlink and delete next token.
@@ -105,14 +113,14 @@ public:
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const Token *tok, const char pattern[], unsigned int varid=0, const char *varname1[]=0 );
+    static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0, const char *varname1[] = 0);
 
     bool isName() const;
     bool isNumber() const;
     bool isBoolean() const;
     bool isStandardType() const;
-    static const Token *findmatch(const Token *tok, const char pattern[], const char *varname1[]=0);
-    static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId );
+    static const Token *findmatch(const Token *tok, const char pattern[], const char *varname1[] = 0);
+    static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId);
 
     /**
      * Needle is build from multiple alternatives. If one of
@@ -127,14 +135,14 @@ public:
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare( const char *needle, const char *haystack );
+    static int multiCompare(const char *needle, const char *haystack);
 
 
     unsigned int linenr() const;
-    void linenr( unsigned int linenr );
+    void linenr(unsigned int linenr);
 
     unsigned int fileIndex() const;
-    void fileIndex( unsigned int fileIndex );
+    void fileIndex(unsigned int fileIndex);
 
     Token *next() const;
 
@@ -146,20 +154,20 @@ public:
      * @param begin Tokens after this will be erased.
      * @param end Tokens before this will be erased.
      */
-    static void eraseTokens( Token *begin, const Token *end );
+    static void eraseTokens(Token *begin, const Token *end);
 
     /**
      * Insert new token after this token. This function will handle
      * relations between next and previous token also.
      * @param str String for the new token.
      */
-    void insertToken( const char str[] );
+    void insertToken(const char str[]);
 
     Token *previous() const;
 
 
     unsigned int varId() const;
-    void varId( unsigned int id );
+    void varId(unsigned int id);
 
     /**
      * For debugging purposes, prints token and all tokens
@@ -167,11 +175,11 @@ public:
      * @param title Title for the printout or use default parameter or 0
      * for no title.
      */
-    void printOut( const char *title = 0 ) const;
+    void printOut(const char *title = 0) const;
 
 private:
-    void next( Token *next );
-    void previous( Token *previous );
+    void next(Token *next);
+    void previous(Token *previous);
 
     std::string _str;
     char * _cstr;

@@ -38,7 +38,7 @@ private:
     /**
      * Helper function for "tokenize". This recursively parses into included header files.
      */
-    void tokenizeCode(std::istream &code, const unsigned int FileIndex=0);
+    void tokenizeCode(std::istream &code, const unsigned int FileIndex = 0);
 
 public:
     Tokenizer();
@@ -61,12 +61,12 @@ public:
     // Helper functions for handling the tokens list..
 
     static void deleteTokens(Token *tok);
-    static const char *getParameterName( const Token *ftok, int par );
+    static const char *getParameterName(const Token *ftok, int par);
 
-    static bool SameFileName( const char fname1[], const char fname2[] );
+    static bool SameFileName(const char fname1[], const char fname2[]);
 
 
-    std::string fileLine( const Token *tok ) const;
+    std::string fileLine(const Token *tok) const;
 
     // Return size.
     int SizeOfType(const char type[]) const;
@@ -76,7 +76,7 @@ public:
     const std::vector<std::string> *getFiles() const;
 
     void fillFunctionList();
-    const Token *GetFunctionTokenByName( const char funcname[] ) const;
+    const Token *GetFunctionTokenByName(const char funcname[]) const;
     const Token *tokens() const;
 
 
@@ -98,7 +98,7 @@ private:
      * @param end e.g. "}"
      * @return The end tag that matches given parameter or 0 if not found.
      */
-    static const Token *findClosing( const Token *tok, const char *start, const char *end );
+    static const Token *findClosing(const Token *tok, const char *start, const char *end);
 
     void Define(const char Name[], const char Value[]);
 
