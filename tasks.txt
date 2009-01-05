@@ -8,7 +8,6 @@ Optimisations
 Refactoring
  * Split large functions into smaller functions.
    When possible, convert unit tests for these smaller functions
- * Use %varid% instead of %var1% or %var2% in pattern matches
  * create a simplify function that converts "void f(x) int x; {" to "void f(int x) {"
  * improve the variable id so class/struct member variables get a variable id
  * parse header files only once.
