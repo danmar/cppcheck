@@ -354,6 +354,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
     const char *varnames[2];
     varnames[0] = varname;
     varnames[1] = 0;
+    std::string varnameStr = varname;
 
     Token *rethead = 0, *rettail = 0;
 #define addtoken(_str)                  \
@@ -405,7 +406,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         if (parlevel == 0 && tok->str() == ";")
             addtoken(";");
 
-        if (Token::Match(tok, "[(;{}] %var1% =", 0, varnames))
+        if (Token::Match(tok, std::string("[(;{}] " + varnameStr + " =").c_str()))
         {
             AllocType alloc = GetAllocationType(tok->tokAt(3));
             bool realloc = false;
@@ -480,9 +481,9 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         }
 
         // if else switch
-        if (Token::Match(tok, "if ( %var1% )", 0, varnames) ||
-            Token::Match(tok, "if ( %var1% != 0 )", 0, varnames) ||
-            Token::Match(tok, "if ( 0 != %var1% )", 0, varnames))
+        if (Token::simpleMatch(tok, std::string("if ( " + varnameStr + " )").c_str()) ||
+            Token::simpleMatch(tok, std::string("if ( " + varnameStr + " != 0 )").c_str()) ||
+            Token::simpleMatch(tok, std::string("if ( 0 != " + varnameStr + " )").c_str()))
         {
             addtoken("if(var)");
 
@@ -509,7 +510,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                     if (parlevel <= 0)
                         break;
                 }
-                if (Token::Match(tok2, "fclose ( %var1% )", 0, varnames))
+                if (Token::simpleMatch(tok2, std::string("fclose ( " + varnameStr + " )").c_str()))
                 {
                     addtoken("dealloc");
                     addtoken(";");
@@ -517,8 +518,8 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                     break;
                 }
                 if ((tok2->str() != ".") &&
-                    Token::Match(tok2->next(), "%var1%", 0, varnames) &&
-                    !Token::Match(tok2->next(), "%var1% .", 0, varnames))
+                    Token::simpleMatch(tok2->next(), varnameStr.c_str()) &&
+                    !Token::simpleMatch(tok2->next(), std::string(varnameStr + " .").c_str()))
                 {
                     dep = true;
                     break;
@@ -572,8 +573,8 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         if (tok->str() == "return")
         {
             addtoken("return");
-            if (Token::Match(tok, "return %var1%", 0, varnames) ||
-                Token::Match(tok, "return & %var1%", 0, varnames))
+            if (Token::simpleMatch(tok, std::string("return " + varnameStr).c_str()) ||
+                Token::simpleMatch(tok, std::string("return & " + varnameStr).c_str()))
                 addtoken("use");
             if (Token::simpleMatch(tok->next(), "("))
             {
@@ -596,13 +597,13 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
             addtoken(tok->strAt(0));
 
         // Assignment..
-        if (Token::Match(tok, "[)=] %var1% [+;)]", 0, varnames) ||
-            Token::Match(tok, "%var1% +=|-=", 0, varnames) ||
-            Token::Match(tok, "+=|<< %var1% ;", 0, varnames))
+        if (Token::Match(tok, std::string("[)=] " + varnameStr + " [+;)]").c_str()) ||
+            Token::Match(tok, std::string(varnameStr + " +=|-=").c_str()) ||
+            Token::Match(tok, std::string("+=|<< " + varnameStr + " ;").c_str()))
         {
             addtoken("use");
         }
-        else if (Token::Match(tok, "[;{}=(,+-*/] %var1% [", 0, varnames))
+        else if (Token::Match(tok, std::string("[;{}=(,+-*/] " + varnameStr + " [").c_str()))
         {
             addtoken("use_");
         }
@@ -642,11 +643,11 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         }
 
         // Linux lists..
-        if (Token::Match(tok, "[=(,] & %var1% [.[]", 0, varnames))
+        if (Token::Match(tok, std::string("[=(,] & " + varnameStr + " [.[]").c_str()))
         {
             addtoken("&use");
         }
-        else if (Token::Match(tok, "[=(,] & %var1% [,)]", 0, varnames))
+        else if (Token::Match(tok, std::string("[=(,] & " + varnameStr + " [,)]").c_str()))
         {
             addtoken("&use2");
         }

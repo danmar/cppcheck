@@ -164,7 +164,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
     return true;
 }
 
-bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, const char *varname1[])
+bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 {
     const char *p = pattern;
     while (*p)
@@ -215,32 +215,6 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid, co
             // Accept any token
             else if (strcmp(str, "%any%") == 0)
             {
-                patternIdentified = true;
-            }
-
-            // Variable name..
-            else if (strcmp(str, "%var1%") == 0)
-            {
-                if (! varname1)
-                    return false;
-
-                if (tok->_str != varname1[0])
-                    return false;
-
-                for (int i = 1; varname1[i]; i++)
-                {
-                    if (!(tok->tokAt(2)))
-                        return false;
-
-                    if (strcmp(tok->strAt(1), "."))
-                        return false;
-
-                    if (strcmp(tok->strAt(2), varname1[i]))
-                        return false;
-
-                    tok = tok->tokAt(2);
-                }
-
                 patternIdentified = true;
             }
 
@@ -353,16 +327,6 @@ bool Token::isStandardType() const
 }
 
 //---------------------------------------------------------------------------
-
-const Token *Token::findmatch(const Token *tok, const char pattern[], const char *varname1[])
-{
-    for (; tok; tok = tok->next())
-    {
-        if (Token::Match(tok, pattern, 0, varname1))
-            return tok;
-    }
-    return 0;
-}
 
 const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned int varId)
 {

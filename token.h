@@ -92,7 +92,6 @@ public:
      * "%num%" Any numeric token, e.g. "23"
      * "%bool%" true or false
      * "%str%" Any token starting with "-character (C-string).
-     * "%var1%" Match with parameter varname1
      * "%varid%" Match with parameter varid
      * "[abc]" Any of the characters 'a' or 'b' or 'c'
      * "int|void|char" Any of the strings, int, void or char
@@ -109,18 +108,16 @@ public:
      * @param tok List of tokens to be compared to the pattern
      * @param pattern The pattern against which the tokens are compared,
      * e.g. "const" or ") const|volatile| {".
-     * @param varname1 Used with pattern "%var1%"
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
-    static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0, const char *varname1[] = 0);
+    static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0);
 
     bool isName() const;
     bool isNumber() const;
     bool isBoolean() const;
     bool isStandardType() const;
-    static const Token *findmatch(const Token *tok, const char pattern[], const char *varname1[] = 0);
-    static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId);
+    static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
 
     /**
      * Needle is build from multiple alternatives. If one of
