@@ -352,7 +352,7 @@ void CheckClass::constructors()
                         isPrivate = false;
 
                     // Is there a private constructor?
-                    else if ( isPrivate && tok->next() && tok->str() == classNameToken->str() && tok->next()->str() == "(" )
+                    else if ( isPrivate && Token::simpleMatch(tok, classNameToken->str() + " (") )
                     {
                         hasPrivateConstructor = true;
                         break;
