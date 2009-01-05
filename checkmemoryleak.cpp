@@ -238,6 +238,17 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
 
     int par = 1;
     int parlevel = 0;
+    std::string pattern = "[,()] ";
+    for (int i = 0; varnames[i]; i++)
+    {
+        if (i > 0)
+            pattern += " . ";
+
+        pattern += varnames[i];
+    }
+
+    pattern += " [,()]";
+
     for (; tok; tok = tok->next())
     {
         if (tok->str() == "(")
@@ -253,7 +264,7 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
         {
             if (tok->str() == ",")
                 ++par;
-            if (Token::Match(tok, "[,()] %var1% [,()]", 0, varnames))
+            if (Token::Match(tok, pattern.c_str()))
             {
                 const Token *ftok = _tokenizer->GetFunctionTokenByName(funcname);
                 const char *parname = Tokenizer::getParameterName(ftok, par);
@@ -321,12 +332,21 @@ void CheckMemoryLeakClass::instoken(Token *tok, const char str[])
 
 bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
 {
-    return bool(Token::Match(tok, "! %var1% [;)&|]", 0, varnames) ||
-                Token::Match(tok, "! ( %var1% )", 0, varnames) ||
-                Token::Match(tok, "unlikely ( ! %var1% )", 0, varnames) ||
-                Token::Match(tok, "unlikely ( %var1% == 0 )", 0, varnames) ||
-                Token::Match(tok, "0 == %var1% [;)&|]", 0, varnames) ||
-                Token::Match(tok, "%var1% == 0", 0, varnames));
+    std::string varname;
+    for (int i = 0; varnames[i]; i++)
+    {
+        if (i > 0)
+            varname += " . ";
+
+        varname += varnames[i];
+    }
+
+    return bool(Token::Match(tok, std::string("! " + varname + " [;)&|]").c_str()) ||
+                Token::simpleMatch(tok, std::string("! ( " + varname + " )").c_str()) ||
+                Token::simpleMatch(tok, std::string("unlikely ( ! " + varname + " )").c_str()) ||
+                Token::simpleMatch(tok, std::string("unlikely ( " + varname + " == 0 )").c_str()) ||
+                Token::Match(tok, std::string("0 == " + varname + " [;)&|]").c_str()) ||
+                Token::simpleMatch(tok, std::string(varname + " == 0").c_str()));
 }
 
 Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype)
