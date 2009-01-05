@@ -463,14 +463,7 @@ private:
 
     void macro1()
     {
-        const char filedata[] = "#define AAA(aa) f(aa)\n"
-                                "AAA(5);\n";
-
-        // Expected result..
-        std::string expected("\nf(5);\n");
-
-        // Compare result..
-        //ASSERT_EQUALS( expected, Preprocessor::expandMacros(filedata) );
+        ASSERT_EQUALS("\nf(5);\n", Preprocessor::expandMacros("#define AAA(aa) f(aa)\nAAA(5);\n"));
     }
 
 

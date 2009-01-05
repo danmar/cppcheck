@@ -18,6 +18,8 @@
 
 
 #include "preprocessor.h"
+#include "tokenize.h"
+#include "token.h"
 
 #include <algorithm>
 
@@ -412,9 +414,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
 
 std::string Preprocessor::expandMacros(std::string code)
 {
-    std::list<std::string> macros;
-
-    // Get macros..
+    // Search for macros and expand them..
     std::string::size_type defpos = 0;
     while ((defpos = code.find("#define", defpos)) != std::string::npos)
     {
@@ -428,15 +428,97 @@ std::string Preprocessor::expandMacros(std::string code)
             break;
         }
 
-        macros.push_back(code.substr(defpos, endpos - defpos));
-        code.erase(defpos, endpos + 1 - defpos);
-    }
+        const std::string macro(code.substr(defpos + 8, endpos - defpos - 7));
+        code.erase(defpos, endpos - defpos);
 
-    // Expand macros..
-    for (std::list<std::string>::const_iterator it = macros.begin(); it != macros.end(); ++it)
-    {
-        const std::string &macro(*it);
+        // Tokenize the macro to make it easier to handle
+        Tokenizer tokenizer;
+        std::istringstream istr(macro.c_str());
+        tokenizer.tokenize(istr, "");
 
+        if (! Token::Match(tokenizer.tokens(), "%var% ( %var%"))
+            continue;
+        std::vector<std::string> macroparams;
+        for (const Token *tok = tokenizer.tokens()->tokAt(2); tok; tok = tok->next())
+        {
+            if (tok->str() == ")")
+                break;
+            if (tok->isName())
+                macroparams.push_back(tok->str());
+        }
+        const std::string macroname(tokenizer.tokens()->str());
+        std::string::size_type pos1 = defpos;
+        while ((pos1 = code.find(macroname + "(", pos1 + 1)) != std::string::npos)
+        {
+            // Previous char must not be alphanumeric or '_'
+            if (pos1 != 0 && (std::isalnum(code[pos1-1]) || code[pos1-1] == '_'))
+                continue;
+            std::vector<std::string> params;
+            int parlevel = 0;
+            std::string par;
+            std::string::size_type pos2;
+            for (pos2 = pos1; pos2 < code.length(); ++pos2)
+            {
+                if (code[pos2] == '(')
+                {
+                    ++parlevel;
+                    if (parlevel == 1)
+                        continue;
+                }
+                else if (code[pos2] == ')')
+                {
+                    --parlevel;
+                    if (parlevel <= 0)
+                    {
+                        params.push_back(par);
+                        break;
+                    }
+                }
+
+                if (parlevel == 1 && code[pos2] == ',')
+                {
+                    params.push_back(par);
+                    par = "";
+                }
+                else if (parlevel >= 1)
+                {
+                    par += std::string(1, code[pos2]);
+                }
+            }
+
+            // Same number of parameters..
+            if (params.size() != macroparams.size())
+                continue;
+
+            // Create macro code..
+            std::string macrocode;
+            const Token *tok = tokenizer.tokens();
+            while (tok && tok->str() != ")")
+                tok = tok->next();
+            while ((tok = tok->next()) != NULL)
+            {
+                std::string str = tok->str();
+                if (tok->isName())
+                {
+                    for (unsigned int i = 0; i < macroparams.size(); ++i)
+                    {
+                        if (str == macroparams[i])
+                        {
+                            str = params[i];
+                            break;
+                        }
+                    }
+                }
+                macrocode += str;
+                if (Token::Match(tok, "%type% %var%"))
+                    macrocode += " ";
+            }
+
+            // Insert macro code..
+            code.erase(pos1, pos2 + 1 - pos1);
+            code.insert(pos1, macrocode);
+            pos1 += macrocode.length();
+        }
     }
 
     return code;
