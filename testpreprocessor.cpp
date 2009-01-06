@@ -66,9 +66,10 @@ private:
         TEST_CASE(if_defined);      // "#if defined(AAA)" => "#ifdef AAA"
 
         // Macros..
-        TEST_CASE(macro1);
-        TEST_CASE(macro2);
-        TEST_CASE(macro3);
+        TEST_CASE(macro_simple1);
+        TEST_CASE(macro_simple2);
+        TEST_CASE(macro_mismatch);
+        TEST_CASE(macro_multiline);
     }
 
 
@@ -463,25 +464,33 @@ private:
     }
 
 
-    void macro1()
+    void macro_simple1()
     {
         const char filedata[] = "#define AAA(aa) f(aa)\n"
                                 "AAA(5);\n";
         ASSERT_EQUALS("\nf(5);\n", Preprocessor::expandMacros(filedata));
     }
 
-    void macro2()
+    void macro_simple2()
     {
         const char filedata[] = "#define min(x,y) x<y?x:y\n"
                                 "min(a(),b());\n";
         ASSERT_EQUALS("\na()<b()?a():b();\n", Preprocessor::expandMacros(filedata));
     }
 
-    void macro3()
+    void macro_mismatch()
     {
         const char filedata[] = "#define AAA(aa,bb) f(aa)\n"
                                 "AAA(5);\n";
         ASSERT_EQUALS("\nAAA(5);\n", Preprocessor::expandMacros(filedata));
+    }
+
+    void macro_multiline()
+    {
+        const char filedata[] = "#define sqr(aa) aa * \\\n"
+                                "                aa\n"
+                                "sqr(5);\n";
+        ASSERT_EQUALS("\n\n5*5;\n", Preprocessor::expandMacros(filedata));
     }
 
 

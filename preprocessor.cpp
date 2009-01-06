@@ -428,8 +428,17 @@ std::string Preprocessor::expandMacros(std::string code)
             break;
         }
 
-        const std::string macro(code.substr(defpos + 8, endpos - defpos - 7));
+        // Extract the whole macro into a separate variable "macro" and then erase it from "code"
+        std::string macro(code.substr(defpos + 8, endpos - defpos - 7));
         code.erase(defpos, endpos - defpos);
+
+        // Remove "\\\n" from the macro
+        while (macro.find("\\\n") != std::string::npos)
+        {
+            macro.erase(macro.find("\\\n"), 2);
+            code.insert(defpos, "\n");
+            ++defpos;
+        }
 
         // Tokenize the macro to make it easier to handle
         Tokenizer tokenizer;
