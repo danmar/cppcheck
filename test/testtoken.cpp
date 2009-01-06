@@ -18,7 +18,7 @@
 
 #include <cstring>
 #include "testsuite.h"
-#include "token.h"
+#include "../src/token.h"
 
 extern std::ostringstream errout;
 class TestTOKEN : public TestFixture

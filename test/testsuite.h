@@ -20,7 +20,7 @@
 
 
 #include <sstream>
-#include "errorlogger.h"
+#include "../src/errorlogger.h"
 
 class Token;
 

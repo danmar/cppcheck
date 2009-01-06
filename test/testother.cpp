@@ -16,19 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-
-#define UNIT_TESTING
-#include "tokenize.h"
+#include "../src/tokenize.h"
+#include "../src/checkother.h"
 #include "testsuite.h"
-#include "checkfunctionusage.h"
 #include <sstream>
 
 extern std::ostringstream errout;
 
-class TestFunctionUsage : public TestFixture
+class TestOther : public TestFixture
 {
 public:
-    TestFunctionUsage() : TestFixture("TestFunctionUsage")
+    TestOther() : TestFixture("TestOther")
     { }
 
 private:
@@ -36,10 +34,9 @@ private:
 
     void run()
     {
-        TEST_CASE(incondition);
-        TEST_CASE(return1);
-        TEST_CASE(callback1);
-        TEST_CASE(else1);
+        TEST_CASE(delete1);
+
+        TEST_CASE(delete2);
     }
 
     void check(const char code[])
@@ -52,54 +49,43 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Check for unused functions..
-        CheckFunctionUsage checkFunctionUsage(this);
-        checkFunctionUsage.parseTokens(tokenizer);
-        checkFunctionUsage.check();
+        // Check for redundant code..
+        CheckOther checkOther(&tokenizer, this);
+        checkOther.WarningRedundantCode();
     }
 
-    void incondition()
+    void delete1()
     {
-        check("int f1()\n"
+        check("void foo()\n"
               "{\n"
-              "    if (f1())\n"
-              "    { }\n"
+              "    if (p)\n"
+              "    {\n"
+              "        delete p;\n"
+              "        p = 0;\n"
+              "    }\n"
               "}\n");
-        std::string err(errout.str());
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
-    void return1()
+    void delete2()
     {
-        check("int f1()\n"
+        check("void foo()\n"
               "{\n"
-              "    return f1();\n"
+              "    if (p)\n"
+              "    {\n"
+              "        delete p;\n"
+              "    }\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
-    }
+        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
 
-    void callback1()
-    {
-        check("void f1()\n"
+        check("void foo()\n"
               "{\n"
-              "    void (*f)() = cond ? f1 : NULL;\n"
+              "    if (p)\n"
+              "        delete p;\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
-    }
-
-    void else1()
-    {
-        check("void f1()\n"
-              "{\n"
-              "    if (cond) ;\n"
-              "    else f1();\n"
-              "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
     }
 };
 
-REGISTER_TEST(TestFunctionUsage)
+REGISTER_TEST(TestOther)
 

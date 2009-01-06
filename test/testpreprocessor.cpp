@@ -23,7 +23,7 @@
 
 #include "testsuite.h"
 #define UNIT_TESTING
-#include "preprocessor.h"
+#include "../src/preprocessor.h"
 
 #include <map>
 #include <string>

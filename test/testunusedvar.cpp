@@ -22,8 +22,8 @@
 
 #define UNIT_TESTING
 #include "testsuite.h"
-#include "tokenize.h"
-#include "checkother.h"
+#include "../src/tokenize.h"
+#include "../src/checkother.h"
 
 #include <sstream>
 extern std::ostringstream errout;

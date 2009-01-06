@@ -16,17 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include "tokenize.h"
-#include "checkother.h"
+
+#define UNIT_TESTING
+#include "../src/tokenize.h"
+#include "../src/checkother.h"
 #include "testsuite.h"
 #include <sstream>
 
 extern std::ostringstream errout;
 
-class TestOther : public TestFixture
+class TestCharVar : public TestFixture
 {
 public:
-    TestOther() : TestFixture("TestOther")
+    TestCharVar() : TestFixture("TestCharVar")
     { }
 
 private:
@@ -34,9 +36,9 @@ private:
 
     void run()
     {
-        TEST_CASE(delete1);
-
-        TEST_CASE(delete2);
+        TEST_CASE(array_index);
+        TEST_CASE(bitop1);
+        TEST_CASE(bitop2);
     }
 
     void check(const char code[])
@@ -45,47 +47,60 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
 
         // Clear the error buffer..
         errout.str("");
 
-        // Check for redundant code..
+        // Check char variable usage..
         CheckOther checkOther(&tokenizer, this);
-        checkOther.WarningRedundantCode();
+        checkOther.CheckCharVariable();
     }
 
-    void delete1()
+    void array_index()
     {
         check("void foo()\n"
               "{\n"
-              "    if (p)\n"
-              "    {\n"
-              "        delete p;\n"
-              "        p = 0;\n"
-              "    }\n"
+              "    unsigned char ch = 0x80;\n"
+              "    buf[ch] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char ch = 0x80;\n"
+              "    buf[ch] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str());
+
+        check("void foo(char ch)\n"
+              "{\n"
+              "    buf[ch] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:3]: Warning - using char variable as array index\n"), errout.str());
+    }
+
+
+    void bitop1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char ch;\n"
+              "    result = a | ch;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable in bit operation\n"), errout.str());
+    }
+
+    void bitop2()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char ch;\n"
+              "    func(&ch);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
-
-    void delete2()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    if (p)\n"
-              "    {\n"
-              "        delete p;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    if (p)\n"
-              "        delete p;\n"
-              "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
-    }
 };
 
-REGISTER_TEST(TestOther)
+REGISTER_TEST(TestCharVar)
 

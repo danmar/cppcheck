@@ -1,86 +1,88 @@
-SRCS=checkbufferoverrun.cpp	checkclass.cpp	checkheaders.cpp	checkmemoryleak.cpp	checkfunctionusage.cpp	checkother.cpp	filelister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp cppcheckexecutor.cpp	errormessage.cpp
+TMPSRCS=checkbufferoverrun.cpp	checkclass.cpp	checkheaders.cpp	checkmemoryleak.cpp	checkfunctionusage.cpp	checkother.cpp	filelister.cpp	preprocessor.cpp	tokenize.cpp	cppcheck.cpp	settings.cpp token.cpp cppcheckexecutor.cpp	errormessage.cpp
+SRCS=$(TMPSRCS:%=src/%)
 OBJS=$(SRCS:%.cpp=%.o)
-TESTS=testbufferoverrun.o	testcharvar.o	testclass.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testother.o	testmemleak.o	testmemleakmp.o	testpreprocessor.o	testredundantif.o	testsimplifytokens.o	testtokenize.o	testtoken.o	testunusedprivfunc.o	testunusedvar.o	testfilelister.o
+TMPTESTS=testbufferoverrun.o	testcharvar.o	testclass.o	testconstructors.o	testdivision.o  testfunctionusage.o	testincompletestatement.o	testother.o	testmemleak.o	testmemleakmp.o	testpreprocessor.o	testredundantif.o	testsimplifytokens.o	testtokenize.o	testtoken.o	testunusedprivfunc.o	testunusedvar.o	testfilelister.o
+TESTS=$(TMPTESTS:%=test/%)
 BIN = ${DESTDIR}/usr/bin
 CFLAGS = -Wall -pedantic -g
 
-all:	${OBJS} main.o
+all:	${OBJS} src/main.o
 	g++ $(CFLAGS) -o cppcheck $^
-test:	${OBJS} testrunner.o	testsuite.o	${TESTS}
+test:	${OBJS} test/testrunner.o	test/testsuite.o	${TESTS}
 	g++ $(CFLAGS) -o testrunner $^
-cppcheckexecutor.o: cppcheckexecutor.cpp cppcheckexecutor.h cppcheck.h errorlogger.h
+cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/cppcheck.h src/errorlogger.h
 	g++ $(CFLAGS) -c $*.cpp
-cppcheck.o: cppcheck.cpp cppcheck.h settings.h errorlogger.h preprocessor.h tokenize.h token.h checkmemoryleak.h checkbufferoverrun.h checkclass.h checkheaders.h checkother.h checkfunctionusage.h filelister.h
+cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/preprocessor.h src/tokenize.h src/token.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkclass.h src/checkheaders.h src/checkother.h src/checkfunctionusage.h src/filelister.h
 	g++ $(CFLAGS) -c $*.cpp
-main.o: main.cpp cppcheck.h settings.h errorlogger.h
+main.o: src/main.cpp src/cppcheck.h src/settings.h src/errorlogger.h
 	g++ $(CFLAGS) -c $*.cpp
-checkbufferoverrun.o: checkbufferoverrun.cpp checkbufferoverrun.h tokenize.h settings.h errorlogger.h token.h
+checkbufferoverrun.o: src/checkbufferoverrun.cpp src/checkbufferoverrun.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-checkclass.o: checkclass.cpp checkclass.h tokenize.h settings.h errorlogger.h token.h
+checkclass.o: src/checkclass.cpp src/checkclass.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-checkfunctionusage.o: checkfunctionusage.cpp checkfunctionusage.h tokenize.h settings.h errorlogger.h token.h
+checkfunctionusage.o: src/checkfunctionusage.cpp src/checkfunctionusage.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-checkheaders.o: checkheaders.cpp checkheaders.h tokenize.h settings.h errorlogger.h token.h
+checkheaders.o: src/checkheaders.cpp src/checkheaders.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-checkmemoryleak.o: checkmemoryleak.cpp checkmemoryleak.h tokenize.h settings.h errorlogger.h token.h
+checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-checkother.o: checkother.cpp checkother.h tokenize.h settings.h errorlogger.h token.h
+checkother.o: src/checkother.cpp src/checkother.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-filelister.o: filelister.cpp filelister.h
+filelister.o: src/filelister.cpp src/filelister.h
 	g++ $(CFLAGS) -c $*.cpp
-preprocessor.o: preprocessor.cpp preprocessor.h errorlogger.h token.h tokenize.h
+preprocessor.o: src/preprocessor.cpp src/preprocessor.h src/errorlogger.h src/token.h src/tokenize.h
 	g++ $(CFLAGS) -c $*.cpp
-settings.o: settings.cpp settings.h
+settings.o: src/settings.cpp src/settings.h
 	g++ $(CFLAGS) -c $*.cpp
-errormessage.o: errormessage.cpp errormessage.h
+errormessage.o: src/errormessage.cpp src/errormessage.h
 	g++ $(CFLAGS) -c $*.cpp
-testbufferoverrun.o: testbufferoverrun.cpp tokenize.h settings.h errorlogger.h token.h checkbufferoverrun.h testsuite.h
+testbufferoverrun.o: test/testbufferoverrun.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkbufferoverrun.h test/testsuite.h
 	g++ $(CFLAGS) -c $*.cpp
-testcharvar.o: testcharvar.cpp tokenize.h settings.h errorlogger.h token.h checkother.h testsuite.h
+testcharvar.o: test/testcharvar.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkother.h test/testsuite.h
 	g++ $(CFLAGS) -c $*.cpp
-testclass.o: testclass.cpp tokenize.h settings.h errorlogger.h token.h checkclass.h testsuite.h
+testclass.o: test/testclass.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkclass.h test/testsuite.h
 	g++ $(CFLAGS) -c $*.cpp
-testconstructors.o: testconstructors.cpp tokenize.h settings.h errorlogger.h token.h checkclass.h testsuite.h
+testconstructors.o: test/testconstructors.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkclass.h test/testsuite.h
 	g++ $(CFLAGS) -c $*.cpp
-testdivision.o: testdivision.cpp tokenize.h settings.h errorlogger.h token.h checkother.h testsuite.h
+testdivision.o: test/testdivision.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkother.h test/testsuite.h
 	g++ $(CFLAGS) -c $*.cpp
-testfunctionusage.o: testfunctionusage.cpp tokenize.h settings.h errorlogger.h token.h testsuite.h checkfunctionusage.h
+testfunctionusage.o: test/testfunctionusage.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h test/testsuite.h src/checkfunctionusage.h
 	g++ $(CFLAGS) -c $*.cpp
-testincompletestatement.o: testincompletestatement.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h checkother.h
+testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h src/errorlogger.h src/tokenize.h src/settings.h src/token.h src/checkother.h
 	g++ $(CFLAGS) -c $*.cpp
-testother.o: testother.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h checkother.h
+testother.o: test/testother.cpp test/testsuite.h src/errorlogger.h src/tokenize.h src/settings.h src/token.h src/checkother.h
 	g++ $(CFLAGS) -c $*.cpp
-testmemleak.o: testmemleak.cpp tokenize.h settings.h errorlogger.h token.h checkmemoryleak.h testsuite.h
+testmemleak.o: test/testmemleak.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkmemoryleak.h test/testsuite.h
 	g++ $(CFLAGS) -c $*.cpp
-testmemleakmp.o: testmemleakmp.cpp tokenize.h settings.h errorlogger.h token.h checkmemoryleak.h testsuite.h
+testmemleakmp.o: test/testmemleakmp.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkmemoryleak.h test/testsuite.h
 	g++ $(CFLAGS) -c $*.cpp
-testpreprocessor.o: testpreprocessor.cpp testsuite.h errorlogger.h preprocessor.h
+testpreprocessor.o: test/testpreprocessor.cpp test/testsuite.h src/errorlogger.h src/preprocessor.h
 	g++ $(CFLAGS) -c $*.cpp
-testredundantif.o: testredundantif.cpp testsuite.h errorlogger.h checkother.h
+testredundantif.o: test/testredundantif.cpp test/testsuite.h src/errorlogger.h src/checkother.h
 	g++ $(CFLAGS) -c $*.cpp
-testrunner.o: testrunner.cpp testsuite.h errorlogger.h
+testrunner.o: test/testrunner.cpp test/testsuite.h src/errorlogger.h
 	g++ $(CFLAGS) -c $*.cpp
-testsimplifytokens.o: testsimplifytokens.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h
+testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h src/errorlogger.h src/tokenize.h src/settings.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-testsuite.o: testsuite.cpp testsuite.h errorlogger.h
+testsuite.o: test/testsuite.cpp test/testsuite.h src/errorlogger.h
 	g++ $(CFLAGS) -c $*.cpp
-testtoken.o: testtoken.cpp testsuite.h errorlogger.h token.h
+testtoken.o: test/testtoken.cpp test/testsuite.h src/errorlogger.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-testtokenize.o: testtokenize.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h
+testtokenize.o: test/testtokenize.cpp test/testsuite.h src/errorlogger.h src/tokenize.h src/settings.h src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-testunusedprivfunc.o: testunusedprivfunc.cpp tokenize.h settings.h errorlogger.h token.h checkclass.h testsuite.h
+testunusedprivfunc.o: test/testunusedprivfunc.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkclass.h test/testsuite.h
 	g++ $(CFLAGS) -c $*.cpp
-testunusedvar.o: testunusedvar.cpp testsuite.h errorlogger.h tokenize.h settings.h token.h checkother.h
+testunusedvar.o: test/testunusedvar.cpp test/testsuite.h src/errorlogger.h src/tokenize.h src/settings.h src/token.h src/checkother.h
 	g++ $(CFLAGS) -c $*.cpp
-testfilelister.o: testfilelister.cpp filelister.h
+testfilelister.o: test/testfilelister.cpp src/filelister.h
 	g++ $(CFLAGS) -c $*.cpp
-token.o: token.cpp token.h
+token.o: src/token.cpp src/token.h
 	g++ $(CFLAGS) -c $*.cpp
-tokenize.o: tokenize.cpp tokenize.h settings.h errorlogger.h token.h filelister.h
+tokenize.o: src/tokenize.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/filelister.h
 	g++ $(CFLAGS) -c $*.cpp
 
 clean:
-	rm -f *.o testrunner cppcheck
+	rm -f src/*.o test/*.o testrunner cppcheck
 install:	cppcheck
 	install -d ${BIN}
 	install cppcheck ${BIN}

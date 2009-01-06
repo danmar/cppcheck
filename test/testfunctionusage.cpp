@@ -18,17 +18,17 @@
 
 
 #define UNIT_TESTING
-#include "tokenize.h"
-#include "checkother.h"
+#include "../src/tokenize.h"
 #include "testsuite.h"
+#include "../src/checkfunctionusage.h"
 #include <sstream>
 
 extern std::ostringstream errout;
 
-class TestCharVar : public TestFixture
+class TestFunctionUsage : public TestFixture
 {
 public:
-    TestCharVar() : TestFixture("TestCharVar")
+    TestFunctionUsage() : TestFixture("TestFunctionUsage")
     { }
 
 private:
@@ -36,9 +36,10 @@ private:
 
     void run()
     {
-        TEST_CASE(array_index);
-        TEST_CASE(bitop1);
-        TEST_CASE(bitop2);
+        TEST_CASE(incondition);
+        TEST_CASE(return1);
+        TEST_CASE(callback1);
+        TEST_CASE(else1);
     }
 
     void check(const char code[])
@@ -47,60 +48,58 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // Clear the error buffer..
         errout.str("");
 
-        // Check char variable usage..
-        CheckOther checkOther(&tokenizer, this);
-        checkOther.CheckCharVariable();
+        // Check for unused functions..
+        CheckFunctionUsage checkFunctionUsage(this);
+        checkFunctionUsage.parseTokens(tokenizer);
+        checkFunctionUsage.check();
     }
 
-    void array_index()
+    void incondition()
     {
-        check("void foo()\n"
+        check("int f1()\n"
               "{\n"
-              "    unsigned char ch = 0x80;\n"
-              "    buf[ch] = 0;\n"
+              "    if (f1())\n"
+              "    { }\n"
               "}\n");
+        std::string err(errout.str());
         ASSERT_EQUALS(std::string(""), errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    char ch = 0x80;\n"
-              "    buf[ch] = 0;\n"
-              "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str());
-
-        check("void foo(char ch)\n"
-              "{\n"
-              "    buf[ch] = 0;\n"
-              "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Warning - using char variable as array index\n"), errout.str());
     }
 
-
-    void bitop1()
+    void return1()
     {
-        check("void foo()\n"
+        check("int f1()\n"
               "{\n"
-              "    char ch;\n"
-              "    result = a | ch;\n"
+              "    return f1();\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable in bit operation\n"), errout.str());
+        std::string err(errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
-    void bitop2()
+    void callback1()
     {
-        check("void foo()\n"
+        check("void f1()\n"
               "{\n"
-              "    char ch;\n"
-              "    func(&ch);\n"
+              "    void (*f)() = cond ? f1 : NULL;\n"
               "}\n");
+        std::string err(errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void else1()
+    {
+        check("void f1()\n"
+              "{\n"
+              "    if (cond) ;\n"
+              "    else f1();\n"
+              "}\n");
+        std::string err(errout.str());
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
-REGISTER_TEST(TestCharVar)
+REGISTER_TEST(TestFunctionUsage)
 

@@ -19,8 +19,8 @@
 
 
 #define UNIT_TESTING
-#include "tokenize.h"
-#include "checkmemoryleak.h"
+#include "../src/tokenize.h"
+#include "../src/checkmemoryleak.h"
 #include "testsuite.h"
 #include <sstream>
 

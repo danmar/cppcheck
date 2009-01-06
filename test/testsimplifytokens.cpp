@@ -19,7 +19,7 @@
 
 
 #include "testsuite.h"
-#include "tokenize.h"
+#include "../src/tokenize.h"
 #include <sstream>
 
 extern std::ostringstream errout;

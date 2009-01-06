@@ -24,7 +24,7 @@
 #include <cstring>
 #include "testsuite.h"
 #define UNIT_TESTING        // Get access to "private" data in Tokenizer
-#include "tokenize.h"
+#include "../src/tokenize.h"
 
 extern std::ostringstream errout;
 class TestTokenizer : public TestFixture
