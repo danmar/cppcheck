@@ -84,33 +84,6 @@ private:
     }
 
 
-    bool cmpmaps(const std::map<std::string, std::string> &m1, const std::map<std::string, std::string> &m2)
-    {
-        // Begin by checking the sizes
-        if (m1.size() != m2.size())
-            return false;
-
-        // Check each item in the maps..
-        for (std::map<std::string, std::string>::const_iterator it1 = m1.begin(); it1 != m1.end(); ++it1)
-        {
-            std::string s1 = it1->first;
-            std::map<std::string, std::string>::const_iterator it2 = m2.find(s1);
-            if (it2 == m2.end())
-                return false;
-            else
-            {
-                std::string s1 = it1->second;
-                std::string s2 = it2->second;
-                if (s1 != s2)
-                    return false;
-            }
-        }
-
-        // No diffs were found
-        return true;
-    }
-
-
     void Bug2190219()
     {
         const char filedata[] = "int main()\n"
@@ -167,7 +140,9 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS(expected[""], actual[""]);
+        ASSERT_EQUALS(expected["__cplusplus"], actual["__cplusplus"]);
+        ASSERT_EQUALS(2, actual.size());
     }
 
 
@@ -179,11 +154,6 @@ private:
                                 "    qwerty\n"
                                 "#endif  \n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""]      = "\n\n\nqwerty\n\n";
-        expected["WIN32"] = "\nabcdef\n\n\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -191,7 +161,9 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\n\nqwerty\n\n", actual[""]);
+        ASSERT_EQUALS("\nabcdef\n\n\n\n", actual["WIN32"]);
+        ASSERT_EQUALS(2, actual.size());
     }
 
     void test2()
@@ -202,11 +174,6 @@ private:
                                 "    qwerty\n"
                                 "  # endif  \n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected["WIN32"] = "\n\n\nqwerty\n\n";
-        expected[""]      = "\n\" # ifdef WIN32\"\n\n\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -214,7 +181,9 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\" # ifdef WIN32\"\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\n\nqwerty\n\n", actual["WIN32"]);
+        ASSERT_EQUALS(2, actual.size());
     }
 
     void test3()
@@ -227,12 +196,6 @@ private:
                                 "c\n"
                                 "#endif\n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""]        = "\n\n\n\n\n\n\n";
-        expected["ABC"]     = "\na\n\n\n\nc\n\n";
-        expected["ABC;DEF"] = "\na\n\nb\n\nc\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -240,7 +203,10 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\n\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\na\n\n\n\nc\n\n", actual["ABC"]);
+        ASSERT_EQUALS("\na\n\nb\n\nc\n\n", actual["ABC;DEF"]);
+        ASSERT_EQUALS(3, actual.size());
     }
 
     void test4()
@@ -252,11 +218,6 @@ private:
                                 "A\n"
                                 "#endif\n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""]        = "\n\n\n\n\n\n";
-        expected["ABC"]     = "\nA\n\n\nA\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -264,7 +225,9 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\nA\n\n\nA\n\n", actual["ABC"]);
+        ASSERT_EQUALS(2, actual.size());
     }
 
     void test5()
@@ -278,12 +241,6 @@ private:
                                 "#endif\n"
                                 "#endif\n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""]    = "\n\n\nB\n\n\n\n\n";
-        expected["ABC"] = "\nA\n\n\n\n\n\n\n";
-        expected["DEF"] = "\n\n\nB\n\nC\n\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -291,7 +248,10 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\n\nB\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\nA\n\n\n\n\n\n\n", actual["ABC"]);
+        ASSERT_EQUALS("\n\n\nB\n\nC\n\n\n", actual["DEF"]);
+        ASSERT_EQUALS(3, actual.size());
     }
 
 
@@ -303,10 +263,6 @@ private:
                                 "#endif\n"
                                 "*/\n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""] = "\n\n\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -314,7 +270,8 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+        ASSERT_EQUALS(1, actual.size());
     }
 
 
@@ -326,10 +283,6 @@ private:
                                 "#endif\n"
                                 "#endif\n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""] = "\n\n\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -337,7 +290,8 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\n\n\n", actual[""]);
+        ASSERT_EQUALS(1, actual.size());
     }
 
     void if1()
@@ -346,10 +300,6 @@ private:
                                 "ABC\n"
                                 " # endif \n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""] = "\nABC\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -357,7 +307,8 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\nABC\n\n", actual[""]);
+        ASSERT_EQUALS(1, actual.size());
     }
 
 
@@ -369,12 +320,6 @@ private:
                                 "DEF\n"
                                 "#endif\n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""] = "\n\n\n\n\n";
-        expected["DEF1"] = "\nABC\n\n\n\n";
-        expected["DEF2"] = "\n\n\nDEF\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -382,7 +327,10 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\nABC\n\n\n\n", actual["DEF1"]);
+        ASSERT_EQUALS("\n\n\nDEF\n\n", actual["DEF2"]);
+        ASSERT_EQUALS(3, actual.size());
     }
 
 
@@ -391,10 +339,6 @@ private:
     {
         const char filedata[] = " # include \"abcd.h\" // abcd\n";
 
-        // Expected result..
-        std::map<std::string, std::string> expected;
-        expected[""] = "#include \"abcd.h\"\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -402,7 +346,8 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("#include \"abcd.h\"\n", actual[""]);
+        ASSERT_EQUALS(1, actual.size());
     }
 
 
@@ -416,10 +361,6 @@ private:
                                 "    B\n"
                                 "#endif\n";
 
-        std::map<std::string, std::string> expected;
-        expected[""] = "\n\n\nB\n\n";
-        expected["LIBVER>100"] = "\nA\n\n\n\n";
-
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
@@ -427,18 +368,17 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\n\nB\n\n", actual[""]);
+        ASSERT_EQUALS("\nA\n\n\n\n", actual["LIBVER>100"]);
+        ASSERT_EQUALS(2, actual.size());
     }
 
 
     void multiline()
     {
         const char filedata[] = "#define str \"abc\"   \\  \n"
-                                "            \"def\"   \\  \n"
-                                "            \"ghi\"       \n";
-
-        std::map<std::string, std::string> expected;
-        expected[""] = "#define str \"abc\" \"def\" \"ghi\"\n\n\n";
+                                "            \"def\"       \n"
+                                "abcdef = str;\n";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
@@ -447,7 +387,8 @@ private:
         preprocessor.preprocess(istr, actual);
 
         // Compare results..
-        ASSERT_EQUALS(true, cmpmaps(actual, expected));
+        ASSERT_EQUALS("\n\nabcdef = \"abc\"\"def\"\n", actual[""]);
+        ASSERT_EQUALS(1, actual.size());
     }
 
 
