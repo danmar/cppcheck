@@ -7,7 +7,7 @@
 		<Option pch_mode="2" />
 		<Option compiler="gcc" />
 		<Build>
-			<Target title="all">
+			<Target title="cppcheck">
 				<Option output="cppcheck" prefix_auto="1" extension_auto="1" />
 				<Option object_output="/home/nobackup/cppcheck/.objs" />
 				<Option type="1" />
