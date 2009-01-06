@@ -45,7 +45,7 @@ public:
         if (! _par1.empty())
             ostr << "const std::string &" << _par1;
         ostr << ") const\n";
-        ostr << "    { return " << msg("\"") << "; }" << std::endl;
+        ostr << "    { return " << msg(true) << "; }" << std::endl;
 
         // Settings..
         ostr << std::endl;
@@ -69,7 +69,7 @@ public:
 	{
 		if ( _settings == i )
 		{
-			ostr << msg("") << std::endl;
+			ostr << "    " << msg(false) << std::endl;
 		}
 	}
 
@@ -95,7 +95,7 @@ int main()
 	for ( unsigned int i = 0; i < 4; ++i )
 	{
 		const char *suite[4] = { "standard", "all", "style", "all + style" };
-		std::cout << "=" << suite[i] << "=" << std::endl;
+		std::cout << "    =" << suite[i] << "=" << std::endl;
 		for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
 			it->generateDoc(std::cout, i);
 	}
