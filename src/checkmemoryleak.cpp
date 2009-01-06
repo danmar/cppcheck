@@ -481,53 +481,57 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         }
 
         // if else switch
-        if (Token::simpleMatch(tok, std::string("if ( " + varnameStr + " )").c_str()) ||
-            Token::simpleMatch(tok, std::string("if ( " + varnameStr + " != 0 )").c_str()) ||
-            Token::simpleMatch(tok, std::string("if ( 0 != " + varnameStr + " )").c_str()))
+        if (tok->str() == "if")
         {
-            addtoken("if(var)");
-
-            // Make sure the "use" will not be added
-            while (tok->str() != ")")
-                tok = tok->next();
-        }
-        else if (Token::Match(tok, "if (") && notvar(tok->tokAt(2), varnames))
-        {
-            addtoken("if(!var)");
-        }
-        else if (Token::Match(tok, "if"))
-        {
-            // Check if the condition depends on var somehow..
-            bool dep = false;
-            int parlevel = 0;
-            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            if (Token::simpleMatch(tok, std::string("if ( " + varnameStr + " )").c_str()) ||
+                Token::simpleMatch(tok, std::string("if ( " + varnameStr + " != 0 )").c_str()) ||
+                Token::simpleMatch(tok, std::string("if ( 0 != " + varnameStr + " )").c_str()))
             {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                if (tok2->str() == ")")
-                {
-                    --parlevel;
-                    if (parlevel <= 0)
-                        break;
-                }
-                if (Token::simpleMatch(tok2, std::string("fclose ( " + varnameStr + " )").c_str()))
-                {
-                    addtoken("dealloc");
-                    addtoken(";");
-                    dep = true;
-                    break;
-                }
-                if ((tok2->str() != ".") &&
-                    Token::simpleMatch(tok2->next(), varnameStr.c_str()) &&
-                    !Token::simpleMatch(tok2->next(), std::string(varnameStr + " .").c_str()))
-                {
-                    dep = true;
-                    break;
-                }
+                addtoken("if(var)");
+
+                // Make sure the "use" will not be added
+                while (tok->str() != ")")
+                    tok = tok->next();
             }
-            addtoken((dep ? "ifv" : "if"));
+            else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varnames))
+            {
+                addtoken("if(!var)");
+            }
+            else
+            {
+                // Check if the condition depends on var somehow..
+                bool dep = false;
+                int parlevel = 0;
+                for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "(")
+                        ++parlevel;
+                    if (tok2->str() == ")")
+                    {
+                        --parlevel;
+                        if (parlevel <= 0)
+                            break;
+                    }
+                    if (Token::simpleMatch(tok2, std::string("fclose ( " + varnameStr + " )").c_str()))
+                    {
+                        addtoken("dealloc");
+                        addtoken(";");
+                        dep = true;
+                        break;
+                    }
+                    if ((tok2->str() != ".") &&
+                        Token::simpleMatch(tok2->next(), varnameStr.c_str()) &&
+                        !Token::simpleMatch(tok2->next(), std::string(varnameStr + " .").c_str()))
+                    {
+                        dep = true;
+                        break;
+                    }
+                }
+                addtoken((dep ? "ifv" : "if"));
+            }
         }
-        else if ((tok->str() == "else") || (tok->str() == "switch"))
+
+        if ((tok->str() == "else") || (tok->str() == "switch"))
         {
             addtoken(tok->aaaa());
         }
