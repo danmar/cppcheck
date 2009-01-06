@@ -19,16 +19,20 @@ public:
     static const unsigned int ALL = 1;
     static const unsigned int STYLE = 2;
 
-    std::string msg(const char str[]) const
+    std::string msg(bool code) const
     {
-        std::string ret(str + _msg + str);
+		const char *str = code ? "\"" : "";
+        std::string ret( str + _msg + str );
 		if (! _par1.empty())
 		{
 			std::string::size_type pos = 0;
 			while ((pos = ret.find("%1", pos)) != std::string::npos)
 			{
 				ret.erase(pos, 2);
-				ret.insert(pos, str + _par1 + str);
+				if ( code )
+					ret.insert(pos, "\" + " + _par1 + " + \"");
+				else
+					ret.insert(pos, _par1);
 			}
 		}
         return ret;
