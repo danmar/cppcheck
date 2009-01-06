@@ -19,50 +19,55 @@ public:
     static const unsigned int ALL = 1;
     static const unsigned int STYLE = 2;
 
-    std::string msg() const
+    std::string msg(const char str[]) const
     {
-        std::string ret("\"" + _msg + "\"");
-
-        if (! _par1.empty())
-        {
-            std::string::size_type pos = 0;
-            while ((pos = ret.find("%1", pos)) != std::string::npos)
-            {
-                ret.erase(pos, 2);
-                ret.insert(pos, "\" + " + _par1 + " + \"");
-            }
-        }
-
+        std::string ret(str + _msg + str);
+		if (! _par1.empty())
+		{
+			std::string::size_type pos = 0;
+			while ((pos = ret.find("%1", pos)) != std::string::npos)
+			{
+				ret.erase(pos, 2);
+				ret.insert(pos, str + _par1 + str);
+			}
+		}
         return ret;
     }
 
-    void generateCode() const
+    void generateCode(std::ostream &ostr) const
     {
         // Error message..
-        std::cout << "    static std::string " << _funcname << "(";
+        ostr << "    static std::string " << _funcname << "(";
         if (! _par1.empty())
-            std::cout << "const std::string &" << _par1;
-        std::cout << ") const\n";
-
-        std::cout << "    { return " << msg() << "; }" << std::endl;
+            ostr << "const std::string &" << _par1;
+        ostr << ") const\n";
+        ostr << "    { return " << msg("\"") << "; }" << std::endl;
 
         // Settings..
-        std::cout << std::endl;
-        std::cout << "    static bool " << _funcname << "(const Settings &s) const" << std::endl;
-        std::cout << "    { return ";
+        ostr << std::endl;
+        ostr << "    static bool " << _funcname << "(const Settings &s) const" << std::endl;
+        ostr << "    { return ";
         if (_settings == 0)
-            std::cout << "true";
+            ostr << "true";
         else
         {
             if (_settings & ALL)
-                std::cout << "s._showAll";
+                ostr << "s._showAll";
             if (_settings & (ALL | STYLE))
-                std::cout << " & ";
+                ostr << " & ";
             if (_settings & STYLE)
-                std::cout << "s._checkCodingStyle";
+                ostr << "s._checkCodingStyle";
         }
-        std::cout << "; }" << std::endl;
+        ostr << "; }" << std::endl;
     }
+
+	void generateDoc(std::ostream &ostr, unsigned int i) const
+	{
+		if ( _settings == i )
+		{
+			ostr << msg("") << std::endl;
+		}
+	}
 
 };
 
@@ -76,8 +81,21 @@ int main()
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
 
     // Generate code..
+	std::cout << "Generate code.." << std::endl;
     for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
-        it->generateCode();
+        it->generateCode(std::cout);
+	std::cout << std::endl;
+
+	// Generate documentation..
+	std::cout << "Generate doc.." << std::endl;
+	for ( unsigned int i = 0; i < 4; ++i )
+	{
+		const char *suite[4] = { "standard", "all", "style", "all + style" };
+		std::cout << "=" << suite[i] << "=" << std::endl;
+		for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
+			it->generateDoc(std::cout, i);
+	}
+	std::cout << std::endl;
 
     return 0;
 }
