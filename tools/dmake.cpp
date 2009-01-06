@@ -78,6 +78,11 @@ int main()
 	fout << "\tg++ $(CXXFLAGS) -o testrunner $(TESTOBJ)\n\n";
 	fout << "all:\tcppcheck\ttestrunner\n\n";
 	fout << "test:\ttestrunner\n\n";
+	fout << "clean:\n";
+	fout << "\trm -f src/*.o test/*.o testrunner cppcheck\n\n";
+	fout << "install:\tcppcheck\n";
+	fout << "\tinstall -d ${BIN}\n";
+	fout << "\tinstall cppcheck ${BIN}\n\n";
 
 	fout << "\n###### Build\n\n";
 
