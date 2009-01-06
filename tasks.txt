@@ -12,7 +12,6 @@ The "simple" tasks
    - etc?
  * Add unit tests
  * improved error message handling
- * create a doxygen project file
 
 New checks (bugs)
  * sprintf problem with overlapping data
