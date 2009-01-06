@@ -14,7 +14,7 @@ cppcheck.o: cppcheck.cpp cppcheck.h settings.h errorlogger.h preprocessor.h toke
 	g++ $(CFLAGS) -c $*.cpp
 main.o: main.cpp cppcheck.h settings.h errorlogger.h
 	g++ $(CFLAGS) -c $*.cpp
-checkbufferoverrun.o: checkbufferoverrun.cpp checkbufferoverrun.h tokenize.h settings.h errorlogger.h token.h 
+checkbufferoverrun.o: checkbufferoverrun.cpp checkbufferoverrun.h tokenize.h settings.h errorlogger.h token.h
 	g++ $(CFLAGS) -c $*.cpp
 checkclass.o: checkclass.cpp checkclass.h tokenize.h settings.h errorlogger.h token.h
 	g++ $(CFLAGS) -c $*.cpp
@@ -28,7 +28,7 @@ checkother.o: checkother.cpp checkother.h tokenize.h settings.h errorlogger.h to
 	g++ $(CFLAGS) -c $*.cpp
 filelister.o: filelister.cpp filelister.h
 	g++ $(CFLAGS) -c $*.cpp
-preprocessor.o: preprocessor.cpp preprocessor.h errorlogger.h
+preprocessor.o: preprocessor.cpp preprocessor.h errorlogger.h token.h tokenize.h
 	g++ $(CFLAGS) -c $*.cpp
 settings.o: settings.cpp settings.h
 	g++ $(CFLAGS) -c $*.cpp
