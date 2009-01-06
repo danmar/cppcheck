@@ -1,30 +1,26 @@
 
+The "simple" tasks
+ * Optimise
+ * Refactor
+ * Preprocessor
+   - expand macros (under work)
+   - include files
+   - etc?
+ * Token list
+   - improve the variable id for class member variables
+   - simplify "void f(x) int x; {" into "void f(int x) {"
+   - etc?
+ * Add unit tests
+ * improved error message handling
 
-Fix a TODO in the code
+New checks (bugs)
+ * sprintf problem with overlapping data
+ * CheckMemoryLeak
+   - Check for more resource leaks
+     Windows API (CreatePen, GetDC, ..)
 
-Optimisations
- * Create a function similar to TOKEN::Match. That first "compiles" a pattern.
+New checks (style)
+ * data truncation
+ * unused static functions or variables
 
-Refactoring
- * Split large functions into smaller functions.
-   When possible, convert unit tests for these smaller functions
- * create a simplify function that converts "void f(x) int x; {" to "void f(int x) {"
- * improve the variable id so class/struct member variables get a variable id
- * parse header files only once.
-
-Preprocessor
- * Expand preprocessor macros
-
-CheckMemoryleak
- * Check for more resource leaks
-   - Windows API (CreatePen, GetDC, ..)
-
-New checks
- * Check if there are static functions or variables that are unused
-
-Unit testing
- * There are many checks that doesn't have unit tests
- * Fix any of the tests that are marked as TODO
- * Add a unit test for one of the issues in the tracker
- * Each issue that has a unit test should have a comment about it
 
