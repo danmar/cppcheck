@@ -466,7 +466,7 @@ std::string Preprocessor::expandMacros(std::string code)
         while ((pos1 = code.find(macroname, pos1 + 1)) != std::string::npos)
         {
             // Previous char must not be alphanumeric or '_'
-            if (pos1 != 0 && (std::isalnum(code[pos1-1]) || code[pos1-1] == '_'))
+            if (pos1 != 0 && (isalnum(code[pos1-1]) || code[pos1-1] == '_'))
                 continue;
 
             std::vector<std::string> params;
