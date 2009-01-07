@@ -89,7 +89,6 @@ private:
      */
     Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype);
     bool notvar(const Token *tok, const char *varnames[]);
-    void instoken(Token *tok, const char str[]);
     void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype);
     void MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[]);
     const char * call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype);

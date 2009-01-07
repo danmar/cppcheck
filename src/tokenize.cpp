@@ -1040,6 +1040,14 @@ void Tokenizer::simplifyTokenList()
 
     simplifyIfAddBraces();
 
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "case %any% : %var%"))
+            tok->next()->next()->insertToken(";");
+        if (Token::Match(tok, "default : %var%"))
+            tok->next()->insertToken(";");
+    }
+
     bool modified = true;
     while (modified)
     {

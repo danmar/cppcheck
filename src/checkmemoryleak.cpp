@@ -324,12 +324,6 @@ void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], Al
 }
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeakClass::instoken(Token *tok, const char str[])
-{
-    tok->insertToken(str);
-}
-//---------------------------------------------------------------------------
-
 bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
 {
     std::string varname;
@@ -544,7 +538,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
 
         if ((tok->str() == "default"))
         {
-            addtoken("case");
+            addtoken("default");
             addtoken(";");
         }
 
@@ -1088,15 +1082,16 @@ void CheckMemoryLeakClass::simplifycode(Token *tok)
                         if (first)
                         {
                             first = false;
-                            instoken(tok2, "{");
+                            tok2->insertToken("{");
                         }
                         else
                         {
                             // Insert "else [if] {
-                            instoken(tok2, "{");
+                            tok2->insertToken("{");
                             if (! def)
-                                instoken(tok2, "if");
-                            instoken(tok2, "else");
+                                tok2->insertToken("if");
+                            tok2->insertToken("else");
+                            tok2 = tok2->next();
                         }
                         while (tok2 && tok2->str() != "}" && ! Token::Match(tok2, "break ;"))
                             tok2 = tok2->next();
