@@ -166,59 +166,59 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\checkbufferoverrun.h"
+				RelativePath=".\src\checkbufferoverrun.h"
 				>
 			</File>
 			<File
-				RelativePath=".\checkclass.h"
+				RelativePath=".\src\checkclass.h"
 				>
 			</File>
 			<File
-				RelativePath=".\checkfunctionusage.h"
+				RelativePath=".\src\checkfunctionusage.h"
 				>
 			</File>
 			<File
-				RelativePath=".\checkheaders.h"
+				RelativePath=".\src\checkheaders.h"
 				>
 			</File>
 			<File
-				RelativePath=".\checkmemoryleak.h"
+				RelativePath=".\src\checkmemoryleak.h"
 				>
 			</File>
 			<File
-				RelativePath=".\checkother.h"
+				RelativePath=".\src\checkother.h"
 				>
 			</File>
 			<File
-				RelativePath=".\cppcheck.h"
+				RelativePath=".\src\cppcheck.h"
 				>
 			</File>
 			<File
-				RelativePath=".\cppcheckexecutor.h"
+				RelativePath=".\src\cppcheckexecutor.h"
 				>
 			</File>
 			<File
-				RelativePath=".\errorlogger.h"
+				RelativePath=".\src\errorlogger.h"
 				>
 			</File>
 			<File
-				RelativePath=".\filelister.h"
+				RelativePath=".\src\filelister.h"
 				>
 			</File>
 			<File
-				RelativePath=".\preprocessor.h"
+				RelativePath=".\src\preprocessor.h"
 				>
 			</File>
 			<File
-				RelativePath=".\settings.h"
+				RelativePath=".\src\settings.h"
 				>
 			</File>
 			<File
-				RelativePath=".\token.h"
+				RelativePath=".\src\token.h"
 				>
 			</File>
 			<File
-				RelativePath=".\tokenize.h"
+				RelativePath=".\src\tokenize.h"
 				>
 			</File>
 		</Filter>
@@ -234,59 +234,59 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\checkbufferoverrun.cpp"
+				RelativePath=".\src\checkbufferoverrun.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\checkclass.cpp"
+				RelativePath=".\src\checkclass.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\checkfunctionusage.cpp"
+				RelativePath=".\src\checkfunctionusage.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\checkheaders.cpp"
+				RelativePath=".\src\checkheaders.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\checkmemoryleak.cpp"
+				RelativePath=".\src\checkmemoryleak.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\checkother.cpp"
+				RelativePath=".\src\checkother.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\cppcheck.cpp"
+				RelativePath=".\src\cppcheck.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\cppcheckexecutor.cpp"
+				RelativePath=".\src\cppcheckexecutor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\filelister.cpp"
+				RelativePath=".\src\filelister.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\main.cpp"
+				RelativePath=".\src\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\preprocessor.cpp"
+				RelativePath=".\src\preprocessor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\settings.cpp"
+				RelativePath=".\src\settings.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\token.cpp"
+				RelativePath=".\src\token.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\tokenize.cpp"
+				RelativePath=".\src\tokenize.cpp"
 				>
 			</File>
 		</Filter>
