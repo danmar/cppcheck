@@ -21,20 +21,20 @@ public:
 
     std::string msg(bool code) const
     {
-		const char *str = code ? "\"" : "";
-        std::string ret( str + _msg + str );
-		if (! _par1.empty())
-		{
-			std::string::size_type pos = 0;
-			while ((pos = ret.find("%1", pos)) != std::string::npos)
-			{
-				ret.erase(pos, 2);
-				if ( code )
-					ret.insert(pos, "\" + " + _par1 + " + \"");
-				else
-					ret.insert(pos, _par1);
-			}
-		}
+        const char *str = code ? "\"" : "";
+        std::string ret(str + _msg + str);
+        if (! _par1.empty())
+        {
+            std::string::size_type pos = 0;
+            while ((pos = ret.find("%1", pos)) != std::string::npos)
+            {
+                ret.erase(pos, 2);
+                if (code)
+                    ret.insert(pos, "\" + " + _par1 + " + \"");
+                else
+                    ret.insert(pos, _par1);
+            }
+        }
         return ret;
     }
 
@@ -65,13 +65,13 @@ public:
         ostr << "; }" << std::endl;
     }
 
-	void generateDoc(std::ostream &ostr, unsigned int i) const
-	{
-		if ( _settings == i )
-		{
-			ostr << "    " << msg(false) << std::endl;
-		}
-	}
+    void generateDoc(std::ostream &ostr, unsigned int i) const
+    {
+        if (_settings == i)
+        {
+            ostr << "    " << msg(false) << std::endl;
+        }
+    }
 
 };
 
@@ -85,21 +85,21 @@ int main()
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
 
     // Generate code..
-	std::cout << "Generate code.." << std::endl;
+    std::cout << "Generate code.." << std::endl;
     for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
         it->generateCode(std::cout);
-	std::cout << std::endl;
+    std::cout << std::endl;
 
-	// Generate documentation..
-	std::cout << "Generate doc.." << std::endl;
-	for ( unsigned int i = 0; i < 4; ++i )
-	{
-		const char *suite[4] = { "standard", "all", "style", "all + style" };
-		std::cout << "    =" << suite[i] << "=" << std::endl;
-		for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
-			it->generateDoc(std::cout, i);
-	}
-	std::cout << std::endl;
+    // Generate documentation..
+    std::cout << "Generate doc.." << std::endl;
+    for (unsigned int i = 0; i < 4; ++i)
+    {
+        const char *suite[4] = { "standard", "all", "style", "all + style" };
+        std::cout << "    =" << suite[i] << "=" << std::endl;
+        for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
+            it->generateDoc(std::cout, i);
+    }
+    std::cout << std::endl;
 
     return 0;
 }
