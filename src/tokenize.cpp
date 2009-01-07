@@ -1,6 +1,6 @@
 /*
  * cppcheck - c/c++ syntax checking
- * Copyright (C) 2007-2009 Daniel Marjam√§ki, Reijo Tomperi, Nicolas Le Cam
+ * Copyright (C) 2007-2009 Daniel Marjam‰ki, Reijo Tomperi, Nicolas Le Cam
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,12 +36,6 @@
 #include <algorithm>
 #include <stdlib.h>     // <- strtoul
 #include <stdio.h>
-
-#ifdef __BORLANDC__
-#include <ctype.h>
-#include <mem.h>
-#endif
-
 
 //---------------------------------------------------------------------------
 
@@ -102,10 +96,10 @@ void Tokenizer::Define(const char Name[], const char Value[])
     bool dec = true, hex = true;
     for (int i = 0; Value[i]; i++)
     {
-        if (! isdigit(Value[i]))
+        if (! std::isdigit(Value[i]))
             dec = false;
 
-        if (! isxdigit(Value[i]) && (!(i == 1 && Value[i] == 'x')))
+        if (! std::isxdigit(Value[i]) && (!(i == 1 && Value[i] == 'x')))
             hex = false;
     }
 
@@ -127,7 +121,6 @@ void Tokenizer::Define(const char Name[], const char Value[])
     }
 
     DefineSymbol *NewSym = new DefineSymbol;
-    memset(NewSym, 0, sizeof(DefineSymbol));
     NewSym->name = strdup(Name);
     NewSym->value = strValue;
     NewSym->next = _dsymlist;
@@ -307,21 +300,21 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
                 {
                     if (State == Space1 || State == Space2)
                     {
-                        if (isspace(line[i]))
+                        if (std::isspace(line[i]))
                             continue;
                         State = (State == Space1) ? Id : Value;
                     }
 
                     else if (State == Id)
                     {
-                        if (isspace(line[i]))
+                        if (std::isspace(line[i]))
                         {
                             strId = CurrentToken;
                             CurrentToken.clear();
                             State = Space2;
                             continue;
                         }
-                        else if (! isalnum(line[i]))
+                        else if (! std::isalnum(line[i]))
                         {
                             break;
                         }
@@ -480,7 +473,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
         }
 
 
-        if (isspace(ch) || iscntrl(ch))
+        if (std::isspace(ch) || std::iscntrl(ch))
         {
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             CurrentToken.clear();
