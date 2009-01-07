@@ -1,6 +1,6 @@
 /*
  * cppcheck - c/c++ syntax checking
- * Copyright (C) 2007-2009 Daniel Marjam‰ki, Reijo Tomperi, Nicolas Le Cam
+ * Copyright (C) 2007-2009 Daniel Marjam√§ki, Reijo Tomperi, Nicolas Le Cam
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,11 @@
 #include <cstring>
 #include <algorithm>
 
+
+#ifdef __BORLANDC__
+#include <ctype.h>
+#include <mem.h>
+#endif
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
@@ -92,6 +97,7 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
         if (varname)
         {
             struct VAR *var = new VAR;
+            memset(var, 0, sizeof(struct VAR));
             var->name = varname;
             var->init = false;
             var->next = varlist;

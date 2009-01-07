@@ -1,6 +1,6 @@
 /*
  * cppcheck - c/c++ syntax checking
- * Copyright (C) 2007-2009 Daniel Marjam‰ki, Reijo Tomperi, Nicolas Le Cam
+ * Copyright (C) 2007-2009 Daniel Marjam√§ki, Reijo Tomperi, Nicolas Le Cam
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@
 #include <algorithm>
 
 #include <sstream>
+
+#ifdef __BORLANDC__
+#include <ctype>
+#endif
 
 
 Preprocessor::Preprocessor()
@@ -50,7 +54,7 @@ std::string Preprocessor::read(std::istream &istr)
             ++lineno;
 
         // Replace assorted special chars with spaces..
-        if ((ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
+        if ((ch != '\n') && (isspace(ch) || iscntrl(ch)))
             ch = ' ';
 
         // Skip spaces after ' ' and after '#'

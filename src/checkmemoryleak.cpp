@@ -1,6 +1,6 @@
 /*
  * cppcheck - c/c++ syntax checking
- * Copyright (C) 2007-2009 Daniel Marjam‰ki, Reijo Tomperi, Nicolas Le Cam
+ * Copyright (C) 2007-2009 Daniel Marjam√§ki, Reijo Tomperi, Nicolas Le Cam
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,12 @@
 
 #include <iostream>
 #include <sstream>
+
+#ifdef __BORLANDC__
+#include <mem.h>     // <- memset
+#else
+#include <string.h>
+#endif
 
 
 //---------------------------------------------------------------------------
