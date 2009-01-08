@@ -1,19 +1,22 @@
-#ifndef ErrorMessageH
-#define ErrorMessageH
-
-/**
- * This class is used by the Cppcheck application to get
- * informative error messages when e.g. memory leak is found
- * from the inspected source file. This is also used another
- * program to generate text for wiki and man page.
- */
+#ifndef errormessageH
+#define errormessageH
+#include <string>
+#include "settings.h"
+class Token;
+class Tokenizer;
 class ErrorMessage
 {
 public:
-    ErrorMessage();
-    virtual ~ErrorMessage();
-protected:
-private:
-};
+    static std::string msg1(const Tokenizer *tokenizer, const Token *Location);
+    static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    { return msg1(tokenizer, Location) + "Memory leak: " + varname + ""; }
 
-#endif // ErrorMessageH
+    static bool memleak(const Settings &s)
+    { return true; }
+    static std::string resourceLeak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    { return msg1(tokenizer, Location) + "Resource leak: " + varname + ""; }
+
+    static bool resourceLeak(const Settings &s)
+    { return true; }
+};
+#endif

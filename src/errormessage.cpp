@@ -1,11 +1,10 @@
 #include "errormessage.h"
+#include "tokenize.h"
+#include "token.h"
 
-ErrorMessage::ErrorMessage()
+std::string ErrorMessage::msg1(const Tokenizer *tokenizer, const Token *Location)
 {
-    //ctor
+    return tokenizer->fileLine(Location) + ": ";
 }
 
-ErrorMessage::~ErrorMessage()
-{
-    //dtor
-}
+
