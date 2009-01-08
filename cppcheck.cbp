@@ -81,6 +81,12 @@
 		<Unit filename="test/testtokenize.cpp" />
 		<Unit filename="test/testunusedprivfunc.cpp" />
 		<Unit filename="test/testunusedvar.cpp" />
+		<Unit filename="tools/dmake.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Unit filename="tools/errmsg.cpp">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Extensions>
 			<code_completion />
 			<debugger />

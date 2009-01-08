@@ -70,6 +70,7 @@ private:
         TEST_CASE(macro_simple2);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_multiline);
+        TEST_CASE(preprocessor_inside_string);
     }
 
 
@@ -434,7 +435,23 @@ private:
         ASSERT_EQUALS("\n\n5*5;\n", Preprocessor::expandMacros(filedata));
     }
 
+    void preprocessor_inside_string()
+    {
+        const char filedata[] = "int main()"
+                                "{"
+                                "    const char *a = \"#define A\n\";"
+                                "}";
 
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual);
+
+        // Compare results..
+        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS("int main(){ const char *a = \"#define A\n\";}\n", actual[""]);
+    }
 };
 
 REGISTER_TEST(TestPreprocessor)
