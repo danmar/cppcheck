@@ -29,68 +29,17 @@ private:
     std::string _par1;
     unsigned int _settings;
 
+    std::string msg(bool code) const;
+
 public:
-    Message(std::string funcname, unsigned int settings, std::string msg, std::string par1)
-            : _funcname(funcname), _msg(msg), _par1(par1), _settings(settings)
-    { }
+    Message(std::string funcname, unsigned int settings, std::string msg, std::string par1);
 
     static const unsigned int ALL = 1;
     static const unsigned int STYLE = 2;
 
-    std::string msg(bool code) const
-    {
-        const char *str = code ? "\"" : "";
-        std::string ret(str + _msg + str);
-        if (! _par1.empty())
-        {
-            std::string::size_type pos = 0;
-            while ((pos = ret.find("%1", pos)) != std::string::npos)
-            {
-                ret.erase(pos, 2);
-                if (code)
-                    ret.insert(pos, "\" + " + _par1 + " + \"");
-                else
-                    ret.insert(pos, _par1);
-            }
-        }
-        return ret;
-    }
+    void generateCode(std::ostream &ostr) const;
 
-    void generateCode(std::ostream &ostr) const
-    {
-        // Error message..
-        ostr << "    static std::string " << _funcname << "(const Tokenizer *tokenizer, const Token *Location, ";
-        if (! _par1.empty())
-            ostr << "const std::string &" << _par1;
-        ostr << ")\n";
-        ostr << "    { return msg1(tokenizer, Location) + " << msg(true) << "; }" << std::endl;
-
-        // Settings..
-        ostr << std::endl;
-        ostr << "    static bool " << _funcname << "(const Settings &s)" << std::endl;
-        ostr << "    { return ";
-        if (_settings == 0)
-            ostr << "true";
-        else
-        {
-            if (_settings & ALL)
-                ostr << "s._showAll";
-            if (_settings & (ALL | STYLE))
-                ostr << " & ";
-            if (_settings & STYLE)
-                ostr << "s._checkCodingStyle";
-        }
-        ostr << "; }" << std::endl;
-    }
-
-    void generateDoc(std::ostream &ostr, unsigned int i) const
-    {
-        if (_settings == i)
-        {
-            ostr << "    " << msg(false) << std::endl;
-        }
-    }
-
+    void generateDoc(std::ostream &ostr, unsigned int i) const;
 };
 
 
@@ -100,8 +49,15 @@ int main()
 {
     // Error messages..
     std::list<Message> err;
+
+    // checkmemoryleak.cpp..
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
     err.push_back(Message("resourceLeak", 0, "Resource leak: %1", "varname"));
+
+    // checkother.cpp..
+    err.push_back(Message("cstyleCast", Message::STYLE, "C-style pointer casting", ""));
+    err.push_back(Message("redundantIfDelete0", Message::STYLE, "Redundant condition. It is safe to deallocate a NULL pointer", ""));
+    err.push_back(Message("redundantIfRemove", Message::STYLE, "Redundant condition. The remove function in the STL will not do anything if element doesn't exist", ""));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;
@@ -156,4 +112,69 @@ int main()
 
     return 0;
 }
+
+
+
+
+
+Message::Message(std::string funcname, unsigned int settings, std::string msg, std::string par1)
+        : _funcname(funcname), _msg(msg), _par1(par1), _settings(settings)
+{ }
+
+std::string Message::msg(bool code) const
+{
+    const char *str = code ? "\"" : "";
+    std::string ret(str + _msg + str);
+    if (! _par1.empty())
+    {
+        std::string::size_type pos = 0;
+        while ((pos = ret.find("%1", pos)) != std::string::npos)
+        {
+            ret.erase(pos, 2);
+            if (code)
+                ret.insert(pos, "\" + " + _par1 + " + \"");
+            else
+                ret.insert(pos, _par1);
+        }
+    }
+    return ret;
+}
+
+void Message::generateCode(std::ostream &ostr) const
+{
+    // Error message..
+    ostr << "    static std::string " << _funcname << "(const Tokenizer *tokenizer, const Token *Location";
+    if (! _par1.empty())
+        ostr << ", const std::string &" << _par1;
+    ostr << ")\n";
+    ostr << "    { return msg1(tokenizer, Location) + " << msg(true) << "; }" << std::endl;
+
+    // Settings..
+    ostr << "    static bool " << _funcname << "(const Settings &s)" << std::endl;
+    ostr << "    { return ";
+    if (_settings == 0)
+        ostr << "true";
+    else
+    {
+        if (_settings & ALL)
+            ostr << "s._showAll";
+        if (_settings & (ALL | STYLE))
+            ostr << " & ";
+        if (_settings & STYLE)
+            ostr << "s._checkCodingStyle";
+    }
+    ostr << "; }" << std::endl << std::endl;
+}
+
+void Message::generateDoc(std::ostream &ostr, unsigned int i) const
+{
+    if (_settings == i)
+    {
+        ostr << "    " << msg(false) << std::endl;
+    }
+}
+
+
+
+
 

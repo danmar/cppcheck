@@ -309,20 +309,25 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     checkOther.InvalidFunctionUsage();
 
 
+    // Warning upon c-style pointer casts
+    if ( ErrorMessage::cstyleCast(_settings) )
+    {
+        const char *ext = strrchr(FileName, '.');
+        if (ext && strcmp(ext, ".cpp") == 0)
+            checkOther.WarningOldStylePointerCast();
+    }
+
+    // if (a) delete a;
+    if ( ErrorMessage::redundantIfDelete0(_settings) )
+        checkOther.WarningRedundantCode();
+
+
     if (_settings._checkCodingStyle)
     {
         // Check that all private functions are called.
         checkClass.privateFunctions();
 
-        // Warning upon c-style pointer casts
-        const char *ext = strrchr(FileName, '.');
-        if (ext && strcmp(ext, ".cpp") == 0)
-            checkOther.WarningOldStylePointerCast();
-
         checkClass.operatorEq();
-
-        // if (a) delete a;
-        checkOther.WarningRedundantCode();
 
         // if (condition);
         checkOther.WarningIf();

@@ -19,7 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
-
+#include "errormessage.h"
 #include <list>
 #include <map>
 #include <sstream>
@@ -59,9 +59,7 @@ void CheckOther::WarningOldStylePointerCast()
         if (!Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
             continue;
 
-        std::ostringstream ostr;
-        ostr << _tokenizer->fileLine(tok) << ": C-style pointer casting";
-        _errorLogger->reportErr(ostr.str());
+        _errorLogger->reportErr( ErrorMessage::cstyleCast(_tokenizer, tok) );
     }
 }
 
@@ -142,9 +140,7 @@ void CheckOther::WarningRedundantCode()
 
         if (err)
         {
-            std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Redundant condition. It is safe to deallocate a NULL pointer";
-            _errorLogger->reportErr(ostr.str());
+            _errorLogger->reportErr( ErrorMessage::redundantIfDelete0(_tokenizer, tok) );
         }
     }
 
@@ -180,10 +176,7 @@ void CheckOther::redundantCondition2()
             var2->str() == var3->str() &&
             any1->str() == any2->str())
         {
-            std::ostringstream errmsg;
-            errmsg << _tokenizer->fileLine(tok)
-            << ": Redundant condition found. The remove function in the STL will not do anything if element doesn't exist";
-            _errorLogger->reportErr(errmsg.str());
+            _errorLogger->reportErr( ErrorMessage::redundantIfRemove(_tokenizer, tok) );
         }
 
         tok = Token::findmatch(tok->next(), pattern);
