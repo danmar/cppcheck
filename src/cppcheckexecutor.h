@@ -46,8 +46,12 @@ public:
      *
      * @param argc from main()
      * @param argv from main()
+     * @return amount of errors found in the checking or 0
+     * if no errors were found. If parsing of the arguments failed
+     * and checking is not even started, 1 is returned to indicate
+     * about an error.
      */
-    void check(int argc, const char* const argv[]);
+    unsigned int check(int argc, const char* const argv[]);
 
     /**
      * Errors and warnings are directed here. This should be

@@ -30,14 +30,19 @@ CppCheckExecutor::~CppCheckExecutor()
     //dtor
 }
 
-void CppCheckExecutor::check(int argc, const char* const argv[])
+unsigned int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     CppCheck cppCheck(*this);
     std::string result = cppCheck.parseFromArgs(argc, argv);
     if (result.length() == 0)
-        cppCheck.check();
+    {
+        return cppCheck.check();
+    }
     else
+    {
         std::cout << result;
+        return 1;
+    }
 }
 
 void CppCheckExecutor::reportErr(const std::string &errmsg)

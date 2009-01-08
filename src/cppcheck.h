@@ -50,8 +50,9 @@ public:
     /**
      * This starts the actual checking. Note that you must call
      * parseFromArgs() or settings() and addFile() before calling this.
+     * @return amount of errors found or 0 if none were found.
      */
-    void check();
+    unsigned int check();
 
     /**
      * Adjust the settings before doing the check. E.g. show only

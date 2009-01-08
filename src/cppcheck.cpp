@@ -144,7 +144,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
     return "";
 }
 
-void CppCheck::check()
+unsigned int CppCheck::check()
 {
     _checkFunctionUsage.setErrorLogger(this);
     std::sort(_filenames.begin(), _filenames.end());
@@ -209,7 +209,9 @@ void CppCheck::check()
         _checkFunctionUsage.check();
     }
 
+    unsigned int result = _errorList.size();
     _errorList.clear();
+    return result;
 }
 
 
