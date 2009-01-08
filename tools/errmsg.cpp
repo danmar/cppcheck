@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
+#include <fstream>
 #include <iostream>
 #include <list>
 #include <string>
@@ -30,7 +31,7 @@ private:
 
 public:
     Message(std::string funcname, unsigned int settings, std::string msg, std::string par1)
-            : _funcname(funcname), _settings(settings), _msg(msg), _par1(par1)
+            : _funcname(funcname), _msg(msg), _par1(par1), _settings(settings)
     { }
 
     static const unsigned int ALL = 1;
@@ -58,15 +59,15 @@ public:
     void generateCode(std::ostream &ostr) const
     {
         // Error message..
-        ostr << "    static std::string " << _funcname << "(";
+        ostr << "    static std::string " << _funcname << "(const Tokenizer *tokenizer, const Token *Location, ";
         if (! _par1.empty())
             ostr << "const std::string &" << _par1;
-        ostr << ") const\n";
-        ostr << "    { return " << msg(true) << "; }" << std::endl;
+        ostr << ")\n";
+        ostr << "    { return msg1(tokenizer, Location) + " << msg(true) << "; }" << std::endl;
 
         // Settings..
         ostr << std::endl;
-        ostr << "    static bool " << _funcname << "(const Settings &s) const" << std::endl;
+        ostr << "    static bool " << _funcname << "(const Settings &s)" << std::endl;
         ostr << "    { return ";
         if (_settings == 0)
             ostr << "true";
@@ -100,11 +101,27 @@ int main()
     // Error messages..
     std::list<Message> err;
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
+    err.push_back(Message("resourceLeak", 0, "Resource leak: %1", "varname"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;
+    std::ofstream fout("errormessage.h");
+    fout << "#ifndef errormessageH\n";
+    fout << "#define errormessageH\n";
+    fout << "#include <string>\n";
+    fout << "#include \"settings.h\"\n";
+    fout << "class Token;\n";
+    fout << "class Tokenizer;\n";
+    fout << "class ErrorMessage\n";
+    fout << "{\n";
+    fout << "private:\n";
+    fout << "    ErrorMessage() { }\n";
+    fout << "    static std::string msg1(const Tokenizer *tokenizer, const Token *Location);\n";
+    fout << "public:\n";
     for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
-        it->generateCode(std::cout);
+        it->generateCode(fout);
+    fout << "};\n";
+    fout << "#endif\n";
     std::cout << std::endl;
 
     // Generate documentation..
