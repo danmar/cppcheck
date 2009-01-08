@@ -12,9 +12,9 @@ The "simple" tasks
    - etc?
  * Add unit tests
  * improved error message handling
+ * Perhaps the parseArgs function should be moved to the class Settings instead?
 
 New checks (bugs)
- * sprintf problem with overlapping data
  * CheckMemoryLeak
    - Check for more resource leaks
      Windows API (CreatePen, GetDC, ..)

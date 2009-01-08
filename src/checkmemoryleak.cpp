@@ -19,6 +19,8 @@
 
 #include "checkmemoryleak.h"
 
+#include "errormessage.h"
+
 #include <stdlib.h> // free
 
 #include <algorithm>
@@ -310,17 +312,11 @@ void CheckMemoryLeakClass::MismatchError(const Token *Tok1, const std::list<cons
 
 void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], AllocType alloctype)
 {
-    std::ostringstream errmsg;
-    errmsg << _tokenizer->fileLine(tok);
-
     if (alloctype == CheckMemoryLeakClass::FOPEN ||
         alloctype == CheckMemoryLeakClass::POPEN)
-        errmsg << ": Resource leak: ";
+        _errorLogger->reportErr(ErrorMessage::resourceLeak(_tokenizer, tok, varname));
     else
-        errmsg << ": Memory leak: ";
-
-    errmsg << varname;
-    _errorLogger->reportErr(errmsg.str());
+        _errorLogger->reportErr(ErrorMessage::memleak(_tokenizer, tok, varname));
 }
 //---------------------------------------------------------------------------
 

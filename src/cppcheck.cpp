@@ -28,6 +28,8 @@
 #include "checkfunctionusage.h"
 #include "filelister.h"
 
+#include "errormessage.h"
+
 #include <algorithm>
 #include <sstream>
 #include <cstring>
@@ -271,7 +273,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
-    checkMemoryLeak.CheckMemoryLeak();
+    if ( ErrorMessage::memleak(_settings) )
+        checkMemoryLeak.CheckMemoryLeak();
 
     // Check that all class constructors are ok.
     checkClass.constructors();
