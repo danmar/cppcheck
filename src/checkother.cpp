@@ -59,7 +59,7 @@ void CheckOther::WarningOldStylePointerCast()
         if (!Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
             continue;
 
-        _errorLogger->reportErr( ErrorMessage::cstyleCast(_tokenizer, tok) );
+        _errorLogger->reportErr(ErrorMessage::cstyleCast(_tokenizer, tok));
     }
 }
 
@@ -140,7 +140,7 @@ void CheckOther::WarningRedundantCode()
 
         if (err)
         {
-            _errorLogger->reportErr( ErrorMessage::redundantIfDelete0(_tokenizer, tok) );
+            _errorLogger->reportErr(ErrorMessage::redundantIfDelete0(_tokenizer, tok));
         }
     }
 
@@ -176,7 +176,7 @@ void CheckOther::redundantCondition2()
             var2->str() == var3->str() &&
             any1->str() == any2->str())
         {
-            _errorLogger->reportErr( ErrorMessage::redundantIfRemove(_tokenizer, tok) );
+            _errorLogger->reportErr(ErrorMessage::redundantIfRemove(_tokenizer, tok));
         }
 
         tok = Token::findmatch(tok->next(), pattern);
@@ -324,40 +324,40 @@ void CheckOther::InvalidFunctionUsage()
             }
         }
     }
-    
+
     // sprintf|snprintf overlapping data
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Get variable id of target buffer..
         unsigned int varid = 0;
-    
-        if ( Token::Match(tok, "sprintf|snprintf ( %var% ,") )
+
+        if (Token::Match(tok, "sprintf|snprintf ( %var% ,"))
             varid = tok->tokAt(2)->varId();
 
-        else if ( Token::Match(tok, "sprintf|snprintf ( %var% . %var% ,") )
+        else if (Token::Match(tok, "sprintf|snprintf ( %var% . %var% ,"))
             varid = tok->tokAt(4)->varId();
-            
-        if ( varid == 0 )
+
+        if (varid == 0)
             continue;
 
         // goto ","
         const Token *tok2 = tok->tokAt(3);
-        while ( tok2 && tok2->str() != "," )
+        while (tok2 && tok2->str() != ",")
             tok2 = tok2->next();
 
         // is any source buffer overlapping the target buffer?
         unsigned int parlevel = 0;
-        while ( (tok2 = tok2->next()) != NULL )
+        while ((tok2 = tok2->next()) != NULL)
         {
-            if ( tok2->str() == "(" )
+            if (tok2->str() == "(")
                 ++parlevel;
-            else if ( tok2->str() == ")" )
+            else if (tok2->str() == ")")
             {
                 --parlevel;
-                if ( parlevel < 0 )
+                if (parlevel < 0)
                     break;
             }
-            else if ( tok2->varId() == varid )
+            else if (tok2->varId() == varid)
             {
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok2) << ": Overlapping data buffer " << tok2->str();

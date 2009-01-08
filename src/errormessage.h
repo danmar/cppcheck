@@ -31,29 +31,49 @@ private:
     static std::string msg1(const Tokenizer *tokenizer, const Token *Location);
 public:
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
-    { return msg1(tokenizer, Location) + "Memory leak: " + varname + ""; }
+    {
+        return msg1(tokenizer, Location) + "Memory leak: " + varname + "";
+    }
     static bool memleak(const Settings &s)
-    { return true; }
+    {
+        return true;
+    }
 
     static std::string resourceLeak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
-    { return msg1(tokenizer, Location) + "Resource leak: " + varname + ""; }
+    {
+        return msg1(tokenizer, Location) + "Resource leak: " + varname + "";
+    }
     static bool resourceLeak(const Settings &s)
-    { return true; }
+    {
+        return true;
+    }
 
     static std::string cstyleCast(const Tokenizer *tokenizer, const Token *Location)
-    { return msg1(tokenizer, Location) + "C-style pointer casting"; }
+    {
+        return msg1(tokenizer, Location) + "C-style pointer casting";
+    }
     static bool cstyleCast(const Settings &s)
-    { return  & s._checkCodingStyle; }
+    {
+        return  & s._checkCodingStyle;
+    }
 
     static std::string redundantIfDelete0(const Tokenizer *tokenizer, const Token *Location)
-    { return msg1(tokenizer, Location) + "Redundant condition. It is safe to deallocate a NULL pointer"; }
+    {
+        return msg1(tokenizer, Location) + "Redundant condition. It is safe to deallocate a NULL pointer";
+    }
     static bool redundantIfDelete0(const Settings &s)
-    { return  & s._checkCodingStyle; }
+    {
+        return  & s._checkCodingStyle;
+    }
 
     static std::string redundantIfRemove(const Tokenizer *tokenizer, const Token *Location)
-    { return msg1(tokenizer, Location) + "Redundant condition. The remove function in the STL will not do anything if element doesn't exist"; }
+    {
+        return msg1(tokenizer, Location) + "Redundant condition. The remove function in the STL will not do anything if element doesn't exist";
+    }
     static bool redundantIfRemove(const Settings &s)
-    { return  & s._checkCodingStyle; }
+    {
+        return  & s._checkCodingStyle;
+    }
 
 };
 #endif

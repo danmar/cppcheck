@@ -273,7 +273,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
-    if ( ErrorMessage::memleak(_settings) )
+    if (ErrorMessage::memleak(_settings))
         checkMemoryLeak.CheckMemoryLeak();
 
     // Check that all class constructors are ok.
@@ -310,7 +310,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
 
     // Warning upon c-style pointer casts
-    if ( ErrorMessage::cstyleCast(_settings) )
+    if (ErrorMessage::cstyleCast(_settings))
     {
         const char *ext = strrchr(FileName, '.');
         if (ext && strcmp(ext, ".cpp") == 0)
@@ -318,7 +318,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     }
 
     // if (a) delete a;
-    if ( ErrorMessage::redundantIfDelete0(_settings) )
+    if (ErrorMessage::redundantIfDelete0(_settings))
         checkOther.WarningRedundantCode();
 
 

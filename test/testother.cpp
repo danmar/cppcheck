@@ -36,7 +36,7 @@ private:
     {
         TEST_CASE(delete1);
         TEST_CASE(delete2);
-        
+
         TEST_CASE(sprintf1);    // Dangerous usage of sprintf
     }
 
@@ -86,9 +86,9 @@ private:
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
     }
-    
-    
-    
+
+
+
     void sprintfUsage(const char code[])
     {
         // Tokenize..
@@ -102,16 +102,16 @@ private:
 
         // Check for redundant code..
         CheckOther checkOther(&tokenizer, this);
-        checkOther.InvalidFunctionUsage();        
+        checkOther.InvalidFunctionUsage();
     }
-    
+
     void sprintf1()
     {
-        sprintfUsage( "void foo()\n"
-                      "{\n"
-                      "    char buf[100];\n"
-                      "    sprintf(buf,\"%s\",buf);\n"
-                      "}\n");
+        sprintfUsage("void foo()\n"
+                     "{\n"
+                     "    char buf[100];\n"
+                     "    sprintf(buf,\"%s\",buf);\n"
+                     "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: Overlapping data buffer buf\n"), errout.str());
     }
 };
