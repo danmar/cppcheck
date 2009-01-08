@@ -70,7 +70,8 @@ int main()
 
     std::ofstream fout("Makefile");
 
-    fout << "CXXFLAGS=-Wall -pedantic -g\n\n";
+    fout << "CXXFLAGS=-Wall -pedantic -g\n";
+    fout << "BIN=${DESTDIR}/usr/bin\n\n";
 
     fout << "\n###### Object Files\n\n";
     fout << "OBJECTS =     " << objfile(srcfiles[0]);

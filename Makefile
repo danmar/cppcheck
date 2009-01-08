@@ -1,4 +1,5 @@
 CXXFLAGS=-Wall -pedantic -g
+BIN=${DESTDIR}/usr/bin
 
 
 ###### Object Files
