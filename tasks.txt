@@ -1,5 +1,5 @@
 
-The "simple" tasks
+A few suggestions for tasks
  * Optimise
  * Refactor
  * Preprocessor
@@ -13,14 +13,5 @@ The "simple" tasks
  * Add unit tests
  * improved error message handling
  * Perhaps the parseArgs function should be moved to the class Settings instead?
-
-New checks (bugs)
- * CheckMemoryLeak
-   - Check for more resource leaks
-     Windows API (CreatePen, GetDC, ..)
-
-New checks (style)
- * data truncation
- * unused static functions or variables
 
 
