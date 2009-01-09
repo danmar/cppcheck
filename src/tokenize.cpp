@@ -281,7 +281,8 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             {
                 // Extract the filename
                 line.erase(0, line.find("\"") + 1);
-                line.erase(line.find("\""));
+                if (line.find("\"") != std::string::npos)
+                    line.erase(line.find("\""));
 
                 // Relative path..
                 if (_files.back().find_first_of("\\/") != std::string::npos)
