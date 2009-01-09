@@ -65,6 +65,11 @@ int main()
     // Get files..
     std::vector<std::string> srcfiles;
     FileLister::RecursiveAddFiles(srcfiles, "src/", true);
+    if (srcfiles.empty())
+    {
+        std::cout << "No source files found." << std::endl;
+        exit(1);
+    }
     std::vector<std::string> testfiles;
     FileLister::RecursiveAddFiles(testfiles, "test/", true);
 
