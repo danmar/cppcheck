@@ -314,9 +314,7 @@ void CheckOther::InvalidFunctionUsage()
                         int radix = atoi(tok2->strAt(1));
                         if (!(radix == 0 || (radix >= 2 && radix <= 36)))
                         {
-                            std::ostringstream ostr;
-                            ostr << _tokenizer->fileLine(tok2) << ": Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
-                            _errorLogger->reportErr(ostr.str());
+                            _errorLogger->reportErr(ErrorMessage::dangerousUsageStrtol(_tokenizer, tok2));
                         }
                     }
                     break;

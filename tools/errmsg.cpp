@@ -58,6 +58,7 @@ int main()
     err.push_back(Message("cstyleCast", Message::STYLE, "C-style pointer casting", ""));
     err.push_back(Message("redundantIfDelete0", Message::STYLE, "Redundant condition. It is safe to deallocate a NULL pointer", ""));
     err.push_back(Message("redundantIfRemove", Message::STYLE, "Redundant condition. The remove function in the STL will not do anything if element doesn't exist", ""));
+    err.push_back(Message("dangerousUsageStrtol", 0, "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36", ""));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

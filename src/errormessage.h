@@ -75,5 +75,14 @@ public:
         return  & s._checkCodingStyle;
     }
 
+    static std::string dangerousUsageStrtol(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
+    }
+    static bool dangerousUsageStrtol(const Settings &s)
+    {
+        return true;
+    }
+
 };
 #endif

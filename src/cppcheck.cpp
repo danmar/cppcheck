@@ -255,14 +255,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkOther.functionVariableUsage();
     }
 
-    // Including header which is not needed (too many false positives)
-//    if ( _settings._checkCodingStyle )
-//    {
-//        CheckHeaders checkHeaders( &tokenizer );
-//        checkHeaders.WarningIncludeHeader();
-//    }
-
-
 
     _tokenizer.simplifyTokenList();
 
@@ -291,25 +283,10 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         // Check for "if (a=b)"
         checkOther.CheckIfAssignment();
-
-        // Check for case without break
-        // Disabled because it generates many false positives
-        // CheckCaseWithoutBreak();
-
-        // Dangerous usage of strtok
-        // Disabled because it generates false positives
-        //WarningStrTok();
     }
-
-
 
     // Dangerous functions, such as 'gets' and 'scanf'
     checkBufferOverrun.dangerousFunctions();
-
-
-    // Invalid function usage..
-    checkOther.InvalidFunctionUsage();
-
 
     // Warning upon c-style pointer casts
     if (ErrorMessage::cstyleCast(_settings))
@@ -323,6 +300,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::redundantIfDelete0(_settings))
         checkOther.WarningRedundantCode();
 
+    // strtol and strtoul usage
+    if (ErrorMessage::dangerousUsageStrtol(_settings))
+        checkOther.InvalidFunctionUsage();
 
     if (_settings._checkCodingStyle)
     {
