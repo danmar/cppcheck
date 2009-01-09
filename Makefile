@@ -64,12 +64,20 @@ cppcheck:	$(OBJECTS)
 testrunner:	$(TESTOBJ)
 	g++ $(CXXFLAGS) -o testrunner $(TESTOBJ)
 
-all:	cppcheck	testrunner
+all:	cppcheck	testrunner	tools
 
 test:	testrunner
 
+tools:	errmsg	dmake
+
+errmsg:	tools/errmsg.cpp
+	g++ -Wall -pedantic -o errmsg tools/errmsg.cpp
+
+dmake:	tools/dmake.cpp	src/filelister.cpp	src/filelister.h
+	g++ -Wall -pedantic -o dmake tools/dmake.cpp src/filelister.cpp
+
 clean:
-	rm -f src/*.o test/*.o testrunner cppcheck
+	rm -f src/*.o test/*.o testrunner cppcheck dmake errmsg
 
 install:	cppcheck
 	install -d ${BIN}
@@ -182,4 +190,8 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp src/tokenize.h src/settin
 
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h src/errorlogger.h src/tokenize.h src/settings.h src/token.h src/checkother.h
 	g++ $(CXXFLAGS) -c -o test/testunusedvar.o test/testunusedvar.cpp
+
+src/errormessage.h:	errmsg
+	./errmsg
+	mv errormessage.h src/
 
