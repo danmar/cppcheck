@@ -83,7 +83,7 @@ private:
               "    int i;\n"
               "};\n");
         std::string actual(errout.str());
-        std::string expected("[test.cpp:1] The class 'Fred' has no constructor\n");
+        std::string expected("[test.cpp:1]: The class 'Fred' has no constructor\n");
         ASSERT_EQUALS(expected, actual);
     }
 

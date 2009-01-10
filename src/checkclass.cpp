@@ -19,6 +19,8 @@
 //---------------------------------------------------------------------------
 #include "checkclass.h"
 
+#include "errormessage.h"
+
 #include <locale>
 
 #include <string>
@@ -69,7 +71,7 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
         if (indentlevel != 1)
             continue;
 
-        // "private:" "public:" "protected:" etc
+		// "private:" "public:" "protected:" etc
         bool b = bool((*tok->strAt(0) != ':') && strchr(tok->strAt(0), ':') != 0);
 
         // Search for start of statement..
@@ -385,10 +387,7 @@ void CheckClass::constructors()
                 struct VAR *varlist = ClassChecking_GetVarList(tok1);
                 if (varlist)
                 {
-                    std::ostringstream ostr;
-                    ostr << _tokenizer->fileLine(tok1);
-                    ostr << " The class '" << classNameToken->str() << "' has no constructor";
-                    _errorLogger->reportErr(ostr.str());
+                    _errorLogger->reportErr(ErrorMessage::noConstructor(_tokenizer, tok1, classNameToken->str()));
                 }
                 // Delete the varlist..
                 while (varlist)

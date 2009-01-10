@@ -30,6 +30,15 @@ private:
     ErrorMessage() { }
     static std::string msg1(const Tokenizer *tokenizer, const Token *Location);
 public:
+    static std::string noConstructor(const Tokenizer *tokenizer, const Token *Location, const std::string &classname)
+    {
+        return msg1(tokenizer, Location) + "The class '" + classname + "' has no constructor";
+    }
+    static bool noConstructor(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
         return msg1(tokenizer, Location) + "Memory leak: " + varname + "";

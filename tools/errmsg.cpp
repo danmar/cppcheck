@@ -50,6 +50,9 @@ int main()
     // Error messages..
     std::list<Message> err;
 
+	// checkclass.cpp..
+	err.push_back(Message("noConstructor", Message::STYLE, "The class '%1' has no constructor", "classname"));
+
     // checkmemoryleak.cpp..
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
     err.push_back(Message("resourceLeak", 0, "Resource leak: %1", "varname"));
