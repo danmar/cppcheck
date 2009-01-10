@@ -57,22 +57,31 @@ public:
         return s._checkCodingStyle;
     }
 
-    static std::string memsetClass(const Tokenizer *tokenizer, const Token *Location, const std::string &funcname)
+    static std::string memsetClass(const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc)
     {
-        return msg1(tokenizer, Location) + "Using '" + funcname + "' on class";
+        return msg1(tokenizer, Location) + "Using '" + memfunc + "' on class";
     }
     static bool memsetClass(const Settings &s)
     {
         return true;
     }
 
-    static std::string memsetStruct(const Tokenizer *tokenizer, const Token *Location, const std::string &funcname, const std::string &classname)
+    static std::string memsetStruct(const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc, const std::string &classname)
     {
-        return msg1(tokenizer, Location) + "Using '" + funcname + "' on struct that contains a 'std::" + classname + "'";
+        return msg1(tokenizer, Location) + "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'";
     }
     static bool memsetStruct(const Settings &s)
     {
         return true;
+    }
+
+    static std::string operatorEq(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "'operator=' should return something";
+    }
+    static bool operatorEq(const Settings &s)
+    {
+        return s._checkCodingStyle;
     }
 
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)

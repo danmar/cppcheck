@@ -310,12 +310,12 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::unusedPrivateFunction(_settings))
         checkClass.privateFunctions();
 
-
+    // 'operator=' should return something..
+    if (ErrorMessage::operatorEq(_settings))
+        checkClass.operatorEq();
 
     if (_settings._checkCodingStyle)
     {
-        checkClass.operatorEq();
-
         // if (condition);
         checkOther.WarningIf();
 

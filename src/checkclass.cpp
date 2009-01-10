@@ -650,11 +650,10 @@ void CheckClass::noMemset()
 
 void CheckClass::operatorEq()
 {
-    if (const Token *tok = Token::findmatch(_tokenizer->tokens(), "void operator = ("))
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), "void operator = (");
+    if (tok)
     {
-        std::ostringstream ostr;
-        ostr << _tokenizer->fileLine(tok) << ": 'operator=' should return something";
-        _errorLogger->reportErr(ostr.str());
+        _errorLogger->reportErr(ErrorMessage::operatorEq(_tokenizer, tok));
     }
 }
 //---------------------------------------------------------------------------
