@@ -160,12 +160,12 @@ void Message::generateCode(std::ostream &ostr) const
         ostr << "true";
     else
     {
-        if (_settings & ALL)
+        if (_settings == ALL)
             ostr << "s._showAll";
-        if (_settings & (ALL | STYLE))
-            ostr << " & ";
-        if (_settings & STYLE)
+        else if (_settings == STYLE)
             ostr << "s._checkCodingStyle";
+        else if (_settings == (ALL | STYLE))
+            ostr << "s._showAll & s._checkCodingStyle";
     }
     ostr << ";\n";
     ostr << "    }\n\n";

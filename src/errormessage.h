@@ -54,7 +54,7 @@ public:
     }
     static bool cstyleCast(const Settings &s)
     {
-        return  & s._checkCodingStyle;
+        return s._checkCodingStyle;
     }
 
     static std::string redundantIfDelete0(const Tokenizer *tokenizer, const Token *Location)
@@ -63,7 +63,7 @@ public:
     }
     static bool redundantIfDelete0(const Settings &s)
     {
-        return  & s._checkCodingStyle;
+        return s._checkCodingStyle;
     }
 
     static std::string redundantIfRemove(const Tokenizer *tokenizer, const Token *Location)
@@ -72,7 +72,7 @@ public:
     }
     static bool redundantIfRemove(const Settings &s)
     {
-        return  & s._checkCodingStyle;
+        return s._checkCodingStyle;
     }
 
     static std::string dangerousUsageStrtol(const Tokenizer *tokenizer, const Token *Location)
