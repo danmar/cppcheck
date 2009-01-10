@@ -96,7 +96,7 @@ private:
               "    Fred() { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4] Uninitialized member variable 'Fred::i'\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Uninitialized member variable 'Fred::i'\n"), errout.str());
     }
 
 
@@ -110,7 +110,7 @@ private:
               "};\n"
               "Fred::Fred()\n"
               "{ }\n");
-        ASSERT_EQUALS(std::string("[test.cpp:7] Uninitialized member variable 'Fred::i'\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:7]: Uninitialized member variable 'Fred::i'\n"), errout.str());
     }
 
 
@@ -129,7 +129,7 @@ private:
               "{\n"
               "    i = _i;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8] Uninitialized member variable 'Fred::i'\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: Uninitialized member variable 'Fred::i'\n"), errout.str());
     }
 
 
@@ -196,7 +196,7 @@ private:
               "    void operator=() { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5] Uninitialized member variable 'Fred::i'\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: Uninitialized member variable 'Fred::i'\n"), errout.str());
     }
 
     void initvar_operator_eq3()

@@ -27,12 +27,15 @@ private:
     std::string _funcname;
     std::string _msg;
     std::string _par1;
+    std::string _par2;
     unsigned int _settings;
 
     std::string msg(bool code) const;
 
 public:
+    Message(std::string funcname, unsigned int settings, std::string msg);
     Message(std::string funcname, unsigned int settings, std::string msg, std::string par1);
+    Message(std::string funcname, unsigned int settings, std::string msg, std::string par1, std::string par2);
 
     static const unsigned int ALL = 1;
     static const unsigned int STYLE = 2;
@@ -52,16 +55,17 @@ int main()
 
     // checkclass.cpp..
     err.push_back(Message("noConstructor", Message::STYLE, "The class '%1' has no constructor", "classname"));
+    err.push_back(Message("uninitVar", 0, "Uninitialized member variable '%1::%2'", "classname", "varname"));
 
     // checkmemoryleak.cpp..
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
     err.push_back(Message("resourceLeak", 0, "Resource leak: %1", "varname"));
 
     // checkother.cpp..
-    err.push_back(Message("cstyleCast", Message::STYLE, "C-style pointer casting", ""));
-    err.push_back(Message("redundantIfDelete0", Message::STYLE, "Redundant condition. It is safe to deallocate a NULL pointer", ""));
-    err.push_back(Message("redundantIfRemove", Message::STYLE, "Redundant condition. The remove function in the STL will not do anything if element doesn't exist", ""));
-    err.push_back(Message("dangerousUsageStrtol", 0, "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36", ""));
+    err.push_back(Message("cstyleCast", Message::STYLE, "C-style pointer casting"));
+    err.push_back(Message("redundantIfDelete0", Message::STYLE, "Redundant condition. It is safe to deallocate a NULL pointer"));
+    err.push_back(Message("redundantIfRemove", Message::STYLE, "Redundant condition. The remove function in the STL will not do anything if element doesn't exist"));
+    err.push_back(Message("dangerousUsageStrtol", 0, "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;
@@ -121,14 +125,23 @@ int main()
 
 
 
+Message::Message(std::string funcname, unsigned int settings, std::string msg)
+        : _funcname(funcname), _msg(msg), _par1(""), _par2(""), _settings(settings)
+{ }
+
 Message::Message(std::string funcname, unsigned int settings, std::string msg, std::string par1)
-        : _funcname(funcname), _msg(msg), _par1(par1), _settings(settings)
+        : _funcname(funcname), _msg(msg), _par1(par1), _par2(""), _settings(settings)
+{ }
+
+Message::Message(std::string funcname, unsigned int settings, std::string msg, std::string par1, std::string par2)
+        : _funcname(funcname), _msg(msg), _par1(par1), _par2(par2), _settings(settings)
 { }
 
 std::string Message::msg(bool code) const
 {
     const char *str = code ? "\"" : "";
     std::string ret(str + _msg + str);
+
     if (! _par1.empty())
     {
         std::string::size_type pos = 0;
@@ -141,6 +154,20 @@ std::string Message::msg(bool code) const
                 ret.insert(pos, _par1);
         }
     }
+
+    if (! _par2.empty())
+    {
+        std::string::size_type pos = 0;
+        while ((pos = ret.find("%2", pos)) != std::string::npos)
+        {
+            ret.erase(pos, 2);
+            if (code)
+                ret.insert(pos, "\" + " + _par2 + " + \"");
+            else
+                ret.insert(pos, _par2);
+        }
+    }
+
     return ret;
 }
 
@@ -150,6 +177,8 @@ void Message::generateCode(std::ostream &ostr) const
     ostr << "    static std::string " << _funcname << "(const Tokenizer *tokenizer, const Token *Location";
     if (! _par1.empty())
         ostr << ", const std::string &" << _par1;
+    if (! _par2.empty())
+        ostr << ", const std::string &" << _par2;
     ostr << ")\n";
     ostr << "    {\n";
     ostr << "        return msg1(tokenizer, Location) + " << msg(true) << ";\n";

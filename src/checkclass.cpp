@@ -446,10 +446,7 @@ void CheckClass::CheckConstructors(const Token *tok1, struct VAR *varlist, const
                 continue;
 
             // It's non-static and it's not initialized => error
-            std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(constructor_token);
-            ostr << " Uninitialized member variable '" << className << "::" << var->name << "'";
-            _errorLogger->reportErr(ostr.str());
+            _errorLogger->reportErr(ErrorMessage::uninitVar(_tokenizer, constructor_token, className, var->name));
         }
 
         for (struct VAR *var = varlist; var; var = var->next)

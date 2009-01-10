@@ -39,6 +39,15 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string uninitVar(const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) + "Uninitialized member variable '" + classname + "::" + varname + "'";
+    }
+    static bool uninitVar(const Settings &s)
+    {
+        return true;
+    }
+
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
         return msg1(tokenizer, Location) + "Memory leak: " + varname + "";
