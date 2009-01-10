@@ -106,10 +106,10 @@ std::string Preprocessor::read(std::istream &istr)
             do
             {
                 ch = (char)istr.get();
-                if ( ch == '\\' )
+                if (ch == '\\')
                 {
                     char chNext = (char)istr.get();
-                    if ( chNext == '\n' )
+                    if (chNext == '\n')
                         ++newlines;
                     else
                     {
@@ -428,7 +428,7 @@ std::string Preprocessor::expandMacros(std::string code)
     std::string::size_type defpos = 0;
     while ((defpos = code.find("#define ", defpos)) != std::string::npos)
     {
-        if ( defpos > 0 && code[defpos-1] != '\n' )
+        if (defpos > 0 && code[defpos-1] != '\n')
         {
             defpos += 6;
             continue;
