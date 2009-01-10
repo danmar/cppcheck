@@ -101,21 +101,29 @@ std::string Preprocessor::read(std::istream &istr)
         // String constants..
         else if (ch == '\"')
         {
+            int newlines = 0;
             code << "\"";
             do
             {
                 ch = (char)istr.get();
-                code << std::string(1, ch);
-                if (ch == '\\')
+                if ( ch == '\\' )
                 {
-                    ch = (char)istr.get();
-                    code << std::string(1, ch);
-
-                    // Avoid exiting loop if string contains "-characters
-                    ch = 0;
+                    char chNext = (char)istr.get();
+                    if ( chNext == '\n' )
+                        ++newlines;
+                    else
+                    {
+                        code << std::string(1, ch);
+                        code << std::string(1, chNext);
+                    }
                 }
+                else
+                    code << std::string(1, ch);
             }
             while (istr.good() && ch != '\"');
+
+            // Insert extra newlines after the string in case the string contained \newline sequences
+            code << std::string(newlines, '\n');
         }
 
         // char constants..
@@ -418,8 +426,14 @@ std::string Preprocessor::expandMacros(std::string code)
 {
     // Search for macros and expand them..
     std::string::size_type defpos = 0;
-    while ((defpos = code.find("#define", defpos)) != std::string::npos)
+    while ((defpos = code.find("#define ", defpos)) != std::string::npos)
     {
+        if ( defpos > 0 && code[defpos-1] != '\n' )
+        {
+            defpos += 6;
+            continue;
+        }
+
         // Get macro..
         std::string::size_type endpos = code.find("\n", defpos + 6);
         while (endpos != std::string::npos && code[endpos-1] == '\\')
