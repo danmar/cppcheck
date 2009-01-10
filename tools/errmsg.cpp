@@ -149,13 +149,13 @@ void Message::generateCode(std::ostream &ostr) const
         ostr << ", const std::string &" << _par1;
     ostr << ")\n";
     ostr << "    {\n";
-	ostr << "        return msg1(tokenizer, Location) + " << msg(true) << ";\n";
+    ostr << "        return msg1(tokenizer, Location) + " << msg(true) << ";\n";
     ostr << "    }\n";
 
     // Settings..
     ostr << "    static bool " << _funcname << "(const Settings &s)" << std::endl;
     ostr << "    {\n";
-	ostr << "        return ";
+    ostr << "        return ";
     if (_settings == 0)
         ostr << "true";
     else
@@ -168,7 +168,7 @@ void Message::generateCode(std::ostream &ostr) const
             ostr << "s._checkCodingStyle";
     }
     ostr << ";\n";
-	ostr << "    }\n\n";
+    ostr << "    }\n\n";
 }
 
 void Message::generateDoc(std::ostream &ostr, unsigned int i) const
