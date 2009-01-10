@@ -71,7 +71,7 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
         if (indentlevel != 1)
             continue;
 
-		// "private:" "public:" "protected:" etc
+        // "private:" "public:" "protected:" etc
         bool b = bool((*tok->strAt(0) != ':') && strchr(tok->strAt(0), ':') != 0);
 
         // Search for start of statement..
