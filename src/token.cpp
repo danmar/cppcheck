@@ -286,7 +286,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         }
 
         // Parse "not" options. Token can be anything except the given one
-        else if (str[1] == '!' && str[0] == '!' && strlen(str) > 2)
+        else if (str[1] == '!' && str[0] == '!' && str[2] != '\0')
         {
             if (strcmp(tok->aaaa(), &(str[2])) == 0)
                 return false;
