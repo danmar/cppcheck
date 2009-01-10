@@ -493,6 +493,18 @@ private:
         }
 
         {
+            const std::string code("");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
+            ASSERT_EQUALS(false, Token::Match(tokenizer.tokens(), "!!else something"));
+        }
+
+        {
             const std::string code("if ;");
 
             // tokenize..

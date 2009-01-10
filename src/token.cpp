@@ -173,15 +173,6 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         while (*p == ' ')
             ++p;
 
-        if (!tok)
-        {
-            // If we have no tokens, pattern "!!else" should return true
-            if (p[1] == '!' && p[0] == '!' && strlen(p) > 2)
-                return true;
-            else
-                return false;
-        }
-
         // Extract token from pattern..
         // TODO: Refactor this so there can't be buffer overflows
         char str[500];
@@ -197,6 +188,15 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         // No token => Success!
         if (str[0] == 0)
             return true;
+
+        if (!tok)
+        {
+            // If we have no tokens, pattern "!!else" should return true
+            if (str[1] == '!' && str[0] == '!' && strlen(str) > 2)
+                continue;
+            else
+                return false;
+        }
 
         // Compare the first character of the string for optimization reasons
         // before doing more detailed checks.
