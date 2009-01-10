@@ -192,7 +192,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         if (!tok)
         {
             // If we have no tokens, pattern "!!else" should return true
-            if (str[1] == '!' && str[0] == '!' && strlen(str) > 2)
+            if (str[1] == '!' && str[0] == '!' && str[2] != '\0')
                 continue;
             else
                 return false;
