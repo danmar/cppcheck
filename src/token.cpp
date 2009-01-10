@@ -167,6 +167,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
 bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
 {
     const char *p = pattern;
+    bool firstpattern = true;
     while (*p)
     {
         // Skip spaces in pattern..
@@ -197,6 +198,12 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             else
                 return false;
         }
+
+        // If we are in the first token, we skip all initial !! patterns
+        if (firstpattern && !tok->previous() && tok->next() && str[1] == '!' && str[0] == '!' && str[2] != '\0')
+            continue;
+
+        firstpattern = false;
 
         // Compare the first character of the string for optimization reasons
         // before doing more detailed checks.

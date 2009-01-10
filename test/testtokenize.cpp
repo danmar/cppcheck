@@ -513,6 +513,18 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
 
             // Match..
+            ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "!!return if"));
+        }
+
+        {
+            const std::string code("if ;");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Match..
             ASSERT_EQUALS(true, Token::Match(tokenizer.tokens(), "if ; !!else"));
         }
 
