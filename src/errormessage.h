@@ -30,6 +30,24 @@ private:
     ErrorMessage() { }
     static std::string msg1(const Tokenizer *tokenizer, const Token *Location);
 public:
+    static std::string arrayIndexOutOfBounds(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Array index out of bounds";
+    }
+    static bool arrayIndexOutOfBounds(const Settings &s)
+    {
+        return s._showAll;
+    }
+
+    static std::string bufferOverrun(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Buffer overrun";
+    }
+    static bool bufferOverrun(const Settings &s)
+    {
+        return s._showAll;
+    }
+
     static std::string noConstructor(const Tokenizer *tokenizer, const Token *Location, const std::string &classname)
     {
         return msg1(tokenizer, Location) + "The class '" + classname + "' has no constructor";

@@ -53,6 +53,10 @@ int main()
     // Error messages..
     std::list<Message> err;
 
+    // checkbufferoverrun.cpp
+    err.push_back(Message("arrayIndexOutOfBounds", Message::ALL, "Array index out of bounds"));
+    err.push_back(Message("bufferOverrun", Message::ALL, "Buffer overrun"));
+
     // checkclass.cpp..
     err.push_back(Message("noConstructor", Message::STYLE, "The class '%1' has no constructor", "classname"));
     err.push_back(Message("uninitVar", 0, "Uninitialized member variable '%1::%2'", "classname", "varname"));

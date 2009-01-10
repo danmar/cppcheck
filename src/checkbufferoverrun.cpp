@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include "checkbufferoverrun.h"
+#include "errormessage.h"
 
 #include <algorithm>
 #include <sstream>
@@ -48,13 +49,13 @@ CheckBufferOverrunClass::~CheckBufferOverrunClass()
 }
 
 // Modified version of 'ReportError' that also reports the callstack
-void CheckBufferOverrunClass::ReportError(const Token *tok, const char errmsg[])
+void CheckBufferOverrunClass::ReportError(const std::string &errmsg)
 {
     std::ostringstream ostr;
     std::list<const Token *>::const_iterator it;
     for (it = _callStack.begin(); it != _callStack.end(); it++)
         ostr << _tokenizer->fileLine(*it) << " -> ";
-    ostr << _tokenizer->fileLine(tok) << ": " << errmsg;
+    ostr << errmsg;
     _errorLogger->reportErr(ostr.str());
 }
 //---------------------------------------------------------------------------
@@ -92,7 +93,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             const char *num = tok->strAt(2);
             if (strtol(num, NULL, 10) >= size)
             {
-                ReportError(tok->next(), "Array index out of bounds");
+                ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
             }
         }
     }
@@ -101,7 +102,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         const char *num = tok->strAt(2 + varc);
         if (strtol(num, NULL, 10) >= size)
         {
-            ReportError(tok->next(), "Array index out of bounds");
+            ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
         }
     }
 
@@ -129,7 +130,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 const char *num = tok->strAt(3);
                 if (strtol(num, NULL, 10) >= size)
                 {
-                    ReportError(tok->next(), "Array index out of bounds");
+                    ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
                 }
             }
         }
@@ -138,7 +139,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             const char *num = tok->next()->strAt(2 + varc);
             if (strtol(num, NULL, 10) >= size)
             {
-                ReportError(tok->next(), "Array index out of bounds");
+                ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
             }
             tok = tok->tokAt(4);
             continue;
@@ -156,7 +157,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                     const char *num  = tok->strAt(6);
                     if (atoi(num) > total_size)
                     {
-                        ReportError(tok, "Buffer overrun");
+                        ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
                     }
                 }
                 continue;
@@ -170,7 +171,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 const char *num  = tok->strAt(varc + 6);
                 if (atoi(num) > total_size)
                 {
-                    ReportError(tok, "Buffer overrun");
+                    ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
                 }
             }
             continue;
@@ -229,7 +230,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
                 if (Token::Match(tok2, pattern.str().c_str()))
                 {
-                    ReportError(tok2, "Buffer overrun");
+                    ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok2));
                     break;
                 }
 
@@ -252,7 +253,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
             if (len > 2 && len >= (int)size + 2)
             {
-                ReportError(tok, "Buffer overrun");
+                ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
             }
             continue;
         }

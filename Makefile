@@ -86,7 +86,7 @@ install:	cppcheck
 
 ###### Build
 
-src/checkbufferoverrun.o: src/checkbufferoverrun.cpp src/checkbufferoverrun.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
+src/checkbufferoverrun.o: src/checkbufferoverrun.cpp src/checkbufferoverrun.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h
 	g++ $(CXXFLAGS) -c -o src/checkbufferoverrun.o src/checkbufferoverrun.cpp
 
 src/checkclass.o: src/checkclass.cpp src/checkclass.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h

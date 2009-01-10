@@ -279,10 +279,12 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::virtualDestructor(_settings))
         checkClass.virtualDestructor();
 
+    // Array index out of bounds / Buffer overruns..
+    if (ErrorMessage::arrayIndexOutOfBounds(_settings) && ErrorMessage::bufferOverrun(_settings))
+        checkBufferOverrun.bufferOverrun();
+
     if (_settings._showAll)
     {
-        // Buffer overruns..
-        checkBufferOverrun.bufferOverrun();
 
         // Check for "if (a=b)"
         checkOther.CheckIfAssignment();
