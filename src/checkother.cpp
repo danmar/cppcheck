@@ -355,7 +355,7 @@ void CheckOther::InvalidFunctionUsage()
                 if (parlevel < 0)
                     break;
             }
-            else if (tok2->varId() == varid)
+            else if (parlevel == 0 && tok2->varId() == varid)
             {
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok2) << ": Overlapping data buffer " << tok2->str();

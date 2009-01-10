@@ -38,6 +38,7 @@ private:
         TEST_CASE(delete2);
 
         TEST_CASE(sprintf1);    // Dangerous usage of sprintf
+        TEST_CASE(sprintf2);
     }
 
     void check(const char code[])
@@ -113,6 +114,16 @@ private:
                      "    sprintf(buf,\"%s\",buf);\n"
                      "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: Overlapping data buffer buf\n"), errout.str());
+    }
+
+    void sprintf2()
+    {
+        sprintfUsage("void foo()\n"
+                     "{\n"
+                     "    char buf[100];\n"
+                     "    sprintf(buf,\"%i\",sizeof(buf));\n"
+                     "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
