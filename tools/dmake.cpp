@@ -101,13 +101,13 @@ int main()
     fout << "\tg++ $(CXXFLAGS) -o testrunner $(TESTOBJ)\n\n";
     fout << "all:\tcppcheck\ttestrunner\ttools\n\n";
     fout << "test:\ttestrunner\n\n";
-    fout << "tools:\terrmsg\tdmake\n\n";
-    fout << "errmsg:\ttools/errmsg.cpp\n";
-    fout << "\tg++ -Wall -pedantic -o errmsg tools/errmsg.cpp\n\n";
-    fout << "dmake:\ttools/dmake.cpp\tsrc/filelister.cpp\tsrc/filelister.h\n";
-    fout << "\tg++ -Wall -pedantic -o dmake tools/dmake.cpp src/filelister.cpp\n\n";
+    fout << "tools:\ttools/errmsg\ttools/dmake\n\n";
+    fout << "tools/errmsg:\ttools/errmsg.cpp\n";
+    fout << "\tg++ $(CXXFLAGS) -o tools/errmsg tools/errmsg.cpp\n\n";
+    fout << "tools/dmake:\ttools/dmake.cpp\tsrc/filelister.cpp\tsrc/filelister.h\n";
+    fout << "\tg++ $(CXXFLAGS) -o tools/dmake tools/dmake.cpp src/filelister.cpp\n\n";
     fout << "clean:\n";
-    fout << "\trm -f src/*.o test/*.o testrunner cppcheck dmake errmsg\n\n";
+    fout << "\trm -f src/*.o test/*.o testrunner cppcheck tools/dmake tools/errmsg\n\n";
     fout << "install:\tcppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n\n";
@@ -134,8 +134,8 @@ int main()
         fout << "\n\tg++ $(CXXFLAGS) -c -o " << objfile(testfiles[i]) << " " << testfiles[i] << "\n\n";
     }
 
-    fout << "src/errormessage.h:\terrmsg\n";
-    fout << "\t./errmsg\n";
+    fout << "src/errormessage.h:\ttools/errmsg\n";
+    fout << "\ttools/errmsg\n";
     fout << "\tmv errormessage.h src/\n\n";
 
     return 0;
