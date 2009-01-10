@@ -84,6 +84,15 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string virtualDestructor(const Tokenizer *tokenizer, const Token *Location, const std::string &Base, const std::string &Derived)
+    {
+        return msg1(tokenizer, Location) + "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor";
+    }
+    static bool virtualDestructor(const Settings &s)
+    {
+        return true;
+    }
+
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
         return msg1(tokenizer, Location) + "Memory leak: " + varname + "";

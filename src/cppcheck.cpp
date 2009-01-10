@@ -276,7 +276,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkClass.constructors();
 
     // Check that all base classes have virtual destructors
-    checkClass.virtualDestructor();
+    if (ErrorMessage::virtualDestructor(_settings))
+        checkClass.virtualDestructor();
 
     if (_settings._showAll)
     {

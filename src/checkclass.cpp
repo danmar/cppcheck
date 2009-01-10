@@ -734,18 +734,14 @@ void CheckClass::virtualDestructor()
                 base = Token::findmatch(_tokenizer->tokens(), (std::string("class ") + baseName[0] + " :|{").c_str());
                 if (base)
                 {
-                    std::ostringstream errmsg;
-                    errmsg << _tokenizer->fileLine(base) << ": Class " << baseName[0] << " which is inherited by class " << derivedClass->str() << " does not have a virtual destructor";
-                    _errorLogger->reportErr(errmsg.str());
+                    _errorLogger->reportErr(ErrorMessage::virtualDestructor(_tokenizer, base, baseName[0], derivedClass->str()));
                 }
             }
 
             // There is a destructor. Check that it's virtual..
             else if (base->str() != "virtual")
             {
-                std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(base) << ": Class " << baseName[0] << " which is inherited by class " << derivedClass->str() << " does not have a virtual destructor";
-                _errorLogger->reportErr(errmsg.str());
+                _errorLogger->reportErr(ErrorMessage::virtualDestructor(_tokenizer, base, baseName[0], derivedClass->str()));
             }
         }
     }

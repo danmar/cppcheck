@@ -60,6 +60,7 @@ int main()
     err.push_back(Message("memsetClass", 0, "Using '%1' on class", "memfunc"));
     err.push_back(Message("memsetStruct", 0, "Using '%1' on struct that contains a 'std::%2'", "memfunc", "classname"));
     err.push_back(Message("operatorEq", Message::STYLE, "'operator=' should return something"));
+    err.push_back(Message("virtualDestructor", 0, "Class %1 which is inherited by class %2 does not have a virtual destructor", "Base", "Derived"));
 
     // checkmemoryleak.cpp..
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
