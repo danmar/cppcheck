@@ -476,7 +476,7 @@ void CheckClass::privateFunctions()
             continue;
 
         // Get private functions..
-        std::list<std::string> FuncList;
+        std::list<const Token *> FuncList;
         FuncList.clear();
         bool priv = false;
         unsigned int indent_level = 0;
@@ -511,7 +511,7 @@ void CheckClass::privateFunctions()
                 if (Token::Match(tok, "%var% (") &&
                     !Token::Match(tok, classname.c_str()))
                 {
-                    FuncList.push_back(tok->str());
+                    FuncList.push_back(tok);
                 }
             }
         }
@@ -552,7 +552,17 @@ void CheckClass::privateFunctions()
                         --indent_level;
                     }
                     if (Token::Match(ftok->next(), "("))
-                        FuncList.remove(ftok->str());
+                    {
+                        // Remove function from FuncList
+                        for (std::list<const Token *>::iterator it = FuncList.begin(); it != FuncList.end(); ++it)
+                        {
+                            if (ftok->str() == (*it)->str())
+                            {
+                                FuncList.remove(*it);
+                                break;
+                            }
+                        }
+                    }
                     ftok = ftok->next();
                 }
             }
@@ -564,12 +574,10 @@ void CheckClass::privateFunctions()
         while (HasFuncImpl && !FuncList.empty())
         {
             // Final check; check if the function pointer is used somewhere..
-            const std::string _pattern("return|(|)|,|= " + FuncList.front());
+            const std::string _pattern("return|(|)|,|= " + FuncList.front()->str());
             if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()))
             {
-                std::ostringstream ostr;
-                ostr << "Class '" << classname << "', unused private function: '" << FuncList.front() << "'";
-                _errorLogger->reportErr(ostr.str());
+                _errorLogger->reportErr(ErrorMessage::unusedPrivateFunction(_tokenizer, FuncList.front(), classname, FuncList.front()->str()));
             }
             FuncList.pop_front();
         }

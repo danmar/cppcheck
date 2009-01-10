@@ -305,11 +305,14 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::dangerousUsageStrtol(_settings))
         checkOther.InvalidFunctionUsage();
 
-    if (_settings._checkCodingStyle)
-    {
-        // Check that all private functions are called.
+    // Check that all private functions are called.
+    if (ErrorMessage::unusedPrivateFunction(_settings))
         checkClass.privateFunctions();
 
+
+
+    if (_settings._checkCodingStyle)
+    {
         checkClass.operatorEq();
 
         // if (condition);

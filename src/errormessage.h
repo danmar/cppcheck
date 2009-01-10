@@ -48,6 +48,15 @@ public:
         return true;
     }
 
+    static std::string unusedPrivateFunction(const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &funcname)
+    {
+        return msg1(tokenizer, Location) + "Unused private function '" + classname + "::" + funcname + "'";
+    }
+    static bool unusedPrivateFunction(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
         return msg1(tokenizer, Location) + "Memory leak: " + varname + "";

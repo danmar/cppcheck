@@ -56,6 +56,7 @@ int main()
     // checkclass.cpp..
     err.push_back(Message("noConstructor", Message::STYLE, "The class '%1' has no constructor", "classname"));
     err.push_back(Message("uninitVar", 0, "Uninitialized member variable '%1::%2'", "classname", "varname"));
+    err.push_back(Message("unusedPrivateFunction", Message::STYLE, "Unused private function '%1::%2'", "classname", "funcname"));
 
     // checkmemoryleak.cpp..
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
