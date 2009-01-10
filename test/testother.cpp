@@ -39,6 +39,7 @@ private:
 
         TEST_CASE(sprintf1);    // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
+		TEST_CASE(sprintf3);
     }
 
     void check(const char code[])
@@ -125,6 +126,18 @@ private:
                      "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
+
+	void sprintf3()
+	{
+        sprintfUsage("void foo()\n"
+                     "{\n"
+                     "    char buf[100];\n"
+                     "    sprintf(buf,\"%i\",sizeof(buf));\n"
+					 "    if (buf[0]);\n"
+                     "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+	}
+
 };
 
 REGISTER_TEST(TestOther)

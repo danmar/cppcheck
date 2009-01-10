@@ -344,7 +344,7 @@ void CheckOther::InvalidFunctionUsage()
             tok2 = tok2->next();
 
         // is any source buffer overlapping the target buffer?
-        unsigned int parlevel = 0;
+        int parlevel = 0;
         while ((tok2 = tok2->next()) != NULL)
         {
             if (tok2->str() == "(")
