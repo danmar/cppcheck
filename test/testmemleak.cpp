@@ -102,6 +102,8 @@ private:
         TEST_CASE(forwhile6);
         TEST_CASE(forwhile7);
         TEST_CASE(forwhile8);       // Bug 2429936
+        TEST_CASE(forwhile9);
+        TEST_CASE(forwhile10);
 
         TEST_CASE(dowhile1);
 
@@ -746,6 +748,48 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+    void forwhile9()
+    {
+        check("char *f()\n"
+              "{\n"
+              "    char *a = 0;\n"
+              "    int i = 0;\n"
+              "    for( ;; )\n"
+              "    {\n"
+              "    if(i>=0)\n"
+              "        continue;\n"
+              "    a = realloc( a, i );\n"
+              "    if(i>=0)\n"
+              "        continue;\n"
+              "    }\n"
+              "\n"
+              "    return a;\n"
+              "}\n", true);
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+    void forwhile10()
+    {
+        check("char *f()\n"
+              "{\n"
+              "    char *a = 0;\n"
+              "    int i = 0;\n"
+              "    for( ;; )\n"
+              "    {\n"
+              "    if(i>=0)\n"
+              "        continue;\n"
+              "    a = realloc( a, i );\n"
+              "    if(i>=0)\n"
+              "        return;\n"
+              "    }\n"
+              "\n"
+              "    return a;\n"
+              "}\n", true);
+        ASSERT_EQUALS(std::string("[test.cpp:11]: Memory leak: a\n"), errout.str());
     }
 
 
