@@ -305,7 +305,7 @@ void CheckMemoryLeakClass::MismatchError(const Token *Tok1, const std::list<cons
     std::ostringstream errmsg;
     for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
         errmsg << _tokenizer->fileLine(*tok) << " -> ";
-    errmsg << _tokenizer->fileLine(Tok1) << ": Mismatching allocation and deallocation: " << varname;
+    errmsg << ErrorMessage::mismatchAllocDealloc(_tokenizer, Tok1, varname);
     _errorLogger->reportErr(errmsg.str());
 }
 //---------------------------------------------------------------------------

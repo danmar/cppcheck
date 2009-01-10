@@ -111,6 +111,15 @@ public:
         return true;
     }
 
+    static std::string mismatchAllocDealloc(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) + "Mismatching allocation and deallocation: " + varname + "";
+    }
+    static bool mismatchAllocDealloc(const Settings &s)
+    {
+        return true;
+    }
+
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
         return msg1(tokenizer, Location) + "Memory leak: " + varname + "";
