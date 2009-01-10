@@ -56,6 +56,7 @@ private:
         TEST_CASE(structmember1);
         TEST_CASE(structmember2);
         TEST_CASE(structmember3);
+        TEST_CASE(structmember4);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -122,6 +123,22 @@ private:
               "    int a = abc[0].a;\n"
               "    int b = abc[0].b;\n"
               "    int c = abc[0].c;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+    void structmember4()
+    {
+        check("struct ABC\n"
+              "{\n"
+              "    const int a;\n"
+              "};\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    ABC abc;\n"
+              "    if (abc.a == 2);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
