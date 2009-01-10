@@ -57,6 +57,24 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string memsetClass(const Tokenizer *tokenizer, const Token *Location, const std::string &funcname)
+    {
+        return msg1(tokenizer, Location) + "Using '" + funcname + "' on class";
+    }
+    static bool memsetClass(const Settings &s)
+    {
+        return true;
+    }
+
+    static std::string memsetStruct(const Tokenizer *tokenizer, const Token *Location, const std::string &funcname, const std::string &classname)
+    {
+        return msg1(tokenizer, Location) + "Using '" + funcname + "' on struct that contains a 'std::" + classname + "'";
+    }
+    static bool memsetStruct(const Settings &s)
+    {
+        return true;
+    }
+
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
         return msg1(tokenizer, Location) + "Memory leak: " + varname + "";

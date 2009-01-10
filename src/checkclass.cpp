@@ -617,9 +617,7 @@ void CheckClass::noMemset()
         const std::string pattern1(std::string("class ") + type);
         if (Token::findmatch(_tokenizer->tokens(), pattern1.c_str()))
         {
-            std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str() << "' on class.";
-            _errorLogger->reportErr(ostr.str());
+            _errorLogger->reportErr(ErrorMessage::memsetClass(_tokenizer, tok, tok->str()));
             continue;
         }
 
@@ -632,6 +630,7 @@ void CheckClass::noMemset()
 
             if (Token::Match(tstruct, "std :: %type% %var% ;"))
             {
+                _errorLogger->reportErr(ErrorMessage::memsetStruct(_tokenizer, tok, tok->str(), tstruct->strAt(2)));
                 std::ostringstream ostr;
                 ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str() << "' on struct that contains a 'std::" << tstruct->strAt(2) << "'";
                 _errorLogger->reportErr(ostr.str());

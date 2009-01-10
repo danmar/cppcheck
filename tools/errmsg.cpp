@@ -57,6 +57,8 @@ int main()
     err.push_back(Message("noConstructor", Message::STYLE, "The class '%1' has no constructor", "classname"));
     err.push_back(Message("uninitVar", 0, "Uninitialized member variable '%1::%2'", "classname", "varname"));
     err.push_back(Message("unusedPrivateFunction", Message::STYLE, "Unused private function '%1::%2'", "classname", "funcname"));
+    err.push_back(Message("memsetClass", 0, "Using '%1' on class", "funcname"));
+    err.push_back(Message("memsetStruct", 0, "Using '%1' on struct that contains a 'std::%2'", "funcname", "classname"));
 
     // checkmemoryleak.cpp..
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));

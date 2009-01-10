@@ -238,7 +238,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
     CheckClass checkClass(&_tokenizer, _settings, this);
-    checkClass.noMemset();
+    if (ErrorMessage::memsetClass(_settings))
+        checkClass.noMemset();
 
 
     // Coding style checks that must be run before the simplifyTokenList
