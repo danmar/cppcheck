@@ -66,7 +66,8 @@ testrunner:	$(TESTOBJ)
 
 all:	cppcheck	testrunner	tools
 
-test:	testrunner
+test:	all
+	./testrunner
 
 tools:	tools/errmsg	tools/dmake
 
