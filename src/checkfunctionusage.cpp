@@ -152,11 +152,11 @@ void CheckFunctionUsage::check()
         if (! func.usedSameFile)
         {
             std::string filename;
-            if (func.filename=="+")
+            if (func.filename == "+")
                 filename = "";
             else
                 filename = func.filename;
-            _errorLogger->reportErr(ErrorMessage::unusedFunction(0, 0, filename, it->first));
+            _errorLogger->reportErr(ErrorMessage::unusedFunction(filename, it->first));
         }
         else if (! func.usedOtherFile)
         {

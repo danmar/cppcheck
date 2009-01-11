@@ -161,7 +161,7 @@ std::string Preprocessor::read(std::istream &istr)
             code << std::string(1, ch);
 
             // if there has been <backspace><newline> sequences, add extra newlines..
-            if ( ch == '\n' && newlines > 0 )
+            if (ch == '\n' && newlines > 0)
             {
                 code << std::string(newlines, '\n');
                 newlines = 0;

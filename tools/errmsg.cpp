@@ -186,15 +186,22 @@ std::string Message::msg(bool code) const
 
 void Message::generateCode(std::ostream &ostr) const
 {
+    bool loc = bool(_msg.substr(0, 4) != "[%1]");
+
     // Error message..
-    ostr << "    static std::string " << _funcname << "(const Tokenizer *tokenizer, const Token *Location";
+    ostr << "    static std::string " << _funcname << "(";
+    if (loc)
+        ostr << "const Tokenizer *tokenizer, const Token *Location";
     if (! _par1.empty())
-        ostr << ", const std::string &" << _par1;
+        ostr << (loc ? ", " : "") <<  "const std::string &" << _par1;
     if (! _par2.empty())
         ostr << ", const std::string &" << _par2;
     ostr << ")\n";
     ostr << "    {\n";
-    ostr << "        return msg1(tokenizer, Location) + " << msg(true) << ";\n";
+    ostr << "        return ";
+    if (loc)
+        ostr << "msg1(tokenizer, Location) + ";
+    ostr << msg(true) << ";\n";
     ostr << "    }\n";
 
     // Settings..
