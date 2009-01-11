@@ -639,9 +639,10 @@ void Tokenizer::setVarId()
             ++_varId;
             int indentlevel = 0;
             int parlevel = 0;
+            bool dot = false;
             for (tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
-                if (tok2->str() == varname)
+                if (!dot && tok2->str() == varname)
                     tok2->varId(_varId);
                 else if (tok2->str() == "{")
                     ++indentlevel;
@@ -657,6 +658,7 @@ void Tokenizer::setVarId()
                     --parlevel;
                 else if (parlevel < 0 && tok2->str() == ";")
                     break;
+                dot = bool(tok2->str() == ".");
             }
         }
     }

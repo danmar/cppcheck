@@ -40,6 +40,7 @@ private:
         TEST_CASE(sprintf1);    // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
+        TEST_CASE(sprintf4);    // struct member
     }
 
     void check(const char code[])
@@ -99,6 +100,8 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
+        //tokenizer.tokens()->printOut( "tokens" );
+
         // Clear the error buffer..
         errout.str("");
 
@@ -134,6 +137,22 @@ private:
                      "    char buf[100];\n"
                      "    sprintf(buf,\"%i\",sizeof(buf));\n"
                      "    if (buf[0]);\n"
+                     "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void sprintf4()
+    {
+        sprintfUsage("struct A\n"
+                     "{\n"
+                     "    char filename[128];\n"
+                     "};\n"
+                     "\n"
+                     "void foo()\n"
+                     "{\n"
+                     "    const char* filename = \"hello\";\n"
+                     "    struct A a;\n"
+                     "    snprintf(a.filename, 128, \"%s\", filename);\n"
                      "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
