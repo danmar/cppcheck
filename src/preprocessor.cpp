@@ -44,6 +44,11 @@ std::string Preprocessor::read(std::istream &istr)
     // For the error report
     int lineno = 1;
 
+    // handling <backspace><newline>
+    // when this is encountered the <backspace><newline> will be "skipped".
+    // on the next <newline>, extra newlines will be added
+    unsigned int newlines = 0;
+
     std::ostringstream code;
     for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
     {
@@ -101,7 +106,6 @@ std::string Preprocessor::read(std::istream &istr)
         // String constants..
         else if (ch == '\"')
         {
-            int newlines = 0;
             code << "\"";
             do
             {
@@ -121,9 +125,6 @@ std::string Preprocessor::read(std::istream &istr)
                     code << std::string(1, ch);
             }
             while (istr.good() && ch != '\"');
-
-            // Insert extra newlines after the string in case the string contained \newline sequences
-            code << std::string(newlines, '\n');
         }
 
         // char constants..
@@ -141,10 +142,30 @@ std::string Preprocessor::read(std::istream &istr)
             code << "\'";
         }
 
+        // <backspace><newline>..
+        else if (ch == '\\')
+        {
+            char chNext = (char)istr.peek();
+            if (chNext == '\n')
+            {
+                ++newlines;
+                (void)istr.get();   // Skip the "<backspace><newline>"
+            }
+            else
+                code << "\\";
+        }
+
         // Just some code..
         else
         {
             code << std::string(1, ch);
+
+            // if there has been <backspace><newline> sequences, add extra newlines..
+            if ( ch == '\n' && newlines > 0 )
+            {
+                code << std::string(newlines, '\n');
+                newlines = 0;
+            }
         }
     }
 
@@ -218,17 +239,6 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
 
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
-
-    // Using the backslash at the end of a line..
-    std::string::size_type loc = 0;
-    while ((loc = processedFile.rfind("\\\n")) != std::string::npos)
-    {
-        processedFile.erase(loc, 2);
-        if (loc > 0 && processedFile[loc-1] != ' ')
-            processedFile.insert(loc, " ");
-        if ((loc = processedFile.find("\n", loc)) != std::string::npos)
-            processedFile.insert(loc, "\n");
-    }
 
     processedFile = replaceIfDefined(processedFile);
 
@@ -436,8 +446,6 @@ std::string Preprocessor::expandMacros(std::string code)
 
         // Get macro..
         std::string::size_type endpos = code.find("\n", defpos + 6);
-        while (endpos != std::string::npos && code[endpos-1] == '\\')
-            endpos = code.find("\n", endpos + 1);
         if (endpos == std::string::npos)
         {
             code.erase(defpos);
@@ -447,14 +455,6 @@ std::string Preprocessor::expandMacros(std::string code)
         // Extract the whole macro into a separate variable "macro" and then erase it from "code"
         std::string macro(code.substr(defpos + 8, endpos - defpos - 7));
         code.erase(defpos, endpos - defpos);
-
-        // Remove "\\\n" from the macro
-        while (macro.find("\\\n") != std::string::npos)
-        {
-            macro.erase(macro.find("\\\n"), 2);
-            code.insert(defpos, "\n");
-            ++defpos;
-        }
 
         // Tokenize the macro to make it easier to handle
         Tokenizer tokenizer;

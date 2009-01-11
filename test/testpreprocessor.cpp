@@ -61,7 +61,8 @@ private:
 
         TEST_CASE(if_cond1);
 
-        TEST_CASE(multiline);
+        TEST_CASE(multiline1);
+        TEST_CASE(multiline2);
 
         TEST_CASE(if_defined);      // "#if defined(AAA)" => "#ifdef AAA"
 
@@ -69,7 +70,6 @@ private:
         TEST_CASE(macro_simple1);
         TEST_CASE(macro_simple2);
         TEST_CASE(macro_mismatch);
-        TEST_CASE(macro_multiline);
         TEST_CASE(preprocessor_inside_string);
     }
 
@@ -375,21 +375,29 @@ private:
     }
 
 
-    void multiline()
+    void multiline1()
     {
-        const char filedata[] = "#define str \"abc\"   \\  \n"
+        const char filedata[] = "#define str \"abc\"     \\\n"
                                 "            \"def\"       \n"
                                 "abcdef = str;\n";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
         Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual);
+        ASSERT_EQUALS("#define str \"abc\"  \"def\" \n\nabcdef = str;\n", preprocessor.read(istr));
+    }
 
-        // Compare results..
-        ASSERT_EQUALS("\n\nabcdef = \"abc\"\"def\"\n", actual[""]);
-        ASSERT_EQUALS(1, actual.size());
+
+    void multiline2()
+    {
+        const char filedata[] = "#define sqr(aa) aa * \\\n"
+                                "                aa\n"
+                                "sqr(5);\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        Preprocessor preprocessor;
+        ASSERT_EQUALS("#define sqr(aa) aa *  aa\n\nsqr(5);\n", preprocessor.read(istr));
     }
 
 
@@ -397,6 +405,7 @@ private:
     {
         const char filedata[] = "#if defined(AAA)\n"
                                 "#endif\n";
+
 
         // Expected result..
         std::string expected("#ifdef AAA\n#endif\n");
@@ -425,14 +434,6 @@ private:
         const char filedata[] = "#define AAA(aa,bb) f(aa)\n"
                                 "AAA(5);\n";
         ASSERT_EQUALS("\nAAA(5);\n", Preprocessor::expandMacros(filedata));
-    }
-
-    void macro_multiline()
-    {
-        const char filedata[] = "#define sqr(aa) aa * \\\n"
-                                "                aa\n"
-                                "sqr(5);\n";
-        ASSERT_EQUALS("\n\n5*5;\n", Preprocessor::expandMacros(filedata));
     }
 
     void preprocessor_inside_string()
