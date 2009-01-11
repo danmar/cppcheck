@@ -647,15 +647,31 @@ void CheckOther::CheckConstantFunctionParameter()
 void CheckOther::CheckStructMemberUsage()
 {
     const char *structname = 0;
-
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->fileIndex() != 0)
             continue;
+
+        if (Token::Match(tok, "struct|union %type% {"))
+        {
+            structname = tok->strAt(1);
+
+            // Bail out if struct/union contain any functions
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                {
+                    structname = 0;
+                    break;
+                }
+
+                if (tok2->str() == "}")
+                    break;
+            }
+        }
+
         if (tok->str() == "}")
             structname = 0;
-        if (Token::Match(tok, "struct|union %type% {"))
-            structname = tok->strAt(1);
 
         if (structname && Token::Match(tok, "[{;]"))
         {
