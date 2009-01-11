@@ -63,6 +63,7 @@ private:
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
+        TEST_CASE(multiline3);
 
         TEST_CASE(if_defined);      // "#if defined(AAA)" => "#ifdef AAA"
 
@@ -387,7 +388,6 @@ private:
         ASSERT_EQUALS("#define str \"abc\"  \"def\" \n\nabcdef = str;\n", preprocessor.read(istr));
     }
 
-
     void multiline2()
     {
         const char filedata[] = "#define sqr(aa) aa * \\\n"
@@ -399,6 +399,19 @@ private:
         Preprocessor preprocessor;
         ASSERT_EQUALS("#define sqr(aa) aa *  aa\n\nsqr(5);\n", preprocessor.read(istr));
     }
+
+    void multiline3()
+    {
+        const char filedata[] = "const char *str = \"abc\\\n"
+                                "def\\\n"
+                                "ghi\"\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        Preprocessor preprocessor;
+        ASSERT_EQUALS("const char *str = \"abcdefghi\"\n\n\n", preprocessor.read(istr));
+    }
+
 
 
     void if_defined()
