@@ -72,6 +72,7 @@ private:
         TEST_CASE(macro_simple2);
         TEST_CASE(macro_simple3);
         TEST_CASE(macro_simple4);
+        TEST_CASE(macro_simple5);
         TEST_CASE(macro_mismatch);
         TEST_CASE(preprocessor_inside_string);
     }
@@ -456,6 +457,18 @@ private:
         const char filedata[] = "#define TEMP_1 if( temp > 0 ) return 1;\n"
                                 "TEMP_1\n";
         ASSERT_EQUALS("\nif( temp > 0 ) return 1;\n", Preprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple5()
+    {
+        const char filedata[] = "#define ABC if( temp > 0 ) return 1;\n"
+                                "\n"
+                                "void foo()\n"
+                                "{\n"
+                                "    int temp = 0;\n"
+                                "    ABC\n"
+                                "}\n";
+        ASSERT_EQUALS("\n\nvoid foo()\n{\n    int temp = 0;\n    if( temp > 0 ) return 1;\n}\n", Preprocessor::expandMacros(filedata));
     }
 
     void macro_mismatch()

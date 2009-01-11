@@ -493,7 +493,7 @@ std::string Preprocessor::expandMacros(std::string code)
 
             std::vector<std::string> params;
             std::string::size_type pos2 = pos1 + macroname.length();
-            if (pos2 >= macro.length())
+            if (macroparams.size() && pos2 >= code.length())
                 continue;
             if (macroparams.size())
             {
