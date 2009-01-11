@@ -97,10 +97,11 @@ int main()
     fout << "\n###### Targets\n\n";
     fout << "cppcheck:\t$(OBJECTS)\n";
     fout << "\tg++ $(CXXFLAGS) -o cppcheck $(OBJECTS)\n\n";
+    fout << "all:\tcppcheck\ttestrunner\ttools\n\n";
     fout << "testrunner:\t$(TESTOBJ)\n";
     fout << "\tg++ $(CXXFLAGS) -o testrunner $(TESTOBJ)\n\n";
-    fout << "all:\tcppcheck\ttestrunner\ttools\n\n";
-    fout << "test:\ttestrunner\n\n";
+    fout << "test:\tall\n";
+    fout << "\t./testrunner\n\n";
     fout << "tools:\ttools/errmsg\ttools/dmake\n\n";
     fout << "tools/errmsg:\ttools/errmsg.cpp\n";
     fout << "\tg++ $(CXXFLAGS) -o tools/errmsg tools/errmsg.cpp\n\n";

@@ -61,10 +61,10 @@ TESTOBJ =     test/testbufferoverrun.o \
 cppcheck:	$(OBJECTS)
 	g++ $(CXXFLAGS) -o cppcheck $(OBJECTS)
 
+all:	cppcheck	testrunner	tools
+
 testrunner:	$(TESTOBJ)
 	g++ $(CXXFLAGS) -o testrunner $(TESTOBJ)
-
-all:	cppcheck	testrunner	tools
 
 test:	all
 	./testrunner
