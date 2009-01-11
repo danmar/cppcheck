@@ -66,6 +66,9 @@ int main()
     err.push_back(Message("operatorEq", Message::STYLE, "'operator=' should return something"));
     err.push_back(Message("virtualDestructor", 0, "Class %1 which is inherited by class %2 does not have a virtual destructor", "Base", "Derived"));
 
+    // checkfunctionusage.cpp..
+    err.push_back(Message("unusedFunction", Message::STYLE | Message::ALL, "[%1]: The function '%2' is never used", "filename", "funcname"));
+
     // checkmemoryleak.cpp..
     err.push_back(Message("mismatchAllocDealloc", 0, "Mismatching allocation and deallocation: %1", "varname"));
     err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));

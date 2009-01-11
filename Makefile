@@ -93,7 +93,7 @@ src/checkbufferoverrun.o: src/checkbufferoverrun.cpp src/checkbufferoverrun.h sr
 src/checkclass.o: src/checkclass.cpp src/checkclass.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h
 	g++ $(CXXFLAGS) -c -o src/checkclass.o src/checkclass.cpp
 
-src/checkfunctionusage.o: src/checkfunctionusage.cpp src/checkfunctionusage.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
+src/checkfunctionusage.o: src/checkfunctionusage.cpp src/checkfunctionusage.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h
 	g++ $(CXXFLAGS) -c -o src/checkfunctionusage.o src/checkfunctionusage.cpp
 
 src/checkheaders.o: src/checkheaders.cpp src/checkheaders.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h

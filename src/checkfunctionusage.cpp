@@ -19,6 +19,7 @@
 
 //---------------------------------------------------------------------------
 #include "checkfunctionusage.h"
+#include "errormessage.h"
 #include "tokenize.h"
 #include <sstream>
 //---------------------------------------------------------------------------
@@ -150,11 +151,12 @@ void CheckFunctionUsage::check()
             continue;
         if (! func.usedSameFile)
         {
-            std::ostringstream errmsg;
-            if (func.filename != "+")
-                errmsg << "[" << func.filename << "] ";
-            errmsg << "The function '" << it->first << "' is never used.";
-            _errorLogger->reportErr(errmsg.str());
+            std::string filename;
+            if (func.filename=="+")
+                filename = "";
+            else
+                filename = func.filename;
+            _errorLogger->reportErr(ErrorMessage::unusedFunction(0, 0, filename, it->first));
         }
         else if (! func.usedOtherFile)
         {

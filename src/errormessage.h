@@ -111,6 +111,15 @@ public:
         return true;
     }
 
+    static std::string unusedFunction(const Tokenizer *tokenizer, const Token *Location, const std::string &filename, const std::string &funcname)
+    {
+        return msg1(tokenizer, Location) + "[" + filename + "]: The function '" + funcname + "' is never used";
+    }
+    static bool unusedFunction(const Settings &s)
+    {
+        return s._showAll & s._checkCodingStyle;
+    }
+
     static std::string mismatchAllocDealloc(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
         return msg1(tokenizer, Location) + "Mismatching allocation and deallocation: " + varname + "";

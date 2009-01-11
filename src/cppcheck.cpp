@@ -136,11 +136,6 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         return oss.str();
     }
 
-    // Check function usage if "--style" and "--all" was given.
-    // There will be false positives for exported library functions
-    if (_settings._showAll && _settings._checkCodingStyle)
-        _settings._checkFunctionUsage = true;
-
     return "";
 }
 
@@ -200,7 +195,7 @@ unsigned int CppCheck::check()
 
     // This generates false positives - especially for libraries
     _settings._verbose = false;
-    if (_settings._checkFunctionUsage)
+    if (ErrorMessage::unusedFunction(_settings))
     {
         _errout.str("");
         if (_settings._errorsOnly == false)
@@ -260,7 +255,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     _tokenizer.simplifyTokenList();
 
 
-    if (_settings._checkFunctionUsage)
+    if (ErrorMessage::unusedFunction(_settings))
         _checkFunctionUsage.parseTokens(_tokenizer);
 
     // Class for detecting buffer overruns and related problems

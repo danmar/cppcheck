@@ -34,7 +34,6 @@ public:
     bool _showAll;
     bool _checkCodingStyle;
     bool _errorsOnly;
-    bool _checkFunctionUsage;
     bool _verbose;
 
     /** Force checking t he files with "too many" configurations. */
