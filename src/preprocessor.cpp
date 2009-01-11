@@ -483,6 +483,14 @@ std::string Preprocessor::expandMacros(std::string code)
             if (pos1 != 0 && (isalnum(code[pos1-1]) || code[pos1-1] == '_'))
                 continue;
 
+            // The char after the macroname must not be alphanumeric or '_'
+            if ( pos1 + macroname.length() < code.length() )
+            {
+                std::string::size_type pos2 = pos1 + macroname.length();
+                if (isalnum(code[pos2]) || code[pos2] == '_')
+                    continue;
+            }
+
             std::vector<std::string> params;
             std::string::size_type pos2 = pos1 + macroname.length();
             if (pos2 >= macro.length())
@@ -556,7 +564,9 @@ std::string Preprocessor::expandMacros(std::string code)
             }
 
             // Insert macro code..
-            code.erase(pos1, pos2 + 1 - pos1);
+            if ( !macroparams.empty() )
+                ++pos2;
+            code.erase(pos1, pos2 - pos1);
             code.insert(pos1, macrocode);
             pos1 += macrocode.length();
         }
