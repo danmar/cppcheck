@@ -83,6 +83,7 @@ int main()
     err.push_back(Message("sprintfOverlappingData", 0, "Overlapping data buffer %1", "varname"));
     err.push_back(Message("udivError", 0, "Unsigned division. The result will be wrong."));
     err.push_back(Message("udivWarning", Message::STYLE | Message::ALL, "Warning: Division with signed and unsigned operators"));
+    err.push_back(Message("unusedStructMember", Message::STYLE, "struct or union member '%1::%2' is never used", "structname", "varname"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

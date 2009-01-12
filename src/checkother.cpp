@@ -700,9 +700,7 @@ void CheckOther::CheckStructMemberUsage()
 
             if (! used)
             {
-                std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok->next()) << ": struct or union member '" << structname << "::" << varname << "' is never used";
-                _errorLogger->reportErr(errmsg.str());
+                _errorLogger->reportErr(ErrorMessage::unusedStructMember(_tokenizer, tok->next(), structname, varname));
             }
         }
     }

@@ -219,5 +219,14 @@ public:
         return s._showAll & s._checkCodingStyle;
     }
 
+    static std::string unusedStructMember(const Tokenizer *tokenizer, const Token *Location, const std::string &structname, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) + "struct or union member '" + structname + "::" + varname + "' is never used";
+    }
+    static bool unusedStructMember(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
 };
 #endif

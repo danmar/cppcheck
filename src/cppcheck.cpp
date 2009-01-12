@@ -319,6 +319,10 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::ifNoAction(_settings))
         checkOther.WarningIf();
 
+    // Unused struct members..
+    if (ErrorMessage::unusedStructMember(_settings))
+        checkOther.CheckStructMemberUsage();
+
 
     if (_settings._checkCodingStyle)
     {
@@ -327,9 +331,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
         // Check if a constant function parameter is passed by value
         checkOther.CheckConstantFunctionParameter();
-
-        // Unused struct members..
-        checkOther.CheckStructMemberUsage();
 
         // Check for various types of incomplete statements that could for example
         // mean that an ';' has been added by accident
