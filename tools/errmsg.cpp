@@ -90,6 +90,8 @@ int main()
     err.push_back(Message("unreadVariable", Message::STYLE, "Variable '%1' is assigned a value that is never used", "varname"));
     err.push_back(Message("unassignedVariable", Message::STYLE, "Variable '%1' is not assigned a value", "varname"));
     err.push_back(Message("constStatement", Message::STYLE, "Redundant code: Found a statement that begins with %1 constant", "type"));
+    err.push_back(Message("charArrayIndex", Message::STYLE, "Warning - using char variable as array index"));
+    err.push_back(Message("charBitOp", Message::STYLE, "Warning - using char variable in bit operation"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

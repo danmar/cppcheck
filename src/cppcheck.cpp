@@ -244,12 +244,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::udivWarning(_settings) || ErrorMessage::udivError(_settings))
         checkOther.CheckUnsignedDivision();
 
-    if (_settings._checkCodingStyle)
-    {
-        // Give warning when using char variable as array index
+    // Give warning when using char variable as array index
+    if (ErrorMessage::charArrayIndex(_settings) || ErrorMessage::charBitOp(_settings))
         checkOther.CheckCharVariable();
-
-    }
 
     // Usage of local variables
     if (ErrorMessage::unusedVariable(_settings))

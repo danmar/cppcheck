@@ -737,9 +737,7 @@ void CheckOther::CheckCharVariable()
                 std::string temp = "%var% [ " + tok->str() + " ]";
                 if ((tok2->str() != ".") && Token::Match(tok2->next(), temp.c_str()))
                 {
-                    std::ostringstream errmsg;
-                    errmsg << _tokenizer->fileLine(tok2->next()) << ": Warning - using char variable as array index";
-                    _errorLogger->reportErr(errmsg.str());
+                    _errorLogger->reportErr(ErrorMessage::charArrayIndex(_tokenizer, tok2->next()));
                     break;
                 }
 
@@ -747,9 +745,7 @@ void CheckOther::CheckCharVariable()
                 std::string tempSecond = tok->str() + " [&|]";
                 if (Token::Match(tok2, tempFirst.c_str()) || Token::Match(tok2, tempSecond.c_str()))
                 {
-                    std::ostringstream errmsg;
-                    errmsg << _tokenizer->fileLine(tok2) << ": Warning - using char variable in bit operation";
-                    _errorLogger->reportErr(errmsg.str());
+                    _errorLogger->reportErr(ErrorMessage::charBitOp(_tokenizer, tok2));
                     break;
                 }
             }

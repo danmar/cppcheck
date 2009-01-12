@@ -282,5 +282,23 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string charArrayIndex(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Warning - using char variable as array index";
+    }
+    static bool charArrayIndex(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
+    static std::string charBitOp(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Warning - using char variable in bit operation";
+    }
+    static bool charBitOp(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
 };
 #endif
