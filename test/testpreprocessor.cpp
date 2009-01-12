@@ -77,6 +77,7 @@ private:
         TEST_CASE(macro_simple5);
         TEST_CASE(macro_mismatch);
         TEST_CASE(preprocessor_inside_string);
+        TEST_CASE(preprocessor_undef);
     }
 
 
@@ -508,6 +509,24 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("int main(){ const char *a = \"#define A\n\";}\n", actual[""]);
+    }
+
+    void preprocessor_undef()
+    {
+        const char filedata[] = "#define AAA int a;\n"
+                                "#undef AAA\n"
+                                "#define AAA char b=0;\n"
+                                "AAA\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual);
+
+        // Compare results..
+        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS("\n\n\nchar b=0;\n", actual[""]);
     }
 };
 
