@@ -619,9 +619,7 @@ void CheckOther::CheckConstantFunctionParameter()
     {
         if (Token::Match(tok, "[,(] const std :: %type% %var% [,)]"))
         {
-            std::ostringstream errmsg;
-            errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(5) << " is passed by value, it could be passed by reference/pointer instead";
-            _errorLogger->reportErr(errmsg.str());
+            _errorLogger->reportErr(ErrorMessage::passedByValue(_tokenizer, tok, tok->strAt(5)));
         }
 
         else if (Token::Match(tok, "[,(] const %type% %var% [,)]"))
@@ -630,9 +628,7 @@ void CheckOther::CheckConstantFunctionParameter()
             const std::string pattern(std::string("class|struct ") + tok->strAt(2));
             if (Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
             {
-                std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok) << " " << tok->strAt(3) << " is passed by value, it could be passed by reference/pointer instead";
-                _errorLogger->reportErr(errmsg.str());
+                _errorLogger->reportErr(ErrorMessage::passedByValue(_tokenizer, tok, tok->strAt(3)));
             }
         }
     }

@@ -327,15 +327,15 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::unreachableCode(_settings))
         checkOther.unreachableCode();
 
+    // Check if a constant function parameter is passed by value
+    if (ErrorMessage::passedByValue(_settings))
+        checkOther.CheckConstantFunctionParameter();
 
 
     if (_settings._checkCodingStyle)
     {
         // Variable scope (check if the scope could be limited)
         //CheckVariableScope();
-
-        // Check if a constant function parameter is passed by value
-        checkOther.CheckConstantFunctionParameter();
 
         // Check for various types of incomplete statements that could for example
         // mean that an ';' has been added by accident

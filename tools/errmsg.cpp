@@ -85,6 +85,7 @@ int main()
     err.push_back(Message("udivWarning", Message::STYLE | Message::ALL, "Warning: Division with signed and unsigned operators"));
     err.push_back(Message("unusedStructMember", Message::STYLE, "struct or union member '%1::%2' is never used", "structname", "varname"));
     err.push_back(Message("unreachableCode", 0, "Unreachable code below a 'return'"));
+    err.push_back(Message("passedByValue", 0, "Function parameter '%1' is passed by value. It could be passed by reference instead.", "parname"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

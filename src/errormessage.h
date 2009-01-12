@@ -237,5 +237,14 @@ public:
         return true;
     }
 
+    static std::string passedByValue(const Tokenizer *tokenizer, const Token *Location, const std::string &parname)
+    {
+        return msg1(tokenizer, Location) + "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.";
+    }
+    static bool passedByValue(const Settings &s)
+    {
+        return true;
+    }
+
 };
 #endif
