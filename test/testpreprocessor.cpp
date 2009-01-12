@@ -50,7 +50,7 @@ private:
         TEST_CASE(test4);
         TEST_CASE(test5);
 
-        TEST_CASE( newlines );
+        TEST_CASE(newlines);
 
         TEST_CASE(comments1);
 

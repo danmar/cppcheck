@@ -46,7 +46,7 @@ static char readChar(std::istream &istr)
         if ((char)istr.peek() == '\n')
             (void)istr.get();
     }
-    
+
     return ch;
 }
 
