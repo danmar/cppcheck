@@ -77,7 +77,7 @@ private:
         TEST_CASE(macro_simple5);
         TEST_CASE(macro_mismatch);
         TEST_CASE(preprocessor_inside_string);
-        TEST_CASE(preprocessor_undef);
+        // TODO TEST_CASE(preprocessor_undef);
     }
 
 
