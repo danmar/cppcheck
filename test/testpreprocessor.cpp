@@ -50,6 +50,8 @@ private:
         TEST_CASE(test4);
         TEST_CASE(test5);
 
+        TEST_CASE( newlines );
+
         TEST_CASE(comments1);
 
         TEST_CASE(if0);
@@ -257,6 +259,18 @@ private:
         ASSERT_EQUALS("\nA\n\n\n\n\n\n\n", actual["ABC"]);
         ASSERT_EQUALS("\n\n\nB\n\nC\n\n\n", actual["DEF"]);
         ASSERT_EQUALS(3, actual.size());
+    }
+
+
+
+    void newlines()
+    {
+        const char filedata[] = "\r\r\n\n";
+
+        // Preprocess
+        std::istringstream istr(filedata);
+        Preprocessor preprocessor;
+        ASSERT_EQUALS("\n\n\n", preprocessor.read(istr));
     }
 
 

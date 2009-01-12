@@ -35,6 +35,21 @@ Preprocessor::Preprocessor()
 
 }
 
+static char readChar(std::istream &istr)
+{
+    char ch = (char)istr.get();
+
+    // Handling of newlines..
+    if (ch == '\r')
+    {
+        ch = '\n';
+        if ((char)istr.peek() == '\n')
+            (void)istr.get();
+    }
+    
+    return ch;
+}
+
 /** Just read the code into a string. Perform simple cleanup of the code */
 std::string Preprocessor::read(std::istream &istr)
 {
@@ -50,7 +65,7 @@ std::string Preprocessor::read(std::istream &istr)
     unsigned int newlines = 0;
 
     std::ostringstream code;
-    for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
+    for (char ch = readChar(istr); istr.good(); ch = readChar(istr))
     {
         if (ch < 0)
             continue;
@@ -70,12 +85,12 @@ std::string Preprocessor::read(std::istream &istr)
         // Remove comments..
         if (ch == '/')
         {
-            char chNext = (char)istr.get();
+            char chNext = readChar(istr);
 
             if (chNext == '/')
             {
                 while (istr.good() && ch != '\n')
-                    ch = (char)istr.get();
+                    ch = readChar(istr);
                 code << "\n";
                 ++lineno;
             }
@@ -86,7 +101,7 @@ std::string Preprocessor::read(std::istream &istr)
                 while (istr.good() && (chPrev != '*' || ch != '/'))
                 {
                     chPrev = ch;
-                    ch = (char)istr.get();
+                    ch = readChar(istr);
                     if (ch == '\n')
                     {
                         code << "\n";
@@ -112,7 +127,7 @@ std::string Preprocessor::read(std::istream &istr)
                 ch = (char)istr.get();
                 if (ch == '\\')
                 {
-                    char chNext = (char)istr.get();
+                    char chNext = readChar(istr);
                     if (chNext == '\n')
                         ++newlines;
                     else
@@ -131,14 +146,14 @@ std::string Preprocessor::read(std::istream &istr)
         else if (ch == '\'')
         {
             code << "\'";
-            ch = (char)istr.get();
+            ch = readChar(istr);
             code << std::string(1, ch);
             if (ch == '\\')
             {
-                ch = (char)istr.get();
+                ch = readChar(istr);
                 code << std::string(1, ch);
             }
-            ch = (char)istr.get();
+            ch = readChar(istr);
             code << "\'";
         }
 
@@ -146,10 +161,10 @@ std::string Preprocessor::read(std::istream &istr)
         else if (ch == '\\')
         {
             char chNext = (char)istr.peek();
-            if (chNext == '\n')
+            if (chNext == '\n' || chNext == '\r')
             {
                 ++newlines;
-                (void)istr.get();   // Skip the "<backspace><newline>"
+                (void)readChar(istr);   // Skip the "<backspace><newline>"
             }
             else
                 code << "\\";
