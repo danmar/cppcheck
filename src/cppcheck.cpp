@@ -323,6 +323,11 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::unusedStructMember(_settings))
         checkOther.CheckStructMemberUsage();
 
+    // Unreachable code below a 'return' statement
+    if (ErrorMessage::unreachableCode(_settings))
+        checkOther.unreachableCode();
+
+
 
     if (_settings._checkCodingStyle)
     {
@@ -335,9 +340,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         // Check for various types of incomplete statements that could for example
         // mean that an ';' has been added by accident
         checkOther.CheckIncompleteStatement();
-
-        // Unreachable code below a 'return' statement
-        checkOther.unreachableCode();
     }
 }
 //---------------------------------------------------------------------------

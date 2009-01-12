@@ -228,5 +228,14 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string unreachableCode(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Unreachable code below a 'return'";
+    }
+    static bool unreachableCode(const Settings &s)
+    {
+        return true;
+    }
+
 };
 #endif
