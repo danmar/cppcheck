@@ -86,6 +86,9 @@ int main()
     err.push_back(Message("unusedStructMember", Message::STYLE, "struct or union member '%1::%2' is never used", "structname", "varname"));
     err.push_back(Message("unreachableCode", 0, "Unreachable code below a 'return'"));
     err.push_back(Message("passedByValue", 0, "Function parameter '%1' is passed by value. It could be passed by reference instead.", "parname"));
+    err.push_back(Message("unusedVariable", Message::STYLE, "Unused variable '%1'", "varname"));
+    err.push_back(Message("unreadVariable", Message::STYLE, "Variable '%1' is assigned a value that is never used", "varname"));
+    err.push_back(Message("unassignedVariable", Message::STYLE, "Variable '%1' is not assigned a value", "varname"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

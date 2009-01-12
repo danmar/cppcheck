@@ -938,23 +938,17 @@ void CheckOther::functionVariableUsage()
 
             if (usage == USAGE_DECLARE)
             {
-                std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok1->next()) << ": Unused variable '" << varname << "'";
-                _errorLogger->reportErr(errmsg.str());
+                _errorLogger->reportErr(ErrorMessage::unusedVariable(_tokenizer, tok1->next(), varname));
             }
 
             else if (!(usage & USAGE_READ))
             {
-                std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok1->next()) << ": Variable '" << varname << "' is assigned a value that is never used";
-                _errorLogger->reportErr(errmsg.str());
+                _errorLogger->reportErr(ErrorMessage::unreadVariable(_tokenizer, tok1->next(), varname));
             }
 
             else if (!(usage & USAGE_WRITE))
             {
-                std::ostringstream errmsg;
-                errmsg << _tokenizer->fileLine(tok1->next()) << ": Variable '" << varname << "' is not assigned a value";
-                _errorLogger->reportErr(errmsg.str());
+                _errorLogger->reportErr(ErrorMessage::unassignedVariable(_tokenizer, tok1->next(), varname));
             }
         }
     }

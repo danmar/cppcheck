@@ -249,9 +249,12 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         // Give warning when using char variable as array index
         checkOther.CheckCharVariable();
 
-        // Usage of local variables
-        checkOther.functionVariableUsage();
     }
+
+    // Usage of local variables
+    if (ErrorMessage::unusedVariable(_settings))
+        checkOther.functionVariableUsage();
+
 
 
     _tokenizer.simplifyTokenList();

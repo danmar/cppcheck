@@ -246,5 +246,32 @@ public:
         return true;
     }
 
+    static std::string unusedVariable(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) + "Unused variable '" + varname + "'";
+    }
+    static bool unusedVariable(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
+    static std::string unreadVariable(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) + "Variable '" + varname + "' is assigned a value that is never used";
+    }
+    static bool unreadVariable(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
+    static std::string unassignedVariable(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) + "Variable '" + varname + "' is not assigned a value";
+    }
+    static bool unassignedVariable(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
 };
 #endif
