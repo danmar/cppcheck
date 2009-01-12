@@ -212,8 +212,6 @@ void CheckOther::WarningIf()
                 {
                     if (Token::Match(tok2, ") ; !!else"))
                     {
-                        std::ostringstream ostr;
-                        ostr << _tokenizer->fileLine(tok) << ": Found \"if (condition);\"";
                         _errorLogger->reportErr(ErrorMessage::ifNoAction(_tokenizer, tok));
                     }
                     break;
@@ -357,9 +355,7 @@ void CheckOther::InvalidFunctionUsage()
             }
             else if (parlevel == 0 && tok2->varId() == varid)
             {
-                std::ostringstream ostr;
-                ostr << _tokenizer->fileLine(tok2) << ": Overlapping data buffer " << tok2->str();
-                _errorLogger->reportErr(ostr.str());
+                _errorLogger->reportErr(ErrorMessage::sprintfOverlappingData(_tokenizer, tok2, tok2->str()));
                 break;
             }
         }

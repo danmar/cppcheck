@@ -192,5 +192,14 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string sprintfOverlappingData(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) + "Overlapping data buffer " + varname + "";
+    }
+    static bool sprintfOverlappingData(const Settings &s)
+    {
+        return true;
+    }
+
 };
 #endif

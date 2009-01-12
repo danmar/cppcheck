@@ -301,7 +301,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkOther.WarningRedundantCode();
 
     // strtol and strtoul usage
-    if (ErrorMessage::dangerousUsageStrtol(_settings))
+    if (ErrorMessage::dangerousUsageStrtol(_settings) ||
+        ErrorMessage::sprintfOverlappingData(_settings))
         checkOther.InvalidFunctionUsage();
 
     // Check that all private functions are called.
