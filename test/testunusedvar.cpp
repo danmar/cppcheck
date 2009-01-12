@@ -47,7 +47,7 @@ private:
         errout.str("");
 
         // Check for unused variables..
-        CheckOther checkOther(&tokenizer, this);
+        CheckOther checkOther(&tokenizer, Settings(), this);
         checkOther.CheckStructMemberUsage();
     }
 
@@ -182,7 +182,7 @@ private:
         errout.str("");
 
         // Check for unused variables..
-        CheckOther checkOther(&tokenizer, this);
+        CheckOther checkOther(&tokenizer, Settings(), this);
         checkOther.functionVariableUsage();
     }
 

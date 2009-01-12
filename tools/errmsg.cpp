@@ -81,6 +81,8 @@ int main()
     err.push_back(Message("dangerousUsageStrtol", 0, "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36"));
     err.push_back(Message("ifNoAction", Message::STYLE, "Found redundant if condition - 'if (condition);'"));
     err.push_back(Message("sprintfOverlappingData", 0, "Overlapping data buffer %1", "varname"));
+    err.push_back(Message("udivError", 0, "Unsigned division. The result will be wrong."));
+    err.push_back(Message("udivWarning", Message::ALL, "Warning: Division with signed and unsigned operators"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

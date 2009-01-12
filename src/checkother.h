@@ -29,7 +29,7 @@
 class CheckOther
 {
 public:
-    CheckOther(const Tokenizer *tokenizer, ErrorLogger *errorLogger);
+    CheckOther(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
     ~CheckOther();
 
     // Casting
@@ -83,6 +83,7 @@ private:
 
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
+    const Settings &_settings;
 };
 
 //---------------------------------------------------------------------------

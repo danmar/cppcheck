@@ -238,12 +238,14 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
 
     // Coding style checks that must be run before the simplifyTokenList
-    CheckOther checkOther(&_tokenizer, this);
-    if (_settings._checkCodingStyle)
-    {
-        // Check for unsigned divisions where one operand is signed
+    CheckOther checkOther(&_tokenizer, _settings, this);
+
+    // Check for unsigned divisions where one operand is signed
+    if (ErrorMessage::udivWarning(_settings) || ErrorMessage::udivError(_settings))
         checkOther.CheckUnsignedDivision();
 
+    if (_settings._checkCodingStyle)
+    {
         // Give warning when using char variable as array index
         checkOther.CheckCharVariable();
 

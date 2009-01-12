@@ -54,7 +54,7 @@ private:
         errout.str("");
 
         // Check for redundant code..
-        CheckOther checkOther(&tokenizer, this);
+        CheckOther checkOther(&tokenizer, Settings(), this);
         checkOther.WarningRedundantCode();
     }
 
@@ -106,7 +106,7 @@ private:
         errout.str("");
 
         // Check for redundant code..
-        CheckOther checkOther(&tokenizer, this);
+        CheckOther checkOther(&tokenizer, Settings(), this);
         checkOther.InvalidFunctionUsage();
     }
 

@@ -48,7 +48,7 @@ private:
         errout.str("");
 
         // Check for redundant condition..
-        CheckOther checkOther(&tokenizer, this);
+        CheckOther checkOther(&tokenizer, Settings(), this);
         checkOther.redundantCondition2();
     }
 

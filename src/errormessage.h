@@ -201,5 +201,23 @@ public:
         return true;
     }
 
+    static std::string udivError(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Unsigned division. The result will be wrong.";
+    }
+    static bool udivError(const Settings &s)
+    {
+        return true;
+    }
+
+    static std::string udivWarning(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Warning: Division with signed and unsigned operators";
+    }
+    static bool udivWarning(const Settings &s)
+    {
+        return s._showAll;
+    }
+
 };
 #endif

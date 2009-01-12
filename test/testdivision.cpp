@@ -47,8 +47,11 @@ private:
         // Clear the error buffer..
         errout.str("");
 
+        Settings settings;
+        settings._showAll = true;
+
         // Check for unsigned divisions..
-        CheckOther checkOther(&tokenizer, this);
+        CheckOther checkOther(&tokenizer, settings, this);
         checkOther.CheckUnsignedDivision();
     }
 

@@ -35,7 +35,8 @@
 // Warning on C-Style casts.. p = (kalle *)foo;
 //---------------------------------------------------------------------------
 
-CheckOther::CheckOther(const Tokenizer *tokenizer, ErrorLogger *errorLogger)
+CheckOther::CheckOther(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
+        : _settings(settings)
 {
     _tokenizer = tokenizer;
     _errorLogger = errorLogger;
@@ -407,41 +408,44 @@ void CheckOther::CheckUnsignedDivision()
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %var%"))
         {
-            const char *varname1 = tok->strAt(1);
-            const char *varname2 = tok->strAt(3);
-            char sign1 = varsign[varname1];
-            char sign2 = varsign[varname2];
-
-            if (sign1 && sign2 && sign1 != sign2)
+            if (ErrorMessage::udivWarning(_settings))
             {
-                // One of the operands are signed, the other is unsigned..
-                std::ostringstream ostr;
-                ostr << _tokenizer->fileLine(tok->next()) << ": Warning: Division with signed and unsigned operators";
-                _errorLogger->reportErr(ostr.str());
+                const char *varname1 = tok->strAt(1);
+                const char *varname2 = tok->strAt(3);
+                char sign1 = varsign[varname1];
+                char sign2 = varsign[varname2];
+
+                if (sign1 && sign2 && sign1 != sign2)
+                {
+                    // One of the operands are signed, the other is unsigned..
+                    _errorLogger->reportErr(ErrorMessage::udivWarning(_tokenizer, tok->next()));
+                }
             }
         }
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / - %num%"))
         {
-            const char *varname1 = tok->strAt(1);
-            char sign1 = varsign[varname1];
-            if (sign1 == 'u')
+            if (ErrorMessage::udivError(_settings))
             {
-                std::ostringstream ostr;
-                ostr << _tokenizer->fileLine(tok->next()) << ": Unsigned division. The result will be wrong.";
-                _errorLogger->reportErr(ostr.str());
+                const char *varname1 = tok->strAt(1);
+                char sign1 = varsign[varname1];
+                if (sign1 == 'u')
+                {
+                    _errorLogger->reportErr(ErrorMessage::udivError(_tokenizer, tok->next()));
+                }
             }
         }
 
         else if (Token::Match(tok, "[([=*/+-] - %num% / %var%"))
         {
-            const char *varname2 = tok->strAt(4);
-            char sign2 = varsign[varname2];
-            if (sign2 == 'u')
+            if (ErrorMessage::udivError(_settings))
             {
-                std::ostringstream ostr;
-                ostr << _tokenizer->fileLine(tok->next()) << ": Unsigned division. The result will be wrong.";
-                _errorLogger->reportErr(ostr.str());
+                const char *varname2 = tok->strAt(4);
+                char sign2 = varsign[varname2];
+                if (sign2 == 'u')
+                {
+                    _errorLogger->reportErr(ErrorMessage::udivError(_tokenizer, tok->next()));
+                }
             }
         }
     }
