@@ -89,6 +89,7 @@ int main()
     err.push_back(Message("unusedVariable", Message::STYLE, "Unused variable '%1'", "varname"));
     err.push_back(Message("unreadVariable", Message::STYLE, "Variable '%1' is assigned a value that is never used", "varname"));
     err.push_back(Message("unassignedVariable", Message::STYLE, "Variable '%1' is not assigned a value", "varname"));
+    err.push_back(Message("constStatement", Message::STYLE, "Redundant code: Found a statement that begins with %1 constant", "type"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

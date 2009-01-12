@@ -273,5 +273,14 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string constStatement(const Tokenizer *tokenizer, const Token *Location, const std::string &type)
+    {
+        return msg1(tokenizer, Location) + "Redundant code: Found a statement that begins with " + type + " constant";
+    }
+    static bool constStatement(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
 };
 #endif

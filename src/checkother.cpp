@@ -783,13 +783,12 @@ void CheckOther::CheckIncompleteStatement()
 
         if ((tok->str() != "#") && Token::Match(tok->next(), "; %str%") && !Token::Match(tok->tokAt(3), ","))
         {
-            std::ostringstream errmsg;
-            errmsg << _tokenizer->fileLine(tok->next()) << ": Redundant code: Found a statement that begins with string constant";
-            _errorLogger->reportErr(errmsg.str());
+            _errorLogger->reportErr(ErrorMessage::constStatement(_tokenizer, tok->next(), "string"));
         }
 
         if (!Token::Match(tok, "#") && Token::Match(tok->next(), "; %num%") && !Token::Match(tok->tokAt(3), ","))
         {
+            _errorLogger->reportErr(ErrorMessage::constStatement(_tokenizer, tok->next(), "numeric"));
             std::ostringstream errmsg;
             errmsg << _tokenizer->fileLine(tok->next()) << ": Redundant code: Found a statement that begins with numeric constant";
             _errorLogger->reportErr(errmsg.str());
