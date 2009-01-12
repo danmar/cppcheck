@@ -631,9 +631,6 @@ void CheckClass::noMemset()
             if (Token::Match(tstruct, "std :: %type% %var% ;"))
             {
                 _errorLogger->reportErr(ErrorMessage::memsetStruct(_tokenizer, tok, tok->str(), tstruct->strAt(2)));
-                std::ostringstream ostr;
-                ostr << _tokenizer->fileLine(tok) << ": Using '" << tok->str() << "' on struct that contains a 'std::" << tstruct->strAt(2) << "'";
-                _errorLogger->reportErr(ostr.str());
                 break;
             }
         }
