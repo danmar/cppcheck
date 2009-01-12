@@ -216,7 +216,7 @@ public:
     }
     static bool udivWarning(const Settings &s)
     {
-        return s._showAll;
+        return s._showAll & s._checkCodingStyle;
     }
 
 };
