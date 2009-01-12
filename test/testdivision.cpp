@@ -49,6 +49,7 @@ private:
 
         Settings settings;
         settings._showAll = true;
+        settings._checkCodingStyle = true;
 
         // Check for unsigned divisions..
         CheckOther checkOther(&tokenizer, settings, this);
