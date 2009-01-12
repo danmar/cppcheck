@@ -214,7 +214,7 @@ void CheckOther::WarningIf()
                     {
                         std::ostringstream ostr;
                         ostr << _tokenizer->fileLine(tok) << ": Found \"if (condition);\"";
-                        _errorLogger->reportErr(ostr.str());
+                        _errorLogger->reportErr(ErrorMessage::ifNoAction(_tokenizer, tok));
                     }
                     break;
                 }

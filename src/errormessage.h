@@ -183,5 +183,14 @@ public:
         return true;
     }
 
+    static std::string ifNoAction(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Found redundant if condition - 'if (condition);'";
+    }
+    static bool ifNoAction(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
 };
 #endif

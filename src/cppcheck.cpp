@@ -312,11 +312,13 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::operatorEq(_settings))
         checkClass.operatorEq();
 
-    if (_settings._checkCodingStyle)
-    {
-        // if (condition);
+    // if (condition);
+    if (ErrorMessage::ifNoAction(_settings))
         checkOther.WarningIf();
 
+
+    if (_settings._checkCodingStyle)
+    {
         // Variable scope (check if the scope could be limited)
         //CheckVariableScope();
 
