@@ -309,5 +309,14 @@ public:
         return false;
     }
 
+    static std::string ifAssignment(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Assignment in if-condition";
+    }
+    static bool ifAssignment(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
 };
 #endif

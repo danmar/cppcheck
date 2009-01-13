@@ -280,12 +280,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::arrayIndexOutOfBounds(_settings) && ErrorMessage::bufferOverrun(_settings))
         checkBufferOverrun.bufferOverrun();
 
-    if (_settings._showAll)
-    {
-
-        // Check for "if (a=b)"
+    // Check for "if (a=b)"
+    if (ErrorMessage::ifAssignment(_settings))
         checkOther.CheckIfAssignment();
-    }
 
     // Dangerous functions, such as 'gets' and 'scanf'
     checkBufferOverrun.dangerousFunctions();

@@ -92,6 +92,7 @@ int main()
     err.push_back(Message("charArrayIndex", Message::style, "Warning - using char variable as array index"));
     err.push_back(Message("charBitOp", Message::style, "Warning - using char variable in bit operation"));
     err.push_back(Message("variableScope", Message::never, "The scope of the variable %1 can be limited", "varname"));
+    err.push_back(Message("ifAssignment", Message::style, "Assignment in if-condition"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;
@@ -224,21 +225,21 @@ void Message::generateCode(std::ostream &ostr) const
     ostr << "        return ";
     switch (_settings)
     {
-        case std: 
-            ostr << "true"; 
-            break;
-        case all:       
-            ostr << "s._showAll"; 
-            break;
-        case style:     
-            ostr << "s._checkCodingStyle"; 
-            break;
-        case style_all: 
-            ostr << "s._showAll & s._checkCodingStyle"; 
-            break;
-        case never:     
-            ostr << "false"; 
-            break;
+    case std:
+        ostr << "true";
+        break;
+    case all:
+        ostr << "s._showAll";
+        break;
+    case style:
+        ostr << "s._checkCodingStyle";
+        break;
+    case style_all:
+        ostr << "s._showAll & s._checkCodingStyle";
+        break;
+    case never:
+        ostr << "false";
+        break;
     }
     ostr << ";\n";
     ostr << "    }\n\n";

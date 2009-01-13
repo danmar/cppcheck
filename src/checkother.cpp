@@ -377,9 +377,7 @@ void CheckOther::CheckIfAssignment()
             Token::Match(tok, "if ( %var% = %str% )") ||
             Token::Match(tok, "if ( %var% = %var% )"))
         {
-            std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Possible bug. Should it be '==' instead of '='?";
-            _errorLogger->reportErr(ostr.str());
+            _errorLogger->reportErr(ErrorMessage::ifAssignment(_tokenizer, tok));
         }
     }
 }

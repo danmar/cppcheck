@@ -21,7 +21,6 @@
 #include "checkfunctionusage.h"
 #include "errormessage.h"
 #include "tokenize.h"
-#include <sstream>
 //---------------------------------------------------------------------------
 
 
