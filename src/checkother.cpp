@@ -602,9 +602,7 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
     }
 
     // Warning if "used" is true
-    std::ostringstream errmsg;
-    errmsg << _tokenizer->fileLine(tok1) << " The scope of the variable '" << varname << "' can be limited";
-    _errorLogger->reportErr(errmsg.str());
+    _errorLogger->reportErr(ErrorMessage::variableScope(_tokenizer, tok1, varname));
 }
 //---------------------------------------------------------------------------
 
@@ -785,9 +783,6 @@ void CheckOther::CheckIncompleteStatement()
         if (!Token::Match(tok, "#") && Token::Match(tok->next(), "; %num%") && !Token::Match(tok->tokAt(3), ","))
         {
             _errorLogger->reportErr(ErrorMessage::constStatement(_tokenizer, tok->next(), "numeric"));
-            std::ostringstream errmsg;
-            errmsg << _tokenizer->fileLine(tok->next()) << ": Redundant code: Found a statement that begins with numeric constant";
-            _errorLogger->reportErr(errmsg.str());
         }
     }
 }

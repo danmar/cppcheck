@@ -300,5 +300,14 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string variableScope(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) + "The scope of the variable " + varname + " can be limited";
+    }
+    static bool variableScope(const Settings &s)
+    {
+        return false;
+    }
+
 };
 #endif

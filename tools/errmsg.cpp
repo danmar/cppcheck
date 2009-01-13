@@ -23,26 +23,25 @@
 
 class Message
 {
+public:
+    enum Settings {std, all, style, style_all, never};
+
+    Message(std::string funcname, Settings settings, std::string msg);
+    Message(std::string funcname, Settings settings, std::string msg, std::string par1);
+    Message(std::string funcname, Settings settings, std::string msg, std::string par1, std::string par2);
+
+    void generateCode(std::ostream &ostr) const;
+
+    void generateDoc(std::ostream &ostr, Settings i) const;
+
 private:
     std::string _funcname;
     std::string _msg;
     std::string _par1;
     std::string _par2;
-    unsigned int _settings;
+    Settings _settings;
 
     std::string msg(bool code) const;
-
-public:
-    Message(std::string funcname, unsigned int settings, std::string msg);
-    Message(std::string funcname, unsigned int settings, std::string msg, std::string par1);
-    Message(std::string funcname, unsigned int settings, std::string msg, std::string par1, std::string par2);
-
-    static const unsigned int ALL = 1;
-    static const unsigned int STYLE = 2;
-
-    void generateCode(std::ostream &ostr) const;
-
-    void generateDoc(std::ostream &ostr, unsigned int i) const;
 };
 
 
@@ -54,44 +53,45 @@ int main()
     std::list<Message> err;
 
     // checkbufferoverrun.cpp
-    err.push_back(Message("arrayIndexOutOfBounds", Message::ALL, "Array index out of bounds"));
-    err.push_back(Message("bufferOverrun", Message::ALL, "Buffer overrun"));
+    err.push_back(Message("arrayIndexOutOfBounds", Message::all, "Array index out of bounds"));
+    err.push_back(Message("bufferOverrun", Message::all, "Buffer overrun"));
 
     // checkclass.cpp..
-    err.push_back(Message("noConstructor", Message::STYLE, "The class '%1' has no constructor", "classname"));
-    err.push_back(Message("uninitVar", 0, "Uninitialized member variable '%1::%2'", "classname", "varname"));
-    err.push_back(Message("unusedPrivateFunction", Message::STYLE, "Unused private function '%1::%2'", "classname", "funcname"));
-    err.push_back(Message("memsetClass", 0, "Using '%1' on class", "memfunc"));
-    err.push_back(Message("memsetStruct", 0, "Using '%1' on struct that contains a 'std::%2'", "memfunc", "classname"));
-    err.push_back(Message("operatorEq", Message::STYLE, "'operator=' should return something"));
-    err.push_back(Message("virtualDestructor", 0, "Class %1 which is inherited by class %2 does not have a virtual destructor", "Base", "Derived"));
+    err.push_back(Message("noConstructor", Message::style, "The class '%1' has no constructor", "classname"));
+    err.push_back(Message("uninitVar", Message::std, "Uninitialized member variable '%1::%2'", "classname", "varname"));
+    err.push_back(Message("unusedPrivateFunction", Message::style, "Unused private function '%1::%2'", "classname", "funcname"));
+    err.push_back(Message("memsetClass", Message::std, "Using '%1' on class", "memfunc"));
+    err.push_back(Message("memsetStruct", Message::std, "Using '%1' on struct that contains a 'std::%2'", "memfunc", "classname"));
+    err.push_back(Message("operatorEq", Message::style, "'operator=' should return something"));
+    err.push_back(Message("virtualDestructor", Message::std, "Class %1 which is inherited by class %2 does not have a virtual destructor", "Base", "Derived"));
 
     // checkfunctionusage.cpp..
-    err.push_back(Message("unusedFunction", Message::STYLE | Message::ALL, "[%1]: The function '%2' is never used", "filename", "funcname"));
+    err.push_back(Message("unusedFunction", Message::style_all, "[%1]: The function '%2' is never used", "filename", "funcname"));
 
     // checkmemoryleak.cpp..
-    err.push_back(Message("mismatchAllocDealloc", 0, "Mismatching allocation and deallocation: %1", "varname"));
-    err.push_back(Message("memleak", 0, "Memory leak: %1", "varname"));
-    err.push_back(Message("resourceLeak", 0, "Resource leak: %1", "varname"));
+    err.push_back(Message("mismatchAllocDealloc", Message::std, "Mismatching allocation and deallocation: %1", "varname"));
+    err.push_back(Message("memleak", Message::std, "Memory leak: %1", "varname"));
+    err.push_back(Message("resourceLeak", Message::std, "Resource leak: %1", "varname"));
 
     // checkother.cpp..
-    err.push_back(Message("cstyleCast", Message::STYLE, "C-style pointer casting"));
-    err.push_back(Message("redundantIfDelete0", Message::STYLE, "Redundant condition. It is safe to deallocate a NULL pointer"));
-    err.push_back(Message("redundantIfRemove", Message::STYLE, "Redundant condition. The remove function in the STL will not do anything if element doesn't exist"));
-    err.push_back(Message("dangerousUsageStrtol", 0, "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36"));
-    err.push_back(Message("ifNoAction", Message::STYLE, "Found redundant if condition - 'if (condition);'"));
-    err.push_back(Message("sprintfOverlappingData", 0, "Overlapping data buffer %1", "varname"));
-    err.push_back(Message("udivError", 0, "Unsigned division. The result will be wrong."));
-    err.push_back(Message("udivWarning", Message::STYLE | Message::ALL, "Warning: Division with signed and unsigned operators"));
-    err.push_back(Message("unusedStructMember", Message::STYLE, "struct or union member '%1::%2' is never used", "structname", "varname"));
-    err.push_back(Message("unreachableCode", 0, "Unreachable code below a 'return'"));
-    err.push_back(Message("passedByValue", 0, "Function parameter '%1' is passed by value. It could be passed by reference instead.", "parname"));
-    err.push_back(Message("unusedVariable", Message::STYLE, "Unused variable '%1'", "varname"));
-    err.push_back(Message("unreadVariable", Message::STYLE, "Variable '%1' is assigned a value that is never used", "varname"));
-    err.push_back(Message("unassignedVariable", Message::STYLE, "Variable '%1' is not assigned a value", "varname"));
-    err.push_back(Message("constStatement", Message::STYLE, "Redundant code: Found a statement that begins with %1 constant", "type"));
-    err.push_back(Message("charArrayIndex", Message::STYLE, "Warning - using char variable as array index"));
-    err.push_back(Message("charBitOp", Message::STYLE, "Warning - using char variable in bit operation"));
+    err.push_back(Message("cstyleCast", Message::style, "C-style pointer casting"));
+    err.push_back(Message("redundantIfDelete0", Message::style, "Redundant condition. It is safe to deallocate a NULL pointer"));
+    err.push_back(Message("redundantIfRemove", Message::style, "Redundant condition. The remove function in the STL will not do anything if element doesn't exist"));
+    err.push_back(Message("dangerousUsageStrtol", Message::std, "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36"));
+    err.push_back(Message("ifNoAction", Message::style, "Found redundant if condition - 'if (condition);'"));
+    err.push_back(Message("sprintfOverlappingData", Message::std, "Overlapping data buffer %1", "varname"));
+    err.push_back(Message("udivError", Message::std, "Unsigned division. The result will be wrong."));
+    err.push_back(Message("udivWarning", Message::style_all, "Warning: Division with signed and unsigned operators"));
+    err.push_back(Message("unusedStructMember", Message::style, "struct or union member '%1::%2' is never used", "structname", "varname"));
+    err.push_back(Message("unreachableCode", Message::std, "Unreachable code below a 'return'"));
+    err.push_back(Message("passedByValue", Message::std, "Function parameter '%1' is passed by value. It could be passed by reference instead.", "parname"));
+    err.push_back(Message("unusedVariable", Message::style, "Unused variable '%1'", "varname"));
+    err.push_back(Message("unreadVariable", Message::style, "Variable '%1' is assigned a value that is never used", "varname"));
+    err.push_back(Message("unassignedVariable", Message::style, "Variable '%1' is not assigned a value", "varname"));
+    err.push_back(Message("constStatement", Message::style, "Redundant code: Found a statement that begins with %1 constant", "type"));
+    err.push_back(Message("charArrayIndex", Message::style, "Warning - using char variable as array index"));
+    err.push_back(Message("charBitOp", Message::style, "Warning - using char variable in bit operation"));
+    err.push_back(Message("variableScope", Message::never, "The scope of the variable %1 can be limited", "varname"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;
@@ -138,9 +138,10 @@ int main()
     for (unsigned int i = 0; i < 4; ++i)
     {
         const char *suite[4] = { "standard", "all", "style", "all + style" };
+        const Message::Settings settings[4] = { Message::std, Message::all, Message::style, Message::style_all };
         std::cout << "    =" << suite[i] << "=" << std::endl;
         for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
-            it->generateDoc(std::cout, i);
+            it->generateDoc(std::cout, settings[i]);
     }
     std::cout << std::endl;
 
@@ -151,15 +152,15 @@ int main()
 
 
 
-Message::Message(std::string funcname, unsigned int settings, std::string msg)
+Message::Message(std::string funcname, Settings settings, std::string msg)
         : _funcname(funcname), _msg(msg), _par1(""), _par2(""), _settings(settings)
 { }
 
-Message::Message(std::string funcname, unsigned int settings, std::string msg, std::string par1)
+Message::Message(std::string funcname, Settings settings, std::string msg, std::string par1)
         : _funcname(funcname), _msg(msg), _par1(par1), _par2(""), _settings(settings)
 { }
 
-Message::Message(std::string funcname, unsigned int settings, std::string msg, std::string par1, std::string par2)
+Message::Message(std::string funcname, Settings settings, std::string msg, std::string par1, std::string par2)
         : _funcname(funcname), _msg(msg), _par1(par1), _par2(par2), _settings(settings)
 { }
 
@@ -221,22 +222,29 @@ void Message::generateCode(std::ostream &ostr) const
     ostr << "    static bool " << _funcname << "(const Settings &s)" << std::endl;
     ostr << "    {\n";
     ostr << "        return ";
-    if (_settings == 0)
-        ostr << "true";
-    else
+    switch (_settings)
     {
-        if (_settings == ALL)
-            ostr << "s._showAll";
-        else if (_settings == STYLE)
-            ostr << "s._checkCodingStyle";
-        else if (_settings == (ALL | STYLE))
-            ostr << "s._showAll & s._checkCodingStyle";
+        case std: 
+            ostr << "true"; 
+            break;
+        case all:       
+            ostr << "s._showAll"; 
+            break;
+        case style:     
+            ostr << "s._checkCodingStyle"; 
+            break;
+        case style_all: 
+            ostr << "s._showAll & s._checkCodingStyle"; 
+            break;
+        case never:     
+            ostr << "false"; 
+            break;
     }
     ostr << ";\n";
     ostr << "    }\n\n";
 }
 
-void Message::generateDoc(std::ostream &ostr, unsigned int i) const
+void Message::generateDoc(std::ostream &ostr, Message::Settings i) const
 {
     if (_settings == i)
     {

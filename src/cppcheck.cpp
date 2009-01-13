@@ -331,12 +331,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::passedByValue(_settings))
         checkOther.CheckConstantFunctionParameter();
 
-
-    if (_settings._checkCodingStyle)
-    {
-        // Variable scope (check if the scope could be limited)
-        //CheckVariableScope();
-    }
+    // Variable scope (check if the scope could be limited)
+    if (ErrorMessage::variableScope(_settings))
+        /*CheckVariableScope()*/;
 
     // Check for various types of incomplete statements that could for example
     // mean that an ';' has been added by accident
