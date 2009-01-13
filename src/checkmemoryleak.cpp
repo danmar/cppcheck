@@ -1240,6 +1240,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
 
 void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
 {
+    bool classmember = false;
     bool infunc = false;
     int indentlevel = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -1250,15 +1251,17 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
         else if (tok->str() == "}")
             --indentlevel;
 
+        if (tok->str() == "::")
+            classmember = true;
 
         // In function..
         if (indentlevel == 0)
         {
             if (Token::Match(tok, ") {"))
-                infunc = true;
+                infunc = !classmember;
 
             else if (Token::Match(tok, "[;}]"))
-                infunc = false;
+                infunc = classmember = false;
         }
 
         // Declare a local variable => Check

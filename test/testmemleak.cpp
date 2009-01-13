@@ -134,6 +134,7 @@ private:
         TEST_CASE(class1);
         TEST_CASE(class2);
         // TODO TEST_CASE( class3 );
+        TEST_CASE(class4);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1231,6 +1232,29 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+    void class4()
+    {
+        check("struct MONITOR_POST;\n"
+              "class MonitorClient\n"
+              "{\n"
+              "private:\n"
+              "    void addPost(MONITOR_POST *MonitorPost);\n"
+              "public:\n"
+              "    void click();\n"
+              "};\n"
+              "\n"
+              "void MonitorClient::addPost(MONITOR_POST* MonitorPost)\n"
+              "{\n"
+              "    _pMonitorPosts->Add(MonitorPost);\n"
+              "}\n"
+              "\n"
+              "void MonitorClient::click()\n"
+              "{\n"
+              "    MONITOR_POST *NewMeasurePost = new MONITOR_POST;\n"
+              "    addPost( NewMeasurePost );\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
 
