@@ -202,6 +202,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\errormessage.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\filelister.h"
 				>
 			</File>
@@ -263,6 +267,10 @@
 			</File>
 			<File
 				RelativePath=".\src\cppcheckexecutor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\errormessage.cpp"
 				>
 			</File>
 			<File
