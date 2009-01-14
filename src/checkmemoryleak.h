@@ -60,7 +60,7 @@ private:
     void CheckMemoryLeak_ClassMembers_ParseClass(const Token *tok1, std::vector<const char *> &classname);
     void CheckMemoryLeak_ClassMembers();
     void CheckMemoryLeak_InFunction();
-    void CheckMemoryLeak_CheckScope(const Token *Tok1, const char varname[]);
+    void CheckMemoryLeak_CheckScope(const Token *Tok1, const char varname[], bool classmember);
 
     /**
      * Simplify code e.g. by replacing empty "{ }" with ";"
@@ -87,7 +87,7 @@ private:
      * @return Newly allocated token array. Caller needs to release reserved
      * memory by calling Tokenizer::deleteTokens(returnValue);
      */
-    Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype);
+    Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember);
     bool notvar(const Token *tok, const char *varnames[]);
     void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype);
     void MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[]);

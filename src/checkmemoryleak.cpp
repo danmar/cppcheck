@@ -275,7 +275,7 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
                 // Check if the function deallocates the variable..
                 while (ftok && (ftok->str() != "{"))
                     ftok = ftok->next();
-                Token *func = getcode(ftok->tokAt(1), callstack, parname, alloctype, dealloctype);
+                Token *func = getcode(ftok->tokAt(1), callstack, parname, alloctype, dealloctype, false);
                 simplifycode(func);
                 const Token *func_ = func;
                 while (func_ && func_->str() == ";")
@@ -339,7 +339,7 @@ bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
                 Token::simpleMatch(tok, std::string(varname + " == 0").c_str()));
 }
 
-Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype)
+Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember)
 {
     const char *varnames[2];
     varnames[0] = varname;
@@ -605,9 +605,17 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         // Investigate function calls..
         if (Token::Match(tok, "%var% ("))
         {
-            const char *str = call_func(tok, callstack, varnames, alloctype, dealloctype);
-            if (str)
-                addtoken(str);
+            if (classmember)
+            {
+                addtoken("use");
+            }
+
+            else
+            {
+                const char *str = call_func(tok, callstack, varnames, alloctype, dealloctype);
+                if (str)
+                    addtoken(str);
+            }
         }
 
         // Callback..
@@ -1108,7 +1116,7 @@ void CheckMemoryLeakClass::simplifycode(Token *tok)
 
 
 // Check for memory leaks for a function variable.
-void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const char varname[])
+void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const char varname[], bool classmember)
 {
     std::list<const Token *> callstack;
 
@@ -1117,7 +1125,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
 
     const Token *result;
 
-    Token *tok = getcode(Tok1, callstack, varname, alloctype, dealloctype);
+    Token *tok = getcode(Tok1, callstack, varname, alloctype, dealloctype, classmember);
     //tok->printOut( "getcode result" );
 
     // Simplify the code and check if freed memory is used..
@@ -1258,7 +1266,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
         if (indentlevel == 0)
         {
             if (Token::Match(tok, ") {"))
-                infunc = !classmember;
+                infunc = true;
 
             else if (Token::Match(tok, "[;}]"))
                 infunc = classmember = false;
@@ -1268,10 +1276,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
         if (indentlevel > 0 && infunc)
         {
             if (Token::Match(tok, "[{};] %type% * %var% [;=]"))
-                CheckMemoryLeak_CheckScope(tok->next(), tok->strAt(3));
+                CheckMemoryLeak_CheckScope(tok->next(), tok->strAt(3), classmember);
 
             else if (Token::Match(tok, "[{};] %type% %type% * %var% [;=]"))
-                CheckMemoryLeak_CheckScope(tok->next(), tok->strAt(4));
+                CheckMemoryLeak_CheckScope(tok->next(), tok->strAt(4), classmember);
         }
     }
 }
@@ -1503,7 +1511,7 @@ Token * CheckMemoryLeakClass::functionParameterCode(const Token *ftok, int param
         // Return the code..
         AllocType alloc = No, dealloc = No;
         std::list<const Token *> callstack;
-        Token *code = getcode(ftok, callstack, parname, alloc, dealloc);
+        Token *code = getcode(ftok, callstack, parname, alloc, dealloc, false);
         simplifycode(code);
         return code;
     }

@@ -135,6 +135,7 @@ private:
         TEST_CASE(class2);
         // TODO TEST_CASE( class3 );
         TEST_CASE(class4);
+        TEST_CASE(class5);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1234,26 +1235,41 @@ private:
 
     void class4()
     {
-        check("struct MONITOR_POST;\n"
-              "class MonitorClient\n"
+        check("struct ABC;\n"
+              "class Fred\n"
               "{\n"
               "private:\n"
-              "    void addPost(MONITOR_POST *MonitorPost);\n"
+              "    void addAbc(ABC *abc);\n"
               "public:\n"
               "    void click();\n"
               "};\n"
               "\n"
-              "void MonitorClient::addPost(MONITOR_POST* MonitorPost)\n"
+              "void Fred::addAbc(ABC* abc)\n"
               "{\n"
-              "    _pMonitorPosts->Add(MonitorPost);\n"
+              "    AbcPosts->Add(abc);\n"
               "}\n"
               "\n"
-              "void MonitorClient::click()\n"
+              "void Fred::click()\n"
               "{\n"
-              "    MONITOR_POST *NewMeasurePost = new MONITOR_POST;\n"
-              "    addPost( NewMeasurePost );\n"
+              "    ABC *p = new ABC;\n"
+              "    addAbc( p );\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void class5()
+    {
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    void foo();\n"
+              "};\n"
+              "\n"
+              "void Fred::foo()\n"
+              "{\n"
+              "    char *str = new char[100];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: Memory leak: str\n", errout.str());
     }
 
 
