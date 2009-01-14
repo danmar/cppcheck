@@ -40,10 +40,10 @@ private:
 
     /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
     void CheckBufferOverrun_StructVariable();
-    
+
     /** Check for buffer overruns - locate local function variables and check them with the .._CheckScope function */
     void CheckBufferOverrun_LocalVariable();
-    
+
     /** Check for buffer overruns - this is the function that performs the actual checking */
     void CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
 

@@ -83,6 +83,8 @@ private:
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
 
+        TEST_CASE(sprintf1);
+
         TEST_CASE(varid1);
         TEST_CASE(varid2);
     }
@@ -356,6 +358,17 @@ private:
               "    strcpy( abc->str, \"abcdef\" );\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:8]: Buffer overrun\n"), errout.str());
+    }
+
+
+    void sprintf1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[3];\n"
+              "    sprintf(str, \"%s\", \"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Buffer overrun\n"), errout.str());
     }
 
 

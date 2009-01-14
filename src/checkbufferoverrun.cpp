@@ -258,6 +258,31 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             continue;
         }
 
+        // sprintf..
+        if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% ,", varid))
+        {
+            int len = 0;
+            for (const Token *tok2 = tok->tokAt(6); tok2 && tok2->str() != ")"; tok2 = tok2->next())
+            {
+                if (tok2->aaaa0() == '\"')
+                {
+                    len -= 2;
+                    const char *str = tok->strAt(0);
+                    while (*str)
+                    {
+                        if (*str == '\\')
+                            ++str;
+                        ++str;
+                        ++len;
+                    }
+                }
+            }
+            if (len > (int)size)
+            {
+                ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
+            }
+        }
+
 
         // Function call..
         // It's not interesting to check what happens when the whole struct is
