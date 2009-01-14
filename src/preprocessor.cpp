@@ -449,6 +449,10 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
 
 std::string Preprocessor::expandMacros(std::string code)
 {
+    // Bail out if there are "#undef" it can cause cppcheck to hang
+    if (code.find("#undef") != std::string::npos)
+        return code;
+
     // Search for macros and expand them..
     std::string::size_type defpos = 0;
     while ((defpos = code.find("#define ", defpos)) != std::string::npos)
