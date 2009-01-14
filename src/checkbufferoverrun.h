@@ -31,21 +31,30 @@ public:
     CheckBufferOverrunClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
     ~CheckBufferOverrunClass();
 
-    // Buffer overrun..
+    /** Check for buffer overruns */
     void bufferOverrun();
 
-
-    // Dangerous functions that can cause buffer overruns
+    /** Check that the code doesn't use dangerous functions that can cause buffer overruns (scanf and gets) */
     void dangerousFunctions();
 private:
+
+    /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
     void CheckBufferOverrun_StructVariable();
+    
+    /** Check for buffer overruns - locate local function variables and check them with the .._CheckScope function */
     void CheckBufferOverrun_LocalVariable();
+    
+    /** Check for buffer overruns - this is the function that performs the actual checking */
     void CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
+
+    /** Report error using the callstack */
     void ReportError(const std::string &errmsg);
 
     const Tokenizer *_tokenizer;
     const Settings _settings;
     ErrorLogger *_errorLogger;
+
+    /** callstack - used during intra-function checking */
     std::list<const Token *> _callStack;
 };
 
