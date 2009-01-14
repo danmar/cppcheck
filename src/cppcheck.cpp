@@ -313,7 +313,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkClass.operatorEq();
 
     // if (condition);
-    if (ErrorMessage::ifNoAction(_settings))
+    if (ErrorMessage::ifNoAction(_settings) || ErrorMessage::conditionAlwaysTrueFalse(_settings))
         checkOther.WarningIf();
 
     // Unused struct members..

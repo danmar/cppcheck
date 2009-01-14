@@ -93,6 +93,7 @@ int main()
     err.push_back(Message("charBitOp", Message::style, "Warning - using char variable in bit operation"));
     err.push_back(Message("variableScope", Message::never, "The scope of the variable %1 can be limited", "varname"));
     err.push_back(Message("ifAssignment", Message::style, "Assignment in if-condition"));
+    err.push_back(Message("conditionAlwaysTrueFalse", Message::style, "Condition is always %1", "truefalse"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

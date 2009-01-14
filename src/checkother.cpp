@@ -194,87 +194,92 @@ void CheckOther::redundantCondition2()
 
 void CheckOther::WarningIf()
 {
-    // Search for 'if (condition);'
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    if (ErrorMessage::ifNoAction(_settings))
     {
-        if (!Token::simpleMatch(tok, "if ("))
-            continue;
-
-        // Search for the end paranthesis for the condition..
-        int parlevel = 0;
-        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+        // Search for 'if (condition);'
+        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
         {
-            if (tok2->str() == "(")
-                ++parlevel;
-            else if (tok2->str() == ")")
+            if (!Token::simpleMatch(tok, "if ("))
+                continue;
+
+            // Search for the end paranthesis for the condition..
+            int parlevel = 0;
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
-                --parlevel;
-                if (parlevel <= 0)
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (tok2->str() == ")")
                 {
-                    if (Token::Match(tok2, ") ; !!else"))
+                    --parlevel;
+                    if (parlevel <= 0)
                     {
-                        _errorLogger->reportErr(ErrorMessage::ifNoAction(_tokenizer, tok));
+                        if (Token::Match(tok2, ") ; !!else"))
+                        {
+                            _errorLogger->reportErr(ErrorMessage::ifNoAction(_tokenizer, tok));
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
     }
 
-    // Search for 'a=b; if (a==b)'
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    if (ErrorMessage::conditionAlwaysTrueFalse(_settings))
     {
-        // Begin statement?
-        if (! Token::Match(tok, "[;{}]"))
-            continue;
-        tok = tok->next();
-        if (! tok)
-            break;
-
-        if (!Token::Match(tok, "%var% = %var% ; if ( %var%"))
-            continue;
-
-        if (strcmp(tok->strAt(9), ")") != 0)
-            continue;
-
-        // var1 = var2 ; if ( var3 cond var4 )
-        const char *var1 = tok->strAt(0);
-        const char *var2 = tok->strAt(2);
-        const char *var3 = tok->strAt(6);
-        const char *cond = tok->strAt(7);
-        const char *var4 = tok->strAt(8);
-
-        // Check that var3 is equal with either var1 or var2
-        if (strcmp(var1, var3) && strcmp(var2, var3))
-            continue;
-
-        // Check that var4 is equal with either var1 or var2
-        if (strcmp(var1, var4) && strcmp(var2, var4))
-            continue;
-
-        // Check that there is a condition..
-        const char *p[6] = {"==", "<=", ">=", "!=", "<", ">"};
-        bool iscond = false;
-        for (int i = 0; i < 6; i++)
+        // Search for 'a=b; if (a==b)'
+        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
         {
-            if (strcmp(cond, p[i]) == 0)
-            {
-                iscond = true;
+            // Begin statement?
+            if (! Token::Match(tok, "[;{}]"))
+                continue;
+            tok = tok->next();
+            if (! tok)
                 break;
-            }
-        }
-        if (!iscond)
-            break;
 
-        // we found the error. Report.
-        std::ostringstream ostr;
-        ostr << _tokenizer->fileLine(tok->tokAt(4)) << ": The condition is always ";
-        for (int i = 0; i < 6; i++)
-        {
-            if (strcmp(cond, p[i]) == 0)
-                ostr << (i < 3 ? "True" : "False");
+            if (!Token::Match(tok, "%var% = %var% ; if ( %var%"))
+                continue;
+
+            if (strcmp(tok->strAt(9), ")") != 0)
+                continue;
+
+            // var1 = var2 ; if ( var3 cond var4 )
+            const char *var1 = tok->strAt(0);
+            const char *var2 = tok->strAt(2);
+            const char *var3 = tok->strAt(6);
+            const char *cond = tok->strAt(7);
+            const char *var4 = tok->strAt(8);
+
+            // Check that var3 is equal with either var1 or var2
+            if (strcmp(var1, var3) && strcmp(var2, var3))
+                continue;
+
+            // Check that var4 is equal with either var1 or var2
+            if (strcmp(var1, var4) && strcmp(var2, var4))
+                continue;
+
+            // Check that there is a condition..
+            const char *p[6] = {"==", "<=", ">=", "!=", "<", ">"};
+            bool iscond = false;
+            for (int i = 0; i < 6; i++)
+            {
+                if (strcmp(cond, p[i]) == 0)
+                {
+                    iscond = true;
+                    break;
+                }
+            }
+            if (!iscond)
+                break;
+
+            // we found the error. Report.
+            bool b = false;
+            for (int i = 0; i < 6; i++)
+            {
+                if (strcmp(cond, p[i]) == 0)
+                    b = (i < 3);
+            }
+            _errorLogger->reportErr(ErrorMessage::conditionAlwaysTrueFalse(_tokenizer, tok->tokAt(4), b ? "True" : "False"));
         }
-        _errorLogger->reportErr(ostr.str());
     }
 }
 //---------------------------------------------------------------------------

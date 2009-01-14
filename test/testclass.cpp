@@ -160,7 +160,7 @@ private:
                        "\n"
                        "private:\n"
                        "    ECODES _code;\n"
-                       "};\n" );
+                       "};\n");
 
         ASSERT_EQUALS("[test.cpp:10]: Uninitialized member variable 'Fred::_code'\n", errout.str());
     }

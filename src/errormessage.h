@@ -318,5 +318,14 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string conditionAlwaysTrueFalse(const Tokenizer *tokenizer, const Token *Location, const std::string &truefalse)
+    {
+        return msg1(tokenizer, Location) + "Condition is always " + truefalse + "";
+    }
+    static bool conditionAlwaysTrueFalse(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
 };
 #endif
