@@ -874,11 +874,20 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "struct|union|class {") ||
                      Token::Match(tok, "struct|union|class %type% {"))
             {
-                while (tok && tok->str() != "}")
+                int indentlevel0 = indentlevel;
+
+                while (tok->str() != "{")
                     tok = tok->next();
-                if (tok)
-                    continue;
-                break;
+
+                do
+                {
+                    if (tok->str() == "{")
+                        indentlevel++;
+                    else if (tok->str() == "}")
+                        indentlevel--;
+                    tok = tok->next();
+                }
+                while (tok && indentlevel > indentlevel0);
             }
 
             if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|="))

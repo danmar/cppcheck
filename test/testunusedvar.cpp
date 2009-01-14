@@ -68,6 +68,7 @@ private:
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
         TEST_CASE(localvarStruct2);
+        TEST_CASE(localvarStruct3);
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
         TEST_CASE(localvarInvert);      // Usage with inverted variable
@@ -255,6 +256,19 @@ private:
                               "{\n"
                               "    struct ABC { int a, b, c; };\n"
                               "    struct ABC abc = { 1, 2, 3 };\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvarStruct3()
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int a = 10;\n"
+                              "    union { struct { unsigned char x; }; unsigned char z; };\n"
+                              "    do {\n"
+                              "        func();\n"
+                              "    } while(a--);\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
