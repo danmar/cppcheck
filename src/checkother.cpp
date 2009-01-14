@@ -809,6 +809,9 @@ void CheckOther::unreachableCode()
         while (tok && Token::Match(tok->next(), ";"))
             tok = tok->next();
 
+        if (!tok)
+            break;
+
         // If there is a statement below the return it is unreachable
         if (!Token::Match(tok, "; case|default|}|#") && !Token::Match(tok, "; %var% :"))
         {
