@@ -1,4 +1,4 @@
-﻿/*
+/*
  * cppcheck - c/c++ syntax checking
  * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam
  *
