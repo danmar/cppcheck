@@ -41,6 +41,8 @@ private:
         TEST_CASE(virtualDestructor3);	// Base class has a destructor, but it's not virtual
         TEST_CASE(virtualDestructor4);	// Derived class doesn't have a destructor => no error
         TEST_CASE(virtualDestructor5);	// Derived class has empty destructor => no error
+
+        TEST_CASE(uninitVar1);
     }
 
     // Check that base classes have virtual destructors
@@ -124,6 +126,45 @@ private:
                                "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
+
+
+    void checkUninitVar(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        CheckClass checkClass(&tokenizer, settings, this);
+        checkClass.constructors();
+    }
+
+    void uninitVar1()
+    {
+        checkUninitVar("enum ECODES\n"
+                       "{\n"
+                       "    CODE_1 = 0,\n"
+                       "    CODE_2 = 1\n"
+                       "};\n"
+                       "\n"
+                       "class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() {}\n"
+                       "\n"
+                       "private:\n"
+                       "    ECODES _code;\n"
+                       "};\n" );
+
+        ASSERT_EQUALS("[test.cpp:10]: Uninitialized member variable 'Fred::_code'\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestClass)

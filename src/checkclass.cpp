@@ -87,6 +87,8 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
         {
             if (next->isStandardType())
                 varname = next->strAt(1);
+            else if (Token::findmatch(_tokenizer->tokens(), ("enum " + next->str()).c_str()))
+                varname = next->strAt(1);
         }
 
         // Pointer?
