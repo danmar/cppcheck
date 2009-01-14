@@ -475,6 +475,8 @@ std::string Preprocessor::expandMacros(std::string code)
         Tokenizer tokenizer;
         std::istringstream istr(macro.c_str());
         tokenizer.tokenize(istr, "");
+        if (! tokenizer.tokens())
+            continue;
 
         // Extract macro parameters
         std::vector<std::string> macroparams;
