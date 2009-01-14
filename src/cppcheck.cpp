@@ -330,7 +330,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Variable scope (check if the scope could be limited)
     if (ErrorMessage::variableScope(_settings))
-        /*CheckVariableScope()*/;
+        checkOther.CheckVariableScope();
 
     // Check for various types of incomplete statements that could for example
     // mean that an ';' has been added by accident
