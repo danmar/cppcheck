@@ -1,4 +1,4 @@
-/*
+﻿/*
  * cppcheck - c/c++ syntax checking
  * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam
  *
@@ -605,9 +605,27 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         // Investigate function calls..
         if (Token::Match(tok, "%var% ("))
         {
+            // Inside class function.. if the var is passed as a parameter then
+            // just add a "use"
             if (classmember)
             {
-                addtoken("use");
+                int parlevel = 1;
+                for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "(")
+                        ++parlevel;
+                    else if (tok2->str() == ")")
+                    {
+                        --parlevel;
+                        if (parlevel <= 0)
+                            break;
+                    }
+                    if (tok2->str() == varnameStr)
+                    {
+                        addtoken("use");
+                        break;
+                    }
+                }
             }
 
             else
