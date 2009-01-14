@@ -136,6 +136,7 @@ private:
         // TODO TEST_CASE( class3 );
         TEST_CASE(class4);
         TEST_CASE(class5);
+        TEST_CASE(class6);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1270,6 +1271,23 @@ private:
               "    char *str = new char[100];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: Memory leak: str\n", errout.str());
+    }
+
+    void class6()
+    {
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    void foo();\n"
+              "};\n"
+              "\n"
+              "void Fred::foo()\n"
+              "{\n"
+              "    char *str = new char[100];\n"
+              "    delete [] str;\n"
+              "    hello();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
