@@ -1014,8 +1014,8 @@ void CheckMemoryLeakClass::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Reduce "[;{}] alloc ; dealloc ;" => "[;{}]"
-            if (Token::Match(tok2, "[;{}] alloc ; dealloc ;"))
+            // Reduce "[;{}] alloc ; dealloc ; !!dealloc" => "[;{}]"
+            if (Token::Match(tok2, "[;{}] alloc ; dealloc ; !!dealloc"))
             {
                 erase(tok2, tok2->tokAt(5));
                 done = false;
@@ -1177,7 +1177,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
     }
 
     simplifycode(tok);
-    //tok->printOut( "simplifycode result" );
+    tok->printOut("simplifycode result");
 
     // If the variable is not allocated at all => no memory leak
     if (Token::findmatch(tok, "alloc") == 0)
@@ -1212,6 +1212,11 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
     else if ((result = Token::findmatch(tok, "alloc ; alloc|assign|return ;")) != NULL)
     {
         MemoryLeak(result->tokAt(2), varname, alloctype);
+    }
+
+    else if ((result = Token::findmatch(tok, "dealloc ; dealloc ;")) != NULL)
+    {
+        _errorLogger->reportErr(ErrorMessage::deallocDealloc(_tokenizer, result->tokAt(2)));
     }
 
     else if (! Token::findmatch(tok, "dealloc") &&

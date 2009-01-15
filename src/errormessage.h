@@ -147,6 +147,15 @@ public:
         return true;
     }
 
+    static std::string deallocDealloc(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Deallocating a deallocated pointer";
+    }
+    static bool deallocDealloc(const Settings &s)
+    {
+        return true;
+    }
+
     static std::string cstyleCast(const Tokenizer *tokenizer, const Token *Location)
     {
         return msg1(tokenizer, Location) + "C-style pointer casting";

@@ -165,6 +165,9 @@ private:
         TEST_CASE(dealloc_use_4);
         TEST_CASE(dealloc_use_5);
         TEST_CASE(dealloc_use_6);
+
+        // free a free'd pointer
+        TEST_CASE(freefree);
     }
 
 
@@ -1585,6 +1588,18 @@ private:
               "    printf(\"free %x\", str);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+    void freefree()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *str = malloc(100);\n"
+              "    free(str);\n"
+              "    free(str);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:5]: Deallocating a deallocated pointer\n"), errout.str());
     }
 
 };

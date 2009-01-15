@@ -72,6 +72,7 @@ int main()
     err.push_back(Message("mismatchAllocDealloc", Message::std, "Mismatching allocation and deallocation: %1", "varname"));
     err.push_back(Message("memleak", Message::std, "Memory leak: %1", "varname"));
     err.push_back(Message("resourceLeak", Message::std, "Resource leak: %1", "varname"));
+    err.push_back(Message("deallocDealloc", Message::std, "Deallocating a deallocated pointer"));
 
     // checkother.cpp..
     err.push_back(Message("cstyleCast", Message::style, "C-style pointer casting"));
