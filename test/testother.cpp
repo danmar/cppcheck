@@ -43,6 +43,7 @@ private:
         TEST_CASE(sprintf4);        // struct member
 
         TEST_CASE(strPlusChar1);     // "/usr" + '/'
+        TEST_CASE(strPlusChar2);     // "/usr" + ch
     }
 
     void check(const char code[])
@@ -187,6 +188,17 @@ private:
                     "    const char *p = \"/usr\" + '/';\n"
                     "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:3]: Unusual pointer arithmetic\n"), errout.str());
+    }
+
+    void strPlusChar2()
+    {
+        // Strange looking pointer arithmetic..
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    char ch = '/';\n"
+                    "    const char *p = \"/usr\" + ch;\n"
+                    "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Unusual pointer arithmetic\n"), errout.str());
     }
 
 };

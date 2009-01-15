@@ -971,14 +971,29 @@ void CheckOther::functionVariableUsage()
 
 void CheckOther::strPlusChar()
 {
+    bool charVars[10000] = {0};
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "%str% + %any%"))
+        // Declaring char variable..
+        if (Token::Match(tok, "char %var% [;=]"))
         {
-            const char *s = tok->strAt(2);
+            unsigned int varid = tok->next()->varId();
+            if (varid>0 && varid<10000)
+                charVars[varid] = true;
+        }
 
+        //
+        else if (Token::Match(tok, "%str% + %any%"))
+        {
             // char constant..
+            const char *s = tok->strAt(2);
             if (*s == '\'')
+                _errorLogger->reportErr(ErrorMessage::strPlusChar(_tokenizer, tok));
+
+            // char variable..
+            unsigned int varid = tok->tokAt(2)->varId();
+            if (varid>0 && varid<10000 && charVars[varid])
                 _errorLogger->reportErr(ErrorMessage::strPlusChar(_tokenizer, tok));
         }
     }
