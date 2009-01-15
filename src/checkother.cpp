@@ -979,7 +979,7 @@ void CheckOther::strPlusChar()
         if (Token::Match(tok, "char %var% [;=]"))
         {
             unsigned int varid = tok->next()->varId();
-            if (varid>0 && varid<10000)
+            if (varid > 0 && varid < 10000)
                 charVars[varid] = true;
         }
 
@@ -993,7 +993,7 @@ void CheckOther::strPlusChar()
 
             // char variable..
             unsigned int varid = tok->tokAt(2)->varId();
-            if (varid>0 && varid<10000 && charVars[varid])
+            if (varid > 0 && varid < 10000 && charVars[varid])
                 _errorLogger->reportErr(ErrorMessage::strPlusChar(_tokenizer, tok));
         }
     }
