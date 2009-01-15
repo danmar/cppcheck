@@ -336,6 +336,10 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // mean that an ';' has been added by accident
     if (ErrorMessage::constStatement(_settings))
         checkOther.CheckIncompleteStatement();
+
+    // Unusual pointer arithmetic
+    if (ErrorMessage::strPlusChar(_settings))
+        checkOther.strPlusChar();
 }
 //---------------------------------------------------------------------------
 

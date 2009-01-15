@@ -327,5 +327,14 @@ public:
         return s._checkCodingStyle;
     }
 
+    static std::string strPlusChar(const Tokenizer *tokenizer, const Token *Location)
+    {
+        return msg1(tokenizer, Location) + "Unusual pointer arithmetic";
+    }
+    static bool strPlusChar(const Settings &s)
+    {
+        return true;
+    }
+
 };
 #endif

@@ -94,6 +94,7 @@ int main()
     err.push_back(Message("variableScope", Message::never, "The scope of the variable %1 can be limited", "varname"));
     err.push_back(Message("ifAssignment", Message::style, "Assignment in if-condition"));
     err.push_back(Message("conditionAlwaysTrueFalse", Message::style, "Condition is always %1", "truefalse"));
+    err.push_back(Message("strPlusChar", Message::std, "Unusual pointer arithmetic"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

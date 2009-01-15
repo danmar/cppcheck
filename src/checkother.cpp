@@ -958,3 +958,28 @@ void CheckOther::functionVariableUsage()
         }
     }
 }
+//---------------------------------------------------------------------------
+
+
+
+
+
+
+//---------------------------------------------------------------------------
+// str plus char
+//---------------------------------------------------------------------------
+
+void CheckOther::strPlusChar()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next() )
+    {
+        if ( Token::Match(tok, "%str% + %any%") )
+        {
+            const char *s = tok->strAt(2);
+
+            // char constant..
+            if ( *s == '\'' )
+                _errorLogger->reportErr(ErrorMessage::strPlusChar(_tokenizer, tok));
+        }
+    }
+}

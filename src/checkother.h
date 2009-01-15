@@ -71,6 +71,9 @@ public:
     /** Unused function variables */
     void functionVariableUsage();
 
+    /** str plus char */
+    void strPlusChar();
+
 #ifndef UNIT_TESTING
 private:
 #endif

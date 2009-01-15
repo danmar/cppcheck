@@ -37,10 +37,12 @@ private:
         TEST_CASE(delete1);
         TEST_CASE(delete2);
 
-        TEST_CASE(sprintf1);    // Dangerous usage of sprintf
+        TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
-        TEST_CASE(sprintf4);    // struct member
+        TEST_CASE(sprintf4);        // struct member
+
+        TEST_CASE(strPlusChar1);     // "/usr" + '/'
     }
 
     void check(const char code[])
@@ -155,6 +157,36 @@ private:
                      "    snprintf(a.filename, 128, \"%s\", filename);\n"
                      "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+
+
+
+    void strPlusChar(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for redundant code..
+        CheckOther checkOther(&tokenizer, Settings(), this);
+        checkOther.strPlusChar();
+    }
+
+    void strPlusChar1()
+    {
+        // Strange looking pointer arithmetic..
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    const char *p = \"/usr\" + '/';\n"
+                    "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:3]: Unusual pointer arithmetic\n"), errout.str());
     }
 
 };
