@@ -45,7 +45,7 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
-				WarnAsError="true"
+				WarnAsError="false"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="4"
 			/>
@@ -167,55 +167,59 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\CheckBufferOverrun.h"
+				RelativePath=".\src\CheckBufferOverrun.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckClass.h"
+				RelativePath=".\src\CheckClass.h"
 				>
 			</File>
 			<File
-				RelativePath=".\checkfunctionusage.h"
+				RelativePath=".\src\checkfunctionusage.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckHeaders.h"
+				RelativePath=".\src\CheckHeaders.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckMemoryLeak.h"
+				RelativePath=".\src\CheckMemoryLeak.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckOther.h"
+				RelativePath=".\src\CheckOther.h"
 				>
 			</File>
 			<File
-				RelativePath=".\cppcheck.h"
+				RelativePath=".\src\cppcheck.h"
 				>
 			</File>
 			<File
-				RelativePath=".\FileLister.h"
+				RelativePath=".\src\errormessage.h"
 				>
 			</File>
 			<File
-				RelativePath=".\preprocessor.h"
+				RelativePath=".\src\FileLister.h"
 				>
 			</File>
 			<File
-				RelativePath=".\settings.h"
+				RelativePath=".\src\preprocessor.h"
 				>
 			</File>
 			<File
-				RelativePath=".\testsuite.h"
+				RelativePath=".\src\settings.h"
 				>
 			</File>
 			<File
-				RelativePath=".\token.h"
+				RelativePath=".\test\testsuite.h"
 				>
 			</File>
 			<File
-				RelativePath=".\tokenize.h"
+				RelativePath=".\src\token.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\tokenize.h"
 				>
 			</File>
 		</Filter>
@@ -231,131 +235,135 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\CheckBufferOverrun.cpp"
+				RelativePath=".\src\CheckBufferOverrun.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckClass.cpp"
+				RelativePath=".\src\CheckClass.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\checkfunctionusage.cpp"
+				RelativePath=".\src\checkfunctionusage.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckHeaders.cpp"
+				RelativePath=".\src\CheckHeaders.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckMemoryLeak.cpp"
+				RelativePath=".\src\CheckMemoryLeak.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CheckOther.cpp"
+				RelativePath=".\src\CheckOther.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\cppcheck.cpp"
+				RelativePath=".\src\cppcheck.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\FileLister.cpp"
+				RelativePath=".\src\errormessage.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\preprocessor.cpp"
+				RelativePath=".\src\FileLister.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\settings.cpp"
+				RelativePath=".\src\preprocessor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testbufferoverrun.cpp"
+				RelativePath=".\src\settings.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testcharvar.cpp"
+				RelativePath=".\test\testbufferoverrun.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testclass.cpp"
+				RelativePath=".\test\testcharvar.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testconstructors.cpp"
+				RelativePath=".\test\testclass.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testdivision.cpp"
+				RelativePath=".\test\testconstructors.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testfilelister.cpp"
+				RelativePath=".\test\testdivision.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testfunctionusage.cpp"
+				RelativePath=".\test\testfilelister.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testincompletestatement.cpp"
+				RelativePath=".\test\testfunctionusage.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testmemleak.cpp"
+				RelativePath=".\test\testincompletestatement.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testmemleakmp.cpp"
+				RelativePath=".\test\testmemleak.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testother.cpp"
+				RelativePath=".\test\testmemleakmp.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testpreprocessor.cpp"
+				RelativePath=".\test\testother.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testredundantif.cpp"
+				RelativePath=".\test\testpreprocessor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testrunner.cpp"
+				RelativePath=".\test\testredundantif.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testsimplifytokens.cpp"
+				RelativePath=".\test\testrunner.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testsuite.cpp"
+				RelativePath=".\test\testsimplifytokens.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testtoken.cpp"
+				RelativePath=".\test\testsuite.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testtokenize.cpp"
+				RelativePath=".\test\testtoken.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testunusedprivfunc.cpp"
+				RelativePath=".\test\testtokenize.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\testunusedvar.cpp"
+				RelativePath=".\test\testunusedprivfunc.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\token.cpp"
+				RelativePath=".\test\testunusedvar.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\tokenize.cpp"
+				RelativePath=".\src\token.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\tokenize.cpp"
 				>
 			</File>
 		</Filter>
