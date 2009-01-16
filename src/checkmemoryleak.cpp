@@ -1166,7 +1166,9 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
             tok2->str("use");
         else if (tok2->str() == "&use2" || tok2->str() == "use_")
             tok2->str(";");
-        else if (tok2->str() == "recursive" || tok2->str() == "dealloc_")
+        else if (tok2->str() == "recursive")
+            tok2->str("use");
+        else if (tok2->str() == "dealloc_")
             tok2->str("dealloc");
         else if (tok2->str() == "realloc")
         {

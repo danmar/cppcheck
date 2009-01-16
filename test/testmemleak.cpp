@@ -167,7 +167,8 @@ private:
         TEST_CASE(dealloc_use_6);
 
         // free a free'd pointer
-        TEST_CASE(freefree);
+        TEST_CASE(freefree1);
+        TEST_CASE(freefree2);
     }
 
 
@@ -1591,7 +1592,7 @@ private:
     }
 
 
-    void freefree()
+    void freefree1()
     {
         check("void foo()\n"
               "{\n"
@@ -1600,6 +1601,17 @@ private:
               "    free(str);\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:5]: Deallocating a deallocated pointer\n"), errout.str());
+    }
+
+    void freefree2()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    FILE *fd = fopen(\"test.txt\", \"wb\");\n"
+              "    fprintf(fd, \"test\");\n"
+              "    fclose(fd);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 };
