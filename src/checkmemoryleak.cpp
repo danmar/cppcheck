@@ -1177,7 +1177,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
     }
 
     simplifycode(tok);
-    tok->printOut("simplifycode result");
+    //tok->printOut("simplifycode result");
 
     // If the variable is not allocated at all => no memory leak
     if (Token::findmatch(tok, "alloc") == 0)
