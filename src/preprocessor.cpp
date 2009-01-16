@@ -481,6 +481,8 @@ std::string Preprocessor::expandMacros(std::string code)
         tokenizer.tokenize(istr, "");
         if (! tokenizer.tokens())
             continue;
+        if (! tokenizer.tokens()->isName())
+            continue;
 
         // Extract macro parameters
         std::vector<std::string> macroparams;
@@ -602,6 +604,7 @@ std::string Preprocessor::expandMacros(std::string code)
             // Insert macro code..
             if (!macroparams.empty())
                 ++pos2;
+
             code.erase(pos1, pos2 - pos1);
             code.insert(pos1, macrocode);
             pos1 += macrocode.length();
