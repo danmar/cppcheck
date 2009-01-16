@@ -148,6 +148,8 @@ void CheckFunctionUsage::check()
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
+        if (it->first == "main" || it->first == "if")
+            continue;
         if (! func.usedSameFile)
         {
             std::string filename;
