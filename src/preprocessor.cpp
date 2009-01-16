@@ -576,23 +576,26 @@ std::string Preprocessor::expandMacros(std::string code)
                 const Token *tok = tokenizer.tokens();
                 while (tok && tok->str() != ")")
                     tok = tok->next();
-                while ((tok = tok->next()) != NULL)
+                if (tok)
                 {
-                    std::string str = tok->str();
-                    if (tok->isName())
+                    while ((tok = tok->next()) != NULL)
                     {
-                        for (unsigned int i = 0; i < macroparams.size(); ++i)
+                        std::string str = tok->str();
+                        if (tok->isName())
                         {
-                            if (str == macroparams[i])
+                            for (unsigned int i = 0; i < macroparams.size(); ++i)
                             {
-                                str = params[i];
-                                break;
+                                if (str == macroparams[i])
+                                {
+                                    str = params[i];
+                                    break;
+                                }
                             }
                         }
+                        macrocode += str;
+                        if (Token::Match(tok, "%type% %var%"))
+                            macrocode += " ";
                     }
-                    macrocode += str;
-                    if (Token::Match(tok, "%type% %var%"))
-                        macrocode += " ";
                 }
             }
 
