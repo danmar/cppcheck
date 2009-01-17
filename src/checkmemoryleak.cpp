@@ -1225,7 +1225,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
 
     else if ((result = Token::findmatch(tok, "dealloc ; dealloc ;")) != NULL)
     {
-        _errorLogger->reportErr(ErrorMessage::deallocDealloc(_tokenizer, result->tokAt(2)));
+        _errorLogger->reportErr(ErrorMessage::deallocDealloc(_tokenizer, result->tokAt(2), varname));
     }
 
     else if (! Token::findmatch(tok, "dealloc") &&

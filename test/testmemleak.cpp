@@ -1617,7 +1617,7 @@ private:
               "    free(str);\n"
               "    free(str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Deallocating a deallocated pointer\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: Deallocating a deallocated pointer: str\n"), errout.str());
     }
 
     void freefree2()

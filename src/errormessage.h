@@ -147,9 +147,9 @@ public:
         return true;
     }
 
-    static std::string deallocDealloc(const Tokenizer *tokenizer, const Token *Location)
+    static std::string deallocDealloc(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "Deallocating a deallocated pointer";
+        return msg1(tokenizer, Location) + "Deallocating a deallocated pointer: " + varname + "";
     }
     static bool deallocDealloc(const Settings &s)
     {
