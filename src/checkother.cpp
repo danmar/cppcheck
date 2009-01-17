@@ -914,7 +914,7 @@ void CheckOther::functionVariableUsage()
                 varUsage[ tok->strAt(1)] |= USAGE_WRITE;
 
             if (Token::Match(tok, ">>|& %var%"))
-                varUsage[ tok->strAt(1)] |= USAGE_WRITE;
+                varUsage[ tok->strAt(1)] |= (USAGE_WRITE | USAGE_READ);
 
             if ((Token::Match(tok, "[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
                 varUsage[ tok->strAt(1)] |= USAGE_READ;
