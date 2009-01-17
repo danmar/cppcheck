@@ -249,6 +249,12 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
         if (indentlevel < 1)
             continue;
 
+        // Variable getting value from stream?
+        if (Token::Match(ftok, ">> %var%"))
+        {
+            InitVar(varlist, ftok->next()->aaaa());
+        }
+
         // Before a new statement there is "[{};)=]" or "else"
         if (! Token::Match(ftok, "[{};)=]") && ftok->str() != "else")
             continue;

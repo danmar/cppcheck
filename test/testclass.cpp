@@ -43,9 +43,7 @@ private:
         TEST_CASE(virtualDestructor5);	// Derived class has empty destructor => no error
 
         TEST_CASE(uninitVar1);
-
-        // TODO, cppcheck currently produces false positive, this should be fixed
-        // TEST_CASE(uninitVarStream);
+        TEST_CASE(uninitVarStream);
     }
 
     // Check that base classes have virtual destructors
