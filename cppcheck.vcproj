@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="cppcheck"
 	ProjectGUID="{ECA5D746-4926-48BA-A372-FC888498531F}"
 	Keyword="Win32Proj"
@@ -214,6 +214,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\resource.h"
+				>
+			</File>
+			<File			
 				RelativePath=".\src\settings.h"
 				>
 			</File>
@@ -231,6 +235,10 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\src\cppcheck.rc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Source Files"
