@@ -972,6 +972,13 @@ void CheckMemoryLeakClass::simplifycode(Token *tok)
                 done = false;
             }
 
+            // Replace "loop if return ;" with "if return ;"
+            if (Token::Match(tok2->next(), "loop if return"))
+            {
+                erase(tok2, tok2->tokAt(2));
+                done = false;
+            }
+
             // Delete if block in "alloc ; if(!var) return ;"
             if (Token::Match(tok2, "alloc ; if(!var) return ;"))
             {

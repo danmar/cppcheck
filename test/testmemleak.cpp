@@ -109,6 +109,7 @@ private:
 
         TEST_CASE(switch1);
         TEST_CASE(switch2);
+        TEST_CASE(switch3);
 
         TEST_CASE(ret1);
         TEST_CASE(ret2);
@@ -835,7 +836,6 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
-
     void switch2()
     {
         const std::string code("void f()\n"
@@ -856,6 +856,23 @@ private:
         ASSERT_EQUALS("[test.cpp:12]: Memory leak: str\n", errout.str());
     }
 
+    void switch3()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *str = new char[10];\n"
+              "    while (abc)\n"
+              "    {\n"
+              "        switch (def)\n"
+              "        {\n"
+              "            default:\n"
+              "                return;\n"
+              "        }\n"
+              "    }\n"
+              "    delete [] str;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: Memory leak: str\n", errout.str());
+    }
 
 
 
