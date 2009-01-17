@@ -43,6 +43,9 @@ private:
         TEST_CASE(virtualDestructor5);	// Derived class has empty destructor => no error
 
         TEST_CASE(uninitVar1);
+
+        // TODO, cppcheck currently produces false positive, this should be fixed
+        // TEST_CASE(uninitVarStream);
     }
 
     // Check that base classes have virtual destructors
@@ -163,6 +166,18 @@ private:
                        "};\n");
 
         ASSERT_EQUALS("[test.cpp:10]: Uninitialized member variable 'Fred::_code'\n", errout.str());
+    }
+
+    void uninitVarStream()
+    {
+        checkUninitVar("#include <fstream>\n"
+                       "class Foo {\n"
+                       "int foo;\n"
+                       "public:\n"
+                       "Foo(std::istream &in) { if(!(in >> foo)) throw 0; }\n"
+                       "};\n");
+
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 };
