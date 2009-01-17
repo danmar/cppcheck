@@ -157,10 +157,18 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 {
     std::ostringstream bdir, oss;
     oss << path;
-    if (path.length() > 0 && path[path.length()-1] == '/')
+    if (path.length() > 0)
     {
-        bdir << path;
-        oss << "*";
+        // Windows doesn't recognize "." as current folder by default
+        if (path == ".")
+        {
+            oss << "/*";
+        }
+        else if (path[path.length() - 1] == '/')
+        {
+            bdir << path;
+            oss << "*";
+        }
     }
 
     WIN32_FIND_DATA ffd;
