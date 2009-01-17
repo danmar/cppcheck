@@ -48,6 +48,15 @@ public:
         return s._showAll;
     }
 
+    static std::string outOfBounds(const Tokenizer *tokenizer, const Token *Location, const std::string &what)
+    {
+        return msg1(tokenizer, Location) + "" + what + " is out of bounds";
+    }
+    static bool outOfBounds(const Settings &s)
+    {
+        return true;
+    }
+
     static std::string noConstructor(const Tokenizer *tokenizer, const Token *Location, const std::string &classname)
     {
         return msg1(tokenizer, Location) + "The class '" + classname + "' has no constructor";

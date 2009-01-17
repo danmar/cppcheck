@@ -84,6 +84,7 @@ private:
         TEST_CASE(buffer_overrun_2);
 
         TEST_CASE(sprintf1);
+        TEST_CASE(snprintf1);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -370,6 +371,17 @@ private:
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: Buffer overrun\n"), errout.str());
     }
+
+    void snprintf1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[5];\n"
+              "    snprintf(str, 10, \"%s\", \"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: snprintf size is out of bounds\n"), errout.str());
+    }
+
 
 
 
