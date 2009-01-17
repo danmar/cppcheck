@@ -75,6 +75,7 @@ private:
         TEST_CASE(localvarIf);          // Usage in if
         TEST_CASE(localvarIfElse);      // return tmp1 ? tmp2 : tmp3;
         TEST_CASE(localvarOpAssign);    // a |= b;
+        TEST_CASE(localvarFor);         // for ( ; var; )
     }
 
     void structmember1()
@@ -335,6 +336,15 @@ private:
         ASSERT_EQUALS(std::string("[test.cpp:2]: Variable 'a' is assigned a value that is never used\n"), errout.str());
     }
 
+    void localvarFor()
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int a = 1;\n"
+                              "    for (;a;);\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 
 };
 

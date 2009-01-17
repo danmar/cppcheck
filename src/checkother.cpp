@@ -927,6 +927,9 @@ void CheckOther::functionVariableUsage()
 
             if (Token::Match(tok, "[(,] %var% [,)]"))
                 varUsage[ tok->strAt(1)] |= USAGE_WRITE;
+
+            if (Token::Match(tok, "; %var% ;"))
+                varUsage[ tok->strAt(1)] |= USAGE_READ;
         }
 
         // Check usage of all variables in the current scope..
