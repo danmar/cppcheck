@@ -516,7 +516,7 @@ public:
             _name = tokens()->str();
 
         std::string::size_type pos = macro.find_first_of(" (");
-        if ( pos != std::string::npos && macro[pos] == '(' )
+        if (pos != std::string::npos && macro[pos] == '(')
         {
             // Extract macro parameters
             if (Token::Match(tokens(), "%var% ( %var%"))
