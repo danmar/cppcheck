@@ -751,7 +751,7 @@ std::string Preprocessor::expandMacros(std::string code)
 
             code.erase(pos1, pos2 - pos1);
             code.insert(pos1, macrocode);
-            pos1 += macrocode.length();
+            pos1 += macrocode.length() - 1;
         }
     }
 
