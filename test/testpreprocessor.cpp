@@ -77,7 +77,8 @@ private:
         TEST_CASE(macro_simple5);
         TEST_CASE(macro_simple6);
         TEST_CASE(macro_mismatch);
-        TEST_CASE(preprocessor_inside_string);
+        TEST_CASE(string1);
+        TEST_CASE(string2);
         TEST_CASE(preprocessor_undef);
     }
 
@@ -501,7 +502,7 @@ private:
         ASSERT_EQUALS("\nAAA(5);\n", Preprocessor::expandMacros(filedata));
     }
 
-    void preprocessor_inside_string()
+    void string1()
     {
         const char filedata[] = "int main()"
                                 "{"
@@ -518,6 +519,16 @@ private:
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("int main(){ const char *a = \"#define A\n\";}\n", actual[""]);
     }
+
+    void string2()
+    {
+        const char filedata[] = "#define AAA 123\n"
+                                "str = \"AAA\"";
+
+        // Compare results..
+        ASSERT_EQUALS("\nstr = \"AAA\"", Preprocessor::expandMacros(filedata));
+    }
+
 
     void preprocessor_undef()
     {
