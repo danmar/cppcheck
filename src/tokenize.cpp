@@ -257,165 +257,12 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
         if (ch < 0)
             continue;
 
-        // Preprocessor stuff?
-        if (ch == '#' && CurrentToken.empty())
-        {
-            std::string line("#");
-            {
-                char chPrev = '#';
-                while (code.good())
-                {
-                    ch = (char)code.get();
-                    if (chPrev != '\\' && ch == '\n')
-                        break;
-                    if (ch != ' ')
-                        chPrev = ch;
-                    if (ch != '\\' && ch != '\n')
-                        line += ch;
-                    if (ch == '\n')
-                        ++lineno;
-                }
-            }
-            if (strncmp(line.c_str(), "#include", 8) == 0 &&
-                line.find("\"") != std::string::npos)
-            {
-                // Extract the filename
-                line.erase(0, line.find("\"") + 1);
-                if (line.find("\"") != std::string::npos)
-                    line.erase(line.find("\""));
-
-                // Relative path..
-                if (_files.back().find_first_of("\\/") != std::string::npos)
-                {
-                    std::string path = _files.back();
-                    path.erase(1 + path.find_last_of("\\/"));
-                    line = path + line;
-                }
-
-                addtoken("#include", lineno, FileIndex);
-                addtoken(line.c_str(), lineno, FileIndex);
-
-                std::ifstream fin(line.c_str());
-                tokenize(fin, line.c_str());
-            }
-
-            else if (strncmp(line.c_str(), "#define", 7) == 0)
-            {
-                std::string strId;
-                enum {Space1, Id, Space2, Value} State;
-                State = Space1;
-                for (unsigned int i = 8; i < line.length(); i++)
-                {
-                    if (State == Space1 || State == Space2)
-                    {
-                        if (isspace(line[i]))
-                            continue;
-                        State = (State == Space1) ? Id : Value;
-                    }
-
-                    else if (State == Id)
-                    {
-                        if (isspace(line[i]))
-                        {
-                            strId = CurrentToken;
-                            CurrentToken.clear();
-                            State = Space2;
-                            continue;
-                        }
-                        else if (! isalnum(line[i]))
-                        {
-                            break;
-                        }
-                    }
-
-                    CurrentToken += line[i];
-                }
-
-                if (State == Value)
-                {
-                    addtoken("def", lineno, FileIndex);
-                    addtoken(strId.c_str(), lineno, FileIndex);
-                    addtoken(";", lineno, FileIndex);
-                    Define(strId.c_str(), CurrentToken.c_str());
-                }
-
-                CurrentToken.clear();
-            }
-
-            else
-            {
-                addtoken("#", lineno, FileIndex);
-                addtoken(";", lineno, FileIndex);
-            }
-
-            ++lineno;
-            continue;
-        }
-
         if (ch == '\n')
         {
             // Add current token..
             addtoken(CurrentToken.c_str(), lineno++, FileIndex);
             CurrentToken.clear();
             continue;
-        }
-
-        // Comments..
-        if (ch == '/' && code.good())
-        {
-            bool newstatement = bool(strchr(";{}", CurrentToken.empty() ? '\0' : CurrentToken[0]) != NULL);
-
-            // Add current token..
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            CurrentToken.clear();
-
-            // Read next character..
-            ch = (char)code.get();
-
-            // If '//'..
-            if (ch == '/')
-            {
-                std::string comment;
-                getline(code, comment);     // Parse in the whole comment
-
-                // If the comment says something like "fred is deleted" then generate appropriate tokens for that
-                comment = comment + " ";
-                if (newstatement && comment.find(" deleted ") != std::string::npos)
-                {
-                    // delete
-                    addtoken("delete", lineno, FileIndex);
-
-                    // fred
-                    std::string::size_type pos1 = comment.find_first_not_of(" \t");
-                    std::string::size_type pos2 = comment.find(" ", pos1);
-                    std::string firstWord = comment.substr(pos1, pos2 - pos1);
-                    addtoken(firstWord.c_str(), lineno, FileIndex);
-
-                    // ;
-                    addtoken(";", lineno, FileIndex);
-                }
-
-                ++lineno;
-                continue;
-            }
-
-            // If '/*'..
-            if (ch == '*')
-            {
-                char chPrev;
-                ch = chPrev = 'A';
-                while (code.good() && (chPrev != '*' || ch != '/'))
-                {
-                    chPrev = ch;
-                    ch = (char)code.get();
-                    if (ch == '\n')
-                        ++lineno;
-                }
-                continue;
-            }
-
-            // Not a comment.. add token..
-            addtoken("/", lineno, FileIndex);
         }
 
         // char..
@@ -470,7 +317,7 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             continue;
         }
 
-        if (strchr("+-*/%&|^?!=<>[](){};:,.~", ch))
+        if (strchr("#+-*/%&|^?!=<>[](){};:,.~", ch))
         {
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             CurrentToken.clear();

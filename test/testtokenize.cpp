@@ -37,7 +37,6 @@ private:
 
     void run()
     {
-        TEST_CASE(multiline);
         TEST_CASE(longtok);
 
         TEST_CASE(inlineasm);
@@ -79,30 +78,6 @@ private:
                 return false;
         }
         return (expected[i] == NULL && actual == NULL);
-    }
-
-
-    void multiline()
-    {
-        const char filedata[] = "#define str \"abc\" \\\n"
-                                "            \"def\"\n";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(filedata);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Expected result..
-        const char *expected[] =
-        {
-            "def",
-            "str",
-            ";",
-            0
-        };
-
-        // Compare..
-        ASSERT_EQUALS(true, cmptok(expected, tokenizer.tokens()));
     }
 
 
