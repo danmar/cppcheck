@@ -37,6 +37,8 @@ private:
         TEST_CASE(delete1);
         TEST_CASE(delete2);
 
+        TEST_CASE(unreachable1);
+
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
@@ -92,6 +94,20 @@ private:
               "        delete p;\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+    }
+
+    void unreachable1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    switch (p)\n"
+              "    {\n"
+              "    default:\n"
+              "        return 0;\n"
+              "        break;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 

@@ -802,29 +802,27 @@ void CheckOther::CheckIncompleteStatement()
 
 void CheckOther::unreachableCode()
 {
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), "[;{}] return");
-    while (tok)
+    const Token *tok = _tokenizer->tokens();
+    while ((tok = Token::findmatch(tok, "[;{}] return")))
     {
         // Goto the 'return' token
         tok = tok->next();
 
         // Locate the end of the 'return' statement
-        while (tok && ! Token::Match(tok, ";"))
+        while (tok && tok->str() != ";")
             tok = tok->next();
-        while (tok && Token::Match(tok->next(), ";"))
+        while (tok && tok->next() && tok->next()->str() == ";")
             tok = tok->next();
 
         if (!tok)
             break;
 
         // If there is a statement below the return it is unreachable
-        if (!Token::Match(tok, "; case|default|}|#") && !Token::Match(tok, "; %var% :"))
+        if ( !Token::Match(tok, "; case|default|}|#") && !Token::Match(tok, "; %var% :")
+            && ( _settings._checkCodingStyle || !Token::simpleMatch(tok, "; break") ) )
         {
             _errorLogger->reportErr(ErrorMessage::unreachableCode(_tokenizer, tok->next()));
         }
-
-        // Find the next 'return' statement
-        tok = Token::findmatch(tok, "[;{}] return");
     }
 }
 //---------------------------------------------------------------------------
