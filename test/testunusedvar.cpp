@@ -69,6 +69,7 @@ private:
         TEST_CASE(localvarStruct1);
         TEST_CASE(localvarStruct2);
         TEST_CASE(localvarStruct3);
+        TEST_CASE(localvarStruct4); // Ticket #31: sigsegv on incomplete struct
 
         TEST_CASE(localvarOp);          // Usage with arithmetic operators
         TEST_CASE(localvarInvert);      // Usage with inverted variable
@@ -273,6 +274,15 @@ private:
                               "    } while(a--);\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvarStruct4()
+    {
+        /* This must not SIGSEGV: */
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    struct { \n");
+        errout.str();
     }
 
 

@@ -896,6 +896,9 @@ void CheckOther::functionVariableUsage()
                     tok = tok->next();
                 }
                 while (tok && indentlevel > indentlevel0);
+
+                if (! tok)
+                    break;
             }
 
             if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|="))
