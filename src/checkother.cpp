@@ -818,8 +818,8 @@ void CheckOther::unreachableCode()
             break;
 
         // If there is a statement below the return it is unreachable
-        if ( !Token::Match(tok, "; case|default|}|#") && !Token::Match(tok, "; %var% :")
-            && ( _settings._checkCodingStyle || !Token::simpleMatch(tok, "; break") ) )
+        if (!Token::Match(tok, "; case|default|}|#") && !Token::Match(tok, "; %var% :")
+            && (_settings._checkCodingStyle || !Token::simpleMatch(tok, "; break")))
         {
             _errorLogger->reportErr(ErrorMessage::unreachableCode(_tokenizer, tok->next()));
         }

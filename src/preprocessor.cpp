@@ -610,7 +610,7 @@ public:
 };
 
 
-
+#include <iostream>
 
 std::string Preprocessor::expandMacros(std::string code)
 {
@@ -668,6 +668,14 @@ std::string Preprocessor::expandMacros(std::string code)
                     if (code[pos1] == '\\')
                         ++pos1;
                     ++pos1;
+
+                    if (!code[pos1])
+                    {
+                        // TODO, this code is here, because there is currently a bug in cppcheck
+                        // Once it has been sorted out, this if can be removed
+                        std::cout << "\n\n####### There is a bug in preprocessor.cpp that can cause crash, shutting down.\n\n" << std::endl;
+                        exit(0);
+                    }
                 }
                 continue;
             }
