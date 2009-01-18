@@ -24,6 +24,7 @@
 #include <algorithm>
 
 #include <sstream>
+#include <fstream>
 
 #ifdef __BORLANDC__
 #include <ctype>
@@ -255,10 +256,9 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
 
-    processedFile = replaceIfDefined(processedFile);
-
-// TODO, uncomment below when handling of includes is implemented well enough
 //    processedFile = handleIncludes(processedFile);
+
+    processedFile = replaceIfDefined(processedFile);
 
     // Get all possible configurations..
     resultConfigurations = getcfgs(processedFile);
@@ -487,9 +487,22 @@ std::string Preprocessor::handleIncludes(std::string code)
             continue;
 
         // filename contains now a file name e.g. "menu.h"
+        std::ifstream fin(filename.c_str());
+        std::string processedFile = Preprocessor::read(fin);
+        if (processedFile.length() > 0)
+        {
+            // Replace all tabs with spaces..
+            std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
 
-        // TODO, add the file here, except do not mess up with the line numbers.
-        // So me must tokenize, before we can append.
+            // Remove all indentation..
+            if (!processedFile.empty() && processedFile[0] == ' ')
+                processedFile.erase(0, processedFile.find_first_not_of(" "));
+
+            // Remove space characters that are after or before new line character
+            processedFile = removeSpaceNearNL(processedFile);
+            processedFile = "#file " + filename + "\n" + processedFile + "#endfile";
+            code.insert(pos, processedFile);
+        }
     }
 
     return code;

@@ -53,7 +53,7 @@ public:
     void preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations);
 
     /** Just read the code into a string. Perform simple cleanup of the code */
-    std::string read(std::istream &istr);
+    static std::string read(std::istream &istr);
 
     /**
      * Get preprocessed code for a given configuration
