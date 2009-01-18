@@ -445,6 +445,108 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
 
 
 
+
+class Macro
+{
+private:
+    Tokenizer tokenizer;
+    std::vector<std::string> _params;
+    std::string _name;
+    std::string _macro;
+
+public:
+    Macro(const std::string &macro)
+        : _macro(macro)
+    {
+        // Tokenize the macro to make it easier to handle
+        std::istringstream istr(macro.c_str());
+        tokenizer.tokenize(istr, "");
+
+        // macro name..
+        if (tokens() && tokens()->isName())
+            _name = tokens()->str();
+
+        // Extract macro parameters
+        if (Token::Match(tokens(), "%var% ( %var%"))
+        {
+            for (const Token *tok = tokens()->tokAt(2); tok; tok = tok->next())
+            {
+                if (tok->str() == ")")
+                    break;
+                if (tok->isName())
+                    _params.push_back(tok->str());
+            }
+        }
+
+    }
+
+    const Token *tokens() const
+    {
+        return tokenizer.tokens();
+    }
+
+    const std::vector<std::string> params() const
+    {
+        return _params;
+    }
+
+    const std::string &name() const
+    {
+        return _name;
+    }
+
+    const std::string code(const std::vector<std::string> &params2) const
+    {
+        std::string macrocode;
+
+        if (_params.empty())
+        {
+            std::string::size_type pos = _macro.find(" ");
+            if (pos == std::string::npos)
+                macrocode = "";
+            else
+            {
+                macrocode = _macro.substr(pos + 1);
+                if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
+                    macrocode.erase(pos);
+            }
+        }
+
+        else
+        {
+            const Token *tok = tokens();
+            while (tok && tok->str() != ")")
+                tok = tok->next();
+            if (tok)
+            {
+                while ((tok = tok->next()) != NULL)
+                {
+                    std::string str = tok->str();
+                    if (tok->isName())
+                    {
+                        for (unsigned int i = 0; i < _params.size(); ++i)
+                        {
+                            if (str == _params[i])
+                            {
+                                str = params2[i];
+                                break;
+                            }
+                        }
+                    }
+                    macrocode += str;
+                    if (Token::Match(tok, "%type% %var%"))
+                        macrocode += " ";
+                }
+            }
+        }
+
+        return macrocode;
+    }
+};
+
+
+
+
 std::string Preprocessor::expandMacros(std::string code)
 {
     // Bail out if there are "#undef" it can cause cppcheck to hang
@@ -470,53 +572,34 @@ std::string Preprocessor::expandMacros(std::string code)
         }
 
         // Extract the whole macro into a separate variable "macro" and then erase it from "code"
-        const std::string macro(code.substr(defpos + 8, endpos - defpos - 7));
+        const Macro macro(code.substr(defpos + 8, endpos - defpos - 7));
         code.erase(defpos, endpos - defpos);
 
-        // Tokenize the macro to make it easier to handle
-        Tokenizer tokenizer;
-        std::istringstream istr(macro.c_str());
-        tokenizer.tokenize(istr, "");
-        if (! tokenizer.tokens())
+        // No macro name => continue
+        if (macro.name() == "")
             continue;
-        if (! tokenizer.tokens()->isName())
-            continue;
-
-        // Extract macro parameters
-        std::vector<std::string> macroparams;
-        if (Token::Match(tokenizer.tokens(), "%var% ( %var%"))
-        {
-            for (const Token *tok = tokenizer.tokens()->tokAt(2); tok; tok = tok->next())
-            {
-                if (tok->str() == ")")
-                    break;
-                if (tok->isName())
-                    macroparams.push_back(tok->str());
-            }
-        }
 
         // Expand all macros in the code..
-        const std::string macroname(tokenizer.tokens()->str());
         std::string::size_type pos1 = defpos;
-        while ((pos1 = code.find(macroname, pos1 + 1)) != std::string::npos)
+        while ((pos1 = code.find(macro.name(), pos1 + 1)) != std::string::npos)
         {
             // Previous char must not be alphanumeric or '_'
             if (pos1 != 0 && (isalnum(code[pos1-1]) || code[pos1-1] == '_'))
                 continue;
 
             // The char after the macroname must not be alphanumeric or '_'
-            if (pos1 + macroname.length() < code.length())
+            if (pos1 + macro.name().length() < code.length())
             {
-                std::string::size_type pos2 = pos1 + macroname.length();
+                std::string::size_type pos2 = pos1 + macro.name().length();
                 if (isalnum(code[pos2]) || code[pos2] == '_')
                     continue;
             }
 
             std::vector<std::string> params;
-            std::string::size_type pos2 = pos1 + macroname.length();
-            if (macroparams.size() && pos2 >= code.length())
+            std::string::size_type pos2 = pos1 + macro.name().length();
+            if (macro.params().size() && pos2 >= code.length())
                 continue;
-            if (macroparams.size())
+            if (macro.params().size())
             {
                 if (code[pos2] != '(')
                     continue;
@@ -554,53 +637,14 @@ std::string Preprocessor::expandMacros(std::string code)
             }
 
             // Same number of parameters..
-            if (params.size() != macroparams.size())
+            if (params.size() != macro.params().size())
                 continue;
 
             // Create macro code..
-            std::string macrocode;
-            if (macroparams.empty())
-            {
-                std::string::size_type pos = macro.find(" ");
-                if (pos == std::string::npos)
-                    macrocode = "";
-                else
-                {
-                    macrocode = macro.substr(pos + 1);
-                    if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
-                        macrocode.erase(pos);
-                }
-            }
-            else
-            {
-                const Token *tok = tokenizer.tokens();
-                while (tok && tok->str() != ")")
-                    tok = tok->next();
-                if (tok)
-                {
-                    while ((tok = tok->next()) != NULL)
-                    {
-                        std::string str = tok->str();
-                        if (tok->isName())
-                        {
-                            for (unsigned int i = 0; i < macroparams.size(); ++i)
-                            {
-                                if (str == macroparams[i])
-                                {
-                                    str = params[i];
-                                    break;
-                                }
-                            }
-                        }
-                        macrocode += str;
-                        if (Token::Match(tok, "%type% %var%"))
-                            macrocode += " ";
-                    }
-                }
-            }
+            const std::string macrocode(macro.code(params));
 
             // Insert macro code..
-            if (!macroparams.empty())
+            if (!macro.params().empty())
                 ++pos2;
 
             code.erase(pos1, pos2 - pos1);
