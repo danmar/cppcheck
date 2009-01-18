@@ -257,6 +257,9 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
 
     processedFile = replaceIfDefined(processedFile);
 
+// TODO, uncomment below when handling of includes is implemented well enough
+//    processedFile = handleIncludes(processedFile);
+
     // Get all possible configurations..
     resultConfigurations = getcfgs(processedFile);
 }
@@ -443,8 +446,54 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
     return expandMacros(ret.str());
 }
 
+std::string Preprocessor::getHeaderFileName(const std::string &str)
+{
+    std::string result;
+    std::string::size_type i = str.find("\"");
+    if (i == std::string::npos)
+        return result;
 
+    for (i = i + 1; i < str.length(); ++i)
+    {
+        if (str[i] == '"')
+            break;
 
+        result.append(1, str[i]);
+    }
+
+    return result;
+}
+
+std::string Preprocessor::handleIncludes(std::string code)
+{
+    std::istringstream istr(code);
+    std::string line;
+    std::string::size_type pos = 0;
+    while ((pos = code.find("#include", pos)) != std::string::npos)
+    {
+        // Accept only includes that are at the start of a line
+        // TODO, multi line strings can contain includes that break this
+        if (pos > 0 && code[pos-1] != '\n')
+            continue;
+
+        std::string::size_type end = code.find("\n", pos);
+        std::string filename = code.substr(pos, end - pos);
+
+        // Remove #include clause
+        code.erase(pos, end - pos);
+
+        filename = getHeaderFileName(filename);
+        if (filename.length() == 0)
+            continue;
+
+        // filename contains now a file name e.g. "menu.h"
+
+        // TODO, add the file here, except do not mess up with the line numbers.
+        // So me must tokenize, before we can append.
+    }
+
+    return code;
+}
 
 class Macro
 {

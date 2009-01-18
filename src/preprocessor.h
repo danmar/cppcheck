@@ -90,6 +90,20 @@ private:
     static bool match_cfg_def(std::string cfg, const std::string &def);
 
     static std::string expandMacros(std::string code);
+
+    /**
+     * Search includes from code and append code from the included
+     * file
+     */
+    static std::string handleIncludes(std::string code);
+
+    /**
+     * Returns the string between double quote characters.
+     * @param str e.g. '#include "menu.h"'
+     * @return e.g. 'menu.h' or empty string if double quotes were
+     * not found.
+     */
+    static std::string getHeaderFileName(const std::string &str);
 };
 
 //---------------------------------------------------------------------------
