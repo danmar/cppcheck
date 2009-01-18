@@ -549,10 +549,6 @@ public:
 
 std::string Preprocessor::expandMacros(std::string code)
 {
-    // Bail out if there are "#undef" it can cause cppcheck to hang
-    if (code.find("#undef") != std::string::npos)
-        return code;
-
     // Search for macros and expand them..
     std::string::size_type defpos = 0;
     while ((defpos = code.find("#define ", defpos)) != std::string::npos)
@@ -580,9 +576,42 @@ std::string Preprocessor::expandMacros(std::string code)
             continue;
 
         // Expand all macros in the code..
+        char pattern[5] = "\"'# ";
+        pattern[3] = macro.name().at(0);
         std::string::size_type pos1 = defpos;
-        while ((pos1 = code.find(macro.name(), pos1 + 1)) != std::string::npos)
+        while ((pos1 = code.find_first_of(pattern, pos1 + 1)) != std::string::npos)
         {
+            char ch = code[pos1];
+
+            // #undef => break
+            if (code[pos1] == '#')
+            {
+                const std::string substr(code.substr(pos1, 7 + macro.name().length()));
+                if (substr == "#undef " + macro.name())
+                    break;
+                else
+                    continue;
+            }
+
+            // String or char..
+            if (code[pos1] == '\"' || code[pos1] == '\'')
+            {
+                //char ch = code[pos1];
+                ++pos1;
+                while (code[pos1] != ch)
+                {
+                    if (code[pos1] == '\\')
+                        ++pos1;
+                    ++pos1;
+                }
+                continue;
+            }
+
+            // Matching the macroname?
+            const std::string substr(code.substr(pos1, macro.name().length()));
+            if (code.substr(pos1, macro.name().length()) != macro.name())
+                continue;
+
             // Previous char must not be alphanumeric or '_'
             if (pos1 != 0 && (isalnum(code[pos1-1]) || code[pos1-1] == '_'))
                 continue;
@@ -651,6 +680,15 @@ std::string Preprocessor::expandMacros(std::string code)
             code.insert(pos1, macrocode);
             pos1 += macrocode.length();
         }
+    }
+
+    // Remove all #undef..
+    defpos = 0;
+    while ((defpos = code.find("\n#undef ", defpos)) != std::string::npos)
+    {
+        ++defpos;
+        std::string::size_type pos2 = code.find("\n", defpos);
+        code.erase(defpos, pos2 - defpos);
     }
 
     return code;

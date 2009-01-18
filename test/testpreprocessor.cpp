@@ -77,7 +77,7 @@ private:
         TEST_CASE(macro_simple5);
         TEST_CASE(macro_mismatch);
         TEST_CASE(preprocessor_inside_string);
-        // TODO TEST_CASE(preprocessor_undef);
+        TEST_CASE(preprocessor_undef);
     }
 
 
@@ -518,15 +518,8 @@ private:
                                 "#define AAA char b=0;\n"
                                 "AAA\n";
 
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual);
-
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("\n\n\nchar b=0;\n", actual[""]);
+        ASSERT_EQUALS("\n\n\nchar b=0;\n", Preprocessor::expandMacros(filedata));
     }
 };
 
