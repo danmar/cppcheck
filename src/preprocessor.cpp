@@ -257,8 +257,6 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
 
     processedFile = replaceIfDefined(processedFile);
 
-    processedFile = expandMacros(processedFile);
-
     // Get all possible configurations..
     resultConfigurations = getcfgs(processedFile);
 }
