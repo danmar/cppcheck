@@ -156,18 +156,26 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
     std::ostringstream bdir, oss;
-    oss << path;
-    if (path.length() > 0)
+    std::string cleanedPath = path;
+
+    std::replace(cleanedPath.begin(), cleanedPath.end(), '\\', '/');
+    oss << cleanedPath;
+
+    if (cleanedPath.length() > 0)
     {
         // Windows doesn't recognize "." as current folder by default
-        if (path == ".")
+        if (cleanedPath == ".")
         {
             oss << "/*";
         }
-        else if (path[path.length() - 1] == '/')
+        else if (cleanedPath[cleanedPath.length() - 1] == '/')
         {
-            bdir << path;
+            bdir << cleanedPath;
             oss << "*";
+        }
+        else
+        {
+            bdir << cleanedPath.substr(0, cleanedPath.rfind('/') + 1);
         }
     }
 
