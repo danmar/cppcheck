@@ -37,6 +37,8 @@ private:
 
     void run()
     {
+        TEST_CASE(define1);
+
         TEST_CASE(longtok);
 
         TEST_CASE(inlineasm);
@@ -78,6 +80,48 @@ private:
                 return false;
         }
         return (expected[i] == NULL && actual == NULL);
+    }
+
+
+    std::string tokenizeAndStringify(const char code[])
+    {
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        {
+            ostr << tok->str();
+
+            // Append newlines
+            if ( tok->next() )
+            {
+                if ( tok->linenr() != tok->next()->linenr() )
+                {
+                    for (int i=tok->linenr();i < tok->next()->linenr();++i)
+                        ostr << "\n";
+                }
+                else
+                {
+                    ostr << " ";
+                }
+            }
+        }
+
+        return ostr.str();
+    }
+
+
+
+    void define1()
+    {
+        const char code[] = "#define AAA(a) a*a\n\n"
+                            "    AAA(5)\n\n";
+        const char expected[] = "# define AAA ( a ) a * a\n\n"
+                                "AAA ( 5 )";
+        ASSERT_EQUALS( expected, tokenizeAndStringify(code) );
     }
 
 
