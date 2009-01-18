@@ -96,11 +96,11 @@ private:
             ostr << tok->str();
 
             // Append newlines
-            if ( tok->next() )
+            if (tok->next())
             {
-                if ( tok->linenr() != tok->next()->linenr() )
+                if (tok->linenr() != tok->next()->linenr())
                 {
-                    for (int i=tok->linenr();i < tok->next()->linenr();++i)
+                    for (int i = tok->linenr();i < tok->next()->linenr();++i)
                         ostr << "\n";
                 }
                 else
@@ -121,7 +121,7 @@ private:
                             "    AAA(5)\n\n";
         const char expected[] = "# define AAA ( a ) a * a\n\n"
                                 "AAA ( 5 )";
-        ASSERT_EQUALS( expected, tokenizeAndStringify(code) );
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
 
