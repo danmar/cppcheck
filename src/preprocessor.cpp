@@ -440,7 +440,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
         ret << line << "\n";
     }
 
-    return ret.str();
+    return expandMacros(ret.str());
 }
 
 
