@@ -70,7 +70,6 @@ private:
         TEST_CASE(if_defined);      // "#if defined(AAA)" => "#ifdef AAA"
 
         // Macros..
-        /*
         TEST_CASE(macro_simple1);
         TEST_CASE(macro_simple2);
         TEST_CASE(macro_simple3);
@@ -79,7 +78,6 @@ private:
         TEST_CASE(macro_mismatch);
         TEST_CASE(preprocessor_inside_string);
         // TODO TEST_CASE(preprocessor_undef);
-        */
     }
 
 
@@ -447,7 +445,7 @@ private:
         ASSERT_EQUALS(expected, Preprocessor::replaceIfDefined(filedata));
     }
 
-/*
+
     void macro_simple1()
     {
         const char filedata[] = "#define AAA(aa) f(aa)\n"
@@ -530,7 +528,6 @@ private:
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\n\n\nchar b=0;\n", actual[""]);
     }
-*/
 };
 
 REGISTER_TEST(TestPreprocessor)

@@ -88,6 +88,8 @@ private:
     static std::string getdef(std::string line, bool def);
 
     static bool match_cfg_def(std::string cfg, const std::string &def);
+
+    static std::string expandMacros(std::string code);
 };
 
 //---------------------------------------------------------------------------
