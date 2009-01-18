@@ -456,7 +456,7 @@ private:
 
 public:
     Macro(const std::string &macro)
-        : _macro(macro)
+            : _macro(macro)
     {
         // Tokenize the macro to make it easier to handle
         std::istringstream istr(macro.c_str());
