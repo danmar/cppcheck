@@ -500,7 +500,7 @@ std::string Preprocessor::handleIncludes(std::string code)
 
             // Remove space characters that are after or before new line character
             processedFile = removeSpaceNearNL(processedFile);
-            processedFile = "#file " + filename + "\n" + processedFile + "#endfile";
+            processedFile = "#file \"" + filename + "\"\n" + processedFile + "#endfile";
             code.insert(pos, processedFile);
         }
     }

@@ -38,7 +38,7 @@ private:
     /**
      * Helper function for "tokenize". This recursively parses into included header files.
      */
-    void tokenizeCode(std::istream &code, const unsigned int FileIndex = 0);
+    void tokenizeCode(std::istream &code, unsigned int FileIndex = 0);
 
 public:
     Tokenizer();

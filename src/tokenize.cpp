@@ -246,11 +246,13 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
 // Tokenize - tokenizes input stream
 //---------------------------------------------------------------------------
 
-void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
+void Tokenizer::tokenizeCode(std::istream &code, unsigned int FileIndex)
 {
     // Tokenize the file.
     unsigned int lineno = 1;
     std::string CurrentToken;
+    std::vector<unsigned int> fileIndexes;
+    fileIndexes.push_back(FileIndex);
     for (char ch = (char)code.get(); code.good(); ch = (char)code.get())
     {
         // We are not handling UTF and stuff like that. Code is supposed to plain simple text.
@@ -315,6 +317,78 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             CurrentToken.clear();
             continue;
+        }
+// TODO, remove false && to take this into use
+        if (false && ch == '#' && CurrentToken.empty())
+        {
+            std::string line("#");
+            {
+                char chPrev = '#';
+                while (code.good())
+                {
+                    ch = (char)code.get();
+                    if (chPrev != '\\' && ch == '\n')
+                        break;
+                    if (ch != ' ')
+                        chPrev = ch;
+                    if (ch != '\\' && ch != '\n')
+                        line += ch;
+                    if (ch == '\n')
+                        ++lineno;
+                }
+            }
+            if (strncmp(line.c_str(), "#file", 5) == 0 &&
+                line.find("\"") != std::string::npos)
+            {
+                // Extract the filename
+                line.erase(0, line.find("\"") + 1);
+                if (line.find("\"") != std::string::npos)
+                    line.erase(line.find("\""));
+
+                // Relative path..
+                if (_files.back().find_first_of("\\/") != std::string::npos)
+                {
+                    std::string path = _files.back();
+                    path.erase(1 + path.find_last_of("\\/"));
+                    line = path + line;
+                }
+
+                // Has this file been tokenized already?
+                bool foundOurfile = false;
+                for (unsigned int i = 0; i < _files.size(); i++)
+                {
+                    if (SameFileName(_files[i].c_str(), line.c_str()))
+                    {
+                        // Use this index
+                        foundOurfile = true;
+                        fileIndexes.push_back(lineno);
+                    }
+                }
+
+                if (!foundOurfile)
+                {
+                    // The "_files" vector remembers what files have been tokenized..
+                    _files.push_back(FileLister::simplifyPath(line.c_str()));
+                    fileIndexes.push_back(lineno);
+                }
+
+                lineno = 0;
+                FileIndex = fileIndexes.size() - 1;
+                continue;
+            }
+
+            else if (strncmp(line.c_str(), "#endfile", 8) == 0)
+            {
+                lineno = fileIndexes.back();
+                fileIndexes.pop_back();
+                FileIndex = fileIndexes.size() - 1;
+                continue;
+            }
+
+            else
+            {
+                addtoken(line.c_str(), lineno, FileIndex);
+            }
         }
 
         if (strchr("#+-*/%&|^?!=<>[](){};:,.~", ch))
@@ -450,7 +524,6 @@ void Tokenizer::tokenizeCode(std::istream &code, const unsigned int FileIndex)
             tok->deleteNext();
         }
     }
-
 }
 //---------------------------------------------------------------------------
 
