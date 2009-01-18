@@ -44,6 +44,7 @@ private:
 
         TEST_CASE(strPlusChar1);     // "/usr" + '/'
         TEST_CASE(strPlusChar2);     // "/usr" + ch
+        TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
     }
 
     void check(const char code[])
@@ -199,6 +200,17 @@ private:
                     "    const char *p = \"/usr\" + ch;\n"
                     "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: Unusual pointer arithmetic\n"), errout.str());
+    }
+
+    void strPlusChar3()
+    {
+        // Strange looking pointer arithmetic..
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    std::string temp = \"/tmp\";\n"
+                    "    std::string path = temp + '/' + \"sub\" + '/';\n"
+                    "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 };

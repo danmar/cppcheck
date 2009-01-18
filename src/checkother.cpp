@@ -987,17 +987,17 @@ void CheckOther::strPlusChar()
         }
 
         //
-        else if (Token::Match(tok, "%str% + %any%"))
+        else if (Token::Match(tok, "[=(] %str% + %any%"))
         {
             // char constant..
-            const char *s = tok->strAt(2);
+            const char *s = tok->strAt(3);
             if (*s == '\'')
-                _errorLogger->reportErr(ErrorMessage::strPlusChar(_tokenizer, tok));
+                _errorLogger->reportErr(ErrorMessage::strPlusChar(_tokenizer, tok->next()));
 
             // char variable..
-            unsigned int varid = tok->tokAt(2)->varId();
+            unsigned int varid = tok->tokAt(3)->varId();
             if (varid > 0 && varid < 10000 && charVars[varid])
-                _errorLogger->reportErr(ErrorMessage::strPlusChar(_tokenizer, tok));
+                _errorLogger->reportErr(ErrorMessage::strPlusChar(_tokenizer, tok->next()));
         }
     }
 }
