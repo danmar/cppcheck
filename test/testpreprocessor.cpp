@@ -75,6 +75,7 @@ private:
         TEST_CASE(macro_simple3);
         TEST_CASE(macro_simple4);
         TEST_CASE(macro_simple5);
+        TEST_CASE(macro_simple6);
         TEST_CASE(macro_mismatch);
         TEST_CASE(preprocessor_inside_string);
         TEST_CASE(preprocessor_undef);
@@ -484,6 +485,13 @@ private:
                                 "    ABC\n"
                                 "}\n";
         ASSERT_EQUALS("\n\nvoid foo()\n{\n    int temp = 0;\n    if( temp > 0 ) return 1;\n}\n", Preprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple6()
+    {
+        const char filedata[] = "#define ABC (a+b+c)\n"
+                                "ABC";
+        ASSERT_EQUALS("\n(a+b+c)", Preprocessor::expandMacros(filedata));
     }
 
     void macro_mismatch()

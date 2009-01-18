@@ -466,18 +466,21 @@ public:
         if (tokens() && tokens()->isName())
             _name = tokens()->str();
 
-        // Extract macro parameters
-        if (Token::Match(tokens(), "%var% ( %var%"))
+        std::string::size_type pos = macro.find_first_of(" (");
+        if ( pos != std::string::npos && macro[pos] == '(' )
         {
-            for (const Token *tok = tokens()->tokAt(2); tok; tok = tok->next())
+            // Extract macro parameters
+            if (Token::Match(tokens(), "%var% ( %var%"))
             {
-                if (tok->str() == ")")
-                    break;
-                if (tok->isName())
-                    _params.push_back(tok->str());
+                for (const Token *tok = tokens()->tokAt(2); tok; tok = tok->next())
+                {
+                    if (tok->str() == ")")
+                        break;
+                    if (tok->isName())
+                        _params.push_back(tok->str());
+                }
             }
         }
-
     }
 
     const Token *tokens() const
