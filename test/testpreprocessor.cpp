@@ -78,6 +78,7 @@ private:
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(preprocessor_undef);
+        TEST_CASE(preprocessor_include_in_str);
     }
 
 
@@ -520,6 +521,25 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("\n\n\nchar b=0;\n", Preprocessor::expandMacros(filedata));
+    }
+
+    void preprocessor_include_in_str()
+    {
+        const char filedata[] = "int main()\n"
+                                "{\n"
+                                "const char *a = \"#include <string>\n\";\n"
+                                "return 0;\n"
+                                "}\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual);
+
+        // Compare results..
+        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS("int main()\n{\nconst char *a = \"#include <string>\n\";\nreturn 0;\n}\n", actual[""]);
     }
 };
 

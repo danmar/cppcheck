@@ -473,7 +473,10 @@ std::string Preprocessor::handleIncludes(std::string code)
     {
         // Accept only includes that are at the start of a line
         if (pos > 0 && code[pos-1] != '\n')
+        {
+            pos += 8; // length of "#include"
             continue;
+        }
 
         std::string::size_type end = code.find("\n", pos);
         std::string filename = code.substr(pos, end - pos);
