@@ -148,6 +148,8 @@ unsigned int CppCheck::check()
         _errout.str("");
         std::string fname = _filenames[c];
 
+        if (_settings._errorsOnly == false)
+            _errorLogger->reportOut(std::string("Checking ") + fname + std::string("..."));
 
         Preprocessor preprocessor;
         std::list<std::string> configurations;
@@ -182,7 +184,7 @@ unsigned int CppCheck::check()
             std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it);
 
             // If only errors are printed, print filename after the check
-            if (_settings._errorsOnly == false)
+            if (_settings._errorsOnly == false && it != configurations.begin())
                 _errorLogger->reportOut(std::string("Checking ") + fname + ": " + cfg + std::string("..."));
 
             checkFile(codeWithoutCfg, _filenames[c].c_str());
