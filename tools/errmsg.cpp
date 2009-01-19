@@ -224,7 +224,10 @@ void Message::generateCode(std::ostream &ostr) const
     ostr << "    }\n";
 
     // Settings..
-    ostr << "    static bool " << _funcname << "(const Settings &s)" << std::endl;
+    ostr << "    static bool " << _funcname << "(";
+    if (_settings != always && _settings != never)
+        ostr << "const Settings &s";
+    ostr << ")" << std::endl;
     ostr << "    {\n";
     ostr << "        return ";
     switch (_settings)
