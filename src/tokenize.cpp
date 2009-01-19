@@ -318,8 +318,8 @@ void Tokenizer::tokenizeCode(std::istream &code, unsigned int FileIndex)
             CurrentToken.clear();
             continue;
         }
-// TODO, remove false && to take this into use
-        if (false && ch == '#' && CurrentToken.empty())
+
+        if (ch == '#' && CurrentToken.empty())
         {
             std::string line("#");
             {
