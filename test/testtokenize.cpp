@@ -37,8 +37,6 @@ private:
 
     void run()
     {
-        TEST_CASE(define1);
-
         TEST_CASE(longtok);
 
         TEST_CASE(inlineasm);
@@ -113,16 +111,6 @@ private:
         return ostr.str();
     }
 
-
-
-    void define1()
-    {
-        const char code[] = "#define AAA(a) a*a\n\n"
-                            "    AAA(5)\n\n";
-        const char expected[] = "# define AAA ( a ) a * a\n\n"
-                                "AAA ( 5 )";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
-    }
 
 
     void longtok()
