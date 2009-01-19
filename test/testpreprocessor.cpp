@@ -59,8 +59,6 @@ private:
 
         TEST_CASE(elif);
 
-        TEST_CASE(include1);
-
         TEST_CASE(if_cond1);
 
         TEST_CASE(multiline1);
@@ -353,23 +351,6 @@ private:
         ASSERT_EQUALS("\nABC\n\n\n\n", actual["DEF1"]);
         ASSERT_EQUALS("\n\n\nDEF\n\n", actual["DEF2"]);
         ASSERT_EQUALS(3, actual.size());
-    }
-
-
-
-    void include1()
-    {
-        const char filedata[] = " # include \"abcd.h\" // abcd\n";
-
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual);
-
-        // Compare results..
-        ASSERT_EQUALS("#include \"abcd.h\"\n", actual[""]);
-        ASSERT_EQUALS(1, actual.size());
     }
 
 
