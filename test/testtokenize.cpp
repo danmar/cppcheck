@@ -66,6 +66,8 @@ private:
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
+
+        // TODO TEST_CASE(file1);
     }
 
 
@@ -627,6 +629,29 @@ private:
                 ASSERT_EQUALS(2, tok->varId());
             else
                 ASSERT_EQUALS(0, tok->varId());
+        }
+    }
+
+
+    void file1()
+    {
+        const char code[] = "a1\n"
+                            "#file \"b\"\n"
+                            "b1\n"
+                            "b2\n"
+                            "#endfile\n"
+                            "a3\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "a");
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        {
+            std::ostringstream ostr;
+            ostr << char('a' + tok->fileIndex()) << tok->linenr();
+            ASSERT_EQUALS(tok->str(), ostr.str());
         }
     }
 };
