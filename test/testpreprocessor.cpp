@@ -78,6 +78,7 @@ private:
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(preprocessor_undef);
+// TODO        TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
     }
 
@@ -522,6 +523,23 @@ private:
         // Compare results..
         ASSERT_EQUALS("\n\n\nchar b=0;\n", Preprocessor::expandMacros(filedata));
     }
+
+    void preprocessor_doublesharp()
+    {
+        const char filedata[] = "#define TEST(var,val) var = val\n"
+                                "TEST(foo,20);\n";
+
+        // Compare results..
+        ASSERT_EQUALS("\nfoo=20;\n", Preprocessor::expandMacros(filedata));
+
+        const char filedata2[] = "#define TEST(var,val) var##_##val = val\n"
+                                 "TEST(foo,20);\n";
+
+        // Compare results..
+        ASSERT_EQUALS("\nfoo_20=20;\n", Preprocessor::expandMacros(filedata2));
+    }
+
+
 
     void preprocessor_include_in_str()
     {
