@@ -235,7 +235,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
     CheckClass checkClass(&_tokenizer, _settings, this);
-    if (ErrorMessage::memsetClass(_settings))
+    if (ErrorMessage::memsetClass())
         checkClass.noMemset();
 
 
@@ -243,7 +243,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     CheckOther checkOther(&_tokenizer, _settings, this);
 
     // Check for unsigned divisions where one operand is signed
-    if (ErrorMessage::udivWarning(_settings) || ErrorMessage::udivError(_settings))
+    if (ErrorMessage::udivWarning(_settings) || ErrorMessage::udivError())
         checkOther.CheckUnsignedDivision();
 
     // Give warning when using char variable as array index
@@ -267,15 +267,15 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
-    if (ErrorMessage::memleak(_settings) && ErrorMessage::mismatchAllocDealloc(_settings))
+    if (ErrorMessage::memleak() && ErrorMessage::mismatchAllocDealloc())
         checkMemoryLeak.CheckMemoryLeak();
 
     // Check that all class constructors are ok.
-    if (ErrorMessage::noConstructor(_settings) && ErrorMessage::uninitVar(_settings))
+    if (ErrorMessage::noConstructor(_settings) && ErrorMessage::uninitVar())
         checkClass.constructors();
 
     // Check that all base classes have virtual destructors
-    if (ErrorMessage::virtualDestructor(_settings))
+    if (ErrorMessage::virtualDestructor())
         checkClass.virtualDestructor();
 
     // Array index out of bounds / Buffer overruns..
@@ -302,8 +302,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkOther.WarningRedundantCode();
 
     // strtol and strtoul usage
-    if (ErrorMessage::dangerousUsageStrtol(_settings) ||
-        ErrorMessage::sprintfOverlappingData(_settings))
+    if (ErrorMessage::dangerousUsageStrtol() ||
+        ErrorMessage::sprintfOverlappingData())
         checkOther.InvalidFunctionUsage();
 
     // Check that all private functions are called.
@@ -323,15 +323,15 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkOther.CheckStructMemberUsage();
 
     // Unreachable code below a 'return' statement
-    if (ErrorMessage::unreachableCode(_settings))
+    if (ErrorMessage::unreachableCode())
         checkOther.unreachableCode();
 
     // Check if a constant function parameter is passed by value
-    if (ErrorMessage::passedByValue(_settings))
+    if (ErrorMessage::passedByValue())
         checkOther.CheckConstantFunctionParameter();
 
     // Variable scope (check if the scope could be limited)
-    if (ErrorMessage::variableScope(_settings))
+    if (ErrorMessage::variableScope())
         checkOther.CheckVariableScope();
 
     // Check for various types of incomplete statements that could for example
@@ -340,7 +340,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkOther.CheckIncompleteStatement();
 
     // Unusual pointer arithmetic
-    if (ErrorMessage::strPlusChar(_settings))
+    if (ErrorMessage::strPlusChar())
         checkOther.strPlusChar();
 }
 //---------------------------------------------------------------------------

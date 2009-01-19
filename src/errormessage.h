@@ -52,7 +52,7 @@ public:
     {
         return msg1(tokenizer, Location) + "" + what + " is out of bounds";
     }
-    static bool outOfBounds(const Settings &s)
+    static bool outOfBounds()
     {
         return true;
     }
@@ -70,7 +70,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Uninitialized member variable '" + classname + "::" + varname + "'";
     }
-    static bool uninitVar(const Settings &s)
+    static bool uninitVar()
     {
         return true;
     }
@@ -88,7 +88,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Using '" + memfunc + "' on class";
     }
-    static bool memsetClass(const Settings &s)
+    static bool memsetClass()
     {
         return true;
     }
@@ -97,7 +97,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'";
     }
-    static bool memsetStruct(const Settings &s)
+    static bool memsetStruct()
     {
         return true;
     }
@@ -115,7 +115,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor";
     }
-    static bool virtualDestructor(const Settings &s)
+    static bool virtualDestructor()
     {
         return true;
     }
@@ -133,7 +133,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Mismatching allocation and deallocation: " + varname + "";
     }
-    static bool mismatchAllocDealloc(const Settings &s)
+    static bool mismatchAllocDealloc()
     {
         return true;
     }
@@ -142,7 +142,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Memory leak: " + varname + "";
     }
-    static bool memleak(const Settings &s)
+    static bool memleak()
     {
         return true;
     }
@@ -151,7 +151,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Resource leak: " + varname + "";
     }
-    static bool resourceLeak(const Settings &s)
+    static bool resourceLeak()
     {
         return true;
     }
@@ -160,7 +160,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Deallocating a deallocated pointer: " + varname + "";
     }
-    static bool deallocDealloc(const Settings &s)
+    static bool deallocDealloc()
     {
         return true;
     }
@@ -196,7 +196,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
     }
-    static bool dangerousUsageStrtol(const Settings &s)
+    static bool dangerousUsageStrtol()
     {
         return true;
     }
@@ -214,7 +214,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Overlapping data buffer " + varname + "";
     }
-    static bool sprintfOverlappingData(const Settings &s)
+    static bool sprintfOverlappingData()
     {
         return true;
     }
@@ -223,7 +223,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Unsigned division. The result will be wrong.";
     }
-    static bool udivError(const Settings &s)
+    static bool udivError()
     {
         return true;
     }
@@ -250,7 +250,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Unreachable code below a 'return'";
     }
-    static bool unreachableCode(const Settings &s)
+    static bool unreachableCode()
     {
         return true;
     }
@@ -259,7 +259,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.";
     }
-    static bool passedByValue(const Settings &s)
+    static bool passedByValue()
     {
         return true;
     }
@@ -322,7 +322,7 @@ public:
     {
         return msg1(tokenizer, Location) + "The scope of the variable " + varname + " can be limited";
     }
-    static bool variableScope(const Settings &s)
+    static bool variableScope()
     {
         return false;
     }
@@ -349,7 +349,7 @@ public:
     {
         return msg1(tokenizer, Location) + "Unusual pointer arithmetic";
     }
-    static bool strPlusChar(const Settings &s)
+    static bool strPlusChar()
     {
         return true;
     }

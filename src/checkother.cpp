@@ -428,7 +428,7 @@ void CheckOther::CheckUnsignedDivision()
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / - %num%"))
         {
-            if (ErrorMessage::udivError(_settings))
+            if (ErrorMessage::udivError())
             {
                 const char *varname1 = tok->strAt(1);
                 char sign1 = varsign[varname1];
@@ -441,7 +441,7 @@ void CheckOther::CheckUnsignedDivision()
 
         else if (Token::Match(tok, "[([=*/+-] - %num% / %var%"))
         {
-            if (ErrorMessage::udivError(_settings))
+            if (ErrorMessage::udivError())
             {
                 const char *varname2 = tok->strAt(4);
                 char sign2 = varsign[varname2];
