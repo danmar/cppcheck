@@ -256,7 +256,7 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
 
-//    processedFile = handleIncludes(processedFile);
+    processedFile = handleIncludes(processedFile);
 
     processedFile = replaceIfDefined(processedFile);
 
@@ -472,7 +472,6 @@ std::string Preprocessor::handleIncludes(std::string code)
     while ((pos = code.find("#include", pos)) != std::string::npos)
     {
         // Accept only includes that are at the start of a line
-        // TODO, multi line strings can contain includes that break this
         if (pos > 0 && code[pos-1] != '\n')
             continue;
 
@@ -500,7 +499,7 @@ std::string Preprocessor::handleIncludes(std::string code)
 
             // Remove space characters that are after or before new line character
             processedFile = removeSpaceNearNL(processedFile);
-            processedFile = "#file \"" + filename + "\"\n" + processedFile + "#endfile";
+            processedFile = "#file \"" + filename + "\"\n" + processedFile + "\n#endfile";
             code.insert(pos, processedFile);
         }
     }
