@@ -354,6 +354,7 @@ void Tokenizer::tokenizeCode(std::istream &code, unsigned int FileIndex)
                 }
 
                 // Has this file been tokenized already?
+                ++lineno;
                 bool foundOurfile = false;
                 for (unsigned int i = 0; i < _files.size(); i++)
                 {
@@ -372,7 +373,7 @@ void Tokenizer::tokenizeCode(std::istream &code, unsigned int FileIndex)
                     fileIndexes.push_back(lineno);
                 }
 
-                lineno = 0;
+                lineno = 1;
                 FileIndex = fileIndexes.size() - 1;
                 continue;
             }
