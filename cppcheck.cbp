@@ -16,7 +16,7 @@
 					<Add option="-g" />
 				</Compiler>
 			</Target>
-			<Target title="test">
+			<Target title="testrunner">
 				<Option output="testrunner" prefix_auto="1" extension_auto="1" />
 				<Option object_output="/home/nobackup/cppcheck/.objs" />
 				<Option type="1" />
