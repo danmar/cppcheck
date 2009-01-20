@@ -867,7 +867,7 @@ void CheckOther::functionVariableUsage()
         static const unsigned int USAGE_WRITE   = 4;
 
         int indentlevel = 0;
-        for (const Token *tok = tok1; tok; tok = tok->next())
+        for (const Token *tok = tok1->next(); tok; tok = tok->next())
         {
             if (tok->str() == "{")
                 ++indentlevel;
@@ -902,34 +902,34 @@ void CheckOther::functionVariableUsage()
             if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|="))
                 varUsage[ tok->strAt(2)] = USAGE_DECLARE;
 
-            if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|="))
+            else if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|="))
                 varUsage[ tok->strAt(3)] = USAGE_DECLARE;
 
-            if (Token::Match(tok, "delete|return %var%"))
+            else if (Token::Match(tok, "delete|return %var%"))
                 varUsage[ tok->strAt(1)] |= USAGE_READ;
 
-            if (Token::Match(tok, "%var% ="))
+            else if (Token::Match(tok, "%var% ="))
                 varUsage[ tok->str()] |= USAGE_WRITE;
 
-            if (Token::Match(tok, "else %var% ="))
+            else if (Token::Match(tok, "else %var% ="))
                 varUsage[ tok->strAt(1)] |= USAGE_WRITE;
 
-            if (Token::Match(tok, ">>|& %var%"))
+            else if (Token::Match(tok, ">>|& %var%"))
                 varUsage[ tok->strAt(1)] |= (USAGE_WRITE | USAGE_READ);
 
-            if ((Token::Match(tok, "[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
+            else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
                 varUsage[ tok->strAt(1)] |= USAGE_READ;
 
-            if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
+            else if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
                 varUsage[ tok->strAt(1)] |= USAGE_READ;
 
-            if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
+            else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
                 varUsage[ tok->str()] |= USAGE_READ;
 
-            if (Token::Match(tok, "[(,] %var% [,)]"))
+            else if (Token::Match(tok, "[(,] %var% [,)]"))
                 varUsage[ tok->strAt(1)] |= USAGE_WRITE;
 
-            if (Token::Match(tok, "; %var% ;"))
+            else if (Token::Match(tok, "; %var% ;"))
                 varUsage[ tok->strAt(1)] |= USAGE_READ;
         }
 
