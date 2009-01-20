@@ -589,6 +589,8 @@ public:
                 while ((tok = tok->next()) != NULL)
                 {
                     std::string str = tok->str();
+                    if (str == "##")
+                        continue;
                     if (tok->isName())
                     {
                         for (unsigned int i = 0; i < _params.size(); ++i)

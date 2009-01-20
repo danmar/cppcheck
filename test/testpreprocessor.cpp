@@ -78,7 +78,7 @@ private:
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(preprocessor_undef);
-// TODO        TEST_CASE(preprocessor_doublesharp);
+        TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
     }
 
