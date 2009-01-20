@@ -288,7 +288,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         }
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
-        else if (strchr(str, '|') && strlen(str) > 2)
+        else if (strchr(str, '|') && (str[0] != '|' || strlen(str) > 2))
         {
             int res = multiCompare(str, tok->_cstr);
             if (res == 0)
