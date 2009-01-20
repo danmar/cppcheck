@@ -167,9 +167,15 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     // The current token being parsed
     std::string CurrentToken;
 
-    // fileIndexes is a vector that holds linenumbers for file indexes
+    // lineNumbers holds line numbers for files in fileIndexes
+    // every time an include file is complitely parsed, last item in the vector
+    // is removed and lineno is set to point to that value.
+    std::vector<unsigned int> lineNumbers;
+
+    // fileIndexes holds index for _files vector about currently parsed files
+    // every time an include file is complitely parsed, last item in the vector
+    // is removed and FileIndex is set to point to that value.
     std::vector<unsigned int> fileIndexes;
-    fileIndexes.push_back(0);
 
     // FileIndex. What file in the _files vector is read now?
     unsigned int FileIndex = 0;
@@ -287,13 +293,14 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 // Has this file been tokenized already?
                 ++lineno;
                 bool foundOurfile = false;
+                fileIndexes.push_back(FileIndex);
                 for (unsigned int i = 0; i < _files.size(); i++)
                 {
                     if (SameFileName(_files[i].c_str(), line.c_str()))
                     {
                         // Use this index
                         foundOurfile = true;
-                        fileIndexes.push_back(lineno);
+                        FileIndex = i;
                     }
                 }
 
@@ -301,19 +308,21 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 {
                     // The "_files" vector remembers what files have been tokenized..
                     _files.push_back(FileLister::simplifyPath(line.c_str()));
-                    fileIndexes.push_back(lineno);
+                    FileIndex = _files.size() - 1;
                 }
 
+                lineNumbers.push_back(lineno);
                 lineno = 1;
-                FileIndex = fileIndexes.size() - 1;
+
                 continue;
             }
 
             else if (strncmp(line.c_str(), "#endfile", 8) == 0)
             {
-                lineno = fileIndexes.back();
+                lineno = lineNumbers.back();
+                lineNumbers.pop_back();
+                FileIndex = fileIndexes.back();
                 fileIndexes.pop_back();
-                FileIndex = fileIndexes.size() - 1;
                 continue;
             }
 

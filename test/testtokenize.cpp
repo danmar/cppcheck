@@ -68,7 +68,7 @@ private:
         TEST_CASE(varid2);
 
         TEST_CASE(file1);
-        // TODO TEST_CASE(file2);
+        TEST_CASE(file2);
 
         TEST_CASE(doublesharp);
     }
