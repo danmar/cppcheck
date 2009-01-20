@@ -49,7 +49,6 @@ Tokenizer::Tokenizer()
 {
     _tokens = 0;
     _tokensBack = 0;
-    _dsymlist = 0;
 }
 
 Tokenizer::~Tokenizer()
@@ -61,15 +60,6 @@ Tokenizer::~Tokenizer()
 
 // Helper functions..
 
-Token *Tokenizer::_gettok(Token *tok, int index)
-{
-    while (tok && index > 0)
-    {
-        tok = tok->next();
-        --index;
-    }
-    return tok;
-}
 
 //---------------------------------------------------------------------------
 
@@ -78,61 +68,12 @@ const Token *Tokenizer::tokens() const
     return _tokens;
 }
 
-//---------------------------------------------------------------------------
-// Defined symbols.
-// "#define abc 123" will create a defined symbol "abc" with the value 123
-//---------------------------------------------------------------------------
-
-
 
 const std::vector<std::string> *Tokenizer::getFiles() const
 {
     return &_files;
 }
 
-void Tokenizer::Define(const char Name[], const char Value[])
-{
-    if (!(Name && Name[0]))
-        return;
-
-    if (!(Value && Value[0]))
-        return;
-
-    // Is 'Value' a decimal value..
-    bool dec = true, hex = true;
-    for (int i = 0; Value[i]; i++)
-    {
-        if (! isdigit(Value[i]))
-            dec = false;
-
-        if (! isxdigit(Value[i]) && (!(i == 1 && Value[i] == 'x')))
-            hex = false;
-    }
-
-    if (!dec && !hex)
-        return;
-
-    char *strValue = strdup(Value);
-
-    if (!dec && hex)
-    {
-        // Convert Value from hexadecimal to decimal
-        unsigned long value;
-        std::istringstream istr(Value + 2);
-        istr >> std::hex >> value;
-        std::ostringstream ostr;
-        ostr << value;
-        free(strValue);
-        strValue = strdup(ostr.str().c_str());
-    }
-
-    DefineSymbol *NewSym = new DefineSymbol;
-    memset(NewSym, 0, sizeof(DefineSymbol));
-    NewSym->name = strdup(Name);
-    NewSym->value = strValue;
-    NewSym->next = _dsymlist;
-    _dsymlist = NewSym;
-}
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -170,16 +111,6 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 
     _tokensBack->linenr(lineno);
     _tokensBack->fileIndex(fileno);
-
-    // Check if str is defined..
-    for (DefineSymbol *sym = _dsymlist; sym; sym = sym->next)
-    {
-        if (strcmp(str, sym->name) == 0)
-        {
-            _tokensBack->str(sym->value);
-            break;
-        }
-    }
 }
 //---------------------------------------------------------------------------
 
@@ -227,32 +158,23 @@ void Tokenizer::InsertTokens(Token *dest, Token *src, unsigned int n)
 
 void Tokenizer::tokenize(std::istream &code, const char FileName[])
 {
-    // Has this file been tokenized already?
-    for (unsigned int i = 0; i < _files.size(); i++)
-    {
-        if (SameFileName(_files[i].c_str(), FileName))
-            return;
-    }
-
     // The "_files" vector remembers what files have been tokenized..
     _files.push_back(FileLister::simplifyPath(FileName));
 
-    // Tokenize the file..
-    tokenizeCode(code, (unsigned int)(_files.size() - 1));
-}
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-// Tokenize - tokenizes input stream
-//---------------------------------------------------------------------------
-
-void Tokenizer::tokenizeCode(std::istream &code, unsigned int FileIndex)
-{
-    // Tokenize the file.
+    // line number in parsed code
     unsigned int lineno = 1;
+
+    // The current token being parsed
     std::string CurrentToken;
+
+    // fileIndexes is a vector that holds linenumbers for file indexes
     std::vector<unsigned int> fileIndexes;
-    fileIndexes.push_back(FileIndex);
+    fileIndexes.push_back(0);
+
+    // FileIndex. What file in the _files vector is read now?
+    unsigned int FileIndex = 0;
+
+    // Read one byte at a time from code and create tokens
     for (char ch = (char)code.get(); code.good(); ch = (char)code.get())
     {
         // We are not handling UTF and stuff like that. Code is supposed to plain simple text.
@@ -628,7 +550,7 @@ void Tokenizer::simplifyTokenList()
             const char *sym = tok->strAt(2);
             const char *num = tok->strAt(4);
 
-            for (Token *tok2 = _gettok(tok, 6); tok2; tok2 = tok2->next())
+            for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == sym)
                 {
@@ -720,7 +642,7 @@ void Tokenizer::simplifyTokenList()
 
         // Replace 'sizeof(var)' with number
         int indentlevel = 0;
-        for (Token *tok2 = _gettok(tok, 5); tok2; tok2 = tok2->next())
+        for (Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "{")
             {
@@ -855,7 +777,7 @@ void Tokenizer::simplifyTokenList()
         {
             if (type0->next()->str() != "operator")
             {
-                tok2 = _gettok(type0, 2);    // The ',' or '=' token
+                tok2 = type0->tokAt(2);    // The ',' or '=' token
                 typelen = 1;
             }
         }
@@ -864,32 +786,32 @@ void Tokenizer::simplifyTokenList()
         {
             if (type0->next()->next()->str() != "operator")
             {
-                tok2 = _gettok(type0, 3);    // The ',' token
+                tok2 = type0->tokAt(3);    // The ',' token
                 typelen = 1;
             }
         }
 
         else if (Token::Match(type0, "%type% %var% [ %num% ] ,|="))
         {
-            tok2 = _gettok(type0, 5);    // The ',' token
+            tok2 = type0->tokAt(5);    // The ',' token
             typelen = 1;
         }
 
         else if (Token::Match(type0, "%type% * %var% [ %num% ] ,|="))
         {
-            tok2 = _gettok(type0, 6);    // The ',' token
+            tok2 = type0->tokAt(6);    // The ',' token
             typelen = 1;
         }
 
         else if (Token::Match(type0, "struct %type% %var% ,|="))
         {
-            tok2 = _gettok(type0, 3);
+            tok2 = type0->tokAt(3);
             typelen = 2;
         }
 
         else if (Token::Match(type0, "struct %type% * %var% ,|="))
         {
-            tok2 = _gettok(type0, 4);
+            tok2 = type0->tokAt(4);
             typelen = 2;
         }
 
@@ -924,7 +846,7 @@ void Tokenizer::simplifyTokenList()
                     else if (parlevel == 0 && strchr(";,", tok2->aaaa0()))
                     {
                         // "type var ="   =>   "type var; var ="
-                        Token *VarTok = _gettok(type0, typelen);
+                        Token *VarTok = type0->tokAt(typelen);
                         if (VarTok->aaaa0() == '*')
                             VarTok = VarTok->next();
                         InsertTokens(eq, VarTok, 2);
@@ -1544,16 +1466,6 @@ void Tokenizer::DeallocateTokens()
     deleteTokens(_tokens);
     _tokens = 0;
     _tokensBack = 0;
-
-    while (_dsymlist)
-    {
-        struct DefineSymbol *next = _dsymlist->next;
-        free(_dsymlist->name);
-        free(_dsymlist->value);
-        delete _dsymlist;
-        _dsymlist = next;
-    }
-
     _files.clear();
 }
 

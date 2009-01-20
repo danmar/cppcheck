@@ -80,6 +80,17 @@ const Token *Token::tokAt(int index) const
     return tok;
 }
 
+Token *Token::tokAt(int index)
+{
+    Token *tok = this;
+    while (index > 0 && tok)
+    {
+        tok = tok->next();
+        --index;
+    }
+    return tok;
+}
+
 const char *Token::strAt(int index) const
 {
     const Token *tok = this->tokAt(index);

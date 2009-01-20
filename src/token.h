@@ -59,6 +59,7 @@ public:
      * would return next from that one.
      */
     const Token *tokAt(int index) const;
+    Token *tokAt(int index);
 
     const char *strAt(int index) const;
 

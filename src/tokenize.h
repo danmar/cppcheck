@@ -35,11 +35,6 @@ private:
     // Deallocate lists..
     void DeallocateTokens();
 
-    /**
-     * Helper function for "tokenize". This recursively parses into included header files.
-     */
-    void tokenizeCode(std::istream &code, unsigned int FileIndex = 0);
-
 public:
     Tokenizer();
     ~Tokenizer();
@@ -84,12 +79,6 @@ public:
 private:
 #endif
 
-    struct DefineSymbol
-    {
-        char *name;
-        char *value;
-        struct DefineSymbol *next;
-    };
 
     /**
      * Finds matching "end" for "start".
@@ -99,8 +88,6 @@ private:
      * @return The end tag that matches given parameter or 0 if not found.
      */
     static const Token *findClosing(const Token *tok, const char *start, const char *end);
-
-    void Define(const char Name[], const char Value[]);
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
 
@@ -145,15 +132,12 @@ private:
      */
     bool simplifyKnownVariables();
 
-    Token *_gettok(Token *tok, int index);
-
     void InsertTokens(Token *dest, Token *src, unsigned int n);
 
     Token *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
     std::vector<const Token *> _functionList;
     std::vector<std::string> _files;
-    struct DefineSymbol * _dsymlist;
     Token *_tokens;
 };
 
