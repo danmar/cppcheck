@@ -243,6 +243,13 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
 
         if (ch == '#' && CurrentToken.empty())
         {
+            // If previous token was "#" then append this to create a "##" token
+            if (Token::simpleMatch(_tokensBack, "#"))
+            {
+                _tokensBack->str("##");
+                continue;
+            }
+
             std::string line("#");
             {
                 char chPrev = '#';
@@ -254,7 +261,9 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                     if (ch != ' ')
                         chPrev = ch;
                     if (ch != '\\' && ch != '\n')
+                    {
                         line += ch;
+                    }
                     if (ch == '\n')
                         ++lineno;
                 }

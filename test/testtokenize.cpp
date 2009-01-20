@@ -69,6 +69,8 @@ private:
 
         TEST_CASE(file1);
         // TODO TEST_CASE(file2);
+
+        TEST_CASE(doublesharp);
     }
 
 
@@ -686,6 +688,25 @@ private:
             ostr << char('a' + tok->fileIndex()) << tok->linenr();
             ASSERT_EQUALS(tok->str(), ostr.str());
         }
+    }
+
+
+
+    void doublesharp()
+    {
+        const char code[] = "TEST(var,val) var##_##val = val\n";
+
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "");
+
+        // Stringify the tokens..
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << tok->str() << " ";
+
+        ASSERT_EQUALS("TEST ( var , val ) var ## _ ## val = val ", ostr.str());
     }
 };
 
