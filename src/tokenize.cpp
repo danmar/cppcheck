@@ -476,15 +476,17 @@ void Tokenizer::setVarId()
         tok->varId(0);
 
     // Set variable ids..
+    bool firstMatch;
     unsigned int _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (! Token::Match(tok, "[;{}(] %type% %var%"))
+        if ( !(firstMatch = Token::Match(tok, "[;{}(] %type% *| %var%"))
+            && !Token::Match(tok, "[;{}(] %type% %type% *| %var%") )
             continue;
 
         // Determine name of declared variable..
         const char *varname = 0;
-        Token *tok2 = tok->next();
+        Token *tok2 = tok->tokAt(firstMatch ? 2 : 3);
         while (tok2 && ! Token::Match(tok2, "[;[=(]"))
         {
             if (tok2->isName())
