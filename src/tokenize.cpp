@@ -541,13 +541,17 @@ void Tokenizer::setVarId()
 
 void Tokenizer::simplifyTokenList()
 {
-
-    // Remove the keyword 'unsigned'
+    // Remove unwanted keywords
+    static const char* unwantedWords[] = { "unsigned", "unlikely" };
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok->next() && (tok->next()->str() == "unsigned"))
+        for (unsigned ui = 0; ui < sizeof(unwantedWords) / sizeof(unwantedWords[0]) && tok->next(); ui++)
         {
-            tok->deleteNext();
+            if (tok->next()->str() == unwantedWords[ui])
+            {
+                tok->deleteNext();
+                break;
+            }
         }
     }
 

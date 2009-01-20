@@ -333,8 +333,6 @@ bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
 
     return bool(Token::Match(tok, std::string("! " + varname + " [;)&|]").c_str()) ||
                 Token::simpleMatch(tok, std::string("! ( " + varname + " )").c_str()) ||
-                Token::simpleMatch(tok, std::string("unlikely ( ! " + varname + " )").c_str()) ||
-                Token::simpleMatch(tok, std::string("unlikely ( " + varname + " == 0 )").c_str()) ||
                 Token::Match(tok, std::string("0 == " + varname + " [;)&|]").c_str()) ||
                 Token::simpleMatch(tok, std::string(varname + " == 0").c_str()));
 }
