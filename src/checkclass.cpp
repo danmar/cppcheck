@@ -389,7 +389,7 @@ void CheckClass::constructors()
         if (! constructor_token)
         {
             // If "--style" has been given, give a warning
-            if (_settings._checkCodingStyle)
+            if (ErrorMessage::noConstructor(_settings))
             {
                 // If the class has member variables there should be an constructor
                 struct VAR *varlist = ClassChecking_GetVarList(tok1);
