@@ -83,7 +83,7 @@ private:
         TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
         // TODO TEST_CASE(fmt);
-        // TODO TEST_CASE(multi_character_character);
+        TEST_CASE(multi_character_character);
     }
 
 
@@ -600,7 +600,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
-        ASSERT_EQUALS("#define FOO 'ABCD'\nint main()\n{\nif( 'ABCD' == 0 );\nreturn 0;\n}\n", actual[""]);
+        ASSERT_EQUALS("\nint main()\n{\nif( 'ABCD' == 0 );\nreturn 0;\n}\n", actual[""]);
     }
 
 };

@@ -120,30 +120,31 @@ std::string Preprocessor::read(std::istream &istr)
             }
         }
 
-        // String constants..
-        else if (ch == '\"')
+        // String or char constants..
+        else if (ch == '\"' || ch == '\'')
         {
-            code << "\"";
+            code << std::string(1, ch);
+            char chNext;
             do
             {
-                ch = (char)istr.get();
-                if (ch == '\\')
+                chNext = (char)istr.get();
+                if (chNext == '\\')
                 {
-                    char chNext = readChar(istr);
-                    if (chNext == '\n')
+                    char chSeq = readChar(istr);
+                    if (chSeq == '\n')
                         ++newlines;
                     else
                     {
-                        code << std::string(1, ch);
                         code << std::string(1, chNext);
+                        code << std::string(1, chSeq);
                     }
                 }
                 else
-                    code << std::string(1, ch);
+                    code << std::string(1, chNext);
             }
-            while (istr.good() && ch != '\"');
+            while (istr.good() && chNext != ch);
         }
-
+/*
         // char constants..
         else if (ch == '\'')
         {
@@ -158,7 +159,7 @@ std::string Preprocessor::read(std::istream &istr)
             ch = readChar(istr);
             code << "\'";
         }
-
+*/
         // <backspace><newline>..
         else if (ch == '\\')
         {
