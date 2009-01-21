@@ -144,22 +144,6 @@ std::string Preprocessor::read(std::istream &istr)
             }
             while (istr.good() && chNext != ch);
         }
-        /*
-                // char constants..
-                else if (ch == '\'')
-                {
-                    code << "\'";
-                    ch = readChar(istr);
-                    code << std::string(1, ch);
-                    if (ch == '\\')
-                    {
-                        ch = readChar(istr);
-                        code << std::string(1, ch);
-                    }
-                    ch = readChar(istr);
-                    code << "\'";
-                }
-        */
         // <backspace><newline>..
         else if (ch == '\\')
         {
