@@ -113,7 +113,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   </refsynopsisdiv>
   <refsect1 id="description">
     <title>DESCRIPTION</title>
-    <para>Simple syntax checking of C/C++ code.
+    <para>A tool for static C/C++ code analysis
       Intended to complement the checking of the compiler.
       Checks for: memory leaks, mismatching allocation-deallocation,
       buffer overrun, and many more.</para>
@@ -166,7 +166,7 @@ default.</para>
   </refsect1>
   <refsect1 id="author">
     <title>AUTHOR</title>
-    <para>The program was written by Daniel Marjamäki, Reijo Tomperi and Nicolas Le Cam</para>
+    <para>The program was written by Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam, Leandro Penz and Kimmo Varis</para>
   </refsect1>
   <refsect1 id="see_also">
     <title>SEE ALSO</title>

@@ -1,6 +1,7 @@
 /*
- * cppcheck - c/c++ syntax checking
- * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
+ * Leandro Penz, Kimmo Varis
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,9 +110,9 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
     if (_filenames.empty())
     {
         std::ostringstream oss;
-        oss <<   "cppcheck 1.27\n"
+        oss <<   "Cppcheck 1.27\n"
         "\n"
-        "C/C++ code checking\n"
+        "A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
         "    cppcheck [--all] [--force] [--quiet] [--style] [--verbose] [file or path1] [file or path]\n"

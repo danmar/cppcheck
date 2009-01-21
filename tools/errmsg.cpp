@@ -1,6 +1,7 @@
 /*
- * cppcheck - c/c++ syntax checking
- * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
+ * Leandro Penz, Kimmo Varis
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,8 +104,9 @@ int main()
     std::ofstream fout("errormessage.h");
 
     fout << "/*\n";
-    fout << " * cppcheck - c/c++ syntax checking\n";
-    fout << " * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam\n";
+    fout << " * Cppcheck - A tool for static C/C++ code analysis\n";
+    fout << " * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,\n";
+    fout << " * Leandro Penz, Kimmo Varis\n";
     fout << " *\n";
     fout << " * This program is free software: you can redistribute it and/or modify\n";
     fout << " * it under the terms of the GNU General Public License as published by\n";
