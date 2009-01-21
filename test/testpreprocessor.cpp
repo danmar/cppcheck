@@ -80,6 +80,7 @@ private:
         TEST_CASE(preprocessor_undef);
         TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
+        // TODO TEST_CASE(fmt);
     }
 
 
@@ -559,6 +560,17 @@ private:
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("int main()\n{\nconst char *a = \"#include <string>\n\";\nreturn 0;\n}\n", actual[""]);
     }
+
+
+    void fmt()
+    {
+        const char filedata[] = "#define DBG(fmt...) printf(fmt);\n"
+                                "DBG(\"[0x%lx-0x%lx)\", pstart, pend);";
+
+        // Preprocess..
+        std::string actual = Preprocessor::expandMacros(filedata);
+    }
+
 };
 
 REGISTER_TEST(TestPreprocessor)
