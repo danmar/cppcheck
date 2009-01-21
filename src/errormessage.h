@@ -247,15 +247,6 @@ public:
         return s._checkCodingStyle;
     }
 
-    static std::string unreachableCode(const Tokenizer *tokenizer, const Token *Location)
-    {
-        return msg1(tokenizer, Location) + "Unreachable code below a 'return'";
-    }
-    static bool unreachableCode()
-    {
-        return true;
-    }
-
     static std::string passedByValue(const Tokenizer *tokenizer, const Token *Location, const std::string &parname)
     {
         return msg1(tokenizer, Location) + "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.";
@@ -263,33 +254,6 @@ public:
     static bool passedByValue()
     {
         return true;
-    }
-
-    static std::string unusedVariable(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
-    {
-        return msg1(tokenizer, Location) + "Unused variable '" + varname + "'";
-    }
-    static bool unusedVariable(const Settings &s)
-    {
-        return s._checkCodingStyle;
-    }
-
-    static std::string unreadVariable(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
-    {
-        return msg1(tokenizer, Location) + "Variable '" + varname + "' is assigned a value that is never used";
-    }
-    static bool unreadVariable(const Settings &s)
-    {
-        return s._checkCodingStyle;
-    }
-
-    static std::string unassignedVariable(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
-    {
-        return msg1(tokenizer, Location) + "Variable '" + varname + "' is not assigned a value";
-    }
-    static bool unassignedVariable(const Settings &s)
-    {
-        return s._checkCodingStyle;
     }
 
     static std::string constStatement(const Tokenizer *tokenizer, const Token *Location, const std::string &type)
@@ -326,15 +290,6 @@ public:
     static bool variableScope()
     {
         return false;
-    }
-
-    static std::string ifAssignment(const Tokenizer *tokenizer, const Token *Location)
-    {
-        return msg1(tokenizer, Location) + "Assignment in if-condition";
-    }
-    static bool ifAssignment(const Settings &s)
-    {
-        return s._checkCodingStyle;
     }
 
     static std::string conditionAlwaysTrueFalse(const Tokenizer *tokenizer, const Token *Location, const std::string &truefalse)

@@ -86,16 +86,11 @@ int main()
     err.push_back(Message("udivError", Message::always, "Unsigned division. The result will be wrong."));
     err.push_back(Message("udivWarning", Message::style_all, "Warning: Division with signed and unsigned operators"));
     err.push_back(Message("unusedStructMember", Message::style, "struct or union member '%1::%2' is never used", "structname", "varname"));
-    err.push_back(Message("unreachableCode", Message::always, "Unreachable code below a 'return'"));
     err.push_back(Message("passedByValue", Message::always, "Function parameter '%1' is passed by value. It could be passed by reference instead.", "parname"));
-    err.push_back(Message("unusedVariable", Message::style, "Unused variable '%1'", "varname"));
-    err.push_back(Message("unreadVariable", Message::style, "Variable '%1' is assigned a value that is never used", "varname"));
-    err.push_back(Message("unassignedVariable", Message::style, "Variable '%1' is not assigned a value", "varname"));
     err.push_back(Message("constStatement", Message::style, "Redundant code: Found a statement that begins with %1 constant", "type"));
     err.push_back(Message("charArrayIndex", Message::style, "Warning - using char variable as array index"));
     err.push_back(Message("charBitOp", Message::style, "Warning - using char variable in bit operation"));
     err.push_back(Message("variableScope", Message::never, "The scope of the variable %1 can be limited", "varname"));
-    err.push_back(Message("ifAssignment", Message::style, "Assignment in if-condition"));
     err.push_back(Message("conditionAlwaysTrueFalse", Message::style, "Condition is always %1", "truefalse"));
     err.push_back(Message("strPlusChar", Message::always, "Unusual pointer arithmetic"));
 

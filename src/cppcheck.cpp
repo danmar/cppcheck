@@ -251,10 +251,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::charArrayIndex(_settings) || ErrorMessage::charBitOp(_settings))
         checkOther.CheckCharVariable();
 
-    // Usage of local variables
-    if (ErrorMessage::unusedVariable(_settings))
-        checkOther.functionVariableUsage();
-
 
 
     _tokenizer.simplifyTokenList();
@@ -282,10 +278,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Array index out of bounds / Buffer overruns..
     if (ErrorMessage::arrayIndexOutOfBounds(_settings) && ErrorMessage::bufferOverrun(_settings))
         checkBufferOverrun.bufferOverrun();
-
-    // Check for "if (a=b)"
-    if (ErrorMessage::ifAssignment(_settings))
-        checkOther.CheckIfAssignment();
 
     // Dangerous functions, such as 'gets' and 'scanf'
     checkBufferOverrun.dangerousFunctions();
@@ -322,10 +314,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Unused struct members..
     if (ErrorMessage::unusedStructMember(_settings))
         checkOther.CheckStructMemberUsage();
-
-    // Unreachable code below a 'return' statement
-    if (ErrorMessage::unreachableCode())
-        checkOther.unreachableCode();
 
     // Check if a constant function parameter is passed by value
     if (ErrorMessage::passedByValue())

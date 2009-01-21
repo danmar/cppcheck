@@ -42,9 +42,6 @@ public:
     // Warning upon: if (condition);
     void WarningIf();
 
-    // Assignment in condition
-    void CheckIfAssignment();
-
     // Invalid function usage..
     void InvalidFunctionUsage();
 
@@ -65,12 +62,6 @@ public:
 
     // Incomplete statement. A statement that only contains a constant or variable
     void CheckIncompleteStatement();
-
-    /** Unreachable code below a 'return' */
-    void unreachableCode();
-
-    /** Unused function variables */
-    void functionVariableUsage();
 
     /** str plus char */
     void strPlusChar();
