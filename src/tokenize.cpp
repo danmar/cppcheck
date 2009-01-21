@@ -480,8 +480,8 @@ void Tokenizer::setVarId()
     unsigned int _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if ( !(firstMatch = Token::Match(tok, "[;{}(] %type% *| %var%"))
-            && !Token::Match(tok, "[;{}(] %type% %type% *| %var%") )
+        if (!(firstMatch = Token::Match(tok, "[;{}(] %type% *| %var%"))
+            && !Token::Match(tok, "[;{}(] %type% %type% *| %var%"))
             continue;
 
         // Determine name of declared variable..
