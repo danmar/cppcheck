@@ -82,6 +82,7 @@ private:
         TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
         // TODO TEST_CASE(fmt);
+        TEST_CASE(multi_character_character);
     }
 
 
@@ -579,6 +580,26 @@ private:
         std::string actual = Preprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\nprintf(\"[0x%lx-0x%lx)\", pstart, pend);", actual);
+    }
+
+    void multi_character_character()
+    {
+        const char filedata[] = "#define FOO 'ABCD'\n"
+                                "int main()\n"
+                                "{\n"
+                                "if( FOO == 0 );\n"
+                                "return 0;\n"
+                                "}\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual);
+
+        // Compare results..
+        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS("#define FOO 'ABCD'\nint main()\n{\nif( 'ABCD' == 0 );\nreturn 0;\n}\n", actual[""]);
     }
 
 };
