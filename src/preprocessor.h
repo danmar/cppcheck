@@ -35,10 +35,11 @@ public:
 
     /**
      * Extract the code for each configuration
-     * \param istr The (file/string) stream to read from.
-     * \param result The map that will get the results
+     * @param istr The (file/string) stream to read from.
+     * @param result The map that will get the results
+     * @param filename The name of the file to check e.g. "src/main.cpp"
      */
-    void preprocess(std::istream &istr, std::map<std::string, std::string> &result);
+    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename);
 
     /**
      * Extract the code for each configuration. Use this with getcode() to get the
@@ -50,8 +51,9 @@ public:
      * to getcode() if you recieved more than once configurations.
      * @param resultConfigurations List of configurations. Pass these one by one
      * to getcode() with processedFile.
+     * @param filename The name of the file to check e.g. "src/main.cpp"
      */
-    void preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations);
+    void preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename);
 
     /** Just read the code into a string. Perform simple cleanup of the code */
     static std::string read(std::istream &istr);
@@ -95,8 +97,11 @@ private:
     /**
      * Search includes from code and append code from the included
      * file
+     * @param code The source code to modify
+     * @param filename The name of the file to check e.g. "src/main.cpp"
+     * @return modified source code
      */
-    static std::string handleIncludes(std::string code);
+    static void handleIncludes(std::string &code, const std::string &filename);
 
     /**
      * Returns the string between double quote characters.

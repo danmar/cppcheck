@@ -188,12 +188,12 @@ std::string Preprocessor::read(std::istream &istr)
 
     return code.str();
 }
-
-void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result)
+#include <iostream>
+void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
 {
     std::list<std::string> configs;
     std::string data;
-    preprocess(istr, data, configs);
+    preprocess(istr, data, configs, filename);
     for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
         result[ *it ] = Preprocessor::getcode(data, *it);
 }
@@ -243,7 +243,7 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
     return ret;
 }
 
-void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations)
+void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename)
 {
     processedFile = read(istr);
 
@@ -257,7 +257,7 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
 
-    processedFile = handleIncludes(processedFile);
+    handleIncludes(processedFile, filename);
 
     processedFile = replaceIfDefined(processedFile);
 
@@ -465,10 +465,11 @@ std::string Preprocessor::getHeaderFileName(const std::string &str)
     return result;
 }
 
-std::string Preprocessor::handleIncludes(std::string code)
+void Preprocessor::handleIncludes(std::string &code, const std::string &filename)
 {
-    std::istringstream istr(code);
-    std::string line;
+//    std::string line;
+    std::string path = filename;
+    path.erase(1 + path.find_last_of("\\/"));
     std::string::size_type pos = 0;
     while ((pos = code.find("#include", pos)) != std::string::npos)
     {
@@ -490,6 +491,7 @@ std::string Preprocessor::handleIncludes(std::string code)
             continue;
 
         // filename contains now a file name e.g. "menu.h"
+        filename = path + filename;
         std::ifstream fin(filename.c_str());
         std::string processedFile = Preprocessor::read(fin);
         if (processedFile.length() > 0)
@@ -507,8 +509,6 @@ std::string Preprocessor::handleIncludes(std::string code)
             code.insert(pos, processedFile);
         }
     }
-
-    return code;
 }
 
 class Macro

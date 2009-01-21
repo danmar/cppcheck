@@ -159,13 +159,13 @@ unsigned int CppCheck::check()
         {
             // File content was given as a string
             std::istringstream iss(_fileContents[ _filenames[c] ]);
-            preprocessor.preprocess(iss, filedata, configurations);
+            preprocessor.preprocess(iss, filedata, configurations, fname);
         }
         else
         {
             // Only file name was given, read the content from file
             std::ifstream fin(fname.c_str());
-            preprocessor.preprocess(fin, filedata, configurations);
+            preprocessor.preprocess(fin, filedata, configurations, fname);
         }
 
         int checkCount = 0;
