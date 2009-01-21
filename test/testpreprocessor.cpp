@@ -74,6 +74,7 @@ private:
         TEST_CASE(macro_simple4);
         TEST_CASE(macro_simple5);
         TEST_CASE(macro_simple6);
+        TEST_CASE(macro_simple7);
         TEST_CASE(macro_mismatch);
         TEST_CASE(string1);
         TEST_CASE(string2);
@@ -479,6 +480,13 @@ private:
         ASSERT_EQUALS("\n(a+b+c)", Preprocessor::expandMacros(filedata));
     }
 
+    void macro_simple7()
+    {
+        const char filedata[] = "#define ABC(str) str\n"
+                                "ABC(\"(\")";
+        ASSERT_EQUALS("\n\"(\"", Preprocessor::expandMacros(filedata));
+    }
+
     void macro_mismatch()
     {
         const char filedata[] = "#define AAA(aa,bb) f(aa)\n"
@@ -564,11 +572,13 @@ private:
 
     void fmt()
     {
-        const char filedata[] = "#define DBG(fmt...) printf(fmt);\n"
+        const char filedata[] = "#define DBG(fmt...) printf(fmt)\n"
                                 "DBG(\"[0x%lx-0x%lx)\", pstart, pend);";
 
         // Preprocess..
         std::string actual = Preprocessor::expandMacros(filedata);
+
+        ASSERT_EQUALS("\nprintf(\"[0x%lx-0x%lx)\", pstart, pend);", actual);
     }
 
 };

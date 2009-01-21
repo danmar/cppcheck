@@ -729,6 +729,26 @@ std::string Preprocessor::expandMacros(std::string code)
                             break;
                         }
                     }
+                    else if (code[pos2] == '\"' || code[pos2] == '\'')
+                    {
+                        par += code[pos2];
+                        char ch = code[pos2];
+                        ++pos2;
+                        while (pos2 < code.length() && code[pos2] != ch)
+                        {
+                            par += code[pos2];
+                            if (code[pos2] == '\\')
+                            {
+                                par += code[pos2];
+                                ++pos2;
+                            }
+                            ++pos2;
+                        }
+                        if (pos2 == code.length())
+                            break;
+                        par += code[pos2];
+                        continue;
+                    }
 
                     if (parlevel == 1 && code[pos2] == ',')
                     {
