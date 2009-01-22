@@ -173,12 +173,12 @@ std::string Preprocessor::read(std::istream &istr)
 
     return code.str();
 }
-#include <iostream>
-void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename)
+
+void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths)
 {
     std::list<std::string> configs;
     std::string data;
-    preprocess(istr, data, configs, filename);
+    preprocess(istr, data, configs, filename, includePaths);
     for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
         result[ *it ] = Preprocessor::getcode(data, *it);
 }
@@ -228,7 +228,7 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
     return ret;
 }
 
-void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename)
+void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
     processedFile = read(istr);
 
@@ -242,7 +242,7 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
 
-    handleIncludes(processedFile, filename);
+    handleIncludes(processedFile, filename, includePaths);
 
     processedFile = replaceIfDefined(processedFile);
 
@@ -470,7 +470,7 @@ std::string Preprocessor::getHeaderFileName(const std::string &str)
     return result;
 }
 
-void Preprocessor::handleIncludes(std::string &code, const std::string &filename)
+void Preprocessor::handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths)
 {
 //    std::string line;
     std::string path = filename;
@@ -496,9 +496,26 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             continue;
 
         // filename contains now a file name e.g. "menu.h"
-        filename = path + filename;
-        std::ifstream fin(filename.c_str());
-        std::string processedFile = Preprocessor::read(fin);
+        std::string processedFile;
+        for (std::list<std::string>::const_iterator iter = includePaths.begin(); iter != includePaths.end(); ++iter)
+        {
+            std::ifstream fin;
+            fin.open((*iter + filename).c_str());
+            if (fin.is_open())
+            {
+                filename = *iter + filename;
+                processedFile = Preprocessor::read(fin);
+                break;
+            }
+        }
+
+        if (processedFile.length() == 0)
+        {
+            filename = path + filename;
+            std::ifstream fin(filename.c_str());
+            processedFile = Preprocessor::read(fin);
+        }
+
         if (processedFile.length() > 0)
         {
             // Replace all tabs with spaces..

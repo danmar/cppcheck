@@ -95,6 +95,35 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--force") == 0)
             _settings._force = true;
 
+        // Include paths
+        else if (strcmp(argv[i], "-I") == 0 || strncmp(argv[i], "-I", 2) == 0)
+        {
+            std::string path;
+
+            // "-I path/"
+            if (strcmp(argv[i], "-I") == 0)
+            {
+                ++i;
+                if (i >= argc)
+                    return "cppcheck: argument to '-I' is missing\n";
+
+                path = argv[i];
+            }
+
+            // "-Ipath/"
+            else
+            {
+                path = argv[i];
+                path = path.substr(2);
+            }
+
+            // If path doesn't end with / or \, add it
+            if (path[path.length()-1] != '/' && path[path.length()-1] != '\\')
+                path += '/';
+
+            _includePaths.push_back(path);
+        }
+
         else
             pathnames.push_back(argv[i]);
     }
@@ -115,7 +144,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
-        "    cppcheck [--all] [--force] [--quiet] [--style] [--verbose] [file or path1] [file or path]\n"
+        "    cppcheck [--all] [--force] [-Idir] [--quiet] [--style] [--verbose] [file or path1] [file or path]\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
@@ -123,6 +152,9 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -a, --all        Make the checking more sensitive. More bugs are detected,\n"
         "                     but there are also more false positives\n"
         "    -f, --force      Force checking on files that have \"too many\" configurations\n"
+        "    -I <dir>         Give include path. Give several -I parameters to give several\n"
+        "                     paths. First given path is checked first. If paths are\n"
+        "                     relative to source files, this is not needed.\n"
         "    -q, --quiet      Only print error messages\n"
         "    -s, --style      Check coding style\n"
         "    -v, --verbose    More detailed error reports\n"
@@ -133,7 +165,9 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "  # Recursively check ../myproject/ and print only most fatal errors:\n"
         "    cppcheck --quiet ../myproject/\n"
         "  # Check only files one.cpp and two.cpp and give all information there is:\n"
-        "    cppcheck -v -a -s one.cpp two.cpp\n";
+        "    cppcheck -v -a -s one.cpp two.cpp\n"
+        "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
+        "    cppcheck -I inc1/ -I inc2/ f.cpp\n";
         return oss.str();
     }
 
@@ -159,13 +193,13 @@ unsigned int CppCheck::check()
         {
             // File content was given as a string
             std::istringstream iss(_fileContents[ _filenames[c] ]);
-            preprocessor.preprocess(iss, filedata, configurations, fname);
+            preprocessor.preprocess(iss, filedata, configurations, fname, _includePaths);
         }
         else
         {
             // Only file name was given, read the content from file
             std::ifstream fin(fname.c_str());
-            preprocessor.preprocess(fin, filedata, configurations, fname);
+            preprocessor.preprocess(fin, filedata, configurations, fname, _includePaths);
         }
 
         int checkCount = 0;

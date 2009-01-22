@@ -104,6 +104,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <command>&dhpackage;</command>
       <arg choice="opt"><option>--all</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
+      <arg choice="opt"><option>-Idir</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--force</option></arg>
@@ -134,6 +135,21 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>-f</option></term>
+        <term><option>--force</option></term>
+        <listitem>
+          <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by 
+default.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-I <dir></option></term>
+        <listitem>
+          <para>Give include path. Give several -I parameters to give several paths. First given path is checked first. If paths are relative to source 
+files, this is not needed.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>-q</option></term>
         <term><option>--quiet</option></term>
         <listitem>
@@ -152,14 +168,6 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <term><option>--verbose</option></term>
         <listitem>
           <para>More detailed error reports</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-f</option></term>
-        <term><option>--force</option></term>
-        <listitem>
-          <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by 
-default.</para>
         </listitem>
       </varlistentry>
     </variablelist>
