@@ -313,7 +313,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
-    if (ErrorMessage::memleak() && ErrorMessage::mismatchAllocDealloc())
+    if (ErrorMessage::memleak() || ErrorMessage::mismatchAllocDealloc())
         checkMemoryLeak.CheckMemoryLeak();
 
     // Check that all class constructors are ok.
@@ -325,7 +325,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkClass.virtualDestructor();
 
     // Array index out of bounds / Buffer overruns..
-    if (ErrorMessage::arrayIndexOutOfBounds(_settings) && ErrorMessage::bufferOverrun(_settings))
+    if (ErrorMessage::arrayIndexOutOfBounds(_settings) || ErrorMessage::bufferOverrun(_settings))
         checkBufferOverrun.bufferOverrun();
 
     // Dangerous functions, such as 'gets' and 'scanf'
