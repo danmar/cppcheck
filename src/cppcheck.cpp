@@ -95,6 +95,14 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--force") == 0)
             _settings._force = true;
 
+        // Print help
+        else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
+        {
+            pathnames.clear();
+            _filenames.clear();
+            break;
+        }
+
         // Include paths
         else if (strcmp(argv[i], "-I") == 0 || strncmp(argv[i], "-I", 2) == 0)
         {
@@ -124,6 +132,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             _includePaths.push_back(path);
         }
 
+        else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
+        {
+            return "cppcheck: error: unrecognized command line option \"" + std::string(argv[i]) + "\"\n";
+        }
+
         else
             pathnames.push_back(argv[i]);
     }
@@ -144,7 +157,8 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
-        "    cppcheck [--all] [--force] [-Idir] [--quiet] [--style] [--verbose] [file or path1] [file or path]\n"
+        "    cppcheck [--all] [--force] [--help] [-Idir] [--quiet] [--style]\n"
+        "             [--verbose] [file or path1] [file or path]\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
@@ -152,6 +166,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -a, --all        Make the checking more sensitive. More bugs are detected,\n"
         "                     but there are also more false positives\n"
         "    -f, --force      Force checking on files that have \"too many\" configurations\n"
+        "    -h, --help       Print this help\n"
         "    -I <dir>         Give include path. Give several -I parameters to give several\n"
         "                     paths. First given path is checked first. If paths are\n"
         "                     relative to source files, this is not needed.\n"

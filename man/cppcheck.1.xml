@@ -103,11 +103,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg choice="opt"><option>--all</option></arg>
-      <arg choice="opt"><option>--quiet</option></arg>
+      <arg choice="opt"><option>--force</option></arg>
+      <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-Idir</option></arg>
+      <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
-      <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>file or path</option></arg>
       <arg choice="plain"><option>...</option></arg>
     </cmdsynopsis>
@@ -140,6 +141,13 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <listitem>
           <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by 
 default.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-h</option></term>
+        <term><option>--help</option></term>
+        <listitem>
+          <para>Print help text.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
