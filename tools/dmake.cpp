@@ -37,6 +37,8 @@ void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
     std::ifstream f(filename.c_str());
     if (! f.is_open())
         return;
+    if (filename.find(".c") == std::string::npos)
+        depfiles.push_back(filename);
 
     std::string path(filename);
     if (path.find("/") != std::string::npos)
@@ -56,7 +58,6 @@ void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
             hfile.erase(0, 4 + hfile.find("/../"));
         if (std::find(depfiles.begin(), depfiles.end(), hfile) != depfiles.end())
             continue;
-        depfiles.push_back(hfile);
         getDeps(hfile, depfiles);
     }
 }
@@ -76,7 +77,8 @@ int main()
 
     std::ofstream fout("Makefile");
 
-    fout << "CXXFLAGS=-Wall -pedantic -g\n";
+    // more warnings.. -Wfloat-equal -Wcast-qual -Wsign-conversion -Wlogical-op
+    fout << "CXXFLAGS=-Wall -Wextra -pedantic -g\n";
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
 
     fout << "\n###### Object Files\n\n";
