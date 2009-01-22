@@ -83,10 +83,12 @@ private:
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(preprocessor_undef);
+        TEST_CASE(defdef);  // Defined multiple times
         TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
         // TODO TEST_CASE(fmt);
         TEST_CASE(multi_character_character);
+
     }
 
 
@@ -559,6 +561,17 @@ private:
         ASSERT_EQUALS("\n\n\nchar b=0;\n", Preprocessor::expandMacros(filedata));
     }
 
+    void defdef()
+    {
+        const char filedata[] = "#define AAA 123\n"
+                                "#define AAA 456\n"
+                                "#define AAA 789\n"
+                                "AAA\n";
+
+        // Compare results..
+        ASSERT_EQUALS("\n\n\n789\n", Preprocessor::expandMacros(filedata));
+    }
+
     void preprocessor_doublesharp()
     {
         const char filedata[] = "#define TEST(var,val) var = val\n"
@@ -596,6 +609,8 @@ private:
     }
 
 
+
+
     void fmt()
     {
         const char filedata[] = "#define DBG(fmt...) printf(fmt)\n"
@@ -626,6 +641,7 @@ private:
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nint main()\n{\nif( 'ABCD' == 0 );\nreturn 0;\n}\n", actual[""]);
     }
+
 
 };
 

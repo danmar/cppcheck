@@ -678,11 +678,17 @@ std::string Preprocessor::expandMacros(std::string code)
             // #undef => break
             if (code[pos1] == '#')
             {
-                const std::string substr(code.substr(pos1, 7 + macro.name().length()));
+                std::string substr;
+
+                substr = code.substr(pos1, 7 + macro.name().length());
                 if (substr == "#undef " + macro.name())
                     break;
-                else
-                    continue;
+
+                substr = code.substr(pos1, 8 + macro.name().length());
+                if (substr == "#define " + macro.name())
+                    break;
+
+                continue;
             }
 
             // String or char..
