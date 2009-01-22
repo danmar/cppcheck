@@ -287,10 +287,30 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
 
     std::list<std::string> deflist;
 
+    // How deep into included files are we currently parsing?
+    // 0=>Source file, 1=>Included by source file, 2=>included by header that was included by source file, etc
+    int filelevel = 0;
+
     std::istringstream istr(filedata);
     std::string line;
     while (getline(istr, line))
     {
+        if (line.substr(0, 6) == "#file ")
+        {
+            ++filelevel;
+            continue;
+        }
+
+        else if (line == "#endfile")
+        {
+            if (filelevel > 0)
+                --filelevel;
+            continue;
+        }
+
+        if (filelevel > 0)
+            continue;
+
         std::string def = getdef(line, true) + getdef(line, false);
         if (!def.empty())
         {

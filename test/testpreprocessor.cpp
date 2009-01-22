@@ -51,6 +51,9 @@ private:
         TEST_CASE(test4);
         TEST_CASE(test5);
 
+        // Handling include guards (don't create extra configuration for it)
+        TEST_CASE(includeguard);
+
         TEST_CASE(newlines);
 
         TEST_CASE(comments1);
@@ -268,6 +271,27 @@ private:
         ASSERT_EQUALS(3, actual.size());
     }
 
+
+    void includeguard()
+    {
+        // Handling include guards..
+        const char filedata[] = "#file \"abc.h\"\n"
+                                "#ifndef abcH\n"
+                                "#define abcH\n"
+                                "#endif\n"
+                                "#endfile\n"
+                                "#ifdef ABC\n"
+                                "#endif";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Expected configurations: "" and "ABC"
+        ASSERT_EQUALS(2, actual.size());
+    }
 
 
     void newlines()
