@@ -139,6 +139,7 @@ private:
         TEST_CASE(class4);
         TEST_CASE(class5);
         TEST_CASE(class6);
+        TEST_CASE(class7);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1311,6 +1312,28 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void class7()
+    {
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    int *i;\n"
+              "    Fred();\n"
+              "    ~Fred();\n"
+              "};\n"
+              "\n"
+              "Fred::Fred()\n"
+              "{\n"
+              "    this->i = new int;\n"
+              "}\n"
+              "Fred::~Fred()\n"
+              "{\n"
+              "    delete this->i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
 
 

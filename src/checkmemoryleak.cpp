@@ -1406,7 +1406,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
     {
         destructor << classname[i] << " :: ";
     }
-    destructor << " ~ " << classname.back() << " (";
+    destructor << "~ " << classname.back() << " (";
 
     // Pattern used in member function. "Var = ..."
     std::ostringstream varname_eq;
@@ -1461,9 +1461,15 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
             }
 
             // Deallocate..
-            const char *varnames[2] = { "var", 0 };
+            const char *varnames[3] = { "var", 0, 0 };
             varnames[0] = varname;
             AllocType dealloc = GetDeallocationType(tok, varnames);
+            if (dealloc == No)
+            {
+                varnames[0] = "this";
+                varnames[1] = varname;
+                dealloc = GetDeallocationType(tok, varnames);
+            }
             if (dealloc != No)
             {
                 std::list<const Token *> callstack;
@@ -1473,6 +1479,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
                     MismatchError(tok, callstack, FullVariableName.str().c_str());
                 Dealloc = dealloc;
             }
+
         }
     }
 
