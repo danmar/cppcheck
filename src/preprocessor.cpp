@@ -679,15 +679,22 @@ std::string Preprocessor::expandMacros(std::string code)
             // #undef => break
             if (code[pos1] == '#')
             {
-                std::string substr;
+                // Are we at a #undef or #define?
+                if (code.substr(pos1, 7) == "#undef ")
+                    pos1 += 7;
+                else if (code.substr(pos1, 8) == "#define ")
+                    pos1 += 8;
+                else
+                    continue;
 
-                substr = code.substr(pos1, 7 + macro.name().length());
-                if (substr == "#undef " + macro.name())
+                // Compare the macroname with the macroname we're currently parsing (macro.name())
+                // If it's the same macroname.. break.
+                std::string::size_type pos = pos1 + macro.name().length();
+                if (pos < code.length()
+                    && code.substr(pos1, macro.name().length()) == macro.name()
+                    && !isalnum(code[pos]) && code[pos] != '_')
                     break;
 
-                substr = code.substr(pos1, 8 + macro.name().length());
-                if (substr == "#define " + macro.name())
-                    break;
 
                 continue;
             }
