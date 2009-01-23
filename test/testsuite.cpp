@@ -173,7 +173,7 @@ void TestFixture::reportErr(const std::string &errmsg)
     errout << errmsg << std::endl;
 }
 
-void TestFixture::reportOut(const std::string &outmsg)
+void TestFixture::reportOut(const std::string & /*outmsg*/)
 {
     // These can probably be ignored
 }
