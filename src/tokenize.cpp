@@ -20,29 +20,17 @@
 
 //---------------------------------------------------------------------------
 #include "tokenize.h"
-
-//---------------------------------------------------------------------------
-
 #include "filelister.h"
 
 #include <locale>
 #include <fstream>
-
-
 #include <string>
 #include <cstring>
 #include <iostream>
 #include <sstream>
 #include <list>
 #include <algorithm>
-#include <stdlib.h>     // <- strtoul
-#include <stdio.h>
-
-#ifdef __BORLANDC__
-#include <ctype.h>
-#include <mem.h>
-#endif
-
+#include <cstdlib>
 
 //---------------------------------------------------------------------------
 
@@ -297,7 +285,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 fileIndexes.push_back(FileIndex);
                 for (unsigned int i = 0; i < _files.size(); i++)
                 {
-                    if (SameFileName(_files[i].c_str(), line.c_str()))
+                    if (FileLister::SameFileName(_files[i].c_str(), line.c_str()))
                     {
                         // Use this index
                         foundOurfile = true;
@@ -1528,22 +1516,6 @@ std::string Tokenizer::fileLine(const Token *tok) const
     return ostr.str();
 }
 
-//---------------------------------------------------------------------------
 
-bool Tokenizer::SameFileName(const char fname1[], const char fname2[])
-{
-#ifdef __linux__
-    return bool(strcmp(fname1, fname2) == 0);
-#endif
-#ifdef __GNUC__
-    return bool(strcasecmp(fname1, fname2) == 0);
-#endif
-#ifdef __BORLANDC__
-    return bool(stricmp(fname1, fname2) == 0);
-#endif
-#ifdef _MSC_VER
-    return bool(_stricmp(fname1, fname2) == 0);
-#endif
-}
 
 //---------------------------------------------------------------------------

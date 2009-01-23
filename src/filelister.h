@@ -41,6 +41,7 @@ class FileLister
 public:
     static void RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive);
     static std::string simplifyPath(const char *originalPath);
+    static bool SameFileName(const char fname1[], const char fname2[]);
 private:
     static bool AcceptFile(const std::string &filename);
 };

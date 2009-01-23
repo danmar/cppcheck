@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 #include "checkheaders.h"
 #include "tokenize.h"
+#include "filelister.h"
 
 #include <algorithm>
 #include <list>
@@ -94,7 +95,7 @@ void CheckHeaders::WarningIncludeHeader()
         const char *includefile = includetok->next()->aaaa();
         while (hfile < _tokenizer->getFiles()->size())
         {
-            if (Tokenizer::SameFileName(_tokenizer->getFiles()->at(hfile).c_str(), includefile))
+            if (FileLister::SameFileName(_tokenizer->getFiles()->at(hfile).c_str(), includefile))
                 break;
             ++hfile;
         }

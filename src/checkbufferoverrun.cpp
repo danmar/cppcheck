@@ -30,7 +30,7 @@
 #include <cstring>
 
 
-#include <stdlib.h>     // <- strtoul
+#include <cstdlib>     // <- strtoul
 
 //---------------------------------------------------------------------------
 

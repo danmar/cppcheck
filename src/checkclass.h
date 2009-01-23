@@ -46,6 +46,13 @@ public:
 private:
     struct VAR
     {
+        VAR(const char *name = 0, bool init = false, struct VAR *next = 0)
+        {
+            this->name = name;
+            this->init = init;
+            this->next = next;
+        }
+
         const char *name;
         bool        init;
         struct VAR *next;

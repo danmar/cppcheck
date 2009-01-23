@@ -26,14 +26,8 @@
 
 #include <string>
 #include <sstream>
-#include <cstring>
 #include <algorithm>
 
-
-#ifdef __BORLANDC__
-#include <ctype.h>
-#include <mem.h>
-#endif
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
@@ -101,11 +95,7 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
         // If the varname was set in one of the two if-block above, create a entry for this variable..
         if (varname)
         {
-            struct VAR *var = new VAR;
-            memset(var, 0, sizeof(struct VAR));
-            var->name = varname;
-            var->init = false;
-            var->next = varlist;
+            struct VAR *var = new VAR(varname, false, varlist);
             varlist   = var;
         }
     }

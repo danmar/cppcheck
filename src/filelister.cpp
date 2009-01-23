@@ -217,4 +217,20 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 
 
 
+//---------------------------------------------------------------------------
 
+bool FileLister::SameFileName(const char fname1[], const char fname2[])
+{
+#ifdef __linux__
+    return bool(strcmp(fname1, fname2) == 0);
+#endif
+#ifdef __GNUC__
+    return bool(strcasecmp(fname1, fname2) == 0);
+#endif
+#ifdef __BORLANDC__
+    return bool(stricmp(fname1, fname2) == 0);
+#endif
+#ifdef _MSC_VER
+    return bool(_stricmp(fname1, fname2) == 0);
+#endif
+}

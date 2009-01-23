@@ -23,16 +23,10 @@
 #include "token.h"
 
 #include <algorithm>
-
 #include <sstream>
 #include <fstream>
 #include <iostream>
-
-#ifdef __BORLANDC__
-#include <ctype>
-#include <stdlib.h>     // exit
-#endif
-
+#include <cstdlib>
 
 Preprocessor::Preprocessor()
 {
@@ -478,7 +472,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
     std::string path = filename;
     path.erase(1 + path.find_last_of("\\/"));
     std::string::size_type pos = 0;
-    std::map<std::string,bool> handledFiles;
+    std::map<std::string, bool> handledFiles;
     while ((pos = code.find("#include", pos)) != std::string::npos)
     {
         // Accept only includes that are at the start of a line
@@ -498,7 +492,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
         if (filename.length() == 0)
             continue;
 
-        if( handledFiles.find( filename ) != handledFiles.end() )
+        if (handledFiles.find(filename) != handledFiles.end())
         {
             // We have processed this file already once, skip
             // it this time to avoid ethernal loop.

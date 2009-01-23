@@ -19,22 +19,11 @@
 
 
 #include "checkmemoryleak.h"
-
 #include "errormessage.h"
 
-#include <stdlib.h> // free
-
 #include <algorithm>
-
 #include <iostream>
 #include <sstream>
-
-#ifdef __BORLANDC__
-#include <mem.h>     // <- memset
-#else
-#include <string.h>
-#endif
-
 
 //---------------------------------------------------------------------------
 

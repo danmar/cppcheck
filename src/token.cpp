@@ -22,10 +22,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
-
-#ifdef __BORLANDC__
-#include <ctype.h>  // isalpha, isdigit
-#endif
+#include <cctype>
 
 Token::Token() :
         _str(""),
@@ -51,8 +48,8 @@ void Token::str(const char s[])
     _str = s;
     std::free(_cstr);
     _cstr = strdup(s);
-    _isName = bool(_str[0] == '_' || isalpha(_str[0]));
-    _isNumber = bool(isdigit(_str[0]) != 0);
+    _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
+    _isNumber = bool(std::isdigit(_str[0]) != 0);
     if (_str == "true" || _str == "false")
         _isBoolean = true;
     else

@@ -24,7 +24,7 @@
 #include <list>
 #include <map>
 #include <sstream>
-#include <stdlib.h>     // <- atoi
+#include <cstdlib>     // <- atoi
 #include <cstring>
 #include <cctype>
 //---------------------------------------------------------------------------
