@@ -404,9 +404,8 @@ void CppCheck::reportErr(const std::string &errmsg)
     _errout << errmsg2 << std::endl;
 }
 
-void CppCheck::reportOut(const std::string &outmsg)
+void CppCheck::reportOut(const std::string & /*outmsg*/)
 {
     // This is currently never called. It is here just to comply with
     // the interface.
-    std::string foo = outmsg; // This is just to get rid of compiler warning
 }
