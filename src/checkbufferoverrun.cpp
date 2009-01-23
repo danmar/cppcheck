@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
  * Leandro Penz, Kimmo Varis
@@ -92,7 +92,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         if (Token::Match(tok, "%varid% [ %num% ]", varid))
         {
             const char *num = tok->strAt(2);
-            if (strtol(num, NULL, 10) >= size)
+            if (std::strtol(num, NULL, 10) >= size)
             {
                 ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
             }
@@ -101,7 +101,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
     else if (Token::Match(tok, std::string(varnames + " [ %num% ]").c_str()))
     {
         const char *num = tok->strAt(2 + varc);
-        if (strtol(num, NULL, 10) >= size)
+        if (std::strtol(num, NULL, 10) >= size)
         {
             ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
         }
@@ -129,7 +129,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", varid))
             {
                 const char *num = tok->strAt(3);
-                if (strtol(num, NULL, 10) >= size)
+                if (std::strtol(num, NULL, 10) >= size)
                 {
                     ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
                 }
@@ -138,7 +138,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), std::string(varnames + " [ %num% ]").c_str()))
         {
             const char *num = tok->next()->strAt(2 + varc);
-            if (strtol(num, NULL, 10) >= size)
+            if (std::strtol(num, NULL, 10) >= size)
             {
                 ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
             }
@@ -156,7 +156,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                     Token::Match(tok->next(), "( %var% , %varid% , %num% )", varid))
                 {
                     const char *num  = tok->strAt(6);
-                    if (atoi(num) > total_size)
+                    if (std::atoi(num) > total_size)
                     {
                         ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
                     }
@@ -170,7 +170,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 Token::Match(tok->next(), std::string("( %var% , " + varnames + " , %num% )").c_str()))
             {
                 const char *num  = tok->strAt(varc + 6);
-                if (atoi(num) > total_size)
+                if (std::atoi(num) > total_size)
                 {
                     ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
                 }
@@ -200,7 +200,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
             // Get index variable and stopsize.
             const char *strindex = tok2->aaaa();
-            int value = ((tok2->next()->aaaa1() == '=') ? 1 : 0) + atoi(tok2->strAt(2));
+            int value = ((tok2->next()->aaaa1() == '=') ? 1 : 0) + std::atoi(tok2->strAt(2));
             if (value <= size)
                 continue;
 
@@ -287,7 +287,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         // snprintf..
         if (varid > 0 && Token::Match(tok, "snprintf ( %varid% , %num%", varid))
         {
-            int n = atoi(tok->strAt(4));
+            int n = std::atoi(tok->strAt(4));
             if (n > size)
                 ReportError(ErrorMessage::outOfBounds(_tokenizer, tok->tokAt(4), "snprintf size"));
         }
@@ -412,7 +412,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
             if (Token::Match(tok, "%type% %var% [ %num% ] ;"))
             {
                 varname[0] = tok->strAt(1);
-                size = strtoul(tok->strAt(3), NULL, 10);
+                size = std::strtoul(tok->strAt(3), NULL, 10);
                 type = tok->aaaa();
                 varid = tok->tokAt(1)->varId();
                 nextTok = 6;
@@ -420,7 +420,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
             else if (Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
             {
                 varname[0] = tok->strAt(1);
-                size = strtoul(tok->strAt(6), NULL, 10);
+                size = std::strtoul(tok->strAt(6), NULL, 10);
                 type = tok->strAt(4);
                 varid = tok->tokAt(1)->varId();
                 nextTok = 8;
@@ -475,7 +475,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 
             const char *varname[3] = {0, 0, 0};
             varname[1] = tok2->strAt(ivar);
-            int arrsize = atoi(tok2->strAt(ivar + 2));
+            int arrsize = std::atoi(tok2->strAt(ivar + 2));
             int total_size = arrsize * _tokenizer->SizeOfType(tok2->next()->aaaa());
             if (total_size == 0)
                 continue;

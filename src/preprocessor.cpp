@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
  * Leandro Penz, Kimmo Varis
@@ -27,6 +27,7 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
+#include <cctype>
 
 Preprocessor::Preprocessor()
 {
@@ -72,7 +73,7 @@ std::string Preprocessor::read(std::istream &istr)
             ++lineno;
 
         // Replace assorted special chars with spaces..
-        if ((ch != '\n') && (isspace(ch) || iscntrl(ch)))
+        if ((ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';
 
         // Skip spaces after ' ' and after '#'
@@ -697,7 +698,7 @@ std::string Preprocessor::expandMacros(std::string code)
                 std::string::size_type pos = pos1 + macro.name().length();
                 if (pos < code.length()
                     && code.substr(pos1, macro.name().length()) == macro.name()
-                    && !isalnum(code[pos]) && code[pos] != '_')
+                    && !std::isalnum(code[pos]) && code[pos] != '_')
                     break;
 
 
@@ -720,7 +721,7 @@ std::string Preprocessor::expandMacros(std::string code)
                         // TODO, this code is here, because there is currently a bug in cppcheck
                         // Once it has been sorted out, this if can be removed
                         std::cout << "\n\n####### There is a bug in preprocessor.cpp that can cause crash, shutting down.\n\n" << std::endl;
-                        exit(0);
+                        std::exit(0);
                     }
                 }
                 continue;
@@ -732,14 +733,14 @@ std::string Preprocessor::expandMacros(std::string code)
                 continue;
 
             // Previous char must not be alphanumeric or '_'
-            if (pos1 != 0 && (isalnum(code[pos1-1]) || code[pos1-1] == '_'))
+            if (pos1 != 0 && (std::isalnum(code[pos1-1]) || code[pos1-1] == '_'))
                 continue;
 
             // The char after the macroname must not be alphanumeric or '_'
             if (pos1 + macro.name().length() < code.length())
             {
                 std::string::size_type pos2 = pos1 + macro.name().length();
-                if (isalnum(code[pos2]) || code[pos2] == '_')
+                if (std::isalnum(code[pos2]) || code[pos2] == '_')
                     continue;
             }
 

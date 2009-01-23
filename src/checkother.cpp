@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
  * Leandro Penz, Kimmo Varis
@@ -316,7 +316,7 @@ void CheckOther::InvalidFunctionUsage()
                 {
                     if (Token::Match(tok2, ", %num% )"))
                     {
-                        int radix = atoi(tok2->strAt(1));
+                        int radix = std::atoi(tok2->strAt(1));
                         if (!(radix == 0 || (radix >= 2 && radix <= 36)))
                         {
                             _errorLogger->reportErr(ErrorMessage::dangerousUsageStrtol(_tokenizer, tok2));

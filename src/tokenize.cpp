@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
  * Leandro Penz, Kimmo Varis
@@ -31,6 +31,7 @@
 #include <list>
 #include <algorithm>
 #include <cstdlib>
+#include <cctype>
 
 //---------------------------------------------------------------------------
 
@@ -79,7 +80,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     std::ostringstream str2;
     if (strncmp(str, "0x", 2) == 0)
     {
-        str2 << strtoul(str + 2, NULL, 16);
+        str2 << std::strtoul(str + 2, NULL, 16);
     }
     else
     {
@@ -332,7 +333,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
         }
 
 
-        if (isspace(ch) || iscntrl(ch))
+        if (std::isspace(ch) || std::iscntrl(ch))
         {
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             CurrentToken.clear();
@@ -651,7 +652,7 @@ void Tokenizer::simplifyTokenList()
             continue;
 
         const char *varname = tok->strAt(1);
-        int total_size = size * atoi(tok->strAt(3));
+        int total_size = size * std::atoi(tok->strAt(3));
 
         // Replace 'sizeof(var)' with number
         int indentlevel = 0;
@@ -705,8 +706,8 @@ void Tokenizer::simplifyTokenList()
             // (1-2)
             if (Token::Match(tok, "[[,(=<>] %num% [+-*/] %num% [],);=<>]"))
             {
-                int i1 = atoi(tok->strAt(1));
-                int i2 = atoi(tok->strAt(3));
+                int i1 = std::atoi(tok->strAt(1));
+                int i2 = std::atoi(tok->strAt(3));
                 if (i2 == 0 && *(tok->strAt(2)) == '/')
                 {
                     continue;
@@ -1201,8 +1202,8 @@ bool Tokenizer::simplifyConditions()
             Token::Match(tok->tokAt(1), "%num% %any% %num%") &&
             (tok4->str() == "&&" || tok4->str() == "||" || tok4->str() == ")"))
         {
-            double op1 = (strstr(tok->strAt(1), "0x")) ? strtol(tok->strAt(1), 0, 16) : atof(tok->strAt(1));
-            double op2 = (strstr(tok->strAt(3), "0x")) ? strtol(tok->strAt(3), 0, 16) : atof(tok->strAt(3));
+            double op1 = (strstr(tok->strAt(1), "0x")) ? std::strtol(tok->strAt(1), 0, 16) : std::atof(tok->strAt(1));
+            double op2 = (strstr(tok->strAt(3), "0x")) ? std::strtol(tok->strAt(3), 0, 16) : std::atof(tok->strAt(3));
             std::string cmp = tok->strAt(2);
 
             bool result = false;
