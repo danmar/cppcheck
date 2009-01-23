@@ -24,6 +24,7 @@
 
 #include <locale>
 
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <algorithm>

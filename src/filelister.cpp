@@ -20,6 +20,7 @@
 #include "filelister.h"
 #include <sstream>
 #include <vector>
+#include <cstring>
 #include <string>
 #include <cctype>
 #include <algorithm>
