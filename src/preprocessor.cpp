@@ -492,14 +492,16 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
         if (filename.length() == 0)
             continue;
 
-        if (handledFiles.find(filename) != handledFiles.end())
+        std::string tempFile = filename;
+        std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), static_cast < int(*)(int) > (std::tolower));
+        if (handledFiles.find(tempFile) != handledFiles.end())
         {
             // We have processed this file already once, skip
             // it this time to avoid ethernal loop.
             continue;
         }
 
-        handledFiles[ filename ] = true;
+        handledFiles[ tempFile ] = true;
 
         // filename contains now a file name e.g. "menu.h"
         std::string processedFile;
