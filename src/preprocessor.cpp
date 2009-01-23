@@ -26,6 +26,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <iostream>
 
 #ifdef __BORLANDC__
 #include <ctype>
@@ -477,6 +478,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
     std::string path = filename;
     path.erase(1 + path.find_last_of("\\/"));
     std::string::size_type pos = 0;
+    std::map<std::string,bool> handledFiles;
     while ((pos = code.find("#include", pos)) != std::string::npos)
     {
         // Accept only includes that are at the start of a line
@@ -495,6 +497,15 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
         filename = getHeaderFileName(filename);
         if (filename.length() == 0)
             continue;
+
+        if( handledFiles.find( filename ) != handledFiles.end() )
+        {
+            // We have processed this file already once, skip
+            // it this time to avoid ethernal loop.
+            continue;
+        }
+
+        handledFiles[ filename ] = true;
 
         // filename contains now a file name e.g. "menu.h"
         std::string processedFile;
@@ -530,6 +541,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             processedFile = removeSpaceNearNL(processedFile);
             processedFile = "#file \"" + filename + "\"\n" + processedFile + "\n#endfile";
             code.insert(pos, processedFile);
+
         }
     }
 }
@@ -636,9 +648,6 @@ public:
         return macrocode;
     }
 };
-
-
-#include <iostream>
 
 std::string Preprocessor::expandMacros(std::string code)
 {

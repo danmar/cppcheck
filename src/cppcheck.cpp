@@ -408,4 +408,5 @@ void CppCheck::reportOut(const std::string &outmsg)
 {
     // This is currently never called. It is here just to comply with
     // the interface.
+    std::string foo = outmsg; // This is just to get rid of compiler warning
 }
