@@ -55,6 +55,9 @@ std::string Preprocessor::read(std::istream &istr)
     // Get filedata from stream..
     bool ignoreSpace = true;
 
+    // need space.. #if( => #if (
+    bool needSpace = false;
+
     // For the error report
     int lineno = 1;
 
@@ -80,6 +83,16 @@ std::string Preprocessor::read(std::istream &istr)
         if (ch == ' ' && ignoreSpace)
             continue;
         ignoreSpace = bool(ch == ' ' || ch == '#' || ch == '/');
+
+        if (needSpace)
+        {
+            if (ch == '(')
+                code << " ";
+            else if (! std::isalpha(ch))
+                needSpace = false;
+        }
+        if (ch == '#')
+            needSpace = true;
 
         // Remove comments..
         if (ch == '/')

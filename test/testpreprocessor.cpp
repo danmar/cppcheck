@@ -50,6 +50,7 @@ private:
         TEST_CASE(test3);
         TEST_CASE(test4);
         TEST_CASE(test5);
+        TEST_CASE(test6);
 
         // Handling include guards (don't create extra configuration for it)
         TEST_CASE(includeguard);
@@ -272,6 +273,18 @@ private:
         ASSERT_EQUALS("\nA\n\n\n\n\n\n\n", actual["ABC"]);
         ASSERT_EQUALS("\n\n\nB\n\nC\n\n\n", actual["DEF"]);
         ASSERT_EQUALS(3, actual.size());
+    }
+
+    void test6()
+    {
+        const char filedata[] = "#if(AAA)\n"
+                                "#if(AAA)\n";
+
+        std::istringstream istr(filedata);
+        const std::string actual(Preprocessor::read(istr));
+
+        // Compare results..
+        ASSERT_EQUALS("#if (AAA)\n#if (AAA)\n", actual);
     }
 
 
