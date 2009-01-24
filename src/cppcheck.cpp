@@ -276,6 +276,14 @@ unsigned int CppCheck::check()
 
 void CppCheck::checkFile(const std::string &code, const char FileName[])
 {
+    /* For debugging: Write the code into a file and exit
+    	{
+    		std::ofstream f("temp.txt");
+    		f << code;
+    		exit(0);
+    	}
+    */
+
     Tokenizer _tokenizer;
 
     // Tokenize the file
