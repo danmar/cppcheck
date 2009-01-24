@@ -309,6 +309,12 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
 
             else if (strncmp(line.c_str(), "#endfile", 8) == 0)
             {
+                if ( lineNumbers.empty() || fileIndexes.empty() )
+                {
+                    std::cerr << "####### Preprocessor bug! #######\n";
+                    std::exit(0);
+                }
+
                 lineno = lineNumbers.back();
                 lineNumbers.pop_back();
                 FileIndex = fileIndexes.back();
