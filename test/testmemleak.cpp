@@ -132,6 +132,7 @@ private:
         TEST_CASE(func10);      // Bug 2458510 - Function pointer
         TEST_CASE(func11);      // Bug 2458510 - Function pointer
         TEST_CASE(func12);
+        TEST_CASE(func13);
 
         TEST_CASE(class1);
         TEST_CASE(class2);
@@ -1130,6 +1131,18 @@ private:
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
+
+    void func13()
+    {
+        check("static void f()\n"
+              "{\n"
+              "    char *p = malloc(100);\n"
+              "    foo(&p);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
 
 
     /*

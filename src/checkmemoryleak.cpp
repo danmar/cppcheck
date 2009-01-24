@@ -652,13 +652,9 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         }
 
         // Linux lists..
-        if (Token::Match(tok, std::string("[=(,] & " + varnameStr + " [.[]").c_str()))
+        if (Token::Match(tok, std::string("[=(,] & " + varnameStr + " [.[,)]").c_str()))
         {
             addtoken("&use");
-        }
-        else if (Token::Match(tok, std::string("[=(,] & " + varnameStr + " [,)]").c_str()))
-        {
-            addtoken("&use2");
         }
     }
 
@@ -1155,12 +1151,12 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
         _errorLogger->reportErr(errmsg.str());
     }
 
-    // Replace "&use" with "use". Replace "&use2" with ";"
+    // Replace "&use" with "use". Replace "use_" with ";"
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
     {
         if (tok2->str() == "&use")
             tok2->str("use");
-        else if (tok2->str() == "&use2" || tok2->str() == "use_")
+        else if (tok2->str() == "use_")
             tok2->str(";");
         else if (tok2->str() == "recursive")
             tok2->str("use");
