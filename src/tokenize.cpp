@@ -272,14 +272,6 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 if (line.find("\"") != std::string::npos)
                     line.erase(line.find("\""));
 
-                // Relative path..
-                if (_files.back().find_first_of("\\/") != std::string::npos)
-                {
-                    std::string path = _files.back();
-                    path.erase(1 + path.find_last_of("\\/"));
-                    line = path + line;
-                }
-
                 // Has this file been tokenized already?
                 ++lineno;
                 bool foundOurfile = false;
