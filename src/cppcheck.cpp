@@ -242,7 +242,15 @@ unsigned int CppCheck::check()
         }
 
         if (_settings._errorsOnly == false && _errout.str().empty())
-            _errorLogger->reportOut("No errors found");
+        {
+            std::ostringstream oss;
+            oss << "No errors found ("
+            << (c + 1) << "/" << _filenames.size()
+            << " files checked " <<
+            static_cast<int>(static_cast<double>((c + 1)) / _filenames.size()*100)
+            << "% done)";
+            _errorLogger->reportOut(oss.str());
+        }
     }
 
     // This generates false positives - especially for libraries
