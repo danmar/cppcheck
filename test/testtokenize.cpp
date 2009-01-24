@@ -749,6 +749,28 @@ private:
                 ostr << " " << tok->str();
             ASSERT_EQUALS(std::string(" void f ( int x, char y ) { }"), ostr.str());
         }
+
+        {
+            // This is not a function but the pattern is similar..
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if (x)\n"
+                                "        int x;\n"
+                                "    { }\n"
+                                "}\n";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void foo ( ) { if ( x ) int x ; { } }"), ostr.str());
+        }
     }
 };
 
