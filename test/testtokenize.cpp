@@ -72,6 +72,8 @@ private:
         TEST_CASE(file2);
 
         TEST_CASE(doublesharp);
+
+        // TODO TEST_CASE(simplify_function_parameters);
     }
 
 
@@ -708,6 +710,45 @@ private:
             ostr << tok->str() << " ";
 
         ASSERT_EQUALS("TEST ( var , val ) var ## _ ## val = val ", ostr.str());
+    }
+
+    void simplify_function_parameters()
+    {
+        {
+            const char code[] = "void f(x) int x;\n"
+                                "{\n"
+                                "}\n";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void f ( int x ) { }"), ostr.str());
+        }
+
+        {
+            const char code[] = "void f(x,y) int x; char y;\n"
+                                "{\n"
+                                "}\n";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void f ( int x, char y ) { }"), ostr.str());
+        }
     }
 };
 
