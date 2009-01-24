@@ -42,6 +42,8 @@ LicenseFile=..\COPYING
 
 OutputBaseFilename={#MyAppName}-{#AppVersion}-setup
 
+ChangesEnvironment=yes
+
 Compression=lzma/ultra
 InternalCompressLevel=ultra
 SolidCompression=true
@@ -51,6 +53,7 @@ Name: english; MessagesFile: compiler:Default.isl
 
 [Tasks]
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
+Name: modifypath; Description: &Add {#MyAppName} directory to your system path; Flags: unchecked
 
 [Files]
 Source: ..\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
@@ -66,4 +69,13 @@ Name: {group}\{cm:ProgramOnTheWeb,{#MyAppName}}; Filename: {#MyAppURL}
 Name: {group}\{cm:UninstallProgram,{#MyAppName}}; Filename: {uninstallexe}
 Name: {commondesktop}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}; Tasks: desktopicon
 
- 	  	 
+[Code]
+function ModPathDir(): TArrayOfString;
+var
+	Dir: TArrayOfString;
+begin
+	setArrayLength(Dir, 1)
+	Dir[0] := ExpandConstant('{app}');
+	Result := Dir;
+end;
+#include "modpath.iss"
