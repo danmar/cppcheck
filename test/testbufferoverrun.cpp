@@ -86,6 +86,8 @@ private:
 
         TEST_CASE(sprintf1);
         TEST_CASE(snprintf1);
+        TEST_CASE(snprintf2);
+        TEST_CASE(snprintf3);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -381,6 +383,26 @@ private:
               "    snprintf(str, 10, \"%s\", \"abc\");\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: snprintf size is out of bounds\n"), errout.str());
+    }
+
+    void snprintf2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[5];\n"
+              "    snprintf(str, 5, \"%s\", \"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void snprintf3()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[5];\n"
+              "    snprintf(str, sizeof str, \"%s\", \"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 
