@@ -217,7 +217,11 @@
 				RelativePath=".\src\resource.h"
 				>
 			</File>
-			<File			
+			<File
+				RelativePath=".\src\resource.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\settings.h"
 				>
 			</File>
