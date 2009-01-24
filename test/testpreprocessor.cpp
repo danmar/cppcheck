@@ -89,7 +89,7 @@ private:
         TEST_CASE(preprocessor_include_in_str);
         // TODO TEST_CASE(fmt);
         TEST_CASE(multi_character_character);
-
+        // TODO TEST_CASE(preprocessor_and_operation);
     }
 
 
@@ -649,6 +649,23 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\nint main()\n{\nif( 'ABCD' == 0 );\nreturn 0;\n}\n", actual[""]);
+    }
+
+    void preprocessor_and_operation()
+    {
+        const char filedata[] = "#if (((EPL_MODULE_INTEGRATION) & (EPL_MODULE_VETH)) != 0)\n"
+                                "#file \"kr.h\"\n"
+                                "#if(((EPL_MODULE_INTEGRATION) & (EPL_MODULE_VETH)) != 0)\n"
+                                "#endif\n"
+                                "#endfile\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        Preprocessor preprocessor;
+        std::string result = preprocessor.getcode(filedata, "");
+
+        // Compare results..
+        ASSERT_EQUALS("\n#file \"kr.h\"\n\n\n#endfile\n\n", result);
     }
 
 
