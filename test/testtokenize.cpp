@@ -74,6 +74,8 @@ private:
         TEST_CASE(doublesharp);
 
         // TODO TEST_CASE(simplify_function_parameters);
+
+        // TODO TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
     }
 
 
@@ -772,6 +774,29 @@ private:
             ASSERT_EQUALS(std::string(" void foo ( ) { if ( x ) int x ; { } }"), ostr.str());
         }
     }
+
+
+    // Simplify "((..))" into "(..)"
+    void reduce_redundant_paranthesis()
+    {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    free(((void*)p));\n"
+                            "}";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" void foo ( ) { free ( p ) ; }"), ostr.str());
+    }
+
 };
 
 REGISTER_TEST(TestTokenizer)
