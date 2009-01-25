@@ -174,6 +174,7 @@ private:
         TEST_CASE(freefree1);
         TEST_CASE(freefree2);
         // TODO TEST_CASE(strcat_result_assignment);
+        // TODO TEST_CASE(complex_free);
     }
 
 
@@ -1684,6 +1685,15 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+    void complex_free()
+    {
+        check("void foo()\n"
+              "{\n"
+              "char *p = malloc(100);\n"
+              "free(((void*)p));\n"
+              "}");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 };
 
 REGISTER_TEST(TestMemleak)
