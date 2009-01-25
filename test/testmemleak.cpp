@@ -173,7 +173,7 @@ private:
         // free a free'd pointer
         TEST_CASE(freefree1);
         TEST_CASE(freefree2);
-        // TODO TEST_CASE(strcat_result_assignment);
+        TEST_CASE(strcat_result_assignment);
     }
 
 

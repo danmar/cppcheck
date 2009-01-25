@@ -311,6 +311,15 @@ void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], Al
 }
 //---------------------------------------------------------------------------
 
+bool CheckMemoryLeakClass::MatchFunctionsThatReturnArg(const Token *tok, const std::string varname)
+{
+    return
+        Token::Match(tok, std::string("; " + varname + " = strcat ( " + varname + " ,").c_str())
+        || Token::Match(tok, std::string("; " + varname + " = memcpy ( " + varname + " ,").c_str())
+        || Token::Match(tok, std::string("; " + varname + " = memmove ( " + varname + " ,").c_str())
+        || Token::Match(tok, std::string("; " + varname + " = strcpy ( " + varname + " ,").c_str());
+}
+
 bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
 {
     std::string varname;
@@ -420,6 +429,11 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 if (dealloctype != No && dealloctype != alloc)
                     MismatchError(tok, callstack, varname);
                 alloctype = alloc;
+            }
+
+            else if (MatchFunctionsThatReturnArg(tok, std::string(varname)))
+            {
+                addtoken("use");
             }
 
             // assignment..
