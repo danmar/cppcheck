@@ -68,7 +68,7 @@ void CppCheck::addFile(const std::string &path, const std::string &content)
 std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 {
     std::vector<std::string> pathnames;
-
+    bool showHelp = false;
     for (int i = 1; i < argc; i++)
     {
         // Flag used for various purposes during debugging
@@ -100,6 +100,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         {
             pathnames.clear();
             _filenames.clear();
+            showHelp = true;
             break;
         }
 
@@ -149,7 +150,8 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             FileLister::RecursiveAddFiles(_filenames, iter->c_str(), true);
     }
 
-    if (_filenames.empty())
+
+    if (argc <= 1 || showHelp)
     {
         std::ostringstream oss;
         oss <<   "Cppcheck 1.27\n"
@@ -186,6 +188,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    cppcheck -I inc1/ -I inc2/ f.cpp\n";
         return oss.str();
     }
+    else if (_filenames.empty())
+    {
+        return "cppcheck: No C or C++ source files found.\n";
+    }
+
 
     return "";
 }
