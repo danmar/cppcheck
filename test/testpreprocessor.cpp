@@ -91,6 +91,8 @@ private:
         // TODO TEST_CASE(fmt);
         TEST_CASE(multi_character_character);
         // TODO TEST_CASE(preprocessor_and_operation);
+
+        TEST_CASE(stringify);
     }
 
 
@@ -681,6 +683,17 @@ private:
         ASSERT_EQUALS("\n#file \"kr.h\"\n\n\n#endfile\n\n", result);
     }
 
+
+    void stringify()
+    {
+        const char filedata[] = "#define STRINGIFY(x) #x\n"
+                                "STRINGIFY(abc)";
+
+        // expand macros..
+        std::string actual = Preprocessor::expandMacros(filedata);
+
+        ASSERT_EQUALS("\n\"abc\"", actual);
+    }
 
 };
 

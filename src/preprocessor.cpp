@@ -637,13 +637,22 @@ public:
                     std::string str = tok->str();
                     if (str == "##")
                         continue;
-                    if (tok->isName())
+                    if (str[0] == '#' || tok->isName())
                     {
+                        bool stringify = false;
+                        if (str[0] == '#')
+                        {
+                            str = str.erase(0, 1);
+                            stringify = true;
+                        }
                         for (unsigned int i = 0; i < _params.size(); ++i)
                         {
                             if (str == _params[i])
                             {
-                                str = params2[i];
+                                if (stringify)
+                                    str = "\"" + params2[i] + "\"";
+                                else
+                                    str = params2[i];
                                 break;
                             }
                         }
