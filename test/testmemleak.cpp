@@ -173,6 +173,7 @@ private:
         // free a free'd pointer
         TEST_CASE(freefree1);
         TEST_CASE(freefree2);
+        // TODO TEST_CASE(strcat_result_assignment);
     }
 
 
@@ -1665,6 +1666,21 @@ private:
               "    fprintf(fd, \"test\");\n"
               "    fclose(fd);\n"
               "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void strcat_result_assignment()
+    {
+        check("#include <stdlib.h>\n"
+              "#include <string.h>\n"
+              "int main()\n"
+              "{\n"
+              "char *p = malloc(10);\n"
+              "p[0] = 0;\n"
+              "p = strcat( p, \"a\" );\n"
+              "free( p );\n"
+              "return 0;\n"
+              "}");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
