@@ -389,7 +389,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkOther.CheckStructMemberUsage();
 
     // Check if a constant function parameter is passed by value
-    if (ErrorMessage::passedByValue())
+    if (ErrorMessage::passedByValue(_settings))
         checkOther.CheckConstantFunctionParameter();
 
     // Variable scope (check if the scope could be limited)

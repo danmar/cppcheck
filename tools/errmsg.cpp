@@ -86,7 +86,7 @@ int main()
     err.push_back(Message("udivError", Message::always, "Unsigned division. The result will be wrong."));
     err.push_back(Message("udivWarning", Message::style_all, "Warning: Division with signed and unsigned operators"));
     err.push_back(Message("unusedStructMember", Message::style, "struct or union member '%1::%2' is never used", "structname", "varname"));
-    err.push_back(Message("passedByValue", Message::always, "Function parameter '%1' is passed by value. It could be passed by reference instead.", "parname"));
+    err.push_back(Message("passedByValue", Message::style, "Function parameter '%1' is passed by value. It could be passed by reference instead.", "parname"));
     err.push_back(Message("constStatement", Message::style, "Redundant code: Found a statement that begins with %1 constant", "type"));
     err.push_back(Message("charArrayIndex", Message::style, "Warning - using char variable as array index"));
     err.push_back(Message("charBitOp", Message::style, "Warning - using char variable in bit operation"));

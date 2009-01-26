@@ -251,9 +251,9 @@ public:
     {
         return msg1(tokenizer, Location) + "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.";
     }
-    static bool passedByValue()
+    static bool passedByValue(const Settings &s)
     {
-        return true;
+        return s._checkCodingStyle;
     }
 
     static std::string constStatement(const Tokenizer *tokenizer, const Token *Location, const std::string &type)
