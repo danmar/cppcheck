@@ -609,7 +609,8 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         if (Token::Match(tok, "%var% ("))
         {
             // Inside class function.. if the var is passed as a parameter then
-            // just add a "use"
+            // just add a "::use"
+            // The "::use" means that a member function was probably called but it wasn't analyzed further
             if (classmember)
             {
                 int parlevel = 1;
@@ -625,7 +626,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                     }
                     if (tok2->str() == varnameStr)
                     {
-                        addtoken("use");
+                        addtoken("::use");
                         break;
                     }
                 }
@@ -1172,6 +1173,8 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
             tok2->str("use");
         else if (tok2->str() == "use_")
             tok2->str(";");
+        else if (tok2->str() == "::use")    // Some kind of member function usage. Not analyzed very well.
+            tok2->str("use");
         else if (tok2->str() == "recursive")
             tok2->str("use");
         else if (tok2->str() == "dealloc_")
