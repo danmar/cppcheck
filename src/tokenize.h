@@ -139,6 +139,12 @@ private:
      */
     bool simplifyRedundantParanthesis();
 
+    /**
+     * Simplify functions like "void f(x) int x; {"
+     * into "void f(int x) {"
+     */
+    bool simplifyFunctionParameters();
+
     void InsertTokens(Token *dest, Token *src, unsigned int n);
 
     Token *_tokensBack;

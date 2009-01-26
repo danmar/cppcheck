@@ -176,6 +176,15 @@ public:
      */
     void printOut(const char *title = 0) const;
 
+    /**
+     * Replace token replaceThis with tokens between start and end,
+     * including start and end. The replaceThis token is deleted.
+     * @param replaceThis, this token will be deleted.
+     * @param start This will be in the place of replaceThis
+     * @param end This is also in the place of replaceThis
+     */
+    static void replace(Token *replaceThis, Token *start, Token *end);
+
 private:
     void next(Token *next);
     void previous(Token *previous);

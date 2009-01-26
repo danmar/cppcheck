@@ -897,6 +897,7 @@ void Tokenizer::simplifyTokenList()
     }
 
     simplifyIfAddBraces();
+    simplifyFunctionParameters();
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -1277,6 +1278,90 @@ bool Tokenizer::simplifyCasts()
     return ret;
 }
 
+
+bool Tokenizer::simplifyFunctionParameters()
+{
+    bool ret = false;
+    int indentlevel = 0;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+            ++indentlevel;
+
+        else if (tok->str() == "}")
+            --indentlevel;
+
+        // Find the function e.g. foo( x ) or foo( x, y )
+        else if (indentlevel == 0 && Token::Match(tok, "%var% ( %var% [,)]"))
+        {
+            // We have found old style function, now we need to change it
+
+            // Get list of argument names
+            std::map<std::string, Token*> argumentNames;
+            bool bailOut = false;
+            for (tok = tok->tokAt(2); tok; tok = tok->tokAt(2))
+            {
+                if (!Token::Match(tok, "%var% [,)]"))
+                {
+                    bailOut = true;
+                    break;
+                }
+
+                argumentNames[tok->str()] = tok;
+                if (tok->next()->str() == ")")
+                {
+                    tok = tok->tokAt(2);
+                    break;
+                }
+            }
+
+            if (bailOut)
+            {
+                continue;
+            }
+
+            Token *start = tok;
+            while (tok && tok->str() != "{")
+            {
+                if (tok->str() == ";")
+                {
+                    tok = tok->previous();
+                    // Move tokens from start to tok into the place of
+                    // argumentNames[tok->str()] and remove the ";"
+
+                    if (argumentNames.find(tok->str()) == argumentNames.end())
+                    {
+                        bailOut = true;
+                        break;
+                    }
+
+                    // Remove the following ";"
+                    Token *temp = tok->tokAt(2);
+                    tok->deleteNext();
+
+                    // Replace "x" with "int x" or similar
+                    Token::replace(argumentNames[tok->str()], start, tok);
+                    ret = true;
+                    tok = temp;
+                    start = tok;
+                }
+                else
+                {
+                    tok = tok->next();
+                }
+            }
+
+            if (bailOut)
+            {
+                continue;
+            }
+
+            ++indentlevel;
+        }
+    }
+
+    return ret;
+}
 
 
 bool Tokenizer::simplifyFunctionReturn()

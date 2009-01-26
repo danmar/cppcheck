@@ -73,7 +73,7 @@ private:
 
         TEST_CASE(doublesharp);
 
-        // TODO TEST_CASE(simplify_function_parameters);
+        TEST_CASE(simplify_function_parameters);
 
         TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
     }
@@ -749,7 +749,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void f ( int x, char y ) { }"), ostr.str());
+            ASSERT_EQUALS(std::string(" void f ( int x , char y ) { }"), ostr.str());
         }
 
         {
@@ -771,7 +771,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void foo ( ) { if ( x ) int x ; { } }"), ostr.str());
+            ASSERT_EQUALS(std::string(" void foo ( ) { if ( x ) { int x ; } { } }"), ostr.str());
         }
     }
 

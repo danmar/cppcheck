@@ -67,6 +67,22 @@ void Token::deleteNext()
         _next->previous(this);
 }
 
+void Token::replace(Token *replaceThis, Token *start, Token *end)
+{
+    // Fix the whole in the old location of start and end
+    start->previous()->next(end->next());
+    end->next()->previous(start->previous());
+
+    // Move start and end to their new location
+    replaceThis->previous()->next(start);
+    replaceThis->next()->previous(end);
+    start->previous(replaceThis->previous());
+    end->next(replaceThis->next());
+
+    // Delete old token, which is replaced
+    delete replaceThis;
+}
+
 const Token *Token::tokAt(int index) const
 {
     const Token *tok = this;
