@@ -75,7 +75,7 @@ private:
 
         // TODO TEST_CASE(simplify_function_parameters);
 
-        // TODO TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
+        TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
     }
 
 

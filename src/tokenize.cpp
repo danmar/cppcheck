@@ -915,6 +915,7 @@ void Tokenizer::simplifyTokenList()
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
         modified |= removeReduntantConditions();
+        modified |= simplifyRedundantParanthesis();
     }
 }
 //---------------------------------------------------------------------------
@@ -1366,6 +1367,39 @@ bool Tokenizer::simplifyKnownVariables()
 
     return ret;
 }
+
+bool Tokenizer::simplifyRedundantParanthesis()
+{
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "( ("))
+        {
+            int parlevel = 0;
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+
+                else if (tok2->str() == ")")
+                {
+                    --parlevel;
+                    if (parlevel == 1)
+                    {
+                        if (Token::simpleMatch(tok2, ") )"))
+                        {
+                            tok->deleteNext();
+                            tok2->deleteNext();
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 
 //---------------------------------------------------------------------------
 // Helper functions for handling the tokens list
