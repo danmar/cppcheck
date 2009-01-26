@@ -30,6 +30,7 @@ public:
     Message(std::string funcname, Settings settings, std::string msg);
     Message(std::string funcname, Settings settings, std::string msg, std::string par1);
     Message(std::string funcname, Settings settings, std::string msg, std::string par1, std::string par2);
+    Message(std::string funcname, Settings settings, std::string msg, std::string par1, std::string par2, std::string details);
 
     void generateCode(std::ostream &ostr) const;
 
@@ -41,6 +42,7 @@ private:
     std::string _par1;
     std::string _par2;
     Settings _settings;
+    std::string _details;
 
     std::string msg(bool code) const;
 };
@@ -82,7 +84,10 @@ int main()
     err.push_back(Message("redundantIfRemove", Message::style, "Redundant condition. The remove function in the STL will not do anything if element doesn't exist"));
     err.push_back(Message("dangerousUsageStrtol", Message::always, "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36"));
     err.push_back(Message("ifNoAction", Message::style, "Found redundant if condition - 'if (condition);'"));
-    err.push_back(Message("sprintfOverlappingData", Message::always, "Overlapping data buffer %1", "varname"));
+    err.push_back(Message("sprintfOverlappingData", Message::always, "Overlapping data buffer %1", "varname", "",
+                          "    -- If copying takes place between objects that overlap as a result of a\n"
+                          "       call to sprintf() or snprintf(), the results are undefined.\n"
+                          "       http://www.opengroup.org/onlinepubs/000095399/functions/printf.html"));
     err.push_back(Message("udivError", Message::always, "Unsigned division. The result will be wrong."));
     err.push_back(Message("udivWarning", Message::style_all, "Warning: Division with signed and unsigned operators"));
     err.push_back(Message("unusedStructMember", Message::style, "struct or union member '%1::%2' is never used", "structname", "varname"));
@@ -155,15 +160,19 @@ int main()
 
 
 Message::Message(std::string funcname, Settings settings, std::string msg)
-        : _funcname(funcname), _msg(msg), _par1(""), _par2(""), _settings(settings)
+        : _funcname(funcname), _msg(msg), _par1(""), _par2(""), _settings(settings), _details("")
 { }
 
 Message::Message(std::string funcname, Settings settings, std::string msg, std::string par1)
-        : _funcname(funcname), _msg(msg), _par1(par1), _par2(""), _settings(settings)
+        : _funcname(funcname), _msg(msg), _par1(par1), _par2(""), _settings(settings), _details("")
 { }
 
 Message::Message(std::string funcname, Settings settings, std::string msg, std::string par1, std::string par2)
-        : _funcname(funcname), _msg(msg), _par1(par1), _par2(par2), _settings(settings)
+        : _funcname(funcname), _msg(msg), _par1(par1), _par2(par2), _settings(settings), _details("")
+{ }
+
+Message::Message(std::string funcname, Settings settings, std::string msg, std::string par1, std::string par2, std::string details)
+        : _funcname(funcname), _msg(msg), _par1(par1), _par2(par2), _settings(settings), _details(details)
 { }
 
 std::string Message::msg(bool code) const
@@ -208,6 +217,8 @@ void Message::generateCode(std::ostream &ostr) const
     ostr << "    static std::string " << _funcname << "(";
     if (loc)
         ostr << "const Tokenizer *tokenizer, const Token *Location";
+    if (_details.size())
+        ostr << ", const Settings &settings";
     if (! _par1.empty())
         ostr << (loc ? ", " : "") <<  "const std::string &" << _par1;
     if (! _par2.empty())
@@ -217,7 +228,21 @@ void Message::generateCode(std::ostream &ostr) const
     ostr << "        return ";
     if (loc)
         ostr << "msg1(tokenizer, Location) + ";
-    ostr << msg(true) << ";\n";
+    ostr << msg(true);
+    if (_details.empty())
+        ostr << ";\n";
+    else
+    {
+        ostr << " + std::string(settings._verbose ? \"\\n";
+        for (std::string::size_type pos = 0; pos < _details.length(); ++pos)
+        {
+            if (_details[pos] == '\n')
+                ostr << "\\n";
+            else
+                ostr << _details[pos];
+        }
+        ostr << "\" : \"\");\n";
+    }
     ostr << "    }\n";
 
     // Settings..

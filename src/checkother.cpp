@@ -362,7 +362,7 @@ void CheckOther::InvalidFunctionUsage()
             }
             else if (parlevel == 0 && tok2->varId() == varid)
             {
-                _errorLogger->reportErr(ErrorMessage::sprintfOverlappingData(_tokenizer, tok2, tok2->str()));
+                _errorLogger->reportErr(ErrorMessage::sprintfOverlappingData(_tokenizer, tok2, _settings, tok2->str()));
                 break;
             }
         }

@@ -211,9 +211,9 @@ public:
         return s._checkCodingStyle;
     }
 
-    static std::string sprintfOverlappingData(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    static std::string sprintfOverlappingData(const Tokenizer *tokenizer, const Token *Location, const Settings &settings, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "Overlapping data buffer " + varname + "";
+        return msg1(tokenizer, Location) + "Overlapping data buffer " + varname + "" + std::string(settings._verbose ? "\n    -- If copying takes place between objects that overlap as a result of a\n       call to sprintf() or snprintf(), the results are undefined.\n       http://www.opengroup.org/onlinepubs/000095399/functions/printf.html" : "");
     }
     static bool sprintfOverlappingData()
     {
