@@ -601,6 +601,49 @@ void Tokenizer::simplifyTokenList()
         if (tok->str() != "sizeof")
             continue;
 
+        if (tok->strAt(1) != std::string("("))
+        {
+            // Add parenthesis around the sizeof
+            for (Token *tempToken = tok->next(); tempToken; tempToken = tempToken->next())
+            {
+                if (Token::Match(tempToken, "%var%"))
+                {
+                    if (Token::Match(tempToken->next(), "."))
+                    {
+                        // We are checking a class or struct, search next varname
+                        tempToken = tempToken->tokAt(1);
+                        continue;
+                    }
+                    else if (Token::Match(tempToken->next(), "- >"))
+                    {
+                        // We are checking a class or struct, search next varname
+                        tempToken = tempToken->tokAt(2);
+                        continue;
+                    }
+                    else if (Token::Match(tempToken->next(), "++") ||
+                             Token::Match(tempToken->next(), "--"))
+                    {
+                        // We have variable++ or variable--, there should be
+                        // nothing after this
+                        tempToken = tempToken->tokAt(2);
+                    }
+                    else if (Token::Match(tempToken->next(), "["))
+                    {
+                        // TODO: We need to find closing ], then check for
+                        // dots and arrows "var[some[0]]->other"
+
+                        // But for now, just bail out
+                        break;
+                    }
+
+                    // Ok, we should be clean. Add ) after tempToken
+                    tok->insertToken("(");
+                    tempToken->insertToken(")");
+                    break;
+                }
+            }
+        }
+
         if (Token::Match(tok, "sizeof ( %type% * )"))
         {
             std::ostringstream str;

@@ -68,7 +68,9 @@ private:
     {
         const char code1[] = " struct ABC *abc = malloc(sizeof(*abc)); ";
         const char code2[] = " struct ABC *abc = malloc(100); ";
+        const char code3[] = " struct ABC *abc = malloc(sizeof *abc ); ";
         ASSERT_EQUALS(tok(code1), tok(code2));
+        ASSERT_EQUALS(tok(code2), tok(code3));
     }
 
     void iftruefalse()
