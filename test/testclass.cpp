@@ -45,6 +45,7 @@ private:
 
         TEST_CASE(uninitVar1);
         TEST_CASE(uninitVarStream);
+        TEST_CASE(privateCtor);         // If constructor is private..
     }
 
     // Check that base classes have virtual destructors
@@ -178,6 +179,20 @@ private:
 
         ASSERT_EQUALS(std::string(""), errout.str());
     }
+
+
+    void privateCtor()
+    {
+        checkUninitVar("class Foo {\n"
+                       "    int foo;\n"
+                       "    Foo() { }\n"
+                       "};\n");
+
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+    }
+
+
 
 };
 
