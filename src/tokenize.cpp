@@ -1351,6 +1351,11 @@ bool Tokenizer::simplifyFunctionParameters()
                 }
             }
 
+            if (tok == NULL)
+            {
+                break;
+            }
+
             if (bailOut)
             {
                 continue;
