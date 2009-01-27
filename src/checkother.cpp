@@ -360,9 +360,9 @@ void CheckOther::InvalidFunctionUsage()
                 if (parlevel < 0)
                     break;
             }
-            else if (parlevel == 0 && tok2->varId() == varid)
+            else if (parlevel == 0 && Token::Match(tok2, ", %varid% [,)]", varid))
             {
-                _errorLogger->reportErr(ErrorMessage::sprintfOverlappingData(_tokenizer, tok2, _settings, tok2->str()));
+                _errorLogger->reportErr(ErrorMessage::sprintfOverlappingData(_tokenizer, tok2->next(), _settings, tok2->next()->str()));
                 break;
             }
         }
