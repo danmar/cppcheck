@@ -128,13 +128,13 @@ public:
      * string, return value is 0. If needle was not found, return
      * value is -1.
      *
-     * @param needle e.g. "one|two" or "|one|two"
-     * @param haystack e.g. "one", "two" or "invalid"
+     * @param haystack e.g. "one|two" or "|one|two"
+     * @param needle e.g. "one", "two" or "invalid"
      * @return 1 if needle is found from the haystack
      *         0 if needle was empty string
      *        -1 if needle was not found
      */
-    static int multiCompare(const char *needle, const char *haystack);
+    static int multiCompare(const char *haystack, const char *needle);
 
 
     unsigned int linenr() const;

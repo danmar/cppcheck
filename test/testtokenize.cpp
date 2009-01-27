@@ -464,6 +464,8 @@ private:
         ASSERT_EQUALS(-1, Token::multiCompare("verybig|two", "s"));
         ASSERT_EQUALS(-1, Token::multiCompare("one|two", "ne"));
         ASSERT_EQUALS(-1, Token::multiCompare("abc|def", "a"));
+        ASSERT_EQUALS(-1, Token::multiCompare("abc|def", "abcd"));
+        ASSERT_EQUALS(-1, Token::multiCompare("abc|def", "default"));
     }
 
     void match1()

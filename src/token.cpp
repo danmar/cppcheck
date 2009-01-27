@@ -111,50 +111,68 @@ const char *Token::strAt(int index) const
     return tok ? tok->_cstr : "";
 }
 
-int Token::multiCompare(const char *needle, const char *haystack)
+int Token::multiCompare(const char *haystack, const char *needle)
 {
     bool emptyStringFound = false;
-    bool findNextOr = false;
-    const char *haystackPointer = haystack;
-    for (; *needle; ++needle)
+    bool noMatch = false;
+    const char *needlePointer = needle;
+    for (; *haystack; ++haystack)
     {
-        if (*needle == '|')
+        if (*haystack == '|')
         {
-            // If needle and haystack are both at the end, we have a match.
-            if (*haystackPointer == 0)
+            if (noMatch)
+            {
+                // We didn't have a match at this round
+                noMatch = false;
+            }
+            else if (*needlePointer == 0)
+            {
+                // If needle and haystack are both at the end, we have a match.
                 return 1;
-
-            haystackPointer = haystack;
-            if (findNextOr)
-                findNextOr = false;
-            else
+            }
+            else if (needlePointer == needle)
+            {
+                // If needlePointer was not increased at all, we had a empty
+                // string in the haystack
                 emptyStringFound = true;
+            }
 
+            needlePointer = needle;
             continue;
         }
 
-        if (findNextOr)
+        if (noMatch)
             continue;
 
-        // If haystack and needle don't share the same character, reset
-        // haystackpointer and find next '|' character.
-        if (*haystackPointer != *needle)
+        // If haystack and needle don't share the same character,
+        // find next '|' character.
+        if (*needlePointer != *haystack)
         {
-            haystackPointer = haystack;
-            findNextOr = true;
+            noMatch = true;
             continue;
         }
 
         // All characters in haystack and needle have matched this far
-        ++haystackPointer;
+        ++needlePointer;
     }
 
-    // If both needle and haystack are at the end, then we have a match.
-    if (*haystackPointer == 0)
-        return 1;
 
-    // If empty string was found or if last character in needle was '|'
-    if (emptyStringFound || findNextOr == false)
+    if (!noMatch)
+    {
+        if (*needlePointer == 0)
+        {
+            // If both needle and haystack are at the end, then we have a match.
+            return 1;
+        }
+        else if (needlePointer == needle)
+        {
+            // Last string in haystack was empty string e.g. "one|two|"
+            return 0;
+        }
+    }
+
+    // If empty string was found earlier from the haystack
+    if (emptyStringFound)
         return 0;
 
     return -1;
