@@ -313,11 +313,7 @@ void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], Al
 
 bool CheckMemoryLeakClass::MatchFunctionsThatReturnArg(const Token *tok, const std::string varname)
 {
-    return
-        Token::Match(tok, std::string("; " + varname + " = strcat ( " + varname + " ,").c_str())
-        || Token::Match(tok, std::string("; " + varname + " = memcpy ( " + varname + " ,").c_str())
-        || Token::Match(tok, std::string("; " + varname + " = memmove ( " + varname + " ,").c_str())
-        || Token::Match(tok, std::string("; " + varname + " = strcpy ( " + varname + " ,").c_str());
+    return Token::Match(tok, std::string("; " + varname + " = strcat|memcpy|memmove|strcpy ( " + varname + " ,").c_str());
 }
 
 bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
