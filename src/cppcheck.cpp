@@ -95,6 +95,10 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--force") == 0)
             _settings._force = true;
 
+        // Write results in results.xml
+        else if (strcmp(argv[i], "--xml-results") == 0)
+            _settings._xmlResults = true;
+
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -270,6 +274,24 @@ unsigned int CppCheck::check()
             _errorLogger->reportOut("Checking usage of global functions (this may take several minutes)..");
 
         _checkFunctionUsage.check();
+    }
+
+    // xml results..
+    if (_settings._xmlResults)
+    {
+        std::ofstream fxml("results.xml");
+        fxml << "<cppcheckResults>\n"
+        << "    <test result=\"" << (_errorList.empty() ? "OK" : "ERROR") << "\"/>\n"
+        << "        <name>cppcheck</name>\n";
+        if (_errorList.size())
+        {
+            fxml << "        <message>\n";
+            for (std::list<std::string>::const_iterator it = _errorList.begin(); it != _errorList.end(); ++it)
+                fxml << *it << "\n";
+            fxml << "        </message>\n";
+        }
+        fxml << "    </test>\n"
+        << "</cppcheckResults>\n";
     }
 
     unsigned int result = _errorList.size();

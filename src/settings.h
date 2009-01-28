@@ -39,6 +39,9 @@ public:
 
     /** Force checking t he files with "too many" configurations. */
     bool _force;
+
+    /** write results in xml file results.xml */
+    bool _xmlResults;
 };
 
 #endif // SETTINGS_H
