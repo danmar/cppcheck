@@ -67,6 +67,8 @@ private:
         TEST_CASE(noerr2);
         TEST_CASE(noerr3);
         TEST_CASE(noerr4);
+        
+        TEST_CASE(sizeof1);
 
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
@@ -155,6 +157,21 @@ private:
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
+
+
+
+
+    void sizeof1()
+    {
+        check("static void f()\n"
+              "{\n"
+              "    char data[10];\n"
+              "    data[ sizeof(*data) ] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
 
 
     void array_index_1()
