@@ -88,7 +88,8 @@ private:
         TEST_CASE(defdef);  // Defined multiple times
         TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
-        // TODO TEST_CASE(fmt);
+        // TODO TEST_CASE(fmt1);
+        // TODO TEST_CASE(fmt2);
         TEST_CASE(multi_character_character);
 
         TEST_CASE(stringify);
@@ -634,7 +635,7 @@ private:
 
 
 
-    void fmt()
+    void fmt1()
     {
         const char filedata[] = "#define DBG(fmt...) printf(fmt)\n"
                                 "DBG(\"[0x%lx-0x%lx)\", pstart, pend);";
@@ -644,6 +645,21 @@ private:
 
         ASSERT_EQUALS("\nprintf(\"[0x%lx-0x%lx)\", pstart, pend);", actual);
     }
+
+    void fmt2()
+    {
+        const char filedata[] = "#define DBG(fmt, args...) printf(fmt, ## args)\n"
+                                "DBG(\"hello\");";
+
+        // Preprocess..
+        std::string actual = Preprocessor::expandMacros(filedata);
+
+        ASSERT_EQUALS("\nprintf(\"hello\");", actual);
+    }
+
+
+
+
 
     void multi_character_character()
     {
