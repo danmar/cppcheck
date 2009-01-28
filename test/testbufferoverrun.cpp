@@ -67,7 +67,7 @@ private:
         TEST_CASE(noerr2);
         TEST_CASE(noerr3);
         TEST_CASE(noerr4);
-        
+
         TEST_CASE(sizeof1);
 
         TEST_CASE(array_index_1);

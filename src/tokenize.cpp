@@ -675,7 +675,19 @@ void Tokenizer::simplifyTokenList()
 
         else if (Token::Match(tok, "sizeof ( * %var% )"))
         {
-            tok->str("100");
+            // Some default value..
+            int sz = 100;
+
+            // Try to locate variable declaration..
+            const Token *decltok = Token::findmatch(_tokens, (std::string("%type% ") + tok->strAt(3) + " [").c_str());
+            if (decltok)
+            {
+                sz = SizeOfType(decltok->strAt(0));
+            }
+
+            std::ostringstream ostr;
+            ostr << sz;
+            tok->str(ostr.str().c_str());
             for (int i = 0; i < 4; ++i)
                 tok->deleteNext();
         }
