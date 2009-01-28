@@ -99,6 +99,10 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--xml-results") == 0)
             _settings._xmlResults = true;
 
+        // Check if there are unused functions
+        else if (strcmp(argv[i], "--unused-functions") == 0)
+            _settings._unusedFunctions = true;
+
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -164,21 +168,25 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "\n"
         "Syntax:\n"
         "    cppcheck [--all] [--force] [--help] [-Idir] [--quiet] [--style]\n"
-        "             [--verbose] [file or path1] [file or path]\n"
+        "             [--unused-functions] [--verbose] [--xml-results]\n"
+        "             [file or path1] [file or path]\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
         "Options:\n"
-        "    -a, --all        Make the checking more sensitive. More bugs are detected,\n"
-        "                     but there are also more false positives\n"
-        "    -f, --force      Force checking on files that have \"too many\" configurations\n"
-        "    -h, --help       Print this help\n"
-        "    -I <dir>         Give include path. Give several -I parameters to give\n"
-        "                     several paths. First given path is checked first. If paths\n"
-        "                     are relative to source files, this is not needed.\n"
-        "    -q, --quiet      Only print error messages\n"
-        "    -s, --style      Check coding style\n"
-        "    -v, --verbose    More detailed error reports\n"
+        "    -a, --all            Make the checking more sensitive. More bugs are\n"
+        "                         detected, but there are also more false positives\n"
+        "    -f, --force          Force checking on files that have \"too many\"\n"
+        "                         configurations\n"
+        "    -h, --help           Print this help\n"
+        "    -I <dir>             Give include path. Give several -I parameters to give\n"
+        "                         several paths. First given path is checked first. If\n"
+        "                         paths are relative to source files, this is not needed\n"
+        "    -q, --quiet          Only print error messages\n"
+        "    -s, --style          Check coding style\n"
+        "    --unused-functions   Check if there are unused functions\n"
+        "    -v, --verbose        More detailed error reports\n"
+        "    --xml-results        Write results in results.xml\n"
         "\n"
         "Example usage:\n"
         "  # Recursively check the current folder. Print the progress on the screen and\n"
@@ -267,7 +275,7 @@ unsigned int CppCheck::check()
 
     // This generates false positives - especially for libraries
     _settings._verbose = false;
-    if (ErrorMessage::unusedFunction(_settings))
+    if (_settings._unusedFunctions)
     {
         _errout.str("");
         if (_settings._errorsOnly == false)
@@ -351,7 +359,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     _tokenizer.simplifyTokenList();
 
 
-    if (ErrorMessage::unusedFunction(_settings))
+    if (_settings._unusedFunctions)
         _checkFunctionUsage.parseTokens(_tokenizer);
 
     // Class for detecting buffer overruns and related problems

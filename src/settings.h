@@ -42,6 +42,9 @@ public:
 
     /** write results in xml file results.xml */
     bool _xmlResults;
+
+    /** Checking if there are unused functions */
+    bool _unusedFunctions;
 };
 
 #endif // SETTINGS_H

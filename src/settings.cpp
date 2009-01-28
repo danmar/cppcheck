@@ -28,6 +28,7 @@ Settings::Settings()
     _verbose = false;
     _force = false;
     _xmlResults = false;
+    _unusedFunctions = false;
 }
 
 Settings::~Settings()
