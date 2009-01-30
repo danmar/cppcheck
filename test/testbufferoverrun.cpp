@@ -69,6 +69,7 @@ private:
         TEST_CASE(noerr4);
 
         TEST_CASE(sizeof1);
+        TEST_CASE(sizeof2);
 
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
@@ -169,6 +170,25 @@ private:
               "    data[ sizeof(*data) ] = 0;\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void sizeof2()
+    {
+        check("static void f()\n"
+              "{\n"
+              "    char data[10];\n"
+              "    data[ sizeof(data[0]) ] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        /* TODO
+        check("static void f()\n"
+              "{\n"
+              "    int data[2];\n"
+              "    data[ sizeof(data[0]) ] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Array index out of bounds\n"), errout.str());
+        */
     }
 
 
