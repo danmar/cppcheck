@@ -74,6 +74,15 @@ private:
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str());
 
+        /* TODO
+        check("void foo()\n"
+              "{\n"
+              "    signed char ch = 0x80;\n"
+              "    buf[ch] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str());
+        */
+
         check("void foo(char ch)\n"
               "{\n"
               "    buf[ch] = 0;\n"
