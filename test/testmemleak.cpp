@@ -185,7 +185,7 @@ private:
               "{\n"
               "    int *a = new int[10];\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Memory leak: a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Memory leak: a\n"), errout.str());
     }
 
     void simple2()
@@ -216,7 +216,7 @@ private:
               "    char *s = new char[100];\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Memory leak: s\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Memory leak: s\n"), errout.str());
     }
 
 
@@ -353,7 +353,7 @@ private:
               "    }\n"
               "    free(str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:6]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (always) Memory leak: str\n"), errout.str());
     }
 
 
@@ -379,7 +379,7 @@ private:
               "        return;\n"
               "    }\n"
               "}\n", true);
-        ASSERT_EQUALS(std::string("[test.cpp:9]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:9]: (always) Memory leak: str\n"), errout.str());
     }
 
 
@@ -429,7 +429,7 @@ private:
               "    }\n"
               "    return NULL;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: Memory leak: s\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (always) Memory leak: s\n"), errout.str());
     }
 
 
@@ -489,7 +489,7 @@ private:
               "        return;\n"
               "    foo(p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:6]: Memory leak: p\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (always) Memory leak: p\n"), errout.str());
     }
 
     void if2()
@@ -591,7 +591,7 @@ private:
               "    }\n"
               "    free(c);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:11]: Memory leak: c\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:11]: (always) Memory leak: c\n"), errout.str());
     }
 
     void if9()
@@ -661,7 +661,7 @@ private:
               "        free(str);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:7]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:7]: (always) Memory leak: str\n"), errout.str());
     }
 
 
@@ -676,7 +676,7 @@ private:
               "    }\n"
               "    free(str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Memory leak: str\n"), errout.str());
     }
 
 
@@ -692,7 +692,7 @@ private:
               "    }\n"
               "    free(str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Memory leak: str\n"), errout.str());
     }
 
 
@@ -721,7 +721,7 @@ private:
               "        str = strdup(a[i]);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (always) Memory leak: str\n"), errout.str());
     }
 
 
@@ -737,7 +737,7 @@ private:
               "        free(str);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:7]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:7]: (always) Memory leak: str\n"), errout.str());
     }
 
 
@@ -802,7 +802,7 @@ private:
               "\n"
               "    return a;\n"
               "}\n", true);
-        ASSERT_EQUALS(std::string("[test.cpp:11]: Memory leak: a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:11]: (always) Memory leak: a\n"), errout.str());
     }
 
 
@@ -821,7 +821,7 @@ private:
               "    while (!str);\n"
               "    return str;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (always) Memory leak: str\n"), errout.str());
     }
 
 
@@ -858,7 +858,7 @@ private:
         check(code.c_str(), false);
         ASSERT_EQUALS("", errout.str());
         check(code.c_str(), true);
-        ASSERT_EQUALS("[test.cpp:12]: Memory leak: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (always) Memory leak: str\n", errout.str());
     }
 
     void switch3()
@@ -876,7 +876,7 @@ private:
               "    }\n"
               "    delete [] str;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: Memory leak: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (always) Memory leak: str\n", errout.str());
     }
 
 
@@ -906,7 +906,7 @@ private:
               "    delete abc;\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:6]: Memory leak: abc\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (always) Memory leak: abc\n"), errout.str());
     }
 
     void ret3()
@@ -916,7 +916,7 @@ private:
               "    FILE *filep = fopen(\"myfile.txt\",\"w\");\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Resource leak: filep\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Resource leak: filep\n"), errout.str());
     }
 
     void ret4()
@@ -926,7 +926,7 @@ private:
               "    FILE *p = popen( \"ls -l\", \"r\");\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Resource leak: p\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Resource leak: p\n"), errout.str());
     }
 
     void ret5()
@@ -949,7 +949,7 @@ private:
               "    int *a = new int[10];\n"
               "    free(a);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Mismatching allocation and deallocation: a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Mismatching allocation and deallocation: a\n"), errout.str());
     }
 
 
@@ -993,7 +993,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: Memory leak: p\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (always) Memory leak: p\n"), errout.str());
     }
 
 
@@ -1026,7 +1026,7 @@ private:
               "    foo(p);\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string("[test.cpp:9] -> [test.cpp:3]: Mismatching allocation and deallocation: str\n"), err);
+        ASSERT_EQUALS(std::string("[test.cpp:9] -> [test.cpp:3]: (always) Mismatching allocation and deallocation: str\n"), err);
     }
 
 
@@ -1043,7 +1043,7 @@ private:
               "    foo(p);\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string("[test.cpp:10]: Memory leak: p\n"), err);
+        ASSERT_EQUALS(std::string("[test.cpp:10]: (always) Memory leak: p\n"), err);
     }
 
 
@@ -1062,7 +1062,7 @@ private:
               "    foo(p);\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string("[test.cpp:11]: Memory leak: p\n"), err);
+        ASSERT_EQUALS(std::string("[test.cpp:11]: (always) Memory leak: p\n"), err);
     }
 
 
@@ -1206,7 +1206,7 @@ private:
               "    delete [] str2;\n"
               "}\n", true);
 
-        ASSERT_EQUALS(std::string("[test.cpp:1]: Memory leak: Fred::str1\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:1]: (always) Memory leak: Fred::str1\n"), errout.str());
     }
 
 
@@ -1231,7 +1231,7 @@ private:
               "    free(str1);\n"
               "}\n", true);
 
-        ASSERT_EQUALS(std::string("[test.cpp:17]: Mismatching allocation and deallocation: Fred::str1\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:17]: (always) Mismatching allocation and deallocation: Fred::str1\n"), errout.str());
     }
 
     void class3()
@@ -1308,7 +1308,7 @@ private:
               "{\n"
               "    char *str = new char[100];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: Memory leak: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (always) Memory leak: str\n", errout.str());
     }
 
     void class6()
@@ -1381,7 +1381,7 @@ private:
               "    delete [] str;\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (always) Memory leak: str\n"), errout.str());
     }
 
     void throw2()
@@ -1448,7 +1448,7 @@ private:
 
         std::string err(errout.str());
 
-        ASSERT_EQUALS(std::string("[test.cpp:12]: Memory leak: s2\n"), err);
+        ASSERT_EQUALS(std::string("[test.cpp:12]: (always) Memory leak: s2\n"), err);
     }
 
 
@@ -1460,7 +1460,7 @@ private:
               "    a = realloc(a, 100);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Memory leak: a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (always) Memory leak: a\n"), errout.str());
     }
 
     void realloc2()
@@ -1485,7 +1485,7 @@ private:
               "    free(a);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Memory leak: a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (always) Memory leak: a\n"), errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1554,7 +1554,7 @@ private:
               "    char *a = reinterpret_cast<char *>(malloc(10));\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Memory leak: a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Memory leak: a\n"), errout.str());
     }
 
     void cast2()
@@ -1592,7 +1592,7 @@ private:
               "    delete abc;\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Memory leak: abc.a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (always) Memory leak: abc.a\n"), errout.str());
     }
 
 
@@ -1674,7 +1674,7 @@ private:
               "    free(str);\n"
               "    free(str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Deallocating a deallocated pointer: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (always) Deallocating a deallocated pointer: str\n"), errout.str());
     }
 
     void freefree2()

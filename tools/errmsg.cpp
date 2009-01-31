@@ -36,6 +36,8 @@ public:
 
     void generateDoc(std::ostream &ostr, Settings i) const;
 
+    std::string stringifySettings(bool text) const;
+
 private:
     std::string _funcname;
     std::string _msg;
@@ -209,6 +211,8 @@ std::string Message::msg(bool code) const
     return ret;
 }
 
+static std::string stringifySeverity();
+
 void Message::generateCode(std::ostream &ostr) const
 {
     bool loc = bool(_msg.substr(0, 4) != "[%1]");
@@ -228,6 +232,7 @@ void Message::generateCode(std::ostream &ostr) const
     ostr << "        return ";
     if (loc)
         ostr << "msg1(tokenizer, Location) + ";
+    ostr << " std::string(\"(" << stringifySettings(true) << ") \") + ";
     ostr << msg(true);
     if (_details.empty())
         ostr << ";\n";
@@ -251,26 +256,7 @@ void Message::generateCode(std::ostream &ostr) const
         ostr << "const Settings &s";
     ostr << ")" << std::endl;
     ostr << "    {\n";
-    ostr << "        return ";
-    switch (_settings)
-    {
-    case always:
-        ostr << "true";
-        break;
-    case all:
-        ostr << "s._showAll";
-        break;
-    case style:
-        ostr << "s._checkCodingStyle";
-        break;
-    case style_all:
-        ostr << "s._showAll & s._checkCodingStyle";
-        break;
-    case never:
-        ostr << "false";
-        break;
-    }
-    ostr << ";\n";
+    ostr << "        return " << stringifySettings(false) << ";\n";
     ostr << "    }\n\n";
 }
 
@@ -283,6 +269,23 @@ void Message::generateDoc(std::ostream &ostr, Message::Settings i) const
 }
 
 
+std::string Message::stringifySettings(bool text) const
+{
+    switch (_settings)
+    {
+    case always:
+        return text ? "always" : "true";
+    case all:
+        return text ? "all" : "s._showAll";
+    case style:
+        return text ? "style" : "s._checkCodingStyle";
+    case style_all:
+        return text ? "all style" : "s._checkCodingStyle || s._showAll";
+    case never:
+        return text ? "never" : "false";
+    }
+    return "";
+}
 
 
 

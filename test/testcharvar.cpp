@@ -72,7 +72,7 @@ private:
               "    char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Warning - using char variable as array index\n"), errout.str());
 
         /* TODO
         check("void foo()\n"
@@ -80,14 +80,14 @@ private:
               "    signed char ch = 0x80;\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable as array index\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Warning - using char variable as array index\n"), errout.str());
         */
 
         check("void foo(char ch)\n"
               "{\n"
               "    buf[ch] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Warning - using char variable as array index\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Warning - using char variable as array index\n"), errout.str());
     }
 
 
@@ -98,7 +98,7 @@ private:
               "    char ch;\n"
               "    result = a | ch;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Warning - using char variable in bit operation\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Warning - using char variable in bit operation\n"), errout.str());
     }
 
     void bitop2()

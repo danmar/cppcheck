@@ -87,14 +87,14 @@ private:
               "        delete p;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
 
         check("void foo()\n"
               "{\n"
               "    if (p)\n"
               "        delete p;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
     }
 
     void unreachable1()
@@ -138,7 +138,7 @@ private:
                      "    char buf[100];\n"
                      "    sprintf(buf,\"%s\",buf);\n"
                      "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Overlapping data buffer buf\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Overlapping data buffer buf\n"), errout.str());
     }
 
     void sprintf2()
@@ -205,7 +205,7 @@ private:
                     "{\n"
                     "    const char *p = \"/usr\" + '/';\n"
                     "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Unusual pointer arithmetic\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (always) Unusual pointer arithmetic\n"), errout.str());
     }
 
     void strPlusChar2()
@@ -216,7 +216,7 @@ private:
                     "    char ch = '/';\n"
                     "    const char *p = \"/usr\" + ch;\n"
                     "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: Unusual pointer arithmetic\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Unusual pointer arithmetic\n"), errout.str());
     }
 
     void strPlusChar3()

@@ -86,7 +86,7 @@ private:
               "    ;\"abc\";\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:3]: Redundant code: Found a statement that begins with string constant\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant code: Found a statement that begins with string constant\n"), errout.str());
     }
 };
 

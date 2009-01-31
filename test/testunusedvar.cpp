@@ -69,9 +69,9 @@ private:
               "    int b;\n"
               "    int c;\n"
               "};\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: struct or union member 'abc::a' is never used\n"
-                                  "[test.cpp:4]: struct or union member 'abc::b' is never used\n"
-                                  "[test.cpp:5]: struct or union member 'abc::c' is never used\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) struct or union member 'abc::a' is never used\n"
+                                  "[test.cpp:4]: (style) struct or union member 'abc::b' is never used\n"
+                                  "[test.cpp:5]: (style) struct or union member 'abc::c' is never used\n"), errout.str());
     }
 
     void structmember2()

@@ -33,7 +33,7 @@ private:
 public:
     static std::string arrayIndexOutOfBounds(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Array index out of bounds";
+        return msg1(tokenizer, Location) +  std::string("(all) ") + "Array index out of bounds";
     }
     static bool arrayIndexOutOfBounds(const Settings &s)
     {
@@ -42,7 +42,7 @@ public:
 
     static std::string bufferOverrun(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Buffer overrun";
+        return msg1(tokenizer, Location) +  std::string("(all) ") + "Buffer overrun";
     }
     static bool bufferOverrun(const Settings &s)
     {
@@ -51,7 +51,7 @@ public:
 
     static std::string outOfBounds(const Tokenizer *tokenizer, const Token *Location, const std::string &what)
     {
-        return msg1(tokenizer, Location) + "" + what + " is out of bounds";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "" + what + " is out of bounds";
     }
     static bool outOfBounds()
     {
@@ -60,7 +60,7 @@ public:
 
     static std::string noConstructor(const Tokenizer *tokenizer, const Token *Location, const std::string &classname)
     {
-        return msg1(tokenizer, Location) + "The class '" + classname + "' has no constructor";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "The class '" + classname + "' has no constructor";
     }
     static bool noConstructor(const Settings &s)
     {
@@ -69,7 +69,7 @@ public:
 
     static std::string uninitVar(const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "Uninitialized member variable '" + classname + "::" + varname + "'";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Uninitialized member variable '" + classname + "::" + varname + "'";
     }
     static bool uninitVar()
     {
@@ -78,7 +78,7 @@ public:
 
     static std::string unusedPrivateFunction(const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &funcname)
     {
-        return msg1(tokenizer, Location) + "Unused private function '" + classname + "::" + funcname + "'";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Unused private function '" + classname + "::" + funcname + "'";
     }
     static bool unusedPrivateFunction(const Settings &s)
     {
@@ -87,7 +87,7 @@ public:
 
     static std::string memsetClass(const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc)
     {
-        return msg1(tokenizer, Location) + "Using '" + memfunc + "' on class";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Using '" + memfunc + "' on class";
     }
     static bool memsetClass()
     {
@@ -96,7 +96,7 @@ public:
 
     static std::string memsetStruct(const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc, const std::string &classname)
     {
-        return msg1(tokenizer, Location) + "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'";
     }
     static bool memsetStruct()
     {
@@ -105,7 +105,7 @@ public:
 
     static std::string operatorEq(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "'operator=' should return something";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "'operator=' should return something";
     }
     static bool operatorEq(const Settings &s)
     {
@@ -114,7 +114,7 @@ public:
 
     static std::string virtualDestructor(const Tokenizer *tokenizer, const Token *Location, const std::string &Base, const std::string &Derived)
     {
-        return msg1(tokenizer, Location) + "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor";
     }
     static bool virtualDestructor()
     {
@@ -123,16 +123,16 @@ public:
 
     static std::string unusedFunction(const std::string &filename, const std::string &funcname)
     {
-        return "[" + filename + "]: The function '" + funcname + "' is never used";
+        return  std::string("(all style) ") + "[" + filename + "]: The function '" + funcname + "' is never used";
     }
     static bool unusedFunction(const Settings &s)
     {
-        return s._showAll & s._checkCodingStyle;
+        return s._checkCodingStyle || s._showAll;
     }
 
     static std::string mismatchAllocDealloc(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "Mismatching allocation and deallocation: " + varname + "";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Mismatching allocation and deallocation: " + varname + "";
     }
     static bool mismatchAllocDealloc()
     {
@@ -141,7 +141,7 @@ public:
 
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "Memory leak: " + varname + "";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Memory leak: " + varname + "";
     }
     static bool memleak()
     {
@@ -150,7 +150,7 @@ public:
 
     static std::string resourceLeak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "Resource leak: " + varname + "";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Resource leak: " + varname + "";
     }
     static bool resourceLeak()
     {
@@ -159,7 +159,7 @@ public:
 
     static std::string deallocDealloc(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "Deallocating a deallocated pointer: " + varname + "";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Deallocating a deallocated pointer: " + varname + "";
     }
     static bool deallocDealloc()
     {
@@ -168,7 +168,7 @@ public:
 
     static std::string cstyleCast(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "C-style pointer casting";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "C-style pointer casting";
     }
     static bool cstyleCast(const Settings &s)
     {
@@ -177,7 +177,7 @@ public:
 
     static std::string redundantIfDelete0(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Redundant condition. It is safe to deallocate a NULL pointer";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Redundant condition. It is safe to deallocate a NULL pointer";
     }
     static bool redundantIfDelete0(const Settings &s)
     {
@@ -186,7 +186,7 @@ public:
 
     static std::string redundantIfRemove(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Redundant condition. The remove function in the STL will not do anything if element doesn't exist";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Redundant condition. The remove function in the STL will not do anything if element doesn't exist";
     }
     static bool redundantIfRemove(const Settings &s)
     {
@@ -195,7 +195,7 @@ public:
 
     static std::string dangerousUsageStrtol(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
     }
     static bool dangerousUsageStrtol()
     {
@@ -204,7 +204,7 @@ public:
 
     static std::string ifNoAction(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Found redundant if condition - 'if (condition);'";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Found redundant if condition - 'if (condition);'";
     }
     static bool ifNoAction(const Settings &s)
     {
@@ -213,7 +213,7 @@ public:
 
     static std::string sprintfOverlappingData(const Tokenizer *tokenizer, const Token *Location, const Settings &settings, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "Overlapping data buffer " + varname + "" + std::string(settings._verbose ? "\n    -- If copying takes place between objects that overlap as a result of a\n       call to sprintf() or snprintf(), the results are undefined.\n       http://www.opengroup.org/onlinepubs/000095399/functions/printf.html" : "");
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Overlapping data buffer " + varname + "" + std::string(settings._verbose ? "\n    -- If copying takes place between objects that overlap as a result of a\n       call to sprintf() or snprintf(), the results are undefined.\n       http://www.opengroup.org/onlinepubs/000095399/functions/printf.html" : "");
     }
     static bool sprintfOverlappingData()
     {
@@ -222,7 +222,7 @@ public:
 
     static std::string udivError(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Unsigned division. The result will be wrong.";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Unsigned division. The result will be wrong.";
     }
     static bool udivError()
     {
@@ -231,16 +231,16 @@ public:
 
     static std::string udivWarning(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Warning: Division with signed and unsigned operators";
+        return msg1(tokenizer, Location) +  std::string("(all style) ") + "Warning: Division with signed and unsigned operators";
     }
     static bool udivWarning(const Settings &s)
     {
-        return s._showAll & s._checkCodingStyle;
+        return s._checkCodingStyle || s._showAll;
     }
 
     static std::string unusedStructMember(const Tokenizer *tokenizer, const Token *Location, const std::string &structname, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "struct or union member '" + structname + "::" + varname + "' is never used";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "struct or union member '" + structname + "::" + varname + "' is never used";
     }
     static bool unusedStructMember(const Settings &s)
     {
@@ -249,7 +249,7 @@ public:
 
     static std::string passedByValue(const Tokenizer *tokenizer, const Token *Location, const std::string &parname)
     {
-        return msg1(tokenizer, Location) + "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.";
     }
     static bool passedByValue(const Settings &s)
     {
@@ -258,7 +258,7 @@ public:
 
     static std::string constStatement(const Tokenizer *tokenizer, const Token *Location, const std::string &type)
     {
-        return msg1(tokenizer, Location) + "Redundant code: Found a statement that begins with " + type + " constant";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Redundant code: Found a statement that begins with " + type + " constant";
     }
     static bool constStatement(const Settings &s)
     {
@@ -267,7 +267,7 @@ public:
 
     static std::string charArrayIndex(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Warning - using char variable as array index";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Warning - using char variable as array index";
     }
     static bool charArrayIndex(const Settings &s)
     {
@@ -276,7 +276,7 @@ public:
 
     static std::string charBitOp(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Warning - using char variable in bit operation";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Warning - using char variable in bit operation";
     }
     static bool charBitOp(const Settings &s)
     {
@@ -285,7 +285,7 @@ public:
 
     static std::string variableScope(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) + "The scope of the variable " + varname + " can be limited";
+        return msg1(tokenizer, Location) +  std::string("(never) ") + "The scope of the variable " + varname + " can be limited";
     }
     static bool variableScope()
     {
@@ -294,7 +294,7 @@ public:
 
     static std::string conditionAlwaysTrueFalse(const Tokenizer *tokenizer, const Token *Location, const std::string &truefalse)
     {
-        return msg1(tokenizer, Location) + "Condition is always " + truefalse + "";
+        return msg1(tokenizer, Location) +  std::string("(style) ") + "Condition is always " + truefalse + "";
     }
     static bool conditionAlwaysTrueFalse(const Settings &s)
     {
@@ -303,7 +303,7 @@ public:
 
     static std::string strPlusChar(const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) + "Unusual pointer arithmetic";
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Unusual pointer arithmetic";
     }
     static bool strPlusChar()
     {
