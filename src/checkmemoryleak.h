@@ -41,7 +41,7 @@ public:
 
 private:
 
-    enum AllocType { No, Malloc, gMalloc, New, NewA, FOPEN, POPEN };
+    enum AllocType { No, Malloc, gMalloc, New, NewArray, FOPEN, POPEN };
 
     // Extra allocation..
     class AllocFunc
@@ -88,12 +88,12 @@ private:
      * @return Newly allocated token array. Caller needs to release reserved
      * memory by calling Tokenizer::deleteTokens(returnValue);
      */
-    Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember);
+    Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all);
     bool notvar(const Token *tok, const char *varnames[]);
     bool MatchFunctionsThatReturnArg(const Token *tok, const std::string varname);
-    void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype);
+    void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
     void MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[]);
-    const char * call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype);
+    const char * call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype, bool &all);
     AllocType GetDeallocationType(const Token *tok, const char *varnames[]);
     AllocType GetAllocationType(const Token *tok2);
     AllocType GetReallocationType(const Token *tok2);

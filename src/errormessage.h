@@ -148,6 +148,15 @@ public:
         return true;
     }
 
+    static std::string memleakall(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) +  std::string("(all) ") + "Memory leak: " + varname + "";
+    }
+    static bool memleakall(const Settings &s)
+    {
+        return s._showAll;
+    }
+
     static std::string resourceLeak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
         return msg1(tokenizer, Location) +  std::string("(always) ") + "Resource leak: " + varname + "";

@@ -176,6 +176,8 @@ private:
         TEST_CASE(freefree1);
         TEST_CASE(freefree2);
         TEST_CASE(strcat_result_assignment);
+
+        TEST_CASE(all1);                // Extra checking when --all is given
     }
 
 
@@ -1717,6 +1719,24 @@ private:
               "}");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
+
+
+
+    void all1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    Fred *f = new Fred;\n"
+              "}\n", false);
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    Fred *f = new Fred;\n"
+              "}\n", true);
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Memory leak: f\n"), errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestMemleak)
