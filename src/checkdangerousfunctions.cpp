@@ -77,7 +77,7 @@ void CheckDangerousFunctionsClass::dangerousFunctions()
             ostr << _tokenizer->fileLine(tok) << ": Found 'mktemp'. You should use 'mkstemp' instead";
             _errorLogger->reportErr(ostr.str());
         }
-		else if (Token::Match(tok, "gets|scanf ("))
+        else if (Token::Match(tok, "gets|scanf ("))
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found '" << tok->str() << "'. You should use 'fgets' instead";

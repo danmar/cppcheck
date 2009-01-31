@@ -93,7 +93,7 @@ private:
         check("void f()\n"
               "{\n"
               "    char *x;\n"
-			  "    scanf(\"%s\", x);\n"
+              "    scanf(\"%s\", x);\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: Found 'scanf'. You should use 'fgets' instead\n"), errout.str());
     }
