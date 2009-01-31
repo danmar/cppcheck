@@ -132,11 +132,11 @@ public:
 
     static std::string mismatchAllocDealloc(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Mismatching allocation and deallocation: " + varname + "";
+        return msg1(tokenizer, Location) +  std::string("(all) ") + "Mismatching allocation and deallocation: " + varname + "";
     }
-    static bool mismatchAllocDealloc()
+    static bool mismatchAllocDealloc(const Settings &s)
     {
-        return true;
+        return s._showAll;
     }
 
     static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
@@ -171,6 +171,15 @@ public:
         return msg1(tokenizer, Location) +  std::string("(always) ") + "Deallocating a deallocated pointer: " + varname + "";
     }
     static bool deallocDealloc()
+    {
+        return true;
+    }
+
+    static std::string deallocuse(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        return msg1(tokenizer, Location) +  std::string("(always) ") + "Using '" + varname + "' after it is deallocated / released";
+    }
+    static bool deallocuse()
     {
         return true;
     }

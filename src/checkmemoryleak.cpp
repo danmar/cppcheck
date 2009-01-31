@@ -293,6 +293,8 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
 
 void CheckMemoryLeakClass::MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[])
 {
+    if (! ErrorMessage::mismatchAllocDealloc(_settings))
+        return;
     std::ostringstream errmsg;
     for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
         errmsg << _tokenizer->fileLine(*tok) << " -> ";

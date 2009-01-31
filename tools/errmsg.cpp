@@ -75,11 +75,12 @@ int main()
     err.push_back(Message("unusedFunction", Message::style_all, "[%1]: The function '%2' is never used", "filename", "funcname"));
 
     // checkmemoryleak.cpp..
-    err.push_back(Message("mismatchAllocDealloc", Message::always, "Mismatching allocation and deallocation: %1", "varname"));
+    err.push_back(Message("mismatchAllocDealloc", Message::all, "Mismatching allocation and deallocation: %1", "varname"));
     err.push_back(Message("memleak", Message::always, "Memory leak: %1", "varname"));
     err.push_back(Message("memleakall", Message::all, "Memory leak: %1", "varname"));
     err.push_back(Message("resourceLeak", Message::always, "Resource leak: %1", "varname"));
     err.push_back(Message("deallocDealloc", Message::always, "Deallocating a deallocated pointer: %1", "varname"));
+    err.push_back(Message("deallocuse", Message::always, "Using '%1' after it is deallocated / released", "varname"));
 
     // checkother.cpp..
     err.push_back(Message("cstyleCast", Message::style, "C-style pointer casting"));
