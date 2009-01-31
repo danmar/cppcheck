@@ -119,6 +119,7 @@ private:
         TEST_CASE(ret5);        // Bug 2458436 - return use
 
         TEST_CASE(mismatch1);
+        // TODO TEST_CASE(mismatch2);
 
         TEST_CASE(func1);
         TEST_CASE(func2);
@@ -952,6 +953,20 @@ private:
         ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Mismatching allocation and deallocation: a\n"), errout.str());
     }
 
+    void mismatch2()
+    {
+        check("void f()\n"
+              "{\n"
+              "	FILE *fp;\n"
+              "\n"
+              "	fp = fopen();\n"
+              "	fclose(fp);\n"
+              "\n"
+              "	fp = popen();\n"
+              "	pclose(fp);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 
 
 
