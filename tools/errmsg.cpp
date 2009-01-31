@@ -213,8 +213,6 @@ std::string Message::msg(bool code) const
     return ret;
 }
 
-static std::string stringifySeverity();
-
 void Message::generateCode(std::ostream &ostr) const
 {
     bool loc = bool(_msg.substr(0, 4) != "[%1]");
