@@ -37,15 +37,9 @@ public:
 
 private:
 
-    /** Report error using the callstack */
-    void ReportError(const std::string &errmsg);
-
     const Tokenizer *_tokenizer;
     const Settings _settings;
     ErrorLogger *_errorLogger;
-
-    /** callstack - used during intra-function checking */
-    std::list<const Token *> _callStack;
 };
 
 //---------------------------------------------------------------------------

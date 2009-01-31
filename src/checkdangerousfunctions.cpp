@@ -49,20 +49,6 @@ CheckDangerousFunctionsClass::~CheckDangerousFunctionsClass()
 
 }
 
-// Modified version of 'ReportError' that also reports the callstack
-void CheckDangerousFunctionsClass::ReportError(const std::string &errmsg)
-{
-    std::ostringstream ostr;
-    std::list<const Token *>::const_iterator it;
-    for (it = _callStack.begin(); it != _callStack.end(); it++)
-        ostr << _tokenizer->fileLine(*it) << " -> ";
-    ostr << errmsg;
-    _errorLogger->reportErr(ostr.str());
-}
-//---------------------------------------------------------------------------
-
-
-
 //---------------------------------------------------------------------------
 // Dangerous functions
 //---------------------------------------------------------------------------
