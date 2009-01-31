@@ -23,6 +23,7 @@
 
 #include "checkmemoryleak.h"
 #include "checkbufferoverrun.h"
+#include "checkdangerousfunctions.h"
 #include "checkclass.h"
 #include "checkheaders.h"
 #include "checkother.h"
@@ -365,6 +366,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Class for detecting buffer overruns and related problems
     CheckBufferOverrunClass checkBufferOverrun(&_tokenizer, _settings, this);
 
+    // Class for checking functions that should not be used
+    CheckDangerousFunctionsClass checkDangerousFunctions(&_tokenizer, _settings, this);
+
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
     if (ErrorMessage::memleak() || ErrorMessage::mismatchAllocDealloc(_settings))
@@ -381,9 +385,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Array index out of bounds / Buffer overruns..
     if (ErrorMessage::arrayIndexOutOfBounds(_settings) || ErrorMessage::bufferOverrun(_settings))
         checkBufferOverrun.bufferOverrun();
-
-    // Dangerous functions, such as 'gets' and 'scanf'
-    checkBufferOverrun.dangerousFunctions();
 
     // Warning upon c-style pointer casts
     if (ErrorMessage::cstyleCast(_settings))

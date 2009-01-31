@@ -19,31 +19,23 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckBufferOverrunH
-#define CheckBufferOverrunH
+#ifndef CheckDangerousFunctionsH
+#define CheckDangerousFunctionsH
 //---------------------------------------------------------------------------
 
 #include "tokenize.h"
 #include "errorlogger.h"
 
-class CheckBufferOverrunClass
+class CheckDangerousFunctionsClass
 {
 public:
-    CheckBufferOverrunClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
-    ~CheckBufferOverrunClass();
+    CheckDangerousFunctionsClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
+    ~CheckDangerousFunctionsClass();
 
     /** Check for buffer overruns */
-    void bufferOverrun();
+    void dangerousFunctions();
+
 private:
-
-    /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
-    void CheckBufferOverrun_StructVariable();
-
-    /** Check for buffer overruns - locate local function variables and check them with the .._CheckScope function */
-    void CheckBufferOverrun_LocalVariable();
-
-    /** Check for buffer overruns - this is the function that performs the actual checking */
-    void CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
 
     /** Report error using the callstack */
     void ReportError(const std::string &errmsg);

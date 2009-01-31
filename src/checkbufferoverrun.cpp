@@ -576,24 +576,3 @@ void CheckBufferOverrunClass::bufferOverrun()
 
 
 
-//---------------------------------------------------------------------------
-// Dangerous functions
-//---------------------------------------------------------------------------
-
-void CheckBufferOverrunClass::dangerousFunctions()
-{
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "gets|scanf ("))
-        {
-            std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Found '" << tok->str() << "'. You should use 'fgets' instead";
-            _errorLogger->reportErr(ostr.str());
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
-
-
-

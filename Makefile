@@ -6,6 +6,7 @@ BIN=${DESTDIR}/usr/bin
 
 OBJECTS =     src/checkbufferoverrun.o \
               src/checkclass.o \
+              src/checkdangerousfunctions.o \
               src/checkfunctionusage.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
@@ -24,6 +25,7 @@ TESTOBJ =     test/testbufferoverrun.o \
               test/testcharvar.o \
               test/testclass.o \
               test/testconstructors.o \
+              test/testdangerousfunctions.o \
               test/testdivision.o \
               test/testfilelister.o \
               test/testfunctionusage.o \
@@ -42,6 +44,7 @@ TESTOBJ =     test/testbufferoverrun.o \
               test/testunusedvar.o \
               src/checkbufferoverrun.o \
               src/checkclass.o \
+              src/checkdangerousfunctions.o \
               src/checkfunctionusage.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
@@ -93,10 +96,13 @@ src/checkbufferoverrun.o: src/checkbufferoverrun.cpp src/checkbufferoverrun.h sr
 src/checkclass.o: src/checkclass.cpp src/checkclass.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h
 	g++ $(CXXFLAGS) -c -o src/checkclass.o src/checkclass.cpp
 
+src/checkdangerousfunctions.o: src/checkdangerousfunctions.cpp src/checkdangerousfunctions.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h
+	g++ $(CXXFLAGS) -c -o src/checkdangerousfunctions.o src/checkdangerousfunctions.cpp
+
 src/checkfunctionusage.o: src/checkfunctionusage.cpp src/checkfunctionusage.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h
 	g++ $(CXXFLAGS) -c -o src/checkfunctionusage.o src/checkfunctionusage.cpp
 
-src/checkheaders.o: src/checkheaders.cpp src/checkheaders.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
+src/checkheaders.o: src/checkheaders.cpp src/checkheaders.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/filelister.h
 	g++ $(CXXFLAGS) -c -o src/checkheaders.o src/checkheaders.cpp
 
 src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h
@@ -105,7 +111,7 @@ src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/tokeniz
 src/checkother.o: src/checkother.cpp src/checkother.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/errormessage.h
 	g++ $(CXXFLAGS) -c -o src/checkother.o src/checkother.cpp
 
-src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkclass.h src/checkheaders.h src/checkother.h src/filelister.h src/errormessage.h
+src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/filelister.h src/errormessage.h
 	g++ $(CXXFLAGS) -c -o src/cppcheck.o src/cppcheck.cpp
 
 src/cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/errorlogger.h src/cppcheck.h src/settings.h src/checkfunctionusage.h src/tokenize.h src/token.h
@@ -143,6 +149,9 @@ test/testclass.o: test/testclass.cpp src/tokenize.h src/settings.h src/errorlogg
 
 test/testconstructors.o: test/testconstructors.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkclass.h test/testsuite.h
 	g++ $(CXXFLAGS) -c -o test/testconstructors.o test/testconstructors.cpp
+
+test/testdangerousfunctions.o: test/testdangerousfunctions.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkdangerousfunctions.h test/testsuite.h
+	g++ $(CXXFLAGS) -c -o test/testdangerousfunctions.o test/testdangerousfunctions.cpp
 
 test/testdivision.o: test/testdivision.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkother.h test/testsuite.h
 	g++ $(CXXFLAGS) -c -o test/testdivision.o test/testdivision.cpp
