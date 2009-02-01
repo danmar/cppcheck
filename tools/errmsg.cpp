@@ -247,27 +247,27 @@ void Message::generateCode(std::ostream &ostr) const
     if (loc)
         ostr << "tokenizer, Location, \"" << stringifySettings(true) << "\", ";
     ostr << msg(true) << ");\n";
-/*
-    ostr << "        return ";
-    if (loc)
-        ostr << "msg1(tokenizer, Location) + ";
-    ostr << " std::string(\"(" << stringifySettings(true) << ") \") + ";
-    ostr << msg(true);
-    if (_details.empty())
-        ostr << ";\n";
-    else
-    {
-        ostr << " + std::string(settings._verbose ? \"\\n";
-        for (std::string::size_type pos = 0; pos < _details.length(); ++pos)
+    /*
+        ostr << "        return ";
+        if (loc)
+            ostr << "msg1(tokenizer, Location) + ";
+        ostr << " std::string(\"(" << stringifySettings(true) << ") \") + ";
+        ostr << msg(true);
+        if (_details.empty())
+            ostr << ";\n";
+        else
         {
-            if (_details[pos] == '\n')
-                ostr << "\\n";
-            else
-                ostr << _details[pos];
+            ostr << " + std::string(settings._verbose ? \"\\n";
+            for (std::string::size_type pos = 0; pos < _details.length(); ++pos)
+            {
+                if (_details[pos] == '\n')
+                    ostr << "\\n";
+                else
+                    ostr << _details[pos];
+            }
+            ostr << "\" : \"\");\n";
         }
-        ostr << "\" : \"\");\n";
-    }
-*/
+    */
     ostr << "    }\n";
 
     // Settings..
