@@ -163,7 +163,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
     if (argc <= 1 || showHelp)
     {
         std::ostringstream oss;
-        oss <<   "Cppcheck 1.27\n"
+        oss <<   "Cppcheck 1.28\n"
         "\n"
         "A tool for static C/C++ code analysis\n"
         "\n"
