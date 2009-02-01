@@ -24,13 +24,25 @@
 
 #include <sstream>
 
-void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg)
+void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id)
 {
-    logger->reportErr(tokenizer->fileLine(tok) + ": (" + severity + ") " + msg);
+    std::list<const Token *> callstack;
+    callstack.push_back(tok);
+    _writemsg(logger, tokenizer, callstack, severity, msg, id);
 }
 
-void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg)
+void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg, const std::string &id)
 {
+    // Todo.. callstack handling
+    const std::string &file(tokenizer->getFiles()->at(callstack.back()->fileIndex()));
+    std::ostringstream linenr;
+    linenr << callstack.back()->linenr();
+    logger->reportXml(file,
+                      linenr.str(),
+                      id,
+                      severity,
+                      msg);
+
     std::ostringstream ostr;
     for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
         ostr << (tok == callstack.begin() ? "" : " -> ") << tokenizer->fileLine(*tok);
@@ -38,7 +50,13 @@ void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, co
 }
 
 
-void ErrorMessage::_writemsg(ErrorLogger *logger, const std::string msg)
+void ErrorMessage::_writemsg(ErrorLogger *logger, const std::string msg, const std::string &id)
 {
+    std::ostringstream xml;
+    xml << "<error";
+    xml << " id=\"" << id << "\"";
+    xml << " msg=\"" << msg << "\"";
+    xml << ">";
+
     logger->reportErr(msg);
 }

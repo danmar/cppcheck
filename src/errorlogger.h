@@ -46,6 +46,18 @@ public:
      * @param outmsg, E.g. "Checking main.cpp..."
      */
     virtual void reportOut(const std::string &outmsg) = 0;
+
+    /**
+     * XML output of error / warning
+     * Todo: callstack handling
+     *
+     * @param file      filepath (can be "")
+     * @param line      line (can be "")
+     * @param id        error id (function name)
+     * @param severity  severity of error (always, all, style, all+style, never)
+     * @param msg       error message in plain text
+     */
+    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg) = 0;
 };
 
 #endif // #ifndef ERRORLOGGER_H

@@ -43,8 +43,8 @@ protected:
 
 public:
     virtual void reportErr(const std::string &errmsg);
-
     virtual void reportOut(const std::string &outmsg);
+    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg);
 
     void run(const std::string &str);
 

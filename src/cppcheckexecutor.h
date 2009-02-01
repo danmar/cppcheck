@@ -71,6 +71,9 @@ public:
      * @param outmsg, E.g. "Checking main.cpp..."
      */
     virtual void reportOut(const std::string &outmsg);
+
+    /** xml output of errors */
+    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg);
 };
 
 #endif // CPPCHECKEXECUTOR_H

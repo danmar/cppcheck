@@ -40,8 +40,8 @@ public:
     /** Force checking t he files with "too many" configurations. */
     bool _force;
 
-    /** write results in xml file results.xml */
-    bool _xmlResults;
+    /** write xml results */
+    bool _xml;
 
     /** Checking if there are unused functions */
     bool _unusedFunctions;

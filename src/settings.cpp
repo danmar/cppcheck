@@ -27,7 +27,7 @@ Settings::Settings()
     _errorsOnly = false;
     _verbose = false;
     _force = false;
-    _xmlResults = false;
+    _xml = false;
     _unusedFunctions = false;
 }
 

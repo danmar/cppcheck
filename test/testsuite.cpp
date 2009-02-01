@@ -177,3 +177,8 @@ void TestFixture::reportOut(const std::string & /*outmsg*/)
 {
     // These can probably be ignored
 }
+
+void TestFixture::reportXml(const std::string & /*file*/, const std::string & /*line*/, const std::string & /*id*/, const std::string & /*severity*/, const std::string & /*msg*/)
+{
+    // These can probably be ignored
+}

@@ -138,9 +138,9 @@ int main()
     fout << "{\n";
     fout << "private:\n";
     fout << "    ErrorMessage() { }\n";
-    fout << "    static void _writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg);\n";
-    fout << "    static void _writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg);\n";
-    fout << "    static void _writemsg(ErrorLogger *logger, const std::string msg);\n";
+    fout << "    static void _writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id);\n";
+    fout << "    static void _writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg, const std::string &id);\n";
+    fout << "    static void _writemsg(ErrorLogger *logger, const std::string msg, const std::string &id);\n";
     fout << "public:\n";
     for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
         it->generateCode(fout);
@@ -246,7 +246,7 @@ void Message::generateCode(std::ostream &ostr) const
     ostr << "        _writemsg(logger, ";
     if (loc)
         ostr << "tokenizer, Location, \"" << stringifySettings(true) << "\", ";
-    ostr << msg(true) << ");\n";
+    ostr << msg(true) << ", \"" << _funcname << "\");\n";
     /*
         ostr << "        return ";
         if (loc)

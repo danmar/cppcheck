@@ -19,6 +19,7 @@
 
 #include "cppcheckexecutor.h"
 #include "cppcheck.h"
+#include <fstream>
 #include <iostream>
 
 CppCheckExecutor::CppCheckExecutor()
@@ -54,4 +55,9 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
 void CppCheckExecutor::reportOut(const std::string &outmsg)
 {
     std::cout << outmsg << std::endl;
+}
+
+void CppCheckExecutor::reportXml(const std::string & /*file*/, const std::string & /*line*/, const std::string & /*id*/, const std::string & /*severity*/, const std::string & /*msg*/)
+{
+    // never used
 }

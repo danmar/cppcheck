@@ -97,8 +97,8 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             _settings._force = true;
 
         // Write results in results.xml
-        else if (strcmp(argv[i], "--xml-results") == 0)
-            _settings._xmlResults = true;
+        else if (strcmp(argv[i], "--xml") == 0)
+            _settings._xml = true;
 
         // Check if there are unused functions
         else if (strcmp(argv[i], "--unused-functions") == 0)
@@ -169,7 +169,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "\n"
         "Syntax:\n"
         "    cppcheck [--all] [--force] [--help] [-Idir] [--quiet] [--style]\n"
-        "             [--unused-functions] [--verbose] [--xml-results]\n"
+        "             [--unused-functions] [--verbose] [--xml]\n"
         "             [file or path1] [file or path]\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
@@ -187,7 +187,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -s, --style          Check coding style\n"
         "    --unused-functions   Check if there are unused functions\n"
         "    -v, --verbose        More detailed error reports\n"
-        "    --xml-results        Write results in results.xml\n"
+        "    --xml                Write results in results.xml\n"
         "\n"
         "Example usage:\n"
         "  # Recursively check the current folder. Print the progress on the screen and\n"
@@ -285,22 +285,14 @@ unsigned int CppCheck::check()
         _checkFunctionUsage.check();
     }
 
-    // xml results..
-    if (_settings._xmlResults)
+    if (_settings._xml)
     {
-        std::ofstream fxml("results.xml");
-        fxml << "<cppcheckResults>\n"
-        << "    <test result=\"" << (_errorList.empty() ? "OK" : "ERROR") << "\"/>\n"
-        << "        <name>cppcheck</name>\n";
-        if (_errorList.size())
-        {
-            fxml << "        <message>\n";
-            for (std::list<std::string>::const_iterator it = _errorList.begin(); it != _errorList.end(); ++it)
-                fxml << *it << "\n";
-            fxml << "        </message>\n";
-        }
-        fxml << "    </test>\n"
-        << "</cppcheckResults>\n";
+        std::ofstream fxml("result.xml");
+        fxml << "<?xml version=\"1.0\"?>\n";
+        fxml << "<results>\n";
+        for (std::list<std::string>::const_iterator it = _xmllist.begin(); it != _xmllist.end(); ++it)
+            fxml << "  " << *it << "\n";
+        fxml << "</results>";
     }
 
     unsigned int result = _errorList.size();
@@ -463,4 +455,18 @@ void CppCheck::reportOut(const std::string & /*outmsg*/)
 {
     // This is currently never called. It is here just to comply with
     // the interface.
+}
+
+void CppCheck::reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg)
+{
+    std::ostringstream xml;
+    xml << "<error";
+    xml << " file=\"" + file + "\"";
+    xml << " line=\"" + line + "\"";
+    xml << " id=\"" + id + "\"";
+    xml << " severity=\"" + severity + "\"";
+    xml << " msg=\"" + msg + "\"";
+    xml << "/>";
+
+    _xmllist.push_back(xml.str());
 }

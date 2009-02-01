@@ -113,6 +113,9 @@ private:
      */
     virtual void reportOut(const std::string &outmsg);
 
+    /** xml output of errors */
+    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg);
+
     std::list<std::string> _errorList;
     std::ostringstream _errout;
     Settings _settings;
@@ -128,6 +131,8 @@ private:
     /** List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. */
     std::list<std::string> _includePaths;
+
+    std::list<std::string> _xmllist;
 };
 
 #endif // CPPCHECK_H
