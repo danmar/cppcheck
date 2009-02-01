@@ -291,27 +291,15 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
 
 //--------------------------------------------------------------------------
 
-void CheckMemoryLeakClass::MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[])
-{
-    if (! ErrorMessage::mismatchAllocDealloc(_settings))
-        return;
-    std::ostringstream errmsg;
-    for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
-        errmsg << _tokenizer->fileLine(*tok) << " -> ";
-    errmsg << ErrorMessage::mismatchAllocDealloc(_tokenizer, Tok1, varname);
-    _errorLogger->reportErr(errmsg.str());
-}
-//---------------------------------------------------------------------------
-
 void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all)
 {
     if (alloctype == CheckMemoryLeakClass::FOPEN ||
         alloctype == CheckMemoryLeakClass::POPEN)
-        _errorLogger->reportErr(ErrorMessage::resourceLeak(_tokenizer, tok, varname));
+        ErrorMessage::resourceLeak(_errorLogger, _tokenizer, tok, varname);
     else if (all)
-        _errorLogger->reportErr(ErrorMessage::memleakall(_tokenizer, tok, varname));
+        ErrorMessage::memleakall(_errorLogger, _tokenizer, tok, varname);
     else
-        _errorLogger->reportErr(ErrorMessage::memleak(_tokenizer, tok, varname));
+        ErrorMessage::memleak(_errorLogger, _tokenizer, tok, varname);
 }
 //---------------------------------------------------------------------------
 
@@ -429,10 +417,13 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
             {
                 if (! realloc)
                     addtoken("alloc");
-                if (alloctype != No && alloctype != alloc)
-                    MismatchError(tok, callstack, varname);
-                if (dealloctype != No && dealloctype != alloc)
-                    MismatchError(tok, callstack, varname);
+                if ((alloctype != No && alloctype != alloc) ||
+                    (dealloctype != No && dealloctype != alloc))
+                {
+                    callstack.push_back(tok);
+                    ErrorMessage::mismatchAllocDealloc(_errorLogger, _tokenizer, callstack, varname);
+                    callstack.pop_back();
+                }
                 alloctype = alloc;
             }
 
@@ -469,10 +460,13 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
             if (dealloc != No)
             {
                 addtoken("dealloc");
-                if (alloctype != No && alloctype != dealloc)
-                    MismatchError(tok, callstack, varname);
-                if (dealloctype != No && dealloctype != dealloc)
-                    MismatchError(tok, callstack, varname);
+                if ((alloctype != No && alloctype != dealloc) ||
+                    (dealloctype != No && dealloctype != dealloc))
+                {
+                    callstack.push_back(tok);
+                    ErrorMessage::mismatchAllocDealloc(_errorLogger, _tokenizer, callstack, varname);
+                    callstack.pop_back();
+                }
                 dealloctype = dealloc;
                 continue;
             }
@@ -1234,7 +1228,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
 
     else if ((result = Token::findmatch(tok, "dealloc ; dealloc ;")) != NULL)
     {
-        _errorLogger->reportErr(ErrorMessage::deallocDealloc(_tokenizer, result->tokAt(2), varname));
+        ErrorMessage::deallocDealloc(_errorLogger, _tokenizer, result->tokAt(2), varname);
     }
 
     else if (! Token::findmatch(tok, "dealloc") &&
@@ -1462,10 +1456,13 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
                 if (alloc != No)
                 {
                     std::list<const Token *> callstack;
-                    if (Dealloc != No && Dealloc != alloc)
-                        MismatchError(tok, callstack, FullVariableName.str().c_str());
-                    if (Alloc != No && Alloc != alloc)
-                        MismatchError(tok, callstack, FullVariableName.str().c_str());
+                    if ((Dealloc != No && Dealloc != alloc) ||
+                        (Alloc != No && Alloc != alloc))
+                    {
+                        callstack.push_back(tok);
+                        ErrorMessage::mismatchAllocDealloc(_errorLogger, _tokenizer, callstack, FullVariableName.str());
+                        callstack.pop_back();
+                    }
                     Alloc = alloc;
                 }
             }
@@ -1483,10 +1480,13 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
             if (dealloc != No)
             {
                 std::list<const Token *> callstack;
-                if (Dealloc != No && Dealloc != dealloc)
-                    MismatchError(tok, callstack, FullVariableName.str().c_str());
-                if (Alloc != No && Alloc != dealloc)
-                    MismatchError(tok, callstack, FullVariableName.str().c_str());
+                if ((Dealloc != No && Dealloc != dealloc) ||
+                    (Alloc != No && Alloc != dealloc))
+                {
+                    callstack.push_back(tok);
+                    ErrorMessage::mismatchAllocDealloc(_errorLogger, _tokenizer, callstack, FullVariableName.str());
+                    callstack.pop_back();
+                }
                 Dealloc = dealloc;
             }
 

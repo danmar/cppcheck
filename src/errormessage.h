@@ -21,307 +21,311 @@
 
 #ifndef errormessageH
 #define errormessageH
+#include <list>
 #include <string>
 #include "settings.h"
+class ErrorLogger;
 class Token;
 class Tokenizer;
 class ErrorMessage
 {
 private:
     ErrorMessage() { }
-    static std::string msg1(const Tokenizer *tokenizer, const Token *Location);
+    static void _writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg);
+    static void _writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg);
+    static void _writemsg(ErrorLogger *logger, const std::string msg);
 public:
-    static std::string arrayIndexOutOfBounds(const Tokenizer *tokenizer, const Token *Location)
+    static void arrayIndexOutOfBounds(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(all) ") + "Array index out of bounds";
+        _writemsg(logger, tokenizer, Location, "all", "Array index out of bounds");
     }
     static bool arrayIndexOutOfBounds(const Settings &s)
     {
         return s._showAll;
     }
 
-    static std::string bufferOverrun(const Tokenizer *tokenizer, const Token *Location)
+    static void bufferOverrun(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(all) ") + "Buffer overrun";
+        _writemsg(logger, tokenizer, Location, "all", "Buffer overrun");
     }
     static bool bufferOverrun(const Settings &s)
     {
         return s._showAll;
     }
 
-    static std::string outOfBounds(const Tokenizer *tokenizer, const Token *Location, const std::string &what)
+    static void outOfBounds(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &what)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "" + what + " is out of bounds";
+        _writemsg(logger, tokenizer, Location, "always", "" + what + " is out of bounds");
     }
     static bool outOfBounds()
     {
         return true;
     }
 
-    static std::string noConstructor(const Tokenizer *tokenizer, const Token *Location, const std::string &classname)
+    static void noConstructor(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &classname)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "The class '" + classname + "' has no constructor";
+        _writemsg(logger, tokenizer, Location, "style", "The class '" + classname + "' has no constructor");
     }
     static bool noConstructor(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string uninitVar(const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &varname)
+    static void uninitVar(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Uninitialized member variable '" + classname + "::" + varname + "'";
+        _writemsg(logger, tokenizer, Location, "always", "Uninitialized member variable '" + classname + "::" + varname + "'");
     }
     static bool uninitVar()
     {
         return true;
     }
 
-    static std::string unusedPrivateFunction(const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &funcname)
+    static void unusedPrivateFunction(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &funcname)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Unused private function '" + classname + "::" + funcname + "'";
+        _writemsg(logger, tokenizer, Location, "style", "Unused private function '" + classname + "::" + funcname + "'");
     }
     static bool unusedPrivateFunction(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string memsetClass(const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc)
+    static void memsetClass(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Using '" + memfunc + "' on class";
+        _writemsg(logger, tokenizer, Location, "always", "Using '" + memfunc + "' on class");
     }
     static bool memsetClass()
     {
         return true;
     }
 
-    static std::string memsetStruct(const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc, const std::string &classname)
+    static void memsetStruct(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc, const std::string &classname)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'";
+        _writemsg(logger, tokenizer, Location, "always", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'");
     }
     static bool memsetStruct()
     {
         return true;
     }
 
-    static std::string operatorEq(const Tokenizer *tokenizer, const Token *Location)
+    static void operatorEq(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "'operator=' should return something";
+        _writemsg(logger, tokenizer, Location, "style", "'operator=' should return something");
     }
     static bool operatorEq(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string virtualDestructor(const Tokenizer *tokenizer, const Token *Location, const std::string &Base, const std::string &Derived)
+    static void virtualDestructor(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &Base, const std::string &Derived)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor";
+        _writemsg(logger, tokenizer, Location, "always", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor");
     }
     static bool virtualDestructor()
     {
         return true;
     }
 
-    static std::string unusedFunction(const std::string &filename, const std::string &funcname)
+    static void unusedFunction(ErrorLogger *logger, const std::string &filename, const std::string &funcname)
     {
-        return  std::string("(all style) ") + "[" + filename + "]: The function '" + funcname + "' is never used";
+        _writemsg(logger, "[" + filename + "]: The function '" + funcname + "' is never used");
     }
     static bool unusedFunction(const Settings &s)
     {
         return s._checkCodingStyle || s._showAll;
     }
 
-    static std::string mismatchAllocDealloc(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    static void mismatchAllocDealloc(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(all) ") + "Mismatching allocation and deallocation: " + varname + "";
+        _writemsg(logger, tokenizer, Location, "all", "Mismatching allocation and deallocation: " + varname + "");
     }
     static bool mismatchAllocDealloc(const Settings &s)
     {
         return s._showAll;
     }
 
-    static std::string memleak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    static void memleak(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Memory leak: " + varname + "";
+        _writemsg(logger, tokenizer, Location, "always", "Memory leak: " + varname + "");
     }
     static bool memleak()
     {
         return true;
     }
 
-    static std::string memleakall(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    static void memleakall(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(all) ") + "Memory leak: " + varname + "";
+        _writemsg(logger, tokenizer, Location, "all", "Memory leak: " + varname + "");
     }
     static bool memleakall(const Settings &s)
     {
         return s._showAll;
     }
 
-    static std::string resourceLeak(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    static void resourceLeak(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Resource leak: " + varname + "";
+        _writemsg(logger, tokenizer, Location, "always", "Resource leak: " + varname + "");
     }
     static bool resourceLeak()
     {
         return true;
     }
 
-    static std::string deallocDealloc(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    static void deallocDealloc(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Deallocating a deallocated pointer: " + varname + "";
+        _writemsg(logger, tokenizer, Location, "always", "Deallocating a deallocated pointer: " + varname + "");
     }
     static bool deallocDealloc()
     {
         return true;
     }
 
-    static std::string deallocuse(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    static void deallocuse(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Using '" + varname + "' after it is deallocated / released";
+        _writemsg(logger, tokenizer, Location, "always", "Using '" + varname + "' after it is deallocated / released");
     }
     static bool deallocuse()
     {
         return true;
     }
 
-    static std::string cstyleCast(const Tokenizer *tokenizer, const Token *Location)
+    static void cstyleCast(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "C-style pointer casting";
+        _writemsg(logger, tokenizer, Location, "style", "C-style pointer casting");
     }
     static bool cstyleCast(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string redundantIfDelete0(const Tokenizer *tokenizer, const Token *Location)
+    static void redundantIfDelete0(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Redundant condition. It is safe to deallocate a NULL pointer";
+        _writemsg(logger, tokenizer, Location, "style", "Redundant condition. It is safe to deallocate a NULL pointer");
     }
     static bool redundantIfDelete0(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string redundantIfRemove(const Tokenizer *tokenizer, const Token *Location)
+    static void redundantIfRemove(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Redundant condition. The remove function in the STL will not do anything if element doesn't exist";
+        _writemsg(logger, tokenizer, Location, "style", "Redundant condition. The remove function in the STL will not do anything if element doesn't exist");
     }
     static bool redundantIfRemove(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string dangerousUsageStrtol(const Tokenizer *tokenizer, const Token *Location)
+    static void dangerousUsageStrtol(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36";
+        _writemsg(logger, tokenizer, Location, "always", "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36");
     }
     static bool dangerousUsageStrtol()
     {
         return true;
     }
 
-    static std::string ifNoAction(const Tokenizer *tokenizer, const Token *Location)
+    static void ifNoAction(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Found redundant if condition - 'if (condition);'";
+        _writemsg(logger, tokenizer, Location, "style", "Found redundant if condition - 'if (condition);'");
     }
     static bool ifNoAction(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string sprintfOverlappingData(const Tokenizer *tokenizer, const Token *Location, const Settings &settings, const std::string &varname)
+    static void sprintfOverlappingData(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Overlapping data buffer " + varname + "" + std::string(settings._verbose ? "\n    -- If copying takes place between objects that overlap as a result of a\n       call to sprintf() or snprintf(), the results are undefined.\n       http://www.opengroup.org/onlinepubs/000095399/functions/printf.html" : "");
+        _writemsg(logger, tokenizer, Location, "always", "Overlapping data buffer " + varname + "");
     }
     static bool sprintfOverlappingData()
     {
         return true;
     }
 
-    static std::string udivError(const Tokenizer *tokenizer, const Token *Location)
+    static void udivError(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Unsigned division. The result will be wrong.";
+        _writemsg(logger, tokenizer, Location, "always", "Unsigned division. The result will be wrong.");
     }
     static bool udivError()
     {
         return true;
     }
 
-    static std::string udivWarning(const Tokenizer *tokenizer, const Token *Location)
+    static void udivWarning(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(all style) ") + "Warning: Division with signed and unsigned operators";
+        _writemsg(logger, tokenizer, Location, "all style", "Warning: Division with signed and unsigned operators");
     }
     static bool udivWarning(const Settings &s)
     {
         return s._checkCodingStyle || s._showAll;
     }
 
-    static std::string unusedStructMember(const Tokenizer *tokenizer, const Token *Location, const std::string &structname, const std::string &varname)
+    static void unusedStructMember(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &structname, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "struct or union member '" + structname + "::" + varname + "' is never used";
+        _writemsg(logger, tokenizer, Location, "style", "struct or union member '" + structname + "::" + varname + "' is never used");
     }
     static bool unusedStructMember(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string passedByValue(const Tokenizer *tokenizer, const Token *Location, const std::string &parname)
+    static void passedByValue(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &parname)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.";
+        _writemsg(logger, tokenizer, Location, "style", "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.");
     }
     static bool passedByValue(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string constStatement(const Tokenizer *tokenizer, const Token *Location, const std::string &type)
+    static void constStatement(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &type)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Redundant code: Found a statement that begins with " + type + " constant";
+        _writemsg(logger, tokenizer, Location, "style", "Redundant code: Found a statement that begins with " + type + " constant");
     }
     static bool constStatement(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string charArrayIndex(const Tokenizer *tokenizer, const Token *Location)
+    static void charArrayIndex(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Warning - using char variable as array index";
+        _writemsg(logger, tokenizer, Location, "style", "Warning - using char variable as array index");
     }
     static bool charArrayIndex(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string charBitOp(const Tokenizer *tokenizer, const Token *Location)
+    static void charBitOp(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Warning - using char variable in bit operation";
+        _writemsg(logger, tokenizer, Location, "style", "Warning - using char variable in bit operation");
     }
     static bool charBitOp(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string variableScope(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    static void variableScope(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        return msg1(tokenizer, Location) +  std::string("(never) ") + "The scope of the variable " + varname + " can be limited";
+        _writemsg(logger, tokenizer, Location, "never", "The scope of the variable " + varname + " can be limited");
     }
     static bool variableScope()
     {
         return false;
     }
 
-    static std::string conditionAlwaysTrueFalse(const Tokenizer *tokenizer, const Token *Location, const std::string &truefalse)
+    static void conditionAlwaysTrueFalse(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &truefalse)
     {
-        return msg1(tokenizer, Location) +  std::string("(style) ") + "Condition is always " + truefalse + "";
+        _writemsg(logger, tokenizer, Location, "style", "Condition is always " + truefalse + "");
     }
     static bool conditionAlwaysTrueFalse(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    static std::string strPlusChar(const Tokenizer *tokenizer, const Token *Location)
+    static void strPlusChar(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        return msg1(tokenizer, Location) +  std::string("(always) ") + "Unusual pointer arithmetic";
+        _writemsg(logger, tokenizer, Location, "always", "Unusual pointer arithmetic");
     }
     static bool strPlusChar()
     {

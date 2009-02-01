@@ -49,15 +49,11 @@ CheckBufferOverrunClass::~CheckBufferOverrunClass()
 
 }
 
-// Modified version of 'ReportError' that also reports the callstack
-void CheckBufferOverrunClass::ReportError(const std::string &errmsg)
+void CheckBufferOverrunClass::arrayIndexOutOfBounds(const Token *tok)
 {
-    std::ostringstream ostr;
-    std::list<const Token *>::const_iterator it;
-    for (it = _callStack.begin(); it != _callStack.end(); it++)
-        ostr << _tokenizer->fileLine(*it) << " -> ";
-    ostr << errmsg;
-    _errorLogger->reportErr(ostr.str());
+    _callStack.push_back(tok);
+    ErrorMessage::arrayIndexOutOfBounds(_errorLogger, _tokenizer, _callStack);
+    _callStack.pop_back();
 }
 //---------------------------------------------------------------------------
 
@@ -94,7 +90,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             const char *num = tok->strAt(2);
             if (std::strtol(num, NULL, 10) >= size)
             {
-                ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
+                arrayIndexOutOfBounds(tok->next());
             }
         }
     }
@@ -103,7 +99,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         const char *num = tok->strAt(2 + varc);
         if (std::strtol(num, NULL, 10) >= size)
         {
-            ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
+            arrayIndexOutOfBounds(tok->next());
         }
     }
 
@@ -131,7 +127,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 const char *num = tok->strAt(3);
                 if (std::strtol(num, NULL, 10) >= size)
                 {
-                    ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
+                    arrayIndexOutOfBounds(tok->next());
                 }
             }
         }
@@ -140,7 +136,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             const char *num = tok->next()->strAt(2 + varc);
             if (std::strtol(num, NULL, 10) >= size)
             {
-                ReportError(ErrorMessage::arrayIndexOutOfBounds(_tokenizer, tok->next()));
+                arrayIndexOutOfBounds(tok->next());
             }
             tok = tok->tokAt(4);
             continue;
@@ -158,7 +154,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                     const char *num  = tok->strAt(6);
                     if (std::atoi(num) > total_size)
                     {
-                        ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
+                        ErrorMessage::bufferOverrun(_errorLogger, _tokenizer, tok);
                     }
                 }
                 continue;
@@ -172,7 +168,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 const char *num  = tok->strAt(varc + 6);
                 if (std::atoi(num) > total_size)
                 {
-                    ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
+                    ErrorMessage::bufferOverrun(_errorLogger, _tokenizer, tok);
                 }
             }
             continue;
@@ -231,7 +227,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
                 if (Token::Match(tok2, pattern.str().c_str()))
                 {
-                    ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok2));
+                    ErrorMessage::bufferOverrun(_errorLogger, _tokenizer, tok2);
                     break;
                 }
 
@@ -254,7 +250,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
             if (len > 2 && len >= (int)size + 2)
             {
-                ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
+                ErrorMessage::bufferOverrun(_errorLogger, _tokenizer, tok);
             }
             continue;
         }
@@ -280,7 +276,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
             if (len > (int)size)
             {
-                ReportError(ErrorMessage::bufferOverrun(_tokenizer, tok));
+                ErrorMessage::bufferOverrun(_errorLogger, _tokenizer, tok);
             }
         }
 
@@ -289,7 +285,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         {
             int n = std::atoi(tok->strAt(4));
             if (n > size)
-                ReportError(ErrorMessage::outOfBounds(_tokenizer, tok->tokAt(4), "snprintf size"));
+                ErrorMessage::outOfBounds(_errorLogger, _tokenizer, tok->tokAt(4), "snprintf size");
         }
 
 

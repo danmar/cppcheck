@@ -158,7 +158,7 @@ void CheckFunctionUsage::check()
                 filename = "";
             else
                 filename = func.filename;
-            _errorLogger->reportErr(ErrorMessage::unusedFunction(filename, it->first));
+            ErrorMessage::unusedFunction(_errorLogger, filename, it->first);
         }
         else if (! func.usedOtherFile)
         {

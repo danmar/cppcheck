@@ -45,15 +45,14 @@ private:
     /** Check for buffer overruns - this is the function that performs the actual checking */
     void CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
 
-    /** Report error using the callstack */
-    void ReportError(const std::string &errmsg);
-
     const Tokenizer *_tokenizer;
     const Settings _settings;
     ErrorLogger *_errorLogger;
 
     /** callstack - used during intra-function checking */
     std::list<const Token *> _callStack;
+
+    void arrayIndexOutOfBounds(const Token *tok);
 };
 
 //---------------------------------------------------------------------------

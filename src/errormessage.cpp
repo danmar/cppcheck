@@ -18,12 +18,27 @@
  */
 
 #include "errormessage.h"
+#include "errorlogger.h"
 #include "tokenize.h"
 #include "token.h"
 
-std::string ErrorMessage::msg1(const Tokenizer *tokenizer, const Token *Location)
+#include <sstream>
+
+void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg)
 {
-    return tokenizer->fileLine(Location) + ": ";
+    logger->reportErr(tokenizer->fileLine(tok) + ": (" + severity + ") " + msg);
+}
+
+void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg)
+{
+    std::ostringstream ostr;
+    for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
+        ostr << (tok == callstack.begin() ? "" : " -> ") << tokenizer->fileLine(*tok);
+    logger->reportErr(ostr.str() + ": (" + severity + ") " + msg);
 }
 
 
+void ErrorMessage::_writemsg(ErrorLogger *logger, const std::string msg)
+{
+    logger->reportErr(msg);
+}

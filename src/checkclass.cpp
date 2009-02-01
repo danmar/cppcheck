@@ -387,7 +387,7 @@ void CheckClass::constructors()
                 struct VAR *varlist = ClassChecking_GetVarList(tok1);
                 if (varlist)
                 {
-                    _errorLogger->reportErr(ErrorMessage::noConstructor(_tokenizer, tok1, classNameToken->str()));
+                    ErrorMessage::noConstructor(_errorLogger, _tokenizer, tok1, classNameToken->str());
                 }
                 // Delete the varlist..
                 while (varlist)
@@ -446,7 +446,7 @@ void CheckClass::CheckConstructors(const Token *tok1, struct VAR *varlist, const
                 continue;
 
             // It's non-static and it's not initialized => error
-            _errorLogger->reportErr(ErrorMessage::uninitVar(_tokenizer, constructor_token, className, var->name));
+            ErrorMessage::uninitVar(_errorLogger, _tokenizer, constructor_token, className, var->name);
         }
 
         for (struct VAR *var = varlist; var; var = var->next)
@@ -577,7 +577,7 @@ void CheckClass::privateFunctions()
             const std::string _pattern("return|(|)|,|= " + FuncList.front()->str());
             if (!Token::findmatch(_tokenizer->tokens(), _pattern.c_str()))
             {
-                _errorLogger->reportErr(ErrorMessage::unusedPrivateFunction(_tokenizer, FuncList.front(), classname, FuncList.front()->str()));
+                ErrorMessage::unusedPrivateFunction(_errorLogger, _tokenizer, FuncList.front(), classname, FuncList.front()->str());
             }
             FuncList.pop_front();
         }
@@ -617,7 +617,7 @@ void CheckClass::noMemset()
         const std::string pattern1(std::string("class ") + type);
         if (Token::findmatch(_tokenizer->tokens(), pattern1.c_str()))
         {
-            _errorLogger->reportErr(ErrorMessage::memsetClass(_tokenizer, tok, tok->str()));
+            ErrorMessage::memsetClass(_errorLogger, _tokenizer, tok, tok->str());
             continue;
         }
 
@@ -630,7 +630,7 @@ void CheckClass::noMemset()
 
             if (Token::Match(tstruct, "std :: %type% %var% ;"))
             {
-                _errorLogger->reportErr(ErrorMessage::memsetStruct(_tokenizer, tok, tok->str(), tstruct->strAt(2)));
+                ErrorMessage::memsetStruct(_errorLogger, _tokenizer, tok, tok->str(), tstruct->strAt(2));
                 break;
             }
         }
@@ -650,7 +650,7 @@ void CheckClass::operatorEq()
     const Token *tok = Token::findmatch(_tokenizer->tokens(), "void operator = (");
     if (tok)
     {
-        _errorLogger->reportErr(ErrorMessage::operatorEq(_tokenizer, tok));
+        ErrorMessage::operatorEq(_errorLogger, _tokenizer, tok);
     }
 }
 //---------------------------------------------------------------------------
@@ -731,14 +731,14 @@ void CheckClass::virtualDestructor()
                 base = Token::findmatch(_tokenizer->tokens(), (std::string("class ") + baseName[0] + " :|{").c_str());
                 if (base)
                 {
-                    _errorLogger->reportErr(ErrorMessage::virtualDestructor(_tokenizer, base, baseName[0], derivedClass->str()));
+                    ErrorMessage::virtualDestructor(_errorLogger, _tokenizer, base, baseName[0], derivedClass->str());
                 }
             }
 
             // There is a destructor. Check that it's virtual..
             else if (base->str() != "virtual")
             {
-                _errorLogger->reportErr(ErrorMessage::virtualDestructor(_tokenizer, base, baseName[0], derivedClass->str()));
+                ErrorMessage::virtualDestructor(_errorLogger, _tokenizer, base, baseName[0], derivedClass->str());
             }
         }
     }
