@@ -67,7 +67,7 @@ private:
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
-        // TODO TEST_CASE(varid3);
+        TEST_CASE(varid3);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
