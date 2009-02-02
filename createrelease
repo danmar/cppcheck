@@ -1,0 +1,19 @@
+#!/bin/bash
+
+cd
+
+echo "Creating source directory"
+svn co https://cppcheck.svn.sourceforge.net/svnroot/cppcheck cppcheck-1.28
+rm -R --force cppcheck-1.28/.svn
+rm -R --force cppcheck-1.28/man/.svn
+rm -R --force cppcheck-1.28/src/.svn
+rm -R --force cppcheck-1.28/test/.svn
+rm -R --force cppcheck-1.28/tools/.svn
+rm -R --force cppcheck-1.28/win_installer/.svn
+
+echo "Creating source packages"
+tar cjvf cppcheck-1.28.tar.bz2 cppcheck-1.28
+tar czvf cppcheck-1.28.tar.gz cppcheck-1.28
+cd cppcheck-1.28
+zip -r -9 ../cppcheck-1.28.zip *
+
