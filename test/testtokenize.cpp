@@ -78,6 +78,7 @@ private:
         TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
 
         TEST_CASE(sizeof1);
+        // TODO TEST_CASE(sizeof2);
     }
 
 
@@ -820,6 +821,30 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" int i [ 4 ] ; 16 ; 4 ;"), ostr.str());
+    }
+
+    void sizeof2()
+    {
+        const char code[] = "int i[4];\n"
+                            "void f()\n"
+                            "{\n"
+                            "    int i[10];\n"
+                            "    sizeof(i);\n"
+                            "    sizeof(*i);\n"
+                            "    sizeof(i[0]);\n"
+                            "}\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; 4 ; 4 ; }"), ostr.str());
     }
 };
 
