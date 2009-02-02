@@ -468,9 +468,9 @@ void Tokenizer::setVarId()
     unsigned int _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if ( tok != _tokens && !Token::Match(tok, "[;{}(]") )
+        if (tok != _tokens && !Token::Match(tok, "[;{}(]"))
             continue;
-    
+
         if (!(firstMatch = Token::Match(tok->next(), "%type% *| %var%"))
             && !Token::Match(tok->next(), "%type% %type% *| %var%"))
             continue;
@@ -676,13 +676,15 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
-        else if (Token::Match(tok, "sizeof ( * %var% )"))
+        else if (Token::Match(tok, "sizeof ( * %var% )") || Token::Match(tok, "sizeof ( %var% [ %num% ] )"))
         {
             // Some default value..
             int sz = 100;
 
+            unsigned int varid = tok->tokAt((tok->tokAt(2)->str() == "*") ? 3 : 2)->varId();
+
             // Try to locate variable declaration..
-            const Token *decltok = Token::findmatch(_tokens, "%type% %varid% [", tok->tokAt(3)->varId());
+            const Token *decltok = Token::findmatch(_tokens, "%type% %varid% [", varid);
             if (decltok)
             {
                 sz = SizeOfType(decltok->strAt(0));
@@ -691,8 +693,9 @@ void Tokenizer::simplifyTokenList()
             std::ostringstream ostr;
             ostr << sz;
             tok->str(ostr.str().c_str());
-            for (int i = 0; i < 4; ++i)
+            while (tok->next()->str() != ")")
                 tok->deleteNext();
+            tok->deleteNext();
         }
     }
 

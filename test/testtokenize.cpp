@@ -80,6 +80,7 @@ private:
 
         TEST_CASE(sizeof1);
         TEST_CASE(sizeof2);
+        TEST_CASE(sizeof3);
     }
 
 
@@ -873,6 +874,25 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }"), ostr.str());
+    }
+
+    void sizeof3()
+    {
+        const char code[] = ";int i[10];\n"
+                            "sizeof(i[0]);\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" ; int i [ 10 ] ; 4 ;"), ostr.str());
     }
 };
 
