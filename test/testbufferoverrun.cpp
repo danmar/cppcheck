@@ -43,10 +43,10 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
 
         // Assign variable ids
         tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
 
         // Fill function list
         tokenizer.fillFunctionList();

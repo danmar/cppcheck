@@ -67,6 +67,7 @@ private:
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
+        // TODO TEST_CASE(varid3);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -78,7 +79,7 @@ private:
         TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
 
         TEST_CASE(sizeof1);
-        // TODO TEST_CASE(sizeof2);
+        TEST_CASE(sizeof2);
     }
 
 
@@ -645,6 +646,30 @@ private:
         }
     }
 
+    void varid3()
+    {
+        const std::string code("static char str[4];\n"
+                               "void f()\n"
+                               "{\n"
+                               "    char str[10];\n"
+                               "    str[0] = 0;\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        {
+            if (Token::Match(tok, "str [ 4"))
+                ASSERT_EQUALS(1, tok->varId());
+            else if (tok->str() == "str")
+                ASSERT_EQUALS(2, tok->varId());
+        }
+    }
+
 
     void file1()
     {
@@ -806,32 +831,11 @@ private:
 
     void sizeof1()
     {
-        const char code[] = "int i[4];\n"
-                            "sizeof(i);\n"
-                            "sizeof(*i);\n";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" int i [ 4 ] ; 16 ; 4 ;"), ostr.str());
-    }
-
-    void sizeof2()
-    {
-        const char code[] = "int i[4];\n"
-                            "void f()\n"
+        const char code[] = "void foo()\n"
                             "{\n"
-                            "    int i[10];\n"
+                            "    int i[4];\n"
                             "    sizeof(i);\n"
                             "    sizeof(*i);\n"
-                            "    sizeof(i[0]);\n"
                             "}\n";
 
         // tokenize..
@@ -839,12 +843,36 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
+        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; 4 ; 4 ; }"), ostr.str());
+        ASSERT_EQUALS(std::string(" void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }"), ostr.str());
+    }
+
+    void sizeof2()
+    {
+        const char code[] = "static int i[4];\n"
+                            "void f()\n"
+                            "{\n"
+                            "    int i[10];\n"
+                            "    sizeof(i);\n"
+                            "}\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }"), ostr.str());
     }
 };
 

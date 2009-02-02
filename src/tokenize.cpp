@@ -679,7 +679,7 @@ void Tokenizer::simplifyTokenList()
             int sz = 100;
 
             // Try to locate variable declaration..
-            const Token *decltok = Token::findmatch(_tokens, (std::string("%type% ") + tok->strAt(3) + " [").c_str());
+            const Token *decltok = Token::findmatch(_tokens, "%type% %varid% [", tok->tokAt(3)->varId());
             if (decltok)
             {
                 sz = SizeOfType(decltok->strAt(0));
@@ -704,7 +704,10 @@ void Tokenizer::simplifyTokenList()
         if (size <= 0)
             continue;
 
-        const char *varname = tok->strAt(1);
+        const unsigned int varid = tok->next()->varId();
+        if (varid == 0)
+            continue;
+
         int total_size = size * std::atoi(tok->strAt(3));
 
         // Replace 'sizeof(var)' with number
@@ -723,19 +726,15 @@ void Tokenizer::simplifyTokenList()
                     break;
             }
 
-            // Todo: Token::Match varname directly
-            else if (Token::Match(tok2, "sizeof ( %var% )"))
+            else if (Token::Match(tok2, "sizeof ( %varid% )", varid))
             {
-                if (strcmp(tok2->strAt(2), varname) == 0)
+                std::ostringstream str;
+                str << total_size;
+                tok2->str(str.str().c_str());
+                // Delete the other tokens..
+                for (int i = 0; i < 3; i++)
                 {
-                    std::ostringstream str;
-                    str << total_size;
-                    tok2->str(str.str().c_str());
-                    // Delete the other tokens..
-                    for (int i = 0; i < 3; i++)
-                    {
-                        tok2->deleteNext();
-                    }
+                    tok2->deleteNext();
                 }
             }
         }
