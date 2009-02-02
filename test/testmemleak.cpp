@@ -120,6 +120,8 @@ private:
 
         TEST_CASE(mismatch1);
         // TODO TEST_CASE(mismatch2);
+        // TODO TEST_CASE(mismatch3);
+        TEST_CASE(mismatch4);
 
         TEST_CASE(func1);
         TEST_CASE(func2);
@@ -959,15 +961,46 @@ private:
     {
         check("void f()\n"
               "{\n"
-              "	FILE *fp;\n"
+              "    FILE *fp;\n"
               "\n"
-              "	fp = fopen();\n"
-              "	fclose(fp);\n"
+              "    fp = fopen();\n"
+              "    fclose(fp);\n"
               "\n"
-              "	fp = popen();\n"
-              "	pclose(fp);\n"
+              "    fp = popen();\n"
+              "    pclose(fp);\n"
               "}\n", false);
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void mismatch3()
+    {
+        check("void f()\n"
+              "{\n"
+              "    FILE *fp;\n"
+              "\n"
+              "    if (abc) fp = fopen();\n"
+              "    else fp = popen();\n"
+              "\n"
+              "    if (abc) fclose(fp);\n"
+              "    else pclose(fp);\n"
+              "}\n", false);
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void mismatch4()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *p = 0;\n"
+              "    for (i = 0; i < 10; ++i)\n"
+              "    {\n"
+              "        delete p;\n"
+              "        p = new char[100];\n"
+              "    }\n"
+              "    delete [] p;\n"
+              "}\n", false);
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (all) Mismatching allocation and deallocation: p\n"
+                                  "[test.cpp:9]: (all) Mismatching allocation and deallocation: p\n"), errout.str());
     }
 
 
