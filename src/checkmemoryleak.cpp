@@ -1495,7 +1495,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
 
     if (Alloc != No && Dealloc == No)
     {
-        MemoryLeak(_tokenizer->tokens(), FullVariableName.str().c_str(), Alloc, false);
+        MemoryLeak(_tokenizer->tokens(), FullVariableName.str().c_str(), Alloc, true);
     }
 }
 
