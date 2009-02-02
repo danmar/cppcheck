@@ -878,7 +878,7 @@ private:
 
     void sizeof3()
     {
-        const char code[] = ";int i[10];\n"
+        const char code[] = "int i[10];\n"
                             "sizeof(i[0]);\n";
 
         // tokenize..
@@ -892,7 +892,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" ; int i [ 10 ] ; 4 ;"), ostr.str());
+        ASSERT_EQUALS(std::string(" int i [ 10 ] ; 4 ;"), ostr.str());
     }
 };
 
