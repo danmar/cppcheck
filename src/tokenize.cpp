@@ -471,7 +471,7 @@ void Tokenizer::setVarId()
         if (tok != _tokens && !Token::Match(tok, "[;{}(]"))
             continue;
 
-        if ( Token::Match(tok, "[;{}(] %any%") )
+        if (Token::Match(tok, "[;{}(] %any%"))
             tok = tok->next();
 
         if (!(firstMatch = Token::Match(tok, "%type% *| %var%"))
@@ -685,12 +685,14 @@ void Tokenizer::simplifyTokenList()
             int sz = 100;
 
             unsigned int varid = tok->tokAt((tok->tokAt(2)->str() == "*") ? 3 : 2)->varId();
-
-            // Try to locate variable declaration..
-            const Token *decltok = Token::findmatch(_tokens, "%type% %varid% [", varid);
-            if (decltok)
+            if (varid != 0)
             {
-                sz = SizeOfType(decltok->strAt(0));
+                // Try to locate variable declaration..
+                const Token *decltok = Token::findmatch(_tokens, "%type% %varid% [", varid);
+                if (decltok)
+                {
+                    sz = SizeOfType(decltok->strAt(0));
+                }
             }
 
             std::ostringstream ostr;
