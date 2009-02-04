@@ -46,7 +46,7 @@ private:
         TEST_CASE(uninitVar1);
         TEST_CASE(uninitVarStream);
         TEST_CASE(privateCtor);         // If constructor is private..
-        // TODO TEST_CASE(function);            // Function is not variable
+        TEST_CASE(function);            // Function is not variable
     }
 
     // Check that base classes have virtual destructors
