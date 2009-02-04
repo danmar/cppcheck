@@ -181,14 +181,12 @@ private:
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
 
-        /* TODO
         check("static void f()\n"
               "{\n"
               "    int data[2];\n"
               "    data[ sizeof(data[0]) ] = 0;\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Array index out of bounds\n"), errout.str());
-        */
     }
 
 
