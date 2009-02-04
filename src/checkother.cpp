@@ -698,10 +698,12 @@ void CheckOther::CheckCharVariable()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring the variable..
-        if (Token::Match(tok, "[{};(,] char %var% [;=,)]"))
+        if (Token::Match(tok, "[{};(,] signed| char %var% [;=,)]"))
         {
             // Set tok to point to the variable name
             tok = tok->tokAt(2);
+            if (tok->str() == "char")
+                tok = tok->next();
 
             // Check usage of char variable..
             int indentlevel = 0;
