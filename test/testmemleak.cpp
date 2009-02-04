@@ -94,6 +94,7 @@ private:
         TEST_CASE(if8);     // Bug 2458532
         // TODO TEST_CASE( if9 );   // if (realloc)
         TEST_CASE(if10);            // else if (realloc)
+        TEST_CASE(if11);
 
         TEST_CASE(forwhile1);
         TEST_CASE(forwhile2);
@@ -629,7 +630,19 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
-
+    void if11()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    int *x = new int[10];\n"
+              "    if (x == 0 || aa)\n"
+              "    {\n"
+              "        return 1;\n"
+              "    }\n"
+              "    delete [] x;\n"
+              "}\n", true);
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (always) Memory leak: x\n"), errout.str());
+    }
 
 
 

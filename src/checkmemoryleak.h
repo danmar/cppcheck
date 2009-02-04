@@ -89,7 +89,16 @@ private:
      * memory by calling Tokenizer::deleteTokens(returnValue);
      */
     Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all);
-    bool notvar(const Token *tok, const char *varnames[]);
+
+    /**
+     * Check if there is a "!var" match inside a condition
+     * @param tok      first token to match
+     * @param varnames the varname
+     * @param endpar   if this is true the "!var" must be followed by ")"
+     * @return true if match
+     */
+    bool notvar(const Token *tok, const char *varnames[], bool endpar = false);
+
     bool MatchFunctionsThatReturnArg(const Token *tok, const std::string &varname);
     void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
     void MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[]);

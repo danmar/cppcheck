@@ -308,7 +308,7 @@ bool CheckMemoryLeakClass::MatchFunctionsThatReturnArg(const Token *tok, const s
     return Token::Match(tok, std::string("; " + varname + " = strcat|memcpy|memmove|strcpy ( " + varname + " ,").c_str());
 }
 
-bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
+bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[], bool endpar)
 {
     std::string varname;
     for (int i = 0; varnames[i]; i++)
@@ -319,10 +319,12 @@ bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[])
         varname += varnames[i];
     }
 
-    return bool(Token::Match(tok, std::string("! " + varname + " [;)&|]").c_str()) ||
-                Token::simpleMatch(tok, std::string("! ( " + varname + " )").c_str()) ||
-                Token::Match(tok, std::string("0 == " + varname + " [;)&|]").c_str()) ||
-                Token::simpleMatch(tok, std::string(varname + " == 0").c_str()));
+    const std::string end(endpar ? " )" : " [;)&|]");
+
+    return bool(Token::Match(tok, std::string("! " + varname + end).c_str()) ||
+                Token::simpleMatch(tok, std::string("! ( " + varname + " )" + end).c_str()) ||
+                Token::Match(tok, std::string("0 == " + varname + end).c_str()) ||
+                Token::simpleMatch(tok, std::string(varname + " == 0" + end).c_str()));
 }
 
 Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all)
@@ -485,7 +487,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 while (tok->str() != ")")
                     tok = tok->next();
             }
-            else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varnames))
+            else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varnames, true))
             {
                 addtoken("if(!var)");
             }
