@@ -46,6 +46,7 @@ private:
         TEST_CASE(uninitVar1);
         TEST_CASE(uninitVarStream);
         TEST_CASE(privateCtor);         // If constructor is private..
+        // TODO TEST_CASE(function);            // Function is not variable
     }
 
     // Check that base classes have virtual destructors
@@ -189,10 +190,29 @@ private:
                        "};\n");
 
         ASSERT_EQUALS(std::string(""), errout.str());
-
     }
 
 
+    void function()
+    {
+        checkUninitVar("class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    A();\n"
+                       "    int* f(int*);\n"
+                       "};\n"
+                       "\n"
+                       "A::A()\n"
+                       "{\n"
+                       "}\n"
+                       "\n"
+                       "int* A::f(int* p)\n"
+                       "{\n"
+                       "    return p;\n"
+                       "}\n");
+
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 
 };
 
