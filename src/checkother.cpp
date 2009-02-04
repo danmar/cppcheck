@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 #include "checkother.h"
 #include "errormessage.h"
+#include <algorithm>
 #include <list>
 #include <map>
 #include <sstream>
@@ -813,3 +814,55 @@ void CheckOther::strPlusChar()
         }
     }
 }
+
+
+
+
+
+void CheckOther::returnPointerToStackData()
+{
+    bool infunc = false;
+    int indentlevel = 0;
+    std::list<unsigned int> arrayVar;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (!infunc && Token::simpleMatch(tok, ") {"))
+        {
+            infunc = true;
+            indentlevel = 0;
+            arrayVar.clear();
+        }
+
+        if (infunc)
+        {
+            if (tok->str() == "{")
+                ++indentlevel;
+            else if (tok->str() == "}")
+            {
+                --indentlevel;
+                if (indentlevel <= 0)
+                    infunc = false;
+                continue;
+            }
+
+            // Declaring a local array..
+            if (Token::Match(tok, "[;{}] %type% %var% ["))
+            {
+                arrayVar.push_back(tok->tokAt(2)->varId());
+            }
+
+            // Return pointer to local array variable..
+            if (Token::Match(tok, "return %var% ;"))
+            {
+                unsigned int varid = tok->next()->varId();
+                if (varid > 0 && std::find(arrayVar.begin(), arrayVar.end(), varid) != arrayVar.end())
+                    ErrorMessage::returnLocalVariable(_errorLogger, _tokenizer, tok);
+            }
+        }
+
+        // Declaring array variable..
+
+
+    }
+}
+

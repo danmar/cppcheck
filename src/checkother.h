@@ -65,6 +65,9 @@ public:
     /** str plus char */
     void strPlusChar();
 
+    /** Returning pointer to local data */
+    void returnPointerToStackData();
+
 #ifndef UNIT_TESTING
 private:
 #endif

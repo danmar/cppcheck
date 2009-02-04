@@ -102,6 +102,7 @@ int main()
     err.push_back(Message("variableScope", Message::never, "The scope of the variable %1 can be limited", "varname"));
     err.push_back(Message("conditionAlwaysTrueFalse", Message::style, "Condition is always %1", "truefalse"));
     err.push_back(Message("strPlusChar", Message::always, "Unusual pointer arithmetic"));
+    err.push_back(Message("returnLocalVariable", Message::always, "Returning pointer to local array variable"));
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;

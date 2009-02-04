@@ -48,6 +48,8 @@ private:
         TEST_CASE(strPlusChar1);     // "/usr" + '/'
         TEST_CASE(strPlusChar2);     // "/usr" + ch
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
+
+        TEST_CASE(returnLocalVariable1);
     }
 
     void check(const char code[])
@@ -230,6 +232,33 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+
+
+    void retVar(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for redundant code..
+        CheckOther checkOther(&tokenizer, Settings(), this);
+        checkOther.returnPointerToStackData();
+    }
+
+    void returnLocalVariable1()
+    {
+        retVar("char *foo()\n"
+               "{\n"
+               "    char str[100] = {0};\n"
+               "    return str;\n"
+               "\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Returning pointer to local array variable\n"), errout.str());
+    }
 };
 
 REGISTER_TEST(TestOther)

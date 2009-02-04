@@ -332,5 +332,14 @@ public:
         return true;
     }
 
+    static void returnLocalVariable(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
+    {
+        _writemsg(logger, tokenizer, Location, "always", "Returning pointer to local array variable", "returnLocalVariable");
+    }
+    static bool returnLocalVariable()
+    {
+        return true;
+    }
+
 };
 #endif
