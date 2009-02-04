@@ -40,6 +40,8 @@ private:
     {
         TEST_CASE(longtok);
 
+        TEST_CASE(removeCast1);
+
         TEST_CASE(inlineasm);
 
         TEST_CASE(dupfuncname);
@@ -76,8 +78,7 @@ private:
 
         TEST_CASE(simplify_function_parameters);
 
-        TEST_CASE(reduce_redundant_paranthesis1);        // Ticket #61
-        TEST_CASE(reduce_redundant_paranthesis2);        // Ticket #61
+        TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
 
         TEST_CASE(sizeof1);
         TEST_CASE(sizeof2);
@@ -141,6 +142,26 @@ private:
 
         // Expected result..
         ASSERT_EQUALS(std::string(10000, 'a'), std::string(tokenizer.tokens()->aaaa()));
+    }
+
+
+
+    // Dont remove "(int *)"..
+    void removeCast1()
+    {
+        const char code[] = "int *f(int *);";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyCasts();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" int * f ( int * ) ;"), ostr.str());
     }
 
 
@@ -810,7 +831,7 @@ private:
 
 
     // Simplify "((..))" into "(..)"
-    void reduce_redundant_paranthesis1()
+    void reduce_redundant_paranthesis()
     {
         const char code[] = "void foo()\n"
                             "{\n"
@@ -830,28 +851,6 @@ private:
         ASSERT_EQUALS(std::string(" void foo ( ) { free ( p ) ; }"), ostr.str());
     }
 
-    // Simplify "((..))" into "(..)"
-    void reduce_redundant_paranthesis2()
-    {
-        const char code[] = "class A\n"
-                            "{\n"
-                            "public:\n"
-                            "    A();\n"
-                            "    int *p(int *);\n"
-                            "}";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" class A { public: A ( ) ; int * p ( int * ) ; }"), ostr.str());
-    }
 
 
 

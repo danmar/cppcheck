@@ -1308,7 +1308,7 @@ bool Tokenizer::simplifyCasts()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok->next(), "( %type% * )"))
+        if (!tok->isName() && Token::Match(tok->next(), "( %type% * )"))
         {
             tok->deleteNext();
             tok->deleteNext();
