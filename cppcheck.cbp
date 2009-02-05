@@ -66,6 +66,7 @@
 		<Unit filename="test/testcharvar.cpp" />
 		<Unit filename="test/testclass.cpp" />
 		<Unit filename="test/testconstructors.cpp" />
+		<Unit filename="test/testcppcheck.cpp" />
 		<Unit filename="test/testdangerousfunctions.cpp" />
 		<Unit filename="test/testdivision.cpp" />
 		<Unit filename="test/testfilelister.cpp" />

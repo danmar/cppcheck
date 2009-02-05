@@ -25,6 +25,7 @@ TESTOBJ =     test/testbufferoverrun.o \
               test/testcharvar.o \
               test/testclass.o \
               test/testconstructors.o \
+              test/testcppcheck.o \
               test/testdangerousfunctions.o \
               test/testdivision.o \
               test/testfilelister.o \
@@ -117,7 +118,7 @@ src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h
 src/cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/errorlogger.h src/cppcheck.h src/settings.h src/checkfunctionusage.h src/tokenize.h src/token.h
 	g++ $(CXXFLAGS) -c -o src/cppcheckexecutor.o src/cppcheckexecutor.cpp
 
-src/errormessage.o: src/errormessage.cpp src/errormessage.h src/settings.h src/tokenize.h src/errorlogger.h src/token.h
+src/errormessage.o: src/errormessage.cpp src/errormessage.h src/settings.h src/errorlogger.h src/tokenize.h src/token.h
 	g++ $(CXXFLAGS) -c -o src/errormessage.o src/errormessage.cpp
 
 src/filelister.o: src/filelister.cpp src/filelister.h
@@ -149,6 +150,9 @@ test/testclass.o: test/testclass.cpp src/tokenize.h src/settings.h src/errorlogg
 
 test/testconstructors.o: test/testconstructors.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkclass.h test/testsuite.h
 	g++ $(CXXFLAGS) -c -o test/testconstructors.o test/testconstructors.cpp
+
+test/testcppcheck.o: test/testcppcheck.cpp test/testsuite.h src/errorlogger.h src/cppcheck.h src/settings.h src/checkfunctionusage.h src/tokenize.h src/token.h
+	g++ $(CXXFLAGS) -c -o test/testcppcheck.o test/testcppcheck.cpp
 
 test/testdangerousfunctions.o: test/testdangerousfunctions.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkdangerousfunctions.h test/testsuite.h
 	g++ $(CXXFLAGS) -c -o test/testdangerousfunctions.o test/testdangerousfunctions.cpp
