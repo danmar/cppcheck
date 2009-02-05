@@ -55,7 +55,7 @@ public:
 
     static void outOfBounds(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &what)
     {
-        _writemsg(logger, tokenizer, Location, "always", "" + what + " is out of bounds", "outOfBounds");
+        _writemsg(logger, tokenizer, Location, "error", "" + what + " is out of bounds", "outOfBounds");
     }
     static bool outOfBounds()
     {
@@ -73,7 +73,7 @@ public:
 
     static void uninitVar(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &varname)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Uninitialized member variable '" + classname + "::" + varname + "'", "uninitVar");
+        _writemsg(logger, tokenizer, Location, "error", "Uninitialized member variable '" + classname + "::" + varname + "'", "uninitVar");
     }
     static bool uninitVar()
     {
@@ -91,7 +91,7 @@ public:
 
     static void memsetClass(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Using '" + memfunc + "' on class", "memsetClass");
+        _writemsg(logger, tokenizer, Location, "error", "Using '" + memfunc + "' on class", "memsetClass");
     }
     static bool memsetClass()
     {
@@ -100,7 +100,7 @@ public:
 
     static void memsetStruct(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &memfunc, const std::string &classname)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'", "memsetStruct");
+        _writemsg(logger, tokenizer, Location, "error", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'", "memsetStruct");
     }
     static bool memsetStruct()
     {
@@ -118,7 +118,7 @@ public:
 
     static void virtualDestructor(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &Base, const std::string &Derived)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor", "virtualDestructor");
+        _writemsg(logger, tokenizer, Location, "error", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor", "virtualDestructor");
     }
     static bool virtualDestructor()
     {
@@ -145,7 +145,7 @@ public:
 
     static void memleak(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Memory leak: " + varname + "", "memleak");
+        _writemsg(logger, tokenizer, Location, "error", "Memory leak: " + varname + "", "memleak");
     }
     static bool memleak()
     {
@@ -163,7 +163,7 @@ public:
 
     static void resourceLeak(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Resource leak: " + varname + "", "resourceLeak");
+        _writemsg(logger, tokenizer, Location, "error", "Resource leak: " + varname + "", "resourceLeak");
     }
     static bool resourceLeak()
     {
@@ -172,7 +172,7 @@ public:
 
     static void deallocDealloc(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Deallocating a deallocated pointer: " + varname + "", "deallocDealloc");
+        _writemsg(logger, tokenizer, Location, "error", "Deallocating a deallocated pointer: " + varname + "", "deallocDealloc");
     }
     static bool deallocDealloc()
     {
@@ -181,7 +181,7 @@ public:
 
     static void deallocuse(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Using '" + varname + "' after it is deallocated / released", "deallocuse");
+        _writemsg(logger, tokenizer, Location, "error", "Using '" + varname + "' after it is deallocated / released", "deallocuse");
     }
     static bool deallocuse()
     {
@@ -217,7 +217,7 @@ public:
 
     static void dangerousUsageStrtol(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36", "dangerousUsageStrtol");
+        _writemsg(logger, tokenizer, Location, "error", "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36", "dangerousUsageStrtol");
     }
     static bool dangerousUsageStrtol()
     {
@@ -235,7 +235,7 @@ public:
 
     static void sprintfOverlappingData(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Overlapping data buffer " + varname + "", "sprintfOverlappingData");
+        _writemsg(logger, tokenizer, Location, "error", "Overlapping data buffer " + varname + "", "sprintfOverlappingData");
     }
     static bool sprintfOverlappingData()
     {
@@ -244,7 +244,7 @@ public:
 
     static void udivError(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Unsigned division. The result will be wrong.", "udivError");
+        _writemsg(logger, tokenizer, Location, "error", "Unsigned division. The result will be wrong.", "udivError");
     }
     static bool udivError()
     {
@@ -325,7 +325,7 @@ public:
 
     static void strPlusChar(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Unusual pointer arithmetic", "strPlusChar");
+        _writemsg(logger, tokenizer, Location, "error", "Unusual pointer arithmetic", "strPlusChar");
     }
     static bool strPlusChar()
     {
@@ -334,7 +334,7 @@ public:
 
     static void returnLocalVariable(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
-        _writemsg(logger, tokenizer, Location, "always", "Returning pointer to local array variable", "returnLocalVariable");
+        _writemsg(logger, tokenizer, Location, "error", "Returning pointer to local array variable", "returnLocalVariable");
     }
     static bool returnLocalVariable()
     {

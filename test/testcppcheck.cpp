@@ -78,7 +78,7 @@ private:
         check(filedata);
 
         // Compare results..
-        ASSERT_EQUALS("[file.cpp:5]: (always) Memory leak: string\n", errout.str());
+        ASSERT_EQUALS("[file.cpp:5]: (error) Memory leak: string\n", errout.str());
     }
 };
 

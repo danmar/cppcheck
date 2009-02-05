@@ -140,7 +140,7 @@ private:
                      "    char buf[100];\n"
                      "    sprintf(buf,\"%s\",buf);\n"
                      "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Overlapping data buffer buf\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Overlapping data buffer buf\n"), errout.str());
     }
 
     void sprintf2()
@@ -207,7 +207,7 @@ private:
                     "{\n"
                     "    const char *p = \"/usr\" + '/';\n"
                     "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (always) Unusual pointer arithmetic\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Unusual pointer arithmetic\n"), errout.str());
     }
 
     void strPlusChar2()
@@ -218,7 +218,7 @@ private:
                     "    char ch = '/';\n"
                     "    const char *p = \"/usr\" + ch;\n"
                     "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Unusual pointer arithmetic\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Unusual pointer arithmetic\n"), errout.str());
     }
 
     void strPlusChar3()
@@ -257,7 +257,7 @@ private:
                "    char str[100] = {0};\n"
                "    return str;\n"
                "\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) Returning pointer to local array variable\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Returning pointer to local array variable\n"), errout.str());
     }
 };
 

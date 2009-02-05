@@ -417,7 +417,7 @@ private:
               "    char str[5];\n"
               "    snprintf(str, 10, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (always) snprintf size is out of bounds\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) snprintf size is out of bounds\n"), errout.str());
     }
 
     void snprintf2()
