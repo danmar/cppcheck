@@ -60,6 +60,7 @@ private:
     {
         TEST_CASE(test1);
         TEST_CASE(test2);
+        TEST_CASE(test3);
     }
 
     void test1()
@@ -79,14 +80,22 @@ private:
 
     void test2()
     {
-        // Todo: remove the ';' before the string
-
         check("void foo()\n"
               "{\n"
-              "    ;\"abc\";\n"
+              "    \"abc\";\n"
               "}\n");
 
         ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant code: Found a statement that begins with string constant\n"), errout.str());
+    }
+
+    void test3()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    const char *str[] = { \"abc\" };\n"
+              "}\n");
+
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 

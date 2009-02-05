@@ -763,12 +763,12 @@ void CheckOther::CheckIncompleteStatement()
         if (parlevel != 0)
             continue;
 
-        if ((tok->str() != "#") && Token::Match(tok->next(), "; %str%") && !Token::Match(tok->tokAt(3), ","))
+        if (Token::Match(tok, "[;{}] %str%") && !Token::Match(tok->tokAt(2), "[,}]"))
         {
             ErrorMessage::constStatement(_errorLogger, _tokenizer, tok->next(), "string");
         }
 
-        if (!Token::Match(tok, "#") && Token::Match(tok->next(), "; %num%") && !Token::Match(tok->tokAt(3), ","))
+        if (Token::Match(tok, "[;{}] %num%") && !Token::Match(tok->tokAt(2), "[,}]"))
         {
             ErrorMessage::constStatement(_errorLogger, _tokenizer, tok->next(), "numeric");
         }
