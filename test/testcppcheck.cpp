@@ -48,7 +48,8 @@ private:
 
     void run()
     {
-        // TEST_CASE(linenumbers);
+        TEST_CASE(linenumbers);
+        // TEST_CASE(linenumbers2);
     }
 
     void linenumbers()
@@ -63,6 +64,21 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("[file.cpp:5]: Using \"foo\" after it has been deallocated / released\n", errout.str());
+    }
+
+    void linenumbers2()
+    {
+        const char filedata[] = "void f()\n"
+                                "{\n"
+                                "  char *string;\n"
+                                "  string = new char[20];\n"
+                                "  string = new char[30];\n"
+                                "  delete [] string;\n"
+                                "}\n";
+        check(filedata);
+
+        // Compare results..
+        ASSERT_EQUALS("[file.cpp:5]: (always) Memory leak: string\n", errout.str());
     }
 };
 
