@@ -174,6 +174,7 @@ private:
         TEST_CASE(dealloc_use_4);
         TEST_CASE(dealloc_use_5);
         TEST_CASE(dealloc_use_6);
+        TEST_CASE(dealloc_use_7);
 
         // free a free'd pointer
         TEST_CASE(freefree1);
@@ -1726,6 +1727,17 @@ private:
               "    printf(\"free %x\", str);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void dealloc_use_7()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *str = new char[10];\n"
+              "    delete [] str;\n"
+              "    str[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:5]: Using \"str\" after it has been deallocated / released\n"), errout.str());
     }
 
 

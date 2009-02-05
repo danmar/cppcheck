@@ -601,7 +601,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         {
             addtoken("use");
         }
-        else if (Token::Match(tok, std::string("[;{}=(,+-*/] " + varnameStr + " [").c_str()))
+        else if (Token::Match(tok->previous(), std::string("[;{}=(,+-*/] " + varnameStr + " [").c_str()))
         {
             addtoken("use_");
         }

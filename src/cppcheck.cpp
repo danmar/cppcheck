@@ -33,6 +33,7 @@
 #include "errormessage.h"
 
 #include <algorithm>
+#include <iostream>
 #include <sstream>
 #include <cstring>
 #include <fstream>
@@ -307,14 +308,6 @@ unsigned int CppCheck::check()
 
 void CppCheck::checkFile(const std::string &code, const char FileName[])
 {
-    /* For debugging: Write the code into a file and exit
-    	{
-    		std::ofstream f("temp.txt");
-    		f << code;
-    		exit(0);
-    	}
-    */
-
     Tokenizer _tokenizer;
 
     // Tokenize the file
@@ -347,10 +340,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorMessage::charArrayIndex(_settings) || ErrorMessage::charBitOp(_settings))
         checkOther.CheckCharVariable();
 
-
-
     _tokenizer.simplifyTokenList();
-
 
     if (_settings._unusedFunctions)
         _checkFunctionUsage.parseTokens(_tokenizer);
