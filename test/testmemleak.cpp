@@ -120,8 +120,8 @@ private:
         TEST_CASE(ret5);        // Bug 2458436 - return use
 
         TEST_CASE(mismatch1);
-        // TODO TEST_CASE(mismatch2);
-        // TODO TEST_CASE(mismatch3);
+        TEST_CASE(mismatch2);
+        TEST_CASE(mismatch3);
         TEST_CASE(mismatch4);
 
         TEST_CASE(func1);
@@ -1013,8 +1013,7 @@ private:
               "    }\n"
               "    delete [] p;\n"
               "}\n", false);
-        ASSERT_EQUALS(std::string("[test.cpp:6]: (all) Mismatching allocation and deallocation: p\n"
-                                  "[test.cpp:9]: (all) Mismatching allocation and deallocation: p\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (all) Mismatching allocation and deallocation: p\n"), errout.str());
     }
 
 

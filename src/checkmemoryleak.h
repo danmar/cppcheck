@@ -41,7 +41,8 @@ public:
 
 private:
 
-    enum AllocType { No, Malloc, gMalloc, New, NewArray, FOPEN, POPEN };
+    /** What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
+    enum AllocType { No, Malloc, gMalloc, New, NewArray, FOPEN, POPEN, Many };
 
     // Extra allocation..
     class AllocFunc
