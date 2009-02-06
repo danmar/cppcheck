@@ -968,7 +968,7 @@ private:
               "    int *a = new int[10];\n"
               "    free(a);\n"
               "}\n", true);
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Mismatching allocation and deallocation: a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Mismatching allocation and deallocation: a\n"), errout.str());
     }
 
     void mismatch2()
@@ -1013,7 +1013,7 @@ private:
               "    }\n"
               "    delete [] p;\n"
               "}\n", false);
-        ASSERT_EQUALS(std::string("[test.cpp:6]: (all) Mismatching allocation and deallocation: p\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (error) Mismatching allocation and deallocation: p\n"), errout.str());
     }
 
 
@@ -1089,7 +1089,7 @@ private:
               "    foo(p);\n"
               "}\n", true);
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string("[test.cpp:9] -> [test.cpp:3]: (all) Mismatching allocation and deallocation: str\n"), err);
+        ASSERT_EQUALS(std::string("[test.cpp:9] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: str\n"), err);
     }
 
 
@@ -1294,7 +1294,7 @@ private:
               "    free(str1);\n"
               "}\n", true);
 
-        ASSERT_EQUALS(std::string("[test.cpp:17]: (all) Mismatching allocation and deallocation: Fred::str1\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n"), errout.str());
     }
 
     void class3()
