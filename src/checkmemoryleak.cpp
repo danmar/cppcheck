@@ -1171,9 +1171,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
     }
     if ((result = Token::findmatch(tok, "dealloc [;{}] use|use_ ;")) != NULL)
     {
-        std::ostringstream errmsg;
-        errmsg << _tokenizer->fileLine(result->tokAt(2)) << ": Using \"" << varname << "\" after it has been deallocated / released";
-        _errorLogger->reportErr(errmsg.str());
+        ErrorMessage::deallocuse(_errorLogger, _tokenizer, result->tokAt(2), varname);
     }
 
     // Replace "&use" with "use". Replace "use_" with ";"

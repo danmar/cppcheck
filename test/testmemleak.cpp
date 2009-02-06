@@ -1669,7 +1669,7 @@ private:
               "    delete [] s;\n"
               "    p = s;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Using \"s\" after it has been deallocated / released\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Using 's' after it is deallocated / released\n"), errout.str());
     }
 
     void dealloc_use_2()
@@ -1714,7 +1714,7 @@ private:
               "    free(str);\n"
               "    char c = str[10];\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Using \"str\" after it has been deallocated / released\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Using 'str' after it is deallocated / released\n"), errout.str());
     }
 
     void dealloc_use_6()
@@ -1736,7 +1736,7 @@ private:
               "    delete [] str;\n"
               "    str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: Using \"str\" after it has been deallocated / released\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Using 'str' after it is deallocated / released\n"), errout.str());
     }
 
 

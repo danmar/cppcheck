@@ -63,7 +63,7 @@ private:
         check(filedata);
 
         // Compare results..
-        ASSERT_EQUALS("[file.cpp:5]: Using \"foo\" after it has been deallocated / released\n", errout.str());
+        ASSERT_EQUALS("[file.cpp:5]: (error) Using 'foo' after it is deallocated / released\n", errout.str());
     }
 
     void linenumbers2()
