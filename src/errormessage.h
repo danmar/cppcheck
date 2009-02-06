@@ -136,11 +136,11 @@ public:
 
     static void mismatchAllocDealloc(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &Location, const std::string &varname)
     {
-        _writemsg(logger, tokenizer, Location, "all", "Mismatching allocation and deallocation: " + varname + "", "mismatchAllocDealloc");
+        _writemsg(logger, tokenizer, Location, "error", "Mismatching allocation and deallocation: " + varname + "", "mismatchAllocDealloc");
     }
-    static bool mismatchAllocDealloc(const Settings &s)
+    static bool mismatchAllocDealloc()
     {
-        return s._showAll;
+        return true;
     }
 
     static void memleak(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &varname)

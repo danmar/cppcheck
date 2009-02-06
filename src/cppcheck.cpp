@@ -353,7 +353,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
-    if (ErrorMessage::memleak() || ErrorMessage::mismatchAllocDealloc(_settings))
+    if (ErrorMessage::memleak() || ErrorMessage::mismatchAllocDealloc())
         checkMemoryLeak.CheckMemoryLeak();
 
     // Check that all class constructors are ok.

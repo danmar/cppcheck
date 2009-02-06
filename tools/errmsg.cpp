@@ -75,7 +75,7 @@ int main()
     err.push_back(Message("unusedFunction", Message::style_all, "[%1]: The function '%2' is never used", "filename", "funcname"));
 
     // checkmemoryleak.cpp..
-    err.push_back(Message("mismatchAllocDealloc", Message::all, "Mismatching allocation and deallocation: %1", "varname"));
+    err.push_back(Message("mismatchAllocDealloc", Message::error, "Mismatching allocation and deallocation: %1", "varname"));
     err.push_back(Message("memleak", Message::error, "Memory leak: %1", "varname"));
     err.push_back(Message("memleakall", Message::all, "Memory leak: %1", "varname"));
     err.push_back(Message("resourceLeak", Message::error, "Resource leak: %1", "varname"));
