@@ -18,8 +18,6 @@
  */
 
 
-
-#define UNIT_TESTING
 #include "../src/tokenize.h"
 #include "../src/checkmemoryleak.h"
 #include "testsuite.h"
@@ -32,6 +30,20 @@ class TestMemleakMultiPass : public TestFixture
 public:
     TestMemleakMultiPass() : TestFixture("TestMemleakMultiPass")
     { }
+
+    class OurCheckMemoryLeakClass : public CheckMemoryLeakClass
+    {
+    public:
+        OurCheckMemoryLeakClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
+                : CheckMemoryLeakClass(tokenizer, settings, errorLogger)
+        {
+        }
+
+        Token *functionParameterCode(const Token *ftok, int parameter)
+        {
+            return CheckMemoryLeakClass::functionParameterCode(ftok, parameter);
+        }
+    };
 
 private:
 
@@ -58,7 +70,7 @@ private:
 
         // Check..
         Settings settings;
-        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
+        OurCheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
         Token *tok = checkMemoryLeak.functionParameterCode(tokenizer.tokens(), 1);
 
         // Compare tokens..

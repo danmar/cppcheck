@@ -68,9 +68,7 @@ public:
     /** Returning pointer to local data */
     void returnPointerToStackData();
 
-#ifndef UNIT_TESTING
-private:
-#endif
+protected:
     void CheckVariableScope_LookupVar(const Token *tok1, const char varname[]);
 
     // Redundant condition

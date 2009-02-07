@@ -75,11 +75,32 @@ public:
     const Token *GetFunctionTokenByName(const char funcname[]) const;
     const Token *tokens() const;
 
+protected:
 
-#ifndef UNIT_TESTING
+    /** Add braces to an if-block
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
+    bool simplifyIfAddBraces();
+
+    /** Simplify casts
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
+    bool simplifyCasts();
+
+    /**
+     * A simplify function that replaces a variable with its value in cases
+     * when the value is known. e.g. "x=10; if(x)" => "x=10;if(10)"
+     *
+     * @return true if modifications to token-list are done.
+     *         false if no modifications are done.
+     */
+    bool simplifyKnownVariables();
+
+    std::vector<const Token *> _functionList;
+
 private:
-#endif
-
 
     /**
      * Finds matching "end" for "start".
@@ -91,12 +112,6 @@ private:
     static const Token *findClosing(const Token *tok, const char *start, const char *end);
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
-
-    /** Add braces to an if-block
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool simplifyIfAddBraces();
 
     /** Simplify conditions
      * @return true if something is modified
@@ -111,26 +126,11 @@ private:
      */
     bool removeReduntantConditions();
 
-    /** Simplify casts
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool simplifyCasts();
-
     /** Simplify function calls - constant return value
      * @return true if something is modified
      *         false if nothing is done.
      */
     bool simplifyFunctionReturn();
-
-    /**
-     * A simplify function that replaces a variable with its value in cases
-     * when the value is known. e.g. "x=10; if(x)" => "x=10;if(10)"
-     *
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifyKnownVariables();
 
     /**
      * Remove redundant paranthesis: "((x))" => "(x)"
@@ -149,7 +149,6 @@ private:
 
     Token *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
-    std::vector<const Token *> _functionList;
     std::vector<std::string> _files;
     Token *_tokens;
 };

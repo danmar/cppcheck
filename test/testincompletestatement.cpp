@@ -21,7 +21,7 @@
 
 // Check for unused variables..
 
-#define UNIT_TESTING
+
 #include "testsuite.h"
 #include "../src/tokenize.h"
 #include "../src/checkother.h"

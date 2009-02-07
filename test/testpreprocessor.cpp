@@ -23,7 +23,6 @@
 
 
 #include "testsuite.h"
-#define UNIT_TESTING
 #include "../src/preprocessor.h"
 
 #include <map>
@@ -34,6 +33,20 @@ class TestPreprocessor : public TestFixture
 public:
     TestPreprocessor() : TestFixture("TestPreprocessor")
     { }
+
+    class OurPreprocessor : public Preprocessor
+    {
+    public:
+        static std::string replaceIfDefined(const std::string &str)
+        {
+            return Preprocessor::replaceIfDefined(str);
+        }
+
+        static std::string expandMacros(std::string code)
+        {
+            return Preprocessor::expandMacros(code);
+        }
+    };
 
 private:
 
@@ -473,7 +486,7 @@ private:
         std::string expected("#ifdef AAA\n#endif\n");
 
         // Compare result..
-        ASSERT_EQUALS(expected, Preprocessor::replaceIfDefined(filedata));
+        ASSERT_EQUALS(expected, OurPreprocessor::replaceIfDefined(filedata));
     }
 
 
@@ -481,28 +494,28 @@ private:
     {
         const char filedata[] = "#define AAA(aa) f(aa)\n"
                                 "AAA(5);\n";
-        ASSERT_EQUALS("\nf(5);\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nf(5);\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple2()
     {
         const char filedata[] = "#define min(x,y) x<y?x:y\n"
                                 "min(a(),b());\n";
-        ASSERT_EQUALS("\na()<b()?a():b();\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\na()<b()?a():b();\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple3()
     {
         const char filedata[] = "#define A 4\n"
                                 "A AA\n";
-        ASSERT_EQUALS("\n4 AA\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n4 AA\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple4()
     {
         const char filedata[] = "#define TEMP_1 if( temp > 0 ) return 1;\n"
                                 "TEMP_1\n";
-        ASSERT_EQUALS("\nif( temp > 0 ) return 1;\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nif( temp > 0 ) return 1;\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple5()
@@ -514,21 +527,21 @@ private:
                                 "    int temp = 0;\n"
                                 "    ABC\n"
                                 "}\n";
-        ASSERT_EQUALS("\n\nvoid foo()\n{\n    int temp = 0;\n    if( temp > 0 ) return 1;\n}\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\nvoid foo()\n{\n    int temp = 0;\n    if( temp > 0 ) return 1;\n}\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple6()
     {
         const char filedata[] = "#define ABC (a+b+c)\n"
                                 "ABC";
-        ASSERT_EQUALS("\n(a+b+c)", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n(a+b+c)", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple7()
     {
         const char filedata[] = "#define ABC(str) str\n"
                                 "ABC(\"(\")";
-        ASSERT_EQUALS("\n\"(\"", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\"(\"", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_simple8()
@@ -536,14 +549,14 @@ private:
         const char filedata[] = "#define ABC 123\n"
                                 "#define ABCD 1234\n"
                                 "ABC ABCD";
-        ASSERT_EQUALS("\n\n123 1234", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\n123 1234", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_mismatch()
     {
         const char filedata[] = "#define AAA(aa,bb) f(aa)\n"
                                 "AAA(5);\n";
-        ASSERT_EQUALS("\nAAA(5);\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nAAA(5);\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void string1()
@@ -570,7 +583,7 @@ private:
                                 "str = \"AAA\"";
 
         // Compare results..
-        ASSERT_EQUALS("\nstr = \"AAA\"", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nstr = \"AAA\"", OurPreprocessor::expandMacros(filedata));
     }
 
 
@@ -582,7 +595,7 @@ private:
                                 "AAA\n";
 
         // Compare results..
-        ASSERT_EQUALS("\n\n\nchar b=0;\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\n\nchar b=0;\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void defdef()
@@ -593,7 +606,7 @@ private:
                                 "AAA\n";
 
         // Compare results..
-        ASSERT_EQUALS("\n\n\n789\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n\n\n789\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void preprocessor_doublesharp()
@@ -602,13 +615,13 @@ private:
                                 "TEST(foo,20);\n";
 
         // Compare results..
-        ASSERT_EQUALS("\nfoo=20;\n", Preprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\nfoo=20;\n", OurPreprocessor::expandMacros(filedata));
 
         const char filedata2[] = "#define TEST(var,val) var##_##val = val\n"
                                  "TEST(foo,20);\n";
 
         // Compare results..
-        ASSERT_EQUALS("\nfoo_20=20;\n", Preprocessor::expandMacros(filedata2));
+        ASSERT_EQUALS("\nfoo_20=20;\n", OurPreprocessor::expandMacros(filedata2));
     }
 
 
@@ -641,7 +654,7 @@ private:
                                 "DBG(\"[0x%lx-0x%lx)\", pstart, pend);";
 
         // Preprocess..
-        std::string actual = Preprocessor::expandMacros(filedata);
+        std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\nprintf(\"[0x%lx-0x%lx)\", pstart, pend);", actual);
     }
@@ -652,7 +665,7 @@ private:
                                 "DBG(\"hello\");";
 
         // Preprocess..
-        std::string actual = Preprocessor::expandMacros(filedata);
+        std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\nprintf(\"hello\");", actual);
     }
@@ -688,7 +701,7 @@ private:
                                 "STRINGIFY(abc)";
 
         // expand macros..
-        std::string actual = Preprocessor::expandMacros(filedata);
+        std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\n\"abc\"", actual);
     }

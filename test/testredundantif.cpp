@@ -22,7 +22,6 @@
 // such as "svar / uvar". Treating "svar" as unsigned data is not good
 
 
-#define UNIT_TESTING
 #include "../src/tokenize.h"
 #include "../src/checkother.h"
 #include "testsuite.h"
@@ -37,6 +36,21 @@ public:
     TestRedundantIf() : TestFixture("TestRedundantIf")
     { }
 
+    class OurCheckOther : public CheckOther
+    {
+    public:
+        OurCheckOther(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
+                : CheckOther(tokenizer, settings, errorLogger)
+        {
+
+        }
+
+        void redundantCondition2()
+        {
+            CheckOther::redundantCondition2();
+        }
+    };
+
 private:
     void check(const char code[])
     {
@@ -49,7 +63,7 @@ private:
         errout.str("");
 
         // Check for redundant condition..
-        CheckOther checkOther(&tokenizer, Settings(), this);
+        OurCheckOther checkOther(&tokenizer, Settings(), this);
         checkOther.redundantCondition2();
     }
 

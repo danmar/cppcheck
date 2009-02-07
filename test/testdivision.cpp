@@ -22,7 +22,6 @@
 // such as "svar / uvar". Treating "svar" as unsigned data is not good
 
 
-#define UNIT_TESTING
 #include "../src/tokenize.h"
 #include "../src/checkother.h"
 #include "testsuite.h"

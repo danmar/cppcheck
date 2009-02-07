@@ -115,9 +115,7 @@ private:
     std::list<AllocFunc> _listAllocFunc;
 
 // Experimental functionality..
-#ifdef UNIT_TESTING
-public:
-#endif
+protected:
     Token *functionParameterCode(const Token *ftok, int parameter);
 };
 

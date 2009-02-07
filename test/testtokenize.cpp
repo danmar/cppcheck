@@ -24,7 +24,6 @@
 
 #include <cstring>
 #include "testsuite.h"
-#define UNIT_TESTING        // Get access to "private" data in Tokenizer
 #include "../src/tokenize.h"
 
 extern std::ostringstream errout;
@@ -33,6 +32,30 @@ class TestTokenizer : public TestFixture
 public:
     TestTokenizer() : TestFixture("TestTokenizer")
     { }
+
+    class OurTokenizer : public Tokenizer
+    {
+    public:
+        void simplifyCasts()
+        {
+            Tokenizer::simplifyCasts();
+        }
+
+        bool simplifyIfAddBraces()
+        {
+            return Tokenizer::simplifyIfAddBraces();
+        }
+
+        bool simplifyKnownVariables()
+        {
+            return Tokenizer::simplifyKnownVariables();
+        }
+
+        std::vector<const Token *> &getFunctionList()
+        {
+            return _functionList;
+        }
+    };
 
 private:
 
@@ -153,7 +176,7 @@ private:
         const char code[] = "int *f(int *);";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -208,14 +231,14 @@ private:
                             "void b()\n"
                             "{ }\n";
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.fillFunctionList();
 
-        ASSERT_EQUALS(1, static_cast<unsigned int>(tokenizer._functionList.size()));
-        ASSERT_EQUALS(std::string("b"), tokenizer._functionList[0]->aaaa());
+        ASSERT_EQUALS(1, static_cast<unsigned int>(tokenizer.getFunctionList().size()));
+        ASSERT_EQUALS(std::string("b"), tokenizer.getFunctionList()[0]->aaaa());
     }
 
     void const_and_volatile_functions()
@@ -239,18 +262,18 @@ private:
 
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         tokenizer.fillFunctionList();
 
-        ASSERT_EQUALS(3, static_cast<unsigned int>(tokenizer._functionList.size()));
-        if (tokenizer._functionList.size() == 3)
+        ASSERT_EQUALS(3, static_cast<unsigned int>(tokenizer.getFunctionList().size()));
+        if (tokenizer.getFunctionList().size() == 3)
         {
-            ASSERT_EQUALS(std::string("a"), tokenizer._functionList[0]->str());
-            ASSERT_EQUALS(std::string("b"), tokenizer._functionList[1]->str());
-            ASSERT_EQUALS(std::string("c"), tokenizer._functionList[2]->str());
+            ASSERT_EQUALS(std::string("a"), tokenizer.getFunctionList()[0]->str());
+            ASSERT_EQUALS(std::string("b"), tokenizer.getFunctionList()[1]->str());
+            ASSERT_EQUALS(std::string("c"), tokenizer.getFunctionList()[2]->str());
         }
     }
 
@@ -284,7 +307,7 @@ private:
                             "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -304,7 +327,7 @@ private:
                             "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -324,7 +347,7 @@ private:
                             "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -349,7 +372,7 @@ private:
 
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -370,7 +393,7 @@ private:
                             "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -393,7 +416,7 @@ private:
                             "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -419,7 +442,7 @@ private:
                             "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -441,7 +464,7 @@ private:
                             "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
@@ -463,7 +486,7 @@ private:
                             "}\n";
 
         // tokenize..
-        Tokenizer tokenizer;
+        OurTokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 

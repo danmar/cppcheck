@@ -73,9 +73,19 @@ public:
      */
     static std::string getcode(const std::string &filedata, std::string cfg);
 
-#ifndef UNIT_TESTING
+protected:
+
+    /**
+     * Replace "#if defined" with "#ifdef" where possible
+     *
+     * @param str The string to be converted
+     * @return The replaced string
+     */
+    static std::string replaceIfDefined(const std::string &str);
+
+    static std::string expandMacros(std::string code);
+
 private:
-#endif
 
     /**
      * Remove space that has new line character on left or right side of it.
@@ -86,14 +96,6 @@ private:
     static std::string removeSpaceNearNL(const std::string &str);
 
     /**
-     * Replace "#if defined" with "#ifdef" where possible
-     *
-     * @param str The string to be converted
-     * @return The replaced string
-     */
-    static std::string replaceIfDefined(const std::string &str);
-
-    /**
      * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
      */
     std::list<std::string> getcfgs(const std::string &filedata);
@@ -101,8 +103,6 @@ private:
     static std::string getdef(std::string line, bool def);
 
     static bool match_cfg_def(std::string cfg, const std::string &def);
-
-    static std::string expandMacros(std::string code);
 
     /**
      * Search includes from code and append code from the included

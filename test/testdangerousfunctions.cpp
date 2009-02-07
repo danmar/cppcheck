@@ -18,7 +18,6 @@
  */
 
 
-#define UNIT_TESTING
 #include "../src/tokenize.h"
 #include "../src/checkdangerousfunctions.h"
 #include "testsuite.h"
