@@ -71,6 +71,8 @@ private:
         TEST_CASE(simple9);     // Bug 2435468 - member function "free"
         TEST_CASE(simple10);    // fclose in a if condition
 
+        TEST_CASE(alloc_alloc_1);
+
         TEST_CASE(use1);
         TEST_CASE(use2);
 
@@ -297,6 +299,20 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+
+
+
+    void alloc_alloc_1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *str;\n"
+              "    str = new char[10];\n"
+              "    str = new char[20];\n"
+              "    delete [] str;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: str\n"), errout.str());
+    }
 
 
 
@@ -840,7 +856,7 @@ private:
               "    while (!str);\n"
               "    return str;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (error) Memory leak: str\n"), errout.str());
     }
 
 
@@ -1013,7 +1029,7 @@ private:
               "    }\n"
               "    delete [] p;\n"
               "}\n", false);
-        ASSERT_EQUALS(std::string("[test.cpp:6]: (error) Mismatching allocation and deallocation: p\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:7]: (error) Mismatching allocation and deallocation: p\n"), errout.str());
     }
 
 
@@ -1522,7 +1538,6 @@ private:
               "    char *a = (char *)malloc(10);\n"
               "    a = realloc(a, 100);\n"
               "}\n");
-
         ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: a\n"), errout.str());
     }
 
@@ -1548,7 +1563,7 @@ private:
               "    free(a);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Memory leak: a\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Memory leak: a\n"), errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1764,15 +1779,13 @@ private:
 
     void strcat_result_assignment()
     {
-        check("#include <stdlib.h>\n"
-              "#include <string.h>\n"
-              "int main()\n"
+        check("void foo()\n"
               "{\n"
-              "char *p = malloc(10);\n"
-              "p[0] = 0;\n"
-              "p = strcat( p, \"a\" );\n"
-              "free( p );\n"
-              "return 0;\n"
+              "    char *p = malloc(10);\n"
+              "    p[0] = 0;\n"
+              "    p = strcat( p, \"a\" );\n"
+              "    free( p );\n"
+              "    return 0;\n"
               "}");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

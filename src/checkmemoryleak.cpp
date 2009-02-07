@@ -384,14 +384,14 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         if (parlevel == 0 && tok->str() == ";")
             addtoken(";");
 
-        if (Token::Match(tok, std::string("[(;{}] " + varnameStr + " =").c_str()))
+        if (Token::Match(tok->previous(), std::string("[(;{}] " + varnameStr + " =").c_str()))
         {
-            AllocType alloc = GetAllocationType(tok->tokAt(3));
+            AllocType alloc = GetAllocationType(tok->tokAt(2));
             bool realloc = false;
 
             if (alloc == No)
             {
-                alloc = GetReallocationType(tok->tokAt(3));
+                alloc = GetReallocationType(tok->tokAt(2));
                 if (alloc != No)
                 {
                     addtoken("realloc");
@@ -403,9 +403,9 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
             // If "--all" hasn't been given, don't check classes..
             if (alloc == New)
             {
-                if (Token::Match(tok->tokAt(3), "new %type% [(;]"))
+                if (Token::Match(tok->tokAt(2), "new %type% [(;]"))
                 {
-                    if (isclass(tok->tokAt(4)))
+                    if (isclass(tok->tokAt(3)))
                     {
                         if (_settings._showAll)
                             all = true;
@@ -433,7 +433,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 alloctype = alloc;
             }
 
-            else if (MatchFunctionsThatReturnArg(tok, std::string(varname)))
+            else if (MatchFunctionsThatReturnArg(tok->previous(), std::string(varname)))
             {
                 addtoken("use");
             }
@@ -1029,10 +1029,11 @@ void CheckMemoryLeakClass::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Reduce "[;{}] alloc ; dealloc ; !!dealloc" => "[;{}]"
-            if (Token::Match(tok2, "[;{}] alloc ; dealloc ; !!dealloc"))
+            // malloc - realloc => alloc ; dealloc ; alloc ;
+            // Reduce "[;{}] alloc ; dealloc ; alloc ;" => "[;{}] alloc ;"
+            if (Token::Match(tok2, "[;{}] alloc ; dealloc ; alloc ;"))
             {
-                erase(tok2, tok2->tokAt(5));
+                erase(tok2->next(), tok2->tokAt(6));
                 done = false;
             }
 
