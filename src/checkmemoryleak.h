@@ -62,7 +62,7 @@ private:
     void CheckMemoryLeak_ClassMembers_ParseClass(const Token *tok1, std::vector<const char *> &classname);
     void CheckMemoryLeak_ClassMembers();
     void CheckMemoryLeak_InFunction();
-    void CheckMemoryLeak_CheckScope(const Token *Tok1, const char varname[], bool classmember);
+    void CheckMemoryLeak_CheckScope(const Token *Tok1, const char varname[], bool classmember, unsigned int sz);
 
     /**
      * Simplify code e.g. by replacing empty "{ }" with ";"
@@ -89,7 +89,7 @@ private:
      * @return Newly allocated token array. Caller needs to release reserved
      * memory by calling Tokenizer::deleteTokens(returnValue);
      */
-    Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all);
+    Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz);
 
     /**
      * Check if there is a "!var" match inside a condition
@@ -103,7 +103,7 @@ private:
     bool MatchFunctionsThatReturnArg(const Token *tok, const std::string &varname);
     void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
     void MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[]);
-    const char * call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype, bool &all);
+    const char * call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz);
     AllocType GetDeallocationType(const Token *tok, const char *varnames[]);
     AllocType GetAllocationType(const Token *tok2);
     AllocType GetReallocationType(const Token *tok2);

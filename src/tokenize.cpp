@@ -1249,13 +1249,19 @@ bool Tokenizer::simplifyConditions()
         }
 
         // Change numeric constant in condition to "true" or "false"
-        const Token *tok2 = tok->tokAt(2);
-        if ((tok->str() == "(" || tok->str() == "&&" || tok->str() == "||")  &&
-            Token::Match(tok->next(), "%num%")                         &&
-            tok2                                                       &&
+        if (Token::Match(tok, "if|while ( %num%") &&
+            (tok->tokAt(3)->str() == ")" || tok->tokAt(3)->str() == "||" || tok->tokAt(3)->str() == "&&"))
+        {
+            tok->next()->next()->str((tok->tokAt(2)->str() != "0") ? "true" : "false");
+            ret = true;
+        }
+        Token *tok2 = tok->tokAt(2);
+        if (tok2                                        &&
+            (tok->str() == "&&" || tok->str() == "||")  &&
+            Token::Match(tok->next(), "%num%")          &&
             (tok2->str() == ")" || tok2->str() == "&&" || tok2->str() == "||"))
         {
-            tok->next()->str((tok->next()->str() != "0") ? "true" : "false");
+            tok->next()->str();
             ret = true;
         }
 

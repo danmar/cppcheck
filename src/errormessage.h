@@ -188,6 +188,15 @@ public:
         return true;
     }
 
+    static void mismatchSize(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &sz)
+    {
+        _writemsg(logger, tokenizer, Location, "all", "The given size " + sz + " is mismatching", "mismatchSize");
+    }
+    static bool mismatchSize(const Settings &s)
+    {
+        return s._showAll;
+    }
+
     static void cstyleCast(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)
     {
         _writemsg(logger, tokenizer, Location, "style", "C-style pointer casting", "cstyleCast");

@@ -184,6 +184,8 @@ private:
         TEST_CASE(strcat_result_assignment);
 
         TEST_CASE(all1);                // Extra checking when --all is given
+
+        TEST_CASE(malloc_constant_1);     // Check that the malloc constant matches the type
     }
 
 
@@ -1807,6 +1809,17 @@ private:
         ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Memory leak: f\n"), errout.str());
     }
 
+
+
+    void malloc_constant_1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    int *p = malloc(3);\n"
+              "    free(p);\n"
+              "}\n", false);
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (all) The given size 3 is mismatching\n"), errout.str());
+    }
 };
 
 REGISTER_TEST(TestMemleak)
