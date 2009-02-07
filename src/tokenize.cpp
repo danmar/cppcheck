@@ -290,7 +290,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 {
                     // The "_files" vector remembers what files have been tokenized..
                     _files.push_back(FileLister::simplifyPath(line.c_str()));
-                    FileIndex = _files.size() - 1;
+                    FileIndex = static_cast<unsigned int>(_files.size() - 1);
                 }
 
                 lineNumbers.push_back(lineno);

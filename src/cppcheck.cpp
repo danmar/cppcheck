@@ -296,7 +296,7 @@ unsigned int CppCheck::check()
         fxml << "</results>";
     }
 
-    unsigned int result = _errorList.size();
+    unsigned int result = static_cast<unsigned int>(_errorList.size());
     _errorList.clear();
     return result;
 }

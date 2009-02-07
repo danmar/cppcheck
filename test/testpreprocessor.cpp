@@ -178,7 +178,7 @@ private:
         // Compare results..
         ASSERT_EQUALS(expected[""], actual[""]);
         ASSERT_EQUALS(expected["__cplusplus"], actual["__cplusplus"]);
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
 
@@ -199,7 +199,7 @@ private:
         // Compare results..
         ASSERT_EQUALS("\n\n\nqwerty\n\n", actual[""]);
         ASSERT_EQUALS("\nabcdef\n\n\n\n", actual["WIN32"]);
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
     void test2()
@@ -219,7 +219,7 @@ private:
         // Compare results..
         ASSERT_EQUALS("\n\" # ifdef WIN32\"\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\n\n\nqwerty\n\n", actual["WIN32"]);
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
     void test3()
@@ -242,7 +242,7 @@ private:
         ASSERT_EQUALS("\n\n\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\na\n\n\n\nc\n\n", actual["ABC"]);
         ASSERT_EQUALS("\na\n\nb\n\nc\n\n", actual["ABC;DEF"]);
-        ASSERT_EQUALS(3, actual.size());
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
     }
 
     void test4()
@@ -263,7 +263,7 @@ private:
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nA\n\n\nA\n\n", actual["ABC"]);
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
     void test5()
@@ -287,7 +287,7 @@ private:
         ASSERT_EQUALS("\n\n\nB\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nA\n\n\n\n\n\n\n", actual["ABC"]);
         ASSERT_EQUALS("\n\n\nB\n\nC\n\n\n", actual["DEF"]);
-        ASSERT_EQUALS(3, actual.size());
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
     }
 
     void test6()
@@ -321,7 +321,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Expected configurations: "" and "ABC"
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
 
@@ -352,7 +352,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
     }
 
 
@@ -372,7 +372,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("\n\n\n\n", actual[""]);
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
     }
 
     void if1()
@@ -389,7 +389,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("\nABC\n\n", actual[""]);
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
     }
 
 
@@ -411,7 +411,7 @@ private:
         ASSERT_EQUALS("\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nABC\n\n\n\n", actual["DEF1"]);
         ASSERT_EQUALS("\n\n\nDEF\n\n", actual["DEF2"]);
-        ASSERT_EQUALS(3, actual.size());
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
     }
 
 
@@ -434,7 +434,7 @@ private:
         // Compare results..
         ASSERT_EQUALS("\n\n\nB\n\n", actual[""]);
         ASSERT_EQUALS("\nA\n\n\n\n", actual["LIBVER>100"]);
-        ASSERT_EQUALS(2, actual.size());
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
 
@@ -573,7 +573,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("int main(){ const char *a = \"#define A\n\";}\n", actual[""]);
     }
 
@@ -641,7 +641,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("int main()\n{\nconst char *a = \"#include <string>\n\";\nreturn 0;\n}\n", actual[""]);
     }
 
@@ -690,7 +690,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\nint main()\n{\nif( 'ABCD' == 0 );\nreturn 0;\n}\n", actual[""]);
     }
 
