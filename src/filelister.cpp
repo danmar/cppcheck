@@ -31,6 +31,8 @@
 #endif
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 #endif
 
 std::string FileLister::simplifyPath(const char *originalPath)
@@ -157,27 +159,41 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 
 void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
+    // oss is the search string passed into FindFirst and FindNext.
+    // bdir is the base directory which is used to form pathnames.
+    // It always has a trailing backslash available for concatenation.
     std::ostringstream bdir, oss;
-    std::string cleanedPath = path;
 
+    std::string cleanedPath = path;
     std::replace(cleanedPath.begin(), cleanedPath.end(), '\\', '/');
+
     oss << cleanedPath;
 
-    if (cleanedPath.length() > 0)
+    // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
+    if (PathIsDirectory(cleanedPath.c_str()))
     {
-        // Windows doesn't recognize "." as current folder by default
-        if (cleanedPath == ".")
+        char c = cleanedPath[ cleanedPath.size()-1 ];
+        switch (c)
         {
-            oss << "/*";
-        }
-        else if (cleanedPath[cleanedPath.length() - 1] == '/')
-        {
+        case '\\':
+            oss << '*';
             bdir << cleanedPath;
-            oss << "*";
+            break;
+        case '*':
+            bdir << cleanedPath.substr(0, cleanedPath.length() - 1);
+            break;
+        default:
+            oss << "\\*";
+            bdir << cleanedPath << '\\';
         }
-        else
+    }
+    else
+    {
+        std::string::size_type pos;
+        pos = path.find_last_of('\\');
+        if (std::string::npos != pos)
         {
-            bdir << cleanedPath.substr(0, cleanedPath.rfind('/') + 1);
+            bdir << cleanedPath.substr(0, pos + 1);
         }
     }
 
@@ -188,11 +204,11 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 
     do
     {
-        std::ostringstream fname;
-        fname << bdir.str().c_str() << ffd.cFileName;
-
         if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
             continue;
+
+        std::ostringstream fname;
+        fname << bdir.str().c_str() << ffd.cFileName;
 
         if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
         {
@@ -205,13 +221,16 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
         else if (recursive)
         {
             // Directory
-            fname << "/";
             FileLister::RecursiveAddFiles(filenames, fname.str().c_str(), recursive);
         }
     }
     while (FindNextFile(hFind, &ffd) != FALSE);
 
-    FindClose(hFind);
+    if (INVALID_HANDLE_VALUE != hFind)
+    {
+        FindClose(hFind);
+        hFind = INVALID_HANDLE_VALUE;
+    }
 }
 
 #endif
