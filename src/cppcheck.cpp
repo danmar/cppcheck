@@ -422,13 +422,11 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
 void CppCheck::reportErr(const std::string &errmsg)
 {
-    if (/*OnlyReportUniqueErrors*/ true)
-    {
-        if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
-            return;
-        _errorList.push_back(errmsg);
-    }
+    // Alert only about unique errors
+    if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
+        return;
 
+    _errorList.push_back(errmsg);
     std::string errmsg2(errmsg);
     if (_settings._verbose)
     {
@@ -451,11 +449,11 @@ void CppCheck::reportXml(const std::string &file, const std::string &line, const
 {
     std::ostringstream xml;
     xml << "<error";
-    xml << " file=\"" + file + "\"";
-    xml << " line=\"" + line + "\"";
-    xml << " id=\"" + id + "\"";
-    xml << " severity=\"" + severity + "\"";
-    xml << " msg=\"" + msg + "\"";
+    xml << " file=\"" << file << "\"";
+    xml << " line=\"" << line << "\"";
+    xml << " id=\"" << id << "\"";
+    xml << " severity=\"" << severity << "\"";
+    xml << " msg=\"" << msg << "\"";
     xml << "/>";
 
     _xmllist.push_back(xml.str());
