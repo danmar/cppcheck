@@ -1261,7 +1261,7 @@ bool Tokenizer::simplifyConditions()
             Token::Match(tok->next(), "%num%")          &&
             (tok2->str() == ")" || tok2->str() == "&&" || tok2->str() == "||"))
         {
-            tok->next()->str();
+            tok->next()->str((tok->next()->str() != "0") ? "true" : "false");
             ret = true;
         }
 

@@ -84,6 +84,7 @@ private:
         TEST_CASE(sizeof2);
         TEST_CASE(sizeof3);
         TEST_CASE(sizeof4);
+        TEST_CASE(simplify_numeric_condition);
     }
 
 
@@ -939,6 +940,33 @@ private:
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" for ( int i = 0 ; i < 100 ; i + + ) { }"), ostr.str());
     }
+
+    void simplify_numeric_condition()
+    {
+        const char code[] =
+            "void f()\n"
+            "{\n"
+            "int x = 0;\n"
+            "if( !x || 0 )\n"
+            "{\n"
+            "}\n"
+            "}";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" void f ( ) { int x ; x = 0 ; if ( ! x ) { } }"), ostr.str());
+    }
+
+
 };
 
 REGISTER_TEST(TestTokenizer)

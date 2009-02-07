@@ -391,7 +391,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
 
             if (sz > 1 &&
                 Token::Match(tok->tokAt(2), "malloc ( %num% )") &&
-				(std::atoi(tok->strAt(4)) % sz) != 0)
+                (std::atoi(tok->strAt(4)) % sz) != 0)
             {
                 ErrorMessage::mismatchSize(_errorLogger, _tokenizer, tok->tokAt(4), tok->strAt(4));
             }
