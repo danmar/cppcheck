@@ -26,7 +26,6 @@
 
 Token::Token() :
         _str(""),
-        _cstr(0),
         _isName(false),
         _isNumber(false),
         _isBoolean(false),
@@ -40,14 +39,12 @@ Token::Token() :
 
 Token::~Token()
 {
-    std::free(_cstr);
+
 }
 
 void Token::str(const char s[])
 {
     _str = s;
-    std::free(_cstr);
-    _cstr = strdup(s);
     _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
     _isNumber = bool(std::isdigit(_str[0]) != 0);
     if (_str == "true" || _str == "false")
@@ -108,7 +105,7 @@ Token *Token::tokAt(int index)
 const char *Token::strAt(int index) const
 {
     const Token *tok = this->tokAt(index);
-    return tok ? tok->_cstr : "";
+    return tok ? tok->_str.c_str() : "";
 }
 
 int Token::multiCompare(const char *haystack, const char *needle)
@@ -191,7 +188,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[])
     {
         size_t length = static_cast<size_t>(next - current);
 
-        if (!tok || length != tok->_str.length() || strncmp(current, tok->_cstr, length))
+        if (!tok || length != tok->_str.length() || strncmp(current, tok->_str.c_str(), length))
             return false;
 
         current = next;
@@ -322,7 +319,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
         else if (strchr(str, '|') && (str[0] != '|' || strlen(str) > 2))
         {
-            int res = multiCompare(str, tok->_cstr);
+            int res = multiCompare(str, tok->_str.c_str());
             if (res == 0)
             {
                 // Empty alternative matches, use the same token on next round

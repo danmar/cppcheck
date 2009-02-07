@@ -36,17 +36,17 @@ public:
 
     const char *aaaa() const
     {
-        return _cstr;
+        return _str.c_str();
     }
 
     char aaaa0() const
     {
-        return _cstr[0];
+        return _str[0];
     }
 
     char aaaa1() const
     {
-        return _cstr[1];
+        return _str[1];
     }
 
     /**
@@ -190,7 +190,6 @@ private:
     void previous(Token *previous);
 
     std::string _str;
-    char * _cstr;
     bool _isName;
     bool _isNumber;
     bool _isBoolean;
