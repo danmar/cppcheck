@@ -1862,7 +1862,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    int *p = new int[100];\n"
-              "    foo();\n"
+              "    ThrowException();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
