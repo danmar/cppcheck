@@ -19,7 +19,6 @@
 
 
 #include "checkmemoryleak.h"
-#include "errormessage.h"
 
 #include <algorithm>
 #include <cstring>
@@ -297,11 +296,11 @@ void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], Al
 {
     if (alloctype == CheckMemoryLeakClass::FOPEN ||
         alloctype == CheckMemoryLeakClass::POPEN)
-        ErrorMessage::resourceLeak(_errorLogger, _tokenizer, tok, varname);
+        _errorLogger->resourceLeak(_tokenizer, tok, varname);
     else if (all)
-        ErrorMessage::memleakall(_errorLogger, _tokenizer, tok, varname);
+        _errorLogger->memleakall(_tokenizer, tok, varname);
     else
-        ErrorMessage::memleak(_errorLogger, _tokenizer, tok, varname);
+        _errorLogger->memleak(_tokenizer, tok, varname);
 }
 //---------------------------------------------------------------------------
 
@@ -395,7 +394,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 Token::Match(tok->tokAt(2), "malloc ( %num% )") &&
                 (std::atoi(tok->strAt(4)) % sz) != 0)
             {
-                ErrorMessage::mismatchSize(_errorLogger, _tokenizer, tok->tokAt(4), tok->strAt(4));
+                _errorLogger->mismatchSize(_tokenizer, tok->tokAt(4), tok->strAt(4));
             }
 
             if (alloc == No)
@@ -435,7 +434,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 if (alloc != Many && dealloctype != No && dealloctype != Many && dealloctype != alloc)
                 {
                     callstack.push_back(tok);
-                    ErrorMessage::mismatchAllocDealloc(_errorLogger, _tokenizer, callstack, varname);
+                    _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, varname);
                     callstack.pop_back();
                 }
 
@@ -482,7 +481,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 if (dealloc != Many && alloctype != No && alloctype != Many && alloctype != dealloc)
                 {
                     callstack.push_back(tok);
-                    ErrorMessage::mismatchAllocDealloc(_errorLogger, _tokenizer, callstack, varname);
+                    _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, varname);
                     callstack.pop_back();
                 }
                 dealloctype = dealloc;
@@ -1188,7 +1187,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
     }
     if ((result = Token::findmatch(tok, "dealloc [;{}] use|use_ ;")) != NULL)
     {
-        ErrorMessage::deallocuse(_errorLogger, _tokenizer, result->tokAt(2), varname);
+        _errorLogger->deallocuse(_tokenizer, result->tokAt(2), varname);
     }
 
     // Replace "&use" with "use". Replace "use_" with ";"
@@ -1252,7 +1251,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
 
     else if ((result = Token::findmatch(tok, "dealloc ; dealloc ;")) != NULL)
     {
-        ErrorMessage::deallocDealloc(_errorLogger, _tokenizer, result->tokAt(2), varname);
+        _errorLogger->deallocDealloc(_tokenizer, result->tokAt(2), varname);
     }
 
     else if (! Token::findmatch(tok, "dealloc") &&
@@ -1490,7 +1489,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
                     if (alloc != Many && Dealloc != No && Dealloc != Many && Dealloc != alloc)
                     {
                         callstack.push_back(tok);
-                        ErrorMessage::mismatchAllocDealloc(_errorLogger, _tokenizer, callstack, FullVariableName.str());
+                        _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, FullVariableName.str());
                         callstack.pop_back();
                     }
 
@@ -1517,7 +1516,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
                 if (dealloc != Many && Alloc != No &&  Alloc != Many && Alloc != dealloc)
                 {
                     callstack.push_back(tok);
-                    ErrorMessage::mismatchAllocDealloc(_errorLogger, _tokenizer, callstack, FullVariableName.str());
+                    _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, FullVariableName.str());
                     callstack.pop_back();
                 }
 

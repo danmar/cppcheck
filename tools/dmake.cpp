@@ -138,9 +138,9 @@ int main()
         fout << "\n\tg++ $(CXXFLAGS) -c -o " << objfile(testfiles[i]) << " " << testfiles[i] << "\n\n";
     }
 
-    fout << "src/errormessage.h:\ttools/errmsg\n";
+    fout << "src/errorlogger.h:\ttools/errmsg\n";
     fout << "\ttools/errmsg\n";
-    fout << "\tmv errormessage.h src/\n\n";
+    fout << "\tmv errorlogger.h src/\n\n";
 
     return 0;
 }

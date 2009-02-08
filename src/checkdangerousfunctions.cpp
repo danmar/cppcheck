@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "checkdangerousfunctions.h"
-#include "errormessage.h"
 
 #include <algorithm>
 #include <sstream>

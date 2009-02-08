@@ -17,40 +17,39 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include "errormessage.h"
 #include "errorlogger.h"
 #include "tokenize.h"
 #include "token.h"
 
 #include <sstream>
 
-void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id)
+void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id)
 {
     std::list<const Token *> callstack;
     callstack.push_back(tok);
-    _writemsg(logger, tokenizer, callstack, severity, msg, id);
+    _writemsg(tokenizer, callstack, severity, msg, id);
 }
 
-void ErrorMessage::_writemsg(ErrorLogger *logger, const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg, const std::string &id)
+void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg, const std::string &id)
 {
     // Todo.. callstack handling
     const std::string &file(tokenizer->getFiles()->at(callstack.back()->fileIndex()));
     std::ostringstream linenr;
     linenr << callstack.back()->linenr();
-    logger->reportXml(file,
-                      linenr.str(),
-                      id,
-                      severity,
-                      msg);
+    reportXml(file,
+              linenr.str(),
+              id,
+              severity,
+              msg);
 
     std::ostringstream ostr;
     for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
         ostr << (tok == callstack.begin() ? "" : " -> ") << tokenizer->fileLine(*tok);
-    logger->reportErr(ostr.str() + ": (" + severity + ") " + msg);
+    reportErr(ostr.str() + ": (" + severity + ") " + msg);
 }
 
 
-void ErrorMessage::_writemsg(ErrorLogger *logger, const std::string msg, const std::string &id)
+void ErrorLogger::_writemsg(const std::string msg, const std::string &id)
 {
     std::ostringstream xml;
     xml << "<error";
@@ -58,5 +57,5 @@ void ErrorMessage::_writemsg(ErrorLogger *logger, const std::string msg, const s
     xml << " msg=\"" << msg << "\"";
     xml << ">";
 
-    logger->reportErr(msg);
+    reportErr(msg);
 }

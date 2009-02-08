@@ -20,7 +20,6 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
-#include "errormessage.h"
 #include <algorithm>
 #include <list>
 #include <map>
@@ -62,7 +61,7 @@ void CheckOther::WarningOldStylePointerCast()
         if (!Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
             continue;
 
-        ErrorMessage::cstyleCast(_errorLogger, _tokenizer, tok);
+        _errorLogger->cstyleCast(_tokenizer, tok);
     }
 }
 
@@ -143,7 +142,7 @@ void CheckOther::WarningRedundantCode()
 
         if (err)
         {
-            ErrorMessage::redundantIfDelete0(_errorLogger, _tokenizer, tok);
+            _errorLogger->redundantIfDelete0(_tokenizer, tok);
         }
     }
 
@@ -179,7 +178,7 @@ void CheckOther::redundantCondition2()
             var2->str() == var3->str() &&
             any1->str() == any2->str())
         {
-            ErrorMessage::redundantIfRemove(_errorLogger, _tokenizer, tok);
+            _errorLogger->redundantIfRemove(_tokenizer, tok);
         }
 
         tok = Token::findmatch(tok->next(), pattern);
@@ -196,7 +195,7 @@ void CheckOther::redundantCondition2()
 
 void CheckOther::WarningIf()
 {
-    if (ErrorMessage::ifNoAction(_settings))
+    if (ErrorLogger::ifNoAction(_settings))
     {
         // Search for 'if (condition);'
         for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -217,7 +216,7 @@ void CheckOther::WarningIf()
                     {
                         if (Token::Match(tok2, ") ; !!else"))
                         {
-                            ErrorMessage::ifNoAction(_errorLogger, _tokenizer, tok);
+                            _errorLogger->ifNoAction(_tokenizer, tok);
                         }
                         break;
                     }
@@ -226,7 +225,7 @@ void CheckOther::WarningIf()
         }
     }
 
-    if (ErrorMessage::conditionAlwaysTrueFalse(_settings))
+    if (ErrorLogger::conditionAlwaysTrueFalse(_settings))
     {
         // Search for 'a=b; if (a==b)'
         for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -280,7 +279,7 @@ void CheckOther::WarningIf()
                 if (strcmp(cond, p[i]) == 0)
                     b = (i < 3);
             }
-            ErrorMessage::conditionAlwaysTrueFalse(_errorLogger, _tokenizer, tok->tokAt(4), b ? "True" : "False");
+            _errorLogger->conditionAlwaysTrueFalse(_tokenizer, tok->tokAt(4), b ? "True" : "False");
         }
     }
 }
@@ -320,7 +319,7 @@ void CheckOther::InvalidFunctionUsage()
                         int radix = std::atoi(tok2->strAt(1));
                         if (!(radix == 0 || (radix >= 2 && radix <= 36)))
                         {
-                            ErrorMessage::dangerousUsageStrtol(_errorLogger, _tokenizer, tok2);
+                            _errorLogger->dangerousUsageStrtol(_tokenizer, tok2);
                         }
                     }
                     break;
@@ -363,7 +362,7 @@ void CheckOther::InvalidFunctionUsage()
             }
             else if (parlevel == 0 && Token::Match(tok2, ", %varid% [,)]", varid))
             {
-                ErrorMessage::sprintfOverlappingData(_errorLogger, _tokenizer, tok2->next(), tok2->next()->str());
+                _errorLogger->sprintfOverlappingData(_tokenizer, tok2->next(), tok2->next()->str());
                 break;
             }
         }
@@ -394,7 +393,7 @@ void CheckOther::CheckUnsignedDivision()
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %var%"))
         {
-            if (ErrorMessage::udivWarning(_settings))
+            if (ErrorLogger::udivWarning(_settings))
             {
                 const char *varname1 = tok->strAt(1);
                 const char *varname2 = tok->strAt(3);
@@ -404,33 +403,33 @@ void CheckOther::CheckUnsignedDivision()
                 if (sign1 && sign2 && sign1 != sign2)
                 {
                     // One of the operands are signed, the other is unsigned..
-                    ErrorMessage::udivWarning(_errorLogger, _tokenizer, tok->next());
+                    _errorLogger->udivWarning(_tokenizer, tok->next());
                 }
             }
         }
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / - %num%"))
         {
-            if (ErrorMessage::udivError())
+            if (ErrorLogger::udivError())
             {
                 const char *varname1 = tok->strAt(1);
                 char sign1 = varsign[varname1];
                 if (sign1 == 'u')
                 {
-                    ErrorMessage::udivError(_errorLogger, _tokenizer, tok->next());
+                    _errorLogger->udivError(_tokenizer, tok->next());
                 }
             }
         }
 
         else if (Token::Match(tok, "[([=*/+-] - %num% / %var%"))
         {
-            if (ErrorMessage::udivError())
+            if (ErrorLogger::udivError())
             {
                 const char *varname2 = tok->strAt(4);
                 char sign2 = varsign[varname2];
                 if (sign2 == 'u')
                 {
-                    ErrorMessage::udivError(_errorLogger, _tokenizer, tok->next());
+                    _errorLogger->udivError(_tokenizer, tok->next());
                 }
             }
         }
@@ -588,7 +587,7 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
     }
 
     // Warning if "used" is true
-    ErrorMessage::variableScope(_errorLogger, _tokenizer, tok1, varname);
+    _errorLogger->variableScope(_tokenizer, tok1, varname);
 }
 //---------------------------------------------------------------------------
 
@@ -603,7 +602,7 @@ void CheckOther::CheckConstantFunctionParameter()
     {
         if (Token::Match(tok, "[,(] const std :: %type% %var% [,)]"))
         {
-            ErrorMessage::passedByValue(_errorLogger, _tokenizer, tok, tok->strAt(5));
+            _errorLogger->passedByValue(_tokenizer, tok, tok->strAt(5));
         }
 
         else if (Token::Match(tok, "[,(] const %type% %var% [,)]"))
@@ -612,7 +611,7 @@ void CheckOther::CheckConstantFunctionParameter()
             const std::string pattern(std::string("class|struct ") + tok->strAt(2));
             if (Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
             {
-                ErrorMessage::passedByValue(_errorLogger, _tokenizer, tok, tok->strAt(3));
+                _errorLogger->passedByValue(_tokenizer, tok, tok->strAt(3));
             }
         }
     }
@@ -680,7 +679,7 @@ void CheckOther::CheckStructMemberUsage()
 
             if (! used)
             {
-                ErrorMessage::unusedStructMember(_errorLogger, _tokenizer, tok->next(), structname, varname);
+                _errorLogger->unusedStructMember(_tokenizer, tok->next(), structname, varname);
             }
         }
     }
@@ -723,7 +722,7 @@ void CheckOther::CheckCharVariable()
                 std::string temp = "%var% [ " + tok->str() + " ]";
                 if ((tok2->str() != ".") && Token::Match(tok2->next(), temp.c_str()))
                 {
-                    ErrorMessage::charArrayIndex(_errorLogger, _tokenizer, tok2->next());
+                    _errorLogger->charArrayIndex(_tokenizer, tok2->next());
                     break;
                 }
 
@@ -731,7 +730,7 @@ void CheckOther::CheckCharVariable()
                 std::string tempSecond = tok->str() + " [&|]";
                 if (Token::Match(tok2, tempFirst.c_str()) || Token::Match(tok2, tempSecond.c_str()))
                 {
-                    ErrorMessage::charBitOp(_errorLogger, _tokenizer, tok2);
+                    _errorLogger->charBitOp(_tokenizer, tok2);
                     break;
                 }
             }
@@ -765,12 +764,12 @@ void CheckOther::CheckIncompleteStatement()
 
         if (Token::Match(tok, "[;{}] %str%") && !Token::Match(tok->tokAt(2), "[,}]"))
         {
-            ErrorMessage::constStatement(_errorLogger, _tokenizer, tok->next(), "string");
+            _errorLogger->constStatement(_tokenizer, tok->next(), "string");
         }
 
         if (Token::Match(tok, "[;{}] %num%") && !Token::Match(tok->tokAt(2), "[,}]"))
         {
-            ErrorMessage::constStatement(_errorLogger, _tokenizer, tok->next(), "numeric");
+            _errorLogger->constStatement(_tokenizer, tok->next(), "numeric");
         }
     }
 }
@@ -805,12 +804,12 @@ void CheckOther::strPlusChar()
             // char constant..
             const char *s = tok->strAt(3);
             if (*s == '\'')
-                ErrorMessage::strPlusChar(_errorLogger, _tokenizer, tok->next());
+                _errorLogger->strPlusChar(_tokenizer, tok->next());
 
             // char variable..
             unsigned int varid = tok->tokAt(3)->varId();
             if (varid > 0 && varid < 10000 && charVars[varid])
-                ErrorMessage::strPlusChar(_errorLogger, _tokenizer, tok->next());
+                _errorLogger->strPlusChar(_tokenizer, tok->next());
         }
     }
 }
@@ -856,7 +855,7 @@ void CheckOther::returnPointerToStackData()
             {
                 unsigned int varid = tok->next()->varId();
                 if (varid > 0 && std::find(arrayVar.begin(), arrayVar.end(), varid) != arrayVar.end())
-                    ErrorMessage::returnLocalVariable(_errorLogger, _tokenizer, tok);
+                    _errorLogger->returnLocalVariable(_tokenizer, tok);
             }
         }
 

@@ -20,7 +20,6 @@
 
 //---------------------------------------------------------------------------
 #include "checkfunctionusage.h"
-#include "errormessage.h"
 #include "tokenize.h"
 //---------------------------------------------------------------------------
 
@@ -158,7 +157,7 @@ void CheckFunctionUsage::check()
                 filename = "";
             else
                 filename = func.filename;
-            ErrorMessage::unusedFunction(_errorLogger, filename, it->first);
+            _errorLogger->unusedFunction(filename, it->first);
         }
         else if (! func.usedOtherFile)
         {

@@ -49,8 +49,6 @@
 		<Unit filename="src/cppcheckexecutor.cpp" />
 		<Unit filename="src/cppcheckexecutor.h" />
 		<Unit filename="src/errorlogger.h" />
-		<Unit filename="src/errormessage.cpp" />
-		<Unit filename="src/errormessage.h" />
 		<Unit filename="src/filelister.cpp" />
 		<Unit filename="src/filelister.h" />
 		<Unit filename="src/main.cpp" />

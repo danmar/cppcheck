@@ -30,8 +30,6 @@
 #include "checkfunctionusage.h"
 #include "filelister.h"
 
-#include "errormessage.h"
-
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -325,7 +323,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // The 'memset' function can do dangerous things if used wrong.
     // Important: The checking doesn't work on simplified tokens list.
     CheckClass checkClass(&_tokenizer, _settings, this);
-    if (ErrorMessage::memsetClass())
+    if (ErrorLogger::memsetClass())
         checkClass.noMemset();
 
 
@@ -333,11 +331,11 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     CheckOther checkOther(&_tokenizer, _settings, this);
 
     // Check for unsigned divisions where one operand is signed
-    if (ErrorMessage::udivWarning(_settings) || ErrorMessage::udivError())
+    if (ErrorLogger::udivWarning(_settings) || ErrorLogger::udivError())
         checkOther.CheckUnsignedDivision();
 
     // Give warning when using char variable as array index
-    if (ErrorMessage::charArrayIndex(_settings) || ErrorMessage::charBitOp(_settings))
+    if (ErrorLogger::charArrayIndex(_settings) || ErrorLogger::charBitOp(_settings))
         checkOther.CheckCharVariable();
 
     _tokenizer.simplifyTokenList();
@@ -353,23 +351,23 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Memory leak
     CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
-    if (ErrorMessage::memleak() || ErrorMessage::mismatchAllocDealloc())
+    if (ErrorLogger::memleak() || ErrorLogger::mismatchAllocDealloc())
         checkMemoryLeak.CheckMemoryLeak();
 
     // Check that all class constructors are ok.
-    if (ErrorMessage::noConstructor(_settings) || ErrorMessage::uninitVar())
+    if (ErrorLogger::noConstructor(_settings) || ErrorLogger::uninitVar())
         checkClass.constructors();
 
     // Check that all base classes have virtual destructors
-    if (ErrorMessage::virtualDestructor())
+    if (ErrorLogger::virtualDestructor())
         checkClass.virtualDestructor();
 
     // Array index out of bounds / Buffer overruns..
-    if (ErrorMessage::arrayIndexOutOfBounds(_settings) || ErrorMessage::bufferOverrun(_settings))
+    if (ErrorLogger::arrayIndexOutOfBounds(_settings) || ErrorLogger::bufferOverrun(_settings))
         checkBufferOverrun.bufferOverrun();
 
     // Warning upon c-style pointer casts
-    if (ErrorMessage::cstyleCast(_settings))
+    if (ErrorLogger::cstyleCast(_settings))
     {
         const char *ext = strrchr(FileName, '.');
         if (ext && strcmp(ext, ".cpp") == 0)
@@ -377,45 +375,45 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     }
 
     // if (a) delete a;
-    if (ErrorMessage::redundantIfDelete0(_settings))
+    if (ErrorLogger::redundantIfDelete0(_settings))
         checkOther.WarningRedundantCode();
 
     // strtol and strtoul usage
-    if (ErrorMessage::dangerousUsageStrtol() ||
-        ErrorMessage::sprintfOverlappingData())
+    if (ErrorLogger::dangerousUsageStrtol() ||
+        ErrorLogger::sprintfOverlappingData())
         checkOther.InvalidFunctionUsage();
 
     // Check that all private functions are called.
-    if (ErrorMessage::unusedPrivateFunction(_settings))
+    if (ErrorLogger::unusedPrivateFunction(_settings))
         checkClass.privateFunctions();
 
     // 'operator=' should return something..
-    if (ErrorMessage::operatorEq(_settings))
+    if (ErrorLogger::operatorEq(_settings))
         checkClass.operatorEq();
 
     // if (condition);
-    if (ErrorMessage::ifNoAction(_settings) || ErrorMessage::conditionAlwaysTrueFalse(_settings))
+    if (ErrorLogger::ifNoAction(_settings) || ErrorLogger::conditionAlwaysTrueFalse(_settings))
         checkOther.WarningIf();
 
     // Unused struct members..
-    if (ErrorMessage::unusedStructMember(_settings))
+    if (ErrorLogger::unusedStructMember(_settings))
         checkOther.CheckStructMemberUsage();
 
     // Check if a constant function parameter is passed by value
-    if (ErrorMessage::passedByValue(_settings))
+    if (ErrorLogger::passedByValue(_settings))
         checkOther.CheckConstantFunctionParameter();
 
     // Variable scope (check if the scope could be limited)
-    if (ErrorMessage::variableScope())
+    if (ErrorLogger::variableScope())
         checkOther.CheckVariableScope();
 
     // Check for various types of incomplete statements that could for example
     // mean that an ';' has been added by accident
-    if (ErrorMessage::constStatement(_settings))
+    if (ErrorLogger::constStatement(_settings))
         checkOther.CheckIncompleteStatement();
 
     // Unusual pointer arithmetic
-    if (ErrorMessage::strPlusChar())
+    if (ErrorLogger::strPlusChar())
         checkOther.strPlusChar();
 }
 //---------------------------------------------------------------------------
