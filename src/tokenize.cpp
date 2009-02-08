@@ -322,7 +322,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
 
         if (strchr("#+-*/%&|^?!=<>[](){};:,.~", ch))
         {
-            if (ch == '.' && std::isdigit(CurrentToken[0]))
+            if (strchr(".+-", ch) && std::isdigit(CurrentToken[0]))
             {
                 // Don't separate doubles
             }
