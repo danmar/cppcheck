@@ -322,12 +322,19 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
 
         if (strchr("#+-*/%&|^?!=<>[](){};:,.~", ch))
         {
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            CurrentToken.clear();
-            CurrentToken += ch;
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            CurrentToken.clear();
-            continue;
+            if (ch == '.' && std::isdigit(CurrentToken[0]))
+            {
+                // Don't separate doubles
+            }
+            else
+            {
+                addtoken(CurrentToken.c_str(), lineno, FileIndex);
+                CurrentToken.clear();
+                CurrentToken += ch;
+                addtoken(CurrentToken.c_str(), lineno, FileIndex);
+                CurrentToken.clear();
+                continue;
+            }
         }
 
 

@@ -62,6 +62,7 @@ private:
         TEST_CASE(test2);
         TEST_CASE(test3);
         TEST_CASE(test4);
+        TEST_CASE(test_numeric);
     }
 
     void test1()
@@ -109,6 +110,25 @@ private:
               "\"world\"\n"
               "};\n"
               "}\n");
+
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void test_numeric()
+    {
+        check("struct P\n"
+              "{\n"
+              "double a;\n"
+              "double b;\n"
+              "};\n"
+              "void f()\n"
+              "{\n"
+              "const P values[2] =\n"
+              "{\n"
+              "{ 346.1,114.1 }, { 347.1,111.1 }\n"
+              "};\n"
+              "}\n"
+              "};\n");
 
         ASSERT_EQUALS(std::string(""), errout.str());
     }

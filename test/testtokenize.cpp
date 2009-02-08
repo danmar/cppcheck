@@ -108,6 +108,7 @@ private:
         TEST_CASE(sizeof3);
         TEST_CASE(sizeof4);
         TEST_CASE(simplify_numeric_condition);
+        TEST_CASE(tokenize_double);
     }
 
 
@@ -989,7 +990,24 @@ private:
         ASSERT_EQUALS(std::string(" void f ( ) { int x ; x = 0 ; if ( ! x ) { } }"), ostr.str());
     }
 
+    void tokenize_double()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    double a = 4.2;\n"
+                            "    float b = 4.2f;\n"
+                            "}\n";
 
+        // tokenize..
+        OurTokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" void f ( ) { double a = 4.2 ; float b = 4.2f ; }"), ostr.str());
+    }
 };
 
 REGISTER_TEST(TestTokenizer)
