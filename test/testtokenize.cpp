@@ -999,6 +999,7 @@ private:
                             "    float b = 4.2f;\n"
                             "    double c = 4.2e+10;\n"
                             "    double d = 4.2e-10;\n"
+                            "    int e = 4+2;\n"
                             "}\n";
 
         // tokenize..
@@ -1009,7 +1010,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { double a = 4.2 ; float b = 4.2f ; double c = 4.2e+10 ; double d = 4.2e-10 ; }"), ostr.str());
+        ASSERT_EQUALS(std::string(" void f ( ) { double a = 4.2 ; float b = 4.2f ; double c = 4.2e+10 ; double d = 4.2e-10 ; int e = 4 + 2 ; }"), ostr.str());
     }
 
     void tokenize_strings()
