@@ -186,6 +186,9 @@ private:
         TEST_CASE(all1);                // Extra checking when --all is given
 
         TEST_CASE(malloc_constant_1);     // Check that the malloc constant matches the type
+
+        // Calls to unknown functions.. they may throw exception, quit the program, etc
+        // TODO TEST_CASE(unknownFunction1);
     }
 
 
@@ -1820,6 +1823,27 @@ private:
               "}\n", false);
         ASSERT_EQUALS(std::string("[test.cpp:3]: (all) The given size 3 is mismatching\n"), errout.str());
     }
+
+
+
+    void unknownFunction1()
+    {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    int *p = new int[100];\n"
+                            "    if (abc)\n"
+                            "    {\n"
+                            "        delete [] p;\n"
+                            "        ThrowException();\n"
+                            "    }\n"
+                            "    delete [] p;\n"
+                            "}\n";
+        check(code, false);
+        ASSERT_EQUALS("", errout.str());
+        check(code, true);
+        ASSERT_EQUALS("[test.cpp:9]: (all) Deallocating a deallocated pointer: p\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestMemleak)
