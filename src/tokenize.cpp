@@ -546,6 +546,20 @@ void Tokenizer::setVarId()
 
 void Tokenizer::simplifyTokenList()
 {
+    // Combine strings
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str()[0] == '"' && tok->next() && tok->next()->str()[0] == '"')
+        {
+            // Two strings after each other, combine them
+            std::string temp = tok->str();
+            temp.erase(temp.length() - 1);
+            temp.append(tok->next()->str().substr(1));
+            tok->str(temp.c_str());
+            tok->deleteNext();
+        }
+    }
+
     // Remove unwanted keywords
     static const char* unwantedWords[] = { "unsigned", "unlikely" };
     for (Token *tok = _tokens; tok; tok = tok->next())

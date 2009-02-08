@@ -39,6 +39,7 @@ private:
         TEST_CASE(cast0);
         TEST_CASE(sizeof1);
         TEST_CASE(iftruefalse);
+        TEST_CASE(combine_strings);
     }
 
     std::string tok(const char code[])
@@ -140,6 +141,27 @@ private:
             const char code2[] = " void f() { if( aa ) { a=0; } else { a=2; } } ";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
+    }
+
+    void combine_strings()
+    {
+        const char code1[] =  "void foo()\n"
+                              "{\n"
+                              "const char *a =\n"
+                              "{\n"
+                              "\"hello \"\n"
+                              "\"world\"\n"
+                              "};\n"
+                              "}\n";
+
+        const char code2[] =  "void foo()\n"
+                              "{\n"
+                              "const char *a =\n"
+                              "{\n"
+                              "\"hello world\"\n"
+                              "};\n"
+                              "}\n";
+        ASSERT_EQUALS(tok(code2), tok(code1));
     }
 };
 

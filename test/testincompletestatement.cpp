@@ -61,6 +61,7 @@ private:
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);
+        TEST_CASE(test4);
     }
 
     void test1()
@@ -93,6 +94,20 @@ private:
         check("void foo()\n"
               "{\n"
               "    const char *str[] = { \"abc\" };\n"
+              "}\n");
+
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void test4()
+    {
+        check("void foo()\n"
+              "{\n"
+              "const char *a =\n"
+              "{\n"
+              "\"hello \"\n"
+              "\"world\"\n"
+              "};\n"
               "}\n");
 
         ASSERT_EQUALS(std::string(""), errout.str());
