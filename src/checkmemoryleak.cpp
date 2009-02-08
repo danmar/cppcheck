@@ -851,6 +851,13 @@ void CheckMemoryLeakClass::simplifycode(Token *tok)
                     done = false;
                 }
 
+                // Remove "if { dealloc ; callfunc ; } !!else"
+                else if (Token::Match(tok2->next(), "if { dealloc|assign|use ; callfunc ; } !!else"))
+                {
+                    erase(tok2, tok2->tokAt(8));
+                    done = false;
+                }
+
                 // Reducing if..
                 else if (_settings._showAll)
                 {

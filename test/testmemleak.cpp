@@ -189,7 +189,7 @@ private:
 
         // Calls to unknown functions.. they may throw exception, quit the program, etc
         TEST_CASE(unknownFunction1);
-        // TODO TEST_CASE(unknownFunction2);
+        TEST_CASE(unknownFunction2);
     }
 
 
@@ -1853,7 +1853,7 @@ private:
               "        ThrowException();\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9] (error) Memory leak: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p\n", errout.str());
     }
 
 };
