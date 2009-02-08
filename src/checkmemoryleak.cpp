@@ -196,7 +196,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType(const 
 const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
     // Keywords that are not function calls..
-    if (Token::Match(tok, "if|for|while"))
+    if (Token::Match(tok, "if|for|while|return|switch"))
         return 0;
 
     // String functions that are not allocating nor deallocating memory..
@@ -221,7 +221,7 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
     if (callstack.size() > 2)
         return "dealloc_";
 
-    const char *funcname = tok->aaaa();
+    const std::string funcname(tok->str());
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
     {
         if ((*it)->str() == funcname)
@@ -250,7 +250,9 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
         {
             --parlevel;
             if (parlevel < 1)
-                return NULL;
+            {
+                return _settings._showAll ? 0 : "callfunc";
+            }
         }
 
         if (parlevel == 1)
@@ -259,7 +261,7 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
                 ++par;
             if (Token::Match(tok, pattern.c_str()))
             {
-                const Token *ftok = _tokenizer->GetFunctionTokenByName(funcname);
+                const Token *ftok = _tokenizer->GetFunctionTokenByName(funcname.c_str());
                 const char *parname = Tokenizer::getParameterName(ftok, par);
                 if (! parname)
                     return "recursive";

@@ -188,7 +188,8 @@ private:
         TEST_CASE(malloc_constant_1);     // Check that the malloc constant matches the type
 
         // Calls to unknown functions.. they may throw exception, quit the program, etc
-        // TODO TEST_CASE(unknownFunction1);
+        TEST_CASE(unknownFunction1);
+        // TODO TEST_CASE(unknownFunction2);
     }
 
 
@@ -1828,20 +1829,31 @@ private:
 
     void unknownFunction1()
     {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int *p = new int[100];\n"
-                            "    if (abc)\n"
-                            "    {\n"
-                            "        delete [] p;\n"
-                            "        ThrowException();\n"
-                            "    }\n"
-                            "    delete [] p;\n"
-                            "}\n";
-        check(code, false);
+        check("void foo()\n"
+              "{\n"
+              "    int *p = new int[100];\n"
+              "    if (abc)\n"
+              "    {\n"
+              "        delete [] p;\n"
+              "        ThrowException();\n"
+              "    }\n"
+              "    delete [] p;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
-        check(code, true);
-        ASSERT_EQUALS("[test.cpp:9]: (all) Deallocating a deallocated pointer: p\n", errout.str());
+    }
+
+    void unknownFunction2()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    int *p = new int[100];\n"
+              "    if (abc)\n"
+              "    {\n"
+              "        delete [] p;\n"
+              "        ThrowException();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9] (error) Memory leak: p\n", errout.str());
     }
 
 };
