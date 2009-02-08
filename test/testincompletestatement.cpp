@@ -107,6 +107,7 @@ private:
               "const char *a =\n"
               "{\n"
               "\"hello \"\n"
+              "\"more \"\n"
               "\"world\"\n"
               "};\n"
               "}\n");

@@ -556,7 +556,7 @@ void Tokenizer::simplifyTokenList()
     // Combine strings
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok->str()[0] == '"' && tok->next() && tok->next()->str()[0] == '"')
+        while (tok->str()[0] == '"' && tok->next() && tok->next()->str()[0] == '"')
         {
             // Two strings after each other, combine them
             std::string temp = tok->str();
