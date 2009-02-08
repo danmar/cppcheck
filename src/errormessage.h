@@ -190,11 +190,11 @@ public:
 
     static void mismatchSize(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location, const std::string &sz)
     {
-        _writemsg(logger, tokenizer, Location, "all", "The given size " + sz + " is mismatching", "mismatchSize");
+        _writemsg(logger, tokenizer, Location, "error", "The given size " + sz + " is mismatching", "mismatchSize");
     }
-    static bool mismatchSize(const Settings &s)
+    static bool mismatchSize()
     {
-        return s._showAll;
+        return true;
     }
 
     static void cstyleCast(ErrorLogger *logger, const Tokenizer *tokenizer, const Token *Location)

@@ -1823,7 +1823,7 @@ private:
               "    int *p = malloc(3);\n"
               "    free(p);\n"
               "}\n", false);
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (all) The given size 3 is mismatching\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (error) The given size 3 is mismatching\n"), errout.str());
     }
 
 

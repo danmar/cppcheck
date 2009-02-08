@@ -81,7 +81,7 @@ int main()
     err.push_back(Message("resourceLeak", Message::error, "Resource leak: %1", "varname"));
     err.push_back(Message("deallocDealloc", Message::error, "Deallocating a deallocated pointer: %1", "varname"));
     err.push_back(Message("deallocuse", Message::error, "Using '%1' after it is deallocated / released", "varname"));
-    err.push_back(Message("mismatchSize", Message::all, "The given size %1 is mismatching", "sz"));
+    err.push_back(Message("mismatchSize", Message::error, "The given size %1 is mismatching", "sz"));
 
     // checkother.cpp..
     err.push_back(Message("cstyleCast", Message::style, "C-style pointer casting"));
