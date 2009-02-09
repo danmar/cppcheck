@@ -63,6 +63,7 @@ private:
         TEST_CASE(test3);
         TEST_CASE(test4);
         TEST_CASE(test_numeric);
+        // TODO TEST_CASE(intarray);
     }
 
     void test1()
@@ -131,6 +132,12 @@ private:
               "}\n"
               "};\n");
 
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void intarray()
+    {
+        check("int arr[] = { 100/2, 1*100 };\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
