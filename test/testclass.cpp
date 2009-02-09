@@ -43,9 +43,13 @@ private:
         TEST_CASE(virtualDestructor5);	// Derived class has empty destructor => no error
 
         TEST_CASE(uninitVar1);
+        TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
-        TEST_CASE(privateCtor);         // If constructor is private..
+        TEST_CASE(privateCtor1);        // If constructor is private..
+        // TODO TEST_CASE(privateCtor2);        // If constructor is private..
         TEST_CASE(function);            // Function is not variable
+        TEST_CASE(uninitVarHeader1);    // Class is defined in header
+        TEST_CASE(uninitVarHeader2);    // Class is defined in header
     }
 
     // Check that base classes have virtual destructors
@@ -168,20 +172,40 @@ private:
         ASSERT_EQUALS("[test.cpp:10]: (error) Uninitialized member variable 'Fred::_code'\n", errout.str());
     }
 
+    void uninitVarEnum()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    enum abc {a,b,c};\n"
+                       "    Fred() {}\n"
+                       "private:\n"
+                       "    unsigned int i;\n"
+                       "};\n");
+
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized member variable 'Fred::i'\n", errout.str());
+    }
+
     void uninitVarStream()
     {
         checkUninitVar("#include <fstream>\n"
-                       "class Foo {\n"
-                       "int foo;\n"
+                       "class Foo\n"
+                       "{\n"
+                       "private:\n"
+                       "    int foo;\n"
                        "public:\n"
-                       "Foo(std::istream &in) { if(!(in >> foo)) throw 0; }\n"
+                       "    Foo(std::istream &in)\n"
+                       "    {\n"
+                       "        if(!(in >> foo))\n"
+                       "            throw 0;\n"
+                       "    }\n"
                        "};\n");
 
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 
-    void privateCtor()
+    void privateCtor1()
     {
         checkUninitVar("class Foo {\n"
                        "    int foo;\n"
@@ -189,6 +213,20 @@ private:
                        "};\n");
 
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void privateCtor2()
+    {
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "private:\n"
+                       "    int foo;\n"
+                       "    Foo() { }\n"
+                       "public:\n"
+                       "    Foo(int _i) { }\n"
+                       "};\n");
+
+        ASSERT_EQUALS(std::string("[test.cpp:7] uninitialized member variable Foo::foo"), errout.str());
     }
 
 
@@ -212,6 +250,36 @@ private:
 
         ASSERT_EQUALS(std::string(""), errout.str());
     }
+
+
+    void uninitVarHeader1()
+    {
+        checkUninitVar("#file \"fred.h\"\n"
+                       "class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    unsigned int i;\n"
+                       "public:\n"
+                       "    Fred();\n"
+                       "};\n"
+                       "#endfile\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarHeader2()
+    {
+        checkUninitVar("#file \"fred.h\"\n"
+                       "class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    unsigned int i;\n"
+                       "public:\n"
+                       "    Fred() { }\n"
+                       "};\n"
+                       "#endfile\n");
+        ASSERT_EQUALS("[fred.h:6]: (error) Uninitialized member variable 'Fred::i'\n", errout.str());
+    }
+
 
 };
 

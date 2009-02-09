@@ -168,7 +168,7 @@ const Token * CheckClass::FindClassFunction(const Token *tok, const char classna
             // Member function implemented in the class declaration?
             if (tok->str() != "~" && Token::Match(tok->next(), internalPattern.str().c_str()))
             {
-                const Token *tok2 = tok;
+                const Token *tok2 = tok->next();
                 while (tok2 && tok2->str() != "{" && tok2->str() != ";")
                     tok2 = tok2->next();
                 if (tok2 && tok2->str() == "{")
