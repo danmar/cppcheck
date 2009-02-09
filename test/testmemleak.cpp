@@ -409,7 +409,7 @@ private:
               "        return;\n"
               "    }\n"
               "}\n", true);
-        ASSERT_EQUALS(std::string("[test.cpp:9]: (error) Memory leak: str\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:9]: (all) Memory leak: str\n"), errout.str());
     }
 
 
@@ -900,7 +900,7 @@ private:
         check(code.c_str(), false);
         ASSERT_EQUALS("", errout.str());
         check(code.c_str(), true);
-        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (all) Memory leak: str\n", errout.str());
     }
 
     void switch3()

@@ -68,7 +68,7 @@ private:
      * Simplify code e.g. by replacing empty "{ }" with ";"
      * @param tok first token. The tokens list can be modified.
      */
-    void simplifycode(Token *tok);
+    void simplifycode(Token *tok, bool &all);
 
     /**
      * Delete tokens between begin and end. E.g. if begin = 1
