@@ -28,6 +28,16 @@ class Token;
 class Tokenizer;
 
 /**
+ * File name and line number.
+ */
+class FileLocation
+{
+public:
+    std::string file;
+    unsigned int line;
+};
+
+/**
  * This is an interface, which the class responsible of error logging
  * should implement.
  */
@@ -39,15 +49,6 @@ public:
     virtual ~ErrorLogger() { }
 
     /**
-     * Errors and warnings are directed here.
-     *
-     * @param errmsg Errors messages are normally in format
-     * "[filepath:line number] Message", e.g.
-     * "[main.cpp:4] Uninitialized member variable"
-     */
-    virtual void reportErr(const std::string &errmsg) = 0;
-
-    /**
      * Information about progress is directed here.
      *
      * @param outmsg, E.g. "Checking main.cpp..."
@@ -55,16 +56,17 @@ public:
     virtual void reportOut(const std::string &outmsg) = 0;
 
     /**
-     * XML output of error / warning
+     * Output of error / warning
      * Todo: callstack handling
      *
-     * @param file      filepath (can be "")
-     * @param line      line (can be "")
+     * @param callStack File names and line numbers where the error
+     * was found and where it was called from. Error location is last
+     * element in the list
      * @param id        error id (function name)
      * @param severity  severity of error (always, all, style, all+style, never)
      * @param msg       error message in plain text
      */
-    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg) = 0;
+    virtual void reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg) = 0;
 
     void arrayIndexOutOfBounds(const Tokenizer *tokenizer, const std::list<const Token *> &Location)
     {
@@ -381,6 +383,35 @@ public:
         return true;
     }
 
+    void dangerousFunctionmktemp(const Tokenizer *tokenizer, const Token *Location)
+    {
+        _writemsg(tokenizer, Location, "style", "Found 'mktemp'. You should use 'mkstemp' instead", "dangerousFunctionmktemp");
+    }
+    static bool dangerousFunctionmktemp(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
+    void dangerousFunctiongets(const Tokenizer *tokenizer, const Token *Location)
+    {
+        _writemsg(tokenizer, Location, "style", "Found 'gets'. You should use 'fgets' instead", "dangerousFunctiongets");
+    }
+    static bool dangerousFunctiongets(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
+    void dangerousFunctionscanf(const Tokenizer *tokenizer, const Token *Location)
+    {
+        _writemsg(tokenizer, Location, "style", "Found 'scanf'. You should use 'fgets' instead", "dangerousFunctionscanf");
+    }
+    static bool dangerousFunctionscanf(const Settings &s)
+    {
+        return s._checkCodingStyle;
+    }
+
+
+    static std::string callStackToString(const std::list<FileLocation> &callStack);
 
 private:
     void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id);

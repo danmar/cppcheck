@@ -32,20 +32,19 @@ void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const Token *tok, const 
 
 void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg, const std::string &id)
 {
-    // Todo.. callstack handling
-    const std::string &file(tokenizer->getFiles()->at(callstack.back()->fileIndex()));
-    std::ostringstream linenr;
-    linenr << callstack.back()->linenr();
-    reportXml(file,
-              linenr.str(),
+    std::list<FileLocation> locationList;
+    for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
+    {
+        FileLocation loc;
+        loc.file = tokenizer->file(*tok);
+        loc.line = (*tok)->linenr();
+        locationList.push_back(loc);
+    }
+
+    reportErr(locationList,
               id,
               severity,
               msg);
-
-    std::ostringstream ostr;
-    for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
-        ostr << (tok == callstack.begin() ? "" : " -> ") << tokenizer->fileLine(*tok);
-    reportErr(ostr.str() + ": (" + severity + ") " + msg);
 }
 
 
@@ -57,5 +56,15 @@ void ErrorLogger::_writemsg(const std::string msg, const std::string &id)
     xml << " msg=\"" << msg << "\"";
     xml << ">";
 
-    reportErr(msg);
+    std::list<FileLocation> empty;
+    empty.push_back(FileLocation());
+    reportErr(empty, "id", "severity", msg);
+}
+
+std::string ErrorLogger::callStackToString(const std::list<FileLocation> &callStack)
+{
+    std::ostringstream ostr;
+    for (std::list<FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok)
+        ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).file << ":" << (*tok).line << "]";
+    return ostr.str();
 }

@@ -60,7 +60,13 @@ void CheckHeaders::WarningHeaderWithImplementation()
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found implementation in header";
-            _errorLogger->reportErr(ostr.str());
+
+            // TODO, this check is currently not used, but if it is some day
+            // it should give correct id and severity by calling proper function
+            // from errorLogger. It should not call reportErr directly.
+            std::list<FileLocation> empty;
+            empty.push_back(FileLocation());
+            _errorLogger->reportErr(empty, "id", "severity", ostr.str());
 
             // Goto next file..
             unsigned int fileindex = tok->fileIndex();
@@ -248,7 +254,13 @@ void CheckHeaders::WarningIncludeHeader()
             ostr << _tokenizer->fileLine(includetok) << ": The included header '" << includefile << "' is not needed";
             if (NeedDeclaration)
                 ostr << " (but a forward declaration is needed)";
-            _errorLogger->reportErr(ostr.str());
+
+            // TODO, this check is currently not used, but if it is some day
+            // it should give correct id and severity by calling proper function
+            // from errorLogger. It should not call reportErr directly.
+            std::list<FileLocation> empty;
+            empty.push_back(FileLocation());
+            _errorLogger->reportErr(empty, "id", "severity", ostr.str()); // TODO
         }
     }
 }

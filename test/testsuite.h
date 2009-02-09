@@ -42,9 +42,8 @@ protected:
     void assertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
 
 public:
-    virtual void reportErr(const std::string &errmsg);
     virtual void reportOut(const std::string &outmsg);
-    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg);
+    virtual void reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg);
 
     void run(const std::string &str);
 

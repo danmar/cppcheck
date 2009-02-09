@@ -167,18 +167,14 @@ void TestFixture::runTests(const char cmd[])
     std::cerr << errmsg.str();
 }
 
-
-void TestFixture::reportErr(const std::string &errmsg)
-{
-    errout << errmsg << std::endl;
-}
-
 void TestFixture::reportOut(const std::string & /*outmsg*/)
 {
     // These can probably be ignored
 }
 
-void TestFixture::reportXml(const std::string & /*file*/, const std::string & /*line*/, const std::string & /*id*/, const std::string & /*severity*/, const std::string & /*msg*/)
+void TestFixture::reportErr(const std::list<FileLocation> &callStack, const std::string & /*id*/, const std::string &severity, const std::string &msg)
 {
-    // These can probably be ignored
+    std::ostringstream text;
+    text << ErrorLogger::callStackToString(callStack) << ": (" << severity << ") " << msg;
+    errout << text.str() << std::endl;
 }

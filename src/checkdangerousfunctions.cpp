@@ -56,17 +56,17 @@ void CheckDangerousFunctionsClass::dangerousFunctions()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "mktemp ("))
+        if (Token::simpleMatch(tok, "mktemp ("))
         {
-            std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Found 'mktemp'. You should use 'mkstemp' instead";
-            _errorLogger->reportErr(ostr.str());
+            _errorLogger->dangerousFunctionmktemp(_tokenizer, tok);
         }
-        else if (Token::Match(tok, "gets|scanf ("))
+        else if (Token::simpleMatch(tok, "gets ("))
         {
-            std::ostringstream ostr;
-            ostr << _tokenizer->fileLine(tok) << ": Found '" << tok->str() << "'. You should use 'fgets' instead";
-            _errorLogger->reportErr(ostr.str());
+            _errorLogger->dangerousFunctiongets(_tokenizer, tok);
+        }
+        else if (Token::simpleMatch(tok, "scanf ("))
+        {
+            _errorLogger->dangerousFunctionscanf(_tokenizer, tok);
         }
     }
 }

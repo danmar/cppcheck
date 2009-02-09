@@ -75,6 +75,8 @@ public:
     const Token *GetFunctionTokenByName(const char funcname[]) const;
     const Token *tokens() const;
 
+    std::string file(const Token *tok) const;
+
 protected:
 
     /** Add braces to an if-block

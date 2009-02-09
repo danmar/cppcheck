@@ -110,7 +110,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--unused-functions</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
-      <arg choice="opt"><option>--xml-results</option></arg>
+      <arg choice="opt"><option>--xml</option></arg>
       <arg choice="opt"><option>file or path</option></arg>
       <arg choice="plain"><option>...</option></arg>
     </cmdsynopsis>
@@ -187,9 +187,9 @@ files, this is not needed.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--xml-results</option></term>
+        <term><option>--xml</option></term>
         <listitem>
-          <para>Write results in results.xml</para>
+          <para>Write results in xml to error stream</para>
         </listitem>
       </varlistentry>
     </variablelist>

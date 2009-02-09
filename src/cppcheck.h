@@ -64,6 +64,12 @@ public:
     void settings(const Settings &settings);
 
     /**
+     * Get copy of current settings.
+     * @return a copy of current settings
+     */
+    Settings settings() const;
+
+    /**
      * Add new file to be checked.
      *
      * @param path Relative or absolute path to the file to be checked,
@@ -104,7 +110,7 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr(const std::string &errmsg);
+    virtual void reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg);
 
     /**
      * Information about progress is directed here.
@@ -112,9 +118,6 @@ private:
      * @param outmsg, E.g. "Checking main.cpp..."
      */
     virtual void reportOut(const std::string &outmsg);
-
-    /** xml output of errors */
-    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg);
 
     std::list<std::string> _errorList;
     std::ostringstream _errout;

@@ -54,15 +54,7 @@ public:
      */
     unsigned int check(int argc, const char* const argv[]);
 
-    /**
-     * Errors and warnings are directed here. This should be
-     * called by the CppCheck class only.
-     *
-     * @param errmsg Errors messages are normally in format
-     * "[filepath:line number] Message", e.g.
-     * "[main.cpp:4] Uninitialized member variable"
-     */
-    virtual void reportErr(const std::string &errmsg);
+
 
     /**
      * Information about progress is directed here. This should be
@@ -73,7 +65,17 @@ public:
     virtual void reportOut(const std::string &outmsg);
 
     /** xml output of errors */
-    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg);
+    virtual void reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg);
+
+private:
+
+    /**
+     * Helper function to print out errors. Appends a line change.
+     * @param errmsg, string to printed to error stream
+     */
+    void reportErr(const std::string &errmsg);
+
+    bool _useXML;
 };
 
 #endif // CPPCHECKEXECUTOR_H

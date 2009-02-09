@@ -24,7 +24,7 @@
 
 CppCheckExecutor::CppCheckExecutor()
 {
-    //ctor
+    _useXML = false;
 }
 
 CppCheckExecutor::~CppCheckExecutor()
@@ -38,7 +38,20 @@ unsigned int CppCheckExecutor::check(int argc, const char* const argv[])
     std::string result = cppCheck.parseFromArgs(argc, argv);
     if (result.length() == 0)
     {
-        return cppCheck.check();
+        if (cppCheck.settings()._xml)
+        {
+            _useXML = true;
+            reportErr("<?xml version=\"1.0\"?>");
+            reportErr("<results>");
+        }
+
+        unsigned int returnValue = cppCheck.check();
+        if (_useXML)
+        {
+            reportErr("</results>");
+        }
+
+        return returnValue;
     }
     else
     {
@@ -57,7 +70,25 @@ void CppCheckExecutor::reportOut(const std::string &outmsg)
     std::cout << outmsg << std::endl;
 }
 
-void CppCheckExecutor::reportXml(const std::string & /*file*/, const std::string & /*line*/, const std::string & /*id*/, const std::string & /*severity*/, const std::string & /*msg*/)
+void CppCheckExecutor::reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg)
 {
-    // never used
+    if (_useXML)
+    {
+        std::ostringstream xml;
+        xml << "<error";
+        xml << " file=\"" << callStack.back().file << "\"";
+        xml << " line=\"" << callStack.back().line << "\"";
+        xml << " id=\"" << id << "\"";
+        xml << " severity=\"" << severity << "\"";
+        xml << " msg=\"" << msg << "\"";
+        xml << "/>";
+        reportErr(xml.str());
+    }
+    else
+    {
+        std::ostringstream text;
+
+        text << ErrorLogger::callStackToString(callStack) << ": (" << severity << ") " << msg;
+        reportErr(text.str());
+    }
 }

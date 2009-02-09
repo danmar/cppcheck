@@ -105,6 +105,12 @@ int main()
     err.push_back(Message("strPlusChar", Message::error, "Unusual pointer arithmetic"));
     err.push_back(Message("returnLocalVariable", Message::error, "Returning pointer to local array variable"));
 
+    // checkdangerousfunctions.cpp..
+    err.push_back(Message("dangerousFunctionmktemp", Message::style, "Found 'mktemp'. You should use 'mkstemp' instead"));
+    err.push_back(Message("dangerousFunctiongets", Message::style, "Found 'gets'. You should use 'fgets' instead"));
+    err.push_back(Message("dangerousFunctionscanf", Message::style, "Found 'scanf'. You should use 'fgets' instead"));
+
+
     // Generate code..
     std::cout << "Generate code.." << std::endl;
     std::ofstream fout("errorlogger.h");
@@ -137,6 +143,16 @@ int main()
     fout << "class Tokenizer;\n";
     fout << "\n";
     fout << "/**\n";
+    fout << " * File name and line number.\n";
+    fout << " */\n";
+    fout << "class FileLocation\n";
+    fout << "{\n";
+    fout << "public:\n";
+    fout << "    std::string file;\n";
+    fout << "    unsigned int line;\n";
+    fout << "};\n";
+    fout << "\n";
+    fout << "/**\n";
     fout << " * This is an interface, which the class responsible of error logging\n";
     fout << " * should implement.\n";
     fout << " */\n";
@@ -148,15 +164,6 @@ int main()
     fout << "    virtual ~ErrorLogger() { }\n";
     fout << "\n";
     fout << "    /**\n";
-    fout << "     * Errors and warnings are directed here.\n";
-    fout << "     *\n";
-    fout << "     * @param errmsg Errors messages are normally in format\n";
-    fout << "     * \"[filepath:line number] Message\", e.g.\n";
-    fout << "     * \"[main.cpp:4] Uninitialized member variable\"\n";
-    fout << "     */\n";
-    fout << "    virtual void reportErr(const std::string &errmsg) = 0;\n";
-    fout << "\n";
-    fout << "    /**\n";
     fout << "     * Information about progress is directed here.\n";
     fout << "     *\n";
     fout << "     * @param outmsg, E.g. \"Checking main.cpp...\"\n";
@@ -164,20 +171,24 @@ int main()
     fout << "    virtual void reportOut(const std::string &outmsg) = 0;\n";
     fout << "\n";
     fout << "    /**\n";
-    fout << "     * XML output of error / warning\n";
+    fout << "     * Output of error / warning\n";
     fout << "     * Todo: callstack handling\n";
     fout << "     *\n";
-    fout << "     * @param file      filepath (can be \"\")\n";
-    fout << "     * @param line      line (can be \"\")\n";
+    fout << "     * @param callStack File names and line numbers where the error\n";
+    fout << "     * was found and where it was called from. Error location is last\n";
+    fout << "     * element in the list\n";
     fout << "     * @param id        error id (function name)\n";
     fout << "     * @param severity  severity of error (always, all, style, all+style, never)\n";
     fout << "     * @param msg       error message in plain text\n";
     fout << "     */\n";
-    fout << "    virtual void reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg) = 0;\n";
+    fout << "    virtual void reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg) = 0;\n";
     fout << "\n";
 
     for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
         it->generateCode(fout);
+
+    fout << "\n";
+    fout << "    static std::string callStackToString(const std::list<FileLocation> &callStack);\n";
     fout << "\n";
     fout << "private:\n";
     fout << "    void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id);\n";

@@ -186,7 +186,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -s, --style          Check coding style\n"
         "    --unused-functions   Check if there are unused functions\n"
         "    -v, --verbose        More detailed error reports\n"
-        "    --xml                Write results in results.xml\n"
+        "    --xml                Write results in xml to error stream.\n"
         "\n"
         "Example usage:\n"
         "  # Recursively check the current folder. Print the progress on the screen and\n"
@@ -284,15 +284,7 @@ unsigned int CppCheck::check()
         _checkFunctionUsage.check();
     }
 
-    if (_settings._xml)
-    {
-        std::ofstream fxml("result.xml");
-        fxml << "<?xml version=\"1.0\"?>\n";
-        fxml << "<results>\n";
-        for (std::list<std::string>::const_iterator it = _xmllist.begin(); it != _xmllist.end(); ++it)
-            fxml << "  " << *it << "\n";
-        fxml << "</results>";
-    }
+
 
     unsigned int result = static_cast<unsigned int>(_errorList.size());
     _errorList.clear();
@@ -416,10 +408,20 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorLogger::strPlusChar())
         checkOther.strPlusChar();
 }
+
+Settings CppCheck::settings() const
+{
+    return _settings;
+}
+
 //---------------------------------------------------------------------------
 
-void CppCheck::reportErr(const std::string &errmsg)
+void CppCheck::reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg)
 {
+    std::ostringstream text;
+    text << ErrorLogger::callStackToString(callStack) << ": (" << severity << ") " << msg;
+    std::string errmsg = text.str();
+
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
         return;
@@ -431,8 +433,7 @@ void CppCheck::reportErr(const std::string &errmsg)
         errmsg2 += "\n    Defines=\'" + cfg + "\'\n";
     }
 
-
-    _errorLogger->reportErr(errmsg2);
+    _errorLogger->reportErr(callStack, id, severity, msg);
 
     _errout << errmsg2 << std::endl;
 }
@@ -441,18 +442,4 @@ void CppCheck::reportOut(const std::string & /*outmsg*/)
 {
     // This is currently never called. It is here just to comply with
     // the interface.
-}
-
-void CppCheck::reportXml(const std::string &file, const std::string &line, const std::string &id, const std::string &severity, const std::string &msg)
-{
-    std::ostringstream xml;
-    xml << "<error";
-    xml << " file=\"" << file << "\"";
-    xml << " line=\"" << line << "\"";
-    xml << " id=\"" << id << "\"";
-    xml << " severity=\"" << severity << "\"";
-    xml << " msg=\"" << msg << "\"";
-    xml << "/>";
-
-    _xmllist.push_back(xml.str());
 }
