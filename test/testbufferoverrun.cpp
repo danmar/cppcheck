@@ -93,6 +93,8 @@ private:
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
+        TEST_CASE(STLSize);
+        TEST_CASE(STLSizeNoErr);
     }
 
 
@@ -471,7 +473,44 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+    void STLSize()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> foo;\n"
+              "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
+              "    {\n"
+              "       foo[ii] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (error) When ii == size(), foo [ ii ] is out of bounds\n"), errout.str());
+    }
 
+    void STLSizeNoErr()
+    {
+        {
+            check("void foo()\n"
+                  "{\n"
+                  "    std::vector<int> foo;\n"
+                  "    for (unsigned int ii = 0; ii < foo.size(); ++ii)\n"
+                  "    {\n"
+                  "       foo[ii] = 0;\n"
+                  "    }\n"
+                  "}\n");
+            ASSERT_EQUALS(std::string(""), errout.str());
+        }
+
+        {
+            check("void foo()\n"
+                  "{\n"
+                  "    std::vector<int> foo;\n"
+                  "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
+                  "    {\n"
+                  "    }\n"
+                  "}\n");
+            ASSERT_EQUALS(std::string(""), errout.str());
+        }
+    }
 };
 
 REGISTER_TEST(TestBufferOverrun)

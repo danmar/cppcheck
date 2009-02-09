@@ -45,6 +45,12 @@ private:
     /** Check for buffer overruns - this is the function that performs the actual checking */
     void CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
 
+    /**
+     * Finds errors like this:
+     * for (unsigned ii = 0; ii <= foo.size(); ++ii)
+     */
+    void STLSizeProblems();
+
     const Tokenizer *_tokenizer;
     const Settings _settings;
     ErrorLogger *_errorLogger;

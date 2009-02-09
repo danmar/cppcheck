@@ -555,12 +555,73 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 }
 //---------------------------------------------------------------------------
 
+void CheckBufferOverrunClass::STLSizeProblems()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (!Token::simpleMatch(tok, "for ("))
+            continue;
 
+
+        int indent = 1;
+        tok = tok->tokAt(2);
+        const Token *num = 0;
+        const Token *var = 0;
+        while (tok)
+        {
+
+            if (tok->str() == "(")
+                ++indent;
+            if (tok->str() == ")")
+            {
+                --indent;
+                if (indent == 0)
+                    break;
+            }
+
+            if (Token::Match(tok, "; %var% <= %var% . size ( ) ;"))
+            {
+                num = tok->tokAt(1);
+                var = tok->tokAt(3);
+            }
+
+            tok = tok->next();
+        }
+
+        tok = tok->next();
+        if (!num || tok->str() != "{")
+            continue;
+
+        std::string pattern = var->str() + " [ " + num->str() + " ]";
+        while (tok)
+        {
+
+            if (tok->str() == "{")
+                ++indent;
+            if (tok->str() == "}")
+            {
+                --indent;
+                if (indent == 0)
+                    break;
+            }
+
+
+            if (Token::Match(tok, pattern.c_str()))
+            {
+                _errorLogger->outOfBounds(_tokenizer, tok, "When " + num->str() + " == size(), " + pattern);
+            }
+
+            tok = tok->next();
+        }
+    }
+
+}
 
 void CheckBufferOverrunClass::bufferOverrun()
 {
     CheckBufferOverrun_LocalVariable();
     CheckBufferOverrun_StructVariable();
+    STLSizeProblems();
 }
 //---------------------------------------------------------------------------
 
