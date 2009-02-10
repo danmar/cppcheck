@@ -20,7 +20,7 @@
 #include "checkstl.h"
 
 CheckStl::CheckStl(const Tokenizer *tokenizer, ErrorLogger *errorLogger)
-    : _tokenizer(tokenizer), _errorLogger(errorLogger)
+        : _tokenizer(tokenizer), _errorLogger(errorLogger)
 {
 
 }
