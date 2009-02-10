@@ -194,6 +194,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\checkstl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\cppcheck.h"
 				>
 			</File>
@@ -275,6 +279,10 @@
 			</File>
 			<File
 				RelativePath=".\src\checkother.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkstl.cpp"
 				>
 			</File>
 			<File

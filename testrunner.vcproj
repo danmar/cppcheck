@@ -195,7 +195,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\checkstl.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\cppcheck.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\errorlogger.h"
 				>
 			</File>
 			<File
@@ -267,11 +275,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\checkstl.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\cppcheck.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\errormessage.cpp"
+				RelativePath=".\src\errorlogger.cpp"
 				>
 			</File>
 			<File
@@ -300,6 +312,10 @@
 			</File>
 			<File
 				RelativePath=".\test\testconstructors.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test\testcppcheck.cpp"
 				>
 			</File>
 			<File
@@ -348,6 +364,10 @@
 			</File>
 			<File
 				RelativePath=".\test\testsimplifytokens.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test\teststl.cpp"
 				>
 			</File>
 			<File
