@@ -419,6 +419,15 @@ public:
         return s._checkCodingStyle;
     }
 
+    void iteratorUsage(const Tokenizer *tokenizer, const Token *Location, const std::string &container1, const std::string &container2)
+    {
+        _writemsg(tokenizer, Location, "error", "Same iterator is used with both " + container1 + " and " + container2 + "", "iteratorUsage");
+    }
+    static bool iteratorUsage()
+    {
+        return true;
+    }
+
 
     static std::string callStackToString(const std::list<FileLocation> &callStack);
 

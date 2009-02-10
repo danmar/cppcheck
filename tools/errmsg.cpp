@@ -111,6 +111,10 @@ int main()
     err.push_back(Message("dangerousFunctiongets", Message::style, "Found 'gets'. You should use 'fgets' instead"));
     err.push_back(Message("dangerousFunctionscanf", Message::style, "Found 'scanf'. You should use 'fgets' instead"));
 
+    // checkstl.cpp..
+    err.push_back(Message("iteratorUsage", Message::error, "Same iterator is used with both %1 and %2", "container1", "container2"));
+
+
 
     // Generate code..
     std::cout << "Generate code.." << std::endl;
