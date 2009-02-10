@@ -70,25 +70,14 @@ void CppCheckExecutor::reportOut(const std::string &outmsg)
     std::cout << outmsg << std::endl;
 }
 
-void CppCheckExecutor::reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg)
+void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     if (_useXML)
     {
-        std::ostringstream xml;
-        xml << "<error";
-        xml << " file=\"" << callStack.back().file << "\"";
-        xml << " line=\"" << callStack.back().line << "\"";
-        xml << " id=\"" << id << "\"";
-        xml << " severity=\"" << severity << "\"";
-        xml << " msg=\"" << msg << "\"";
-        xml << "/>";
-        reportErr(xml.str());
+        reportErr(msg.toXML());
     }
     else
     {
-        std::ostringstream text;
-
-        text << ErrorLogger::callStackToString(callStack) << ": (" << severity << ") " << msg;
-        reportErr(text.str());
+        reportErr(msg.toText());
     }
 }

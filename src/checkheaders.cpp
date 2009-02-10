@@ -64,10 +64,9 @@ void CheckHeaders::WarningHeaderWithImplementation()
             // TODO, this check is currently not used, but if it is some day
             // it should give correct id and severity by calling proper function
             // from errorLogger. It should not call reportErr directly.
-            std::list<FileLocation> empty;
-            empty.push_back(FileLocation());
-            _errorLogger->reportErr(empty, "id", "severity", ostr.str());
-
+//            std::list<ErrorLogger::ErrorMessage::FileLocation> empty;
+            //          empty.push_back(FileLocation());
+            // _errorLogger->reportErr(empty, "severity", ostr.str(), "id");
             // Goto next file..
             unsigned int fileindex = tok->fileIndex();
             while (tok->next() && tok->fileIndex() == fileindex)
@@ -258,9 +257,9 @@ void CheckHeaders::WarningIncludeHeader()
             // TODO, this check is currently not used, but if it is some day
             // it should give correct id and severity by calling proper function
             // from errorLogger. It should not call reportErr directly.
-            std::list<FileLocation> empty;
-            empty.push_back(FileLocation());
-            _errorLogger->reportErr(empty, "id", "severity", ostr.str()); // TODO
+//            std::list<FileLocation> empty;
+            //          empty.push_back(FileLocation());
+            // _errorLogger->reportErr(empty, "severity", ostr.str(), "id"); // TODO
         }
     }
 }

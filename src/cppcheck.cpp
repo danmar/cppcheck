@@ -424,11 +424,9 @@ Settings CppCheck::settings() const
 
 //---------------------------------------------------------------------------
 
-void CppCheck::reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg)
+void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    std::ostringstream text;
-    text << ErrorLogger::callStackToString(callStack) << ": (" << severity << ") " << msg;
-    std::string errmsg = text.str();
+    std::string errmsg = msg.toText();
 
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
@@ -441,7 +439,7 @@ void CppCheck::reportErr(const std::list<FileLocation> &callStack, const std::st
         errmsg2 += "\n    Defines=\'" + cfg + "\'\n";
     }
 
-    _errorLogger->reportErr(callStack, id, severity, msg);
+    _errorLogger->reportErr(msg);
 
     _errout << errmsg2 << std::endl;
 }

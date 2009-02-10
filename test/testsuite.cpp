@@ -172,9 +172,7 @@ void TestFixture::reportOut(const std::string & /*outmsg*/)
     // These can probably be ignored
 }
 
-void TestFixture::reportErr(const std::list<FileLocation> &callStack, const std::string & /*id*/, const std::string &severity, const std::string &msg)
+void TestFixture::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    std::ostringstream text;
-    text << ErrorLogger::callStackToString(callStack) << ": (" << severity << ") " << msg;
-    errout << text.str() << std::endl;
+    errout << msg.toText() << std::endl;
 }

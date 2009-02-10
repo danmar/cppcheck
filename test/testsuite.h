@@ -43,7 +43,7 @@ protected:
 
 public:
     virtual void reportOut(const std::string &outmsg);
-    virtual void reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg);
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
 
     void run(const std::string &str);
 

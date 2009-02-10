@@ -28,22 +28,38 @@ class Token;
 class Tokenizer;
 
 /**
- * File name and line number.
- */
-class FileLocation
-{
-public:
-    std::string file;
-    unsigned int line;
-};
-
-/**
  * This is an interface, which the class responsible of error logging
  * should implement.
  */
 class ErrorLogger
 {
 public:
+
+    /**
+     * reportErr()
+     */
+    class ErrorMessage
+    {
+    public:
+        /**
+         * File name and line number.
+         */
+        class FileLocation
+        {
+        public:
+            std::string file;
+            unsigned int line;
+        };
+
+        ErrorMessage(const std::list<FileLocation> &callStack, const std::string &severity, const std::string &msg, const std::string &id);
+        std::string toXML() const;
+        std::string toText() const;
+    private:
+        std::list<FileLocation> _callStack;
+        std::string _severity;
+        std::string _msg;
+        std::string _id;
+    };
 
     ErrorLogger() { }
     virtual ~ErrorLogger() { }
@@ -66,7 +82,7 @@ public:
      * @param severity  severity of error (always, all, style, all+style, never)
      * @param msg       error message in plain text
      */
-    virtual void reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg) = 0;
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;
 
     void arrayIndexOutOfBounds(const Tokenizer *tokenizer, const std::list<const Token *> &Location)
     {
@@ -429,7 +445,7 @@ public:
     }
 
 
-    static std::string callStackToString(const std::list<FileLocation> &callStack);
+    static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 
 private:
     void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id);

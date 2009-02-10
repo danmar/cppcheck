@@ -110,7 +110,7 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    virtual void reportErr(const std::list<FileLocation> &callStack, const std::string &id, const std::string &severity, const std::string &msg);
+    virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
 
     /**
      * Information about progress is directed here.
