@@ -37,6 +37,7 @@ private:
     void run()
     {
         TEST_CASE(iterator1);
+        TEST_CASE(iterator2);
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
     }
@@ -64,6 +65,19 @@ private:
               "{\n"
               "    for (it = foo.begin(); it != bar.end(); ++it)\n"
               "    { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
+    }
+
+    void iterator2()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    it = foo.begin();\n"
+              "    while (it != bar.end())\n"
+              "    {\n"
+              "        ++it;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
     }

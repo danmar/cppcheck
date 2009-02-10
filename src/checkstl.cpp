@@ -35,6 +35,7 @@ void CheckStl::iterators()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        // it = foo.begin(); it != bar.end()
         if (Token::Match(tok, "%var% = %var% . begin ( ) ; %var% != %var% . end ( ) ;"))
         {
             // Different iterators..
@@ -44,6 +45,19 @@ void CheckStl::iterators()
             if (tok->tokAt(2)->str() == tok->tokAt(10)->str())
                 continue;
             _errorLogger->iteratorUsage(_tokenizer, tok, tok->tokAt(2)->str(), tok->tokAt(10)->str());
+        }
+
+        // it = foo.begin();
+        // while (it != bar.end())
+        if (Token::Match(tok, "%var% = %var% . begin ( ) ; while ( %var% != %var% . end ( )"))
+        {
+            // Different iterators..
+            if (tok->str() != tok->tokAt(10)->str())
+                continue;
+            // Same container..
+            if (tok->tokAt(2)->str() == tok->tokAt(12)->str())
+                continue;
+            _errorLogger->iteratorUsage(_tokenizer, tok, tok->tokAt(2)->str(), tok->tokAt(12)->str());
         }
     }
 }
