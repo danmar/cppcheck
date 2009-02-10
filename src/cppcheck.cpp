@@ -412,6 +412,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     CheckStl checkStl(&_tokenizer, this);
     if (ErrorLogger::iteratorUsage())
         checkStl.iterators();
+
+    if (ErrorLogger::stlOutOfBounds())
+        checkStl.stlOutOfBounds();
 }
 
 Settings CppCheck::settings() const

@@ -37,6 +37,8 @@ private:
     void run()
     {
         TEST_CASE(iterator1);
+        TEST_CASE(STLSize);
+        TEST_CASE(STLSizeNoErr);
     }
 
     void check(const char code[])
@@ -52,6 +54,7 @@ private:
         // Check char variable usage..
         CheckStl checkStl(&tokenizer, this);
         checkStl.iterators();
+        checkStl.stlOutOfBounds();
     }
 
 
@@ -65,6 +68,45 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
     }
 
+
+    void STLSize()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> foo;\n"
+              "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
+              "    {\n"
+              "       foo[ii] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:6]: (error) When ii == size(), foo [ ii ] is out of bounds\n"), errout.str());
+    }
+
+    void STLSizeNoErr()
+    {
+        {
+            check("void foo()\n"
+                  "{\n"
+                  "    std::vector<int> foo;\n"
+                  "    for (unsigned int ii = 0; ii < foo.size(); ++ii)\n"
+                  "    {\n"
+                  "       foo[ii] = 0;\n"
+                  "    }\n"
+                  "}\n");
+            ASSERT_EQUALS(std::string(""), errout.str());
+        }
+
+        {
+            check("void foo()\n"
+                  "{\n"
+                  "    std::vector<int> foo;\n"
+                  "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
+                  "    {\n"
+                  "    }\n"
+                  "}\n");
+            ASSERT_EQUALS(std::string(""), errout.str());
+        }
+    }
 };
 
 REGISTER_TEST(TestStl)

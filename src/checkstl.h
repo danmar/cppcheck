@@ -32,6 +32,13 @@ public:
     CheckStl(const Tokenizer *tokenizer, ErrorLogger *errorLogger);
     ~CheckStl();
 
+
+    /**
+     * Finds errors like this:
+     * for (unsigned ii = 0; ii <= foo.size(); ++ii)
+     */
+    void stlOutOfBounds();
+
     void iterators();
 
 private:
