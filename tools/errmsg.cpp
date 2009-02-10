@@ -61,6 +61,7 @@ int main()
     err.push_back(Message("arrayIndexOutOfBounds", Message::all, "Array index out of bounds"));
     err.push_back(Message("bufferOverrun", Message::all, "Buffer overrun"));
     err.push_back(Message("outOfBounds", Message::error, "%1 is out of bounds", "what"));
+    err.push_back(Message("stlOutOfBounds", Message::error, "%1 is out of bounds", "what"));
 
     // checkclass.cpp..
     err.push_back(Message("noConstructor", Message::style, "The class '%1' has no constructor", "classname"));

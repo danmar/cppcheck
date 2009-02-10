@@ -95,6 +95,15 @@ public:
         return true;
     }
 
+    void stlOutOfBounds(const Tokenizer *tokenizer, const Token *Location, const std::string &what)
+    {
+        _writemsg(tokenizer, Location, "error", "" + what + " is out of bounds", "stlOutOfBounds");
+    }
+    static bool stlOutOfBounds()
+    {
+        return true;
+    }
+
     void noConstructor(const Tokenizer *tokenizer, const Token *Location, const std::string &classname)
     {
         _writemsg(tokenizer, Location, "style", "The class '" + classname + "' has no constructor", "noConstructor");

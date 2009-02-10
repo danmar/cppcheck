@@ -608,7 +608,7 @@ void CheckBufferOverrunClass::STLSizeProblems()
 
             if (Token::Match(tok, pattern.c_str()))
             {
-                _errorLogger->outOfBounds(_tokenizer, tok, "When " + num->str() + " == size(), " + pattern);
+                _errorLogger->stlOutOfBounds(_tokenizer, tok, "When " + num->str() + " == size(), " + pattern);
             }
 
             tok = tok->next();
