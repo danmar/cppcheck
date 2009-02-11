@@ -415,6 +415,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     if (ErrorLogger::stlOutOfBounds())
         checkStl.stlOutOfBounds();
+
+    if (ErrorLogger::erase())
+        checkStl.erase();
 }
 
 Settings CppCheck::settings() const

@@ -113,6 +113,7 @@ int main()
 
     // checkstl.cpp..
     err.push_back(Message("iteratorUsage", Message::error, "Same iterator is used with both %1 and %2", "container1", "container2"));
+    err.push_back(Message("erase", Message::error, "Dangerous usage of erase"));
 
 
 

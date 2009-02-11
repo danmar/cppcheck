@@ -18,6 +18,10 @@
  */
 
 #include "checkstl.h"
+#include "errorlogger.h"
+#include "token.h"
+#include "tokenize.h"
+
 
 CheckStl::CheckStl(const Tokenizer *tokenizer, ErrorLogger *errorLogger)
         : _tokenizer(tokenizer), _errorLogger(errorLogger)
@@ -124,3 +128,78 @@ void CheckStl::stlOutOfBounds()
     }
 
 }
+
+
+
+void CheckStl::erase()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "for ("))
+        {
+            for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ";"; tok2 = tok2->next())
+            {
+                if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% != %var% . end ( ) ") &&
+                    tok2->str() == tok2->tokAt(8)->str() &&
+                    tok2->tokAt(2)->str() == tok2->tokAt(10)->str())
+                {
+                    eraseCheckLoop(tok2);
+                    break;
+                }
+            }
+        }
+
+        if (Token::Match(tok, "while ( %var% != %var% . end ( )"))
+        {
+            eraseCheckLoop(tok->tokAt(2));
+        }
+    }
+}
+
+
+void CheckStl::eraseCheckLoop(const Token *it)
+{
+    const Token *tok = it;
+
+    // Search for the start of the loop body..
+    int indentlevel = 1;
+    while (indentlevel > 0 && 0 != (tok = tok->next()))
+    {
+        if (tok->str() == "(")
+            ++indentlevel;
+        else if (tok->str() == ")")
+            --indentlevel;
+    }
+
+    if (! Token::simpleMatch(tok, ") {"))
+        return;
+
+    // Parse loop..
+    // Error if it contains "erase(it)" but neither "break;" nor "it="
+    indentlevel = 0;
+    const Token *tok2 = 0;
+    while (0 != (tok = tok->next()))
+    {
+        if (tok->str() == "{")
+            ++indentlevel;
+        else if (tok->str() == "}")
+        {
+            --indentlevel;
+            if (indentlevel < 0)
+                break;
+        }
+        else if (Token::simpleMatch(tok, "break ;") || Token::simpleMatch(tok, (it->str() + " =").c_str()))
+        {
+            tok2 = 0;
+            break;
+        }
+        else if (Token::simpleMatch(tok, ("erase ( " + it->str() + " )").c_str()))
+            tok2 = tok;
+    }
+
+    // Write error message..
+    if (tok2)
+        _errorLogger->erase(_tokenizer, tok2);
+}
+
+

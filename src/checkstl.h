@@ -23,8 +23,9 @@
 #define checkstlH
 //---------------------------------------------------------------------------
 
-#include "tokenize.h"
-#include "errorlogger.h"
+class ErrorLogger;
+class Token;
+class Tokenizer;
 
 class CheckStl
 {
@@ -39,11 +40,27 @@ public:
      */
     void stlOutOfBounds();
 
+    /**
+     * Finds errors like this:
+     * for (it = foo.begin(); it != bar.end(); ++it)
+     */
     void iterators();
+
+    /**
+     * Dangerous usage of erase
+     */
+    void erase();
 
 private:
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
+
+    /**
+     * Helper function used by the 'erase' function
+     * This function parses a loop
+     * @param it iterator token
+     */
+    void eraseCheckLoop(const Token *it);
 };
 
 //---------------------------------------------------------------------------

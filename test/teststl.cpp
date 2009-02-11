@@ -40,6 +40,9 @@ private:
         TEST_CASE(iterator2);
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
+        TEST_CASE(erase);
+        TEST_CASE(eraseBreak);
+        TEST_CASE(eraseAssign);
     }
 
     void check(const char code[])
@@ -121,6 +124,68 @@ private:
             ASSERT_EQUALS(std::string(""), errout.str());
         }
     }
+
+
+
+
+
+
+    void checkErase(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check char variable usage..
+        CheckStl checkStl(&tokenizer, this);
+        checkStl.erase();
+    }
+
+
+    void erase()
+    {
+        checkErase("void f()\n"
+                   "{\n"
+                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                   "    {\n"
+                   "        foo.erase(it);\n"
+                   "    }\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of erase\n", errout.str());
+    }
+
+    void eraseBreak()
+    {
+        checkErase("void f()\n"
+                   "{\n"
+                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                   "    {\n"
+                   "        foo.erase(it);\n"
+                   "        break;\n"
+                   "    }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void eraseAssign()
+    {
+        checkErase("void f()\n"
+                   "{\n"
+                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                   "    {\n"
+                   "        foo.erase(it);\n"
+                   "        it = foo.begin();\n"
+                   "    }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+
 };
 
 REGISTER_TEST(TestStl)

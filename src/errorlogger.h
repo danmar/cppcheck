@@ -444,6 +444,15 @@ public:
         return true;
     }
 
+    void erase(const Tokenizer *tokenizer, const Token *Location)
+    {
+        _writemsg(tokenizer, Location, "error", "Dangerous usage of erase", "erase");
+    }
+    static bool erase()
+    {
+        return true;
+    }
+
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 
