@@ -388,7 +388,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 // Checking local variables in a scope
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
+void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
 {
     int indentlevel = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -399,43 +399,40 @@ void CheckBufferOverrunClass::CheckBufferOverrun_LocalVariable()
         else if (tok->str() == "}")
             --indentlevel;
 
-        else if (indentlevel > 0)
+        const char *varname[2] = {0};
+        unsigned int size = 0;
+        const char *type = 0;
+        unsigned int varid = 0;
+        int nextTok = 0;
+
+        if (Token::Match(tok, "%type% %var% [ %num% ] ;"))
         {
-            const char *varname[2] = {0};
-            unsigned int size = 0;
-            const char *type = 0;
-            unsigned int varid = 0;
-            int nextTok = 0;
-
-            if (Token::Match(tok, "%type% %var% [ %num% ] ;"))
-            {
-                varname[0] = tok->strAt(1);
-                size = std::strtoul(tok->strAt(3), NULL, 10);
-                type = tok->aaaa();
-                varid = tok->tokAt(1)->varId();
-                nextTok = 6;
-            }
-            else if (Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
-            {
-                varname[0] = tok->strAt(1);
-                size = std::strtoul(tok->strAt(6), NULL, 10);
-                type = tok->strAt(4);
-                varid = tok->tokAt(1)->varId();
-                nextTok = 8;
-            }
-            else
-            {
-                continue;
-            }
-
-            int total_size = size * _tokenizer->SizeOfType(type);
-            if (total_size == 0)
-                continue;
-
-            // The callstack is empty
-            _callStack.clear();
-            CheckBufferOverrun_CheckScope(tok->tokAt(nextTok), varname, size, total_size, varid);
+            varname[0] = tok->strAt(1);
+            size = std::strtoul(tok->strAt(3), NULL, 10);
+            type = tok->aaaa();
+            varid = tok->tokAt(1)->varId();
+            nextTok = 6;
         }
+        else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
+        {
+            varname[0] = tok->strAt(1);
+            size = std::strtoul(tok->strAt(6), NULL, 10);
+            type = tok->strAt(4);
+            varid = tok->tokAt(1)->varId();
+            nextTok = 8;
+        }
+        else
+        {
+            continue;
+        }
+
+        int total_size = size * _tokenizer->SizeOfType(type);
+        if (total_size == 0)
+            continue;
+
+        // The callstack is empty
+        _callStack.clear();
+        CheckBufferOverrun_CheckScope(tok->tokAt(nextTok), varname, size, total_size, varid);
     }
 }
 //---------------------------------------------------------------------------
@@ -560,7 +557,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 
 void CheckBufferOverrunClass::bufferOverrun()
 {
-    CheckBufferOverrun_LocalVariable();
+    CheckBufferOverrun_GlobalAndLocalVariable();
     CheckBufferOverrun_StructVariable();
 }
 //---------------------------------------------------------------------------

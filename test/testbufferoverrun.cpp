@@ -85,6 +85,7 @@ private:
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
+        TEST_CASE(buffer_overrun_3);
 
         TEST_CASE(sprintf1);
         TEST_CASE(snprintf1);
@@ -373,6 +374,9 @@ private:
     }
 
 
+
+
+
     void buffer_overrun_1()
     {
         check("void f()\n"
@@ -397,6 +401,24 @@ private:
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:8]: (all) Buffer overrun\n"), errout.str());
     }
+
+
+    void buffer_overrun_3()
+    {
+        check("int a[10];\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    int i;\n"
+              "    for (i = 0; i <= 10; ++i)\n"
+              "        a[i] = 0;\n"
+              "}\n");
+        std::string err(errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:7]: (all) Buffer overrun\n"), err);
+    }
+
+
+
 
 
     void sprintf1()
