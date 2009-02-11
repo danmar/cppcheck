@@ -62,6 +62,7 @@ private:
         TEST_CASE(test2);
         TEST_CASE(test3);
         TEST_CASE(test4);
+        TEST_CASE(test5);
         TEST_CASE(test_numeric);
         // TODO TEST_CASE(intarray);
     }
@@ -114,6 +115,16 @@ private:
               "}\n");
 
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void test5()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    50;\n"
+              "}\n");
+
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant code: Found a statement that begins with numeric constant\n"), errout.str());
     }
 
     void test_numeric()
