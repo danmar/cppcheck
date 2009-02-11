@@ -115,7 +115,7 @@ src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/tokeniz
 src/checkother.o: src/checkother.cpp src/checkother.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CXXFLAGS) -c -o src/checkother.o src/checkother.cpp
 
-src/checkstl.o: src/checkstl.cpp src/checkstl.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
+src/checkstl.o: src/checkstl.cpp src/checkstl.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
 	g++ $(CXXFLAGS) -c -o src/checkstl.o src/checkstl.cpp
 
 src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/checkstl.h src/filelister.h
