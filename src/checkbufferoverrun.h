@@ -23,8 +23,12 @@
 #define CheckBufferOverrunH
 //---------------------------------------------------------------------------
 
-#include "tokenize.h"
-#include "errorlogger.h"
+#include "settings.h"
+#include <list>
+
+class ErrorLogger;
+class Token;
+class Tokenizer;
 
 class CheckBufferOverrunClass
 {

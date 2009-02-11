@@ -23,6 +23,9 @@
 
 #include "checkbufferoverrun.h"
 
+#include "tokenize.h"
+#include "errorlogger.h"
+
 #include <algorithm>
 #include <sstream>
 #include <list>
