@@ -110,6 +110,7 @@ private:
         TEST_CASE(simplify_numeric_condition);
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
+        // TODO TEST_CASE(simplify_constants);
     }
 
 
@@ -1035,6 +1036,32 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" void f ( ) { const char * a = { \"hello more world\" } ; }"), ostr.str());
+    }
+
+    void simplify_constants()
+    {
+        const char code[] =
+            "void f()\n"
+            "{\n"
+            "const int a = 45;\n"
+            "}\n"
+            "void g()\n"
+            "{\n"
+            "int a = 2;\n"
+            "}\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" void f ( ) { const int a = 45 ; } void g ( ) { int a ; a = 2 ; }"), ostr.str());
     }
 };
 
