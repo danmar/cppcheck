@@ -188,7 +188,7 @@ void CheckStl::eraseCheckLoop(const Token *it)
             if (indentlevel < 0)
                 break;
         }
-        else if (Token::simpleMatch(tok, "break ;") || Token::simpleMatch(tok, (it->str() + " =").c_str()))
+        else if (Token::Match(tok, "break|return|goto") || Token::simpleMatch(tok, (it->str() + " =").c_str()))
         {
             tok2 = 0;
             break;

@@ -42,6 +42,8 @@ private:
         TEST_CASE(STLSizeNoErr);
         TEST_CASE(erase);
         TEST_CASE(eraseBreak);
+        TEST_CASE(eraseReturn);
+        TEST_CASE(eraseGoto);
         TEST_CASE(eraseAssign);
     }
 
@@ -167,6 +169,33 @@ private:
                    "        foo.erase(it);\n"
                    "        break;\n"
                    "    }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void eraseReturn()
+    {
+        checkErase("void f()\n"
+                   "{\n"
+                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                   "    {\n"
+                   "        foo.erase(it);\n"
+                   "        return;\n"
+                   "    }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void eraseGoto()
+    {
+        checkErase("void f()\n"
+                   "{\n"
+                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                   "    {\n"
+                   "        foo.erase(it);\n"
+                   "        goto abc;\n"
+                   "    }\n"
+                   "bar:\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
     }
