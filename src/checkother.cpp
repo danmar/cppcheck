@@ -762,6 +762,12 @@ void CheckOther::CheckIncompleteStatement()
         if (parlevel != 0)
             continue;
 
+        if (tok->previous() && Token::Match(tok->previous(), "="))
+        {
+            /* We are inside an assignment, so it's not a statement. */
+            continue;
+        }
+
         if (Token::Match(tok, "[;{}] %str%") && !Token::Match(tok->tokAt(2), "[,}]"))
         {
             _errorLogger->constStatement(_tokenizer, tok->next(), "string");
