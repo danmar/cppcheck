@@ -94,6 +94,8 @@ private:
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
+
+        TEST_CASE(assign1);
     }
 
 
@@ -491,6 +493,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void assign1()
+    {
+        check("char str[3] = {'a', 'b', 'c'};\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    str[3] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Array index out of bounds\n"), errout.str());
     }
 };
 

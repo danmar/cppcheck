@@ -405,7 +405,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
         unsigned int varid = 0;
         int nextTok = 0;
 
-        if (Token::Match(tok, "%type% %var% [ %num% ] ;"))
+        if (Token::Match(tok, "%type% %var% [ %num% ] [;=]"))
         {
             varname[0] = tok->strAt(1);
             size = std::strtoul(tok->strAt(3), NULL, 10);
