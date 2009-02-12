@@ -40,6 +40,7 @@ private:
         TEST_CASE(sizeof1);
         TEST_CASE(iftruefalse);
         TEST_CASE(combine_strings);
+        // TODO TEST_CASE(double_plus);
     }
 
     std::string tok(const char code[])
@@ -162,6 +163,27 @@ private:
                               "};\n"
                               "}\n";
         ASSERT_EQUALS(tok(code2), tok(code1));
+    }
+
+    void double_plus()
+    {
+        {
+            const char code1[] =  "void foo( int a )\n"
+                                  "{\n"
+                                  "a++;\n"
+                                  "a--;\n"
+                                  "++a;\n"
+                                  "--a;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a ) { a ++ ; a -- ; ++ a ; -- a ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a )\n"
+                                  "{\n"
+                                  "a=a+a;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a ) { a = a + a ; } ", tok(code1));
+        }
     }
 };
 

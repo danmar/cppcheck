@@ -471,12 +471,20 @@ void Token::printOut(const char *title) const
         std::cout << "########";
 
     std::cout << "###" << std::endl;
+    unsigned int lineNum = 0;
     for (const Token *t = this; t; t = t->next())
     {
-        std::cout << t->linenr() << ": " << t->str();
-        if (t->varId())
-            std::cout << " (" << t->varId() << ")";
+        if (lineNum != t->linenr())
+        {
+            std::cout << std::endl << t->linenr() << ": ";
+            lineNum = t->linenr();
+        }
 
-        std::cout << std::endl;
+        std::cout << t->str();
+//        if (t->varId())
+        //          std::cout << " (" << t->varId() << ")";
+
+        std::cout << " ";
     }
+    std::cout << std::endl;
 }
