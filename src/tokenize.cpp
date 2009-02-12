@@ -597,10 +597,20 @@ void Tokenizer::simplifyTokenList()
         {
             const char *sym = tok->strAt(2);
             const char *num = tok->strAt(4);
-
+            int indent = 1;
             for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
             {
-                if (tok2->str() == sym)
+                if (tok2->str() == "{")
+                {
+                    ++indent;
+                }
+                else if (tok2->str() == "}")
+                {
+                    --indent;
+                    if (indent == 0)
+                        break;
+                }
+                else if (tok2->str() == sym)
                 {
                     tok2->str(num);
                 }

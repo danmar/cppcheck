@@ -110,7 +110,7 @@ private:
         TEST_CASE(simplify_numeric_condition);
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
-        // TODO TEST_CASE(simplify_constants);
+        TEST_CASE(simplify_constants);
     }
 
 
@@ -1044,6 +1044,8 @@ private:
             "void f()\n"
             "{\n"
             "const int a = 45;\n"
+            "if( a )\n"
+            "{ int b = a; }\n"
             "}\n"
             "void g()\n"
             "{\n"
@@ -1061,7 +1063,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { const int a = 45 ; } void g ( ) { int a ; a = 2 ; }"), ostr.str());
+        ASSERT_EQUALS(std::string(" void f ( ) { const int a = 45 ; { int b ; b = 45 ; } } void g ( ) { int a ; a = 2 ; }"), ostr.str());
     }
 };
 
