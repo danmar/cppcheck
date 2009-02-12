@@ -184,6 +184,48 @@ private:
                                   "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a + a ; } ", tok(code1));
         }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a+++b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a ) { a = a ++ + b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a---b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a ) { a = a -- - b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a--+b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a ) { a = a -- + b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a++-b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a ) { a = a ++ - b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a+--b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a ) { a = a + -- b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a-++b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a ) { a = a - ++ b ; } ", tok(code1));
+        }
     }
 };
 
