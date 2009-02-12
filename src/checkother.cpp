@@ -762,9 +762,29 @@ void CheckOther::CheckIncompleteStatement()
         if (parlevel != 0)
             continue;
 
-        if (tok->previous() && Token::Match(tok->previous(), "="))
+        if (Token::Match(tok, "= {"))
         {
-            /* We are inside an assignment, so it's not a statement. */
+            /* We are in an assignment, so it's not a statement.
+             * Skip until ";" */
+
+            while (!Token::Match(tok, ";"))
+            {
+                int level = 0;
+                do
+                {
+                    if (tok->str() == "(" || tok->str() == "{")
+                        ++level;
+                    else if (tok->str() == ")" || tok->str() == "}")
+                        --level;
+
+                    tok = tok->next();
+
+                    if (tok == NULL)
+                        return;
+                }
+                while (level > 0);
+            }
+
             continue;
         }
 

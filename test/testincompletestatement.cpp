@@ -65,6 +65,8 @@ private:
         TEST_CASE(test5);
         TEST_CASE(test_numeric);
         TEST_CASE(intarray);
+        TEST_CASE(structarraynull);
+        TEST_CASE(structarray);
     }
 
     void test1()
@@ -151,6 +153,25 @@ private:
         check("int arr[] = { 100/2, 1*100 };\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
+
+    void structarraynull()
+    {
+        check("struct st arr[] = {\n"
+              "    { 100/2, 1*100 }\n"
+              "    { 90, 70 }\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void structarray()
+    {
+        check("struct st arr[] = {\n"
+              "    { 100/2, 1*100 }\n"
+              "    { 90, 70 }\n"
+              "};\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestIncompleteStatement)
