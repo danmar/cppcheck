@@ -102,7 +102,7 @@ private:
         TEST_CASE(preprocessor_doublesharp);
         TEST_CASE(preprocessor_include_in_str);
         TEST_CASE(fmt1);
-        // TODO TEST_CASE(fmt2);
+        TEST_CASE(fmt2);
         TEST_CASE(multi_character_character);
 
         TEST_CASE(stringify);

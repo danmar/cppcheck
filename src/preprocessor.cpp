@@ -645,6 +645,7 @@ public:
                 tok = tok->next();
             if (tok)
             {
+                bool optcomma = false;
                 while ((tok = tok->next()) != NULL)
                 {
                     std::string str = tok->str();
@@ -667,8 +668,9 @@ public:
                                     str = "";
                                     for (unsigned int j = _params.size() - 1; j < params2.size(); ++j)
                                     {
-                                        if (j > _params.size() - 1)
+                                        if (optcomma || j > _params.size() - 1)
                                             str += ",";
+                                        optcomma = false;
                                         str += params2[j];
                                     }
                                     break;
@@ -681,6 +683,12 @@ public:
                             }
                         }
                     }
+                    if (_variadic && Token::Match(tok, ",") && tok->next() && Token::Match(tok->next(), "##"))
+                    {
+                        optcomma = true;
+                        continue;
+                    }
+                    optcomma = false;
                     macrocode += str;
                     if (Token::Match(tok, "%type% %var%"))
                         macrocode += " ";
