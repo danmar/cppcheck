@@ -99,6 +99,8 @@ private:
 
         TEST_CASE(doublesharp);
 
+        TEST_CASE(macrodoublesharp);
+
         TEST_CASE(simplify_function_parameters);
 
         TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
@@ -799,6 +801,23 @@ private:
             ostr << tok->str() << " ";
 
         ASSERT_EQUALS("TEST ( var , val ) var ## _ ## val = val ", ostr.str());
+    }
+
+    void macrodoublesharp()
+    {
+        const char code[] = "DBG(fmt,args...) printf(fmt, ## args)\n";
+
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "");
+
+        // Stringify the tokens..
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << tok->str() << " ";
+
+        ASSERT_EQUALS("DBG ( fmt , args . . . ) printf ( fmt , ## args ) ", ostr.str());
     }
 
     void simplify_function_parameters()

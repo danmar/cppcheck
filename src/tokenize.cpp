@@ -249,11 +249,18 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             std::string line("#");
             {
                 char chPrev = '#';
+                bool skip = false;
                 while (code.good())
                 {
                     ch = (char)code.get();
                     if (chPrev != '\\' && ch == '\n')
                         break;
+                    if (chPrev == '#' && ch == '#')
+                    {
+                        addtoken("##", lineno, FileIndex);
+                        skip = true;
+                        break;
+                    }
                     if (ch != ' ')
                         chPrev = ch;
                     if (ch != '\\' && ch != '\n')
@@ -263,6 +270,8 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                     if (ch == '\n')
                         ++lineno;
                 }
+                if (skip)
+                    continue;
             }
             if (strncmp(line.c_str(), "#file", 5) == 0 &&
                 line.find("\"") != std::string::npos)
