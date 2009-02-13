@@ -94,6 +94,7 @@ private:
         TEST_CASE(varid2);
         TEST_CASE(varid3);
         // TODO TEST_CASE(varid4);    // There is currently a problem for "*(a+10)" => "a[10]"
+        // TODO TEST_CASE(varid5);    // There is currently a problem for "int a,b;" => "int a; int b;"
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -750,6 +751,31 @@ private:
                                    "1: void f ( const int a@1 [ ] )\n"
                                    "2: {\n"
                                    "3: int i@2 ; i@2 = a@1 [ 10 ] ;\n"
+                                   "4: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid5()
+    {
+        const std::string code("void f()\n"
+                               "{\n"
+                               "    int a,b;\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n"
+                                   "1: void f ( )\n"
+                                   "2: {\n"
+                                   "3: int a@1 ; int b@2 ;\n"
                                    "4: }\n");
 
         ASSERT_EQUALS(expected, actual);
