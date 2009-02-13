@@ -93,6 +93,7 @@ private:
         TEST_CASE(varid1);
         TEST_CASE(varid2);
         TEST_CASE(varid3);
+        // TODO TEST_CASE(varid4);    // There is currently a problem for "*(a+10)" => "a[10]"
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -725,6 +726,31 @@ private:
                                    "4: char str@2 [ 10 ] ;\n"
                                    "5: str@2 [ 0 ] = 0 ;\n"
                                    "6: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid4()
+    {
+        const std::string code("void f(const unsigned int a[])\n"
+                               "{\n"
+                               "    int i = *(a+10);\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n"
+                                   "1: void f ( const int a@1 [ ] )\n"
+                                   "2: {\n"
+                                   "3: int i@2 ; i@2 = a@1 [ 10 ] ;\n"
+                                   "4: }\n");
 
         ASSERT_EQUALS(expected, actual);
     }
