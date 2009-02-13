@@ -563,6 +563,7 @@ private:
     std::vector<std::string> _params;
     std::string _name;
     std::string _macro;
+    bool _variadic;
 
 public:
     Macro(const std::string &macro)
@@ -576,6 +577,8 @@ public:
         if (tokens() && tokens()->isName())
             _name = tokens()->str();
 
+        _variadic = false;
+
         std::string::size_type pos = macro.find_first_of(" (");
         if (pos != std::string::npos && macro[pos] == '(')
         {
@@ -586,6 +589,11 @@ public:
                 {
                     if (tok->str() == ")")
                         break;
+                    if (Token::Match(tok, ". . . )"))
+                    {
+                        _variadic = true;
+                        break;
+                    }
                     if (tok->isName())
                         _params.push_back(tok->str());
                 }
@@ -601,6 +609,11 @@ public:
     const std::vector<std::string> params() const
     {
         return _params;
+    }
+
+    bool variadic() const
+    {
+        return _variadic;
     }
 
     const std::string &name() const
@@ -649,6 +662,17 @@ public:
                         {
                             if (str == _params[i])
                             {
+                                if (_variadic && i == _params.size() - 1)
+                                {
+                                    str = "";
+                                    for (unsigned int j = _params.size() - 1; j < params2.size(); ++j)
+                                    {
+                                        if (j > _params.size() - 1)
+                                            str += ",";
+                                        str += params2[j];
+                                    }
+                                    break;
+                                }
                                 if (stringify)
                                     str = "\"" + params2[i] + "\"";
                                 else
@@ -828,7 +852,7 @@ std::string Preprocessor::expandMacros(std::string code)
             }
 
             // Same number of parameters..
-            if (params.size() != macro.params().size())
+            if (!macro.variadic() && params.size() != macro.params().size())
                 continue;
 
             // Create macro code..
