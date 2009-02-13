@@ -23,6 +23,7 @@
 #include <string>
 #include <iostream>
 #include <cctype>
+#include <sstream>
 
 Token::Token() :
         _str(""),
@@ -488,3 +489,26 @@ void Token::printOut(const char *title) const
     }
     std::cout << std::endl;
 }
+
+
+std::string Token::stringifyList(const bool varid) const
+{
+    std::ostringstream ret;
+    unsigned int linenr = 0;
+    for (const Token *tok = this; tok; tok = tok->next())
+    {
+        while (linenr < tok->linenr())
+        {
+            ++linenr;
+            ret << "\n" << linenr << ":";
+        }
+        ret << " " << tok->str();
+        if (varid && tok->varId() > 0)
+            ret << "@" << tok->varId();
+    }
+    ret << "\n";
+    return ret.str();
+}
+
+
+

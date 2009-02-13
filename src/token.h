@@ -185,6 +185,9 @@ public:
      */
     static void replace(Token *replaceThis, Token *start, Token *end);
 
+    /** Stringify a token list (with or without varId) */
+    std::string stringifyList(const bool varid) const;
+
 private:
     void next(Token *next);
     void previous(Token *previous);

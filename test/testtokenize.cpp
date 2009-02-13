@@ -641,7 +641,7 @@ private:
 
     void varid1()
     {
-        const std::string code(";static int i = 1;\n"
+        const std::string code("static int i = 1;\n"
                                "void f()\n"
                                "{\n"
                                "    int i = 2;\n"
@@ -656,19 +656,19 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-        {
-            if (tok->str() != "i")
-                ASSERT_EQUALS(0, tok->varId());
-            else if (Token::Match(tok, "i = 1"))
-                ASSERT_EQUALS(1, tok->varId());
-            else if (Token::Match(tok, "i = 2"))
-                ASSERT_EQUALS(2, tok->varId());
-            else if (Token::Match(tok, "i = 3"))
-                ASSERT_EQUALS(3, tok->varId());
-            else if (Token::Match(tok, "i = 4"))
-                ASSERT_EQUALS(2, tok->varId());
-        }
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n"
+                                   "1: static int i@1 = 1 ;\n"
+                                   "2: void f ( )\n"
+                                   "3: {\n"
+                                   "4: int i@2 = 2 ;\n"
+                                   "5: for ( int i@3 = 0 ; i@3 < 10 ; + + i@3 )\n"
+                                   "6: i@3 = 3 ;\n"
+                                   "7: i@2 = 4 ;\n"
+                                   "8: }\n");
+
+        ASSERT_EQUALS(expected, actual);
     }
 
     void varid2()
@@ -686,15 +686,17 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-        {
-            if (tok->str() == "abc")
-                ASSERT_EQUALS(1, tok->varId());
-            else if (tok->str() == "a")
-                ASSERT_EQUALS(2, tok->varId());
-            else
-                ASSERT_EQUALS(0, tok->varId());
-        }
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n"
+                                   "1: void f ( )\n"
+                                   "2: {\n"
+                                   "3: struct ABC abc@1 ;\n"
+                                   "4: abc@1 . a@2 = 3 ;\n"
+                                   "5: i = abc@1 . a@2 ;\n"
+                                   "6: }\n");
+
+        ASSERT_EQUALS(expected, actual);
     }
 
     void varid3()
@@ -712,13 +714,17 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-        {
-            if (Token::Match(tok, "str [ 4"))
-                ASSERT_EQUALS(1, tok->varId());
-            else if (tok->str() == "str")
-                ASSERT_EQUALS(2, tok->varId());
-        }
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n"
+                                   "1: static char str@1 [ 4 ] ;\n"
+                                   "2: void f ( )\n"
+                                   "3: {\n"
+                                   "4: char str@2 [ 10 ] ;\n"
+                                   "5: str@2 [ 0 ] = 0 ;\n"
+                                   "6: }\n");
+
+        ASSERT_EQUALS(expected, actual);
     }
 
 
