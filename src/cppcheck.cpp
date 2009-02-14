@@ -37,6 +37,7 @@
 #include <cstring>
 #include <fstream>
 #include <map>
+#include <iomanip>
 
 //---------------------------------------------------------------------------
 
@@ -332,6 +333,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkOther.CheckCharVariable();
 
     _tokenizer.simplifyTokenList();
+
+    // Write simplified token list to a file..
+    std::cout << _tokenizer.tokens()->stringifyList(true) << std::endl;
 
     if (_settings._unusedFunctions)
         _checkFunctionUsage.parseTokens(_tokenizer);

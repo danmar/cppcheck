@@ -1570,6 +1570,14 @@ bool Tokenizer::simplifyKnownVariables()
                         tok3->str(tok2->strAt(2));
                         ret = true;
                     }
+
+                    // Variable is used in calculation..
+                    if (Token::Match(tok3, "[=+-*/] %varid% [+-*/;]", varid))
+                    {
+                        tok3 = tok3->next();
+                        tok3->str(tok2->strAt(2));
+                        ret = true;
+                    }
                 }
             }
         }
