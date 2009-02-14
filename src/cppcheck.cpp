@@ -351,7 +351,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         checkMemoryLeak.CheckMemoryLeak();
 
     // Check that all class constructors are ok.
-    if (ErrorLogger::noConstructor(_settings) || ErrorLogger::uninitVar())
+    if (ErrorLogger::noConstructor(_settings) || ErrorLogger::uninitVar(_settings))
         checkClass.constructors();
 
     // Check that all base classes have virtual destructors

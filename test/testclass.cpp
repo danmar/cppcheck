@@ -169,7 +169,7 @@ private:
                        "    ECODES _code;\n"
                        "};\n");
 
-        ASSERT_EQUALS("[test.cpp:10]: (error) Uninitialized member variable 'Fred::_code'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) Member variable not initialized in the constructor 'Fred::_code'\n", errout.str());
     }
 
     void uninitVarEnum()
@@ -183,7 +183,7 @@ private:
                        "    unsigned int i;\n"
                        "};\n");
 
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized member variable 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
     void uninitVarStream()
@@ -226,7 +226,7 @@ private:
                        "    Foo(int _i) { }\n"
                        "};\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:7] uninitialized member variable Foo::foo"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:7] (style) Member variable not initialized in the constructor Foo::foo"), errout.str());
     }
 
 
@@ -277,7 +277,7 @@ private:
                        "    Fred() { }\n"
                        "};\n"
                        "#endfile\n");
-        ASSERT_EQUALS("[fred.h:6]: (error) Uninitialized member variable 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[fred.h:6]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
 

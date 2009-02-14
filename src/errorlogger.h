@@ -131,11 +131,11 @@ public:
 
     void uninitVar(const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &varname)
     {
-        _writemsg(tokenizer, Location, "error", "Uninitialized member variable '" + classname + "::" + varname + "'", "uninitVar");
+        _writemsg(tokenizer, Location, "style", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'", "uninitVar");
     }
-    static bool uninitVar()
+    static bool uninitVar(const Settings &s)
     {
-        return true;
+        return s._checkCodingStyle;
     }
 
     void unusedPrivateFunction(const Tokenizer *tokenizer, const Token *Location, const std::string &classname, const std::string &funcname)

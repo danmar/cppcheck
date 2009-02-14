@@ -65,7 +65,7 @@ int main()
 
     // checkclass.cpp..
     err.push_back(Message("noConstructor", Message::style, "The class '%1' has no constructor", "classname"));
-    err.push_back(Message("uninitVar", Message::error, "Uninitialized member variable '%1::%2'", "classname", "varname"));
+    err.push_back(Message("uninitVar", Message::style, "Member variable not initialized in the constructor '%1::%2'", "classname", "varname"));
     err.push_back(Message("unusedPrivateFunction", Message::style, "Unused private function '%1::%2'", "classname", "funcname"));
     err.push_back(Message("memsetClass", Message::error, "Using '%1' on class", "memfunc"));
     err.push_back(Message("memsetStruct", Message::error, "Using '%1' on struct that contains a 'std::%2'", "memfunc", "classname"));
