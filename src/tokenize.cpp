@@ -639,33 +639,6 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
-    // Replace constants..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "const %type% %var% = %num% ;"))
-        {
-            const char *sym = tok->strAt(2);
-            const char *num = tok->strAt(4);
-            int indent = 1;
-            for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "{")
-                {
-                    ++indent;
-                }
-                else if (tok2->str() == "}")
-                {
-                    --indent;
-                    if (indent == 0)
-                        break;
-                }
-                else if (tok2->str() == sym)
-                {
-                    tok2->str(num);
-                }
-            }
-        }
-    }
 
 
     // Fill the map _typeSize..
@@ -840,7 +813,37 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
+    // Replace constants..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "const %type% %var% = %num% ;"))
+        {
+            const char *sym = tok->strAt(2);
+            const char *num = tok->strAt(4);
+            int indent = 1;
+            for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                {
+                    ++indent;
+                }
+                else if (tok2->str() == "}")
+                {
+                    --indent;
+                    if (indent == 0)
+                        break;
+                }
 
+                // Compare constants, but don't touch members of other structures
+                else if (tok2->str() == sym &&
+                         tok2->previous() &&
+                         tok2->previous()->str() != ".")
+                {
+                    tok2->str(num);
+                }
+            }
+        }
+    }
 
 
     // Simple calculations..

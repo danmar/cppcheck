@@ -115,6 +115,7 @@ private:
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
         TEST_CASE(simplify_constants);
+        TEST_CASE(simplify_constants2);
     }
 
 
@@ -1141,6 +1142,33 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" void f ( ) { const int a = 45 ; { int b ; b = 45 ; } } void g ( ) { int a ; a = 2 ; }"), ostr.str());
+    }
+
+    void simplify_constants2()
+    {
+        const char code[] =
+            "void f( Foo &foo, Foo *foo2 )\n"
+            "{\n"
+            "const int a = 45;\n"
+            "foo.a=a+a;\n"
+            "foo2->a=a;\n"
+            "}\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+
+        std::ostringstream oss;
+        oss << " void f ( Foo & foo , Foo * foo2 ) { const int a = 45 ; foo . a = 90 ; foo2 . a = 45 ; }";
+        ASSERT_EQUALS(oss.str(), ostr.str());
     }
 };
 

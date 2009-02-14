@@ -482,8 +482,8 @@ void Token::printOut(const char *title) const
         }
 
         std::cout << t->str();
-//        if (t->varId())
-        //          std::cout << " (" << t->varId() << ")";
+        if (t->varId())
+            std::cout << " (" << t->varId() << ")";
 
         std::cout << " ";
     }
