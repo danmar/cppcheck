@@ -350,7 +350,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 CurrentToken.clear();
                 CurrentToken += ch;
                 // Add "++", "--" or ">>" token
-                if ((ch=='+' || ch=='-' || ch=='>') && (code.peek() == ch))
+                if ((ch == '+' || ch == '-' || ch == '>') && (code.peek() == ch))
                     CurrentToken += (char)code.get();
                 addtoken(CurrentToken.c_str(), lineno, FileIndex);
                 CurrentToken.clear();
