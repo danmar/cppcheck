@@ -601,6 +601,44 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
+    // Convert + + into + and + - into -
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (tok->next())
+        {
+            if (tok->str() == "+")
+            {
+                if (tok->next()->str() == "+")
+                {
+                    tok->deleteNext();
+                    continue;
+                }
+                else if (tok->next()->str() == "-")
+                {
+                    tok->str("-");
+                    tok->deleteNext();
+                    continue;
+                }
+            }
+            else if (tok->str() == "-")
+            {
+                if (tok->next()->str() == "-")
+                {
+                    tok->str("+");
+                    tok->deleteNext();
+                    continue;
+                }
+                else if (tok->next()->str() == "+")
+                {
+                    tok->deleteNext();
+                    continue;
+                }
+            }
+
+            break;
+        }
+    }
+
     // Replace constants..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {

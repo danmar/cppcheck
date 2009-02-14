@@ -41,6 +41,7 @@ private:
         TEST_CASE(iftruefalse);
         TEST_CASE(combine_strings);
         TEST_CASE(double_plus);
+        TEST_CASE(redundant_plus);
     }
 
     std::string tok(const char code[])
@@ -225,6 +226,59 @@ private:
                                   "a=a-++b;\n"
                                   "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a - ++ b ; } ", tok(code1));
+        }
+    }
+
+    void redundant_plus()
+    {
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a + + b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a + + + b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a + - b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a - + b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a - - b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a - + - b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; } ", tok(code1));
+        }
+        {
+            const char code1[] =  "void foo( int a, int b )\n"
+                                  "{\n"
+                                  "a=a - - - b;\n"
+                                  "}\n";
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; } ", tok(code1));
         }
     }
 };
