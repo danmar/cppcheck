@@ -111,6 +111,7 @@ private:
         TEST_CASE(sizeof2);
         TEST_CASE(sizeof3);
         TEST_CASE(sizeof4);
+        // TODO (ticket #108) TEST_CASE(sizeof5);
         TEST_CASE(simplify_numeric_condition);
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -1024,7 +1025,6 @@ private:
         ASSERT_EQUALS(std::string(" int i [ 10 ] ; 4 ;"), ostr.str());
     }
 
-
     void sizeof4()
     {
         const char code[] =
@@ -1043,6 +1043,28 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" for ( int i = 0 ; i < 100 ; i ++ ) { }"), ostr.str());
+    }
+
+    void sizeof5()
+    {
+        const char code[] = "int i;\n"
+                            "sizeof(i);\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+
+        std::ostringstream oss;
+        oss << " int i ; " << sizeof(int);
+        ASSERT_EQUALS(oss.str(), ostr.str());
     }
 
     void simplify_numeric_condition()
