@@ -667,7 +667,7 @@ private:
                                    "2: void f ( )\n"
                                    "3: {\n"
                                    "4: int i@2 = 2 ;\n"
-                                   "5: for ( int i@3 = 0 ; i@3 < 10 ; + + i@3 )\n"
+                                   "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 )\n"
                                    "6: i@3 = 3 ;\n"
                                    "7: i@2 = 4 ;\n"
                                    "8: }\n");
@@ -1041,7 +1041,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" for ( int i = 0 ; i < 100 ; i + + ) { }"), ostr.str());
+        ASSERT_EQUALS(std::string(" for ( int i = 0 ; i < 100 ; i ++ ) { }"), ostr.str());
     }
 
     void simplify_numeric_condition()
