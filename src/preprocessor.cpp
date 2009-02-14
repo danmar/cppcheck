@@ -772,8 +772,7 @@ std::string Preprocessor::expandMacros(std::string code)
 
                     if (!code[pos1])
                     {
-                        // TODO, this code is here, because there is currently a bug in cppcheck
-                        // Once it has been sorted out, this if can be removed
+                        // This should not happen, if it does, there is a bug in cppcheck.
                         std::cout << "\n\n####### There is a bug in preprocessor.cpp that can cause crash, shutting down.\n\n" << std::endl;
                         std::exit(0);
                     }
