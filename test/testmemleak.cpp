@@ -148,6 +148,7 @@ private:
         TEST_CASE(class6);
         TEST_CASE(class7);
         TEST_CASE(class8);
+        TEST_CASE(class9);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1450,6 +1451,24 @@ private:
               "    delete c;\n"
               "    doNothing(c);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class9()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "	   int * p;\n"
+              "	   A();\n"
+              "	   ~A();\n"
+              "};\n"
+              "\n"
+              "A::A()\n"
+              "{ p = new int; }\n"
+              "\n"
+              "A::~A()\n"
+              "{ delete (p); }\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 

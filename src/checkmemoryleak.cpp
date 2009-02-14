@@ -173,6 +173,12 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType(const 
     if (Token::simpleMatch(tok, std::string("delete [ ] " + names + " ;").c_str()))
         return NewArray;
 
+    if (Token::simpleMatch(tok, std::string("delete ( " + names + " ) ;").c_str()))
+        return New;
+
+    if (Token::simpleMatch(tok, std::string("delete [ ] ( " + names + " ) ;").c_str()))
+        return NewArray;
+
     if (Token::simpleMatch(tok, std::string("free ( " + names + " ) ;").c_str()) ||
         Token::simpleMatch(tok, std::string("kfree ( " + names + " ) ;").c_str()))
     {
@@ -212,6 +218,10 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
 
     // Convert functions that are not allocating nor deallocating memory..
     if (Token::Match(tok, "atoi|atof|atol|strtol|strtoul|strtod"))
+        return 0;
+
+    // This is not an unknown function neither
+    if (tok->str() == "delete")
         return 0;
 
     if (GetAllocationType(tok) != No || GetReallocationType(tok) != No || GetDeallocationType(tok, varnames) != No)
