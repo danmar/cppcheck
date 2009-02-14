@@ -36,7 +36,7 @@ class ErrorLogger
 public:
 
     /**
-     * reportErr()
+     * Wrapper for error messages, provided by reportErr()
      */
     class ErrorMessage
     {
@@ -66,21 +66,18 @@ public:
 
     /**
      * Information about progress is directed here.
+     * Override this to receive the progress messages.
      *
      * @param outmsg, E.g. "Checking main.cpp..."
      */
     virtual void reportOut(const std::string &outmsg) = 0;
 
     /**
-     * Output of error / warning
-     * Todo: callstack handling
+     * Information about found errors and warnings is directed
+     * here. Override this to receive the errormessages.
      *
-     * @param callStack File names and line numbers where the error
-     * was found and where it was called from. Error location is last
-     * element in the list
-     * @param id        error id (function name)
-     * @param severity  severity of error (always, all, style, all+style, never)
-     * @param msg       error message in plain text
+     * @param msg Location and other information about the found.
+     * error
      */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;
 
