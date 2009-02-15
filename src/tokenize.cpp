@@ -255,6 +255,8 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                     ch = (char)code.get();
                     if (chPrev != '\\' && ch == '\n')
                         break;
+                    if (chPrev == '\\')
+                        line += chPrev;
                     if (chPrev == '#' && ch == '#')
                     {
                         addtoken("##", lineno, FileIndex);

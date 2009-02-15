@@ -98,6 +98,7 @@ private:
 
         TEST_CASE(file1);
         TEST_CASE(file2);
+        TEST_CASE(file3);
 
         TEST_CASE(doublesharp);
 
@@ -837,6 +838,24 @@ private:
             ASSERT_EQUALS(tok->str(), ostr.str());
         }
     }
+
+
+
+    void file3()
+    {
+        const char code[] = "#file \"c:\\a.h\"\n"
+                            "123\n"
+                            "#endfile\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "a.cpp");
+
+
+        ASSERT_EQUALS("[c:\\a.h:1]", tokenizer.fileLine(tokenizer.tokens()));
+    }
+
 
 
 
