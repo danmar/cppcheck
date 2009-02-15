@@ -849,7 +849,7 @@ void Tokenizer::simplifyTokenList()
 
 
     // Simple calculations..
-    for (bool done = false; !done; )
+    for (bool done = false; !done;)
     {
         done = true;
         for (Token *tok = _tokens; tok; tok = tok->next())
