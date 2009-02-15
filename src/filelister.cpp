@@ -165,7 +165,7 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
     std::ostringstream bdir, oss;
 
     std::string cleanedPath = path;
-    std::replace(cleanedPath.begin(), cleanedPath.end(), '\\', '/');
+    std::replace(cleanedPath.begin(), cleanedPath.end(), '/', '\\');
 
     oss << cleanedPath;
 
