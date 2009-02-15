@@ -922,6 +922,8 @@ void Tokenizer::simplifyTokenList()
 
         if (Token::Match(next, "* ( %var% + %num% )"))
         {
+            unsigned int varid = tok->tokAt(3)->varId();
+
             const char *str[4] = {"var", "[", "num", "]"};
             str[0] = tok->strAt(3);
             str[2] = tok->strAt(5);
@@ -930,6 +932,8 @@ void Tokenizer::simplifyTokenList()
             {
                 tok = tok->next();
                 tok->str(str[i]);
+                if (i == 0)
+                    tok->varId(varid);
             }
 
             tok->deleteNext();
