@@ -849,8 +849,9 @@ void Tokenizer::simplifyTokenList()
 
 
     // Simple calculations..
-    for (bool done = false; !done; done = true)
+    for (bool done = false; !done; )
     {
+        done = true;
         for (Token *tok = _tokens; tok; tok = tok->next())
         {
             if (Token::simpleMatch(tok->next(), "* 1") || Token::simpleMatch(tok->next(), "1 *"))
@@ -894,6 +895,15 @@ void Tokenizer::simplifyTokenList()
                     tok->deleteNext();
                 }
 
+                done = false;
+            }
+
+            // Remove parantheses around number..
+            if (!tok->isName() && Token::Match(tok->next(), "( %num% )"))
+            {
+                tok->deleteNext();
+                tok = tok->next();
+                tok->deleteNext();
                 done = false;
             }
         }

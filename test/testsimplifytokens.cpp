@@ -42,6 +42,7 @@ private:
         TEST_CASE(combine_strings);
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
+        TEST_CASE(parantheses1);
     }
 
     std::string tok(const char code[])
@@ -280,6 +281,13 @@ private:
                                   "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; } ", tok(code1));
         }
+    }
+
+
+    void parantheses1()
+    {
+        const char code1[] = "<= (10+100);";
+        ASSERT_EQUALS("<= 110 ; ", tok(code1));
     }
 };
 
