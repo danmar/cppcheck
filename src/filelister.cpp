@@ -41,7 +41,7 @@ std::string FileLister::simplifyPath(const char *originalPath)
     std::vector<std::string> pathParts;
     for (; *originalPath; ++originalPath)
     {
-        if (*originalPath == '/')
+        if (*originalPath == '/' || *originalPath == '\\')
         {
             if (subPath.length() > 0)
             {
@@ -49,7 +49,7 @@ std::string FileLister::simplifyPath(const char *originalPath)
                 subPath = "";
             }
 
-            pathParts.push_back("/");
+            pathParts.push_back(std::string(1 , *originalPath));
         }
         else
             subPath.append(1, *originalPath);
