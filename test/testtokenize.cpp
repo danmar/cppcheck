@@ -94,7 +94,7 @@ private:
         TEST_CASE(varid2);
         TEST_CASE(varid3);
         TEST_CASE(varid4);
-        // TODO TEST_CASE(varid5);    // There is currently a problem for "int a,b;" => "int a; int b;"
+        TEST_CASE(varid5);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -745,7 +745,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         // result..

@@ -541,7 +541,13 @@ void Tokenizer::setVarId()
                 else if (tok2->str() == "(")
                     ++parlevel;
                 else if (tok2->str() == ")")
-                    --parlevel;
+                {
+                    // Is this a function parameter or a variable declared in for example a for loop?
+                    if (parlevel==0 && indentlevel==0 && Token::Match(tok2, ") const| {"))
+                        ;
+                    else
+                        --parlevel;
+                }
                 else if (parlevel < 0 && tok2->str() == ";")
                     break;
                 dot = bool(tok2->str() == ".");
@@ -922,8 +928,6 @@ void Tokenizer::simplifyTokenList()
 
         if (Token::Match(next, "* ( %var% + %num% )"))
         {
-            unsigned int varid = tok->tokAt(3)->varId();
-
             const char *str[4] = {"var", "[", "num", "]"};
             str[0] = tok->strAt(3);
             str[2] = tok->strAt(5);
@@ -932,8 +936,6 @@ void Tokenizer::simplifyTokenList()
             {
                 tok = tok->next();
                 tok->str(str[i]);
-                if (i == 0)
-                    tok->varId(varid);
             }
 
             tok->deleteNext();
@@ -1051,6 +1053,9 @@ void Tokenizer::simplifyTokenList()
             }
         }
     }
+
+    // In case variable declarations have been updated...
+    setVarId();
 
     // Replace NULL with 0..
     for (Token *tok = _tokens; tok; tok = tok->next())
