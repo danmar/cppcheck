@@ -543,7 +543,7 @@ void Tokenizer::setVarId()
                 else if (tok2->str() == ")")
                 {
                     // Is this a function parameter or a variable declared in for example a for loop?
-                    if (parlevel==0 && indentlevel==0 && Token::Match(tok2, ") const| {"))
+                    if (parlevel == 0 && indentlevel == 0 && Token::Match(tok2, ") const| {"))
                         ;
                     else
                         --parlevel;
@@ -1649,6 +1649,38 @@ bool Tokenizer::simplifyKnownVariables()
 
     return ret;
 }
+
+
+bool Tokenizer::elseif()
+{
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (!Token::simpleMatch(tok, "else if"))
+            continue;
+        int indent = 0;
+        for (Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
+        {
+            if (Token::Match(tok2, "(|{"))
+                ++indent;
+            else if (Token::Match(tok2, ")|}"))
+                --indent;
+
+            if (indent == 0 && Token::Match(tok2, "}|;"))
+            {
+                if (!Token::simpleMatch(tok2->next(), "else"))
+                {
+                    tok->insertToken("{");
+                    tok2->insertToken("}");
+                    ret = true;
+                    break;
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 
 bool Tokenizer::simplifyRedundantParanthesis()
 {

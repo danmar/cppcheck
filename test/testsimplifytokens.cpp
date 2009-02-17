@@ -25,6 +25,27 @@
 
 extern std::ostringstream errout;
 
+
+// A test tokenizer where protected functions are made public
+class OpenTokenizer : public Tokenizer
+{
+public:
+    OpenTokenizer(const char code[]) : Tokenizer()
+    {
+        std::istringstream istr(code);
+        tokenize(istr, "test.cpp");
+    }
+
+    virtual ~OpenTokenizer()
+    { }
+
+    bool elseif_()
+    {
+        return elseif();
+    }
+};
+
+
 class TestSimplifyTokens : public TestFixture
 {
 public:
@@ -43,6 +64,8 @@ private:
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
         TEST_CASE(parantheses1);
+
+        TEST_CASE(elseif1);
     }
 
     std::string tok(const char code[])
@@ -50,7 +73,6 @@ private:
         std::istringstream istr(code);
         Tokenizer tokenizer;
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
         std::string ret;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
@@ -288,6 +310,22 @@ private:
     {
         const char code1[] = "<= (10+100);";
         ASSERT_EQUALS("<= 110 ; ", tok(code1));
+    }
+
+
+    std::string elseif(const char code[])
+    {
+        std::istringstream istr(code);
+
+        OpenTokenizer tokenizer(code);
+        tokenizer.elseif_();
+        return tokenizer.tokens()->stringifyList(false);
+    }
+
+    void elseif1()
+    {
+        const char code[] = "else if(ab) { cd } else { ef }gh";
+        ASSERT_EQUALS("\n1: else { if ( ab ) { cd } else { ef } } gh\n", elseif(code));
     }
 };
 

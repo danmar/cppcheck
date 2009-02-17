@@ -100,6 +100,9 @@ protected:
      */
     bool simplifyKnownVariables();
 
+    /** Simplify "if else" */
+    bool elseif();
+
     std::vector<const Token *> _functionList;
 
 private:
