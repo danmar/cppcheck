@@ -1077,6 +1077,8 @@ void Tokenizer::simplifyTokenList()
     simplifyIfAddBraces();
     simplifyFunctionParameters();
 
+    elseif();
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "case %any% : %var%"))
