@@ -45,6 +45,8 @@ private:
         TEST_CASE(eraseReturn);
         TEST_CASE(eraseGoto);
         TEST_CASE(eraseAssign);
+
+        TEST_CASE(pushback1);
     }
 
     void check(const char code[])
@@ -213,6 +215,37 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+
+
+
+
+
+    void checkPushback(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check char variable usage..
+        CheckStl checkStl(&tokenizer, this);
+        checkStl.pushback();
+    }
+
+
+    void pushback1()
+    {
+        checkPushback("void f()\n"
+                      "{\n"
+                      "    std::vector<int>::const_iterator it = foo.begin();\n"
+                      "    foo.push_back(123);\n"
+                      "    *it;\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+    }
 
 
 };

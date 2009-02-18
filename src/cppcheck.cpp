@@ -421,6 +421,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     if (ErrorLogger::erase())
         checkStl.erase();
+
+    if (ErrorLogger::pushback())
+        checkStl.pushback();
 }
 
 Settings CppCheck::settings() const

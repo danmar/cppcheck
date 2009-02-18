@@ -203,3 +203,60 @@ void CheckStl::eraseCheckLoop(const Token *it)
 }
 
 
+
+
+
+void CheckStl::pushback()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "vector <"))
+        {
+            while (tok && tok->str() != ">")
+                tok = tok->next();
+            if (!tok)
+                break;
+            if (Token::Match(tok, "> :: iterator|const_iterator %var% =|;"))
+            {
+                const std::string iteratorname(tok->strAt(3));
+                std::string vectorname;
+                int indent = 0;
+                bool invalidIterator = false;
+                for (const Token *tok2 = tok;indent >= 0 && tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "{" || tok2->str() == "(")
+                        ++indent;
+                    else if (tok2->str() == "}" || tok2->str() == ")")
+                    {
+                        if (indent == 0 && Token::simpleMatch(tok2, ") {"))
+                            tok2 = tok2->next();
+                        else
+                            --indent;
+                    }
+
+                    // Assigning iterator..
+                    if (Token::Match(tok2, (iteratorname + " = %var% . begin ( )").c_str()))
+                    {
+                        vectorname = tok2->strAt(2);
+                        invalidIterator = false;
+                    }
+
+                    // push_back on vector..
+                    if (vectorname.size() && Token::Match(tok2, (vectorname + " . push_front|push_back").c_str()))
+                        invalidIterator = true;
+
+                    // Using invalid iterator..
+                    if (invalidIterator)
+                    {
+                        if (Token::Match(tok2, ("++|--|*|+|-|(|, " + iteratorname).c_str()))
+                            _errorLogger->pushback(_tokenizer, tok2, iteratorname);
+                        if (Token::Match(tok2, (iteratorname + " ++|--|+|-").c_str()))
+                            _errorLogger->pushback(_tokenizer, tok2, iteratorname);
+                    }
+                }
+            }
+        }
+    }
+}
+
+

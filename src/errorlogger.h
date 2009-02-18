@@ -450,6 +450,15 @@ public:
         return true;
     }
 
+    void pushback(const Tokenizer *tokenizer, const Token *Location, const std::string &iterator_name)
+    {
+        _writemsg(tokenizer, Location, "error", "After push_back or push_front, the iterator '" + iterator_name + "' may be invalid", "pushback");
+    }
+    static bool pushback()
+    {
+        return true;
+    }
+
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 

@@ -114,7 +114,7 @@ int main()
     // checkstl.cpp..
     err.push_back(Message("iteratorUsage", Message::error, "Same iterator is used with both %1 and %2", "container1", "container2"));
     err.push_back(Message("erase", Message::error, "Dangerous usage of erase"));
-
+    err.push_back(Message("pushback", Message::error, "After push_back or push_front, the iterator '%1' may be invalid", "iterator_name"));
 
 
     // Generate code..

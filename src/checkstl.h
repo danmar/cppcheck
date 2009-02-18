@@ -51,6 +51,11 @@ public:
      */
     void erase();
 
+    /**
+     * Dangerous usage of push_back
+     */
+    void pushback();
+
 private:
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
