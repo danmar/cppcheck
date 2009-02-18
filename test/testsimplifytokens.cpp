@@ -139,7 +139,7 @@ private:
 
         {
             const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else if( bb ) a=1; int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = false; if( bb ) a=1; int c=1; } ";
+            const char code2[] = " void f ( ) { int a ; bool use ; use = false ; { if ( bb ) { a = 1 ; } } int c ; c = 1 ; } ";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
@@ -157,13 +157,13 @@ private:
 
         {
             const char code1[] = " void f() { if( aa ) { a=0; } else if( true ) a=1; else { a=2; } } ";
-            const char code2[] = " void f() { if( aa ) { a=0; } else { a=1; } } ";
+            const char code2[] = " void f ( ) { if ( aa ) { a = 0 ; } else { { a = 1 ; } } } ";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
             const char code1[] = " void f() { if( aa ) { a=0; } else if( false ) a=1; else { a=2; } } ";
-            const char code2[] = " void f() { if( aa ) { a=0; } else { a=2; } } ";
+            const char code2[] = " void f ( ) { if ( aa ) { a = 0 ; } else { { a = 2 ; } } } ";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
     }
