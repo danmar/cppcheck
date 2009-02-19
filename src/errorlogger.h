@@ -459,13 +459,13 @@ public:
         return true;
     }
 
-    void unvalidatedInput(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    void unvalidatedInput(const Tokenizer *tokenizer, const Token *Location)
     {
-        _writemsg(tokenizer, Location, "all", "Unvalidated input: " + varname + "", "unvalidatedInput");
+        _writemsg(tokenizer, Location, "security", "Unvalidated input", "unvalidatedInput");
     }
     static bool unvalidatedInput(const Settings &s)
     {
-        return s._showAll;
+        return s._security;
     }
 
 

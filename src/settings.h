@@ -45,6 +45,9 @@ public:
 
     /** Checking if there are unused functions */
     bool _unusedFunctions;
+
+    /** Security checks */
+    bool _security;
 };
 
 #endif // SETTINGS_H

@@ -25,7 +25,7 @@
 class Message
 {
 public:
-    enum Settings {error, all, style, style_all, never};
+    enum Settings {error, all, style, style_all, security, never};
 
     Message(std::string funcname, Settings settings, std::string msg);
     Message(std::string funcname, Settings settings, std::string msg, std::string par1);
@@ -118,7 +118,7 @@ int main()
 
 
     // checkvalidate.cpp
-    err.push_back(Message("unvalidatedInput", Message::all, "Unvalidated input: %1", "varname"));
+    err.push_back(Message("unvalidatedInput", Message::security, "Unvalidated input"));
 
 
     // Generate code..
@@ -223,10 +223,11 @@ int main()
 
     // Generate documentation..
     std::cout << "Generate doc.." << std::endl;
-    for (unsigned int i = 0; i < 4; ++i)
+    const unsigned int NUMSUITE = 5;
+    for (unsigned int i = 0; i < NUMSUITE; ++i)
     {
-        const char *suite[4] = { "error", "all", "style", "all + style" };
-        const Message::Settings settings[4] = { Message::error, Message::all, Message::style, Message::style_all };
+        const char *suite[NUMSUITE] = { "error", "all", "style", "all + style", "security" };
+        const Message::Settings settings[NUMSUITE] = { Message::error, Message::all, Message::style, Message::style_all, Message::security };
         std::cout << "    =" << suite[i] << "=" << std::endl;
         for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
             it->generateDoc(std::cout, settings[i]);
@@ -374,6 +375,8 @@ std::string Message::stringifySettings(bool text) const
         return text ? "style" : "s._checkCodingStyle";
     case style_all:
         return text ? "all style" : "s._checkCodingStyle || s._showAll";
+    case security:
+        return text ? "security" : "s._security";
     case never:
         return text ? "never" : "false";
     }

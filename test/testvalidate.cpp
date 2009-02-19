@@ -37,6 +37,7 @@ private:
     void run()
     {
         TEST_CASE(stdin1);
+        TEST_CASE(gui);
     }
 
     void check(const char code[])
@@ -63,7 +64,39 @@ private:
               "    int i;\n"
               "    std::cin >> i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (all) Unvalidated input: i\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (security) Unvalidated input\n", errout.str());
+    }
+
+
+
+
+
+    void checkGui(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check char variable usage..
+        CheckValidate checkValidate(&tokenizer, this);
+        checkValidate.gui();
+    }
+
+
+    void gui()
+    {
+        // Reading the value of a textbox and converting it into an int without any validation..
+        checkGui("void onok()\n"
+                 "{\n"
+                 "    TEdit *editAbc;\n"
+                 "    abc = atoi(editAbc->Text.c_str());\n"
+                 "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (security) Unvalidated input\n", errout.str());
     }
 };
 

@@ -36,6 +36,9 @@ public:
     /** Reading a number from a stream/FILE */
     void readnum();
 
+    /** Reading Form/GUI data */
+    void gui();
+
 private:
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;

@@ -29,6 +29,7 @@ Settings::Settings()
     _force = false;
     _xml = false;
     _unusedFunctions = false;
+    _security = false;
 }
 
 Settings::~Settings()
