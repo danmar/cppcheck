@@ -52,8 +52,11 @@ public:
         };
 
         ErrorMessage(const std::list<FileLocation> &callStack, const std::string &severity, const std::string &msg, const std::string &id);
+        ErrorMessage();
         std::string toXML() const;
         std::string toText() const;
+        std::string serialize() const;
+        bool deserialize( const std::string &data );
     private:
         std::list<FileLocation> _callStack;
         std::string _severity;
@@ -80,6 +83,14 @@ public:
      * error
      */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;
+
+    /**
+     * Information about how many files have been checked
+     *
+     * @param index This many files have been checked.
+     * @param max This many files there are in total.
+     */
+    virtual void reportStatus(unsigned int index, unsigned int max) = 0;
 
     void arrayIndexOutOfBounds(const Tokenizer *tokenizer, const std::list<const Token *> &Location)
     {

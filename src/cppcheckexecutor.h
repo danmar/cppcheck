@@ -21,6 +21,7 @@
 #define CPPCHECKEXECUTOR_H
 
 #include "errorlogger.h"
+#include "settings.h"
 
 /**
  * This class works as an example of how CppCheck can be used in external
@@ -67,6 +68,8 @@ public:
     /** xml output of errors */
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
 
+    virtual void reportStatus(unsigned int index, unsigned int max);
+
 private:
 
     /**
@@ -75,7 +78,7 @@ private:
      */
     void reportErr(const std::string &errmsg);
 
-    bool _useXML;
+    Settings _settings;
 };
 
 #endif // CPPCHECKEXECUTOR_H

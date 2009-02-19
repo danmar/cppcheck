@@ -262,16 +262,7 @@ unsigned int CppCheck::check()
             ++checkCount;
         }
 
-        if (_settings._errorsOnly == false && _errout.str().empty())
-        {
-            std::ostringstream oss;
-            oss << "No errors found ("
-            << (c + 1) << "/" << _filenames.size()
-            << " files checked " <<
-            static_cast<int>(static_cast<double>((c + 1)) / _filenames.size()*100)
-            << "% done)";
-            _errorLogger->reportOut(oss.str());
-        }
+        _errorLogger->reportStatus(c + 1, _filenames.size());
     }
 
     // This generates false positives - especially for libraries
@@ -457,4 +448,14 @@ void CppCheck::reportOut(const std::string & /*outmsg*/)
 {
     // This is currently never called. It is here just to comply with
     // the interface.
+}
+
+const std::vector<std::string> &CppCheck::filenames() const
+{
+    return _filenames;
+}
+
+void CppCheck::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
+{
+
 }

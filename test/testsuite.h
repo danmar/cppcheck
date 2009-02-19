@@ -44,7 +44,7 @@ protected:
 public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
-
+    virtual void reportStatus(unsigned int /*index*/, unsigned int /*max*/) {}
     void run(const std::string &str);
 
     TestFixture(const std::string &_name);

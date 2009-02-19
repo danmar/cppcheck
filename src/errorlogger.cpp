@@ -23,12 +23,89 @@
 
 #include <sstream>
 
+ErrorLogger::ErrorMessage::ErrorMessage()
+{
+
+}
+#include <iostream>
 ErrorLogger::ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string &severity, const std::string &msg, const std::string &id)
 {
     _callStack = callStack;
     _severity = severity;
     _msg = msg;
     _id = id;
+}
+
+std::string ErrorLogger::ErrorMessage::serialize() const
+{
+    std::ostringstream oss;
+    oss << _id.length() << " " << _id;
+    oss << _severity.length() << " " << _severity;
+    oss << _msg.length() << " " << _msg;
+    oss << _callStack.size() << " ";
+
+    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok)
+    {
+        std::ostringstream smallStream;
+        smallStream << (*tok).line << ":" << (*tok).file;
+        oss << smallStream.str().length() << " " << smallStream.str();
+    }
+    return oss.str();
+}
+
+bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
+{
+    _callStack.clear();
+    std::istringstream iss(data);
+    std::vector<std::string> results;
+    while (iss.good())
+    {
+        unsigned int len = 0;
+        if (!(iss >> len))
+            return false;
+
+        iss.get();
+        std::string temp;
+        for (unsigned int i = 0; i < len && iss.good(); ++i)
+            temp.append(1, iss.get());
+
+        results.push_back(temp);
+        if (results.size() == 3)
+            break;
+    }
+
+    _id = results[0];
+    _severity = results[1];
+    _msg = results[2];
+
+    unsigned int stackSize = 0;
+    if (!(iss >> stackSize))
+        return false;
+
+    while (iss.good())
+    {
+        unsigned int len = 0;
+        if (!(iss >> len))
+            return false;
+
+        iss.get();
+        std::string temp;
+        for (unsigned int i = 0; i < len && iss.good(); ++i)
+            temp.append(1, iss.get());
+
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.file = temp.substr(temp.find(':') + 1);
+        temp = temp.substr(0, temp.find(':'));
+        std::istringstream fiss(temp);
+        fiss >> loc.line;
+
+        _callStack.push_back(loc);
+
+        if (_callStack.size() >= stackSize)
+            break;
+    }
+
+    return true;
 }
 
 std::string ErrorLogger::ErrorMessage::toXML() const

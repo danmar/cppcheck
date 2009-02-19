@@ -20,6 +20,7 @@ OBJECTS =     src/checkbufferoverrun.o \
               src/main.o \
               src/preprocessor.o \
               src/settings.o \
+              src/threadexecutor.o \
               src/token.o \
               src/tokenize.o
 
@@ -62,6 +63,7 @@ TESTOBJ =     test/testbufferoverrun.o \
               src/filelister.o \
               src/preprocessor.o \
               src/settings.o \
+              src/threadexecutor.o \
               src/token.o \
               src/tokenize.o
 
@@ -127,7 +129,7 @@ src/checkvalidate.o: src/checkvalidate.cpp src/checkvalidate.h src/errorlogger.h
 src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/checkstl.h src/filelister.h
 	g++ $(CXXFLAGS) -c -o src/cppcheck.o src/cppcheck.cpp
 
-src/cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h src/cppcheck.h src/checkfunctionusage.h src/tokenize.h src/token.h
+src/cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h src/cppcheck.h src/checkfunctionusage.h src/tokenize.h src/token.h src/threadexecutor.h
 	g++ $(CXXFLAGS) -c -o src/cppcheckexecutor.o src/cppcheckexecutor.cpp
 
 src/errorlogger.o: src/errorlogger.cpp src/errorlogger.h src/settings.h src/tokenize.h src/token.h
@@ -144,6 +146,9 @@ src/preprocessor.o: src/preprocessor.cpp src/preprocessor.h src/tokenize.h src/s
 
 src/settings.o: src/settings.cpp src/settings.h
 	g++ $(CXXFLAGS) -c -o src/settings.o src/settings.cpp
+
+src/threadexecutor.o: src/threadexecutor.cpp src/threadexecutor.h src/settings.h src/errorlogger.h src/cppcheck.h src/checkfunctionusage.h src/tokenize.h src/token.h
+	g++ $(CXXFLAGS) -c -o src/threadexecutor.o src/threadexecutor.cpp
 
 src/token.o: src/token.cpp src/token.h
 	g++ $(CXXFLAGS) -c -o src/token.o src/token.cpp

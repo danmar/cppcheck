@@ -59,6 +59,8 @@
 		<Unit filename="src/preprocessor.h" />
 		<Unit filename="src/settings.cpp" />
 		<Unit filename="src/settings.h" />
+		<Unit filename="src/threadexecutor.cpp" />
+		<Unit filename="src/threadexecutor.h" />
 		<Unit filename="src/token.cpp" />
 		<Unit filename="src/token.h" />
 		<Unit filename="src/tokenize.cpp" />

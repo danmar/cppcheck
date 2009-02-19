@@ -100,6 +100,10 @@ public:
      */
     std::string parseFromArgs(int argc, const char* const argv[]);
 
+    const std::vector<std::string> &filenames() const;
+
+    virtual void reportStatus(unsigned int index, unsigned int max);
+
 private:
     void checkFile(const std::string &code, const char FileName[]);
 

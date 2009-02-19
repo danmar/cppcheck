@@ -19,17 +19,18 @@
 
 #include "cppcheckexecutor.h"
 #include "cppcheck.h"
+#include "threadexecutor.h"
 #include <fstream>
 #include <iostream>
 
 CppCheckExecutor::CppCheckExecutor()
 {
-    _useXML = false;
+
 }
 
 CppCheckExecutor::~CppCheckExecutor()
 {
-    //dtor
+
 }
 
 unsigned int CppCheckExecutor::check(int argc, const char* const argv[])
@@ -38,15 +39,29 @@ unsigned int CppCheckExecutor::check(int argc, const char* const argv[])
     std::string result = cppCheck.parseFromArgs(argc, argv);
     if (result.length() == 0)
     {
-        if (cppCheck.settings()._xml)
+        _settings = cppCheck.settings();
+        if (_settings._xml)
         {
-            _useXML = true;
             reportErr("<?xml version=\"1.0\"?>");
             reportErr("<results>");
         }
 
-        unsigned int returnValue = cppCheck.check();
-        if (_useXML)
+        unsigned int returnValue = 0;
+        if (1)
+        {
+            // Single process
+            returnValue = cppCheck.check();
+        }
+        else
+        {
+            // Multiple processes
+            const std::vector<std::string> &filenames = cppCheck.filenames();
+            Settings settings = cppCheck.settings();
+            ThreadExecutor executor(filenames, settings, *this);
+            returnValue = executor.check();
+        }
+
+        if (_settings._xml)
         {
             reportErr("</results>");
         }
@@ -70,9 +85,22 @@ void CppCheckExecutor::reportOut(const std::string &outmsg)
     std::cout << outmsg << std::endl;
 }
 
+void CppCheckExecutor::reportStatus(unsigned int index, unsigned int max)
+{
+    if (max > 1 && !_settings._errorsOnly)
+    {
+        std::ostringstream oss;
+        oss << index << "/" << max
+        << " files checked " <<
+        static_cast<int>(static_cast<double>(index) / max*100)
+        << "% done";
+        std::cout << oss.str() << std::endl;
+    }
+}
+
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    if (_useXML)
+    if (_settings._xml)
     {
         reportErr(msg.toXML());
     }

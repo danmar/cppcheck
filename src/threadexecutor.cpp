@@ -1,0 +1,191 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
+ * Leandro Penz, Kimmo Varis
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/
+ */
+
+#include "threadexecutor.h"
+#include "cppcheck.h"
+
+#if 0
+
+/**
+This implementation is currently for Linux only and disabled with #if 0 until
+proper way is invented.
+ */
+
+#include <sys/wait.h>
+#include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
+
+ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
+        : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
+{
+
+}
+
+ThreadExecutor::~ThreadExecutor()
+{
+    //dtor
+}
+
+bool ThreadExecutor::handleRead(unsigned int &result)
+{
+    char type = 0;
+    if (read(_pipe[0], &type, 1) <= 0)
+    {
+        return false;
+    }
+
+    if (type != '1' && type != '2' && type != '3')
+    {
+        std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
+        exit(0);
+    }
+
+    unsigned int len = 0;
+    read(_pipe[0], &len, sizeof(len));
+    char *buf = new char[len];
+    read(_pipe[0], buf, len);
+    if (type == '1')
+    {
+        _errorLogger.reportOut(buf);
+    }
+    else if (type == '2')
+    {
+        ErrorLogger::ErrorMessage msg;
+        msg.deserialize(buf);
+        _errorLogger.reportErr(msg);
+    }
+    else if (type == '3')
+    {
+        _fileCount++;
+        std::istringstream iss(buf);
+        unsigned int fileResult = 0;
+        iss >> fileResult;
+        result += fileResult;
+        _errorLogger.reportStatus(_fileCount, _filenames.size());
+    }
+
+    delete [] buf;
+    return true;
+}
+
+unsigned int ThreadExecutor::check()
+{
+    _fileCount = 0;
+    unsigned int result = 0;
+    if (pipe(_pipe) == -1)
+    {
+        perror("pipe");
+        exit(1);
+    }
+
+    int flags = 0;
+    if ((flags = fcntl(_pipe[0], F_GETFL, 0)) < 0)
+    {
+        perror("fcntl");
+        exit(1);
+    }
+
+    if (fcntl(_pipe[0], F_SETFL, flags | O_NONBLOCK) < 0)
+    {
+        perror("fcntl");
+        exit(1);
+    }
+
+    unsigned int childCount = 0;
+    for (unsigned int i = 0; i < _filenames.size(); i++)
+    {
+        // Keep only wanted amount of child processes running at a time.
+        if (childCount >= 2)
+        {
+            while (handleRead(result))
+            {
+
+            }
+
+            int stat = 0;
+            waitpid(0, &stat, 0);
+            --childCount;
+        }
+
+        pid_t pid = fork();
+        if (pid < 0)
+        {
+            // Error
+            std::cerr << "Failed to create child process" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        else if (pid == 0)
+        {
+            CppCheck fileChecker(*this);
+            fileChecker.settings(_settings);
+            fileChecker.addFile(_filenames[i]);
+            unsigned int result = fileChecker.check();
+            std::ostringstream oss;
+            oss << result;
+            writeToPipe('3', oss.str());
+            exit(0);
+        }
+
+        ++childCount;
+    }
+
+    while (childCount > 0)
+    {
+        int stat = 0;
+        waitpid(0, &stat, 0);
+        --childCount;
+    }
+
+    while (handleRead(result))
+    {
+
+    }
+
+    return result;
+}
+
+void ThreadExecutor::writeToPipe(char type, const std::string &data)
+{
+    unsigned int len = data.length() + 1;
+    char *out = new char[ len + 1 + sizeof(len)];
+    out[0] = type;
+    memcpy(&(out[1]), &len, sizeof(len));
+    memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
+    write(_pipe[1], out, len + 1 + sizeof(len));
+}
+
+void ThreadExecutor::reportOut(const std::string &outmsg)
+{
+    writeToPipe('1', outmsg);
+}
+
+void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
+{
+    writeToPipe('2', msg.serialize());
+}
+
+void ThreadExecutor::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
+{
+    // Not used
+}
+
+#else
+
+#endif

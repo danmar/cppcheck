@@ -177,8 +177,11 @@ int main()
     fout << "        };\n";
     fout << "\n";
     fout << "        ErrorMessage(const std::list<FileLocation> &callStack, const std::string &severity, const std::string &msg, const std::string &id);\n";
+    fout << "        ErrorMessage();\n";
     fout << "        std::string toXML() const;\n";
     fout << "        std::string toText() const;\n";
+    fout << "        std::string serialize() const;\n";
+    fout << "        bool deserialize( const std::string &data );\n";
     fout << "    private:\n";
     fout << "        std::list<FileLocation> _callStack;\n";
     fout << "        std::string _severity;\n";
@@ -205,6 +208,14 @@ int main()
     fout << "     * error\n";
     fout << "     */\n";
     fout << "    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) = 0;\n";
+    fout << "\n";
+    fout << "    /**\n";
+    fout << "     * Information about how many files have been checked\n";
+    fout << "     *\n";
+    fout << "     * @param index This many files have been checked.\n";
+    fout << "     * @param max This many files there are in total.\n";
+    fout << "     */\n";
+    fout << "    virtual void reportStatus(unsigned int index, unsigned int max) = 0;\n";
     fout << "\n";
 
     for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
