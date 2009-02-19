@@ -459,6 +459,15 @@ public:
         return true;
     }
 
+    void unvalidatedInput(const Tokenizer *tokenizer, const Token *Location, const std::string &varname)
+    {
+        _writemsg(tokenizer, Location, "all", "Unvalidated input: " + varname + "", "unvalidatedInput");
+    }
+    static bool unvalidatedInput(const Settings &s)
+    {
+        return s._showAll;
+    }
+
 
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 

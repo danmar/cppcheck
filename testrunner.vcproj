@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="testrunner"
 	ProjectGUID="{ABA515EF-1C57-4980-8E40-2C937D212C9D}"
 	Keyword="Win32Proj"
@@ -199,6 +199,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\checkvalidate.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\cppcheck.h"
 				>
 			</File>
@@ -276,6 +280,10 @@
 			</File>
 			<File
 				RelativePath=".\src\checkstl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkvalidate.cpp"
 				>
 			</File>
 			<File
@@ -388,6 +396,10 @@
 			</File>
 			<File
 				RelativePath=".\test\testunusedvar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test\testvalidate.cpp"
 				>
 			</File>
 			<File

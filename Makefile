@@ -12,6 +12,7 @@ OBJECTS =     src/checkbufferoverrun.o \
               src/checkmemoryleak.o \
               src/checkother.o \
               src/checkstl.o \
+              src/checkvalidate.o \
               src/cppcheck.o \
               src/cppcheckexecutor.o \
               src/errorlogger.o \
@@ -45,6 +46,7 @@ TESTOBJ =     test/testbufferoverrun.o \
               test/testtokenize.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
+              test/testvalidate.o \
               src/checkbufferoverrun.o \
               src/checkclass.o \
               src/checkdangerousfunctions.o \
@@ -53,6 +55,7 @@ TESTOBJ =     test/testbufferoverrun.o \
               src/checkmemoryleak.o \
               src/checkother.o \
               src/checkstl.o \
+              src/checkvalidate.o \
               src/cppcheck.o \
               src/cppcheckexecutor.o \
               src/errorlogger.o \
@@ -117,6 +120,9 @@ src/checkother.o: src/checkother.cpp src/checkother.h src/tokenize.h src/setting
 
 src/checkstl.o: src/checkstl.cpp src/checkstl.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
 	g++ $(CXXFLAGS) -c -o src/checkstl.o src/checkstl.cpp
+
+src/checkvalidate.o: src/checkvalidate.cpp src/checkvalidate.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
+	g++ $(CXXFLAGS) -c -o src/checkvalidate.o src/checkvalidate.cpp
 
 src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/checkstl.h src/filelister.h
 	g++ $(CXXFLAGS) -c -o src/cppcheck.o src/cppcheck.cpp
@@ -213,6 +219,9 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp src/tokenize.h src/settin
 
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h src/checkother.h
 	g++ $(CXXFLAGS) -c -o test/testunusedvar.o test/testunusedvar.cpp
+
+test/testvalidate.o: test/testvalidate.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkvalidate.h test/testsuite.h
+	g++ $(CXXFLAGS) -c -o test/testvalidate.o test/testvalidate.cpp
 
 src/errorlogger.h:	tools/errmsg
 	tools/errmsg

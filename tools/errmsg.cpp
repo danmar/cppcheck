@@ -117,6 +117,10 @@ int main()
     err.push_back(Message("pushback", Message::error, "After push_back or push_front, the iterator '%1' may be invalid", "iterator_name"));
 
 
+    // checkvalidate.cpp
+    err.push_back(Message("unvalidatedInput", Message::all, "Unvalidated input: %1", "varname"));
+
+
     // Generate code..
     std::cout << "Generate code.." << std::endl;
     std::ofstream fout("errorlogger.h");
