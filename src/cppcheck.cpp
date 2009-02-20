@@ -104,6 +104,10 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--unused-functions") == 0)
             _settings._unusedFunctions = true;
 
+        // Write results in results.xml
+        else if (strcmp(argv[i], "--vcl") == 0)
+            _settings._vcl = true;
+
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -169,7 +173,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "\n"
         "Syntax:\n"
         "    cppcheck [--all] [--force] [--help] [-Idir] [--quiet] [--style]\n"
-        "             [--unused-functions] [--verbose] [--xml]\n"
+        "             [--unused-functions] [--verbose] [--vcl] [--xml]\n"
         "             [file or path1] [file or path]\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
@@ -186,6 +190,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -q, --quiet          Only print error messages\n"
         "    -s, --style          Check coding style\n"
         "    --unused-functions   Check if there are unused functions\n"
+        "    --vcl                Suppress messages about memory leaks when using VCL classes\n"
         "    -v, --verbose        More detailed error reports\n"
         "    --xml                Write results in xml to error stream.\n"
         "\n"

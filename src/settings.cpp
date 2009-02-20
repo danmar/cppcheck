@@ -30,6 +30,7 @@ Settings::Settings()
     _xml = false;
     _unusedFunctions = false;
     _security = false;
+    _vcl = false;
 }
 
 Settings::~Settings()

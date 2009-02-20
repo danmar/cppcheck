@@ -426,7 +426,19 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                     if (isclass(tok->tokAt(3)))
                     {
                         if (_settings._showAll)
-                            all = true;
+                        {
+
+                            if (_settings._vcl && Token::Match(tok->tokAt(4), "( %var%") && (tok->strAt(3)[0] == 'T'))
+                            {
+                                // Guess this is a VCL class with automatic deallocation
+                                alloc = No;
+                            }
+                            else
+                            {
+                                // The checking will proceed.. but any error messages that are shown are shown thanks to "--all"
+                                all = true;
+                            }
+                        }
                         else
                             alloc = No;
                     }

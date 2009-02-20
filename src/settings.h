@@ -48,6 +48,9 @@ public:
 
     /** Security checks */
     bool _security;
+
+    /** Disable warnings for VCL classes */
+    bool _vcl;
 };
 
 #endif // SETTINGS_H

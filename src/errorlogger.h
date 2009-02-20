@@ -56,7 +56,7 @@ public:
         std::string toXML() const;
         std::string toText() const;
         std::string serialize() const;
-        bool deserialize( const std::string &data );
+        bool deserialize(const std::string &data);
     private:
         std::list<FileLocation> _callStack;
         std::string _severity;

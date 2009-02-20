@@ -192,6 +192,9 @@ private:
         TEST_CASE(unknownFunction1);
         TEST_CASE(unknownFunction2);
         TEST_CASE(unknownFunction3);
+
+        // VCL..
+        TEST_CASE(vcl1);
     }
 
 
@@ -1884,6 +1887,37 @@ private:
               "    ThrowException();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
+    }
+
+
+
+
+    void vcl1()
+    {
+        const char code[] = "void Form1::foo()\n"
+                            "{\n"
+                            "    TEdit *Edit1 = new TEdit(this);\n"
+                            "}\n";
+
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for memory leaks..
+        Settings settings;
+        settings._debug = true;
+        settings._showAll = true;
+        settings._vcl = true;
+        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
+        checkMemoryLeak.CheckMemoryLeak();
+
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
