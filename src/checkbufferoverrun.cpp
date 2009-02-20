@@ -239,7 +239,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
 
         // Writing data into array..
-        if (Token::Match(tok, std::string("strcpy ( " + varnames + " , %str% )").c_str()))
+        if (Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))
         {
             int len = 0;
             const char *str = tok->strAt(varc + 4);
@@ -256,6 +256,16 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
             continue;
         }
+        
+        
+        // Dangerous usage of strncat..
+        if (Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
+        {
+            int n = atoi(tok->strAt(6));
+            if (n == size)
+                _errorLogger->strncatUsage(_tokenizer, tok);
+        }
+        
 
         // sprintf..
         if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% ,", varid))

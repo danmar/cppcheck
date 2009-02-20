@@ -110,6 +110,15 @@ public:
         return s._showAll;
     }
 
+    void strncatUsage(const Tokenizer *tokenizer, const Token *Location)
+    {
+        _writemsg(tokenizer, Location, "all", "Dangerous usage of strncat, possible buffer overrun", "strncatUsage");
+    }
+    static bool strncatUsage(const Settings &s)
+    {
+        return s._showAll;
+    }
+
     void outOfBounds(const Tokenizer *tokenizer, const Token *Location, const std::string &what)
     {
         _writemsg(tokenizer, Location, "error", "" + what + " is out of bounds", "outOfBounds");

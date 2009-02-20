@@ -93,7 +93,7 @@ private:
         TEST_CASE(snprintf3);
         
         // TODO TEST_CASE(strncat1);
-        // TODO TEST_CASE(strncat2);
+        TEST_CASE(strncat2);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -487,7 +487,7 @@ private:
               "    char str[5];\n"
               "    strncat(str, a, 5);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) dangerous usage of strncat. If str is nonempty there will be a buffer overrun\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Dangerous usage of strncat, possible buffer overrun\n"), errout.str());
     }
 
 
