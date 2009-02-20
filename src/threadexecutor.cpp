@@ -24,6 +24,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <cstdlib>
+#include <cstring>
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
@@ -166,8 +168,8 @@ void ThreadExecutor::writeToPipe(char type, const std::string &data)
     unsigned int len = data.length() + 1;
     char *out = new char[ len + 1 + sizeof(len)];
     out[0] = type;
-    memcpy(&(out[1]), &len, sizeof(len));
-    memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
+    std::memcpy(&(out[1]), &len, sizeof(len));
+    std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
     write(_pipe[1], out, len + 1 + sizeof(len));
 }
 
