@@ -47,10 +47,14 @@ unsigned int CppCheckExecutor::check(int argc, const char* const argv[])
         }
 
         unsigned int returnValue = 0;
-        if (1)
+        if (_settings._workers == 1)
         {
             // Single process
             returnValue = cppCheck.check();
+        }
+        else if (!ThreadExecutor::isEnabled())
+        {
+            std::cout << "No thread support yet implemented for this platform." << std::endl;
         }
         else
         {

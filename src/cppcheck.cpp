@@ -146,6 +146,39 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             _includePaths.push_back(path);
         }
 
+// Include paths
+        else if (strcmp(argv[i], "-w") == 0 ||
+                 strncmp(argv[i], "-w", 2) == 0)
+        {
+            std::string numberString;
+
+            // "-w 3"
+            if (strcmp(argv[i], "-w") == 0)
+            {
+                ++i;
+                if (i >= argc)
+                    return "cppcheck: argument to '-w' is missing\n";
+
+                numberString = argv[i];
+            }
+
+            // "-w3"
+            else if (strncmp(argv[i], "-w", 2) == 0)
+            {
+                numberString = argv[i];
+                numberString = numberString.substr(2);
+            }
+
+            std::istringstream iss(numberString);
+            if (!(iss >> _settings._workers))
+                return "cppcheck: argument to '-w' is not a number\n";
+
+            if (_settings._workers > 1000)
+            {
+                return "cppcheck: argument for '-w' is allowed to be 1000 at max\n";
+            }
+        }
+
         else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
         {
             return "cppcheck: error: unrecognized command line option \"" + std::string(argv[i]) + "\"\n";
@@ -184,7 +217,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -f, --force          Force checking on files that have \"too many\"\n"
         "                         configurations\n"
         "    -h, --help           Print this help\n"
-        "    -I <dir>             Give include path. Give several -I parameters to give\n"
+        "    -I [dir]             Give include path. Give several -I parameters to give\n"
         "                         several paths. First given path is checked first. If\n"
         "                         paths are relative to source files, this is not needed\n"
         "    -q, --quiet          Only print error messages\n"
@@ -192,6 +225,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    --unused-functions   Check if there are unused functions\n"
         "    --vcl                Suppress messages about memory leaks when using VCL classes\n"
         "    -v, --verbose        More detailed error reports\n"
+        "    -w [workers]         Start [workers] threads to do the checking work.\n"
         "    --xml                Write results in xml to error stream.\n"
         "\n"
         "Example usage:\n"

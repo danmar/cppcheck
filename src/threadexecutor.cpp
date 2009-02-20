@@ -19,18 +19,12 @@
 
 #include "threadexecutor.h"
 #include "cppcheck.h"
-
-#if 0
-
-/**
-This implementation is currently for Linux only and disabled with #if 0 until
-proper way is invented.
- */
-
-#include <sys/wait.h>
 #include <iostream>
+#if defined(__GNUC__) && !defined(__MINGW32__)
+#include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
+#endif
 
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
         : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
@@ -43,6 +37,12 @@ ThreadExecutor::~ThreadExecutor()
     //dtor
 }
 
+///////////////////////////////////////////////////////////////////////////////
+////// This code is for __GNUC__ only /////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+#if defined(__GNUC__) && !defined(__MINGW32__)
+
 bool ThreadExecutor::handleRead(unsigned int &result)
 {
     char type = 0;
@@ -53,7 +53,7 @@ bool ThreadExecutor::handleRead(unsigned int &result)
 
     if (type != '1' && type != '2' && type != '3')
     {
-        std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
+        std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         exit(0);
     }
 
@@ -112,7 +112,7 @@ unsigned int ThreadExecutor::check()
     for (unsigned int i = 0; i < _filenames.size(); i++)
     {
         // Keep only wanted amount of child processes running at a time.
-        if (childCount >= 2)
+        if (childCount >= _settings._workers)
         {
             while (handleRead(result))
             {
@@ -187,5 +187,22 @@ void ThreadExecutor::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
 }
 
 #else
+unsigned int ThreadExecutor::check()
+{
+    return 0;
+}
 
+void ThreadExecutor::reportOut(const std::string &/*outmsg*/)
+{
+
+}
+void ThreadExecutor::reportErr(const ErrorLogger::ErrorMessage &/*msg*/)
+{
+
+}
+
+void ThreadExecutor::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
+{
+
+}
 #endif

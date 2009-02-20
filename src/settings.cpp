@@ -31,6 +31,7 @@ Settings::Settings()
     _unusedFunctions = false;
     _security = false;
     _vcl = false;
+    _workers = 1;
 }
 
 Settings::~Settings()

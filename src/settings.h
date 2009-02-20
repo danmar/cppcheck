@@ -51,6 +51,10 @@ public:
 
     /** Disable warnings for VCL classes */
     bool _vcl;
+
+    /** How many processes/threads should do checking at the same
+        time. Default is 1. */
+    unsigned int _workers;
 };
 
 #endif // SETTINGS_H

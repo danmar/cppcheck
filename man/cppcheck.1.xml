@@ -105,11 +105,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--all</option></arg>
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
-      <arg choice="opt"><option>-Idir</option></arg>
+      <arg choice="opt"><option>-I[dir]</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--unused-functions</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
+      <arg choice="opt"><option>-w[workers]</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
       <arg choice="opt"><option>file or path</option></arg>
       <arg choice="plain"><option>...</option></arg>
@@ -153,7 +154,7 @@ default.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-I &lt;dir&gt;</option></term>
+        <term><option>-I [dir]</option></term>
         <listitem>
           <para>Give include path. Give several -I parameters to give several paths. First given path is checked first. If paths are relative to source 
 files, this is not needed.</para>
@@ -184,6 +185,12 @@ files, this is not needed.</para>
         <term><option>--verbose</option></term>
         <listitem>
           <para>More detailed error reports</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-w [workers]</option></term>
+        <listitem>
+          <para>Start [workers] threads to do the checking work.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

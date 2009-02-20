@@ -31,7 +31,6 @@
  */
 class ThreadExecutor : public ErrorLogger
 {
-#if 0
 public:
     ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &_errorLogger);
     virtual ~ThreadExecutor();
@@ -39,28 +38,37 @@ public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
     virtual void reportStatus(unsigned int index, unsigned int max);
-protected:
-private:
-    bool handleRead(unsigned int &result);
-    void writeToPipe(char type, const std::string &data);
 
+private:
     const std::vector<std::string> &_filenames;
     const Settings &_settings;
     ErrorLogger &_errorLogger;
-    int _pipe[2];
     unsigned int _fileCount;
+
+#if defined(__GNUC__) && !defined(__MINGW32__)
+private:
+    bool handleRead(unsigned int &result);
+    void writeToPipe(char type, const std::string &data);
+    int _pipe[2];
+public:
+    /**
+     * @return true if support for threads exist.
+     */
+    static bool isEnabled()
+    {
+        return true;
+    }
 #else
 public:
-    ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &_errorLogger) {};
-    virtual ~ThreadExecutor() {};
-    unsigned int check()
+    /**
+     * @return true if support for threads exist.
+     */
+    static bool isEnabled()
     {
-        return 0;
+        return false;
     }
-    virtual void reportOut(const std::string &outmsg) {}
-    virtual void reportErr(const ErrorLogger::ErrorMessage &msg) {}
-    virtual void reportStatus(unsigned int index, unsigned int max) {}
 #endif
+
 };
 
 #endif // THREADEXECUTOR_H
