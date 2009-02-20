@@ -91,6 +91,9 @@ private:
         TEST_CASE(snprintf1);
         TEST_CASE(snprintf2);
         TEST_CASE(snprintf3);
+        
+        // TODO TEST_CASE(strncat1);
+        // TODO TEST_CASE(strncat2);
 
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -461,6 +464,30 @@ private:
               "    snprintf(str, sizeof str, \"%s\", \"abc\");\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+
+
+    void strncat1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[10];\n"
+              "    strncpy(str, a, 5);\n"
+              "    strncat(str, b, 5);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) possible buffer overrun"), errout.str());
+    }
+
+    void strncat2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[5];\n"
+              "    strncat(str, a, 5);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) dangerous usage of strncat. If str is nonempty there will be a buffer overrun\n"), errout.str());
     }
 
 
