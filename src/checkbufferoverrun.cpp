@@ -105,7 +105,6 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         }
     }
 
-
     int indentlevel = 0;
     for (; tok; tok = tok->next())
     {
@@ -159,7 +158,6 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                         _errorLogger->bufferOverrun(_tokenizer, tok);
                     }
                 }
-                continue;
             }
         }
         else if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets"))
@@ -256,8 +254,8 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
             continue;
         }
-        
-        
+
+
         // Dangerous usage of strncat..
         if (Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
@@ -265,7 +263,16 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             if (n == size)
                 _errorLogger->strncatUsage(_tokenizer, tok);
         }
-        
+
+
+        // Dangerous usage of strncpy + strncat..
+        if (Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% ) ; strncat ( %varid% , %any% , %num% )", varid))
+        {
+            int n = atoi(tok->strAt(6)) + atoi(tok->strAt(15));
+            if (n > size)
+                _errorLogger->strncatUsage(_tokenizer, tok->tokAt(9));
+        }
+
 
         // sprintf..
         if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% ,", varid))

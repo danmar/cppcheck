@@ -91,8 +91,8 @@ private:
         TEST_CASE(snprintf1);
         TEST_CASE(snprintf2);
         TEST_CASE(snprintf3);
-        
-        // TODO TEST_CASE(strncat1);
+
+        TEST_CASE(strncat1);
         TEST_CASE(strncat2);
 
         TEST_CASE(varid1);
@@ -473,11 +473,11 @@ private:
     {
         check("void f()\n"
               "{\n"
-              "    char str[10];\n"
-              "    strncpy(str, a, 5);\n"
-              "    strncat(str, b, 5);\n"
+              "    char str[16];\n"
+              "    strncpy(str, a, 10);\n"
+              "    strncat(str, b, 10);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) possible buffer overrun"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Dangerous usage of strncat, possible buffer overrun\n"), errout.str());
     }
 
     void strncat2()
