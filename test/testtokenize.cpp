@@ -83,6 +83,7 @@ private:
         TEST_CASE(simplifyKnownVariables3);
         TEST_CASE(simplifyKnownVariables4);
         TEST_CASE(simplifyKnownVariables5);
+        TEST_CASE(simplifyKnownVariables6);
 
         TEST_CASE(multiCompare);
 
@@ -508,6 +509,29 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" void f ( ) { int a = 4 ; if ( a = 5 ) ; }"), ostr.str());
+    }
+
+    void simplifyKnownVariables6()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    char str[2];"
+                            "    int a = 4;\n"
+                            "    str[a] = 0;\n"
+                            "}\n";
+
+        // tokenize..
+        OurTokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.setVarId();
+        tokenizer.simplifyKnownVariables();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" void f ( ) { char str [ 2 ] ; int a = 4 ; str [ 4 ] = 0 ; }"), ostr.str());
     }
 
     void multiCompare()
