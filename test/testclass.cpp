@@ -51,6 +51,9 @@ private:
         TEST_CASE(uninitVarHeader1);    // Class is defined in header
         TEST_CASE(uninitVarHeader2);    // Class is defined in header
         TEST_CASE(uninitVarHeader3);    // Class is defined in header
+
+        TEST_CASE(noConstructor1);
+        TEST_CASE(noConstructor2);
     }
 
     // Check that base classes have virtual destructors
@@ -293,6 +296,61 @@ private:
                        "};\n"
                        "#endfile\n");
         ASSERT_EQUALS("[fred.h:6]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+    }
+
+
+
+
+
+    void checkNoConstructor(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckClass checkClass(&tokenizer, settings, this);
+        checkClass.constructors();
+    }
+
+    void noConstructor1()
+    {
+        // There are nonstatic member variables - constructor is needed
+        checkNoConstructor("class Fred\n"
+                           "{\n"
+                           "    int i;\n"
+                           "};\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' has no constructor\n", errout.str());
+    }
+
+    void noConstructor2()
+    {
+        checkNoConstructor("class Fred\n"
+                           "{\n"
+                           "public:\n"
+                           "    static void foobar();\n"
+                           "};\n"
+                           "\n"
+                           "void Fred::foobar()\n"
+                           "{ }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor3()
+    {
+        checkNoConstructor("class Fred\n"
+                           "{\n"
+                           "public:\n"
+                           "    static int foobar;\n"
+                           "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

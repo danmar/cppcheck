@@ -482,6 +482,22 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             tok->deleteNext();
         }
     }
+
+    // Remove "mutable"
+    while (Token::simpleMatch(_tokens, "mutable"))
+    {
+        Token *tok = _tokens;
+        _tokens = _tokens->next();
+        delete tok;
+    }
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (Token::simpleMatch(tok->next(), "mutable"))
+        {
+            tok->deleteNext();
+        }
+    }
+
 }
 //---------------------------------------------------------------------------
 
