@@ -44,6 +44,8 @@
 		<Unit filename="src/checkmemoryleak.h" />
 		<Unit filename="src/checkother.cpp" />
 		<Unit filename="src/checkother.h" />
+		<Unit filename="src/checksecurity.cpp" />
+		<Unit filename="src/checksecurity.h" />
 		<Unit filename="src/checkstl.cpp" />
 		<Unit filename="src/checkstl.h" />
 		<Unit filename="src/cppcheck.cpp" />
@@ -81,6 +83,7 @@
 		<Unit filename="test/testpreprocessor.cpp" />
 		<Unit filename="test/testredundantif.cpp" />
 		<Unit filename="test/testrunner.cpp" />
+		<Unit filename="test/testsecurity.cpp" />
 		<Unit filename="test/testsimplifytokens.cpp" />
 		<Unit filename="test/teststl.cpp" />
 		<Unit filename="test/testsuite.cpp" />
