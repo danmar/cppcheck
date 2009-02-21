@@ -19,19 +19,19 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef checkvalidateH
-#define checkvalidateH
+#ifndef checksecurityH
+#define checksecurityH
 //---------------------------------------------------------------------------
 
 class ErrorLogger;
 class Token;
 class Tokenizer;
 
-class CheckValidate
+class CheckSecurity
 {
 public:
-    CheckValidate(const Tokenizer *tokenizer, ErrorLogger *errorLogger);
-    ~CheckValidate();
+    CheckSecurity(const Tokenizer *tokenizer, ErrorLogger *errorLogger);
+    ~CheckSecurity();
 
     /** Reading a number from a stream/FILE */
     void readnum();

@@ -20,16 +20,16 @@
 
 
 #include "../src/tokenize.h"
-#include "../src/checkvalidate.h"
+#include "../src/checksecurity.h"
 #include "testsuite.h"
 #include <sstream>
 
 extern std::ostringstream errout;
 
-class TestValidate : public TestFixture
+class TestSecurity : public TestFixture
 {
 public:
-    TestValidate() : TestFixture("TestValidate")
+    TestSecurity() : TestFixture("TestSecurity")
     { }
 
 private:
@@ -52,8 +52,8 @@ private:
         errout.str("");
 
         // Check char variable usage..
-        CheckValidate checkValidate(&tokenizer, this);
-        checkValidate.readnum();
+        CheckSecurity checkSecurity(&tokenizer, this);
+        checkSecurity.readnum();
     }
 
 
@@ -83,8 +83,8 @@ private:
         errout.str("");
 
         // Check char variable usage..
-        CheckValidate checkValidate(&tokenizer, this);
-        checkValidate.gui();
+        CheckSecurity checkSecurity(&tokenizer, this);
+        checkSecurity.gui();
     }
 
 
@@ -100,4 +100,4 @@ private:
     }
 };
 
-REGISTER_TEST(TestValidate)
+REGISTER_TEST(TestSecurity)

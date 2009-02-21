@@ -120,7 +120,7 @@ src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/tokeniz
 src/checkother.o: src/checkother.cpp src/checkother.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CXXFLAGS) -c -o src/checkother.o src/checkother.cpp
 
-src/checksecurity.o: src/checksecurity.cpp src/errorlogger.h src/settings.h src/token.h src/tokenize.h
+src/checksecurity.o: src/checksecurity.cpp src/checksecurity.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
 	g++ $(CXXFLAGS) -c -o src/checksecurity.o src/checksecurity.cpp
 
 src/checkstl.o: src/checkstl.cpp src/checkstl.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
@@ -204,7 +204,7 @@ test/testredundantif.o: test/testredundantif.cpp src/tokenize.h src/settings.h s
 test/testrunner.o: test/testrunner.cpp test/testsuite.h src/errorlogger.h src/settings.h
 	g++ $(CXXFLAGS) -c -o test/testrunner.o test/testrunner.cpp
 
-test/testsecurity.o: test/testsecurity.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h test/testsuite.h
+test/testsecurity.o: test/testsecurity.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checksecurity.h test/testsuite.h
 	g++ $(CXXFLAGS) -c -o test/testsecurity.o test/testsecurity.cpp
 
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h

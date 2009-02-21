@@ -17,19 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include "checkvalidate.h"
+#include "checksecurity.h"
 #include "errorlogger.h"
 #include "token.h"
 #include "tokenize.h"
 
 
-CheckValidate::CheckValidate(const Tokenizer *tokenizer, ErrorLogger *errorLogger)
+CheckSecurity::CheckSecurity(const Tokenizer *tokenizer, ErrorLogger *errorLogger)
         : _tokenizer(tokenizer), _errorLogger(errorLogger)
 {
 
 }
 
-CheckValidate::~CheckValidate()
+CheckSecurity::~CheckSecurity()
 {
 
 }
@@ -37,7 +37,7 @@ CheckValidate::~CheckValidate()
 /**
  * Check that there are input validation when reading number from FILE/stream
  */
-void CheckValidate::readnum()
+void CheckSecurity::readnum()
 {
     const Token *tok = _tokenizer->tokens();
     while (tok)
@@ -80,7 +80,7 @@ void CheckValidate::readnum()
  * Read data from Form/GUI
  * Todo: This function must be more customizable to be usable
  */
-void CheckValidate::gui()
+void CheckSecurity::gui()
 {
     // input control classes whose values are insecure..
     const char *inputclass[] = {"TEdit", 0};
