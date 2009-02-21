@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="cppcheck"
 	ProjectGUID="{ECA5D746-4926-48BA-A372-FC888498531F}"
 	Keyword="Win32Proj"
@@ -230,6 +230,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\threadexecutor.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\token.h"
 				>
 			</File>
@@ -311,6 +315,10 @@
 			</File>
 			<File
 				RelativePath=".\src\settings.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\threadexecutor.cpp"
 				>
 			</File>
 			<File
