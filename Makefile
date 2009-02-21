@@ -11,8 +11,8 @@ OBJECTS =     src/checkbufferoverrun.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
               src/checkother.o \
+              src/checksecurity.o \
               src/checkstl.o \
-              src/checkvalidate.o \
               src/cppcheck.o \
               src/cppcheckexecutor.o \
               src/errorlogger.o \
@@ -40,6 +40,7 @@ TESTOBJ =     test/testbufferoverrun.o \
               test/testpreprocessor.o \
               test/testredundantif.o \
               test/testrunner.o \
+              test/testsecurity.o \
               test/testsimplifytokens.o \
               test/teststl.o \
               test/testsuite.o \
@@ -47,7 +48,6 @@ TESTOBJ =     test/testbufferoverrun.o \
               test/testtokenize.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
-              test/testvalidate.o \
               src/checkbufferoverrun.o \
               src/checkclass.o \
               src/checkdangerousfunctions.o \
@@ -55,8 +55,8 @@ TESTOBJ =     test/testbufferoverrun.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
               src/checkother.o \
+              src/checksecurity.o \
               src/checkstl.o \
-              src/checkvalidate.o \
               src/cppcheck.o \
               src/cppcheckexecutor.o \
               src/errorlogger.o \
@@ -120,11 +120,11 @@ src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/tokeniz
 src/checkother.o: src/checkother.cpp src/checkother.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	g++ $(CXXFLAGS) -c -o src/checkother.o src/checkother.cpp
 
+src/checksecurity.o: src/checksecurity.cpp src/errorlogger.h src/settings.h src/token.h src/tokenize.h
+	g++ $(CXXFLAGS) -c -o src/checksecurity.o src/checksecurity.cpp
+
 src/checkstl.o: src/checkstl.cpp src/checkstl.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
 	g++ $(CXXFLAGS) -c -o src/checkstl.o src/checkstl.cpp
-
-src/checkvalidate.o: src/checkvalidate.cpp src/checkvalidate.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
-	g++ $(CXXFLAGS) -c -o src/checkvalidate.o src/checkvalidate.cpp
 
 src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/checkstl.h src/filelister.h
 	g++ $(CXXFLAGS) -c -o src/cppcheck.o src/cppcheck.cpp
@@ -204,6 +204,9 @@ test/testredundantif.o: test/testredundantif.cpp src/tokenize.h src/settings.h s
 test/testrunner.o: test/testrunner.cpp test/testsuite.h src/errorlogger.h src/settings.h
 	g++ $(CXXFLAGS) -c -o test/testrunner.o test/testrunner.cpp
 
+test/testsecurity.o: test/testsecurity.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h test/testsuite.h
+	g++ $(CXXFLAGS) -c -o test/testsecurity.o test/testsecurity.cpp
+
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
 	g++ $(CXXFLAGS) -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
 
@@ -224,9 +227,6 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp src/tokenize.h src/settin
 
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h src/checkother.h
 	g++ $(CXXFLAGS) -c -o test/testunusedvar.o test/testunusedvar.cpp
-
-test/testvalidate.o: test/testvalidate.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkvalidate.h test/testsuite.h
-	g++ $(CXXFLAGS) -c -o test/testvalidate.o test/testvalidate.cpp
 
 src/errorlogger.h:	tools/errmsg
 	tools/errmsg
