@@ -95,6 +95,8 @@ private:
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
 
+        TEST_CASE(cin1);
+
         TEST_CASE(varid1);
         TEST_CASE(varid2);
 
@@ -490,6 +492,17 @@ private:
         ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Dangerous usage of strncat, possible buffer overrun\n"), errout.str());
     }
 
+
+
+    void cin1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[10];\n"
+              "    cin >> str;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Buffer overrun\n"), errout.str());
+    }
 
 
 

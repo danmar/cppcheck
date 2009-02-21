@@ -307,6 +307,11 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 _errorLogger->outOfBounds(_tokenizer, tok->tokAt(4), "snprintf size");
         }
 
+        // cin..
+        if (varid > 0 && Token::Match(tok, "cin >> %varid% ;", varid))
+        {
+            _errorLogger->bufferOverrun(_tokenizer, tok);
+        }
 
         // Function call..
         // It's not interesting to check what happens when the whole struct is
