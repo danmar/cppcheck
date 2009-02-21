@@ -50,6 +50,7 @@ private:
         TEST_CASE(function);            // Function is not variable
         TEST_CASE(uninitVarHeader1);    // Class is defined in header
         TEST_CASE(uninitVarHeader2);    // Class is defined in header
+        TEST_CASE(uninitVarHeader3);    // Class is defined in header
     }
 
     // Check that base classes have virtual destructors
@@ -273,6 +274,20 @@ private:
                        "{\n"
                        "private:\n"
                        "    unsigned int i;\n"
+                       "public:\n"
+                       "    Fred() { }\n"
+                       "};\n"
+                       "#endfile\n");
+        ASSERT_EQUALS("[fred.h:6]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+    }
+
+    void uninitVarHeader3()
+    {
+        checkUninitVar("#file \"fred.h\"\n"
+                       "class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    mutable int i;\n"
                        "public:\n"
                        "    Fred() { }\n"
                        "};\n"

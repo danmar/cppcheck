@@ -76,8 +76,14 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
         const Token *next = tok->next();
         const char *varname = 0;
 
+        // If next token contains a ":".. it is not part of a variable declaration
+        if (next->str().find(":") != std::string::npos)
+        {
+        
+        }
+
         // Is it a variable declaration?
-        if (Token::Match(next, "%type% %var% ;"))
+        else if (Token::Match(next, "%type% %var% ;"))
         {
             if (next->isStandardType())
                 varname = next->strAt(1);
@@ -85,10 +91,26 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
                 varname = next->strAt(1);
         }
 
+        // Is it a variable declaration?
+        else if (Token::Match(next, "%type% %type% %var% ;"))
+        {
+            const Token *next2 = next->next();
+            if (next2->isStandardType())
+                varname = next2->strAt(1);
+            else if (Token::findmatch(_tokenizer->tokens(), ("enum " + next2->str()).c_str()))
+                varname = next2->strAt(1);
+        }
+
         // Pointer?
         else if (Token::Match(next, "%type% * %var% ;"))
         {
             varname = next->strAt(2);
+        }
+
+        // Pointer?
+        else if (!b && Token::Match(next, "%type% %type% * %var% ;"))
+        {
+            varname = next->strAt(3);
         }
 
         // If the varname was set in one of the two if-block above, create a entry for this variable..
