@@ -47,7 +47,7 @@ unsigned int CppCheckExecutor::check(int argc, const char* const argv[])
         }
 
         unsigned int returnValue = 0;
-        if (_settings._workers == 1)
+        if (_settings._jobs == 1)
         {
             // Single process
             returnValue = cppCheck.check();

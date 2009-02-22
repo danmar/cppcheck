@@ -147,35 +147,35 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         }
 
 // Include paths
-        else if (strcmp(argv[i], "-w") == 0 ||
-                 strncmp(argv[i], "-w", 2) == 0)
+        else if (strcmp(argv[i], "-j") == 0 ||
+                 strncmp(argv[i], "-j", 2) == 0)
         {
             std::string numberString;
 
-            // "-w 3"
-            if (strcmp(argv[i], "-w") == 0)
+            // "-j 3"
+            if (strcmp(argv[i], "-j") == 0)
             {
                 ++i;
                 if (i >= argc)
-                    return "cppcheck: argument to '-w' is missing\n";
+                    return "cppcheck: argument to '-j' is missing\n";
 
                 numberString = argv[i];
             }
 
-            // "-w3"
-            else if (strncmp(argv[i], "-w", 2) == 0)
+            // "-j3"
+            else if (strncmp(argv[i], "-j", 2) == 0)
             {
                 numberString = argv[i];
                 numberString = numberString.substr(2);
             }
 
             std::istringstream iss(numberString);
-            if (!(iss >> _settings._workers))
-                return "cppcheck: argument to '-w' is not a number\n";
+            if (!(iss >> _settings._jobs))
+                return "cppcheck: argument to '-j' is not a number\n";
 
-            if (_settings._workers > 1000)
+            if (_settings._jobs > 1000)
             {
-                return "cppcheck: argument for '-w' is allowed to be 1000 at max\n";
+                return "cppcheck: argument for '-j' is allowed to be 1000 at max\n";
             }
         }
 
@@ -225,7 +225,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    --unused-functions   Check if there are unused functions\n"
         "    --vcl                Suppress messages about memory leaks when using VCL classes\n"
         "    -v, --verbose        More detailed error reports\n"
-        "    -w [workers]         Start [workers] threads to do the checking work.\n"
+        "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
         "    --xml                Write results in xml to error stream.\n"
         "\n"
         "Example usage:\n"

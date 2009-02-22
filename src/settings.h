@@ -54,7 +54,7 @@ public:
 
     /** How many processes/threads should do checking at the same
         time. Default is 1. */
-    unsigned int _workers;
+    unsigned int _jobs;
 };
 
 #endif // SETTINGS_H

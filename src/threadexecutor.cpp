@@ -114,7 +114,7 @@ unsigned int ThreadExecutor::check()
     for (unsigned int i = 0; i < _filenames.size(); i++)
     {
         // Keep only wanted amount of child processes running at a time.
-        if (childCount >= _settings._workers)
+        if (childCount >= _settings._jobs)
         {
             while (handleRead(result))
             {
