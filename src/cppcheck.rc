@@ -75,7 +75,7 @@ BEGIN
             VALUE "FileDescription", "cppcheck Application"
             VALUE "FileVersion", "1.28"
             VALUE "InternalName", "cppcheck"
-            VALUE "LegalCopyright", "Copyright (C) 2009 Daniel Marjam√§ki"
+            VALUE "LegalCopyright", "Copyright (C) 2009 Daniel Marjam‰ki"
             VALUE "OriginalFilename", "cppcheck.exe"
             VALUE "ProductName", "cppcheck Application"
             VALUE "ProductVersion", "1.28"
