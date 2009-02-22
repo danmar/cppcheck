@@ -57,7 +57,6 @@ public:
         std::string toText() const;
         std::string serialize() const;
         bool deserialize(const std::string &data);
-    private:
         std::list<FileLocation> _callStack;
         std::string _severity;
         std::string _msg;

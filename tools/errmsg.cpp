@@ -183,7 +183,6 @@ int main()
     fout << "        std::string toText() const;\n";
     fout << "        std::string serialize() const;\n";
     fout << "        bool deserialize(const std::string &data);\n";
-    fout << "    private:\n";
     fout << "        std::list<FileLocation> _callStack;\n";
     fout << "        std::string _severity;\n";
     fout << "        std::string _msg;\n";
