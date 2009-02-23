@@ -195,6 +195,7 @@ private:
 
         // VCL..
         TEST_CASE(vcl1);
+        TEST_CASE(vcl2);
     }
 
 
@@ -1891,14 +1892,8 @@ private:
 
 
 
-
-    void vcl1()
+    void checkvcl(const char code[])
     {
-        const char code[] = "void Form1::foo()\n"
-                            "{\n"
-                            "    TEdit *Edit1 = new TEdit(this);\n"
-                            "}\n";
-
         // Tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
@@ -1916,10 +1911,36 @@ private:
         settings._vcl = true;
         CheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
         checkMemoryLeak.CheckMemoryLeak();
+    }
 
+
+
+    void vcl1()
+    {
+        checkvcl("void Form1::foo()\n"
+                 "{\n"
+                 "    TEdit *Edit1 = new TEdit(this);\n"
+                 "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
+
+    void vcl2()
+    {
+        checkvcl("class Fred\n"
+                 "{\n"
+                 "private:\n"
+                 "    TButton *button;\n"
+                 "public:\n"
+                 "    Fred();\n"
+                 "};\n"
+                 "\n"
+                 "Fred::Fred()\n"
+                 "{\n"
+                 "    button = new TButton(this);\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestMemleak)

@@ -1441,6 +1441,10 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass(const Token *
         // Declaring member variable.. check allocations and deallocations
         if (Token::Match(tok->next(), "%type% * %var% ;"))
         {
+            // No false positives for vcl classes..
+            if (_settings._vcl && tok->next()->str()[0] == 'T')
+                continue;
+
             if (tok->isName() || Token::Match(tok, "[;}]"))
             {
                 if (_settings._showAll || !isclass(tok->tokAt(1)))
