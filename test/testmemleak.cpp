@@ -120,6 +120,7 @@ private:
         TEST_CASE(ret3);
         TEST_CASE(ret4);
         TEST_CASE(ret5);        // Bug 2458436 - return use
+        TEST_CASE(ret6);
 
         TEST_CASE(mismatch1);
         TEST_CASE(mismatch2);
@@ -982,6 +983,16 @@ private:
               "{\n"
               "    char *c = new char[50];\n"
               "    return (c ? c : NULL);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void ret6()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *c = new char[50];\n"
+              "    return strcpy(c, \"foo\");\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
