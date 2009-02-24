@@ -476,7 +476,7 @@ void CheckClass::privateFunctions()
 
         // The class implementation must be available..
         const std::string classconstructor(classname + " :: " + classname);
-        if (!Token::findmatch(_tokenizer->tokens(), classconstructor.c_str()))
+        if (tok1->fileIndex()>0 && !Token::findmatch(_tokenizer->tokens(), classconstructor.c_str()))
             continue;
 
         // Get private functions..
@@ -549,13 +549,13 @@ void CheckClass::privateFunctions()
                 {
                     if (ftok->str() == "{")
                         ++indent_level;
-                    if (ftok->str() == "}")
+                    else if (ftok->str() == "}")
                     {
                         if (indent_level <= 1)
                             break;
                         --indent_level;
                     }
-                    if (Token::Match(ftok->next(), "("))
+                    else if (Token::Match(ftok, "%var% ("))
                     {
                         // Remove function from FuncList
                         for (std::list<const Token *>::iterator it = FuncList.begin(); it != FuncList.end(); ++it)
