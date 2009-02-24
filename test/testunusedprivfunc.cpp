@@ -36,7 +36,6 @@ private:
     void run()
     {
         TEST_CASE(test1);
-        TEST_CASE(test2);
 
         // [ 2236547 ] False positive --style unused function, called via pointer
         TEST_CASE(func_pointer);
@@ -80,26 +79,6 @@ private:
 
         ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Unused private function 'Fred::f'\n"), errout.str());
     }
-
-
-    void test2()
-    {
-        check("class A {\n"
-              "public:\n"
-              "    A();\n"
-              "\n"
-              "    void a() const\n"
-              "    { b(); }\n"
-              "private:\n"
-              "    void b( ) const\n"
-              "    { }\n"
-              "};\n"
-              "\n"
-              "A::A()\n"
-              "{ }\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
-    }
-
 
 
 
