@@ -1604,6 +1604,22 @@ bool Tokenizer::simplifyFunctionReturn()
     return ret;
 }
 
+
+static void incdec(std::string &value, const std::string &op)
+{
+    int ivalue = 0;
+    std::istringstream istr(value.c_str());
+    istr >> ivalue;
+    if (op == "++")
+        ++ivalue;
+    else if (op == "--")
+        --ivalue;
+    std::ostringstream ostr;
+    ostr << ivalue;
+    value = ostr.str();
+}
+
+
 bool Tokenizer::simplifyKnownVariables()
 {
     bool ret = false;
@@ -1635,6 +1651,8 @@ bool Tokenizer::simplifyKnownVariables()
                 if (varid == 0)
                     continue;
 
+                std::string value(tok2->strAt(2));
+
                 for (Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
                 {
                     // Perhaps it's a loop => bail out
@@ -1649,7 +1667,7 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3, "if ( %varid% )", varid))
                     {
                         tok3 = tok3->next()->next();
-                        tok3->str(tok2->strAt(2));
+                        tok3->str(value.c_str());
                         ret = true;
                     }
 
@@ -1657,8 +1675,24 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3, "[=+-*/[] %varid% [+-*/;]]", varid))
                     {
                         tok3 = tok3->next();
-                        tok3->str(tok2->strAt(2));
+                        tok3->str(value.c_str());
                         ret = true;
+                    }
+
+                    if (Token::Match(tok3->next(), "%varid% ++|--", varid))
+                    {
+                        tok3 = tok3->next();
+                        tok3->str(value.c_str());
+                        incdec(value, tok3->strAt(1));
+                        tok3->deleteNext();
+                    }
+
+                    if (Token::Match(tok3->next(), "++|-- %varid%", varid))
+                    {
+                        incdec(value, tok3->strAt(1));
+                        tok3->deleteNext();
+                        tok3 = tok3->next();
+                        tok3->str(value.c_str());
                     }
                 }
             }
