@@ -675,14 +675,9 @@ void Tokenizer::simplifyTokenList()
     _typeSize["double"] = sizeof(double);
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class %var%"))
+        if (Token::Match(tok, "class|struct %var%"))
         {
-            _typeSize[tok->strAt(1)] = 11;
-        }
-
-        else if (Token::Match(tok, "struct %var%"))
-        {
-            _typeSize[tok->strAt(1)] = 13;
+            _typeSize[tok->strAt(1)] = 100;
         }
     }
 
