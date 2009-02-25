@@ -892,12 +892,6 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
                 // Reducing if..
                 else if (_settings._showAll)
                 {
-                    if (Token::Match(tok2->next(), "if assign|dealloc|use ; else"))
-                    {
-                        all = true;
-                        erase(tok2->next(), tok2->tokAt(3));
-                        done = false;
-                    }
                     if (Token::Match(tok2, "[;{}] if { assign|dealloc|use ; return ; } !!else"))
                     {
                         all = true;

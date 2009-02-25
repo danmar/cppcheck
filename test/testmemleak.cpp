@@ -85,6 +85,7 @@ private:
         TEST_CASE(ifelse7);
         TEST_CASE(ifelse8);
         TEST_CASE(ifelse9);
+        TEST_CASE(ifelse10);
 
         TEST_CASE(if1);
         TEST_CASE(if2);
@@ -509,6 +510,24 @@ private:
               "        delete [] s;\n"
               "    }\n"
               "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+    void ifelse10()
+    {
+        check("static char *f()\n"
+              "{\n"
+              "    char *s = new char[10];\n"
+              "    if ( ghfgf )\n"
+              "    {\n"
+              "        str[0] = s;\n"
+              "    }\n"
+              "    else\n"
+              "    {\n"
+              "        str[0] = s;\n"
+              "    }\n"
+              "}\n", true);
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
