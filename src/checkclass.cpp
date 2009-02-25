@@ -476,7 +476,7 @@ void CheckClass::privateFunctions()
 
         // The class implementation must be available..
         const std::string classconstructor(classname + " :: " + classname);
-        if (tok1->fileIndex()>0 && !Token::findmatch(_tokenizer->tokens(), classconstructor.c_str()))
+        if (tok1->fileIndex() > 0 && !Token::findmatch(_tokenizer->tokens(), classconstructor.c_str()))
             continue;
 
         // Get private functions..
@@ -521,58 +521,68 @@ void CheckClass::privateFunctions()
         }
 
         // Check that all private functions are used..
-        const std::string pattern_function(classname + " ::");
         bool HasFuncImpl = false;
-        const Token *ftok = _tokenizer->tokens();
-        while (ftok)
+        bool inclass = false;
+        indent_level = 0;
+        const std::string pattern_function(classname + " ::");
+        for (const Token *ftok = _tokenizer->tokens(); ftok; ftok = ftok->next())
         {
-            ftok = Token::findmatch(ftok, pattern_function.c_str());
-            int numpar = 0;
-            while (ftok && !Token::Match(ftok, "[;{]"))
+            if (ftok->str() == "{")
+                ++indent_level;
+            else if (ftok->str() == "}")
             {
-                if (ftok->str() == "(")
-                    ++numpar;
-                else if (ftok->str() == ")")
-                    --numpar;
-                ftok = ftok->next();
+                if (indent_level > 0)
+                    --indent_level;
+                if (indent_level == 0)
+                    inclass = false;
             }
 
-            if (!ftok)
-                break;
-
-            if (ftok->str() != ";" && numpar == 0)
+            if (Token::Match(ftok, ("class " + classname + " :|{").c_str()))
             {
-                HasFuncImpl = true;
-
                 indent_level = 0;
-                while (ftok)
+                inclass = true;
+            }
+
+            // Check member class functions to see what functions are used..
+            if ((inclass && indent_level == 1 && Token::Match(ftok, ") const| {")) ||
+                (Token::Match(ftok, (classname + " :: %var% (").c_str())))
+            {
+                while (ftok && ftok->str() != ")")
+                    ftok = ftok->next();
+                if (!ftok)
+                    break;
+                if (!Token::Match(ftok, ") const| {"))
+                    continue;
+
+                if (ftok->fileIndex() == 0)
+                    HasFuncImpl = true;
+
+                // Parse function..
+                int indentlevel2 = 0;
+                for (const Token *tok2 = ftok; tok2; tok2 = tok2->next())
                 {
-                    if (ftok->str() == "{")
-                        ++indent_level;
-                    else if (ftok->str() == "}")
+                    if (tok2->str() == "{")
+                        ++indentlevel2;
+                    else if (tok2->str() == "}")
                     {
-                        if (indent_level <= 1)
+                        --indentlevel2;
+                        if (indentlevel2 < 1)
                             break;
-                        --indent_level;
                     }
-                    else if (Token::Match(ftok, "%var% ("))
+                    else if (Token::Match(tok2, "%var% ("))
                     {
                         // Remove function from FuncList
                         for (std::list<const Token *>::iterator it = FuncList.begin(); it != FuncList.end(); ++it)
                         {
-                            if (ftok->str() == (*it)->str())
+                            if (tok2->str() == (*it)->str())
                             {
                                 FuncList.remove(*it);
                                 break;
                             }
                         }
                     }
-                    ftok = ftok->next();
                 }
             }
-
-            if (ftok)
-                ftok = ftok->next();
         }
 
         while (HasFuncImpl && !FuncList.empty())
