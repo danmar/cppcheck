@@ -64,6 +64,7 @@ private:
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
         TEST_CASE(parantheses1);
+        TEST_CASE(parantheses2);
 
         TEST_CASE(elseif1);
     }
@@ -310,6 +311,12 @@ private:
     {
         const char code1[] = "<= (10+100);";
         ASSERT_EQUALS("<= 110 ; ", tok(code1));
+    }
+
+    void parantheses2()
+    {
+        const char code1[] = "= (p);";
+        ASSERT_EQUALS("= p ; ", tok(code1));
     }
 
 
