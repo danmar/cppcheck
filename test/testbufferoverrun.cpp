@@ -82,6 +82,7 @@ private:
         TEST_CASE(array_index_10);
         TEST_CASE(array_index_11);
         TEST_CASE(array_index_12);
+        // TODO TEST_CASE(array_index_13);    ticket #118
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -378,6 +379,21 @@ private:
               "}\n");
         std::string err(errout.str());
         ASSERT_EQUALS(std::string("[test.cpp:10]: (all) Array index out of bounds\n"), err);
+    }
+
+
+    void array_index_13()
+    {
+        check("typedef unsigned char  U8;\n"
+              "typedef unsigned long  U32;\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    U32         data[21];\n"
+              "    memory[pos++] = (U8) data[2];\n"
+              "    sprintf( buf2, \" %s = V%d\n\", outputIO[data[0]], data[2] );\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 
