@@ -53,7 +53,7 @@ Name: english; MessagesFile: compiler:Default.isl
 
 [Tasks]
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
-Name: modifypath; Description: &Add {#MyAppName} directory to your system path; Flags: unchecked
+Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Flags: unchecked
 
 [Files]
 Source: ..\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
