@@ -53,6 +53,9 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
         if (tok->fileIndex() != 0)
             continue;
 
+        if (tok->str().find(":") != std::string::npos)
+            continue;
+
         const Token *funcname = 0;
 
         if (Token::Match(tok, "%type% %var% ("))
@@ -95,14 +98,14 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
     {
         const Token *funcname = 0;
 
-        if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]") ||
-            Token::Match(tok, ":: %var% (") ||
-            Token::Match(tok, "|= %var% (") ||
-            Token::Match(tok, "&= %var% (") ||
-            Token::Match(tok, "&& %var% (") ||
-            Token::Match(tok, "|| %var% (") ||
-            Token::Match(tok, "else %var% (") ||
-            Token::Match(tok, "return %var% ("))
+        if (Token::Match(tok->next(), "%var% ("))
+        {
+            if (tok->str() == "*" || (tok->isName() && !Token::Match(tok, "else|return")))
+                continue;
+            funcname = tok->next();
+        }
+
+        if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
             funcname = tok->next();
 
         // funcname ( => Assert that the end paranthesis isn't followed by {
