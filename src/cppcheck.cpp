@@ -66,6 +66,12 @@ void CppCheck::addFile(const std::string &path, const std::string &content)
     _fileContents[ path ] = content;
 }
 
+void CppCheck::clearFiles()
+{
+    _filenames.clear();
+    _fileContents.clear();
+}
+
 std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 {
     std::vector<std::string> pathnames;

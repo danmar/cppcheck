@@ -90,6 +90,11 @@ public:
     void addFile(const std::string &path, const std::string &content);
 
     /**
+     * Remove all files added with addFile() and parseFromArgs().
+     */
+    void clearFiles();
+
+    /**
      * Parse command line args and get settings and file lists
      * from there.
      *
