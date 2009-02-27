@@ -64,7 +64,7 @@ private:
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
         TEST_CASE(parantheses1);
-        TEST_CASE(parantheses2);
+        TEST_CASE(paranthesesVar);      // Remove redundant parantheses around variable .. "( %var% )"
 
         TEST_CASE(elseif1);
     }
@@ -313,10 +313,15 @@ private:
         ASSERT_EQUALS("<= 110 ; ", tok(code1));
     }
 
-    void parantheses2()
+    void paranthesesVar()
     {
-        const char code1[] = "= (p);";
-        ASSERT_EQUALS("= p ; ", tok(code1));
+        // remove parantheses..
+        ASSERT_EQUALS("= p ; ", tok("= (p);"));
+        ASSERT_EQUALS("if ( a < p ) { ", tok("if(a<(p))"));
+
+        // keep parantheses..
+        ASSERT_EQUALS("= ( char ) a ; ", tok("= (char)a;"));
+        ASSERT_EQUALS("cast < char * > ( p ) ", tok("cast<char *>(p)"));
     }
 
 

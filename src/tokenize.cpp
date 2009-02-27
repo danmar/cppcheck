@@ -926,7 +926,7 @@ void Tokenizer::simplifyTokenList()
 
             // Remove parantheses around variable..
             // keep parantheses here: dynamic_cast<Fred *>(p);
-            if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% )"))
+            if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% ) [;),+-*/><]]"))
             {
                 tok->deleteNext();
                 tok = tok->next();
