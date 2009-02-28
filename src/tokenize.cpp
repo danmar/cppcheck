@@ -519,6 +519,9 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "[;{}(] %any%"))
             tok = tok->next();
 
+        if (Token::Match(tok, "else|return"))
+            continue;
+
         if (!(firstMatch = Token::Match(tok, "%type% *| %var%"))
             && !Token::Match(tok, "%type% %type% *| %var%"))
             continue;
