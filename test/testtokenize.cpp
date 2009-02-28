@@ -1078,16 +1078,9 @@ private:
 
 
 
-
-    void sizeof1()
+    // Simplify 'sizeof'..
+    std::string sizeof_(const char code[])
     {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int i[4];\n"
-                            "    sizeof(i);\n"
-                            "    sizeof(*i);\n"
-                            "}\n";
-
         // tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
@@ -1099,7 +1092,20 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }"), ostr.str());
+
+        return ostr.str();
+    }
+
+
+    void sizeof1()
+    {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    int i[4];\n"
+                            "    sizeof(i);\n"
+                            "    sizeof(*i);\n"
+                            "}\n";
+        ASSERT_EQUALS(std::string(" void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }"), sizeof_(code));
     }
 
     void sizeof2()
@@ -1110,38 +1116,14 @@ private:
                             "    int i[10];\n"
                             "    sizeof(i);\n"
                             "}\n";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.setVarId();
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }"), ostr.str());
+        ASSERT_EQUALS(std::string(" static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }"), sizeof_(code));
     }
 
     void sizeof3()
     {
         const char code[] = "int i[10];\n"
                             "sizeof(i[0]);\n";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.setVarId();
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" int i [ 10 ] ; 4 ;"), ostr.str());
+        ASSERT_EQUALS(std::string(" int i [ 10 ] ; 4 ;"), sizeof_(code));
     }
 
     void sizeof4()
@@ -1149,19 +1131,7 @@ private:
         const char code[] =
             "for (int i = 0; i < sizeof(g_ReservedNames[0]); i++)"
             "{}";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.setVarId();
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" for ( int i = 0 ; i < 100 ; i ++ ) { }"), ostr.str());
+        ASSERT_EQUALS(std::string(" for ( int i = 0 ; i < 100 ; i ++ ) { }"), sizeof_(code));
     }
 
     void sizeof5()
@@ -1169,21 +1139,10 @@ private:
         const char code[] = ";int i;\n"
                             "sizeof(i);\n";
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        std::ostringstream expected;
+        expected << " ; int i ; " << sizeof(int) << " ;";
 
-        tokenizer.setVarId();
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-
-        std::ostringstream oss;
-        oss << " ; int i ; " << sizeof(int) << " ;";
-        ASSERT_EQUALS(oss.str(), ostr.str());
+        ASSERT_EQUALS(expected.str(), sizeof_(code));
     }
 
     void simplify_numeric_condition()
