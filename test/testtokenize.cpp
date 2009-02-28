@@ -112,11 +112,6 @@ private:
 
         TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
 
-        TEST_CASE(sizeof1);
-        TEST_CASE(sizeof2);
-        TEST_CASE(sizeof3);
-        TEST_CASE(sizeof4);
-        TEST_CASE(sizeof5);
         TEST_CASE(simplify_numeric_condition);
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -1077,73 +1072,6 @@ private:
     }
 
 
-
-    // Simplify 'sizeof'..
-    std::string sizeof_(const char code[])
-    {
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.setVarId();
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-
-        return ostr.str();
-    }
-
-
-    void sizeof1()
-    {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int i[4];\n"
-                            "    sizeof(i);\n"
-                            "    sizeof(*i);\n"
-                            "}\n";
-        ASSERT_EQUALS(std::string(" void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }"), sizeof_(code));
-    }
-
-    void sizeof2()
-    {
-        const char code[] = "static int i[4];\n"
-                            "void f()\n"
-                            "{\n"
-                            "    int i[10];\n"
-                            "    sizeof(i);\n"
-                            "}\n";
-        ASSERT_EQUALS(std::string(" static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }"), sizeof_(code));
-    }
-
-    void sizeof3()
-    {
-        const char code[] = "int i[10];\n"
-                            "sizeof(i[0]);\n";
-        ASSERT_EQUALS(std::string(" int i [ 10 ] ; 4 ;"), sizeof_(code));
-    }
-
-    void sizeof4()
-    {
-        const char code[] =
-            "for (int i = 0; i < sizeof(g_ReservedNames[0]); i++)"
-            "{}";
-        ASSERT_EQUALS(std::string(" for ( int i = 0 ; i < 100 ; i ++ ) { }"), sizeof_(code));
-    }
-
-    void sizeof5()
-    {
-        const char code[] = ";int i;\n"
-                            "sizeof(i);\n";
-
-        std::ostringstream expected;
-        expected << " ; int i ; " << sizeof(int) << " ;";
-
-        ASSERT_EQUALS(expected.str(), sizeof_(code));
-    }
 
     void simplify_numeric_condition()
     {
