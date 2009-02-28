@@ -116,7 +116,7 @@ private:
         TEST_CASE(sizeof2);
         TEST_CASE(sizeof3);
         TEST_CASE(sizeof4);
-        // TODO (ticket #108) TEST_CASE(sizeof5);
+        TEST_CASE(sizeof5);
         TEST_CASE(simplify_numeric_condition);
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -1166,7 +1166,7 @@ private:
 
     void sizeof5()
     {
-        const char code[] = "int i;\n"
+        const char code[] = ";int i;\n"
                             "sizeof(i);\n";
 
         // tokenize..
@@ -1182,7 +1182,7 @@ private:
             ostr << " " << tok->str();
 
         std::ostringstream oss;
-        oss << " int i ; " << sizeof(int);
+        oss << " ; int i ; " << sizeof(int) << " ;";
         ASSERT_EQUALS(oss.str(), ostr.str());
     }
 
