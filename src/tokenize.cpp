@@ -1031,13 +1031,13 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
-        else if (Token::Match(type0, "%type% %var% [ %num% ] ,|="))
+        else if (Token::Match(type0, "%type% %var% [ %num% ] ,"))
         {
             tok2 = type0->tokAt(5);    // The ',' token
             typelen = 1;
         }
 
-        else if (Token::Match(type0, "%type% * %var% [ %num% ] ,|="))
+        else if (Token::Match(type0, "%type% * %var% [ %num% ] ,"))
         {
             tok2 = type0->tokAt(6);    // The ',' token
             typelen = 1;

@@ -64,6 +64,7 @@ private:
         TEST_CASE(redundant_plus);
         TEST_CASE(parantheses1);
         TEST_CASE(paranthesesVar);      // Remove redundant parantheses around variable .. "( %var% )"
+        TEST_CASE(declareVar);
 
         TEST_CASE(elseif1);
 
@@ -321,6 +322,11 @@ private:
         ASSERT_EQUALS("cast < char * > ( p ) ", tok("cast<char *>(p)"));
     }
 
+    void declareVar()
+    {
+        const char code[] = "void f ( ) { char str [ 100 ] = \"100\" ; } ";
+        ASSERT_EQUALS(code, tok(code));
+    }
 
     std::string elseif(const char code[])
     {
