@@ -88,7 +88,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         the Free Software Foundation.</para>
       <para>On Debian systems, the complete text of the GNU General Public
         License can be found in
-	<filename>/usr/share/common-licenses/GPL</filename>.</para>
+	<filename>/usr/share/common-licenses/GPL-2</filename>.</para>
     </legalnotice>
   </refentryinfo>
   <refmeta>
