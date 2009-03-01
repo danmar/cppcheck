@@ -129,7 +129,7 @@ int main()
     fout << "/*\n";
     fout << " * Cppcheck - A tool for static C/C++ code analysis\n";
     fout << " * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,\n";
-    fout << " * Leandro Penz, Kimmo Varis\n";
+    fout << " * Leandro Penz, Kimmo Varis, Vesa Pikki\n";
     fout << " *\n";
     fout << " * This program is free software: you can redistribute it and/or modify\n";
     fout << " * it under the terms of the GNU General Public License as published by\n";
