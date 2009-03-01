@@ -109,6 +109,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--unused-functions</option></arg>
+      <arg choice="opt"><option>--vcl</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>-j[jobs]</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
@@ -178,6 +179,12 @@ files, this is not needed.</para>
         <term><option>--unused-functions</option></term>
         <listitem>
           <para>Check if there are unused functions</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--vcl</option></term>
+        <listitem>
+          <para>Suppress messages about memory leaks when using VCL classes</para>
         </listitem>
       </varlistentry>
       <varlistentry>
