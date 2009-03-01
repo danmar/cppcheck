@@ -173,6 +173,10 @@ int main()
     fout << "        class FileLocation\n";
     fout << "        {\n";
     fout << "        public:\n";
+    fout << "            FileLocation()\n";
+    fout << "            {\n";
+    fout << "                line = 0;\n";
+    fout << "            }\n";
     fout << "            std::string file;\n";
     fout << "            unsigned int line;\n";
     fout << "        };\n";

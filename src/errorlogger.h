@@ -47,6 +47,10 @@ public:
         class FileLocation
         {
         public:
+            FileLocation()
+            {
+                line = 0;
+            }
             std::string file;
             unsigned int line;
         };
