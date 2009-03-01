@@ -20,6 +20,7 @@
 #include "threadexecutor.h"
 #include "cppcheck.h"
 #include <iostream>
+#include <algorithm>
 #if defined(__GNUC__) && !defined(__MINGW32__)
 #include <sys/wait.h>
 #include <unistd.h>

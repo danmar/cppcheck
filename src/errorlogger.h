@@ -1,7 +1,7 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
- * Leandro Penz, Kimmo Varis, Vesa Pikki
+ * Leandro Penz, Kimmo Varis
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
