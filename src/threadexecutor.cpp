@@ -61,9 +61,19 @@ bool ThreadExecutor::handleRead(unsigned int &result)
     }
 
     unsigned int len = 0;
-    read(_pipe[0], &len, sizeof(len));
+    if (read(_pipe[0], &len, sizeof(len)) <= 0)
+    {
+        std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
+        exit(0);
+    }
+
     char *buf = new char[len];
-    read(_pipe[0], buf, len);
+    if (read(_pipe[0], buf, len) <= 0)
+    {
+        std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
+        exit(0);
+    }
+
     if (type == '1')
     {
         _errorLogger.reportOut(buf);
@@ -178,7 +188,11 @@ void ThreadExecutor::writeToPipe(char type, const std::string &data)
     out[0] = type;
     std::memcpy(&(out[1]), &len, sizeof(len));
     std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
-    write(_pipe[1], out, len + 1 + sizeof(len));
+    if (write(_pipe[1], out, len + 1 + sizeof(len)) <= 0)
+    {
+        std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
+        exit(0);
+    }
 }
 
 void ThreadExecutor::reportOut(const std::string &outmsg)
