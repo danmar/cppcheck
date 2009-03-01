@@ -491,8 +491,8 @@ public:
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 
 private:
-    void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id);
-    void _writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg, const std::string &id);
-    void _writemsg(const std::string msg, const std::string &id);
+    void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id);
+    void _writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id);
+    void _writemsg(const std::string &msg, const std::string &id);
 };
 #endif

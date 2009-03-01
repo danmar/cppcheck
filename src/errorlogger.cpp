@@ -128,14 +128,14 @@ std::string ErrorLogger::ErrorMessage::toText() const
     return text.str();
 }
 
-void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string msg, const std::string &id)
+void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id)
 {
     std::list<const Token *> callstack;
     callstack.push_back(tok);
     _writemsg(tokenizer, callstack, severity, msg, id);
 }
 
-void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string msg, const std::string &id)
+void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
@@ -150,7 +150,7 @@ void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const To
 }
 
 
-void ErrorLogger::_writemsg(const std::string msg, const std::string &id)
+void ErrorLogger::_writemsg(const std::string &msg, const std::string &id)
 {
     std::ostringstream xml;
     xml << "<error";
