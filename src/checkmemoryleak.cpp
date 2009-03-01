@@ -1447,14 +1447,16 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass(const Token *
             if (tok->isName() || Token::Match(tok, "[;}]"))
             {
                 if (_settings._showAll || !isclass(tok->tokAt(1)))
-                    CheckMemoryLeak_ClassMembers_Variable(classname, tok->strAt(3));
+                    CheckMemoryLeak_ClassMembers_Variable(classname, tok->tokAt(3));
             }
         }
     }
 }
 
-void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vector<const char *> &classname, const char varname[])
+void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vector<const char *> &classname, const Token *tokVarname)
 {
+    const char *varname = tokVarname->strAt(0);
+
     // Function pattern.. Check if member function
     std::ostringstream fpattern;
     for (unsigned int i = 0; i < classname.size(); i++)
@@ -1560,7 +1562,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vect
 
     if (Alloc != No && Dealloc == No)
     {
-        MemoryLeak(_tokenizer->tokens(), FullVariableName.str().c_str(), Alloc, true);
+        MemoryLeak(tokVarname, FullVariableName.str().c_str(), Alloc, true);
     }
 }
 

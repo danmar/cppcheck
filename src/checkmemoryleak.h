@@ -58,7 +58,7 @@ private:
         }
     };
 
-    void CheckMemoryLeak_ClassMembers_Variable(const std::vector<const char *> &classname, const char varname[]);
+    void CheckMemoryLeak_ClassMembers_Variable(const std::vector<const char *> &classname, const Token *tokVarname);
     void CheckMemoryLeak_ClassMembers_ParseClass(const Token *tok1, std::vector<const char *> &classname);
     void CheckMemoryLeak_ClassMembers();
     void CheckMemoryLeak_InFunction();

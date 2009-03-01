@@ -1327,7 +1327,7 @@ private:
               "    delete [] str2;\n"
               "}\n", true);
 
-        ASSERT_EQUALS(std::string("[test.cpp:1]: (all) Memory leak: Fred::str1\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Memory leak: Fred::str1\n"), errout.str());
     }
 
 
