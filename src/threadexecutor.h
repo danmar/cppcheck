@@ -22,6 +22,7 @@
 
 #include <vector>
 #include <string>
+#include <list>
 #include "settings.h"
 #include "errorlogger.h"
 
@@ -50,6 +51,7 @@ private:
     bool handleRead(unsigned int &result);
     void writeToPipe(char type, const std::string &data);
     int _pipe[2];
+    std::list<std::string> _errorList;
 public:
     /**
      * @return true if support for threads exist.

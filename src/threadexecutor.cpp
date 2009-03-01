@@ -71,7 +71,14 @@ bool ThreadExecutor::handleRead(unsigned int &result)
     {
         ErrorLogger::ErrorMessage msg;
         msg.deserialize(buf);
-        _errorLogger.reportErr(msg);
+
+        // Alert only about unique errors
+        std::string errmsg = msg.toText();
+        if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end())
+        {
+            _errorList.push_back(errmsg);
+            _errorLogger.reportErr(msg);
+        }
     }
     else if (type == '3')
     {
