@@ -31,8 +31,8 @@
 CheckDialog::CheckDialog(QSettings &programSettings) :
         mSettings(programSettings)
 {
-    QPushButton *cancel = new QPushButton("Cancel");
-    QPushButton *ok = new QPushButton("Ok");
+    QPushButton *cancel = new QPushButton(tr("Cancel"));
+    QPushButton *ok = new QPushButton(tr("Ok"));
 
     //Main layout
     QVBoxLayout *layout = new QVBoxLayout();
@@ -42,48 +42,46 @@ CheckDialog::CheckDialog(QSettings &programSettings) :
 
 
     //File selection tree
-    layout->addWidget(new QLabel("Select files to check"));
+    layout->addWidget(new QLabel(tr("Select files to check")));
     mFileTree = new QTreeView();
     layout->addWidget(mFileTree);
     mFileTree->setModel(&mModel);
-    mFileTree->scrollTo(mModel.index(programSettings.value("Check path", QDir::currentPath()).toString()));
+    mFileTree->scrollTo(mModel.index(programSettings.value(tr("Check path"), QDir::currentPath()).toString()));
     mFileTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     //Number of jobs
-    mJobs = new QLineEdit(programSettings.value("Check threads", 1).toString());
-    layout->addWidget(new QLabel("Number of threads"));
+    mJobs = new QLineEdit(programSettings.value(tr("Check threads"), 1).toString());
+    layout->addWidget(new QLabel(tr("Number of threads")));
     layout->addWidget(mJobs);
     mJobs->setValidator(new QIntValidator(this));
 
-    //Debug
-    mDebug = AddCheckbox(layout, "Debug", "Check debug", false);
 
     //Show All
-    mShowAll = AddCheckbox(layout, "Show all", "Check show all", false);
+    mShowAll = AddCheckbox(layout, tr("Show all"), tr("Check show all"), false);
 
     //Check Coding Style
-    mCheckCodingStyle = AddCheckbox(layout, "Check Coding Style", "Check coding style", false);
+    mCheckCodingStyle = AddCheckbox(layout, tr("Check Coding Style"), tr("Check coding style"), false);
 
     //Errors only
-    mErrorsOnly = AddCheckbox(layout, "Errors only", "Check errors only", false);
+    mErrorsOnly = AddCheckbox(layout, tr("Errors only"), tr("Check errors only"), false);
 
     //Verbose
-    mVerbose = AddCheckbox(layout, "Verbose", "Check verbose", false);
+    mVerbose = AddCheckbox(layout, tr("Verbose"), tr("Check verbose"), false);
 
     //Force
-    mForce = AddCheckbox(layout, "Force", "Check force", false);
+    mForce = AddCheckbox(layout, tr("Force"), tr("Check force"), false);
 
     //XML
-    mXml = AddCheckbox(layout, "XML", "Check xml", false);
+    mXml = AddCheckbox(layout, tr("XML"), tr("Check xml"), false);
 
     //Unused functions
-    mUnusedFunctions = AddCheckbox(layout, "Unused functions", "Check unused functions", false);
+    mUnusedFunctions = AddCheckbox(layout, tr("Unused functions"), tr("Check unused functions"), false);
 
     //Security
-    mSecurity = AddCheckbox(layout, "Security", "Check security", false);
+    mSecurity = AddCheckbox(layout, tr("Security"), tr("Check security"), false);
 
     //Vcl
-    mVcl = AddCheckbox(layout, "Vcl", "Check vcl", false);
+    mVcl = AddCheckbox(layout, tr("Vcl"), tr("Check vcl"), false);
 
 
 
@@ -100,7 +98,7 @@ CheckDialog::CheckDialog(QSettings &programSettings) :
     connect(cancel, SIGNAL(clicked()),
             this, SLOT(reject()));
 
-    setWindowTitle("Select files to check");
+    setWindowTitle(tr("Select files to check"));
     setLayout(layout);
 
     LoadSettings();
@@ -124,7 +122,10 @@ QStringList CheckDialog::GetSelectedFiles()
 
     foreach(index, indexes)
     {
-        list << mModel.filePath(index);
+        if (!mModel.filePath(index).isEmpty())
+        {
+            list << mModel.filePath(index);
+        }
     }
 
     return list;
@@ -166,7 +167,7 @@ QCheckBox* CheckDialog::AddCheckbox(QVBoxLayout *layout,
 Settings CheckDialog::GetSettings()
 {
     Settings result;
-    result._debug = CheckStateToBool(mDebug->checkState());
+    result._debug = false;
     result._showAll = CheckStateToBool(mShowAll->checkState());
     result._checkCodingStyle = CheckStateToBool(mCheckCodingStyle->checkState());
     result._errorsOnly = CheckStateToBool(mErrorsOnly->checkState());
@@ -212,43 +213,41 @@ void CheckDialog::LoadSettings()
     }
     else
     {*/
-    resize(mSettings.value("Check dialog width", 800).toInt(), mSettings.value("Check dialog height", 600).toInt());
+    resize(mSettings.value(tr("Check dialog width"), 800).toInt(), mSettings.value(tr("Check dialog height"), 600).toInt());
     //}
 
     for (int i = 0;i < mModel.columnCount();i++)
     {
         //mFileTree.columnWidth(i);
-        QString temp = QString("Check dialog column %1 width").arg(i);
+        QString temp = QString(tr("Check dialog column %1 width")).arg(i);
         mFileTree->setColumnWidth(i, mSettings.value(temp, 800 / mModel.columnCount()).toInt());
     }
 }
 
 void CheckDialog::SaveSettings()
 {
-    mSettings.setValue("Check dialog width", size().width());
-    mSettings.setValue("Check dialog height", size().height());
+    mSettings.setValue(tr("Check dialog width"), size().width());
+    mSettings.setValue(tr("Check dialog height"), size().height());
     //mSettings.setValue("Check dialog maximized", isMaximized());
 
     for (int i = 0;i < mModel.columnCount();i++)
     {
-        QString temp = QString("Check dialog column %1 width").arg(i);
+        QString temp = QString(tr("Check dialog column %1 width")).arg(i);
         mSettings.setValue(temp, mFileTree->columnWidth(i));
     }
 }
 
 void CheckDialog::SaveCheckboxValues()
 {
-    mSettings.setValue("Check threads", mJobs->text().toInt());
-    SaveCheckboxValue(mDebug, "Check debug");
-    SaveCheckboxValue(mShowAll, "Check show all");
-    SaveCheckboxValue(mCheckCodingStyle, "Check coding style");
-    SaveCheckboxValue(mErrorsOnly, "Check errors only");
-    SaveCheckboxValue(mVerbose, "Check verbose");
-    SaveCheckboxValue(mForce, "Check force");
-    SaveCheckboxValue(mXml, "Check xml");
-    SaveCheckboxValue(mUnusedFunctions, "Check unused functions");
-    SaveCheckboxValue(mSecurity, "Check security");
-    SaveCheckboxValue(mVcl, "Check vcl");
+    mSettings.setValue(tr("Check threads"), mJobs->text().toInt());
+    SaveCheckboxValue(mShowAll, tr("Check show all"));
+    SaveCheckboxValue(mCheckCodingStyle, tr("Check coding style"));
+    SaveCheckboxValue(mErrorsOnly, tr("Check errors only"));
+    SaveCheckboxValue(mVerbose, tr("Check verbose"));
+    SaveCheckboxValue(mForce, tr("Check force"));
+    SaveCheckboxValue(mXml, tr("Check xml"));
+    SaveCheckboxValue(mUnusedFunctions, tr("Check unused functions"));
+    SaveCheckboxValue(mSecurity, tr("Check security"));
 }
 
 void CheckDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)

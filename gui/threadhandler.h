@@ -18,53 +18,58 @@
  */
 
 
-#ifndef CHECKTHREAD_H
-#define CHECKTHREAD_H
+#ifndef THREADHANDLER_H
+#define THREADHANDLER_H
 
-#include <QThread>
+#include <QObject>
+#include <QStringList>
 #include "../src/cppcheck.h"
 #include "threadresult.h"
+#include "checkthread.h"
+#include "resultsview.h"
 
 /**
-* @brief Thread to run cppcheck
+* @brief This class handles creating threadresult and starting threads
 *
 */
-class CheckThread : public QThread
+class ThreadHandler : public QObject
 {
     Q_OBJECT
 public:
-    CheckThread(ThreadResult &result);
-    virtual ~CheckThread();
+    ThreadHandler();
+    virtual ~ThreadHandler();
+    void SetThreadCount(const int count);
+    void Initialize(ResultsView *view);
+    void LoadSettings(QSettings &settings);
+    void SaveSettings(QSettings &settings);
 
     /**
-    * @brief Set settings for cppcheck
+    * @brief Clear all files from cppcheck
     *
-    * @param settings settings for cppcheck
     */
+    void ClearFiles();
+
+    /**
+    * @brief Set files to check
+    *
+    * @param files files to check
+    */
+    void SetFiles(const QStringList &files);
+
     void Check(Settings settings);
-
-    /**
-    * @brief method that is run in a thread
-    *
-    */
-    void run();
 
 
 signals:
-
-    /**
-    * @brief cpp checking is done
-    *
-    */
     void Done();
+protected slots:
+    void Stop();
+    void ThreadDone();
 protected:
-    ThreadResult &mResult;
-    /**
-    * @brief CppCheck itself
-    *
-    */
-    CppCheck mCppCheck;
+    ThreadResult mResults;
+    int mThreadCount;
+    QList<CheckThread *> mThreads;
+    int mRunningThreadCount;
 private:
 };
 
-#endif // CHECKTHREAD_H
+#endif // THREADHANDLER_H

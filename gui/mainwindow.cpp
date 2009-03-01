@@ -24,9 +24,9 @@
 #include <QMenuBar>
 
 MainWindow::MainWindow() :
-        mSettings("CppCheck", "CppCheck-GUI"),
-        mExit("E&xit", this),
-        mCheck("&Check", this),
+        mSettings(tr("CppCheck"), tr("CppCheck-GUI")),
+        mExit(tr("E&xit"), this),
+        mCheck(tr("&Check"), this),
         mResults(mSettings)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
@@ -40,14 +40,8 @@ MainWindow::MainWindow() :
     connect(&mExit, SIGNAL(triggered()), this, SLOT(close()));
     connect(&mCheck, SIGNAL(triggered()), this, SLOT(Check()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
-    connect(&mThread, SIGNAL(CurrentFile(const QString &)),
-            &mResults, SLOT(CurrentFile(const QString &)));
-
-    connect(&mThread, SIGNAL(Progress(int, int)),
-            &mResults, SLOT(Progress(int, int)));
-    connect(&mThread, SIGNAL(Error(const QString &, const QString &, const QString &)),
-            &mResults, SLOT(Error(const QString &, const QString &, const QString &)));
     LoadSettings();
+    mThread.Initialize(&mResults);
 }
 
 MainWindow::~MainWindow()
@@ -57,21 +51,22 @@ MainWindow::~MainWindow()
 
 void MainWindow::LoadSettings()
 {
-    if (mSettings.value("Window maximized", false).toBool())
+    if (mSettings.value(tr("Window maximized"), false).toBool())
     {
         showMaximized();
     }
     else
     {
-        resize(mSettings.value("Window width", 800).toInt(), mSettings.value("Window height", 600).toInt());
+        resize(mSettings.value(tr("Window width"), 800).toInt(),
+               mSettings.value(tr("Window height"), 600).toInt());
     }
 }
 
 void MainWindow::SaveSettings()
 {
-    mSettings.setValue("Window width", size().width());
-    mSettings.setValue("Window height", size().height());
-    mSettings.setValue("Window maximized", isMaximized());
+    mSettings.setValue(tr("Window width"), size().width());
+    mSettings.setValue(tr("Window height"), size().height());
+    mSettings.setValue(tr("Window maximized"), isMaximized());
 }
 
 
@@ -82,22 +77,11 @@ void MainWindow::Check()
     {
         mResults.Clear();
         mThread.ClearFiles();
-
-        QString str;
-        qDebug("Selected files:");
-        foreach(str, dialog.GetSelectedFiles())
-        {
-            qDebug() << str;
-            mThread.AddFile(str);
-        }
-
-        mSettings.setValue("Check path", dialog.GetDefaultPath());
+        mThread.SetFiles(dialog.GetSelectedFiles());
+        mSettings.setValue(tr("Check path"), dialog.GetDefaultPath());
         dialog.SaveCheckboxValues();
-
-        mThread.SetSettings(dialog.GetSettings());
         mCheck.setDisabled(true);
-
-        mThread.start();
+        mThread.Check(dialog.GetSettings());
     }
 }
 

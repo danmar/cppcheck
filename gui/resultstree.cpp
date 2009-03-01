@@ -25,7 +25,7 @@ ResultsTree::ResultsTree(QSettings &settings) :
 {
     setModel(&mModel);
     QStringList labels;
-    labels << "Filename && severity" << "Message";
+    labels << tr("Filename && severity") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
 
     LoadSettings();
@@ -48,8 +48,13 @@ QStandardItem *ResultsTree::CreateItem(const QString &name)
 
 void ResultsTree::AddErrorItem(const QString &file,
                                const QString &severity,
-                               const QString &error)
+                               const QString &message,
+                               const QStringList &files,
+                               const QList<int> &lines)
 {
+    Q_UNUSED(files);
+    Q_UNUSED(lines);
+
     QStandardItem *fileitem = FindFileItem(file);
     if (!fileitem)
     {
@@ -58,7 +63,7 @@ void ResultsTree::AddErrorItem(const QString &file,
 
     QList<QStandardItem*> list;
     list << CreateItem(severity);
-    list << CreateItem(error);
+    list << CreateItem(message);
     fileitem->appendRow(list);
     mModel.appendRow(fileitem);
 }
@@ -81,7 +86,7 @@ void ResultsTree::LoadSettings()
     for (int i = 0;i < mModel.columnCount();i++)
     {
         //mFileTree.columnWidth(i);
-        QString temp = QString("Result column %1 width").arg(i);
+        QString temp = QString(tr("Result column %1 width")).arg(i);
         setColumnWidth(i, mSettings.value(temp, 800 / mModel.columnCount()).toInt());
     }
 }
@@ -90,7 +95,7 @@ void ResultsTree::SaveSettings()
 {
     for (int i = 0;i < mModel.columnCount();i++)
     {
-        QString temp = QString("Result column %1 width").arg(i);
+        QString temp = QString(tr("Result column %1 width")).arg(i);
         mSettings.setValue(temp, columnWidth(i));
     }
 }

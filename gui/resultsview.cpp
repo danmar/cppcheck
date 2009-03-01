@@ -48,21 +48,19 @@ void ResultsView::Clear()
 }
 
 
-void ResultsView::CurrentFile(const QString &filename)
-{
-    mProgress->setFormat(filename);
-}
 
 void ResultsView::Progress(int value, int max)
 {
+    qDebug() << tr("Progress:") << value << tr("/") << max;
     mProgress->setMaximum(max);
     mProgress->setValue(value);
 }
 
-void ResultsView::Error(const QString &filename,
+void ResultsView::Error(const QString &file,
                         const QString &severity,
-                        const QString &message)
+                        const QString &message,
+                        const QStringList &files,
+                        const QList<int> &lines)
 {
-    qDebug() << "Error" << filename << severity << message;
-    mTree->AddErrorItem(filename, severity, message);
+    mTree->AddErrorItem(file, severity, message, files, lines);
 }

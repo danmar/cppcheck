@@ -21,7 +21,9 @@
 #include "checkthread.h"
 #include <QDebug>
 
-CheckThread::CheckThread() : mCppCheck(*this)
+CheckThread::CheckThread(ThreadResult &result) :
+        mResult(result),
+        mCppCheck(result)
 {
     //ctor
 }
@@ -31,49 +33,27 @@ CheckThread::~CheckThread()
     //dtor
 }
 
-void CheckThread::SetSettings(Settings settings)
+void CheckThread::Check(Settings settings)
 {
     mCppCheck.settings(settings);
-}
-
-void CheckThread::AddFile(const QString &file)
-{
-    mCppCheck.addFile(file.toStdString());
-}
-
-void CheckThread::ClearFiles()
-{
-    mCppCheck.clearFiles();
+    start();
 }
 
 void CheckThread::run()
 {
-    mCppCheck.check();
+    QString file;
+    file = mResult.GetNextFile();
+
+    while (!file.isEmpty())
+    {
+        qDebug() << tr("Checking file") << file;
+        mCppCheck.addFile(file.toStdString());
+        mCppCheck.check();
+        file = mResult.GetNextFile();
+    }
+
     emit Done();
 }
 
 
-void CheckThread::reportOut(const std::string &outmsg)
-{
-    emit CurrentFile(QString(outmsg.c_str()));
-}
 
-void CheckThread::reportErr(const ErrorLogger::ErrorMessage &msg)
-{
-    emit Error(QString(callStackToString(msg._callStack).c_str()),
-               QString(msg._severity.c_str()),
-               QString(msg._msg.c_str()));
-    /*
-    qDebug()<<"Error: ";
-    qDebug()<<QString(callStackToString(msg._callStack).c_str());
-    qDebug()<<QString(msg._severity.c_str());
-    qDebug()<<QString(msg._msg.c_str());
-    qDebug()<<endl;
-    */
-
-}
-
-void CheckThread::reportStatus(unsigned int index, unsigned int max)
-{
-    emit Progress(index, max);
-}

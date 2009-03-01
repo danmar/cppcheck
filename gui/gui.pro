@@ -8,6 +8,7 @@ DEPENDPATH += .
 INCLUDEPATH += .
 MOC_DIR = temp
 OBJECTS_DIR = temp
+CONFIG += warn_on debug
 
 # Input
 HEADERS += 	mainwindow.h \
@@ -16,6 +17,8 @@ HEADERS += 	mainwindow.h \
 		resultsview.h \
 		resultstree.h \
 		settingsdialog.h \
+		threadresult.h \
+		threadhandler.h \
 		../src/checkbufferoverrun.h \
            	../src/checkclass.h \
            	../src/checkdangerousfunctions.h \
@@ -42,6 +45,8 @@ SOURCES += 	main.cpp \
 		checkthread.cpp \
 		resultsview.cpp \
 		resultstree.cpp \
+		threadresult.cpp \
+		threadhandler.cpp \
 		settingsdialog.cpp \
 		../src/checkbufferoverrun.cpp \
            	../src/checkclass.cpp \

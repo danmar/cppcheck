@@ -18,55 +18,49 @@
  */
 
 
-#ifndef RESULTSVIEW_H
-#define RESULTSVIEW_H
+#ifndef THREADRESULT_H
+#define THREADRESULT_H
 
-
-#include <QWidget>
-#include <QProgressBar>
+#include <QMutex>
+#include <QObject>
+#include <QStringList>
 #include "../src/errorlogger.h"
-#include "resultstree.h"
 
 /**
-* @brief Widget to show cppcheck progressbar and result
+* @brief Threads use this class to obtain new files to process and to publish results
 *
 */
-class ResultsView : public QWidget
+class ThreadResult : public QObject, public ErrorLogger
 {
     Q_OBJECT
 public:
-    ResultsView(QSettings &settings);
-    virtual ~ResultsView();
+    ThreadResult();
+    virtual ~ThreadResult();
+    QString GetNextFile();
+    void SetFiles(const QStringList &files);
+    void ClearFiles();
+    int GetFileCount();
 
     /**
-    * @brief Clear results
-    *
+    * ErrorLogger methods
     */
-    void Clear();
-public slots:
-    /**
-    * Slots for CheckThread's signals
-    */
+    void reportOut(const std::string &outmsg);
+    void reportErr(const ErrorLogger::ErrorMessage &msg);
+    void reportStatus(unsigned int index, unsigned int max);
+signals:
     void Progress(int value, int max);
     void Error(const QString &file,
                const QString &severity,
                const QString &message,
                const QStringList &files,
                const QList<int> &lines);
+
 protected:
-    /**
-    * @brief Tree to show cppcheck's results
-    *
-    */
-    ResultsTree *mTree;
-
-    /**
-    * @brief Progressbar to show cppcheck's progress
-    *
-    */
-    QProgressBar *mProgress;
-
+    mutable QMutex mutex;
+    QStringList mFiles;
+    int mMaxProgress;
+    int mProgress;
 private:
 };
 
-#endif // RESULTSVIEW_H
+#endif // THREADRESULT_H

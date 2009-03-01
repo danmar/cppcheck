@@ -28,7 +28,7 @@
 #include "../src/settings.h"
 
 #include "checkdialog.h"
-#include "checkthread.h"
+#include "threadhandler.h"
 
 /**
 * @brief Main window for cppcheck-gui
@@ -98,7 +98,7 @@ protected:
     * @brief Thread to check files
     *
     */
-    CheckThread mThread;
+    ThreadHandler mThread;
 
 private:
 };

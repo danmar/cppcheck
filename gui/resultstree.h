@@ -46,7 +46,9 @@ public:
     */
     void AddErrorItem(const QString &file,
                       const QString &severity,
-                      const QString &error);
+                      const QString &message,
+                      const QStringList &files,
+                      const QList<int> &lines);
 
     /**
     * @brief Clear all errors from the tree

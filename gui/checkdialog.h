@@ -145,12 +145,6 @@ protected:
     * @brief Cppcheck setting
     *
     */
-    QCheckBox *mDebug;
-
-    /**
-    * @brief Cppcheck setting
-    *
-    */
     QCheckBox *mShowAll;
 
     /**
