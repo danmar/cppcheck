@@ -256,7 +256,7 @@ private:
                "{\n"
                "    char str[100] = {0};\n"
                "    return str;\n"
-               "\n");
+               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Returning pointer to local array variable\n"), errout.str());
     }
 };
