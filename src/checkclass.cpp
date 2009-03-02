@@ -545,7 +545,7 @@ void CheckClass::privateFunctions()
 
             // Check member class functions to see what functions are used..
             if ((inclass && indent_level == 1 && Token::Match(ftok, ") const| {")) ||
-                (Token::Match(ftok, (classname + " :: %var% (").c_str())))
+                (Token::Match(ftok, (classname + " :: ~| %var% (").c_str())))
             {
                 while (ftok && ftok->str() != ")")
                     ftok = ftok->next();
