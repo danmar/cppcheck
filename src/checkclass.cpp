@@ -551,6 +551,11 @@ void CheckClass::privateFunctions()
                     ftok = ftok->next();
                 if (!ftok)
                     break;
+                if (Token::Match(ftok, ") : %var% ("))
+                {
+                    while (!Token::Match(ftok->next(), "[{};]"))
+                        ftok = ftok->next();
+                }
                 if (!Token::Match(ftok, ") const| {"))
                     continue;
 
