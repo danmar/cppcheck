@@ -57,7 +57,6 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
         files << QString((*tok).file.c_str());
         lines << (*tok).line;
     }
-    qDebug() << "Got error for file" << QString(callStackToString(msg._callStack).c_str()) << QString(msg._msg.c_str());
 
     emit Error(QString(callStackToString(msg._callStack).c_str()),
                QString(msg._severity.c_str()),

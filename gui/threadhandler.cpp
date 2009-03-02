@@ -58,8 +58,6 @@ void ThreadHandler::Check(Settings settings)
         mRunningThreadCount = mResults.GetFileCount();
     }
 
-    qDebug() << "Starting" << mRunningThreadCount << "threads";
-    qDebug() << mThreads.size();
     for (int i = 0;i < mRunningThreadCount;i++)
     {
         mThreads[i]->Check(settings);
@@ -74,9 +72,6 @@ void ThreadHandler::SetThreadCount(const int count)
     {
         return;
     }
-
-    qDebug() << "Setting thead count to" << count;
-
 
     //Remove unused old threads
     RemoveThreads();
@@ -112,8 +107,6 @@ void ThreadHandler::RemoveThreads()
 void ThreadHandler::ThreadDone()
 {
     mRunningThreadCount--;
-    qDebug() << "Thread done" << mRunningThreadCount << "threads left";
-
     if (mRunningThreadCount == 0)
     {
         emit Done();

@@ -51,7 +51,6 @@ void ResultsView::Clear()
 
 void ResultsView::Progress(int value, int max)
 {
-    qDebug() << "Progress:" << value << "/" << max;
     mProgress->setMaximum(max);
     mProgress->setValue(value);
 }
