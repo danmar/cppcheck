@@ -19,6 +19,7 @@
 
 
 #include "resultstree.h"
+#include <QDebug>
 
 ResultsTree::ResultsTree(QSettings &settings) :
         mSettings(settings)
@@ -60,6 +61,8 @@ void ResultsTree::AddErrorItem(const QString &file,
     {
         fileitem = CreateItem(file);
     }
+
+    qDebug() << "Adding error for file" << file << ". Message is" << message;
 
     QList<QStandardItem*> list;
     list << CreateItem(severity);

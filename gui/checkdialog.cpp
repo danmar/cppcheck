@@ -27,6 +27,9 @@
 #include <QFileDialog>
 #include <QDirIterator>
 #include <QDebug>
+#include <QFileInfo>
+#include <QDirIterator>
+#include "../src/filelister.h"
 
 CheckDialog::CheckDialog(QSettings &programSettings) :
         mSettings(programSettings)
@@ -111,8 +114,54 @@ CheckDialog::~CheckDialog()
 }
 
 
+QStringList CheckDialog::RemoveUnacceptedFiles(const QStringList &list)
+{
+    QStringList result;
+    QString str;
+    foreach(str, list)
+    {
+        if (FileLister::AcceptFile(str.toStdString()))
+        {
+            result << str;
+        }
+    }
 
+    return result;
+}
 
+QStringList CheckDialog::GetFiles(QModelIndex index)
+{
+    QFileInfo info(mModel.filePath(index));
+    QStringList list;
+
+    if (info.isDir())
+    {
+        QDirIterator it(mModel.filePath(index), QDirIterator::Subdirectories);
+
+        while (it.hasNext())
+        {
+            list << it.next();
+        }
+    }
+    else
+    {
+        list << mModel.filePath(index);
+    }
+
+    return list;
+}
+
+QStringList CheckDialog::RemoveDuplicates(const QStringList &list)
+{
+    QHash<QString, int> hash;
+    QString str;
+    foreach(str, list)
+    {
+        hash[str] = 0;
+    }
+
+    return QStringList(hash.uniqueKeys());
+}
 
 QStringList CheckDialog::GetSelectedFiles()
 {
@@ -124,11 +173,13 @@ QStringList CheckDialog::GetSelectedFiles()
     {
         if (!mModel.filePath(index).isEmpty())
         {
-            list << mModel.filePath(index);
+            list << GetFiles(index);
         }
     }
 
-    return list;
+    QString str;
+
+    return RemoveUnacceptedFiles(RemoveDuplicates(list));
 }
 
 

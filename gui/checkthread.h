@@ -57,6 +57,8 @@ signals:
     *
     */
     void Done();
+
+    void FileChecked(const QString &file);
 protected:
     ThreadResult &mResult;
     /**

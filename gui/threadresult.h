@@ -47,6 +47,8 @@ public:
     void reportOut(const std::string &outmsg);
     void reportErr(const ErrorLogger::ErrorMessage &msg);
     void reportStatus(unsigned int index, unsigned int max);
+public slots:
+    void FileChecked(const QString &file);
 signals:
     void Progress(int value, int max);
     void Error(const QString &file,

@@ -71,6 +71,9 @@ public:
     */
     void SaveCheckboxValues();
 protected:
+    QStringList RemoveUnacceptedFiles(const QStringList &list);
+    QStringList RemoveDuplicates(const QStringList &list);
+    QStringList GetFiles(QModelIndex index);
 
     /**
     * @brief Load saved values

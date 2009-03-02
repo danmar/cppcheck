@@ -46,9 +46,12 @@ void CheckThread::run()
 
     while (!file.isEmpty())
     {
-        qDebug() << tr("Checking file") << file;
+        qDebug() << "Checking file" << file;
         mCppCheck.addFile(file.toStdString());
         mCppCheck.check();
+        mCppCheck.clearFiles();
+        emit FileChecked(file);
+
         file = mResult.GetNextFile();
     }
 

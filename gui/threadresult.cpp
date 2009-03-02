@@ -19,6 +19,7 @@
 
 
 #include "threadresult.h"
+#include <QDebug>
 
 ThreadResult::ThreadResult() : mMaxProgress(0), mProgress(0)
 {
@@ -32,8 +33,14 @@ ThreadResult::~ThreadResult()
 
 void ThreadResult::reportOut(const std::string &outmsg)
 {
-    //emit CurrentFile(QString(outmsg.c_str()));
     Q_UNUSED(outmsg);
+}
+
+void ThreadResult::FileChecked(const QString &file)
+{
+    Q_UNUSED(file); //For later use maybe?
+    mProgress++;
+    emit Progress(mProgress, mMaxProgress);
 }
 
 void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
@@ -50,6 +57,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
         files << QString((*tok).file.c_str());
         lines << (*tok).line;
     }
+    qDebug() << "Got error for file" << QString(callStackToString(msg._callStack).c_str()) << QString(msg._msg.c_str());
 
     emit Error(QString(callStackToString(msg._callStack).c_str()),
                QString(msg._severity.c_str()),
@@ -57,9 +65,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
                files,
                lines);
 
-    mProgress++;
 
-    emit Progress(mProgress, mMaxProgress);
 
 }
 
@@ -83,8 +89,7 @@ void ThreadResult::reportStatus(unsigned int index, unsigned int max)
 
 void ThreadResult::SetFiles(const QStringList &files)
 {
-    //TODO we should check which of the strings in files is actually a path
-    //and add the path's contents
+    QMutexLocker locker(&mutex);
     mFiles = files;
     mProgress = 0;
     mMaxProgress = files.size();
@@ -92,11 +97,13 @@ void ThreadResult::SetFiles(const QStringList &files)
 
 void ThreadResult::ClearFiles()
 {
+    QMutexLocker locker(&mutex);
     mFiles.clear();
 }
 
 int ThreadResult::GetFileCount()
 {
+    QMutexLocker locker(&mutex);
     return mFiles.size();
 }
 

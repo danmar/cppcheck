@@ -65,8 +65,8 @@ protected slots:
     void Stop();
     void ThreadDone();
 protected:
+    void RemoveThreads();
     ThreadResult mResults;
-    int mThreadCount;
     QList<CheckThread *> mThreads;
     int mRunningThreadCount;
 private:
