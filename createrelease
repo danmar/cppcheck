@@ -1,20 +1,28 @@
 #!/bin/bash
+# A script exporting current sources from SVN and creating
+# source archives
+#
+# Exporting is done and archive files created to user's home
+# directory.
+
+# Release name and version
+releasename=cppcheck-1.29
 
 cd
 
 echo "Creating source directory"
-svn co https://cppcheck.svn.sourceforge.net/svnroot/cppcheck cppcheck-1.29
-rm -R --force cppcheck-1.29/.svn
-rm -R --force cppcheck-1.29/gui
-rm -R --force cppcheck-1.29/man/.svn
-rm -R --force cppcheck-1.29/src/.svn
-rm -R --force cppcheck-1.29/test/.svn
-rm -R --force cppcheck-1.29/tools/.svn
-rm -R --force cppcheck-1.29/win_installer/.svn
+svn co https://cppcheck.svn.sourceforge.net/svnroot/cppcheck $releasename
+rm -R --force $releasename/.svn
+rm -R --force $releasename/gui
+rm -R --force $releasename/man/.svn
+rm -R --force $releasename/src/.svn
+rm -R --force $releasename/test/.svn
+rm -R --force $releasename/tools/.svn
+rm -R --force $releasename/win_installer/.svn
 
 echo "Creating source packages"
-tar cjvf cppcheck-1.29.tar.bz2 cppcheck-1.29
-tar czvf cppcheck-1.29.tar.gz cppcheck-1.29
-cd cppcheck-1.29
-zip -r -9 ../cppcheck-1.29.zip *
+tar cjvf $releasename.tar.bz2 $releasename
+tar czvf $releasename.tar.gz $releasename
+cd $releasename
+zip -r -9 ../$releasename.zip *
 
