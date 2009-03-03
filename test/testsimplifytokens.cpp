@@ -340,7 +340,7 @@ private:
     void elseif1()
     {
         const char code[] = "else if(ab) { cd } else { ef }gh";
-        ASSERT_EQUALS("\n1: else { if ( ab ) { cd } else { ef } } gh\n", elseif(code));
+        ASSERT_EQUALS("\n\n##file 0\n1: else { if ( ab ) { cd } else { ef } } gh\n", elseif(code));
     }
 
 

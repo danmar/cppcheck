@@ -735,7 +735,7 @@ private:
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n"
+        const std::string expected("\n\n##file 0\n"
                                    "1: static int i@1 = 1 ;\n"
                                    "2: void f ( )\n"
                                    "3: {\n"
@@ -765,7 +765,7 @@ private:
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n"
+        const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
                                    "3: struct ABC abc@1 ;\n"
@@ -793,7 +793,7 @@ private:
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n"
+        const std::string expected("\n\n##file 0\n"
                                    "1: static char str@1 [ 4 ] ;\n"
                                    "2: void f ( )\n"
                                    "3: {\n"
@@ -819,7 +819,7 @@ private:
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n"
+        const std::string expected("\n\n##file 0\n"
                                    "1: void f ( const int a@1 [ ] )\n"
                                    "2: {\n"
                                    "3: int i@2 ; i@2 = a@1 [ 10 ] ;\n"
@@ -844,7 +844,7 @@ private:
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n"
+        const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
                                    "3: int a@1 ; int b@2 ;\n"
@@ -869,7 +869,7 @@ private:
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n"
+        const std::string expected("\n\n##file 0\n"
                                    "1: void f ( int a@1 , int b@2 )\n"
                                    "2: {\n"
                                    "3: return a@1 + b@2 ;\n"
@@ -897,7 +897,7 @@ private:
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n"
+        const std::string expected("\n\n##file 0\n"
                                    "1: void func ( )\n"
                                    "2: {\n"
                                    "3: char a@1 [ 256 ] = \"test\" ;\n"
@@ -926,7 +926,7 @@ private:
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n"
+        const std::string expected("\n\n##file 0\n"
                                    "1: int f ( )\n"
                                    "2: {\n"
                                    "3: int a@1 ;\n"

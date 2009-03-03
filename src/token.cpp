@@ -24,6 +24,7 @@
 #include <iostream>
 #include <cctype>
 #include <sstream>
+#include <map>
 
 Token::Token() :
         _str(""),
@@ -475,13 +476,35 @@ std::string Token::stringifyList(const bool varid, const char *title) const
         ret << "\n### " << title << " ###\n";
 
     unsigned int linenr = 0;
+    int fileIndex = -1;
+    std::map<unsigned int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok; tok = tok->next())
     {
-        while (linenr < tok->linenr())
+        bool fileChange = false;
+        if (static_cast<int>(tok->_fileIndex) != fileIndex)
         {
-            ++linenr;
-            ret << "\n" << linenr << ":";
+            if (fileIndex != -1)
+            {
+                lineNumbers[fileIndex] = tok->_fileIndex;
+            }
+
+            fileIndex = static_cast<int>(tok->_fileIndex);
+            ret << "\n\n##file " << fileIndex << "";
+
+            linenr = lineNumbers[fileIndex];
+            fileChange = true;
         }
+
+        if (linenr != tok->linenr() || fileChange)
+        {
+            while (linenr < tok->linenr())
+            {
+                ++linenr;
+                ret << "\n" << linenr << ":";
+            }
+            linenr = tok->linenr();
+        }
+
         ret << " " << tok->str();
         if (varid && tok->varId() > 0)
             ret << "@" << tok->varId();
