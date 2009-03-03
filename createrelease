@@ -11,14 +11,7 @@ releasename=cppcheck-1.29
 cd
 
 echo "Creating source directory"
-svn co https://cppcheck.svn.sourceforge.net/svnroot/cppcheck $releasename
-rm -R --force $releasename/.svn
-rm -R --force $releasename/gui
-rm -R --force $releasename/man/.svn
-rm -R --force $releasename/src/.svn
-rm -R --force $releasename/test/.svn
-rm -R --force $releasename/tools/.svn
-rm -R --force $releasename/win_installer/.svn
+svn export https://cppcheck.svn.sourceforge.net/svnroot/cppcheck $releasename
 
 echo "Creating source packages"
 tar cjvf $releasename.tar.bz2 $releasename
