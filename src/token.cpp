@@ -465,35 +465,15 @@ void Token::linenr(unsigned int linenr)
 
 void Token::printOut(const char *title) const
 {
-    std::cout << std::endl << "###";
-    if (title)
-        std::cout << " " << title << " ";
-    else
-        std::cout << "########";
-
-    std::cout << "###" << std::endl;
-    unsigned int lineNum = 0;
-    for (const Token *t = this; t; t = t->next())
-    {
-        if (lineNum != t->linenr())
-        {
-            std::cout << std::endl << t->linenr() << ": ";
-            lineNum = t->linenr();
-        }
-
-        std::cout << t->str();
-        if (t->varId())
-            std::cout << " (" << t->varId() << ")";
-
-        std::cout << " ";
-    }
-    std::cout << std::endl;
+    std::cout << stringifyList(true, title) << std::endl;
 }
 
-
-std::string Token::stringifyList(const bool varid) const
+std::string Token::stringifyList(const bool varid, const char *title) const
 {
     std::ostringstream ret;
+    if (title)
+        ret << "\n### " << title << " ###\n";
+
     unsigned int linenr = 0;
     for (const Token *tok = this; tok; tok = tok->next())
     {
