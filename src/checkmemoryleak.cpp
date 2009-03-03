@@ -625,7 +625,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                     }
                 }
             }
-            else if (Token::Match(tok, ("return strcpy|strncpy ( " + varnameStr).c_str()))
+            else if (Token::Match(tok, ("return strcpy|strncpy|memcpy ( " + varnameStr).c_str()))
             {
                 addtoken("use");
                 tok = tok->tokAt(2);

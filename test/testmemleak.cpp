@@ -122,6 +122,7 @@ private:
         TEST_CASE(ret4);
         TEST_CASE(ret5);        // Bug 2458436 - return use
         TEST_CASE(ret6);
+        TEST_CASE(ret7);
 
         TEST_CASE(mismatch1);
         TEST_CASE(mismatch2);
@@ -1016,7 +1017,15 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
-
+    void ret7()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *c = new char[50];\n"
+              "    return memcpy(c, \"foo\",4);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 
 
     void mismatch1()
