@@ -552,7 +552,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { int i = 22 ; abc [ 22 ] = 1 ; abc [ 24 ] = 2 ; }"), ostr.str());
+        ASSERT_EQUALS(std::string(" void foo ( ) { int i = 24 ; abc [ 22 ] = 1 ; abc [ 24 ] = 2 ; }"), ostr.str());
     }
 
     void simplifyKnownVariables8()
@@ -574,7 +574,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { int i = 22 ; i ++ ; abc [ 23 ] = 0 ; }"), ostr.str());
+        ASSERT_EQUALS(std::string(" void foo ( ) { int i = 23 ; ; abc [ 23 ] = 0 ; }"), ostr.str());
     }
 
 

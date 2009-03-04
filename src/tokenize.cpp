@@ -1713,20 +1713,32 @@ bool Tokenizer::simplifyKnownVariables()
 
                     if (Token::Match(tok3->next(), "%varid% ++|--", varid))
                     {
-                        tok3 = tok3->next();
-                        const std::string op(tok3->strAt(1));
-                        if (!Token::Match(tok3->previous(), "; %any% %any% ;"))
+                        const std::string op(tok3->strAt(2));
+                        if (Token::Match(tok3, "; %any% %any% ;"))
                         {
+                            tok3->deleteNext();
+                            tok3->deleteNext();
+                        }
+                        else
+                        {
+                            tok3 = tok3->next();
                             tok3->str(value.c_str());
                             tok3->deleteNext();
                         }
                         incdec(value, op);
+                        tok2->tokAt(2)->str(value.c_str());
                     }
 
                     if (Token::Match(tok3->next(), "++|-- %varid%", varid))
                     {
                         incdec(value, tok3->strAt(1));
-                        if (!Token::Match(tok3, "; %any% %any% ;"))
+                        tok2->tokAt(2)->str(value.c_str());
+                        if (Token::Match(tok3, "; %any% %any% ;"))
+                        {
+                            tok3->deleteNext();
+                            tok3->deleteNext();
+                        }
+                        else
                         {
                             tok3->deleteNext();
                             tok3->next()->str(value.c_str());
