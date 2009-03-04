@@ -185,32 +185,14 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             continue;
         }
 
-        // char..
-        if (ch == '\'')
+        // char/string..
+        if (ch == '\'' || ch == '\"')
         {
             // Add previous token
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             CurrentToken.clear();
 
-            // Read this ..
-            CurrentToken += ch;
-            CurrentToken += (char)code.get();
-            CurrentToken += (char)code.get();
-            if (CurrentToken[1] == '\\')
-                CurrentToken += (char)code.get();
-
-            // Add token and start on next..
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            CurrentToken.clear();
-
-            continue;
-        }
-
-        // String..
-        if (ch == '\"')
-        {
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            CurrentToken.clear();
+            // read char
             bool special = false;
             char c = ch;
             do
@@ -230,10 +212,13 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 // Get next character
                 c = (char)code.get();
             }
-            while (code.good() && (special || c != '\"'));
-            CurrentToken += '\"';
+            while (code.good() && (special || c != ch));
+            CurrentToken += ch;
+
+            // Add token and start on next..
             addtoken(CurrentToken.c_str(), lineno, FileIndex);
             CurrentToken.clear();
+
             continue;
         }
 

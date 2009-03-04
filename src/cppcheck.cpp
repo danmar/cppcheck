@@ -334,6 +334,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     // Tokenize the file
     {
+        std::cout << "code..\n" << code << std::endl;
+
+
         std::istringstream istr(code);
         _tokenizer.tokenize(istr, FileName);
     }
@@ -365,7 +368,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     _tokenizer.simplifyTokenList();
 
     // Write simplified token list to a file..
-    //std::cout << _tokenizer.tokens()->stringifyList(true) << std::endl;
+    std::cout << _tokenizer.tokens()->stringifyList(true) << std::endl;
 
     if (_settings._unusedFunctions)
         _checkFunctionUsage.parseTokens(_tokenizer);
