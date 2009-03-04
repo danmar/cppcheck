@@ -145,6 +145,13 @@ private:
     bool simplifyRedundantParanthesis();
 
     /**
+     * Simplify constant calculations such as "1+2" => "3"
+     * @return true if modifications to token-list are done.
+     *         false if no modifications are done.
+     */
+    bool simplifyCalculations();
+
+    /**
      * Simplify functions like "void f(x) int x; {"
      * into "void f(int x) {"
      */

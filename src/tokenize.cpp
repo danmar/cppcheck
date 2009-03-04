@@ -891,78 +891,9 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
-
-    // Simple calculations..
-    for (bool done = false; !done;)
-    {
-        done = true;
-        for (Token *tok = _tokens; tok; tok = tok->next())
-        {
-            if (Token::simpleMatch(tok->next(), "* 1") || Token::simpleMatch(tok->next(), "1 *"))
-            {
-                for (int i = 0; i < 2; i++)
-                    tok->deleteNext();
-                done = false;
-            }
-
-            // (1-2)
-            if (Token::Match(tok, "[[,(=<>] %num% [+-*/] %num% [],);=<>]"))
-            {
-                int i1 = std::atoi(tok->strAt(1));
-                int i2 = std::atoi(tok->strAt(3));
-                if (i2 == 0 && *(tok->strAt(2)) == '/')
-                {
-                    continue;
-                }
-
-                switch (*(tok->strAt(2)))
-                {
-                case '+':
-                    i1 += i2;
-                    break;
-                case '-':
-                    i1 -= i2;
-                    break;
-                case '*':
-                    i1 *= i2;
-                    break;
-                case '/':
-                    i1 /= i2;
-                    break;
-                }
-                tok = tok->next();
-                std::ostringstream str;
-                str <<  i1;
-                tok->str(str.str().c_str());
-                for (int i = 0; i < 2; i++)
-                {
-                    tok->deleteNext();
-                }
-
-                done = false;
-            }
-
-            // Remove parantheses around number..
-            if (!tok->isName() && Token::Match(tok->next(), "( %num% )"))
-            {
-                tok->deleteNext();
-                tok = tok->next();
-                tok->deleteNext();
-                done = false;
-            }
-
-            // Remove parantheses around variable..
-            // keep parantheses here: dynamic_cast<Fred *>(p);
-            if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% ) [;),+-*/><]]"))
-            {
-                tok->deleteNext();
-                tok = tok->next();
-                tok->deleteNext();
-                done = false;
-            }
-        }
-    }
-
+    // Simplify simple calculations..
+    while (simplifyCalculations())
+        ;
 
     // Replace "*(str + num)" => "str[num]"
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -1145,6 +1076,7 @@ void Tokenizer::simplifyTokenList()
         modified |= simplifyKnownVariables();
         modified |= removeReduntantConditions();
         modified |= simplifyRedundantParanthesis();
+        modified |= simplifyCalculations();
     }
 }
 //---------------------------------------------------------------------------
@@ -1727,6 +1659,7 @@ bool Tokenizer::simplifyKnownVariables()
                         }
                         incdec(value, op);
                         tok2->tokAt(2)->str(value.c_str());
+                        ret = true;
                     }
 
                     if (Token::Match(tok3->next(), "++|-- %varid%", varid))
@@ -1744,6 +1677,7 @@ bool Tokenizer::simplifyKnownVariables()
                             tok3->next()->str(value.c_str());
                         }
                         tok3 = tok3->next();
+                        ret = true;
                     }
                 }
             }
@@ -1816,6 +1750,79 @@ bool Tokenizer::simplifyRedundantParanthesis()
     }
     return ret;
 }
+
+bool Tokenizer::simplifyCalculations()
+{
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok->next(), "* 1") || Token::simpleMatch(tok->next(), "1 *"))
+        {
+            for (int i = 0; i < 2; i++)
+                tok->deleteNext();
+            ret = true;
+        }
+
+        // (1-2)
+        if (Token::Match(tok, "[[,(=<>] %num% [+-*/] %num% [],);=<>]"))
+        {
+            int i1 = std::atoi(tok->strAt(1));
+            int i2 = std::atoi(tok->strAt(3));
+            if (i2 == 0 && *(tok->strAt(2)) == '/')
+            {
+                continue;
+            }
+
+            switch (*(tok->strAt(2)))
+            {
+            case '+':
+                i1 += i2;
+                break;
+            case '-':
+                i1 -= i2;
+                break;
+            case '*':
+                i1 *= i2;
+                break;
+            case '/':
+                i1 /= i2;
+                break;
+            }
+            tok = tok->next();
+            std::ostringstream str;
+            str <<  i1;
+            tok->str(str.str().c_str());
+            for (int i = 0; i < 2; i++)
+            {
+                tok->deleteNext();
+            }
+
+            ret = true;
+        }
+
+        // Remove parantheses around number..
+        if (!tok->isName() && Token::Match(tok->next(), "( %num% )"))
+        {
+            tok->deleteNext();
+            tok = tok->next();
+            tok->deleteNext();
+            ret = true;
+        }
+
+        // Remove parantheses around variable..
+        // keep parantheses here: dynamic_cast<Fred *>(p);
+        if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% ) [;),+-*/><]]"))
+        {
+            tok->deleteNext();
+            tok = tok->next();
+            tok->deleteNext();
+            ret = true;
+        }
+    }
+    return ret;
+}
+
+
 
 
 //---------------------------------------------------------------------------
