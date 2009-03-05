@@ -74,6 +74,7 @@ private:
         TEST_CASE(sizeof4);
         TEST_CASE(sizeof5);
         TEST_CASE(sizeof6);
+        TEST_CASE(casting);
     }
 
     std::string tok(const char code[])
@@ -425,6 +426,18 @@ private:
         ASSERT_EQUALS(expected.str(), sizeof_(code));
     }
 
+    void casting()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "for (int i = 0; i < static_cast<int>(3); ++i) {}\n"
+                            "}\n";
+
+        std::ostringstream expected;
+        expected << " void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }";
+
+        ASSERT_EQUALS(expected.str(), sizeof_(code));
+    }
 };
 
 REGISTER_TEST(TestSimplifyTokens)

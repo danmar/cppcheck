@@ -876,6 +876,8 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
+    simplifyCasts();
+
     // Simplify simple calculations..
     while (simplifyCalculations())
         ;
@@ -1056,7 +1058,6 @@ void Tokenizer::simplifyTokenList()
     {
         modified = false;
         modified |= simplifyConditions();
-        modified |= simplifyCasts();
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
         modified |= removeReduntantConditions();
