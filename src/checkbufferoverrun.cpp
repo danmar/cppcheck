@@ -257,7 +257,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
 
         // Dangerous usage of strncat..
-        if (Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
+        if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
             int n = atoi(tok->strAt(6));
             if (n == size)
@@ -266,7 +266,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
 
         // Dangerous usage of strncpy + strncat..
-        if (Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% ) ; strncat ( %varid% , %any% , %num% )", varid))
+        if (varid > 0 && Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% ) ; strncat ( %varid% , %any% , %num% )", varid))
         {
             int n = atoi(tok->strAt(6)) + atoi(tok->strAt(15));
             if (n > size)
