@@ -100,6 +100,9 @@ void CheckStl::stlOutOfBounds()
             tok = tok->next();
         }
 
+        if( !tok )
+            return;
+
         tok = tok->next();
         if (!num || tok->str() != "{")
             continue;

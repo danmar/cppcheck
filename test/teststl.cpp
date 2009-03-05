@@ -47,6 +47,7 @@ private:
         TEST_CASE(eraseAssign);
 
         TEST_CASE(pushback1);
+        TEST_CASE(invalidcode);
     }
 
     void check(const char code[])
@@ -247,7 +248,14 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
     }
 
-
+    void invalidcode()
+    {
+        check("void f()\n"
+              "{\n"
+              "    for ( \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestStl)
