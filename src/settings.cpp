@@ -19,6 +19,8 @@
 
 #include "settings.h"
 
+#include <algorithm>
+
 Settings::Settings()
 {
     _debug = false;
@@ -30,7 +32,6 @@ Settings::Settings()
     _xml = false;
     _unusedFunctions = false;
     _security = false;
-    _vcl = false;
     _jobs = 1;
     _exitCode = 0;
 }
@@ -39,3 +40,25 @@ Settings::~Settings()
 {
 
 }
+
+
+void Settings::autoDealloc(std::istream &istr)
+{
+    std::string line;
+    while (getline(istr,line))
+    {
+        // Check if line has a valid classname..
+        if (line.empty())
+            continue;
+
+        // Add classname to list
+        _autoDealloc.push_back(line);
+    }
+}
+
+
+bool Settings::isAutoDealloc(const char classname[]) const
+{
+    return (std::find(_autoDealloc.begin(), _autoDealloc.end(), classname) != _autoDealloc.end());
+}
+

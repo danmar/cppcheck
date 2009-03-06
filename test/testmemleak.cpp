@@ -1931,12 +1931,14 @@ private:
 
 
 
-    void checkvcl(const char code[])
+    void checkvcl(const char code[], const char _autoDealloc[])
     {
         // Tokenize..
         Tokenizer tokenizer;
+        {
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        }
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
@@ -1947,7 +1949,12 @@ private:
         Settings settings;
         settings._debug = true;
         settings._showAll = true;
-        settings._vcl = true;
+        
+        {
+        std::istringstream istr(_autoDealloc);
+        settings.autoDealloc(istr);
+        }
+
         CheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
         checkMemoryLeak.CheckMemoryLeak();
     }
@@ -1959,7 +1966,7 @@ private:
         checkvcl("void Form1::foo()\n"
                  "{\n"
                  "    TEdit *Edit1 = new TEdit(this);\n"
-                 "}\n");
+                 "}\n", "TEdit\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1977,7 +1984,7 @@ private:
                  "Fred::Fred()\n"
                  "{\n"
                  "    button = new TButton(this);\n"
-                 "}\n");
+                 "}\n", "TButton\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

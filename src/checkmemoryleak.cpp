@@ -428,9 +428,9 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                         if (_settings._showAll)
                         {
 
-                            if (_settings._vcl && Token::Match(tok->tokAt(4), "( %var%") && (tok->strAt(3)[0] == 'T'))
+                            if (_settings.isAutoDealloc(tok->strAt(3)))
                             {
-                                // Guess this is a VCL class with automatic deallocation
+                                // This class has automatic deallocation
                                 alloc = No;
                             }
                             else
@@ -1440,8 +1440,8 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass(const Token *
         // Declaring member variable.. check allocations and deallocations
         if (Token::Match(tok->next(), "%type% * %var% ;"))
         {
-            // No false positives for vcl classes..
-            if (_settings._vcl && tok->next()->str()[0] == 'T')
+            // No false positives for auto deallocated classes..
+            if (_settings.isAutoDealloc(tok->strAt(1)))
                 continue;
 
             if (tok->isName() || Token::Match(tok, "[;}]"))

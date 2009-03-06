@@ -20,6 +20,10 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include <list>
+#include <string>
+#include <istream>
+
 /**
  * This is just a container for general settings so that we don't need
  * to pass individual values to functions or constructors now or in the
@@ -27,6 +31,10 @@
  */
 class Settings
 {
+private:
+    /** classes that are automaticly deallocated */
+    std::list<std::string> _autoDealloc;
+
 public:
     Settings();
     virtual ~Settings();
@@ -49,9 +57,6 @@ public:
     /** Security checks */
     bool _security;
 
-    /** Disable warnings for VCL classes */
-    bool _vcl;
-
     /** How many processes/threads should do checking at the same
         time. Default is 1. */
     unsigned int _jobs;
@@ -59,6 +64,12 @@ public:
     /** If errors are found, this value is returned from main().
         Default value is 0. */
     int _exitCode;
+    
+    /** Fill list of automaticly deallocated classes */
+    void autoDealloc(std::istream &istr);
+
+    /** is a class automaticly deallocated? */
+    bool isAutoDealloc(const char classname[]) const;
 };
 
 #endif // SETTINGS_H
