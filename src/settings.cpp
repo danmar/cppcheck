@@ -45,7 +45,7 @@ Settings::~Settings()
 void Settings::autoDealloc(std::istream &istr)
 {
     std::string line;
-    while (getline(istr,line))
+    while (getline(istr, line))
     {
         // Check if line has a valid classname..
         if (line.empty())

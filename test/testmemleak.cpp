@@ -1936,8 +1936,8 @@ private:
         // Tokenize..
         Tokenizer tokenizer;
         {
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
         }
         tokenizer.setVarId();
         tokenizer.simplifyTokenList();
@@ -1949,10 +1949,10 @@ private:
         Settings settings;
         settings._debug = true;
         settings._showAll = true;
-        
+
         {
-        std::istringstream istr(_autoDealloc);
-        settings.autoDealloc(istr);
+            std::istringstream istr(_autoDealloc);
+            settings.autoDealloc(istr);
         }
 
         CheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);

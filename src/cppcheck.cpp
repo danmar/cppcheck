@@ -196,11 +196,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         }
 
         // auto deallocated classes..
-        else if (strcmp(argv[i], "--auto-dealloc")==0)
+        else if (strcmp(argv[i], "--auto-dealloc") == 0)
         {
             ++i;
 
-            if (i >= argc || !strstr(argv[i],".lst"))
+            if (i >= argc || !strstr(argv[i], ".lst"))
                 return "No .lst file specified for the --auto-dealloc option\n";
 
             std::ifstream f(argv[i]);
