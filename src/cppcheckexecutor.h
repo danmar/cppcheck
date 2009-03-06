@@ -48,12 +48,13 @@ public:
      *
      * @param argc from main()
      * @param argv from main()
-     * @return amount of errors found in the checking or 0
-     * if no errors were found. If parsing of the arguments failed
-     * and checking is not even started, 1 is returned to indicate
-     * about an error.
+     * @return EXIT_FAILURE if arguments are invalid or no input files
+     *         were found.
+     *         If errors are found and --error-exitcode is used,
+     *         given value is returned instead of default 0.
+     *         If no errors are found, 0 is returned.
      */
-    unsigned int check(int argc, const char* const argv[]);
+    int check(int argc, const char* const argv[]);
 
 
 

@@ -55,6 +55,10 @@ public:
     /** How many processes/threads should do checking at the same
         time. Default is 1. */
     unsigned int _jobs;
+
+    /** If errors are found, this value is returned from main().
+        Default value is 0. */
+    int _exitCode;
 };
 
 #endif // SETTINGS_H

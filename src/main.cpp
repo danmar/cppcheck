@@ -17,7 +17,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include "cppcheckexecutor.h"
 
 /**
@@ -25,17 +24,10 @@
  *
  * @param argc Passed to CppCheck::parseFromArgs()
  * @param argv Passed to CppCheck::parseFromArgs()
- * @return EXIT_SUCCESS if no errors are found or
- *         EXIT_FAILURE if errors are found or checking was
- *         not done because of invalid arguments given.
+ * @return What CppCheckExecutor::check() returns.
  */
 int main(int argc, char* argv[])
 {
     CppCheckExecutor exec;
-    if (exec.check(argc, argv) == 0)
-    {
-        return EXIT_SUCCESS;
-    }
-
-    return EXIT_FAILURE;
+    return exec.check(argc, argv);
 }

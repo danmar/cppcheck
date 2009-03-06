@@ -100,7 +100,7 @@ void CheckStl::stlOutOfBounds()
             tok = tok->next();
         }
 
-        if( !tok )
+        if (!tok)
             return;
 
         tok = tok->next();

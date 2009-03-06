@@ -103,6 +103,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg choice="opt"><option>--all</option></arg>
+      <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-I[dir]</option></arg>
@@ -136,6 +137,15 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <listitem>
           <para>Normally a message is only shown if cppcheck is sure it has 
           found a bug. When this option is given, all messages are shown.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--error-exitcode=[n]</option></term>
+        <listitem>
+          <para>If errors are found, integer [n] is returned instead of default 0. 
+          EXIT_FAILURE is returned if arguments are not valid or if no input files are
+          provided. Note that your operating system can modify this value, e.g. 
+          256 can become 0.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

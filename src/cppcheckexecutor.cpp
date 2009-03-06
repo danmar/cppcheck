@@ -22,6 +22,7 @@
 #include "threadexecutor.h"
 #include <fstream>
 #include <iostream>
+#include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 
 CppCheckExecutor::CppCheckExecutor()
 {
@@ -33,7 +34,7 @@ CppCheckExecutor::~CppCheckExecutor()
 
 }
 
-unsigned int CppCheckExecutor::check(int argc, const char* const argv[])
+int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     CppCheck cppCheck(*this);
     std::string result = cppCheck.parseFromArgs(argc, argv);
@@ -70,12 +71,15 @@ unsigned int CppCheckExecutor::check(int argc, const char* const argv[])
             reportErr("</results>");
         }
 
-        return returnValue;
+        if (returnValue)
+            return _settings._exitCode;
+        else
+            return 0;
     }
     else
     {
         std::cout << result;
-        return 1;
+        return EXIT_FAILURE;
     }
 }
 

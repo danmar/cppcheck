@@ -119,6 +119,20 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             break;
         }
 
+
+        // --error-exitcode=1
+        else if (strncmp(argv[i], "--error-exitcode=", 17) == 0)
+        {
+            std::string temp = argv[i];
+            temp = temp.substr(17);
+            std::istringstream iss(temp);
+            if (!(iss >> _settings._exitCode))
+            {
+                _settings._exitCode = 0;
+                return "cppcheck: Argument must be an integer. Try something like '--error-exitcode=1'\n";
+            }
+        }
+
         // Include paths
         else if (strcmp(argv[i], "-I") == 0 || strncmp(argv[i], "-I", 2) == 0)
         {
@@ -216,6 +230,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "Options:\n"
         "    -a, --all            Make the checking more sensitive. More bugs are\n"
         "                         detected, but there are also more false positives\n"
+        "    --error-exitcode=[n] If errors are found, integer [n] is returned instead\n"
+        "                         of default 0. EXIT_FAILURE is returned\n"
+        "                         if arguments are not valid or if no input files are\n"
+        "                         provided. Note that your operating system can\n"
+        "                         modify this value, e.g. 256 can become 0.\n"
         "    -f, --force          Force checking on files that have \"too many\"\n"
         "                         configurations\n"
         "    -h, --help           Print this help\n"
