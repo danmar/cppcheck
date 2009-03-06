@@ -107,11 +107,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-I[dir]</option></arg>
+      <arg choice="opt"><option>-j[jobs]</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--unused-functions</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
-      <arg choice="opt"><option>-j[jobs]</option></arg>
+      <arg choice="opt"><option>--version</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
       <arg choice="opt"><option>file or path</option></arg>
       <arg choice="plain"><option>...</option></arg>
@@ -171,6 +172,12 @@ files, this is not needed.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>-j [jobs]</option></term>
+        <listitem>
+          <para>Start [jobs] threads to do the checking work.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>-q</option></term>
         <term><option>--quiet</option></term>
         <listitem>
@@ -198,9 +205,9 @@ files, this is not needed.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-j [jobs]</option></term>
+        <term><option>--version</option></term>
         <listitem>
-          <para>Start [jobs] threads to do the checking work.</para>
+          <para>Print out version information</para>
         </listitem>
       </varlistentry>
       <varlistentry>

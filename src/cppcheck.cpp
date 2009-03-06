@@ -78,6 +78,9 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
     bool showHelp = false;
     for (int i = 1; i < argc; i++)
     {
+        if (strcmp(argv[i], "--version") == 0)
+            return "Cppcheck 1.29\n";
+
         // Flag used for various purposes during debugging
         if (strcmp(argv[i], "--debug") == 0)
             _settings._debug = true;
@@ -226,18 +229,16 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             FileLister::RecursiveAddFiles(_filenames, iter->c_str(), true);
     }
 
-
     if (argc <= 1 || showHelp)
     {
         std::ostringstream oss;
-        oss <<   "Cppcheck 1.28\n"
-        "\n"
-        "A tool for static C/C++ code analysis\n"
+        oss <<   "Cppcheck - A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
-        "    cppcheck [--all] [--force] [--help] [-Idir] [--quiet] [--style]\n"
-        "             [--unused-functions] [--verbose] [--xml]\n"
-        "             [file or path1] [file or path]\n"
+        "    cppcheck [--all] [--error-exitcode=[n]] [--force] [--help] \n"
+        "             [-Idir] [-j [jobs]] [--quiet] [--style] \n"
+        "             [--unused-functions] [--verbose] [--version] [--xml] \n"
+        "             [file or path1] [file or path] ...\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
@@ -255,11 +256,12 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -I [dir]             Give include path. Give several -I parameters to give\n"
         "                         several paths. First given path is checked first. If\n"
         "                         paths are relative to source files, this is not needed\n"
+        "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
         "    -q, --quiet          Only print error messages\n"
         "    -s, --style          Check coding style\n"
         "    --unused-functions   Check if there are unused functions\n"
         "    -v, --verbose        More detailed error reports\n"
-        "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
+        "    --version            Print out version number\n"
         "    --xml                Write results in xml to error stream.\n"
         "\n"
         "Example usage:\n"
