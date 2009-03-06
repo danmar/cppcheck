@@ -195,6 +195,20 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             }
         }
 
+        // auto deallocated classes..
+        else if (strcmp(argv[i], "--auto-dealloc")==0)
+        {
+            ++i;
+
+            if (i >= argc || !strstr(argv[i],".lst"))
+                return "No .lst file specified for the --auto-dealloc option\n";
+
+            std::ifstream f(argv[i]);
+            if (!f.is_open())
+                return "couldn't open the file \"" + std::string(argv[i+1]) + "\"\n";
+            _settings.autoDealloc(f);
+        }
+
         else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
         {
             return "cppcheck: error: unrecognized command line option \"" + std::string(argv[i]) + "\"\n";
