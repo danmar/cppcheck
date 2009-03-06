@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <cstdlib>
 #include <cstring>
+#include <cstdio>
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
