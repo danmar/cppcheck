@@ -47,7 +47,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   <!-- Fill in your name for FIRSTNAME and SURNAME. -->
   <!ENTITY dhfirstname "Reijo">
   <!ENTITY dhsurname   "Tomperi">
-  <!-- dhusername could also be set to "&firstname; &surname;". -->  
+  <!-- dhusername could also be set to "&firstname; &surname;". -->
   <!ENTITY dhusername  "&dhfirstname; &dhsurname;">
   <!ENTITY dhemail     "aggro80@users.sourceforge.net">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
@@ -136,16 +136,24 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <term><option>-a</option></term>
         <term><option>--all</option></term>
         <listitem>
-          <para>Normally a message is only shown if cppcheck is sure it has 
+          <para>Normally a message is only shown if cppcheck is sure it has
           found a bug. When this option is given, all messages are shown.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--auto-dealloc</option></term>
+        <listitem>
+          <para>Suppress warnings about classes that have automatic deallocation</para>
+          <para>The classnames must be provided in plain text - one classname / line - in a .lst file. </para>
+          <para>This option can be given several times, allowing you to provide several .lst files.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
         <term><option>--error-exitcode=[n]</option></term>
         <listitem>
-          <para>If errors are found, integer [n] is returned instead of default 0. 
+          <para>If errors are found, integer [n] is returned instead of default 0.
           EXIT_FAILURE is returned if arguments are not valid or if no input files are
-          provided. Note that your operating system can modify this value, e.g. 
+          provided. Note that your operating system can modify this value, e.g.
           256 can become 0.</para>
         </listitem>
       </varlistentry>
@@ -153,7 +161,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <term><option>-f</option></term>
         <term><option>--force</option></term>
         <listitem>
-          <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by 
+          <para>Force checking of files that have a lot of configurations. Error is printed if such a file is found so there is no reason to use this by
 default.</para>
         </listitem>
       </varlistentry>
@@ -167,7 +175,7 @@ default.</para>
       <varlistentry>
         <term><option>-I [dir]</option></term>
         <listitem>
-          <para>Give include path. Give several -I parameters to give several paths. First given path is checked first. If paths are relative to source 
+          <para>Give include path. Give several -I parameters to give several paths. First given path is checked first. If paths are relative to source
 files, this is not needed.</para>
         </listitem>
       </varlistentry>
@@ -226,5 +234,5 @@ files, this is not needed.</para>
     <title>SEE ALSO</title>
     <!-- In alpabetical order. -->
     <para>Full list of features: http://cppcheck.wiki.sourceforge.net/</para>
-  </refsect1>  
+  </refsect1>
 </refentry>
