@@ -1,21 +1,14 @@
 #!/bin/bash
-# A script exporting current sources from SVN and creating
-# source archives
+# A script for creating source archives from a GIT tag
 #
-# Exporting is done and archive files created to user's home
-# directory.
+# Archive files are created in user's home directory.
 
-# Release name and version
-releasename=cppcheck-1.29
+# Tag to use
+tag=1.30
 
-cd
+# Name of release
+releasename=cppcheck-$tag
 
-echo "Creating source directory"
-svn export https://cppcheck.svn.sourceforge.net/svnroot/cppcheck $releasename
-
-echo "Creating source packages"
-tar cjvf $releasename.tar.bz2 $releasename
-tar czvf $releasename.tar.gz $releasename
-cd $releasename
-zip -r -9 ../$releasename.zip *
-
+git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar.gz
+git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
+git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
