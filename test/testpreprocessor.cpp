@@ -95,6 +95,7 @@ private:
         TEST_CASE(macro_simple7);
         TEST_CASE(macro_simple8);
         TEST_CASE(macro_mismatch);
+        // TODO TEST_CASE(macro_linenumbers);
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(preprocessor_undef);
@@ -585,6 +586,21 @@ private:
         const char filedata[] = "#define AAA(aa,bb) f(aa)\n"
                                 "AAA(5);\n";
         ASSERT_EQUALS("\nAAA(5);\n", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_linenumbers()
+    {
+        const char filedata[] = "#define AAA(a)\n"
+                                "AAA(5\n"
+                                "\n"
+                                ")\n"
+                                "int a;\n";
+        ASSERT_EQUALS(  "\n"
+                        "\n"
+                        "\n"
+                        "\n"
+                        "int a;\n",
+                        OurPreprocessor::expandMacros(filedata));
     }
 
     void string1()
