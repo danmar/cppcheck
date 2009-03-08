@@ -342,10 +342,10 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         Tokenizer tok;
-        std::istringstream codeStream( actual[""] );
-        tok.tokenize( codeStream, "main.cpp" );
+        std::istringstream codeStream(actual[""]);
+        tok.tokenize(codeStream, "main.cpp");
 
-        ASSERT_EQUALS( "\n\n##file 0\n1:\n2:\n3:\n4: int main ( ) { }\n", tok.tokens()->stringifyList() );
+        ASSERT_EQUALS("\n\n##file 0\n1:\n2:\n3:\n4: int main ( ) { }\n", tok.tokens()->stringifyList());
 
         // Expected configurations: "" and "ABC"
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
