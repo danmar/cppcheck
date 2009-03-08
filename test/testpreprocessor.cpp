@@ -24,7 +24,7 @@
 
 #include "testsuite.h"
 #include "../src/preprocessor.h"
-
+#include "../src/tokenize.h"
 #include <map>
 #include <string>
 
@@ -106,6 +106,7 @@ private:
         TEST_CASE(multi_character_character);
 
         TEST_CASE(stringify);
+        TEST_CASE(ifdefwithfile);
     }
 
 
@@ -324,6 +325,33 @@ private:
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
 
+    void ifdefwithfile()
+    {
+        // Handling include guards..
+        const char filedata[] = "#ifdef ABC\n"
+                                "#file \"abc.h\"\n"
+                                "class A{};/*\n\n\n\n\n\n\n*/\n"
+                                "#endfile\n"
+                                "#endif\n"
+                                "int main() {}\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        Tokenizer tok;
+        std::istringstream codeStream( actual[""] );
+        tok.tokenize( codeStream, "main.cpp" );
+
+        ASSERT_EQUALS( "\n\n##file 0\n1:\n2:\n3:\n4: int main ( ) { }\n", tok.tokens()->stringifyList() );
+
+        // Expected configurations: "" and "ABC"
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n#file \"abc.h\"\n\n\n\n\n\n\n\n\n#endfile\n\nint main() {}\n", actual[""]);
+        ASSERT_EQUALS("\n#file \"abc.h\"\nclass A{};\n\n\n\n\n\n\n\n#endfile\n\nint main() {}\n", actual["ABC"]);
+    }
 
     void newlines()
     {

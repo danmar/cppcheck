@@ -447,10 +447,15 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
             for (std::list<bool>::const_iterator it = matching_ifdef.begin(); it != matching_ifdef.end(); ++it)
                 match &= bool(*it);
         }
-        if (! match)
-            line = "";
 
-        if (line.find("#if") == 0 ||
+        if (line.find("#file \"") == 0 ||
+            line.find("#endfile") == 0 )
+        {
+            // We must not remove #file tags or line numbers
+            // are corrupted. File tags are removed by the tokenizer.
+        }
+        else if (!match ||
+            line.find("#if") == 0 ||
             line.find("#else") == 0 ||
             line.find("#elif") == 0 ||
             line.find("#endif") == 0)
