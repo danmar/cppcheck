@@ -67,7 +67,10 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         iss.get();
         std::string temp;
         for (unsigned int i = 0; i < len && iss.good(); ++i)
-            temp.append(1, iss.get());
+        {
+            char c = iss.get();
+            temp.append(1, c);
+        }
 
         results.push_back(temp);
         if (results.size() == 3)
@@ -91,7 +94,10 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         iss.get();
         std::string temp;
         for (unsigned int i = 0; i < len && iss.good(); ++i)
-            temp.append(1, iss.get());
+        {
+            char c = iss.get();
+            temp.append(1, c);
+        }
 
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.file = temp.substr(temp.find(':') + 1);
