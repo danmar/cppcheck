@@ -19,8 +19,8 @@
 
 
 #define MyAppName "cppcheck"
-#define AppVersion "1.28"
-; #define MyAppVerName "cppcheck 1.28"
+#define AppVersion "1.30"
+; #define MyAppVerName "cppcheck 1.30"
 #define MyAppURL "http://sourceforge.net/projects/cppcheck/"
 #define MyAppExeName "cppcheck.exe"
 
