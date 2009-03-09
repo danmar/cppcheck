@@ -32,7 +32,9 @@
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #include <shlwapi.h>
+#if !defined(QT_CORE_LIB)
 #pragma comment(lib, "shlwapi.lib")
+#endif
 #endif
 
 std::string FileLister::simplifyPath(const char *originalPath)
@@ -150,12 +152,22 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 }
 #endif
 
+///////////////////////////////////////////////////////////////////////////////
+////// This code is for MinGW and Qt                ///////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+#if defined(__MINGW32__) && defined(QT_CORE_LIB)
+void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
+{
+    //This method is not used by Qt build
+}
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for Borland C++ and Visual C++ ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
+#if (defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)) && !defined(QT_CORE_LIB)
 
 void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {

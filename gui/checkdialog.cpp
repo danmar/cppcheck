@@ -84,7 +84,7 @@ CheckDialog::CheckDialog(QSettings &programSettings) :
     mSecurity = AddCheckbox(layout, tr("Security"), tr("Check security"), false);
 
     //Vcl
-    mVcl = AddCheckbox(layout, tr("Vcl"), tr("Check vcl"), false);
+    //mVcl = AddCheckbox(layout, tr("Vcl"), tr("Check vcl"), false);
 
 
 
@@ -227,7 +227,7 @@ Settings CheckDialog::GetSettings()
     result._xml = CheckStateToBool(mXml->checkState());
     result._unusedFunctions = CheckStateToBool(mUnusedFunctions->checkState());
     result._security = CheckStateToBool(mSecurity->checkState());
-    result._vcl = CheckStateToBool(mVcl->checkState());
+    //result._vcl = CheckStateToBool(mVcl->checkState());
     result._jobs = mJobs->text().toInt();
     return result;
 }
