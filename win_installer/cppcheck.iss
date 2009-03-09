@@ -37,6 +37,7 @@ AppUpdatesURL={#MyAppURL}
 
 ; This is for the installer file
 VersionInfoVersion={#AppVersion}
+VersionInfoDescription=cppcheck installer
 
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
