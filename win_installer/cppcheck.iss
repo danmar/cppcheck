@@ -61,7 +61,7 @@ Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:Ad
 Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Flags: unchecked
 
 [Files]
-Source: ..\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
+Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
 Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
