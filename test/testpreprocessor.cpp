@@ -95,7 +95,7 @@ private:
         TEST_CASE(macro_simple7);
         TEST_CASE(macro_simple8);
         TEST_CASE(macro_mismatch);
-        // TODO TEST_CASE(macro_linenumbers);
+        TEST_CASE(macro_linenumbers);
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(preprocessor_undef);

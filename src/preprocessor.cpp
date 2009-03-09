@@ -806,6 +806,9 @@ std::string Preprocessor::expandMacros(std::string code)
             std::string::size_type pos2 = pos1 + macro.name().length();
             if (macro.params().size() && pos2 >= code.length())
                 continue;
+
+            unsigned int numberOfNewlines = 0;
+
             if (macro.params().size())
             {
                 if (code[pos2] != '(')
@@ -850,6 +853,10 @@ std::string Preprocessor::expandMacros(std::string code)
                         par += code[pos2];
                         continue;
                     }
+                    else if (code[pos2] == '\n')
+                    {
+                        ++numberOfNewlines;
+                    }
 
                     if (parlevel == 1 && code[pos2] == ',')
                     {
@@ -868,7 +875,7 @@ std::string Preprocessor::expandMacros(std::string code)
                 continue;
 
             // Create macro code..
-            const std::string macrocode(macro.code(params));
+            const std::string macrocode(std::string(numberOfNewlines, '\n') + macro.code(params));
 
             // Insert macro code..
             if (!macro.params().empty())
