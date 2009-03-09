@@ -20,7 +20,7 @@
 
 #define MyAppName "cppcheck"
 #define AppVersion "1.30"
-#define MyAppURL "http://sourceforge.net/projects/cppcheck/"
+#define MyAppURL "http://cppcheck.wiki.sourceforge.net/"
 #define MyAppExeName "cppcheck.exe"
 
 [Setup]
