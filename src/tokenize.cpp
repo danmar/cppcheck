@@ -1395,11 +1395,12 @@ bool Tokenizer::simplifyCasts()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (!tok->isName() && Token::Match(tok->next(), "( %type% * )"))
+        if (Token::Match(tok->next(), "( %type% * )") || Token::Match(tok->next(), "( %type% %type% * )"))
         {
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
+            if (tok->isName() && tok->str() != "return")
+                continue;
+            while (tok->next()->str() != ")")
+                tok->deleteNext();
             tok->deleteNext();
             ret = true;
         }

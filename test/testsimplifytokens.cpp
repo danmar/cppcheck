@@ -58,6 +58,7 @@ private:
     void run()
     {
         TEST_CASE(cast0);
+        TEST_CASE(cast1);
         TEST_CASE(iftruefalse);
         TEST_CASE(combine_strings);
         TEST_CASE(double_plus);
@@ -97,6 +98,13 @@ private:
         const char code1[] = " if ( p == (char *)0 ) ";
         const char code2[] = " if ( p == 0 ) ";
         ASSERT_EQUALS(tok(code1), tok(code2));
+    }
+
+    void cast1()
+    {
+        const char code[] = "return (unsigned char *)str;";
+        const char expected[] = "return str;";
+        ASSERT_EQUALS(tok(expected), tok(code));
     }
 
     void iftruefalse()
