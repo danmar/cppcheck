@@ -42,13 +42,6 @@ public:
 private:
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
-
-    /**
-     * Helper function used by the 'erase' function
-     * This function parses a loop
-     * @param it iterator token
-     */
-    void eraseCheckLoop(const Token *it);
 };
 
 //---------------------------------------------------------------------------
