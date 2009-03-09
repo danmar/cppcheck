@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="cppcheck"
 	ProjectGUID="{ECA5D746-4926-48BA-A372-FC888498531F}"
 	Keyword="Win32Proj"
@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="Debug"
-			IntermediateDirectory="Debug"
+			OutputDirectory="Build\Debug"
+			IntermediateDirectory="BuildTmp\Debug"
 			ConfigurationType="1"
 			>
 			<Tool
@@ -88,8 +88,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="Release"
-			IntermediateDirectory="Release"
+			OutputDirectory="Build\Release"
+			IntermediateDirectory="BuildTmp\Release"
 			ConfigurationType="1"
 			>
 			<Tool
