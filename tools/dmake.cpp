@@ -79,7 +79,7 @@ int main()
 
     // more warnings.. -Wfloat-equal -Wcast-qual -Wsign-conversion -Wlogical-op
     fout << "CXXFLAGS=-Wall -Wextra -pedantic -g\n";
-    fout << "COMPILER=g++\n";
+    fout << "CXX=g++\n";
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
 
     fout << "\n###### Object Files\n\n";
@@ -100,17 +100,17 @@ int main()
 
     fout << "\n###### Targets\n\n";
     fout << "cppcheck:\t$(OBJECTS)\n";
-    fout << "\t$(COMPILER) $(CXXFLAGS) -o cppcheck $(OBJECTS)\n\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o cppcheck $(OBJECTS) $(LDFLAGS)\n\n";
     fout << "all:\tcppcheck\ttestrunner\ttools\n\n";
     fout << "testrunner:\t$(TESTOBJ)\n";
-    fout << "\t$(COMPILER) $(CXXFLAGS) -o testrunner $(TESTOBJ)\n\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "tools:\ttools/errmsg\ttools/dmake\n\n";
     fout << "tools/errmsg:\ttools/errmsg.cpp\n";
-    fout << "\t$(COMPILER) $(CXXFLAGS) -o tools/errmsg tools/errmsg.cpp\n\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o tools/errmsg tools/errmsg.cpp $(LDFLAGS)\n\n";
     fout << "tools/dmake:\ttools/dmake.cpp\tsrc/filelister.cpp\tsrc/filelister.h\n";
-    fout << "\t$(COMPILER) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp src/filelister.cpp\n\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp src/filelister.cpp $(LDFLAGS)\n\n";
     fout << "clean:\n";
     fout << "\trm -f src/*.o test/*.o testrunner cppcheck tools/dmake tools/errmsg\n\n";
     fout << "install:\tcppcheck\n";
@@ -126,7 +126,7 @@ int main()
         getDeps(srcfiles[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(COMPILER) $(CXXFLAGS) -c -o " << objfile(srcfiles[i]) << " " << srcfiles[i] << "\n\n";
+        fout << "\n\t$(CXX) $(CXXFLAGS) -c -o " << objfile(srcfiles[i]) << " " << srcfiles[i] << "\n\n";
     }
 
     for (unsigned int i = 0; i < testfiles.size(); ++i)
@@ -136,7 +136,7 @@ int main()
         getDeps(testfiles[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(COMPILER) $(CXXFLAGS) -c -o " << objfile(testfiles[i]) << " " << testfiles[i] << "\n\n";
+        fout << "\n\t$(CXX) $(CXXFLAGS) -c -o " << objfile(testfiles[i]) << " " << testfiles[i] << "\n\n";
     }
 
     fout << "src/errorlogger.h:\ttools/errmsg\n";
