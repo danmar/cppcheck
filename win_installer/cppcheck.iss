@@ -20,7 +20,7 @@
 
 #define MyAppName "cppcheck"
 #define AppVersion "1.30"
-#define MyAppURL "http://sourceforge.net/projects/cppcheck/"
+#define MyAppURL "http://cppcheck.wiki.sourceforge.net/"
 #define MyAppExeName "cppcheck.exe"
 
 [Setup]
@@ -37,6 +37,7 @@ AppUpdatesURL={#MyAppURL}
 
 ; This is for the installer file
 VersionInfoVersion={#AppVersion}
+VersionInfoDescription=cppcheck installer
 
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
@@ -46,6 +47,7 @@ LicenseFile=..\COPYING
 OutputBaseFilename={#MyAppName}-{#AppVersion}-setup
 
 ChangesEnvironment=yes
+OutputDir=..\Build
 
 Compression=lzma/ultra
 InternalCompressLevel=ultra
