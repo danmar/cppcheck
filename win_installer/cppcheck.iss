@@ -47,6 +47,7 @@ LicenseFile=..\COPYING
 OutputBaseFilename={#MyAppName}-{#AppVersion}-setup
 
 ChangesEnvironment=yes
+OutputDir=..\Build
 
 Compression=lzma/ultra
 InternalCompressLevel=ultra
