@@ -1395,10 +1395,19 @@ bool Tokenizer::simplifyCasts()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok->next(), "( %type% * )") || Token::Match(tok->next(), "( %type% %type% * )"))
+        if (Token::Match(tok->next(), "( %type% *| )") || Token::Match(tok->next(), "( %type% %type% *| )"))
         {
             if (tok->isName() && tok->str() != "return")
                 continue;
+
+            // Is it a cast of some variable?
+            const Token *tok2 = tok->tokAt(3);
+            while (tok2 && tok2->str() != ")")
+                tok2 = tok2->next();
+            if (!Token::Match(tok2, ") %var%"))
+                continue;
+
+            // Remove cast..
             while (tok->next()->str() != ")")
                 tok->deleteNext();
             tok->deleteNext();
