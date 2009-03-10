@@ -1345,14 +1345,14 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
         else if (tok->str() == "}")
             --indentlevel;
 
-        if (tok->str() == "::")
-            classmember = true;
-
         // In function..
         if (indentlevel == 0)
         {
             if (Token::Match(tok, ") {"))
                 infunc = true;
+
+            else if (tok->str() == "::")
+                classmember = true;
 
             else if (Token::Match(tok, "[;}]"))
                 infunc = classmember = false;
