@@ -595,12 +595,12 @@ private:
                                 "\n"
                                 ")\n"
                                 "int a;\n";
-        ASSERT_EQUALS(  "\n"
-                        "\n"
-                        "\n"
-                        "\n"
-                        "int a;\n",
-                        OurPreprocessor::expandMacros(filedata));
+        ASSERT_EQUALS("\n"
+                      "\n"
+                      "\n"
+                      "\n"
+                      "int a;\n",
+                      OurPreprocessor::expandMacros(filedata));
     }
 
     void string1()
