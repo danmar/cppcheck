@@ -76,7 +76,7 @@ private:
         TEST_CASE(sizeof5);
         TEST_CASE(sizeof6);
         TEST_CASE(casting);
-        
+
         TEST_CASE(template1);
     }
 
@@ -460,7 +460,7 @@ private:
                                    "template < classname T > void f ( T val ) { T a ; } "
                                    "f<int> ( 10 ) ; "
                                    "void f<int> ( int val ) { int a ; }");
-                                   
+
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 };

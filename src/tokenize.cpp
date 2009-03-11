@@ -499,25 +499,25 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
         {
             if (!Token::Match(tok2, pattern.c_str()))
                 continue;
-                
+
             // New type..
             const std::string type2(tok2->strAt(2));
-                
+
             // New funcname..
             const std::string funcname2(funcname + "<" + type2 + ">");
 
             // Create copy of template..
             const Token *tok3 = tok->tokAt(5);
-            addtoken(((tok3->str()==type)?type2:tok3->str()).c_str(), tok3->linenr(), tok3->fileIndex());
+            addtoken(((tok3->str() == type) ? type2 : tok3->str()).c_str(), tok3->linenr(), tok3->fileIndex());
             addtoken(funcname2.c_str(), tok3->linenr(), tok3->fileIndex());
             int indentlevel = 0;
             for (tok3 = tok3->tokAt(2); tok3; tok3 = tok3->next())
-            {                
-                addtoken(((tok3->str()==type)?type2:tok3->str()).c_str(), tok3->linenr(), tok3->fileIndex());
+            {
+                addtoken(((tok3->str() == type) ? type2 : tok3->str()).c_str(), tok3->linenr(), tok3->fileIndex());
 
                 if (tok3->str() == "{")
                     ++indentlevel;
-                
+
                 else if (tok3->str() == "}")
                 {
                     if (indentlevel <= 1)
@@ -525,7 +525,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                     --indentlevel;
                 }
             }
-            
+
             // Replace all these template usages..
             for (Token *tok4 = tok2; tok4; tok4 = tok4->next())
             {
