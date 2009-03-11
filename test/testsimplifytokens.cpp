@@ -76,6 +76,8 @@ private:
         TEST_CASE(sizeof5);
         TEST_CASE(sizeof6);
         TEST_CASE(casting);
+        
+        TEST_CASE(template1);
     }
 
     std::string tok(const char code[])
@@ -441,10 +443,25 @@ private:
                             "for (int i = 0; i < static_cast<int>(3); ++i) {}\n"
                             "}\n";
 
-        std::ostringstream expected;
-        expected << " void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }";
+        const std::string expected(" void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }");
 
-        ASSERT_EQUALS(expected.str(), sizeof_(code));
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+
+
+
+    void template1()
+    {
+        const char code[] = "template <classname T> void f(T val) { T a; }\n"
+                            "f<int>(10);";
+
+        const std::string expected(" "
+                                   "template < classname T > void f ( T val ) { T a ; } "
+                                   "f<int> ( 10 ) ; "
+                                   "void f<int> ( int val ) { int a ; }");
+                                   
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 };
 
