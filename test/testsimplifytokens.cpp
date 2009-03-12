@@ -78,6 +78,7 @@ private:
         TEST_CASE(casting);
 
         TEST_CASE(template1);
+        TEST_CASE(template2);
     }
 
     std::string tok(const char code[])
@@ -460,6 +461,19 @@ private:
                                    "template < classname T > void f ( T val ) { T a ; } "
                                    "f<int> ( 10 ) ; "
                                    "void f<int> ( int val ) { int a ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template2()
+    {
+        const char code[] = "template <classname T> class Fred { T a; };\n"
+                            "Fred<int> fred;";
+
+        const std::string expected(" "
+                                   "template < classname T > class Fred { T a ; } ; "
+                                   "Fred<int> fred ; "
+                                   "class Fred<int> { int a ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }

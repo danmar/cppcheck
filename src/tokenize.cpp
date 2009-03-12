@@ -486,15 +486,18 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     // Handle templates..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (!Token::Match(tok, "template < %type% %var% > %type% %var% ("))
+        if (!Token::Match(tok, "template < %type% %var% > %type% %var% (") &&
+            !Token::Match(tok, "template < %type% %var% > class %var% {"))
             continue;
 
         // type and function name..
         const std::string type(tok->strAt(3));
-        const std::string funcname(tok->strAt(6));
+        const std::string name(tok->strAt(6));
+
+        const bool isfunc(tok->strAt(7)[0] == '('); 
 
         // locate template usage..
-        const std::string pattern(funcname + " < %type% > (");
+        const std::string pattern(name + " < %type% > " + (isfunc ? "(" : "%var%"));
         for (Token *tok2 = _tokens; tok2; tok2 = tok2->next())
         {
             if (!Token::Match(tok2, pattern.c_str()))
@@ -503,13 +506,13 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             // New type..
             const std::string type2(tok2->strAt(2));
 
-            // New funcname..
-            const std::string funcname2(funcname + "<" + type2 + ">");
+            // New classname/funcname..
+            const std::string name2(name + "<" + type2 + ">");
 
             // Create copy of template..
             const Token *tok3 = tok->tokAt(5);
             addtoken(((tok3->str() == type) ? type2 : tok3->str()).c_str(), tok3->linenr(), tok3->fileIndex());
-            addtoken(funcname2.c_str(), tok3->linenr(), tok3->fileIndex());
+            addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
             int indentlevel = 0;
             for (tok3 = tok3->tokAt(2); tok3; tok3 = tok3->next())
             {
@@ -529,9 +532,9 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             // Replace all these template usages..
             for (Token *tok4 = tok2; tok4; tok4 = tok4->next())
             {
-                if (Token::simpleMatch(tok4, (funcname + " < " + type2 + " >").c_str()))
+                if (Token::simpleMatch(tok4, (name + " < " + type2 + " >").c_str()))
                 {
-                    tok4->str(funcname2.c_str());
+                    tok4->str(name2.c_str());
                     tok4->deleteNext();
                     tok4->deleteNext();
                     tok4->deleteNext();
