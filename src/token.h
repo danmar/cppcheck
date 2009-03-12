@@ -188,6 +188,13 @@ public:
     /** Stringify a token list (with or without varId) */
     std::string stringifyList(const bool varid = true, const char *title = 0) const;
 
+    /**
+     * This is intended to be used for the first token in the list
+     * Do not use this for the tokens at the end of the list unless the
+     * token is the last token in the list.
+     */
+    void deleteThis();
+
 private:
     void next(Token *next);
     void previous(Token *previous);

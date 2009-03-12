@@ -157,6 +157,12 @@ private:
      */
     bool simplifyFunctionParameters();
 
+    /**
+     * Simplify namespaces by removing them, e.g.
+     * "namespace b{ void f(){} }" becomes "void f(){}"
+     */
+    void simplifyNamespaces();
+
     void InsertTokens(Token *dest, Token *src, unsigned int n);
 
     Token *_tokensBack;

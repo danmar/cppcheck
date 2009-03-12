@@ -79,6 +79,7 @@ private:
 
         TEST_CASE(template1);
         TEST_CASE(template2);
+        TEST_CASE(namespaces);
     }
 
     std::string tok(const char code[])
@@ -476,6 +477,25 @@ private:
                                    "class Fred<int> { int a ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void namespaces()
+    {
+        {
+            const char code[] = "using namespace std; namespace a{ namespace b{ void f(){} } }";
+
+            const std::string expected(" using namespace std ; void f ( ) { }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "namespace b{ void f(){} }";
+
+            const std::string expected(" void f ( ) { }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 };
 

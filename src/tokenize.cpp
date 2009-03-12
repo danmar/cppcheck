@@ -494,7 +494,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
         const std::string type(tok->strAt(3));
         const std::string name(tok->strAt(6));
 
-        const bool isfunc(tok->strAt(7)[0] == '('); 
+        const bool isfunc(tok->strAt(7)[0] == '(');
 
         // locate template usage..
         const std::string pattern(name + " < %type% > " + (isfunc ? "(" : "%var%"));
@@ -637,8 +637,66 @@ void Tokenizer::setVarId()
 // Simplify token list
 //---------------------------------------------------------------------------
 
+void Tokenizer::simplifyNamespaces()
+{
+    for (Token *token = _tokens; token; token = token->next())
+    {
+        while (token->str() == "namespace" &&
+               (!token->previous() || token->previous()->str() != "using"))
+        {
+            // Token is namespace and there is no "using" before it.
+            Token *start = token;
+            Token *tok = token->next();
+            if (!tok)
+                return;
+
+            int indent = 0;
+            for (tok = tok->next(); tok; tok = tok->next())
+            {
+                if (tok->str() == "{")
+                    indent++;
+                else if (tok->str() == "}")
+                {
+                    indent--;
+                    if (indent == 0)
+                        break;
+                }
+            }
+
+            if (!tok)
+                return;
+
+            if (tok->str() == "}")
+            {
+                tok = tok->previous();
+                tok->deleteNext();
+                start->deleteNext();
+                start->deleteNext();
+                token = start->next();
+                if (start->previous())
+                {
+                    start = start->previous();
+                    start->deleteNext();
+                }
+                else
+                {
+                    // First token in the list, don't delete
+                    // as _tokens is attached to it.
+                    start->deleteThis();
+                }
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+}
+
 void Tokenizer::simplifyTokenList()
 {
+    simplifyNamespaces();
+
     // Combine strings
     for (Token *tok = _tokens; tok; tok = tok->next())
     {

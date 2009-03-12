@@ -66,6 +66,33 @@ void Token::deleteNext()
         _next->previous(this);
 }
 
+void Token::deleteThis()
+{
+    if (_next)
+    {
+        _str = _next->_str;
+        _isName = _next->_isName;
+        _isNumber = _next->_isNumber;
+        _isBoolean = _next->_isBoolean;
+        _varId = _next->_varId;
+        _fileIndex = _next->_fileIndex;
+        _linenr = _next->_linenr;
+        deleteNext();
+    }
+    else if (_previous)
+    {
+        // This should never be used for tokens
+        // at the end of the list
+        str(";");
+    }
+    else
+    {
+        // We are the last token in the list, we can't delete
+        // ourselves, so just make us ;
+        str(";");
+    }
+}
+
 void Token::replace(Token *replaceThis, Token *start, Token *end)
 {
     // Fix the whole in the old location of start and end
