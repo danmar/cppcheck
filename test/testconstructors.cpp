@@ -68,6 +68,7 @@ private:
         TEST_CASE(initvar_same_classname);      // BUG 2208157
         TEST_CASE(initvar_chained_assign);      // BUG 2270433
         TEST_CASE(initvar_2constructors);       // BUG 2270353
+        TEST_CASE(initvar_constvar);
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
 
@@ -293,6 +294,20 @@ private:
 
         std::string err(errout.str());
         ASSERT_EQUALS(std::string(""), err);
+    }
+
+
+    void initvar_constvar()
+    {
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    const char *s;\n"
+              "    Fred();\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ }");
+        ASSERT_EQUALS(std::string("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::s'\n"), errout.str());
     }
 
 

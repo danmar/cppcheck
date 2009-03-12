@@ -97,6 +97,12 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
             varname = next->strAt(2);
         }
 
+        // Pointer?
+        else if (Token::Match(next, "%type% %type% * %var% ;"))
+        {
+            varname = next->strAt(3);
+        }
+
         // If the varname was set in one of the two if-block above, create a entry for this variable..
         if (varname)
         {
