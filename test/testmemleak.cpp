@@ -152,6 +152,8 @@ private:
         TEST_CASE(class7);
         TEST_CASE(class8);
         TEST_CASE(class9);
+        // TODO TEST_CASE(class10);
+        // TODO TEST_CASE(class11);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1513,6 +1515,30 @@ private:
               "A::~A()\n"
               "{ delete (p); }\n", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void class10()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "	   int * p;\n"
+              "	   A() { p = new int; }\n"
+              "};\n", true);
+        ASSERT_EQUALS("memory leak", errout.str());
+    }
+
+    void class11()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "	   int * p;\n"
+              "	   A();\n"
+              "};\n"
+              "A::A() : p(new int[10])\n"
+              "{ }", true);
+        ASSERT_EQUALS("memory leak", errout.str());
     }
 
 
