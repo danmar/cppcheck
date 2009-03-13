@@ -119,6 +119,8 @@ private:
         TEST_CASE(tokenize_strings);
         TEST_CASE(simplify_constants);
         TEST_CASE(simplify_constants2);
+
+        TEST_CASE(findClassFunction1);
     }
 
 
@@ -1258,6 +1260,32 @@ private:
         oss << " void f ( Foo & foo , Foo * foo2 ) { const int a = 45 ; foo . a = 90 ; foo2 . a = 45 ; }";
         ASSERT_EQUALS(oss.str(), ostr.str());
     }
+
+
+    void findClassFunction1()
+    {
+        const char code[] =
+            "class Fred"
+            "{\n"
+            "public:\n"
+            "    Fred()\n"
+            "    { }\n"
+            "};\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        int i;
+
+        i = 0;
+        const Token *tok = Tokenizer::FindClassFunction(tokenizer.tokens(), "Fred", "%var%", i);
+        ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
+        tok = Tokenizer::FindClassFunction(tok->next(), "Fred", "%var%", i);
+        ASSERT_EQUALS(0, (int)tok);
+    }
+
 };
 
 REGISTER_TEST(TestTokenizer)
