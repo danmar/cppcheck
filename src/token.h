@@ -195,6 +195,22 @@ public:
      */
     void deleteThis();
 
+    /**
+     * Create link to given token
+     * @param link The token where this token should link
+     * to.
+     */
+    void link(Token *link);
+
+    /**
+     * Return token where this token links to.
+     * Supported links are:
+     * "{" <-> "}"
+     *
+     * @return The token where this token links to.
+     */
+    Token *link() const;
+
 private:
     void next(Token *next);
     void previous(Token *previous);
@@ -206,6 +222,7 @@ private:
     unsigned int _varId;
     Token *_next;
     Token *_previous;
+    Token *_link;
     unsigned int _fileIndex;
     unsigned int _linenr;
 };

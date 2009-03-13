@@ -646,27 +646,12 @@ void Tokenizer::simplifyNamespaces()
         {
             // Token is namespace and there is no "using" before it.
             Token *start = token;
-            Token *tok = token->next();
+            Token *tok = token->tokAt(2);
             if (!tok)
                 return;
 
-            int indent = 0;
-            for (tok = tok->next(); tok; tok = tok->next())
-            {
-                if (tok->str() == "{")
-                    indent++;
-                else if (tok->str() == "}")
-                {
-                    indent--;
-                    if (indent == 0)
-                        break;
-                }
-            }
-
-            if (!tok)
-                return;
-
-            if (tok->str() == "}")
+            tok = tok->link();
+            if (tok && tok->str() == "}")
             {
                 tok = tok->previous();
                 tok->deleteNext();
@@ -695,6 +680,33 @@ void Tokenizer::simplifyNamespaces()
 
 void Tokenizer::simplifyTokenList()
 {
+    std::list<Token*> links;
+    for (Token *token = _tokens; token; token = token->next())
+    {
+        if (token->str() == "{")
+        {
+            links.push_back(token);
+        }
+        else if (token->str() == "}")
+        {
+            if (links.size() == 0)
+            {
+                // Error, { and } don't match.
+                break;
+            }
+
+            token->link(links.back());
+            links.back()->link(token);
+            links.pop_back();
+        }
+    }
+
+    if (links.size() > 0)
+    {
+        // Error, { and } don't match.
+    }
+
+
     simplifyNamespaces();
 
     // Combine strings

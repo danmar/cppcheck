@@ -34,6 +34,7 @@ Token::Token() :
         _varId(0),
         _next(0),
         _previous(0),
+        _link(0),
         _fileIndex(0),
         _linenr(0)
 {
@@ -77,6 +78,7 @@ void Token::deleteThis()
         _varId = _next->_varId;
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
+        _link = _next->_link;
         deleteNext();
     }
     else if (_previous)
@@ -489,6 +491,16 @@ unsigned int Token::linenr() const
 void Token::linenr(unsigned int linenr)
 {
     _linenr = linenr;
+}
+
+void Token::link(Token *link)
+{
+    _link = link;
+}
+
+Token *Token::link() const
+{
+    return _link;
 }
 
 void Token::printOut(const char *title) const
