@@ -60,7 +60,6 @@ private:
 
     void ClassChecking_VarList_Initialize(const Token *tok1, const Token *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack);
     void InitVar(struct VAR *varlist, const char varname[]);
-    const Token *FindClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel);
     struct VAR *ClassChecking_GetVarList(const Token *tok1);
 
     // Check constructors for a specified class

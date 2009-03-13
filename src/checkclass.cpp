@@ -115,90 +115,6 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
 }
 //---------------------------------------------------------------------------
 
-const Token * CheckClass::FindClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel)
-{
-    if (indentlevel < 0 || tok == NULL)
-        return NULL;
-
-    std::ostringstream classPattern;
-    classPattern << "class " << classname << " :|{";
-
-    std::ostringstream internalPattern;
-    internalPattern << funcname << " (";
-
-    std::ostringstream externalPattern;
-    externalPattern << classname << " :: " << funcname << " (";
-
-    for (;tok; tok = tok->next())
-    {
-        if (indentlevel == 0 && Token::Match(tok, classPattern.str().c_str()))
-        {
-            while (tok && tok->str() != "{")
-                tok = tok->next();
-            if (tok)
-                tok = tok->next();
-            if (! tok)
-                break;
-            indentlevel = 1;
-        }
-
-        if (tok->str() == "{")
-        {
-            // If indentlevel==0 don't go to indentlevel 1. Skip the block.
-            if (indentlevel > 0)
-                ++indentlevel;
-
-            else
-            {
-                for (; tok; tok = tok->next())
-                {
-                    if (tok->str() == "{")
-                        ++indentlevel;
-                    else if (tok->str() == "}")
-                    {
-                        --indentlevel;
-                        if (indentlevel <= 0)
-                            break;
-                    }
-                }
-                if (tok == NULL)
-                    return NULL;
-
-                continue;
-            }
-        }
-
-        if (tok->str() == "}")
-        {
-            --indentlevel;
-            if (indentlevel < 0)
-                return NULL;
-        }
-
-        if (indentlevel == 1)
-        {
-            // Member function implemented in the class declaration?
-            if (tok->str() != "~" && Token::Match(tok->next(), internalPattern.str().c_str()))
-            {
-                const Token *tok2 = tok->next();
-                while (tok2 && tok2->str() != "{" && tok2->str() != ";")
-                    tok2 = tok2->next();
-                if (tok2 && tok2->str() == "{")
-                    return tok->next();
-            }
-        }
-
-        else if (indentlevel == 0 && Token::Match(tok, externalPattern.str().c_str()))
-        {
-            return tok;
-        }
-    }
-
-    // Not found
-    return NULL;
-}
-//---------------------------------------------------------------------------
-
 void CheckClass::InitVar(struct VAR *varlist, const char varname[])
 {
     for (struct VAR *var = varlist; var; var = var->next)
@@ -295,7 +211,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
             {
                 callstack.push_back(ftok->str());
                 int i = 0;
-                const Token *ftok2 = FindClassFunction(tok1, classname, ftok->aaaa(), i);
+                const Token *ftok2 = Tokenizer::FindClassFunction(tok1, classname, ftok->aaaa(), i);
                 ClassChecking_VarList_Initialize(tok1, ftok2, varlist, classname, callstack);
             }
         }
@@ -438,7 +354,7 @@ void CheckClass::CheckConstructors(const Token *tok1, struct VAR *varlist, const
     const char * const className = tok1->strAt(1);
 
     int indentlevel = 0;
-    const Token *constructor_token = FindClassFunction(tok1, className, funcname, indentlevel);
+    const Token *constructor_token = Tokenizer::FindClassFunction(tok1, className, funcname, indentlevel);
     std::list<std::string> callstack;
     ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className, callstack);
     while (constructor_token)
@@ -462,7 +378,7 @@ void CheckClass::CheckConstructors(const Token *tok1, struct VAR *varlist, const
         for (struct VAR *var = varlist; var; var = var->next)
             var->init = false;
 
-        constructor_token = FindClassFunction(constructor_token->next(), className, funcname, indentlevel);
+        constructor_token = Tokenizer::FindClassFunction(constructor_token->next(), className, funcname, indentlevel);
         callstack.clear();
         ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className, callstack);
     }
