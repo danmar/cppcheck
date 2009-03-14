@@ -152,7 +152,7 @@ private:
         TEST_CASE(class7);
         TEST_CASE(class8);
         TEST_CASE(class9);
-        // TODO TEST_CASE(class10);
+        TEST_CASE(class10);
         // TODO TEST_CASE(class11);
 
         TEST_CASE(throw1);
@@ -1525,7 +1525,7 @@ private:
               "	   int * p;\n"
               "	   A() { p = new int; }\n"
               "};\n", true);
-        ASSERT_EQUALS("memory leak", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: A::p\n", errout.str());
     }
 
     void class11()

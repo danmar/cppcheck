@@ -1447,122 +1447,94 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass(const Token *
             if (tok->isName() || Token::Match(tok, "[;}]"))
             {
                 if (_settings._showAll || !isclass(tok->tokAt(1)))
-                    CheckMemoryLeak_ClassMembers_Variable(classname, tok->tokAt(3));
+                    CheckMemoryLeak_ClassMembers_Variable(classname.back(), tok->tokAt(3));
             }
         }
     }
 }
 
-void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const std::vector<const char *> &classname, const Token *tokVarname)
+void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const char classname[], const Token *tokVarname)
 {
     const char *varname = tokVarname->strAt(0);
-
-    // Function pattern.. Check if member function
-    std::ostringstream fpattern;
-    for (unsigned int i = 0; i < classname.size(); i++)
-    {
-        fpattern << classname[i] << " :: ";
-    }
-    fpattern << "%var% (";
-
-    // Destructor pattern.. Check if class destructor..
-    std::ostringstream destructor;
-    for (unsigned int i = 0; i < classname.size(); i++)
-    {
-        destructor << classname[i] << " :: ";
-    }
-    destructor << "~ " << classname.back() << " (";
-
-    // Pattern used in member function. "Var = ..."
-    std::ostringstream varname_eq;
-    varname_eq << varname << " =";
-
-    // Full variable name..
-    std::ostringstream FullVariableName;
-    for (unsigned int i = 0; i < classname.size(); i++)
-        FullVariableName << classname[i] << "::";
-    FullVariableName << varname;
 
     // Check if member variable has been allocated and deallocated..
     AllocType Alloc = No;
     AllocType Dealloc = No;
 
     // Loop through all tokens. Inspect member functions
-    bool memberfunction = false;
-    int indentlevel = 0;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    int indent_ = 0;
+    const Token *functionToken = Tokenizer::FindClassFunction(_tokenizer->tokens(), classname, "~| %var%", indent_);
+    while (functionToken)
     {
-        if (tok->str() == "{")
-            ++indentlevel;
-
-        else if (tok->str() == "}")
-            --indentlevel;
-
-        // Set the 'memberfunction' variable..
-        if (indentlevel == 0)
+        int indent = 0;
+        for (const Token *tok = functionToken; tok; tok = tok->next())
         {
-            if (Token::Match(tok, "[;}]"))
-                memberfunction = false;
-            else if (Token::Match(tok, fpattern.str().c_str()) || Token::Match(tok, destructor.str().c_str()))
-                memberfunction = true;
-        }
-
-        // Parse member function..
-        if (indentlevel > 0 && memberfunction)
-        {
-            // Allocate..
-            if (Token::Match(tok, varname_eq.str().c_str()))
+            if (tok->str() == "{")
+                ++indent;
+            else if (tok->str() == "}")
             {
-                AllocType alloc = GetAllocationType(tok->tokAt(2));
-                if (alloc != No)
+                --indent;
+                if (indent <= 0)
+                    break;
+            }
+            else if (indent > 0)
+            {
+                // Allocate..
+                if (Token::Match(tok, (std::string(varname) + " =").c_str()))
                 {
-                    if (Alloc != No && Alloc != alloc)
-                        alloc = Many;
+                    AllocType alloc = GetAllocationType(tok->tokAt(2));
+                    if (alloc != No)
+                    {
+                        if (Alloc != No && Alloc != alloc)
+                            alloc = Many;
+
+                        std::list<const Token *> callstack;
+                        if (alloc != Many && Dealloc != No && Dealloc != Many && Dealloc != alloc)
+                        {
+                            callstack.push_back(tok);
+                            _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, (std::string(classname) + "::" + varname).c_str());
+                            callstack.pop_back();
+                        }
+
+                        Alloc = alloc;
+                    }
+                }
+
+                // Deallocate..
+                const char *varnames[3] = { "var", 0, 0 };
+                varnames[0] = varname;
+                AllocType dealloc = GetDeallocationType(tok, varnames);
+                if (dealloc == No)
+                {
+                    varnames[0] = "this";
+                    varnames[1] = varname;
+                    dealloc = GetDeallocationType(tok, varnames);
+                }
+                if (dealloc != No)
+                {
+                    if (Dealloc != No && Dealloc != dealloc)
+                        dealloc = Many;
 
                     std::list<const Token *> callstack;
-                    if (alloc != Many && Dealloc != No && Dealloc != Many && Dealloc != alloc)
+                    if (dealloc != Many && Alloc != No &&  Alloc != Many && Alloc != dealloc)
                     {
                         callstack.push_back(tok);
-                        _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, FullVariableName.str());
+                        _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, (std::string(classname) + "::" + varname).c_str());
                         callstack.pop_back();
                     }
 
-                    Alloc = alloc;
-                }
-            }
-
-            // Deallocate..
-            const char *varnames[3] = { "var", 0, 0 };
-            varnames[0] = varname;
-            AllocType dealloc = GetDeallocationType(tok, varnames);
-            if (dealloc == No)
-            {
-                varnames[0] = "this";
-                varnames[1] = varname;
-                dealloc = GetDeallocationType(tok, varnames);
-            }
-            if (dealloc != No)
-            {
-                if (Dealloc != No && Dealloc != dealloc)
-                    dealloc = Many;
-
-                std::list<const Token *> callstack;
-                if (dealloc != Many && Alloc != No &&  Alloc != Many && Alloc != dealloc)
-                {
-                    callstack.push_back(tok);
-                    _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, FullVariableName.str());
-                    callstack.pop_back();
+                    Dealloc = dealloc;
                 }
 
-                Dealloc = dealloc;
             }
-
         }
+
+        functionToken = Tokenizer::FindClassFunction(functionToken->next(), classname, "~| %var%", indent_);
     }
 
     if (Alloc != No && Dealloc == No)
     {
-        MemoryLeak(tokVarname, FullVariableName.str().c_str(), Alloc, true);
+        MemoryLeak(tokVarname, (std::string(classname) + "::" + varname).c_str(), Alloc, true);
     }
 }
 
