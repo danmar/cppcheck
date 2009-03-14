@@ -176,6 +176,14 @@ private:
 
     void InsertTokens(Token *dest, Token *src, unsigned int n);
 
+    /**
+     * Setup links for tokens so that one can call Token::link().
+     *
+     * @return false if there was a mismatch with tokens, this
+     * should mean that source code was not valid.
+     */
+    bool createLinks();
+
     Token *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
     std::vector<std::string> _files;

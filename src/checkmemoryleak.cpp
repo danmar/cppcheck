@@ -1491,7 +1491,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const char clas
                 // Allocate..
                 if (indent == 0 || Token::Match(tok, (std::string(varname) + " =").c_str()))
                 {
-                    AllocType alloc = GetAllocationType(tok->tokAt((indent>0) ? 2 : 3));
+                    AllocType alloc = GetAllocationType(tok->tokAt((indent > 0) ? 2 : 3));
                     if (alloc != No)
                     {
                         if (Alloc != No && Alloc != alloc)

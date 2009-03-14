@@ -521,7 +521,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             // New type..
             std::vector<std::string> types2;
             s = "";
-            for (const Token *tok3 = tok2->tokAt(2); tok3->str()!=">"; tok3 = tok3->next())
+            for (const Token *tok3 = tok2->tokAt(2); tok3->str() != ">"; tok3 = tok3->next())
             {
                 if (tok3->str() != ",")
                     types2.push_back(tok3->str());
@@ -574,7 +574,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             s = name + " < " + type2 + " >";
             for (std::string::size_type pos = s.find(","); pos != std::string::npos; pos = s.find(",", pos + 2))
             {
-                s.insert(pos+1, " ");
+                s.insert(pos + 1, " ");
                 s.insert(pos, " ");
             }
             for (Token *tok4 = tok2; tok4; tok4 = tok4->next())
@@ -725,11 +725,16 @@ void Tokenizer::simplifyNamespaces()
     }
 }
 
-void Tokenizer::simplifyTokenList()
+bool Tokenizer::createLinks()
 {
     std::list<Token*> links;
     for (Token *token = _tokens; token; token = token->next())
     {
+        if (token->link())
+        {
+            token->link(0);
+        }
+
         if (token->str() == "{")
         {
             links.push_back(token);
@@ -739,7 +744,7 @@ void Tokenizer::simplifyTokenList()
             if (links.size() == 0)
             {
                 // Error, { and } don't match.
-                break;
+                return false;
             }
 
             token->link(links.back());
@@ -751,8 +756,15 @@ void Tokenizer::simplifyTokenList()
     if (links.size() > 0)
     {
         // Error, { and } don't match.
+        return false;
     }
 
+    return true;
+}
+
+void Tokenizer::simplifyTokenList()
+{
+    createLinks();
 
     simplifyNamespaces();
 
@@ -1240,6 +1252,8 @@ void Tokenizer::simplifyTokenList()
         modified |= simplifyRedundantParanthesis();
         modified |= simplifyCalculations();
     }
+
+    createLinks();
 }
 //---------------------------------------------------------------------------
 
