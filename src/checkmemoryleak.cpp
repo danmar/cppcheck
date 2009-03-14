@@ -104,7 +104,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
             return gMalloc;
     }
 
-    if (Token::Match(tok2, "new %type% [;(]"))
+    if (Token::Match(tok2, "new %type% [;()]"))
         return New;
 
     if (Token::Match(tok2, "new %type% ["))
@@ -1467,6 +1467,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const char clas
     while (functionToken)
     {
         int indent = 0;
+        bool initlist = false;
         for (const Token *tok = functionToken; tok; tok = tok->next())
         {
             if (tok->str() == "{")
@@ -1477,12 +1478,20 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const char clas
                 if (indent <= 0)
                     break;
             }
-            else if (indent > 0)
+            else if (indent == 0 && Token::simpleMatch(tok, ") :"))
+                initlist = true;
+            else if (initlist || indent > 0)
             {
-                // Allocate..
-                if (Token::Match(tok, (std::string(varname) + " =").c_str()))
+                if (indent == 0)
                 {
-                    AllocType alloc = GetAllocationType(tok->tokAt(2));
+                    if (!Token::Match(tok, (":|, " + std::string(varname) + " (").c_str()))
+                        continue;
+                }
+
+                // Allocate..
+                if (indent == 0 || Token::Match(tok, (std::string(varname) + " =").c_str()))
+                {
+                    AllocType alloc = GetAllocationType(tok->tokAt((indent>0) ? 2 : 3));
                     if (alloc != No)
                     {
                         if (Alloc != No && Alloc != alloc)
@@ -1499,6 +1508,9 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const char clas
                         Alloc = alloc;
                     }
                 }
+
+                if (indent == 0)
+                    continue;
 
                 // Deallocate..
                 const char *varnames[3] = { "var", 0, 0 };
