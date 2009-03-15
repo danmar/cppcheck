@@ -533,25 +533,18 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             const std::string name2(name + "<" + type2 + ">");
 
             // Create copy of template..
-            const Token *tok3 = tok->next();
-            for (unsigned int i = 0; i <= type.size(); ++i)
-            {
-                if (i == type.size())
-                    addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
-                else if (tok3->str() == type[i])
-                {
-                    addtoken(types2[i].c_str(), tok3->linenr(), tok3->fileIndex());
-                    break;
-                }
-            }
-            addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
             int indentlevel = 0;
-            for (tok3 = tok3->tokAt(2); tok3; tok3 = tok3->next())
+            for (const Token *tok3 = tok->next(); tok3; tok3 = tok3->next())
             {
                 for (unsigned int i = 0; i <= type.size(); ++i)
                 {
                     if (i == type.size())
-                        addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
+                    {
+                        if (tok3->str() == name)
+                            addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
+                        else
+                            addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
+                    }
                     else if (tok3->str() == type[i])
                     {
                         addtoken(types2[i].c_str(), tok3->linenr(), tok3->fileIndex());
