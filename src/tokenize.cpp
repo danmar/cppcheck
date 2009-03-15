@@ -512,10 +512,10 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 s += ",";
             s += " %any% ";
         }
-        const std::string pattern(s + "> " + (isfunc ? "(" : "%var%"));
+        const std::string pattern(s + "> ");
         for (Token *tok2 = _tokens; tok2; tok2 = tok2->next())
         {
-            if (!Token::Match(tok2, pattern.c_str()))
+            if (!Token::Match(tok2, (pattern + (isfunc ? "(" : "%var%")).c_str()))
                 continue;
 
             // New type..
@@ -532,34 +532,55 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             // New classname/funcname..
             const std::string name2(name + "<" + type2 + ">");
 
-            // Create copy of template..
-            int indentlevel = 0;
-            for (const Token *tok3 = tok->next(); tok3; tok3 = tok3->next())
+            // Copy template..
+            for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next())
             {
-                for (unsigned int i = 0; i <= type.size(); ++i)
+                // Start of template..
+                if (tok3 == tok)
                 {
-                    if (i == type.size())
-                    {
-                        if (tok3->str() == name)
-                            addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
-                        else
-                            addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
-                    }
-                    else if (tok3->str() == type[i])
-                    {
-                        addtoken(types2[i].c_str(), tok3->linenr(), tok3->fileIndex());
-                        break;
-                    }
+                    tok3 = tok3->next();
                 }
 
-                if (tok3->str() == "{")
-                    ++indentlevel;
-
-                else if (tok3->str() == "}")
+                // member function implemented outside class definition
+                else if (Token::Match(tok3, (pattern + " :: %var% (").c_str()))
                 {
-                    if (indentlevel <= 1)
-                        break;
-                    --indentlevel;
+                    addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
+                    while (tok3->str() != "::")
+                        tok3 = tok3->next();
+                }
+
+                // not part of template.. go on to next token
+                else
+                    continue;
+
+                int indentlevel = 0;
+                for (; tok3; tok3 = tok3->next())
+                {
+                    for (unsigned int i = 0; i <= type.size(); ++i)
+                    {
+                        if (i == type.size())
+                        {
+                            if (tok3->str() == name)
+                                addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
+                            else
+                                addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
+                        }
+                        else if (tok3->str() == type[i])
+                        {
+                            addtoken(types2[i].c_str(), tok3->linenr(), tok3->fileIndex());
+                            break;
+                        }
+                    }
+
+                    if (tok3->str() == "{")
+                        ++indentlevel;
+
+                    else if (tok3->str() == "}")
+                    {
+                        if (indentlevel <= 1)
+                            break;
+                        --indentlevel;
+                    }
                 }
             }
 
