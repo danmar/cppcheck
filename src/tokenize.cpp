@@ -177,20 +177,10 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
         if (ch < 0)
             continue;
 
-        if (ch == '\n')
-        {
-            // Add current token..
-            addtoken(CurrentToken.c_str(), lineno++, FileIndex);
-            CurrentToken.clear();
-            continue;
-        }
-
         // char/string..
         if (ch == '\'' || ch == '\"')
         {
-            // Add previous token
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            CurrentToken.clear();
+            std::string line;
 
             // read char
             bool special = false;
@@ -198,7 +188,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             do
             {
                 // Append token..
-                CurrentToken += c;
+                line += c;
 
                 if (c == '\n')
                     ++lineno;
@@ -213,60 +203,13 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 c = (char)code.get();
             }
             while (code.good() && (special || c != ch));
-            CurrentToken += ch;
+            line += ch;
 
-            // Add token and start on next..
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            CurrentToken.clear();
-
-            continue;
-        }
-
-        if (ch == '#' && CurrentToken.empty())
-        {
-            // If previous token was "#" then append this to create a "##" token
-            if (Token::simpleMatch(_tokensBack, "#"))
-            {
-                _tokensBack->str("##");
-                continue;
-            }
-
-            std::string line("#");
-            {
-                char chPrev = '#';
-                bool skip = false;
-                while (code.good())
-                {
-                    ch = (char)code.get();
-                    if (chPrev != '\\' && ch == '\n')
-                        break;
-                    if (chPrev == '\\')
-                        line += chPrev;
-                    if (chPrev == '#' && ch == '#')
-                    {
-                        addtoken("##", lineno, FileIndex);
-                        skip = true;
-                        break;
-                    }
-                    if (ch != ' ')
-                        chPrev = ch;
-                    if (ch != '\\' && ch != '\n')
-                    {
-                        line += ch;
-                    }
-                    if (ch == '\n')
-                        ++lineno;
-                }
-                if (skip)
-                    continue;
-            }
-            if (strncmp(line.c_str(), "#file", 5) == 0 &&
-                line.find("\"") != std::string::npos)
+            // Handle #file "file.h"
+            if (CurrentToken == "#file")
             {
                 // Extract the filename
-                line.erase(0, line.find("\"") + 1);
-                if (line.find("\"") != std::string::npos)
-                    line.erase(line.find("\""));
+                line = line.substr(1, line.length() - 2);
 
                 // Has this file been tokenized already?
                 ++lineno;
@@ -290,33 +233,23 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 }
 
                 lineNumbers.push_back(lineno);
-                lineno = 1;
-
-                continue;
+                lineno = 0;
             }
-
-            else if (strncmp(line.c_str(), "#endfile", 8) == 0)
-            {
-                if (lineNumbers.empty() || fileIndexes.empty())
-                {
-                    std::cerr << "####### Preprocessor bug! #######\n";
-                    std::exit(0);
-                }
-
-                lineno = lineNumbers.back();
-                lineNumbers.pop_back();
-                FileIndex = fileIndexes.back();
-                fileIndexes.pop_back();
-                continue;
-            }
-
             else
             {
+                // Add previous token
+                addtoken(CurrentToken.c_str(), lineno, FileIndex);
+
+                // Add content of the string
                 addtoken(line.c_str(), lineno, FileIndex);
             }
+
+            CurrentToken.clear();
+
+            continue;
         }
 
-        if (strchr("#+-*/%&|^?!=<>[](){};:,.~", ch))
+        if (strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch))
         {
             if (ch == '.' &&
                 CurrentToken.length() > 0 &&
@@ -333,8 +266,55 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             }
             else
             {
-                addtoken(CurrentToken.c_str(), lineno, FileIndex);
+                if (CurrentToken == "#file")
+                {
+                    // Handle this where strings are handled
+                    continue;
+                }
+                else if (CurrentToken == "#endfile")
+                {
+                    if (lineNumbers.empty() || fileIndexes.empty())
+                    {
+                        std::cerr << "####### Preprocessor bug! #######\n";
+                        std::exit(0);
+                    }
+
+                    lineno = lineNumbers.back();
+                    lineNumbers.pop_back();
+                    FileIndex = fileIndexes.back();
+                    fileIndexes.pop_back();
+                    CurrentToken.clear();
+                    continue;
+                }
+
+                // If token contains # characters, split it up
+                std::string temp;
+                for (std::string::size_type i = 0; i < CurrentToken.length(); ++i)
+                {
+                    if (CurrentToken[i] == '#' && CurrentToken.length() + 1 > i && CurrentToken[i+1] == '#')
+                    {
+                        addtoken(temp.c_str(), lineno, FileIndex);
+                        temp.clear();
+                        addtoken("##", lineno, FileIndex);
+                        ++i;
+                    }
+                    else
+                        temp += CurrentToken[i];
+                }
+
+                addtoken(temp.c_str(), lineno, FileIndex);
                 CurrentToken.clear();
+
+                if (ch == '\n')
+                {
+                    ++lineno;
+                    continue;
+                }
+                else if (ch == ' ')
+                {
+                    continue;
+                }
+
                 CurrentToken += ch;
                 // Add "++", "--" or ">>" token
                 if ((ch == '+' || ch == '-' || ch == '>') && (code.peek() == ch))
@@ -343,14 +323,6 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 CurrentToken.clear();
                 continue;
             }
-        }
-
-
-        if (std::isspace(ch) || std::iscntrl(ch))
-        {
-            addtoken(CurrentToken.c_str(), lineno, FileIndex);
-            CurrentToken.clear();
-            continue;
         }
 
         CurrentToken += ch;

@@ -107,7 +107,7 @@ private:
         TEST_CASE(multi_character_character);
 
         TEST_CASE(stringify);
-        // TODO TEST_CASE(stringify2);
+        TEST_CASE(stringify2);
         TEST_CASE(ifdefwithfile);
         TEST_CASE(pragma);
     }

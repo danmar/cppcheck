@@ -912,10 +912,10 @@ private:
     {
         const std::string code("void func()\n"
                                "{\n"
-                               "	char a[256] = \"test\";\n"
-                               "	{\n"
-                               "		char b[256] = \"test\";\n"
-                               "	}\n"
+                               "char a[256] = \"test\";\n"
+                               "{\n"
+                               "char b[256] = \"test\";\n"
+                               "}\n"
                                "}\n");
 
         // tokenize..

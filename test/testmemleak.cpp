@@ -1522,8 +1522,8 @@ private:
         check("class A\n"
               "{\n"
               "public:\n"
-              "	   int * p;\n"
-              "	   A() { p = new int; }\n"
+              "    int * p;\n"
+              "    A() { p = new int; }\n"
               "};\n", true);
         ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: A::p\n", errout.str());
     }
@@ -1533,8 +1533,8 @@ private:
         check("class A\n"
               "{\n"
               "public:\n"
-              "	   int * p;\n"
-              "	   A();\n"
+              "    int * p;\n"
+              "    A();\n"
               "};\n"
               "A::A() : p(new int[10])\n"
               "{ }", true);
