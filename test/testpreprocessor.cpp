@@ -108,6 +108,7 @@ private:
 
         TEST_CASE(stringify);
         TEST_CASE(stringify2);
+        // TODO TEST_CASE(stringify3);
         TEST_CASE(ifdefwithfile);
         TEST_CASE(pragma);
     }
@@ -756,6 +757,17 @@ private:
     {
         const char filedata[] = "#define A(x) g(#x)\n"
                                 "A(abc);";
+
+        // expand macros..
+        std::string actual = OurPreprocessor::expandMacros(filedata);
+
+        ASSERT_EQUALS("\ng(\"abc\");", actual);
+    }
+
+    void stringify3()
+    {
+        const char filedata[] = "#define A(x) g(#x)\n"
+                                "A( abc);";
 
         // expand macros..
         std::string actual = OurPreprocessor::expandMacros(filedata);
