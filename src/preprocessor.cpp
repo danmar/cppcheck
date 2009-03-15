@@ -449,17 +449,20 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
         }
 
         if (line.find("#file \"") == 0 ||
-            line.find("#endfile") == 0)
+            line.find("#endfile") == 0 ||
+            line.find("#define") == 0)
         {
             // We must not remove #file tags or line numbers
             // are corrupted. File tags are removed by the tokenizer.
         }
         else if (!match ||
-                 line.find("#if") == 0 ||
-                 line.find("#else") == 0 ||
-                 line.find("#elif") == 0 ||
-                 line.find("#endif") == 0)
+                 line[0] == '#')
+        {
+            // Remove #if, #else, #pragma etc, leaving only
+            // #define, #file and #endfile. and also lines
+            // which are not part of this configuration.
             line = "";
+        }
 
         ret << line << "\n";
     }
