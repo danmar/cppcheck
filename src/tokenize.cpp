@@ -1459,6 +1459,7 @@ bool Tokenizer::simplifyIfAddBraces()
         // insert open brace..
         tok->insertToken("{");
         tok = tok->next();
+        Token *tempToken = tok;
 
         // insert close brace..
         // In most cases it would work to just search for the next ';' and insert a closing brace after it.
@@ -1467,31 +1468,31 @@ bool Tokenizer::simplifyIfAddBraces()
         // * if (cond1) if (cond2) { }
         int parlevel = 0;
         int indentlevel = 0;
-        while ((tok = tok->next()) != NULL)
+        while ((tempToken = tempToken->next()) != NULL)
         {
-            if (tok->str() == "{")
+            if (tempToken->str() == "{")
                 ++indentlevel;
 
-            else if (tok->str() == "}")
+            else if (tempToken->str() == "}")
             {
                 --indentlevel;
                 if (indentlevel == 0)
                     break;
             }
 
-            else if (tok->str() == "(")
+            else if (tempToken->str() == "(")
                 ++parlevel;
 
-            else if (tok->str() == ")")
+            else if (tempToken->str() == ")")
                 --parlevel;
 
-            else if (indentlevel == 0 && parlevel == 0 && tok->str() == ";")
+            else if (indentlevel == 0 && parlevel == 0 && tempToken->str() == ";")
                 break;
         }
 
-        if (tok)
+        if (tempToken)
         {
-            tok->insertToken("}");
+            tempToken->insertToken("}");
             ret = true;
         }
     }
