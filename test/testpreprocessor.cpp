@@ -107,6 +107,7 @@ private:
         TEST_CASE(multi_character_character);
 
         TEST_CASE(stringify);
+        // TODO TEST_CASE(stringify2);
         TEST_CASE(ifdefwithfile);
         TEST_CASE(pragma);
     }
@@ -749,6 +750,17 @@ private:
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\n\"abc\"", actual);
+    }
+
+    void stringify2()
+    {
+        const char filedata[] = "#define A(x) g(#x)\n"
+                                "A(abc);";
+
+        // expand macros..
+        std::string actual = OurPreprocessor::expandMacros(filedata);
+
+        ASSERT_EQUALS("\ng(\"abc\");", actual);
     }
 
     void pragma()
