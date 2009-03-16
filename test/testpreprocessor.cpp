@@ -108,7 +108,7 @@ private:
 
         TEST_CASE(stringify);
         TEST_CASE(stringify2);
-        // TODO TEST_CASE(stringify3);
+        TEST_CASE(stringify3);
         TEST_CASE(ifdefwithfile);
         TEST_CASE(pragma);
     }
@@ -703,7 +703,7 @@ private:
         // Preprocess..
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
-        ASSERT_EQUALS("\nprintf(\"[0x%lx-0x%lx)\", pstart, pend);", actual);
+        ASSERT_EQUALS("\nprintf(\"[0x%lx-0x%lx)\",pstart,pend);", actual);
     }
 
     void fmt2()

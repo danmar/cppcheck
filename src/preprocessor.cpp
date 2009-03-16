@@ -866,9 +866,13 @@ std::string Preprocessor::expandMacros(std::string code)
                         params.push_back(par);
                         par = "";
                     }
+                    else if (code[pos2] == ' ')
+                    {
+
+                    }
                     else if (parlevel >= 1)
                     {
-                        par += std::string(1, code[pos2]);
+                        par.append(1, code[pos2]);
                     }
                 }
             }
