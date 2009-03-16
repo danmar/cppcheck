@@ -101,6 +101,8 @@ private:
         TEST_CASE(varid2);
 
         TEST_CASE(assign1);
+
+        TEST_CASE(alloc);    // Buffer allocated with new
     }
 
 
@@ -544,6 +546,25 @@ private:
               "    str[3] = 0;\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Array index out of bounds\n"), errout.str());
+    }
+
+
+
+    void alloc()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *s = new char[10];\n"
+              "    s[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Array index out of bounds\n"), errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    char *s = malloc(10);\n"
+              "    s[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Array index out of bounds\n"), errout.str());
     }
 };
 

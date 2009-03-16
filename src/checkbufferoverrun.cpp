@@ -443,6 +443,14 @@ void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
             varid = tok->tokAt(1)->varId();
             nextTok = 8;
         }
+        else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc ( %num% ) ;"))
+        {
+            varname[0] = tok->strAt(1);
+            size = std::strtoul(tok->strAt(5), NULL, 10);
+            type = "char";
+            varid = tok->tokAt(1)->varId();
+            nextTok = 7;
+        }
         else
         {
             continue;
