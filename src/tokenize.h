@@ -38,6 +38,7 @@ private:
 
 public:
     Tokenizer();
+    Tokenizer(const Settings &settings);
     ~Tokenizer();
 
     /**
@@ -188,6 +189,7 @@ private:
     std::map<std::string, unsigned int> _typeSize;
     std::vector<std::string> _files;
     Token *_tokens;
+    Settings _settings;
 };
 
 //---------------------------------------------------------------------------

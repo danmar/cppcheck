@@ -41,6 +41,13 @@ Tokenizer::Tokenizer()
     _tokensBack = 0;
 }
 
+Tokenizer::Tokenizer(const Settings &settings)
+{
+    _tokens = 0;
+    _tokensBack = 0;
+    _settings = settings;
+}
+
 Tokenizer::~Tokenizer()
 {
     DeallocateTokens();
@@ -1240,6 +1247,10 @@ void Tokenizer::simplifyTokenList()
     }
 
     createLinks();
+    if (_settings._debug)
+    {
+        _tokens->printOut();
+    }
 }
 //---------------------------------------------------------------------------
 
