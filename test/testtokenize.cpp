@@ -122,6 +122,9 @@ private:
         TEST_CASE(simplify_constants2);
 
         TEST_CASE(findClassFunction1);
+
+        // Ticket 184 TEST_CASE(vardecl1);
+        // Ticket 184 TEST_CASE(vardecl2);
     }
 
 
@@ -1313,6 +1316,37 @@ private:
         ASSERT_EQUALS(0, (int)tok);
     }
 
+    void vardecl1()
+    {
+        const char code[] = "unsigned int a, b;";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+
+        ASSERT_EQUALS(" unsigned int a ; unsigned int b ;", ostr.str());
+    }
+
+    void vardecl2()
+    {
+        const char code[] = "void foo(a,b) unsigned int a, b; { }";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+
+        ASSERT_EQUALS(" void foo ( a , b ) unsigned int a ; unsigned int b ; { }", ostr.str());
+    }
 };
 
 REGISTER_TEST(TestTokenizer)
