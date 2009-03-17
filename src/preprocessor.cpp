@@ -433,7 +433,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
                 matching_ifdef.back() = ! matched_ifdef.back();
         }
 
-        else if (line == "#endif")
+        else if (line.compare(0, 6, "#endif") == 0)
         {
             if (! matched_ifdef.empty())
                 matched_ifdef.pop_back();
