@@ -78,6 +78,7 @@ private:
         for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
             s += tok2->str() + " ";
         ASSERT_EQUALS("; } ", s);
+        Tokenizer::deleteTokens(tok);
     }
 
 };

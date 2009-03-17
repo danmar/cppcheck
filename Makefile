@@ -217,7 +217,7 @@ test/teststl.o: test/teststl.cpp src/tokenize.h src/settings.h src/errorlogger.h
 test/testsuite.o: test/testsuite.cpp test/testsuite.h src/errorlogger.h src/settings.h
 	$(CXX) $(CXXFLAGS) -c -o test/testsuite.o test/testsuite.cpp
 
-test/testtoken.o: test/testtoken.cpp test/testsuite.h src/errorlogger.h src/settings.h src/token.h
+test/testtoken.o: test/testtoken.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o test/testtoken.o test/testtoken.cpp
 
 test/testtokenize.o: test/testtokenize.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h

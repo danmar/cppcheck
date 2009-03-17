@@ -19,6 +19,7 @@
 
 #include <cstring>
 #include "testsuite.h"
+#include "../src/tokenize.h"
 #include "../src/token.h"
 
 extern std::ostringstream errout;
@@ -54,6 +55,8 @@ private:
         ASSERT_EQUALS(last->previous()->previous()->str(), "1");
         if (token->previous())
             ASSERT_EQUALS("Null was expected", "");
+
+        Tokenizer::deleteTokens(token);
     }
 
 
