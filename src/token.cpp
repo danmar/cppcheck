@@ -49,7 +49,7 @@ void Token::str(const char s[])
 {
     _str = s;
     _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
-    _isNumber = bool(std::isdigit(_str[(_str[0]=='-')?1:0]) != 0);
+    _isNumber = bool(std::isdigit(_str[(_str[0] == '-') ? 1 : 0]) != 0);
     if (_str == "true" || _str == "false")
         _isBoolean = true;
     else
