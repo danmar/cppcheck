@@ -700,9 +700,9 @@ void Tokenizer::simplifyNamespaces()
                 tok->deleteNext();
                 start->deleteNext();
                 start->deleteNext();
-                token = start->next();
                 if (start->previous())
                 {
+                    token = start->next();
                     start = start->previous();
                     start->deleteNext();
                 }
