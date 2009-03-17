@@ -535,20 +535,23 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                 int indentlevel = 0;
                 for (; tok3; tok3 = tok3->next())
                 {
-                    for (unsigned int i = 0; i <= type.size(); ++i)
                     {
-                        if (i == type.size())
-                        {
-                            if (tok3->str() == name)
-                                addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
-                            else
-                                addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
-                        }
-                        else if (tok3->str() == type[i])
-                        {
-                            addtoken(types2[i].c_str(), tok3->linenr(), tok3->fileIndex());
-                            break;
-                        }
+                        // search for this token in the type vector
+                        unsigned int itype = 0;
+                        while (itype < type.size() && type[itype] != tok3->str())
+                            ++itype;
+
+                        // replace type with given type..
+                        if (itype < type.size())
+                            addtoken(types2[itype].c_str(), tok3->linenr(), tok3->fileIndex());
+
+                        // replace name..
+                        else if (tok3->str() == name)
+                            addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
+
+                        // copy
+                        else
+                            addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
                     }
 
                     if (tok3->str() == "{")
