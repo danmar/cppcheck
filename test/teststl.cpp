@@ -128,6 +128,24 @@ private:
                   "}\n");
             ASSERT_EQUALS(std::string(""), errout.str());
         }
+
+        {
+            check("void foo()\n"
+                  "{\n"
+                  "    std::vector<int> foo;\n"
+                  "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
+                  "    {\n"
+                  "        if (ii == foo.size())\n"
+                  "        {\n"
+                  "        }\n"
+                  "        else\n"
+                  "        {\n"
+                  "            foo[ii] = 0;\n"
+                  "        }\n"
+                  "    }\n"
+                  "}\n");
+            // TODO ASSERT_EQUALS(std::string(""), errout.str());
+        }
     }
 
 
