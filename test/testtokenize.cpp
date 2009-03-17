@@ -61,6 +61,8 @@ private:
 
     void run()
     {
+        TEST_CASE(minus);
+
         TEST_CASE(longtok);
 
         TEST_CASE(removeCast1);
@@ -168,6 +170,14 @@ private:
         }
 
         return ostr.str();
+    }
+
+
+    void minus()
+    {
+        ASSERT_EQUALS("i = -12", tokenizeAndStringify("i = -12"));
+        ASSERT_EQUALS("1 - 2", tokenizeAndStringify("1-2"));
+        ASSERT_EQUALS("foo ( -1 ) - 2", tokenizeAndStringify("foo(-1)-2"));
     }
 
 

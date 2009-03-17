@@ -336,6 +336,16 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     }
     addtoken(CurrentToken.c_str(), lineno, FileIndex);
 
+    // Combine "- %num%" ..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[(+-*/=,] - %num%") && tok->strAt(2)[0] != '-')
+        {
+            tok->next()->str((std::string("-") + tok->strAt(2)).c_str());
+            tok->next()->deleteNext();
+        }
+    }
+
     // Combine tokens..
     for (Token *tok = _tokens; tok && tok->next(); tok = tok->next())
     {

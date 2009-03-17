@@ -408,9 +408,9 @@ void CheckOther::CheckUnsignedDivision()
             }
         }
 
-        else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / - %num%"))
+        else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %num%"))
         {
-            if (ErrorLogger::udivError())
+            if (tok->strAt(3)[0] == '-' && ErrorLogger::udivError())
             {
                 const char *varname1 = tok->strAt(1);
                 char sign1 = varsign[varname1];
@@ -421,11 +421,11 @@ void CheckOther::CheckUnsignedDivision()
             }
         }
 
-        else if (Token::Match(tok, "[([=*/+-] - %num% / %var%"))
+        else if (Token::Match(tok, "[([=*/+-,] %num% / %var%"))
         {
-            if (ErrorLogger::udivError())
+            if (tok->strAt(1)[0] == '-' && ErrorLogger::udivError())
             {
-                const char *varname2 = tok->strAt(4);
+                const char *varname2 = tok->strAt(3);
                 char sign2 = varsign[varname2];
                 if (sign2 == 'u')
                 {
