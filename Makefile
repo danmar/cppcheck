@@ -124,10 +124,10 @@ src/checkother.o: src/checkother.cpp src/checkother.h src/tokenize.h src/setting
 src/checksecurity.o: src/checksecurity.cpp src/checksecurity.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
 	$(CXX) $(CXXFLAGS) -c -o src/checksecurity.o src/checksecurity.cpp
 
-src/checkstl.o: src/checkstl.cpp src/checkstl.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
+src/checkstl.o: src/checkstl.cpp src/checkstl.h src/check.h src/settings.h src/tokenize.h src/errorlogger.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkstl.o src/checkstl.cpp
 
-src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/checkstl.h src/filelister.h
+src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/filelister.h
 	$(CXX) $(CXXFLAGS) -c -o src/cppcheck.o src/cppcheck.cpp
 
 src/cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h src/cppcheck.h src/checkfunctionusage.h src/tokenize.h src/token.h src/threadexecutor.h
@@ -211,7 +211,7 @@ test/testsecurity.o: test/testsecurity.cpp src/tokenize.h src/settings.h src/err
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp
 
-test/teststl.o: test/teststl.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkstl.h test/testsuite.h
+test/teststl.o: test/teststl.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkstl.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/teststl.o test/teststl.cpp
 
 test/testsuite.o: test/testsuite.cpp test/testsuite.h src/errorlogger.h src/settings.h

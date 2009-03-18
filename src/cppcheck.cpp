@@ -28,7 +28,6 @@
 #include "checkheaders.h"
 #include "checkother.h"
 #include "checkfunctionusage.h"
-#include "checkstl.h"
 #include "filelister.h"
 
 #include <algorithm>
@@ -482,19 +481,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Unusual pointer arithmetic
     if (ErrorLogger::strPlusChar())
         checkOther.strPlusChar();
-
-    CheckStl checkStl(&_tokenizer, this);
-    if (ErrorLogger::iteratorUsage())
-        checkStl.iterators();
-
-    if (ErrorLogger::stlOutOfBounds())
-        checkStl.stlOutOfBounds();
-
-    if (ErrorLogger::erase())
-        checkStl.erase();
-
-    if (ErrorLogger::pushback())
-        checkStl.pushback();
 }
 
 Settings CppCheck::settings() const

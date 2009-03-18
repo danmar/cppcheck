@@ -18,21 +18,8 @@
  */
 
 #include "checkstl.h"
-#include "errorlogger.h"
-#include "token.h"
 #include "tokenize.h"
-
-
-CheckStl::CheckStl(const Tokenizer *tokenizer, ErrorLogger *errorLogger)
-        : _tokenizer(tokenizer), _errorLogger(errorLogger)
-{
-
-}
-
-CheckStl::~CheckStl()
-{
-
-}
+#include "token.h"
 
 
 void CheckStl::iterators()
@@ -48,7 +35,7 @@ void CheckStl::iterators()
             // Same container..
             if (tok->tokAt(2)->str() == tok->tokAt(10)->str())
                 continue;
-            _errorLogger->iteratorUsage(_tokenizer, tok, tok->tokAt(2)->str(), tok->tokAt(10)->str());
+            errorIteratorUsage(tok, tok->strAt(2), tok->strAt(10));
         }
 
         // it = foo.begin();
@@ -61,7 +48,7 @@ void CheckStl::iterators()
             // Same container..
             if (tok->tokAt(2)->str() == tok->tokAt(12)->str())
                 continue;
-            _errorLogger->iteratorUsage(_tokenizer, tok, tok->tokAt(2)->str(), tok->tokAt(12)->str());
+            errorIteratorUsage(tok, tok->strAt(2), tok->strAt(12));
         }
     }
 }
@@ -262,4 +249,13 @@ void CheckStl::pushback()
     }
 }
 
+
+void CheckStl::errorIteratorUsage(const Token * const tok, const char container1[], const char container2[])
+{
+    ErrorLogger::ErrorMessage errmsg;
+    errmsg._severity = "error";
+    errmsg._msg = std::string("Same iterator is used with both ") + container1 + " and " + container2;
+    errmsg._id = "iteratorUsage";
+    _errorLogger->reportErr(errmsg);
+}
 

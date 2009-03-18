@@ -23,15 +23,27 @@
 #define checkstlH
 //---------------------------------------------------------------------------
 
-class ErrorLogger;
-class Token;
-class Tokenizer;
+#include "check.h"
 
-class CheckStl
+class Token;
+
+class CheckStl : public Check
 {
 public:
-    CheckStl(const Tokenizer *tokenizer, ErrorLogger *errorLogger);
-    ~CheckStl();
+
+    CheckStl(const Tokenizer * const tokenizer, const Settings &settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    {
+
+    }
+
+    void runChecks()
+    {
+        stlOutOfBounds();
+        iterators();
+        erase();
+        pushback();
+    }
 
 
     /**
@@ -57,8 +69,6 @@ public:
     void pushback();
 
 private:
-    const Tokenizer *_tokenizer;
-    ErrorLogger *_errorLogger;
 
     /**
      * Helper function used by the 'erase' function
@@ -66,6 +76,8 @@ private:
      * @param it iterator token
      */
     void eraseCheckLoop(const Token *it);
+
+    void errorIteratorUsage(const Token * const tok, const char container1[], const char container2[]);
 };
 
 //---------------------------------------------------------------------------

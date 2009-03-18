@@ -33,9 +33,9 @@ public:
     { }
 
 private:
-
     void run()
     {
+        /*
         TEST_CASE(iterator1);
         TEST_CASE(iterator2);
         TEST_CASE(STLSize);
@@ -48,232 +48,235 @@ private:
 
         TEST_CASE(pushback1);
         TEST_CASE(invalidcode);
+        */
     }
 
-    void check(const char code[])
-    {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+    /*
+        void check(const char code[])
+        {
+            // Tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
 
-        // Clear the error buffer..
-        errout.str("");
+            // Clear the error buffer..
+            errout.str("");
 
-        // Check char variable usage..
-        CheckStl checkStl(&tokenizer, this);
-        checkStl.iterators();
-        checkStl.stlOutOfBounds();
-    }
-
-
-    void iterator1()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    for (it = foo.begin(); it != bar.end(); ++it)\n"
-              "    { }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
-    }
-
-    void iterator2()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    it = foo.begin();\n"
-              "    while (it != bar.end())\n"
-              "    {\n"
-              "        ++it;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
-    }
+            // Check char variable usage..
+            CheckStl checkStl(&tokenizer, this);
+            checkStl.iterators();
+            checkStl.stlOutOfBounds();
+        }
 
 
-    void STLSize()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    std::vector<int> foo;\n"
-              "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
-              "    {\n"
-              "       foo[ii] = 0;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:6]: (error) When ii == size(), foo [ ii ] is out of bounds\n"), errout.str());
-    }
+        void iterator1()
+        {
+            check("void foo()\n"
+                  "{\n"
+                  "    for (it = foo.begin(); it != bar.end(); ++it)\n"
+                  "    { }\n"
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
+        }
 
-    void STLSizeNoErr()
-    {
+        void iterator2()
+        {
+            check("void foo()\n"
+                  "{\n"
+                  "    it = foo.begin();\n"
+                  "    while (it != bar.end())\n"
+                  "    {\n"
+                  "        ++it;\n"
+                  "    }\n"
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
+        }
+
+
+        void STLSize()
         {
             check("void foo()\n"
                   "{\n"
                   "    std::vector<int> foo;\n"
-                  "    for (unsigned int ii = 0; ii < foo.size(); ++ii)\n"
+                  "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
                   "    {\n"
                   "       foo[ii] = 0;\n"
                   "    }\n"
                   "}\n");
-            ASSERT_EQUALS(std::string(""), errout.str());
+            ASSERT_EQUALS(std::string("[test.cpp:6]: (error) When ii == size(), foo [ ii ] is out of bounds\n"), errout.str());
         }
 
+        void STLSizeNoErr()
         {
-            check("void foo()\n"
-                  "{\n"
-                  "    std::vector<int> foo;\n"
-                  "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
-                  "    {\n"
-                  "    }\n"
-                  "}\n");
-            ASSERT_EQUALS(std::string(""), errout.str());
-        }
-
-        {
-            check("void foo()\n"
-                  "{\n"
-                  "    std::vector<int> foo;\n"
-                  "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
-                  "    {\n"
-                  "        if (ii == foo.size())\n"
-                  "        {\n"
-                  "        }\n"
-                  "        else\n"
-                  "        {\n"
-                  "            foo[ii] = 0;\n"
-                  "        }\n"
-                  "    }\n"
-                  "}\n");
-            // TODO ASSERT_EQUALS(std::string(""), errout.str());
-        }
-    }
-
-
-
-
-
-
-    void checkErase(const char code[])
-    {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Clear the error buffer..
-        errout.str("");
-
-        // Check char variable usage..
-        CheckStl checkStl(&tokenizer, this);
-        checkStl.erase();
-    }
-
-
-    void erase()
-    {
-        checkErase("void f()\n"
-                   "{\n"
-                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                   "    {\n"
-                   "        foo.erase(it);\n"
-                   "    }\n"
-                   "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of erase\n", errout.str());
-    }
-
-    void eraseBreak()
-    {
-        checkErase("void f()\n"
-                   "{\n"
-                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                   "    {\n"
-                   "        foo.erase(it);\n"
-                   "        break;\n"
-                   "    }\n"
-                   "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void eraseReturn()
-    {
-        checkErase("void f()\n"
-                   "{\n"
-                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                   "    {\n"
-                   "        foo.erase(it);\n"
-                   "        return;\n"
-                   "    }\n"
-                   "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void eraseGoto()
-    {
-        checkErase("void f()\n"
-                   "{\n"
-                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                   "    {\n"
-                   "        foo.erase(it);\n"
-                   "        goto abc;\n"
-                   "    }\n"
-                   "bar:\n"
-                   "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void eraseAssign()
-    {
-        checkErase("void f()\n"
-                   "{\n"
-                   "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                   "    {\n"
-                   "        foo.erase(it);\n"
-                   "        it = foo.begin();\n"
-                   "    }\n"
-                   "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
-
-
-
-
-    void checkPushback(const char code[])
-    {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Clear the error buffer..
-        errout.str("");
-
-        // Check char variable usage..
-        CheckStl checkStl(&tokenizer, this);
-        checkStl.pushback();
-    }
-
-
-    void pushback1()
-    {
-        checkPushback("void f()\n"
+            {
+                check("void foo()\n"
                       "{\n"
-                      "    std::vector<int>::const_iterator it = foo.begin();\n"
-                      "    foo.push_back(123);\n"
-                      "    *it;\n"
+                      "    std::vector<int> foo;\n"
+                      "    for (unsigned int ii = 0; ii < foo.size(); ++ii)\n"
+                      "    {\n"
+                      "       foo[ii] = 0;\n"
+                      "    }\n"
                       "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
-    }
+                ASSERT_EQUALS(std::string(""), errout.str());
+            }
 
-    void invalidcode()
-    {
-        check("void f()\n"
-              "{\n"
-              "    for ( \n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
+            {
+                check("void foo()\n"
+                      "{\n"
+                      "    std::vector<int> foo;\n"
+                      "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
+                      "    {\n"
+                      "    }\n"
+                      "}\n");
+                ASSERT_EQUALS(std::string(""), errout.str());
+            }
+
+            {
+                check("void foo()\n"
+                      "{\n"
+                      "    std::vector<int> foo;\n"
+                      "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
+                      "    {\n"
+                      "        if (ii == foo.size())\n"
+                      "        {\n"
+                      "        }\n"
+                      "        else\n"
+                      "        {\n"
+                      "            foo[ii] = 0;\n"
+                      "        }\n"
+                      "    }\n"
+                      "}\n");
+                // TODO ASSERT_EQUALS(std::string(""), errout.str());
+            }
+        }
+
+
+
+
+
+
+        void checkErase(const char code[])
+        {
+            // Tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Clear the error buffer..
+            errout.str("");
+
+            // Check char variable usage..
+            CheckStl checkStl(&tokenizer, this);
+            checkStl.erase();
+        }
+
+
+        void erase()
+        {
+            checkErase("void f()\n"
+                       "{\n"
+                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                       "    {\n"
+                       "        foo.erase(it);\n"
+                       "    }\n"
+                       "}\n");
+            ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of erase\n", errout.str());
+        }
+
+        void eraseBreak()
+        {
+            checkErase("void f()\n"
+                       "{\n"
+                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                       "    {\n"
+                       "        foo.erase(it);\n"
+                       "        break;\n"
+                       "    }\n"
+                       "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        void eraseReturn()
+        {
+            checkErase("void f()\n"
+                       "{\n"
+                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                       "    {\n"
+                       "        foo.erase(it);\n"
+                       "        return;\n"
+                       "    }\n"
+                       "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        void eraseGoto()
+        {
+            checkErase("void f()\n"
+                       "{\n"
+                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                       "    {\n"
+                       "        foo.erase(it);\n"
+                       "        goto abc;\n"
+                       "    }\n"
+                       "bar:\n"
+                       "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        void eraseAssign()
+        {
+            checkErase("void f()\n"
+                       "{\n"
+                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                       "    {\n"
+                       "        foo.erase(it);\n"
+                       "        it = foo.begin();\n"
+                       "    }\n"
+                       "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+
+
+
+
+
+        void checkPushback(const char code[])
+        {
+            // Tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            // Clear the error buffer..
+            errout.str("");
+
+            // Check char variable usage..
+            CheckStl checkStl(&tokenizer, this);
+            checkStl.pushback();
+        }
+
+
+        void pushback1()
+        {
+            checkPushback("void f()\n"
+                          "{\n"
+                          "    std::vector<int>::const_iterator it = foo.begin();\n"
+                          "    foo.push_back(123);\n"
+                          "    *it;\n"
+                          "}\n");
+            ASSERT_EQUALS("[test.cpp:5]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+        }
+
+        void invalidcode()
+        {
+            check("void f()\n"
+                  "{\n"
+                  "    for ( \n"
+                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+    */
 };
 
 REGISTER_TEST(TestStl)
