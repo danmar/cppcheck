@@ -1324,7 +1324,7 @@ private:
         const Token *tok = Tokenizer::FindClassFunction(tokenizer.tokens(), "Fred", "%var%", i);
         ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
         tok = Tokenizer::FindClassFunction(tok->next(), "Fred", "%var%", i);
-        ASSERT_EQUALS(0, (int)tok);
+        ASSERT_EQUALS(0, tok ? 1 : 0);
     }
 
     void vardecl1()
