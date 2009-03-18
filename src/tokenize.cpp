@@ -478,6 +478,8 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
         }
     }
 
+    simplifyVarDecl();
+
     // Handle templates..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -1109,116 +1111,8 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
-
-
-    // Split up variable declarations if possible..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (! Token::Match(tok, "[{};]"))
-            continue;
-
-        Token *type0 = tok->next();
-        if (!Token::Match(type0, "%type%"))
-            continue;
-        if (Token::Match(type0, "else|return"))
-            continue;
-
-        Token *tok2 = NULL;
-        unsigned int typelen = 0;
-
-        if (Token::Match(type0, "%type% %var% ,|="))
-        {
-            if (type0->next()->str() != "operator")
-            {
-                tok2 = type0->tokAt(2);    // The ',' or '=' token
-                typelen = 1;
-            }
-        }
-
-        else if (Token::Match(type0, "%type% * %var% ,|="))
-        {
-            if (type0->next()->next()->str() != "operator")
-            {
-                tok2 = type0->tokAt(3);    // The ',' token
-                typelen = 1;
-            }
-        }
-
-        else if (Token::Match(type0, "%type% %var% [ %num% ] ,"))
-        {
-            tok2 = type0->tokAt(5);    // The ',' token
-            typelen = 1;
-        }
-
-        else if (Token::Match(type0, "%type% * %var% [ %num% ] ,"))
-        {
-            tok2 = type0->tokAt(6);    // The ',' token
-            typelen = 1;
-        }
-
-        else if (Token::Match(type0, "struct %type% %var% ,|="))
-        {
-            tok2 = type0->tokAt(3);
-            typelen = 2;
-        }
-
-        else if (Token::Match(type0, "struct %type% * %var% ,|="))
-        {
-            tok2 = type0->tokAt(4);
-            typelen = 2;
-        }
-
-
-        if (tok2)
-        {
-            if (tok2->str() == ",")
-            {
-                tok2->str(";");
-                InsertTokens(tok2, type0, typelen);
-            }
-
-            else
-            {
-                Token *eq = tok2;
-
-                int parlevel = 0;
-                while (tok2)
-                {
-                    if (strchr("{(", tok2->aaaa0()))
-                    {
-                        ++parlevel;
-                    }
-
-                    else if (strchr("})", tok2->aaaa0()))
-                    {
-                        if (parlevel < 0)
-                            break;
-                        --parlevel;
-                    }
-
-                    else if (parlevel == 0 && strchr(";,", tok2->aaaa0()))
-                    {
-                        // "type var ="   =>   "type var; var ="
-                        Token *VarTok = type0->tokAt(typelen);
-                        if (VarTok->aaaa0() == '*')
-                            VarTok = VarTok->next();
-                        InsertTokens(eq, VarTok, 2);
-                        eq->str(";");
-
-                        // "= x, "   =>   "= x; type "
-                        if (tok2->str() == ",")
-                        {
-                            tok2->str(";");
-                            InsertTokens(tok2, type0, typelen);
-                        }
-                        break;
-                    }
-
-                    tok2 = tok2->next();
-                }
-            }
-        }
-    }
+    // Simplify variable declarations
+    simplifyVarDecl();
 
     // In case variable declarations have been updated...
     setVarId();
@@ -1784,6 +1678,131 @@ static void incdec(std::string &value, const std::string &op)
     std::ostringstream ostr;
     ostr << ivalue;
     value = ostr.str();
+}
+
+
+
+bool Tokenizer::simplifyVarDecl()
+{
+    // Split up variable declarations..
+    // "int a=4;" => "int a; a=4;"
+    bool ret = false;
+
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->previous() && !Token::Match(tok->previous(), "[{};)]"))
+            continue;
+
+        Token *type0 = tok;
+        if (!Token::Match(type0, "%type%"))
+            continue;
+        if (Token::Match(type0, "else|return"))
+            continue;
+
+        bool isconst = false;
+        Token *tok2 = type0;
+        unsigned int typelen = 1;
+
+        while (Token::Match(tok2, "%type% %type% *| %var%"))
+        {
+            if (tok2->str() == "const")
+                isconst = true;
+
+            tok2 = tok2->next();
+            ++typelen;
+        }
+
+        // Don't split up const declaration..
+        if (isconst && Token::Match(tok2, "%type% %var% ="))
+            continue;
+
+        if (Token::Match(tok2, "%type% %var% ,|="))
+        {
+            if (tok2->next()->str() != "operator")
+                tok2 = tok2->tokAt(2);    // The ',' or '=' token
+            else
+                tok2 = NULL;
+        }
+
+        else if (Token::Match(tok2, "%type% * %var% ,|="))
+        {
+            if (tok2->next()->next()->str() != "operator")
+                tok2 = tok2->tokAt(3);    // The ',' token
+            else
+                tok2 = NULL;
+        }
+
+        else if (Token::Match(tok2, "%type% %var% [ %num% ] ,"))
+        {
+            tok2 = tok2->tokAt(5);    // The ',' token
+        }
+
+        else if (Token::Match(tok2, "%type% * %var% [ %num% ] ,"))
+        {
+            tok2 = tok2->tokAt(6);    // The ',' token
+        }
+
+        else
+        {
+            tok2 = NULL;
+            typelen = 0;
+        }
+
+
+        if (tok2)
+        {
+            ret = true;
+
+            if (tok2->str() == ",")
+            {
+                tok2->str(";");
+                InsertTokens(tok2, type0, typelen);
+            }
+
+            else
+            {
+                Token *eq = tok2;
+
+                int parlevel = 0;
+                while (tok2)
+                {
+                    if (strchr("{(", tok2->aaaa0()))
+                    {
+                        ++parlevel;
+                    }
+
+                    else if (strchr("})", tok2->aaaa0()))
+                    {
+                        if (parlevel < 0)
+                            break;
+                        --parlevel;
+                    }
+
+                    else if (parlevel == 0 && strchr(";,", tok2->aaaa0()))
+                    {
+                        // "type var ="   =>   "type var; var ="
+                        Token *VarTok = type0->tokAt(typelen);
+                        if (VarTok->aaaa0() == '*')
+                            VarTok = VarTok->next();
+                        InsertTokens(eq, VarTok, 2);
+                        eq->str(";");
+
+                        // "= x, "   =>   "= x; type "
+                        if (tok2->str() == ",")
+                        {
+                            tok2->str(";");
+                            InsertTokens(tok2, type0, typelen);
+                        }
+                        break;
+                    }
+
+                    tok2 = tok2->next();
+                }
+            }
+        }
+    }
+
+    return ret;
 }
 
 

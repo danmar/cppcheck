@@ -89,6 +89,12 @@ public:
     static const Token *FindClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel);
 
 
+    /**
+     * Simplify variable declarations
+     */
+    bool simplifyVarDecl();
+
+
 protected:
 
     /** Add braces to an if-block
