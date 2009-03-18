@@ -344,6 +344,12 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
             tok->next()->str((std::string("-") + tok->strAt(2)).c_str());
             tok->next()->deleteNext();
         }
+
+        if (Token::Match(tok, "return - %num%") && tok->strAt(2)[0] != '-')
+        {
+            tok->next()->str((std::string("-") + tok->strAt(2)).c_str());
+            tok->next()->deleteNext();
+        }
     }
 
     // Combine tokens..
