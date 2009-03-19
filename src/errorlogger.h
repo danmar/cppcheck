@@ -95,6 +95,15 @@ public:
      */
     virtual void reportStatus(unsigned int index, unsigned int max) = 0;
 
+    void genericError(const Tokenizer *tokenizer, const Token *Location, const std::string &msg)
+    {
+        _writemsg(tokenizer, Location, "error", "" + msg + "", "genericError");
+    }
+    static bool genericError()
+    {
+        return true;
+    }
+
     void arrayIndexOutOfBounds(const Tokenizer *tokenizer, const std::list<const Token *> &Location)
     {
         _writemsg(tokenizer, Location, "all", "Array index out of bounds", "arrayIndexOutOfBounds");
