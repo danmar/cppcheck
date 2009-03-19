@@ -35,7 +35,6 @@ public:
 private:
     void run()
     {
-        /*
         TEST_CASE(iterator1);
         TEST_CASE(iterator2);
         TEST_CASE(STLSize);
@@ -48,10 +47,8 @@ private:
 
         TEST_CASE(pushback1);
         TEST_CASE(invalidcode);
-        */
     }
 
-    /*
         void check(const char code[])
         {
             // Tokenize..
@@ -62,10 +59,9 @@ private:
             // Clear the error buffer..
             errout.str("");
 
-            // Check char variable usage..
-            CheckStl checkStl(&tokenizer, this);
-            checkStl.iterators();
-            checkStl.stlOutOfBounds();
+            // Check..
+            CheckStl checkStl;
+            checkStl.runChecks(&tokenizer, (const Settings *)0, this);
         }
 
 
@@ -154,85 +150,68 @@ private:
 
 
 
-
-        void checkErase(const char code[])
-        {
-            // Tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Clear the error buffer..
-            errout.str("");
-
-            // Check char variable usage..
-            CheckStl checkStl(&tokenizer, this);
-            checkStl.erase();
-        }
-
-
         void erase()
         {
-            checkErase("void f()\n"
-                       "{\n"
-                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                       "    {\n"
-                       "        foo.erase(it);\n"
-                       "    }\n"
-                       "}\n");
+            check("void f()\n"
+                  "{\n"
+                  "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                  "    {\n"
+                  "        foo.erase(it);\n"
+                  "    }\n"
+                  "}\n");
             ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of erase\n", errout.str());
         }
 
         void eraseBreak()
         {
-            checkErase("void f()\n"
-                       "{\n"
-                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                       "    {\n"
-                       "        foo.erase(it);\n"
-                       "        break;\n"
-                       "    }\n"
-                       "}\n");
+            check("void f()\n"
+                  "{\n"
+                  "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                  "    {\n"
+                  "        foo.erase(it);\n"
+                  "        break;\n"
+                  "    }\n"
+                  "}\n");
             ASSERT_EQUALS("", errout.str());
         }
 
         void eraseReturn()
         {
-            checkErase("void f()\n"
-                       "{\n"
-                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                       "    {\n"
-                       "        foo.erase(it);\n"
-                       "        return;\n"
-                       "    }\n"
-                       "}\n");
+            check("void f()\n"
+                  "{\n"
+                  "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                  "    {\n"
+                  "        foo.erase(it);\n"
+                  "        return;\n"
+                  "    }\n"
+                  "}\n");
             ASSERT_EQUALS("", errout.str());
         }
 
         void eraseGoto()
         {
-            checkErase("void f()\n"
-                       "{\n"
-                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                       "    {\n"
-                       "        foo.erase(it);\n"
-                       "        goto abc;\n"
-                       "    }\n"
-                       "bar:\n"
-                       "}\n");
+            check("void f()\n"
+                  "{\n"
+                  "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                  "    {\n"
+                  "        foo.erase(it);\n"
+                  "        goto abc;\n"
+                  "    }\n"
+                  "bar:\n"
+                  "}\n");
             ASSERT_EQUALS("", errout.str());
         }
 
         void eraseAssign()
         {
-            checkErase("void f()\n"
-                       "{\n"
-                       "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                       "    {\n"
-                       "        foo.erase(it);\n"
-                       "        it = foo.begin();\n"
-                       "    }\n"
-                       "}\n");
+            check("void f()\n"
+                  "{\n"
+                  "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+                  "    {\n"
+                  "        foo.erase(it);\n"
+                  "        it = foo.begin();\n"
+                  "    }\n"
+                  "}\n");
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -240,31 +219,14 @@ private:
 
 
 
-
-        void checkPushback(const char code[])
-        {
-            // Tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // Clear the error buffer..
-            errout.str("");
-
-            // Check char variable usage..
-            CheckStl checkStl(&tokenizer, this);
-            checkStl.pushback();
-        }
-
-
         void pushback1()
         {
-            checkPushback("void f()\n"
-                          "{\n"
-                          "    std::vector<int>::const_iterator it = foo.begin();\n"
-                          "    foo.push_back(123);\n"
-                          "    *it;\n"
-                          "}\n");
+            check("void f()\n"
+                  "{\n"
+                  "    std::vector<int>::const_iterator it = foo.begin();\n"
+                  "    foo.push_back(123);\n"
+                  "    *it;\n"
+                  "}\n");
             ASSERT_EQUALS("[test.cpp:5]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
         }
 
@@ -276,7 +238,6 @@ private:
                   "}\n");
             ASSERT_EQUALS("", errout.str());
         }
-    */
 };
 
 REGISTER_TEST(TestStl)
