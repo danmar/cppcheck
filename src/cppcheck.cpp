@@ -30,6 +30,8 @@
 #include "checkfunctionusage.h"
 #include "filelister.h"
 
+#include "check.h"
+
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -481,6 +483,11 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Unusual pointer arithmetic
     if (ErrorLogger::strPlusChar())
         checkOther.strPlusChar();
+
+    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+    {
+        (*it)->runChecks(&_tokenizer, &_settings, this);
+    }
 }
 
 Settings CppCheck::settings() const

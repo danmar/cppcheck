@@ -21,6 +21,7 @@
 #define checkH
 
 #include "settings.h"
+#include <list>
 
 class Tokenizer;
 class ErrorLogger;
@@ -28,21 +29,26 @@ class ErrorLogger;
 class Check
 {
 public:
-
-    Check(const Tokenizer * const tokenizer, const Settings &settings, ErrorLogger *errorLogger)
-            : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
-    { }
+    // This constructor is used when registering the CheckClass
+    Check()
+    {
+        instances().push_back(this);
+    }
 
     virtual ~Check()
-    { }
+    {
+        instances().remove(this);
+    }
+
+    /** get instances of this */
+    static std::list<Check *> &instances()
+    {
+        static std::list<Check *> _instances;
+        return _instances;
+    }
 
     /** run checks.. */
-    virtual void runChecks() = 0;
-
-protected:
-    const Tokenizer * const _tokenizer;
-    const Settings &_settings;
-    ErrorLogger *_errorLogger;
+    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
 };
 
 #endif

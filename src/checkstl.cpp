@@ -22,6 +22,10 @@
 #include "token.h"
 
 
+// Create a static instance of this
+static CheckStl instance;
+
+
 void CheckStl::iterators()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
