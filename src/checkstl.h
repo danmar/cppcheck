@@ -76,8 +76,6 @@ private:
      * @param it iterator token
      */
     void eraseCheckLoop(const Token *it);
-
-    void errorIteratorUsage(const Token * const tok, const char container1[], const char container2[]);
 };
 
 //---------------------------------------------------------------------------

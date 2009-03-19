@@ -35,7 +35,7 @@ void CheckStl::iterators()
             // Same container..
             if (tok->tokAt(2)->str() == tok->tokAt(10)->str())
                 continue;
-            errorIteratorUsage(tok, tok->strAt(2), tok->strAt(10));
+            _errorLogger->iteratorUsage(_tokenizer, tok, tok->strAt(2), tok->strAt(10));
         }
 
         // it = foo.begin();
@@ -48,7 +48,7 @@ void CheckStl::iterators()
             // Same container..
             if (tok->tokAt(2)->str() == tok->tokAt(12)->str())
                 continue;
-            errorIteratorUsage(tok, tok->strAt(2), tok->strAt(12));
+            _errorLogger->iteratorUsage(_tokenizer, tok, tok->strAt(2), tok->strAt(12));
         }
     }
 }
@@ -250,12 +250,4 @@ void CheckStl::pushback()
 }
 
 
-void CheckStl::errorIteratorUsage(const Token * const tok, const char container1[], const char container2[])
-{
-    ErrorLogger::ErrorMessage errmsg;
-    errmsg._severity = "error";
-    errmsg._msg = std::string("Same iterator is used with both ") + container1 + " and " + container2;
-    errmsg._id = "iteratorUsage";
-    _errorLogger->reportErr(errmsg);
-}
 
