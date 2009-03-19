@@ -57,6 +57,9 @@ int main()
     // Error messages..
     std::list<Message> err;
 
+    // Generic error message
+    err.push_back(Message("genericError", Message::error, "%1", "msg"));
+
     // checkbufferoverrun.cpp
     err.push_back(Message("arrayIndexOutOfBounds", Message::all, "Array index out of bounds"));
     err.push_back(Message("bufferOverrun", Message::all, "Buffer overrun"));

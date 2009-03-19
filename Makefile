@@ -5,7 +5,8 @@ BIN=${DESTDIR}/usr/bin
 
 ###### Object Files
 
-OBJECTS =     src/checkbufferoverrun.o \
+OBJECTS =     src/checkautovariables.o \
+              src/checkbufferoverrun.o \
               src/checkclass.o \
               src/checkdangerousfunctions.o \
               src/checkfunctionusage.o \
@@ -49,6 +50,7 @@ TESTOBJ =     test/testbufferoverrun.o \
               test/testtokenize.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
+              src/checkautovariables.o \
               src/checkbufferoverrun.o \
               src/checkclass.o \
               src/checkdangerousfunctions.o \
@@ -100,6 +102,9 @@ install:	cppcheck
 
 ###### Build
 
+src/checkautovariables.o: src/checkautovariables.cpp src/checkautovariables.h src/check.h src/settings.h src/token.h src/tokenize.h src/errorlogger.h
+	$(CXX) $(CXXFLAGS) -c -o src/checkautovariables.o src/checkautovariables.cpp
+
 src/checkbufferoverrun.o: src/checkbufferoverrun.cpp src/checkbufferoverrun.h src/settings.h src/tokenize.h src/errorlogger.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkbufferoverrun.o src/checkbufferoverrun.cpp
 
@@ -127,7 +132,7 @@ src/checksecurity.o: src/checksecurity.cpp src/checksecurity.h src/errorlogger.h
 src/checkstl.o: src/checkstl.cpp src/checkstl.h src/check.h src/settings.h src/tokenize.h src/errorlogger.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkstl.o src/checkstl.cpp
 
-src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/filelister.h
+src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/checkmemoryleak.h src/checkbufferoverrun.h src/checkdangerousfunctions.h src/checkclass.h src/checkheaders.h src/checkother.h src/filelister.h src/check.h
 	$(CXX) $(CXXFLAGS) -c -o src/cppcheck.o src/cppcheck.cpp
 
 src/cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h src/cppcheck.h src/checkfunctionusage.h src/tokenize.h src/token.h src/threadexecutor.h
