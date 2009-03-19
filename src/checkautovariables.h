@@ -41,11 +41,11 @@ public:
     /** Check for buffer overruns */
     void autoVariables();
 private:
-	std::list<std::string> fp_list;
-	std::list<std::string> vd_list;
-	bool error_av(const Token* left,const Token* right);
-	bool is_auto_var(const Token* t);
-	void addVD(const Token* t);
+    std::list<std::string> fp_list;
+    std::list<std::string> vd_list;
+    bool error_av(const Token* left, const Token* right);
+    bool is_auto_var(const Token* t);
+    void addVD(const Token* t);
     const Tokenizer *_tokenizer;
     const Settings *_settings;
     ErrorLogger *_errorLogger;
