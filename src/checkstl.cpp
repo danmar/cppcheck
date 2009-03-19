@@ -22,9 +22,11 @@
 #include "token.h"
 
 
-// Create a static instance of this
-static CheckStl instance;
-
+// Register this check class (by creating a static instance of it)
+namespace
+{
+    CheckStl instance;
+}
 
 void CheckStl::iterators()
 {
