@@ -78,6 +78,9 @@ private:
      * @param it iterator token
      */
     void eraseCheckLoop(const Token *it);
+
+    void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
+
 };
 
 //---------------------------------------------------------------------------

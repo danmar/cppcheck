@@ -28,6 +28,14 @@ namespace
 CheckStl instance;
 }
 
+
+// Error message for bad iterator usage..
+void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
+{
+    reportError(tok, "error", "Same iterator is used with both " + container1 + " and " + container2, "iterators");
+}
+
+
 void CheckStl::iterators()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -41,7 +49,7 @@ void CheckStl::iterators()
             // Same container..
             if (tok->tokAt(2)->str() == tok->tokAt(10)->str())
                 continue;
-            _errorLogger->iteratorUsage(_tokenizer, tok, tok->strAt(2), tok->strAt(10));
+            iteratorsError(tok, tok->strAt(2), tok->strAt(10));
         }
 
         // it = foo.begin();
@@ -54,7 +62,8 @@ void CheckStl::iterators()
             // Same container..
             if (tok->tokAt(2)->str() == tok->tokAt(12)->str())
                 continue;
-            _errorLogger->iteratorUsage(_tokenizer, tok, tok->strAt(2), tok->strAt(12));
+
+            iteratorsError(tok, tok->strAt(2), tok->strAt(12));
         }
     }
 }

@@ -29,14 +29,14 @@
 class Check
 {
 public:
-    // This constructor is used when registering the CheckClass
+    /** This constructor is used when registering the CheckClass */
     Check()
             : _tokenizer(0), _settings(0), _errorLogger(0)
     {
         instances().push_back(this);
     }
 
-    // This constructor is used when running checks..
+    /** This constructor is used when running checks.. */
     Check(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
     { }
@@ -61,7 +61,8 @@ protected:
     const Settings * const _settings;
     ErrorLogger * const _errorLogger;
 
-    void reportError(const Token *tok, const char severity[], const char id[], const char msg[])
+    /** report an error */
+    void reportError(const Token *tok, const std::string severity, const std::string id, const std::string msg)
     {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.line = tok->linenr();
