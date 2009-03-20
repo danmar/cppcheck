@@ -20,11 +20,11 @@
 #ifndef checkH
 #define checkH
 
-#include <list>
+#include "tokenize.h"
+#include "settings.h"
+#include "errorlogger.h"
 
-class Tokenizer;
-class Settings;
-class ErrorLogger;
+#include <list>
 
 class Check
 {
@@ -60,6 +60,18 @@ protected:
     const Tokenizer * const _tokenizer;
     const Settings * const _settings;
     ErrorLogger * const _errorLogger;
+
+    void reportError(const Token *tok, const char severity[], const char id[], const char msg[])
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok->linenr();
+        loc.file = _tokenizer->file(tok);
+
+        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+        locationList.push_back(loc);
+
+        _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList, severity, id, msg));
+    }
 };
 
 #endif
