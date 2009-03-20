@@ -44,6 +44,8 @@
 		<Unit filename="gui/settingsdialog.cpp" />
 		<Unit filename="gui/settingsdialog.h" />
 		<Unit filename="src/check.h" />
+		<Unit filename="src/checkautovariables.cpp" />
+		<Unit filename="src/checkautovariables.h" />
 		<Unit filename="src/checkbufferoverrun.cpp" />
 		<Unit filename="src/checkbufferoverrun.h" />
 		<Unit filename="src/checkclass.cpp" />

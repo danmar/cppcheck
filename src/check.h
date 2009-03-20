@@ -71,7 +71,7 @@ protected:
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         locationList.push_back(loc);
 
-        _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList, severity, id, msg));
+        _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList, severity, msg, id));
     }
 };
 

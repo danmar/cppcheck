@@ -32,7 +32,7 @@ CheckStl instance;
 // Error message for bad iterator usage..
 void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
 {
-    reportError(tok, "error", "Same iterator is used with both " + container1 + " and " + container2, "iterators");
+    reportError(tok, "error", "iterators", "Same iterator is used with both " + container1 + " and " + container2);
 }
 
 
