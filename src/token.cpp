@@ -114,10 +114,14 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
 const Token *Token::tokAt(int index) const
 {
     const Token *tok = this;
-    while (index > 0 && tok)
+    int num = abs(index);
+    while (num > 0 && tok)
     {
-        tok = tok->next();
-        --index;
+        if (index > 0)
+            tok = tok->next();
+        else
+            tok = tok->previous();
+        --num;
     }
     return tok;
 }
@@ -125,10 +129,14 @@ const Token *Token::tokAt(int index) const
 Token *Token::tokAt(int index)
 {
     Token *tok = this;
-    while (index > 0 && tok)
+    int num = abs(index);
+    while (num > 0 && tok)
     {
-        tok = tok->next();
-        --index;
+        if (index > 0)
+            tok = tok->next();
+        else
+            tok = tok->previous();
+        --num;
     }
     return tok;
 }
