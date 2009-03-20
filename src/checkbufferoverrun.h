@@ -23,6 +23,7 @@
 #define CheckBufferOverrunH
 //---------------------------------------------------------------------------
 
+#include "check.h"
 #include "settings.h"
 #include <list>
 
@@ -30,11 +31,23 @@ class ErrorLogger;
 class Token;
 class Tokenizer;
 
-class CheckBufferOverrunClass
+class CheckBufferOverrunClass : public Check
 {
 public:
-    CheckBufferOverrunClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
-    ~CheckBufferOverrunClass();
+
+    CheckBufferOverrunClass() : Check()
+    { }
+
+    CheckBufferOverrunClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    { }
+
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckBufferOverrunClass checkBufferOverrunClass(tokenizer, settings, errorLogger);
+        if (settings->_showAll)
+            checkBufferOverrunClass.bufferOverrun();
+    }
 
     /** Check for buffer overruns */
     void bufferOverrun();
@@ -48,10 +61,6 @@ private:
 
     /** Check for buffer overruns - this is the function that performs the actual checking */
     void CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
-
-    const Tokenizer *_tokenizer;
-    const Settings _settings;
-    ErrorLogger *_errorLogger;
 
     /** callstack - used during intra-function checking */
     std::list<const Token *> _callStack;

@@ -36,20 +36,6 @@
 
 //---------------------------------------------------------------------------
 
-// _callStack used when parsing into subfunctions.
-
-
-CheckBufferOverrunClass::CheckBufferOverrunClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
-        :  _settings(settings)
-{
-    _tokenizer = tokenizer;
-    _errorLogger = errorLogger;
-}
-
-CheckBufferOverrunClass::~CheckBufferOverrunClass()
-{
-
-}
 
 void CheckBufferOverrunClass::arrayIndexOutOfBounds(const Token *tok)
 {
@@ -323,7 +309,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 continue;
 
             // Only perform this checking if showAll setting is enabled..
-            if (!_settings._showAll)
+            if (!_settings->_showAll)
                 continue;
 
             unsigned int parlevel = 0, par = 0;

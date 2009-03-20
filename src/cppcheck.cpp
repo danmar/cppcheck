@@ -22,7 +22,6 @@
 #include "tokenize.h"   // <- Tokenizer
 
 #include "checkmemoryleak.h"
-#include "checkbufferoverrun.h"
 #include "checkdangerousfunctions.h"
 #include "checkheaders.h"
 #include "checkother.h"
@@ -402,9 +401,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (_settings._unusedFunctions)
         _checkFunctionUsage.parseTokens(_tokenizer);
 
-    // Class for detecting buffer overruns and related problems
-    CheckBufferOverrunClass checkBufferOverrun(&_tokenizer, _settings, this);
-
     // Class for checking functions that should not be used
     CheckDangerousFunctionsClass checkDangerousFunctions(&_tokenizer, _settings, this);
 
@@ -412,10 +408,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
     if (ErrorLogger::memleak() || ErrorLogger::mismatchAllocDealloc())
         checkMemoryLeak.CheckMemoryLeak();
-
-    // Array index out of bounds / Buffer overruns..
-    if (ErrorLogger::arrayIndexOutOfBounds(_settings) || ErrorLogger::bufferOverrun(_settings))
-        checkBufferOverrun.bufferOverrun();
 
     // Warning upon c-style pointer casts
     if (ErrorLogger::cstyleCast(_settings))
