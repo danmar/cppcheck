@@ -20,10 +20,10 @@
 #ifndef checkH
 #define checkH
 
-#include "settings.h"
 #include <list>
 
 class Tokenizer;
+class Settings;
 class ErrorLogger;
 
 class Check
@@ -31,9 +31,15 @@ class Check
 public:
     // This constructor is used when registering the CheckClass
     Check()
+            : _tokenizer(0), _settings(0), _errorLogger(0)
     {
         instances().push_back(this);
     }
+
+    // This constructor is used when running checks..
+    Check(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
+    { }
 
     virtual ~Check()
     {
@@ -49,6 +55,11 @@ public:
 
     /** run checks.. */
     virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
+
+protected:
+    const Tokenizer * const _tokenizer;
+    const Settings * const _settings;
+    ErrorLogger * const _errorLogger;
 };
 
 #endif

@@ -30,17 +30,21 @@ class Token;
 class CheckStl : public Check
 {
 public:
+    CheckStl() : Check()
+    { }
+
+    CheckStl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    { }
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
-        _tokenizer = tokenizer;
-        _settings = settings;
-        _errorLogger = errorLogger;
+        CheckStl checkStl(tokenizer, settings, errorLogger);
 
-        stlOutOfBounds();
-        iterators();
-        erase();
-        pushback();
+        checkStl.stlOutOfBounds();
+        checkStl.iterators();
+        checkStl.erase();
+        checkStl.pushback();
     }
 
 
@@ -74,10 +78,6 @@ private:
      * @param it iterator token
      */
     void eraseCheckLoop(const Token *it);
-
-    const Tokenizer *_tokenizer;
-    const Settings *_settings;
-    ErrorLogger *_errorLogger;
 };
 
 //---------------------------------------------------------------------------

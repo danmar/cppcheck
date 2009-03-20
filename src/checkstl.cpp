@@ -25,7 +25,7 @@
 // Register this check class (by creating a static instance of it)
 namespace
 {
-    CheckStl instance;
+CheckStl instance;
 }
 
 void CheckStl::iterators()
