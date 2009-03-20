@@ -58,7 +58,7 @@ private:
         // Check for unused private functions..
         Settings settings;
         settings._checkCodingStyle = true;
-        CheckClass checkClass(&tokenizer, settings, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.privateFunctions();
     }
 

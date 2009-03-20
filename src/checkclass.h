@@ -22,22 +22,49 @@
 #define CheckClassH
 //---------------------------------------------------------------------------
 
-#include "tokenize.h"
+#include "check.h"
 #include "settings.h"
-#include "errorlogger.h"
 
-class CheckClass
+class Token;
+
+class CheckClass : public Check
 {
 public:
-    CheckClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
-    ~CheckClass();
+    CheckClass() : Check()
+    { }
 
+    CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    { }
+
+    // TODO: run noMemset
+
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckClass checkClass(tokenizer, settings, errorLogger);
+
+        if (settings->_checkCodingStyle)
+        {
+            checkClass.constructors();
+            checkClass.operatorEq();
+            checkClass.privateFunctions();
+        }
+        checkClass.virtualDestructor();
+    }
+
+
+    // Check that all class constructors are ok.
     void constructors();
 
+    // Check that all private functions are called.
     void privateFunctions();
 
+    // Check that the memsets are valid.
+    // The 'memset' function can do dangerous things if used wrong.
+    // Important: The checking doesn't work on simplified tokens list.
     void noMemset();
 
+    // 'operator=' should return something..
     void operatorEq();    // Warning upon "void operator=(.."
 
     // The destructor in a base class should be virtual
@@ -64,10 +91,6 @@ private:
 
     // Check constructors for a specified class
     void CheckConstructors(const Token *tok1, struct VAR *varlist, const char funcname[]);
-
-    const Tokenizer *_tokenizer;
-    Settings _settings;
-    ErrorLogger *_errorLogger;
 };
 //---------------------------------------------------------------------------
 #endif

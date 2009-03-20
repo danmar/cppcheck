@@ -24,7 +24,6 @@
 #include "checkmemoryleak.h"
 #include "checkbufferoverrun.h"
 #include "checkdangerousfunctions.h"
-#include "checkclass.h"
 #include "checkheaders.h"
 #include "checkother.h"
 #include "checkfunctionusage.h"
@@ -384,14 +383,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     _tokenizer.fillFunctionList();
 
-    // Check that the memsets are valid.
-    // The 'memset' function can do dangerous things if used wrong.
-    // Important: The checking doesn't work on simplified tokens list.
-    CheckClass checkClass(&_tokenizer, _settings, this);
-    if (ErrorLogger::memsetClass())
-        checkClass.noMemset();
-
-
     // Coding style checks that must be run before the simplifyTokenList
     CheckOther checkOther(&_tokenizer, _settings, this);
 
@@ -422,14 +413,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorLogger::memleak() || ErrorLogger::mismatchAllocDealloc())
         checkMemoryLeak.CheckMemoryLeak();
 
-    // Check that all class constructors are ok.
-    if (ErrorLogger::noConstructor(_settings) || ErrorLogger::uninitVar(_settings))
-        checkClass.constructors();
-
-    // Check that all base classes have virtual destructors
-    if (ErrorLogger::virtualDestructor())
-        checkClass.virtualDestructor();
-
     // Array index out of bounds / Buffer overruns..
     if (ErrorLogger::arrayIndexOutOfBounds(_settings) || ErrorLogger::bufferOverrun(_settings))
         checkBufferOverrun.bufferOverrun();
@@ -450,14 +433,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     if (ErrorLogger::dangerousUsageStrtol() ||
         ErrorLogger::sprintfOverlappingData())
         checkOther.InvalidFunctionUsage();
-
-    // Check that all private functions are called.
-    if (ErrorLogger::unusedPrivateFunction(_settings))
-        checkClass.privateFunctions();
-
-    // 'operator=' should return something..
-    if (ErrorLogger::operatorEq(_settings))
-        checkClass.operatorEq();
 
     // if (condition);
     if (ErrorLogger::ifNoAction(_settings) || ErrorLogger::conditionAlwaysTrueFalse(_settings))

@@ -70,7 +70,7 @@ private:
 
         // Check..
         Settings settings;
-        CheckClass checkClass(&tokenizer, settings, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.virtualDestructor();
     }
 
@@ -152,7 +152,7 @@ private:
 
         // Check..
         Settings settings;
-        CheckClass checkClass(&tokenizer, settings, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
 
@@ -316,7 +316,7 @@ private:
         // Check..
         Settings settings;
         settings._checkCodingStyle = true;
-        CheckClass checkClass(&tokenizer, settings, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
 

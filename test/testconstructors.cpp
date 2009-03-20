@@ -49,7 +49,7 @@ private:
         // Check class constructors..
         Settings settings;
         settings._checkCodingStyle = true;
-        CheckClass checkClass(&tokenizer, settings, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
 

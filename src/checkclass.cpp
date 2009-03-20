@@ -20,6 +20,10 @@
 //---------------------------------------------------------------------------
 #include "checkclass.h"
 
+#include "tokenize.h"
+#include "token.h"
+#include "errorlogger.h"
+
 #include <locale>
 
 #include <cstring>
@@ -29,17 +33,6 @@
 
 //---------------------------------------------------------------------------
 
-CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
-{
-    _tokenizer = tokenizer;
-    _settings = settings;
-    _errorLogger = errorLogger;
-}
-
-CheckClass::~CheckClass()
-{
-
-}
 
 //---------------------------------------------------------------------------
 
@@ -307,7 +300,7 @@ void CheckClass::constructors()
         if (! constructor_token)
         {
             // If "--style" has been given, give a warning
-            if (ErrorLogger::noConstructor(_settings))
+            if (ErrorLogger::noConstructor(*_settings))
             {
                 // If the class has member variables there should be an constructor
                 struct VAR *varlist = ClassChecking_GetVarList(tok1);
