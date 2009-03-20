@@ -53,7 +53,8 @@ private:
         errout.str("");
 
         // Check char variable usage..
-        CheckOther checkOther(&tokenizer, Settings(), this);
+        Settings settings;
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.CheckCharVariable();
     }
 

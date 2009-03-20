@@ -23,14 +23,46 @@
 #define CheckOtherH
 //---------------------------------------------------------------------------
 
-#include "tokenize.h"
-#include "errorlogger.h"
+#include "check.h"
+#include "settings.h"
 
-class CheckOther
+class Token;
+
+class CheckOther : public Check
 {
 public:
-    CheckOther(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
-    ~CheckOther();
+    CheckOther() : Check()
+    { }
+
+    CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    { }
+
+
+    // TODO: run these before simplification..
+    // checkOther.CheckUnsignedDivision();
+    // checkOther.CheckCharVariable();
+
+
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckOther checkOther(tokenizer, settings, errorLogger);
+
+        if (settings->_checkCodingStyle)
+        {
+            checkOther.WarningOldStylePointerCast();
+            checkOther.WarningRedundantCode();
+            checkOther.WarningIf();
+            checkOther.CheckVariableScope();
+            checkOther.CheckConstantFunctionParameter();
+            checkOther.CheckStructMemberUsage();
+            checkOther.CheckIncompleteStatement();
+        }
+
+        checkOther.strPlusChar();
+        checkOther.returnPointerToStackData();
+        checkOther.InvalidFunctionUsage();
+    }
 
     // Casting
     void WarningOldStylePointerCast();
@@ -75,10 +107,6 @@ protected:
     // if (haystack.find(needle) != haystack.end())
     //    haystack.remove(needle);
     void redundantCondition2();
-
-    const Tokenizer *_tokenizer;
-    ErrorLogger *_errorLogger;
-    const Settings &_settings;
 };
 
 //---------------------------------------------------------------------------

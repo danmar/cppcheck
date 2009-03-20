@@ -23,23 +23,26 @@
 #define CheckDangerousFunctionsH
 //---------------------------------------------------------------------------
 
-#include "tokenize.h"
-#include "errorlogger.h"
+#include "check.h"
 
-class CheckDangerousFunctionsClass
+class CheckDangerousFunctionsClass : public Check
 {
 public:
-    CheckDangerousFunctionsClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
-    ~CheckDangerousFunctionsClass();
+    CheckDangerousFunctionsClass() : Check()
+    { }
+
+    CheckDangerousFunctionsClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    { }
+
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckDangerousFunctionsClass checkDangerousFunctionsClass(tokenizer, settings, errorLogger);
+        checkDangerousFunctionsClass.dangerousFunctions();
+    }
 
     /** Check for buffer overruns */
     void dangerousFunctions();
-
-private:
-
-    const Tokenizer *_tokenizer;
-    const Settings _settings;
-    ErrorLogger *_errorLogger;
 };
 
 //---------------------------------------------------------------------------

@@ -34,7 +34,7 @@ public:
     class OurCheckMemoryLeakClass : public CheckMemoryLeakClass
     {
     public:
-        OurCheckMemoryLeakClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
+        OurCheckMemoryLeakClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
                 : CheckMemoryLeakClass(tokenizer, settings, errorLogger)
         {
         }
@@ -70,7 +70,7 @@ private:
 
         // Check..
         Settings settings;
-        OurCheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
+        OurCheckMemoryLeakClass checkMemoryLeak(&tokenizer, &settings, this);
         Token *tok = checkMemoryLeak.functionParameterCode(tokenizer.tokens(), 1);
 
         // Compare tokens..

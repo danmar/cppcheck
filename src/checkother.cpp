@@ -20,6 +20,8 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+#include "tokenize.h"
+
 #include <algorithm>
 #include <list>
 #include <map>
@@ -29,24 +31,15 @@
 #include <cctype>
 //---------------------------------------------------------------------------
 
-
-
-
-//---------------------------------------------------------------------------
-// Warning on C-Style casts.. p = (kalle *)foo;
-//---------------------------------------------------------------------------
-
-CheckOther::CheckOther(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
-        : _settings(settings)
+// Register this check class (by creating a static instance of it)
+namespace
 {
-    _tokenizer = tokenizer;
-    _errorLogger = errorLogger;
+CheckOther instance;
 }
 
-CheckOther::~CheckOther()
-{
+//---------------------------------------------------------------------------
 
-}
+
 
 void CheckOther::WarningOldStylePointerCast()
 {
@@ -195,7 +188,7 @@ void CheckOther::redundantCondition2()
 
 void CheckOther::WarningIf()
 {
-    if (ErrorLogger::ifNoAction(_settings))
+    if (ErrorLogger::ifNoAction(*_settings))
     {
         // Search for 'if (condition);'
         for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -225,7 +218,7 @@ void CheckOther::WarningIf()
         }
     }
 
-    if (ErrorLogger::conditionAlwaysTrueFalse(_settings))
+    if (ErrorLogger::conditionAlwaysTrueFalse(*_settings))
     {
         // Search for 'a=b; if (a==b)'
         for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -393,7 +386,7 @@ void CheckOther::CheckUnsignedDivision()
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %var%"))
         {
-            if (ErrorLogger::udivWarning(_settings))
+            if (ErrorLogger::udivWarning(*_settings))
             {
                 const char *varname1 = tok->strAt(1);
                 const char *varname2 = tok->strAt(3);

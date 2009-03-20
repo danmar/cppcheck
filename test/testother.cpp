@@ -63,7 +63,8 @@ private:
         errout.str("");
 
         // Check for redundant code..
-        CheckOther checkOther(&tokenizer, Settings(), this);
+        Settings settings;
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.WarningRedundantCode();
     }
 
@@ -129,7 +130,8 @@ private:
         errout.str("");
 
         // Check for redundant code..
-        CheckOther checkOther(&tokenizer, Settings(), this);
+        Settings settings;
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.InvalidFunctionUsage();
     }
 
@@ -196,7 +198,8 @@ private:
         errout.str("");
 
         // Check for redundant code..
-        CheckOther checkOther(&tokenizer, Settings(), this);
+        Settings settings;
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.strPlusChar();
     }
 
@@ -246,7 +249,8 @@ private:
         errout.str("");
 
         // Check for redundant code..
-        CheckOther checkOther(&tokenizer, Settings(), this);
+        Settings settings;
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.returnPointerToStackData();
     }
 

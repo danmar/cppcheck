@@ -26,17 +26,31 @@
 
 /** \brief Check for memory leaks */
 
-#include "tokenize.h"
-#include "settings.h"
-#include "errorlogger.h"
+#include "check.h"
+
 #include <list>
+#include <string>
 #include <vector>
 
-class CheckMemoryLeakClass
+class Token;
+
+class CheckMemoryLeakClass : public Check
 {
 public:
-    CheckMemoryLeakClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger);
-    ~CheckMemoryLeakClass();
+    CheckMemoryLeakClass() : Check()
+    { }
+
+    CheckMemoryLeakClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    { }
+
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckMemoryLeakClass checkMemoryLeakClass(tokenizer, settings, errorLogger);
+        checkMemoryLeakClass.CheckMemoryLeak();
+    }
+
+
     void CheckMemoryLeak();
 
 private:
@@ -109,9 +123,6 @@ private:
     AllocType GetReallocationType(const Token *tok2);
     bool isclass(const Token *typestr);
 
-    const Tokenizer *_tokenizer;
-    ErrorLogger *_errorLogger;
-    const Settings _settings;
     std::list<AllocFunc> _listAllocFunc;
 
 // Experimental functionality..

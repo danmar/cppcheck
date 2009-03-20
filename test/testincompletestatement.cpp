@@ -52,7 +52,7 @@ private:
         settings._showAll = true;
 
         // Check for unused variables..
-        CheckOther checkOther(&tokenizer, settings, this);
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.CheckIncompleteStatement();
     }
 

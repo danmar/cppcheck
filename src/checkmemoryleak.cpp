@@ -20,6 +20,8 @@
 
 #include "checkmemoryleak.h"
 
+#include "tokenize.h"
+
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -27,17 +29,13 @@
 
 //---------------------------------------------------------------------------
 
-CheckMemoryLeakClass::CheckMemoryLeakClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
-        : _settings(settings)
+// Register this check class (by creating a static instance of it)
+namespace
 {
-    _tokenizer = tokenizer;
-    _errorLogger = errorLogger;
+CheckMemoryLeakClass instance;
 }
 
-CheckMemoryLeakClass::~CheckMemoryLeakClass()
-{
-
-}
+//---------------------------------------------------------------------------
 
 bool CheckMemoryLeakClass::isclass(const Token *tok)
 {
@@ -260,7 +258,7 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
             --parlevel;
             if (parlevel < 1)
             {
-                return _settings._showAll ? 0 : "callfunc";
+                return _settings->_showAll ? 0 : "callfunc";
             }
         }
 
@@ -425,10 +423,10 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 {
                     if (isclass(tok->tokAt(3)))
                     {
-                        if (_settings._showAll)
+                        if (_settings->_showAll)
                         {
 
-                            if (_settings.isAutoDealloc(tok->strAt(3)))
+                            if (_settings->isAutoDealloc(tok->strAt(3)))
                             {
                                 // This class has automatic deallocation
                                 alloc = No;
@@ -800,7 +798,7 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
                 }
 
                 // Two "if alloc ;" after one another.. perhaps only one of them can be executed each time
-                else if (!_settings._showAll && Token::Match(tok2, "[;{}] if alloc ; if alloc ;"))
+                else if (!_settings->_showAll && Token::Match(tok2, "[;{}] if alloc ; if alloc ;"))
                 {
                     erase(tok2, tok2->tokAt(4));
                     done = false;
@@ -820,7 +818,7 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
                 // Otherwise, only the "if" will be deleted
                 else if (Token::Match(tok2, "[;{}] if assign|dealloc|use ; !!else"))
                 {
-                    if (_settings._showAll)
+                    if (_settings->_showAll)
                     {
                         erase(tok2, tok2->tokAt(3));
                         all = true;
@@ -890,7 +888,7 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
                 }
 
                 // Reducing if..
-                else if (_settings._showAll)
+                else if (_settings->_showAll)
                 {
                     if (Token::Match(tok2, "[;{}] if { assign|dealloc|use ; return ; } !!else"))
                     {
@@ -960,7 +958,7 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
             }
 
             // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
-            if (! _settings._showAll && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
+            if (! _settings->_showAll && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
             {
                 tok2 = tok2->next()->next()->next();
                 erase(tok2, tok2->tokAt(3));
@@ -1267,7 +1265,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
         MemoryLeak(result->tokAt(3), varname, alloctype, all);
     }
 
-    else if (_settings._showAll && (result = Token::findmatch(tok, "alloc ; ifv break|continue|return ;")) != NULL)
+    else if (_settings->_showAll && (result = Token::findmatch(tok, "alloc ; ifv break|continue|return ;")) != NULL)
     {
         MemoryLeak(result->tokAt(3), varname, alloctype, all);
     }
@@ -1293,7 +1291,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
     }
 
     // detect cases that "simplifycode" don't handle well..
-    else if (_settings._debug)
+    else if (_settings->_debug)
     {
         Token *first = tok;
         while (first && first->str() == ";")
@@ -1441,12 +1439,12 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_ParseClass(const Token *
         if (Token::Match(tok->next(), "%type% * %var% ;"))
         {
             // No false positives for auto deallocated classes..
-            if (_settings.isAutoDealloc(tok->strAt(1)))
+            if (_settings->isAutoDealloc(tok->strAt(1)))
                 continue;
 
             if (tok->isName() || Token::Match(tok, "[;}]"))
             {
-                if (_settings._showAll || !isclass(tok->tokAt(1)))
+                if (_settings->_showAll || !isclass(tok->tokAt(1)))
                     CheckMemoryLeak_ClassMembers_Variable(classname.back(), tok->tokAt(3));
             }
         }
@@ -1565,7 +1563,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak()
     CheckMemoryLeak_InFunction();
 
     // Check that all class members are deallocated..
-    if (_settings._showAll)
+    if (_settings->_showAll)
         CheckMemoryLeak_ClassMembers();
 }
 //---------------------------------------------------------------------------

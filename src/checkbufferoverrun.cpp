@@ -36,6 +36,13 @@
 
 //---------------------------------------------------------------------------
 
+// Register this check class (by creating a static instance of it)
+namespace
+{
+CheckBufferOverrunClass instance;
+}
+
+//---------------------------------------------------------------------------
 
 void CheckBufferOverrunClass::arrayIndexOutOfBounds(const Token *tok)
 {

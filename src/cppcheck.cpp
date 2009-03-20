@@ -21,10 +21,6 @@
 #include "preprocessor.h" // preprocessor.
 #include "tokenize.h"   // <- Tokenizer
 
-#include "checkmemoryleak.h"
-#include "checkdangerousfunctions.h"
-#include "checkheaders.h"
-#include "checkother.h"
 #include "checkfunctionusage.h"
 #include "filelister.h"
 
@@ -382,75 +378,13 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     _tokenizer.fillFunctionList();
 
-    // Coding style checks that must be run before the simplifyTokenList
-    CheckOther checkOther(&_tokenizer, _settings, this);
-
-    // Check for unsigned divisions where one operand is signed
-    if (ErrorLogger::udivWarning(_settings) || ErrorLogger::udivError())
-        checkOther.CheckUnsignedDivision();
-
-    // Give warning when using char variable as array index
-    if (ErrorLogger::charArrayIndex(_settings) || ErrorLogger::charBitOp(_settings))
-        checkOther.CheckCharVariable();
 
     _tokenizer.simplifyTokenList();
-
-    // Write simplified token list to a file..
-    //std::cout << _tokenizer.tokens()->stringifyList(true) << std::endl;
 
     if (_settings._unusedFunctions)
         _checkFunctionUsage.parseTokens(_tokenizer);
 
-    // Class for checking functions that should not be used
-    CheckDangerousFunctionsClass checkDangerousFunctions(&_tokenizer, _settings, this);
-
-    // Memory leak
-    CheckMemoryLeakClass checkMemoryLeak(&_tokenizer, _settings, this);
-    if (ErrorLogger::memleak() || ErrorLogger::mismatchAllocDealloc())
-        checkMemoryLeak.CheckMemoryLeak();
-
-    // Warning upon c-style pointer casts
-    if (ErrorLogger::cstyleCast(_settings))
-    {
-        const char *ext = strrchr(FileName, '.');
-        if (ext && strcmp(ext, ".cpp") == 0)
-            checkOther.WarningOldStylePointerCast();
-    }
-
-    // if (a) delete a;
-    if (ErrorLogger::redundantIfDelete0(_settings))
-        checkOther.WarningRedundantCode();
-
-    // strtol and strtoul usage
-    if (ErrorLogger::dangerousUsageStrtol() ||
-        ErrorLogger::sprintfOverlappingData())
-        checkOther.InvalidFunctionUsage();
-
-    // if (condition);
-    if (ErrorLogger::ifNoAction(_settings) || ErrorLogger::conditionAlwaysTrueFalse(_settings))
-        checkOther.WarningIf();
-
-    // Unused struct members..
-    if (ErrorLogger::unusedStructMember(_settings))
-        checkOther.CheckStructMemberUsage();
-
-    // Check if a constant function parameter is passed by value
-    if (ErrorLogger::passedByValue(_settings))
-        checkOther.CheckConstantFunctionParameter();
-
-    // Variable scope (check if the scope could be limited)
-    if (ErrorLogger::variableScope())
-        checkOther.CheckVariableScope();
-
-    // Check for various types of incomplete statements that could for example
-    // mean that an ';' has been added by accident
-    if (ErrorLogger::constStatement(_settings))
-        checkOther.CheckIncompleteStatement();
-
-    // Unusual pointer arithmetic
-    if (ErrorLogger::strPlusChar())
-        checkOther.strPlusChar();
-
+    // Run all checks in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
     {
         (*it)->runChecks(&_tokenizer, &_settings, this);

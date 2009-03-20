@@ -47,7 +47,8 @@ private:
         errout.str("");
 
         // Check for unused variables..
-        CheckOther checkOther(&tokenizer, Settings(), this);
+        Settings settings;
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.CheckStructMemberUsage();
     }
 

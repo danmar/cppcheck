@@ -23,6 +23,9 @@
 
 #include "checkdangerousfunctions.h"
 
+#include "tokenize.h"
+#include "token.h"
+
 #include <algorithm>
 #include <sstream>
 #include <list>
@@ -33,19 +36,11 @@
 
 //---------------------------------------------------------------------------
 
-// _callStack used when parsing into subfunctions.
 
-
-CheckDangerousFunctionsClass::CheckDangerousFunctionsClass(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
-        :  _settings(settings)
+// Register this check class (by creating a static instance of it)
+namespace
 {
-    _tokenizer = tokenizer;
-    _errorLogger = errorLogger;
-}
-
-CheckDangerousFunctionsClass::~CheckDangerousFunctionsClass()
-{
-
+CheckDangerousFunctionsClass instance;
 }
 
 //---------------------------------------------------------------------------

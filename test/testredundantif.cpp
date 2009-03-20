@@ -39,7 +39,7 @@ public:
     class OurCheckOther : public CheckOther
     {
     public:
-        OurCheckOther(const Tokenizer *tokenizer, const Settings &settings, ErrorLogger *errorLogger)
+        OurCheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
                 : CheckOther(tokenizer, settings, errorLogger)
         {
 
@@ -63,7 +63,8 @@ private:
         errout.str("");
 
         // Check for redundant condition..
-        OurCheckOther checkOther(&tokenizer, Settings(), this);
+        Settings settings;
+        OurCheckOther checkOther(&tokenizer, &settings, this);
         checkOther.redundantCondition2();
     }
 

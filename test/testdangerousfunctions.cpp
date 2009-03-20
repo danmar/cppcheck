@@ -56,7 +56,7 @@ private:
         // Check for buffer overruns..
         Settings settings;
         settings._showAll = true;
-        CheckDangerousFunctionsClass checkDangerousFunctions(&tokenizer, settings, this);
+        CheckDangerousFunctionsClass checkDangerousFunctions(&tokenizer, &settings, this);
         checkDangerousFunctions.dangerousFunctions();
     }
 

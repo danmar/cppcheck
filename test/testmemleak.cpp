@@ -54,7 +54,7 @@ private:
         settings._debug = true;
         settings._showAll = showAll;
         tokenizer.fillFunctionList();
-        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
+        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.CheckMemoryLeak();
     }
 
@@ -1981,7 +1981,7 @@ private:
             settings.autoDealloc(istr);
         }
 
-        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, settings, this);
+        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.CheckMemoryLeak();
     }
 
