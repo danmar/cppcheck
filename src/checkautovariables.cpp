@@ -189,23 +189,26 @@ void CheckAutoVariables::autoVariables()
         else if (bindent > 0 && Token::Match(tok, "%var% = & %var%")) //Critical assignement
         {
             if (error_av(tok->tokAt(0), tok->tokAt(3)))
-                _errorLogger->genericError(_tokenizer,
-                                           tok,
-                                           "Wrong assignement of an auto-variable to an effective parameter of a function");
+                reportError(tok,
+                            "error",
+                            "autoVariables",
+                            "Wrong assignement of an auto-variable to an effective parameter of a function");
         }
         else if (bindent > 0 && Token::Match(tok, "%var% [ %any% ] = & %var%")) //Critical assignement
         {
             if (error_av(tok->tokAt(0), tok->tokAt(6)))
-                _errorLogger->genericError(_tokenizer,
-                                           tok,
-                                           "Wrong assignement of an auto-variable to an effective parameter of a function");
+                reportError(tok,
+                            "error",
+                            "autoVariables",
+                            "Wrong assignement of an auto-variable to an effective parameter of a function");
         }
         else if (bindent > 0 && Token::Match(tok, "return & %var%")) //Critical return
         {
             if (is_auto_var(tok->tokAt(2)))
-                _errorLogger->genericError(_tokenizer,
-                                           tok,
-                                           "Return of the address of an auto-variable");
+                reportError(tok,
+                            "error",
+                            "autoVariables",
+                            "Return of the address of an auto-variable");
         }
     }
     vd_list.clear();

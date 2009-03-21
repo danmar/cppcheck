@@ -72,15 +72,26 @@ protected:
     /** report an error */
     void reportError(const Token *tok, const std::string severity, const std::string id, const std::string msg)
     {
-        ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = tok->linenr();
-        loc.file = _tokenizer->file(tok);
+        std::list<const Token *> callstack;
+        callstack.push_back(tok);
+        reportError(callstack, severity, id, msg);
+    }
 
+    /** report an error */
+    void reportError(const std::list<const Token *> callstack, const std::string severity, const std::string id, const std::string msg)
+    {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        locationList.push_back(loc);
+        for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
+        {
+            ErrorLogger::ErrorMessage::FileLocation loc;
+            loc.line = (*it)->linenr();
+            loc.file = _tokenizer->file(*it);
+            locationList.push_back(loc);
+        }
 
         _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList, severity, msg, id));
     }
+
 };
 
 #endif

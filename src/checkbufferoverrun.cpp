@@ -47,9 +47,30 @@ CheckBufferOverrunClass instance;
 void CheckBufferOverrunClass::arrayIndexOutOfBounds(const Token *tok)
 {
     _callStack.push_back(tok);
-    _errorLogger->arrayIndexOutOfBounds(_tokenizer, _callStack);
+    arrayIndexOutOfBounds();
     _callStack.pop_back();
 }
+
+void CheckBufferOverrunClass::arrayIndexOutOfBounds()
+{
+    reportError(_callStack, "all", "arrayIndexOutOfBounds", "Array index out of bounds");
+}
+
+void CheckBufferOverrunClass::bufferOverrun(const Token *tok)
+{
+    reportError(tok, "all", "bufferOverrun", "Buffer overrun");
+}
+
+void CheckBufferOverrunClass::strncatUsage(const Token *tok)
+{
+    reportError(tok, "all", "strncatUsage", "Dangerous usage of strncat, possible buffer overrun");
+}
+
+void CheckBufferOverrunClass::outOfBounds(const Token *tok, const std::string &what)
+{
+    reportError(tok, "error", "outOfBounds", what + " is out of bounds");
+}
+
 //---------------------------------------------------------------------------
 
 
@@ -148,7 +169,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                     const char *num  = tok->strAt(6);
                     if (std::atoi(num) > total_size)
                     {
-                        _errorLogger->bufferOverrun(_tokenizer, tok);
+                        bufferOverrun(tok);
                     }
                 }
             }
@@ -161,7 +182,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 const char *num  = tok->strAt(varc + 6);
                 if (std::atoi(num) > total_size)
                 {
-                    _errorLogger->bufferOverrun(_tokenizer, tok);
+                    bufferOverrun(tok);
                 }
             }
             continue;
@@ -220,7 +241,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
                 if (Token::Match(tok2, pattern.str().c_str()))
                 {
-                    _errorLogger->bufferOverrun(_tokenizer, tok2);
+                    bufferOverrun(tok2);
                     break;
                 }
 
@@ -243,7 +264,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
             if (len > 2 && len >= (int)size + 2)
             {
-                _errorLogger->bufferOverrun(_tokenizer, tok);
+                bufferOverrun(tok);
             }
             continue;
         }
@@ -254,7 +275,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         {
             int n = atoi(tok->strAt(6));
             if (n == size)
-                _errorLogger->strncatUsage(_tokenizer, tok);
+                strncatUsage(tok);
         }
 
 
@@ -263,7 +284,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         {
             int n = atoi(tok->strAt(6)) + atoi(tok->strAt(15));
             if (n > size)
-                _errorLogger->strncatUsage(_tokenizer, tok->tokAt(9));
+                strncatUsage(tok->tokAt(9));
         }
 
 
@@ -288,7 +309,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             }
             if (len > (int)size)
             {
-                _errorLogger->bufferOverrun(_tokenizer, tok);
+                bufferOverrun(tok);
             }
         }
 
@@ -297,13 +318,13 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         {
             int n = std::atoi(tok->strAt(4));
             if (n > size)
-                _errorLogger->outOfBounds(_tokenizer, tok->tokAt(4), "snprintf size");
+                outOfBounds(tok->tokAt(4), "snprintf size");
         }
 
         // cin..
         if (varid > 0 && Token::Match(tok, "cin >> %varid% ;", varid))
         {
-            _errorLogger->bufferOverrun(_tokenizer, tok);
+            bufferOverrun(tok);
         }
 
         // Function call..
@@ -584,9 +605,6 @@ void CheckBufferOverrunClass::bufferOverrun()
     CheckBufferOverrun_StructVariable();
 }
 //---------------------------------------------------------------------------
-
-
-
 
 
 

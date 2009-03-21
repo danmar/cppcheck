@@ -454,7 +454,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 if (alloc != Many && dealloctype != No && dealloctype != Many && dealloctype != alloc)
                 {
                     callstack.push_back(tok);
-                    _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, varname);
+                    mismatchAllocDealloc(callstack, varname);
                     callstack.pop_back();
                 }
 
@@ -501,7 +501,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 if (dealloc != Many && alloctype != No && alloctype != Many && alloctype != dealloc)
                 {
                     callstack.push_back(tok);
-                    _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, varname);
+                    mismatchAllocDealloc(callstack, varname);
                     callstack.pop_back();
                 }
                 dealloctype = dealloc;
@@ -1499,7 +1499,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const char clas
                         if (alloc != Many && Dealloc != No && Dealloc != Many && Dealloc != alloc)
                         {
                             callstack.push_back(tok);
-                            _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, (std::string(classname) + "::" + varname).c_str());
+                            mismatchAllocDealloc(callstack, (std::string(classname) + "::" + varname).c_str());
                             callstack.pop_back();
                         }
 
@@ -1529,7 +1529,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_ClassMembers_Variable(const char clas
                     if (dealloc != Many && Alloc != No &&  Alloc != Many && Alloc != dealloc)
                     {
                         callstack.push_back(tok);
-                        _errorLogger->mismatchAllocDealloc(_tokenizer, callstack, (std::string(classname) + "::" + varname).c_str());
+                        mismatchAllocDealloc(callstack, (std::string(classname) + "::" + varname).c_str());
                         callstack.pop_back();
                     }
 
@@ -1648,3 +1648,7 @@ void CheckMemoryLeakClass::mismatchSizeError(const Token *tok, const std::string
     reportError(tok, "error", "mismatchSize", "The given size " + sz + " is mismatching");
 }
 
+void CheckMemoryLeakClass::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname)
+{
+    reportError(callstack, "error", "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
+}

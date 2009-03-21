@@ -68,6 +68,10 @@ private:
     std::list<const Token *> _callStack;
 
     void arrayIndexOutOfBounds(const Token *tok);
+    void arrayIndexOutOfBounds();
+    void bufferOverrun(const Token *tok);
+    void strncatUsage(const Token *tok);
+    void outOfBounds(const Token *tok, const std::string &what);
 };
 
 //---------------------------------------------------------------------------

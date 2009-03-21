@@ -95,46 +95,23 @@ public:
      */
     virtual void reportStatus(unsigned int index, unsigned int max) = 0;
 
-    void genericError(const Tokenizer *tokenizer, const Token *Location, const std::string &msg)
-    {
-        _writemsg(tokenizer, Location, "error", "" + msg + "", "genericError");
-    }
-    static bool genericError()
-    {
-        return true;
-    }
 
-    void arrayIndexOutOfBounds(const Tokenizer *tokenizer, const std::list<const Token *> &Location)
-    {
-        _writemsg(tokenizer, Location, "all", "Array index out of bounds", "arrayIndexOutOfBounds");
-    }
     static bool arrayIndexOutOfBounds(const Settings &s)
     {
         return s._showAll;
     }
 
-    void bufferOverrun(const Tokenizer *tokenizer, const Token *Location)
-    {
-        _writemsg(tokenizer, Location, "all", "Buffer overrun", "bufferOverrun");
-    }
     static bool bufferOverrun(const Settings &s)
     {
         return s._showAll;
     }
 
-    void strncatUsage(const Tokenizer *tokenizer, const Token *Location)
-    {
-        _writemsg(tokenizer, Location, "all", "Dangerous usage of strncat, possible buffer overrun", "strncatUsage");
-    }
+
     static bool strncatUsage(const Settings &s)
     {
         return s._showAll;
     }
 
-    void outOfBounds(const Tokenizer *tokenizer, const Token *Location, const std::string &what)
-    {
-        _writemsg(tokenizer, Location, "error", "" + what + " is out of bounds", "outOfBounds");
-    }
     static bool outOfBounds()
     {
         return true;
@@ -189,10 +166,7 @@ public:
         return s._checkCodingStyle || s._showAll;
     }
 
-    void mismatchAllocDealloc(const Tokenizer *tokenizer, const std::list<const Token *> &Location, const std::string &varname)
-    {
-        _writemsg(tokenizer, Location, "error", "Mismatching allocation and deallocation: " + varname + "", "mismatchAllocDealloc");
-    }
+
     static bool mismatchAllocDealloc()
     {
         return true;

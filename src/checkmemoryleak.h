@@ -131,7 +131,7 @@ private:
     void deallocDeallocError(const Token *tok, const std::string &varname);
     void deallocuseError(const Token *tok, const std::string &varname);
     void mismatchSizeError(const Token *tok, const std::string &sz);
-
+    void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname);
 
 // Experimental functionality..
 protected:
