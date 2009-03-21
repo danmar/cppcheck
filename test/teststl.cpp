@@ -61,7 +61,7 @@ private:
 
         // Check..
         CheckStl checkStl;
-        checkStl.runChecks(&tokenizer, (const Settings *)0, this);
+        checkStl.runSimplifiedChecks(&tokenizer, (const Settings *)0, this);
     }
 
 
