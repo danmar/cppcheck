@@ -617,10 +617,10 @@ void Tokenizer::setVarId()
     unsigned int _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok != _tokens && !Token::Match(tok, "[;{}(]"))
+        if (tok != _tokens && !Token::Match(tok, "[,;{}(] %type%"))
             continue;
 
-        if (Token::Match(tok, "[;{}(] %type%"))
+        if (Token::Match(tok, "[,;{}(] %type%"))
             tok = tok->next();
 
         if (Token::Match(tok, "else|return"))
@@ -629,7 +629,7 @@ void Tokenizer::setVarId()
         // Determine name of declared variable..
         const char *varname = 0;
         Token *tok2 = tok->tokAt(1);
-        while (tok2 && ! Token::Match(tok2, "[;[=(]"))
+        while (tok2)
         {
             if (tok2->isName())
                 varname = tok2->strAt(0);
@@ -639,7 +639,7 @@ void Tokenizer::setVarId()
         }
 
         // Variable declaration found => Set variable ids
-        if (Token::Match(tok2, "[;[=]") && varname)
+        if (Token::Match(tok2, "[,);[=]") && varname)
         {
             ++_varId;
             int indentlevel = 0;
@@ -1114,9 +1114,6 @@ void Tokenizer::simplifyTokenList()
     // Simplify variable declarations
     simplifyVarDecl();
 
-    // In case variable declarations have been updated...
-    setVarId();
-
     // Replace NULL with 0..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -1136,6 +1133,9 @@ void Tokenizer::simplifyTokenList()
 
     simplifyIfAddBraces();
     simplifyFunctionParameters();
+
+    // In case variable declarations have been updated...
+    setVarId();
 
     elseif();
 
