@@ -1,7 +1,7 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
- * Leandro Penz, Kimmo Varis, Vesa Pikki
+ * Leandro Penz, Kimmo Varis, Vesa Pikki, Gianluca Scacco
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,11 +111,26 @@ bool isTypeName(const Token *tok)
         ret |= (_str == type[i]);
     return !ret;
 }
+bool isStatic(const Token *tok)
+{
+    bool res = false;
+
+    if (Token::Match(tok->tokAt(-1), "static "))
+        res = true;
+    else if (Token::Match(tok->tokAt(-2), "static "))
+        res = true;
+    else if (Token::Match(tok->tokAt(-3), "static "))
+        res = true;
+
+    //std::cout << __PRETTY_FUNCTION__ << " " << tok->str() << " " << res << std::endl;
+    return res;
+
+}
 void CheckAutoVariables::addVD(const Token* tok)
 {
     std::string var_name;
     var_name = tok->str();
-    //cout << "VD " << tok->linenr() << " " << var_name << endl;
+    //std::cout << "VD " << tok->linenr() << " " << var_name << std::endl;
     vd_list.push_back(var_name);
 }
 void CheckAutoVariables::autoVariables()
@@ -155,20 +170,17 @@ void CheckAutoVariables::autoVariables()
         {
             bindent--;
         }
-        else if (bindent > 0 && Token::Match(tok, "%type% :: %any%")) //Inside a function
+        else if (bindent > 0 && Token::Match(tok, "%type% :: %any%") && !isStatic(tok)) //Inside a function
         {
-            std::string var_name;
-            //print(tok,5);
-            var_name = tok->tokAt(2)->str();
-            vd_list.push_back(var_name);
+            addVD(tok->tokAt(2));
         }
-        else if (bindent > 0 && Token::Match(tok, "%var% %var% ;")) //Inside a function
+        else if (bindent > 0 && Token::Match(tok, "%var% %var% ;") && !isStatic(tok)) //Inside a function
         {
             if (!isTypeName(tok))
                 continue;
             addVD(tok->tokAt(1));
         }
-        else if (bindent > 0 && Token::Match(tok, "const %var% %var% ;")) //Inside a function
+        else if (bindent > 0 && Token::Match(tok, "const %var% %var% ;") && !isStatic(tok)) //Inside a function
         {
             if (!isTypeName(tok->tokAt(1)))
                 continue;
