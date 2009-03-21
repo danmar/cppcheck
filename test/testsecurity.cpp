@@ -52,7 +52,7 @@ private:
         errout.str("");
 
         // Check char variable usage..
-        CheckSecurity checkSecurity(&tokenizer, this);
+        CheckSecurity checkSecurity(&tokenizer, 0, this);
         checkSecurity.readnum();
     }
 
@@ -83,7 +83,7 @@ private:
         errout.str("");
 
         // Check char variable usage..
-        CheckSecurity checkSecurity(&tokenizer, this);
+        CheckSecurity checkSecurity(&tokenizer, 0, this);
         checkSecurity.gui();
     }
 

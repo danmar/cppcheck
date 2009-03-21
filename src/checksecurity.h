@@ -23,15 +23,26 @@
 #define checksecurityH
 //---------------------------------------------------------------------------
 
-class ErrorLogger;
-class Token;
-class Tokenizer;
+#include "check.h"
 
-class CheckSecurity
+class CheckSecurity : public Check
 {
 public:
-    CheckSecurity(const Tokenizer *tokenizer, ErrorLogger *errorLogger);
-    ~CheckSecurity();
+    /** This constructor is used when registering the CheckClass */
+    CheckSecurity() : Check()
+    { }
+
+    /** This constructor is used when running checks.. */
+    CheckSecurity(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    { }
+
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckSecurity checkSecurity(tokenizer, settings, errorLogger);
+        checkSecurity.readnum();
+        checkSecurity.gui();
+    }
 
     /** Reading a number from a stream/FILE */
     void readnum();
@@ -40,8 +51,7 @@ public:
     void gui();
 
 private:
-    const Tokenizer *_tokenizer;
-    ErrorLogger *_errorLogger;
+    void unvalidatedInput(const Token *tok);
 };
 
 //---------------------------------------------------------------------------

@@ -18,21 +18,7 @@
  */
 
 #include "checksecurity.h"
-#include "errorlogger.h"
-#include "token.h"
-#include "tokenize.h"
 
-
-CheckSecurity::CheckSecurity(const Tokenizer *tokenizer, ErrorLogger *errorLogger)
-        : _tokenizer(tokenizer), _errorLogger(errorLogger)
-{
-
-}
-
-CheckSecurity::~CheckSecurity()
-{
-
-}
 
 /**
  * Check that there are input validation when reading number from FILE/stream
@@ -66,11 +52,11 @@ void CheckSecurity::readnum()
         for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
         {
             if (Token::Match(tok2, "cin >> %varid%", varId))
-                _errorLogger->unvalidatedInput(_tokenizer, tok2);
+                unvalidatedInput(tok2);
             if (Token::Match(tok2, "fscanf ( %var% , %str% , %varid%", varId))
-                _errorLogger->unvalidatedInput(_tokenizer, tok2);
+                unvalidatedInput(tok2);
             if (Token::Match(tok2, "scanf ( %str% , %varid%", varId))
-                _errorLogger->unvalidatedInput(_tokenizer, tok2);
+                unvalidatedInput(tok2);
         }
     }
 }
@@ -103,11 +89,15 @@ void CheckSecurity::gui()
                 // Getting the value..
                 const Token *tok2 = Token::findmatch(tok, (dangerousfunc + " ( " + varname + " .").c_str());
                 if (tok2)
-                    _errorLogger->unvalidatedInput(_tokenizer, tok2);
+                    unvalidatedInput(tok2);
             }
         }
     }
 }
 
 
+void CheckSecurity::unvalidatedInput(const Token *tok)
+{
+    reportError(tok, "security", "unvalidatedInput", "Unvalidated input");
+}
 

@@ -45,6 +45,15 @@ public:
 
     /** Check for buffer overruns */
     void dangerousFunctions();
+
+private:
+    /** Error Messages.. */
+    void dangerousFunctionmktemp(const Token *tok);
+    void dangerousFunctiongets(const Token *tok);
+    void dangerousFunctionscanf(const Token *tok);
+
+
+
 };
 
 //---------------------------------------------------------------------------

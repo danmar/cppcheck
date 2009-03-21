@@ -324,37 +324,25 @@ public:
         return true;
     }
 
-    void dangerousFunctionmktemp(const Tokenizer *tokenizer, const Token *Location)
-    {
-        _writemsg(tokenizer, Location, "style", "Found 'mktemp'. You should use 'mkstemp' instead", "dangerousFunctionmktemp");
-    }
+
     static bool dangerousFunctionmktemp(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    void dangerousFunctiongets(const Tokenizer *tokenizer, const Token *Location)
-    {
-        _writemsg(tokenizer, Location, "style", "Found 'gets'. You should use 'fgets' instead", "dangerousFunctiongets");
-    }
+
     static bool dangerousFunctiongets(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    void dangerousFunctionscanf(const Tokenizer *tokenizer, const Token *Location)
-    {
-        _writemsg(tokenizer, Location, "style", "Found 'scanf'. You should use 'fgets' instead", "dangerousFunctionscanf");
-    }
+
     static bool dangerousFunctionscanf(const Settings &s)
     {
         return s._checkCodingStyle;
     }
 
-    void unvalidatedInput(const Tokenizer *tokenizer, const Token *Location)
-    {
-        _writemsg(tokenizer, Location, "security", "Unvalidated input", "unvalidatedInput");
-    }
+
     static bool unvalidatedInput(const Settings &s)
     {
         return s._security;

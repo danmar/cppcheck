@@ -53,20 +53,32 @@ void CheckDangerousFunctionsClass::dangerousFunctions()
     {
         if (Token::simpleMatch(tok, "mktemp ("))
         {
-            _errorLogger->dangerousFunctionmktemp(_tokenizer, tok);
+            dangerousFunctionmktemp(tok);
         }
         else if (Token::simpleMatch(tok, "gets ("))
         {
-            _errorLogger->dangerousFunctiongets(_tokenizer, tok);
+            dangerousFunctiongets(tok);
         }
         else if (Token::simpleMatch(tok, "scanf ("))
         {
-            _errorLogger->dangerousFunctionscanf(_tokenizer, tok);
+            dangerousFunctionscanf(tok);
         }
     }
 }
 //---------------------------------------------------------------------------
 
 
+void CheckDangerousFunctionsClass::dangerousFunctionmktemp(const Token *tok)
+{
+    reportError(tok, "style", "dangerousFunctionmktemp", "Found 'mktemp'. You should use 'mkstemp' instead");
+}
 
+void CheckDangerousFunctionsClass::dangerousFunctiongets(const Token *tok)
+{
+    reportError(tok, "style", "dangerousFunctiongets", "Found 'gets'. You should use 'fgets' instead");
+}
 
+void CheckDangerousFunctionsClass::dangerousFunctionscanf(const Token *tok)
+{
+    reportError(tok, "style", "dangerousFunctionscanf", "Found 'scanf'. You should use 'fgets' instead");
+}
