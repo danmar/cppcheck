@@ -234,7 +234,3 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp src/tokenize.h src/settin
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h src/checkother.h src/check.h
 	$(CXX) $(CXXFLAGS) -c -o test/testunusedvar.o test/testunusedvar.cpp
 
-src/errorlogger.h:	tools/errmsg
-	tools/errmsg
-	mv errorlogger.h src/
-
