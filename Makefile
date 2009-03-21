@@ -26,13 +26,13 @@ OBJECTS =     src/checkautovariables.o \
               src/token.o \
               src/tokenize.o
 
-TESTOBJ =     test/testbufferoverrun.o \
+TESTOBJ =     test/testautovariables.o \
+              test/testbufferoverrun.o \
               test/testcharvar.o \
               test/testclass.o \
               test/testconstructors.o \
               test/testcppcheck.o \
               test/testdangerousfunctions.o \
-              test/testautovariables.o \
               test/testdivision.o \
               test/testfilelister.o \
               test/testfunctionusage.o \
@@ -127,7 +127,7 @@ src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/check.h
 src/checkother.o: src/checkother.cpp src/checkother.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkother.o src/checkother.cpp
 
-src/checksecurity.o: src/checksecurity.cpp src/checksecurity.h src/errorlogger.h src/settings.h src/token.h src/tokenize.h
+src/checksecurity.o: src/checksecurity.cpp src/checksecurity.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/checksecurity.o src/checksecurity.cpp
 
 src/checkstl.o: src/checkstl.cpp src/checkstl.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
@@ -163,6 +163,9 @@ src/token.o: src/token.cpp src/token.h
 src/tokenize.o: src/tokenize.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/filelister.h
 	$(CXX) $(CXXFLAGS) -c -o src/tokenize.o src/tokenize.cpp
 
+test/testautovariables.o: test/testautovariables.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkautovariables.h src/check.h test/testsuite.h
+	$(CXX) $(CXXFLAGS) -c -o test/testautovariables.o test/testautovariables.cpp
+
 test/testbufferoverrun.o: test/testbufferoverrun.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkbufferoverrun.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testbufferoverrun.o test/testbufferoverrun.cpp
 
@@ -180,9 +183,6 @@ test/testcppcheck.o: test/testcppcheck.cpp test/testsuite.h src/errorlogger.h sr
 
 test/testdangerousfunctions.o: test/testdangerousfunctions.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkdangerousfunctions.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testdangerousfunctions.o test/testdangerousfunctions.cpp
-
-test/testautovariables.o: test/testautovariables.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkdangerousfunctions.h src/check.h test/testsuite.h
-	$(CXX) $(CXXFLAGS) -c -o test/testautovariables.o test/testautovariables.cpp
 
 test/testdivision.o: test/testdivision.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkother.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testdivision.o test/testdivision.cpp
@@ -214,7 +214,7 @@ test/testredundantif.o: test/testredundantif.cpp src/tokenize.h src/settings.h s
 test/testrunner.o: test/testrunner.cpp test/testsuite.h src/errorlogger.h src/settings.h
 	$(CXX) $(CXXFLAGS) -c -o test/testrunner.o test/testrunner.cpp
 
-test/testsecurity.o: test/testsecurity.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checksecurity.h test/testsuite.h
+test/testsecurity.o: test/testsecurity.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checksecurity.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testsecurity.o test/testsecurity.cpp
 
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
