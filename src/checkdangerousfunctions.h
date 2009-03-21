@@ -28,14 +28,16 @@
 class CheckDangerousFunctionsClass : public Check
 {
 public:
+    /** This constructor is used when registering the CheckClass */
     CheckDangerousFunctionsClass() : Check()
     { }
 
+    /** This constructor is used when running checks.. */
     CheckDangerousFunctionsClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckDangerousFunctionsClass checkDangerousFunctionsClass(tokenizer, settings, errorLogger);
         checkDangerousFunctionsClass.dangerousFunctions();

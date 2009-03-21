@@ -30,14 +30,16 @@ class Token;
 class CheckStl : public Check
 {
 public:
+    /** This constructor is used when registering the CheckClass */
     CheckStl() : Check()
     { }
 
+    /** This constructor is used when running checks.. */
     CheckStl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckStl checkStl(tokenizer, settings, errorLogger);
 

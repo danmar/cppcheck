@@ -44,7 +44,7 @@ public:
             : Check(tokenizer, settings, errorLogger)
     { }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckMemoryLeakClass checkMemoryLeakClass(tokenizer, settings, errorLogger);
         checkMemoryLeakClass.CheckMemoryLeak();

@@ -31,20 +31,24 @@ class Token;
 class CheckOther : public Check
 {
 public:
+    /** This constructor is used when registering the CheckClass */
     CheckOther() : Check()
     { }
 
+    /** This constructor is used when running checks.. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
 
 
-    // TODO: run these before simplification..
-    // checkOther.CheckUnsignedDivision();
-    // checkOther.CheckCharVariable();
-
-
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckOther checkOther(tokenizer, settings, errorLogger);
+        checkOther.CheckUnsignedDivision();
+        checkOther.CheckCharVariable();
+    }
+
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 

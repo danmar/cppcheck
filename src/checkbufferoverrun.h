@@ -35,14 +35,16 @@ class CheckBufferOverrunClass : public Check
 {
 public:
 
+    /** This constructor is used when registering the CheckClass */
     CheckBufferOverrunClass() : Check()
     { }
 
+    /** This constructor is used when running checks.. */
     CheckBufferOverrunClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckBufferOverrunClass checkBufferOverrunClass(tokenizer, settings, errorLogger);
         if (settings->_showAll)

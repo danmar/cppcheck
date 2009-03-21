@@ -30,16 +30,22 @@ class Token;
 class CheckClass : public Check
 {
 public:
+    /** This constructor is used when registering the CheckClass */
     CheckClass() : Check()
     { }
 
+    /** This constructor is used when running checks.. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
 
-    // TODO: run noMemset
-
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckClass checkClass(tokenizer, settings, errorLogger);
+        checkClass.noMemset();
+    }
+
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckClass checkClass(tokenizer, settings, errorLogger);
 

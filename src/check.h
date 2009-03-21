@@ -53,8 +53,13 @@ public:
         return _instances;
     }
 
-    /** run checks.. */
-    virtual void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
+    /** run checks, the token list is not simplified */
+    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *)
+    { }
+
+    /** run checks, the token list is simplified */
+    virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
+
 
 protected:
     const Tokenizer * const _tokenizer;

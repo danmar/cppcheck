@@ -378,16 +378,21 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     _tokenizer.fillFunctionList();
 
+    // call all "runChecks" in all registered Check classes
+    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+    {
+        (*it)->runChecks(&_tokenizer, &_settings, this);
+    }
 
     _tokenizer.simplifyTokenList();
 
     if (_settings._unusedFunctions)
         _checkFunctionUsage.parseTokens(_tokenizer);
 
-    // Run all checks in all registered Check classes
+    // call all "runSimplifiedChecks" in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
     {
-        (*it)->runChecks(&_tokenizer, &_settings, this);
+        (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
     }
 }
 

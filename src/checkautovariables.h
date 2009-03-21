@@ -30,25 +30,30 @@
 class CheckAutoVariables : public Check
 {
 public:
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    /** This constructor is used when registering the CheckClass */
+    CheckAutoVariables() : Check()
+    { }
+
+    /** This constructor is used when running checks.. */
+    CheckAutoVariables(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+        : Check(tokenizer, settings, errorLogger)
+    { }
+
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
-        _tokenizer = tokenizer;
-        _settings = settings;
-        _errorLogger = errorLogger;
-        autoVariables();
+        CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
+        checkAutoVariables.autoVariables();
     }
 
     /** Check for buffer overruns */
     void autoVariables();
+
 private:
     std::list<std::string> fp_list;
     std::list<std::string> vd_list;
     bool error_av(const Token* left, const Token* right);
     bool is_auto_var(const Token* t);
     void addVD(const Token* t);
-    const Tokenizer *_tokenizer;
-    const Settings *_settings;
-    ErrorLogger *_errorLogger;
 };
 
 //---------------------------------------------------------------------------
