@@ -60,6 +60,9 @@ public:
     /** run checks, the token list is simplified */
     virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
 
+    /** get error messages */
+    virtual void getErrorMessages()
+    { }
 
 protected:
     const Tokenizer * const _tokenizer;

@@ -83,6 +83,10 @@ private:
 
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
 
+    void getErrorMessages()
+    {
+        iteratorsError(0, "container1", "container2");
+    }
 };
 
 //---------------------------------------------------------------------------
