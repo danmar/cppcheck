@@ -304,11 +304,11 @@ void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], Al
 {
     if (alloctype == CheckMemoryLeakClass::FOPEN ||
         alloctype == CheckMemoryLeakClass::POPEN)
-        _errorLogger->resourceLeak(_tokenizer, tok, varname);
+        resourceLeakError(tok, varname);
     else if (all)
-        _errorLogger->memleakall(_tokenizer, tok, varname);
+        memleakallError(tok, varname);
     else
-        _errorLogger->memleak(_tokenizer, tok, varname);
+        memleakError(tok, varname);
 }
 //---------------------------------------------------------------------------
 
@@ -402,7 +402,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                 Token::Match(tok->tokAt(2), "malloc ( %num% )") &&
                 (std::atoi(tok->strAt(4)) % sz) != 0)
             {
-                _errorLogger->mismatchSize(_tokenizer, tok->tokAt(4), tok->strAt(4));
+                mismatchSizeError(tok->tokAt(4), tok->strAt(4));
             }
 
             if (alloc == No)
@@ -1213,7 +1213,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
     }
     if ((result = Token::findmatch(tok, "dealloc [;{}] use|use_ ;")) != NULL)
     {
-        _errorLogger->deallocuse(_tokenizer, result->tokAt(2), varname);
+        deallocuseError(result->tokAt(2), varname);
     }
 
     // Replace "&use" with "use". Replace "use_" with ";"
@@ -1277,7 +1277,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
 
     else if ((result = Token::findmatch(tok, "dealloc ; dealloc ;")) != NULL)
     {
-        _errorLogger->deallocDealloc(_tokenizer, result->tokAt(2), varname);
+        deallocDeallocError(result->tokAt(2), varname);
     }
 
     else if (! Token::findmatch(tok, "dealloc") &&
@@ -1615,5 +1615,36 @@ Token * CheckMemoryLeakClass::functionParameterCode(const Token *ftok, int param
     }
 
     return NULL;
+}
+
+
+void CheckMemoryLeakClass::memleakError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, "error", "memleak", "Memory leak: " + varname);
+}
+
+void CheckMemoryLeakClass::memleakallError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, "all", "memleakall", "Memory leak: " + varname);
+}
+
+void CheckMemoryLeakClass::resourceLeakError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, "error", "resourceLeak", "Resource leak: " + varname);
+}
+
+void CheckMemoryLeakClass::deallocDeallocError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, "error", "deallocDealloc", "Deallocating a deallocated pointer: " + varname);
+}
+
+void CheckMemoryLeakClass::deallocuseError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, "error", "deallocuse", "Using '" + varname + "' after it is deallocated / released");
+}
+
+void CheckMemoryLeakClass::mismatchSizeError(const Token *tok, const std::string &sz)
+{
+    reportError(tok, "error", "mismatchSize", "The given size " + sz + " is mismatching");
 }
 

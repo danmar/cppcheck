@@ -97,6 +97,16 @@ private:
 
     // Check constructors for a specified class
     void CheckConstructors(const Token *tok1, struct VAR *varlist, const char funcname[]);
+
+    // Reporting errors..
+    void noConstructorError(const Token *tok, const std::string &classname);
+    void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
+    void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
+    void memsetClassError(const Token *tok, const std::string &memfunc);
+    void memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname);
+    void operatorEqError(const Token *tok);
+    void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
+
 };
 //---------------------------------------------------------------------------
 #endif

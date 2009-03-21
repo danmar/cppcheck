@@ -125,6 +125,14 @@ private:
 
     std::list<AllocFunc> _listAllocFunc;
 
+    void memleakError(const Token *tok, const std::string &varname);
+    void memleakallError(const Token *tok, const std::string &varname);
+    void resourceLeakError(const Token *tok, const std::string &varname);
+    void deallocDeallocError(const Token *tok, const std::string &varname);
+    void deallocuseError(const Token *tok, const std::string &varname);
+    void mismatchSizeError(const Token *tok, const std::string &sz);
+
+
 // Experimental functionality..
 protected:
     Token *functionParameterCode(const Token *ftok, int parameter);

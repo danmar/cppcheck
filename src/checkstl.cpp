@@ -166,7 +166,6 @@ void CheckStl::erase()
     }
 }
 
-
 void CheckStl::eraseCheckLoop(const Token *it)
 {
     const Token *tok = it;
@@ -209,10 +208,15 @@ void CheckStl::eraseCheckLoop(const Token *it)
 
     // Write error message..
     if (tok2)
-        _errorLogger->erase(_tokenizer, tok2);
+        eraseError(tok2);
 }
 
 
+// Error message for bad iterator usage..
+void CheckStl::eraseError(const Token *tok)
+{
+    reportError(tok, "error", "erase", "Dangerous usage of erase");
+}
 
 
 
@@ -259,9 +263,9 @@ void CheckStl::pushback()
                     if (invalidIterator)
                     {
                         if (Token::Match(tok2, ("++|--|*|+|-|(|, " + iteratorname).c_str()))
-                            _errorLogger->pushback(_tokenizer, tok2, iteratorname);
+                            pushbackError(tok2, iteratorname);
                         if (Token::Match(tok2, (iteratorname + " ++|--|+|-").c_str()))
-                            _errorLogger->pushback(_tokenizer, tok2, iteratorname);
+                            pushbackError(tok2, iteratorname);
                     }
                 }
             }
@@ -269,5 +273,11 @@ void CheckStl::pushback()
     }
 }
 
+
+// Error message for bad iterator usage..
+void CheckStl::pushbackError(const Token *tok, const std::string &iterator_name)
+{
+    reportError(tok, "error", "pushback", "After push_back or push_front, the iterator '" + iterator_name + "' may be invalid");
+}
 
 

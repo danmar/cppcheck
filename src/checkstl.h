@@ -83,11 +83,15 @@ private:
 
     void stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var);
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
+    void eraseError(const Token *tok);
+    void pushbackError(const Token *tok, const std::string &iterator_name);
 
     void getErrorMessages()
     {
         iteratorsError(0, "container1", "container2");
         stlOutOfBoundsError(0, "i", "foo");
+        eraseError(0);
+        pushbackError(0, "iterator");
     }
 };
 

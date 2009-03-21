@@ -111,6 +111,27 @@ protected:
     // if (haystack.find(needle) != haystack.end())
     //    haystack.remove(needle);
     void redundantCondition2();
+
+private:
+    // Error messages..
+    void cstyleCastError(const Token *tok);
+    void redundantIfDelete0Error(const Token *tok);
+    void redundantIfRemoveError(const Token *tok);
+    void dangerousUsageStrtolError(const Token *tok);
+    void ifNoActionError(const Token *tok);
+    void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
+    void udivError(const Token *tok);
+    void udivWarning(const Token *tok);
+    void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname);
+    void passedByValueError(const Token *tok, const std::string &parname);
+    void constStatementError(const Token *tok, const std::string &type);
+    void charArrayIndexError(const Token *tok);
+    void charBitOpError(const Token *tok);
+    void variableScopeError(const Token *tok, const std::string &varname);
+    void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
+    void strPlusChar(const Token *tok);
+    void returnLocalVariable(const Token *tok);
+
 };
 
 //---------------------------------------------------------------------------
