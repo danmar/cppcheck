@@ -125,13 +125,18 @@ void CheckStl::stlOutOfBounds()
 
             if (Token::Match(tok, pattern.c_str()))
             {
-                _errorLogger->stlOutOfBounds(_tokenizer, tok, "When " + num->str() + " == size(), " + pattern);
+                stlOutOfBoundsError(tok, num->str(), var->str());
             }
 
             tok = tok->next();
         }
     }
+}
 
+// Error message for bad iterator usage..
+void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var)
+{
+    reportError(tok, "error", "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds");
 }
 
 

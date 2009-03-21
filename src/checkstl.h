@@ -81,11 +81,13 @@ private:
      */
     void eraseCheckLoop(const Token *it);
 
+    void stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var);
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
 
     void getErrorMessages()
     {
         iteratorsError(0, "container1", "container2");
+        stlOutOfBoundsError(0, "i", "foo");
     }
 };
 
