@@ -34,6 +34,11 @@ MainWindow::MainWindow() :
         mActionReCheck(tr("Recheck files"), this),
         mActionCheckDirectory(tr("Check &directory"), this),
         mActionSettings(tr("&Settings"), this),
+        mActionShowAll(tr("Show &more errors"), this),
+        mActionShowSecurity(tr("Show &security errors"), this),
+        mActionShowStyle(tr("Show s&tyle errors"), this),
+        mActionShowUnused(tr("Show errors on &unused functions"), this),
+        mActionShowErrors(tr("Show &common errors"), this),
         mResults(mSettings)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
@@ -43,6 +48,19 @@ MainWindow::MainWindow() :
     menu->addAction(&mActionClearResults);
     menu->addSeparator();
     menu->addAction(&mActionExit);
+
+    QMenu *menuview = menuBar()->addMenu(tr("&View"));
+    mActionShowAll.setCheckable(true);
+    mActionShowSecurity.setCheckable(true);
+    mActionShowStyle.setCheckable(true);
+    mActionShowUnused.setCheckable(true);
+    mActionShowErrors.setCheckable(true);
+
+    menuview->addAction(&mActionShowAll);
+    menuview->addAction(&mActionShowSecurity);
+    menuview->addAction(&mActionShowStyle);
+    menuview->addAction(&mActionShowUnused);
+    menuview->addAction(&mActionShowErrors);
 
     QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
     menuprogram->addAction(&mActionSettings);
@@ -77,6 +95,12 @@ void MainWindow::LoadSettings()
         resize(mSettings.value(tr("Window width"), 800).toInt(),
                mSettings.value(tr("Window height"), 600).toInt());
     }
+
+    mActionShowAll.setChecked(mSettings.value(tr("Show all"), true).toBool());
+    mActionShowSecurity.setChecked(mSettings.value(tr("Show security"), true).toBool());
+    mActionShowStyle.setChecked(mSettings.value(tr("Show style"), true).toBool());
+    mActionShowUnused.setChecked(mSettings.value(tr("Show unused"), true).toBool());
+    mActionShowErrors.setChecked(mSettings.value(tr("Show errors"), true).toBool());
 }
 
 void MainWindow::SaveSettings()
@@ -84,6 +108,12 @@ void MainWindow::SaveSettings()
     mSettings.setValue(tr("Window width"), size().width());
     mSettings.setValue(tr("Window height"), size().height());
     mSettings.setValue(tr("Window maximized"), isMaximized());
+
+    mSettings.setValue(tr("Show all"), mActionShowAll.isChecked());
+    mSettings.setValue(tr("Show security"), mActionShowSecurity.isChecked());
+    mSettings.setValue(tr("Show style"), mActionShowStyle.isChecked());
+    mSettings.setValue(tr("Show unused"), mActionShowUnused.isChecked());
+    mSettings.setValue(tr("Show errors"), mActionShowErrors.isChecked());
 }
 
 

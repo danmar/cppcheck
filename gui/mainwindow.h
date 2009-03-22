@@ -130,6 +130,13 @@ protected:
     */
     QAction mActionSettings;
 
+    QAction mActionShowAll;
+    QAction mActionShowSecurity;
+    QAction mActionShowStyle;
+    QAction mActionShowUnused;
+    QAction mActionShowErrors;
+
+
 
     /**
     * @brief Results for checking
