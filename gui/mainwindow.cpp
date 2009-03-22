@@ -292,4 +292,7 @@ void MainWindow::ShowErrors(bool checked)
 {
     mResults.ShowResults(SHOW_ERRORS, checked);
 }
+<<<<<<< HEAD:gui/mainwindow.cpp
 
+=======
+>>>>>>> gui:gui/mainwindow.cpp

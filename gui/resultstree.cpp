@@ -77,7 +77,10 @@ void ResultsTree::AddErrorItem(const QString &file,
     }
 }
 
+<<<<<<< HEAD:gui/resultstree.cpp
 
+=======
+>>>>>>> gui:gui/resultstree.cpp
 ShowTypes ResultsTree::SeverityToShowType(const QString &severity)
 {
     if (severity == "all")
