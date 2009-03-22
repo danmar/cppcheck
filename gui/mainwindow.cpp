@@ -109,7 +109,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
         mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
         EnableCheckButtons(false);
-        mThread.Check(GetCppCheckSettings(),false);
+        mThread.Check(GetCppCheckSettings(), false);
     }
 }
 
@@ -209,7 +209,7 @@ void MainWindow::ReCheck()
 {
     ClearResults();
     EnableCheckButtons(false);
-    mThread.Check(GetCppCheckSettings(),true);
+    mThread.Check(GetCppCheckSettings(), true);
 }
 
 void MainWindow::ClearResults()

@@ -46,7 +46,8 @@ void ThreadHandler::SetFiles(const QStringList &files)
 
 void ThreadHandler::Check(Settings settings, bool recheck)
 {
-    if (recheck && mRunningThreadCount == 0) {
+    if (recheck && mRunningThreadCount == 0)
+    {
         mResults.SetFiles(mLastFiles);
     }
 
