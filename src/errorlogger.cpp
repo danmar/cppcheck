@@ -130,7 +130,11 @@ std::string ErrorLogger::ErrorMessage::toXML() const
 std::string ErrorLogger::ErrorMessage::toText() const
 {
     std::ostringstream text;
-    text << callStackToString(_callStack) << ": (" << _severity << ") " << _msg;
+    if (!_callStack.empty())
+        text << callStackToString(_callStack) << ": ";
+    if (!_severity.empty())
+        text << "(" << _severity << ") ";
+    text << _msg;
     return text.str();
 }
 
@@ -164,9 +168,8 @@ void ErrorLogger::_writemsg(const std::string &msg, const std::string &id)
     xml << " msg=\"" << msg << "\"";
     xml << ">";
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> empty;
-    empty.push_back(ErrorLogger::ErrorMessage::FileLocation());
-    reportErr(ErrorLogger::ErrorMessage(empty, "severity", msg, "id"));
+    std::list<ErrorLogger::ErrorMessage::FileLocation> loc;
+    reportErr(ErrorLogger::ErrorMessage(loc, "", msg, "id"));
 }
 
 std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
