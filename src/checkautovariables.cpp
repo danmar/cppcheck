@@ -56,7 +56,7 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
     {
         std::string vname = (*it_fp);
 
-	//The left argument is a formal parameter
+        //The left argument is a formal parameter
         if (vname == left_var)
         {
             //cout << "Beccato" << endl;
@@ -72,7 +72,7 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
     for (id_vd = vd_list.begin();id_vd != vd_list.end();++id_vd)
     {
         std::string vname = (*id_vd);
-	//The left argument is a variable declaration
+        //The left argument is a variable declaration
         if (vname == right_var)
             break;
     }
