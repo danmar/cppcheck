@@ -49,6 +49,8 @@ public slots:
     *
     */
     void CheckFiles();
+    void ReCheck();
+    void ClearResults();
 
     /**
     * @brief Slot for check directory menu item
@@ -66,6 +68,7 @@ protected slots:
     */
     void CheckDone();
 protected:
+    void EnableCheckButtons(bool enable);
     void DoCheckFiles(QFileDialog::FileMode mode);
     QStringList GetFilesRecursively(const QString &path);
     QStringList RemoveDuplicates(const QStringList &list);
@@ -101,6 +104,19 @@ protected:
     *
     */
     QAction mActionCheckFiles;
+
+    /**
+    * @brief Menu action to clear results
+    *
+    */
+    QAction mActionClearResults;
+
+    /**
+    * @brief Menu action to re check
+    *
+    */
+    QAction mActionReCheck;
+
 
     /**
     * @brief Menu action to check a directory

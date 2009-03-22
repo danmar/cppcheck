@@ -57,7 +57,7 @@ public:
     */
     void SetFiles(const QStringList &files);
 
-    void Check(Settings settings);
+    void Check(Settings settings, bool recheck);
 
 
 signals:
@@ -66,6 +66,7 @@ protected slots:
     void Stop();
     void ThreadDone();
 protected:
+    QStringList mLastFiles;
     void RemoveThreads();
     ThreadResult mResults;
     QList<CheckThread *> mThreads;
