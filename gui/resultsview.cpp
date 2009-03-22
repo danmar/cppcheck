@@ -63,3 +63,8 @@ void ResultsView::Error(const QString &file,
 {
     mTree->AddErrorItem(file, severity, message, files, lines);
 }
+
+void ResultsView::ShowResults(ShowTypes type, bool show)
+{
+    mTree->ShowResults(type,show);
+}

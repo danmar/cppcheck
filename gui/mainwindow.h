@@ -52,6 +52,12 @@ public slots:
     void ReCheck();
     void ClearResults();
 
+    void ShowAll(bool checked);
+    void ShowSecurity(bool checked);
+    void ShowStyle(bool checked);
+    void ShowUnused(bool checked);
+    void ShowErrors(bool checked);
+
     /**
     * @brief Slot for check directory menu item
     *

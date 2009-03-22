@@ -63,20 +63,32 @@ void ResultsTree::AddErrorItem(const QString &file,
     if (realfile.isEmpty())
         realfile = "Undefined file";
 
-    QStandardItem *fileitem = FindFileItem(realfile);
+    ErrorItem item;
+    item.file = realfile;
+    item.type = SeverityToShowType(severity);
+    item.message = message;
+    item.files = files;
+    item.lines = lines;
+    mItems<<item;
 
-    if (!fileitem)
+    if (mShowTypes[item.type])
     {
-        //qDebug()<<"No previous error for file"<<realfile;
-        fileitem = CreateItem(realfile);
-        mModel.appendRow(fileitem);
+        AddItem(mItems.size()-1);
     }
+}
 
-    QList<QStandardItem*> list;
-    list << CreateItem(severity);
-    list << CreateItem(QString("%1").arg(lines[0]));
-    list << CreateItem(message);
-    fileitem->appendRow(list);
+ShowTypes ResultsTree::SeverityToShowType(const QString &severity)
+{
+    if (severity == "all")
+        return SHOW_ALL;
+    if (severity == "error")
+        return SHOW_ERRORS;
+    if (severity == "style")
+        return SHOW_STYLE;
+    if (severity == "security")
+        return SHOW_SECURITY;
+
+    return SHOW_NONE;
 }
 
 QStandardItem *ResultsTree::FindFileItem(const QString &name)
@@ -90,6 +102,7 @@ QStandardItem *ResultsTree::FindFileItem(const QString &name)
 void ResultsTree::Clear()
 {
     mModel.removeRows(0, mModel.rowCount());
+    mItems.clear();
 }
 
 void ResultsTree::LoadSettings()
@@ -110,3 +123,71 @@ void ResultsTree::SaveSettings()
         mSettings.setValue(temp, columnWidth(i));
     }
 }
+
+void ResultsTree::ShowResults(ShowTypes type, bool show)
+{
+    if (type != SHOW_NONE)
+    {
+        if (mShowTypes[type] != show)
+        {
+            mShowTypes[type] = show;
+            RefreshTree();
+        }
+    }
+}
+
+
+void ResultsTree::RefreshTree()
+{
+    mModel.removeRows(0, mModel.rowCount());
+    for (int i=0;i<mItems.size();i++)
+    {
+        if (mShowTypes[mItems[i].type])
+        {
+            AddItem(i);
+        }
+    }
+}
+
+QString ResultsTree::ShowTypeToString(ShowTypes type)
+{
+    switch (type)
+    {
+    case SHOW_ALL:
+        return "all";
+    case SHOW_ERRORS:
+        return "error";
+    case SHOW_STYLE:
+        return "style";
+    case SHOW_SECURITY:
+        return "security";
+    case SHOW_UNUSED:
+        return "unused";
+    case SHOW_NONE:
+        return "none";
+    }
+
+    return "";
+}
+
+
+void ResultsTree::AddItem(int index)
+{
+    if (index >= 0 && index < mItems.size())
+    {
+        QStandardItem *fileitem = FindFileItem(mItems[index].file);
+        if (!fileitem)
+        {
+            //qDebug()<<"No previous error for file"<<realfile;
+            fileitem = CreateItem(mItems[index].file);
+            mModel.appendRow(fileitem);
+        }
+
+        QList<QStandardItem*> list;
+        list << CreateItem(ShowTypeToString(mItems[index].type));
+        list << CreateItem(QString("%1").arg(mItems[index].lines[0]));
+        list << CreateItem(mItems[index].message);
+        fileitem->appendRow(list);
+    }
+}
+

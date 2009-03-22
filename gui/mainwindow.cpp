@@ -73,6 +73,13 @@ MainWindow::MainWindow() :
     connect(&mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
     connect(&mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
     connect(&mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
+
+    connect(&mActionShowAll, SIGNAL(toggled(bool)), this, SLOT(ShowAll(bool)));
+    connect(&mActionShowSecurity, SIGNAL(toggled(bool)), this, SLOT(ShowSecurity(bool)));
+    connect(&mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
+    connect(&mActionShowUnused, SIGNAL(toggled(bool)), this, SLOT(ShowUnused(bool)));
+    connect(&mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
+
     connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     LoadSettings();
@@ -101,6 +108,12 @@ void MainWindow::LoadSettings()
     mActionShowStyle.setChecked(mSettings.value(tr("Show style"), true).toBool());
     mActionShowUnused.setChecked(mSettings.value(tr("Show unused"), true).toBool());
     mActionShowErrors.setChecked(mSettings.value(tr("Show errors"), true).toBool());
+
+    mResults.ShowResults(SHOW_ALL,mActionShowAll.isChecked());
+    mResults.ShowResults(SHOW_ERRORS,mActionShowErrors.isChecked());
+    mResults.ShowResults(SHOW_SECURITY,mActionShowSecurity.isChecked());
+    mResults.ShowResults(SHOW_STYLE,mActionShowStyle.isChecked());
+    mResults.ShowResults(SHOW_UNUSED,mActionShowUnused.isChecked());
 }
 
 void MainWindow::SaveSettings()
@@ -254,3 +267,28 @@ void MainWindow::EnableCheckButtons(bool enable)
     mActionCheckDirectory.setEnabled(enable);
 }
 
+
+void MainWindow::ShowAll(bool checked)
+{
+    mResults.ShowResults(SHOW_ALL,checked);
+}
+
+void MainWindow::ShowSecurity(bool checked)
+{
+    mResults.ShowResults(SHOW_SECURITY,checked);
+}
+
+void MainWindow::ShowStyle(bool checked)
+{
+    mResults.ShowResults(SHOW_STYLE,checked);
+}
+
+void MainWindow::ShowUnused(bool checked)
+{
+    mResults.ShowResults(SHOW_UNUSED,checked);
+}
+
+void MainWindow::ShowErrors(bool checked)
+{
+    mResults.ShowResults(SHOW_ERRORS,checked);
+}

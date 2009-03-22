@@ -25,7 +25,7 @@
 #include <QStandardItemModel>
 #include <QStandardItem>
 #include <QSettings>
-
+#include "common.h"
 
 /**
 * @brief Cppcheck's results are shown in this tree
@@ -55,7 +55,23 @@ public:
     *
     */
     void Clear();
+
+    void ShowResults(ShowTypes type, bool show);
 protected:
+    void AddItem(int index);
+    void RefreshTree();
+    ShowTypes SeverityToShowType(const QString &severity);
+    QString ShowTypeToString(ShowTypes type);
+
+    typedef struct {
+        QString file;
+        ShowTypes type;
+        QString message;
+        QStringList files;
+        QList<int> lines;
+    }ErrorItem;
+
+    QList<ErrorItem> mItems;
     /**
     * @brief Load all settings
     * Colum widths
@@ -95,6 +111,8 @@ protected:
     *
     */
     QSettings &mSettings;
+
+    bool mShowTypes[SHOW_NONE];
 private:
 };
 
