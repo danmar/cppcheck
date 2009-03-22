@@ -99,48 +99,12 @@ protected:
         */
     QLineEdit *mJobs;
 
-    /**
-    * @brief Cppcheck setting
-    *
-    */
-    QCheckBox *mShowAll;
-
-    /**
-    * @brief Cppcheck setting
-    *
-    */
-    QCheckBox *mCheckCodingStyle;
-
-    /**
-    * @brief Cppcheck setting
-    *
-    */
-    QCheckBox *mErrorsOnly;
-
-    /**
-    * @brief Cppcheck setting
-    *
-    */
-    QCheckBox *mVerbose;
 
     /**
     * @brief Cppcheck setting
     *
     */
     QCheckBox *mForce;
-
-    /**
-    * @brief Cppcheck setting
-    *
-    */
-    QCheckBox *mUnusedFunctions;
-
-    /**
-    * @brief Cppcheck setting
-    *
-    */
-    QCheckBox *mSecurity;
-
 
 
     /**

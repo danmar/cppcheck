@@ -42,27 +42,12 @@ SettingsDialog::SettingsDialog(QSettings &programSettings) :
     mJobs->setValidator(new QIntValidator(this));
     layout->addLayout(jobsLayout);
 
-
-    //Show All
-    mShowAll = AddCheckbox(layout, tr("Show all"), tr("Check show all"), false);
-
-    //Check Coding Style
-    mCheckCodingStyle = AddCheckbox(layout, tr("Check Coding Style"), tr("Check coding style"), false);
-
-    //Errors only
-    mErrorsOnly = AddCheckbox(layout, tr("Errors only"), tr("Check errors only"), false);
-
-    //Verbose
-    mVerbose = AddCheckbox(layout, tr("Verbose"), tr("Check verbose"), false);
-
     //Force
-    mForce = AddCheckbox(layout, tr("Force"), tr("Check force"), false);
+    mForce = AddCheckbox(layout,
+                         tr("Force checking on files that have \"too many\" configurations"),
+                         tr("Check force"),
+                         false);
 
-    //Unused functions
-    mUnusedFunctions = AddCheckbox(layout, tr("Unused functions"), tr("Check unused functions"), false);
-
-    //Security
-    mSecurity = AddCheckbox(layout, tr("Security"), tr("Check security"), false);
 
 
 
@@ -129,13 +114,7 @@ void SettingsDialog::SaveSettings()
 void SettingsDialog::SaveCheckboxValues()
 {
     mSettings.setValue(tr("Check threads"), mJobs->text().toInt());
-    SaveCheckboxValue(mShowAll, tr("Check show all"));
-    SaveCheckboxValue(mCheckCodingStyle, tr("Check coding style"));
-    SaveCheckboxValue(mErrorsOnly, tr("Check errors only"));
-    SaveCheckboxValue(mVerbose, tr("Check verbose"));
     SaveCheckboxValue(mForce, tr("Check force"));
-    SaveCheckboxValue(mUnusedFunctions, tr("Check unused functions"));
-    SaveCheckboxValue(mSecurity, tr("Check security"));
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
