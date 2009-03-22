@@ -46,44 +46,48 @@ static CheckAutoVariables instance;
 // _callStack used when parsing into subfunctions.
 
 
-bool CheckAutoVariables::error_av(const Token* left, const Token* right)
+bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 {
     std::string left_var = left->str();
     std::string right_var = right->str();
     std::list<std::string>::iterator it_fp;
 
-    for (it_fp = fp_list.begin();it_fp != fp_list.end();it_fp++)
+    for (it_fp = fp_list.begin();it_fp != fp_list.end();++it_fp)
     {
         std::string vname = (*it_fp);
-        //cout << "error_av " << vname << " " << left_var << endl;
+
+	//The left argument is a formal parameter
         if (vname == left_var)
         {
             //cout << "Beccato" << endl;
-            break; //The left argument is a formal parameter
+            break;
         }
 
     }
+    //The left argument is NOT a formal parameter
     if (it_fp == fp_list.end())
-        return false; //The left argument is NOT a formal parameter
+        return false;
 
     std::list<std::string>::iterator id_vd;
-    for (id_vd = vd_list.begin();id_vd != vd_list.end();id_vd++)
+    for (id_vd = vd_list.begin();id_vd != vd_list.end();++id_vd)
     {
         std::string vname = (*id_vd);
+	//The left argument is a variable declaration
         if (vname == right_var)
-            break; //The left argument is a variable declaration
+            break;
     }
+    //The left argument is NOT a variable declaration
     if (id_vd == vd_list.end())
-        return false; //The left argument is NOT a variable declaration
+        return false;
     //If I reach this point there is a wrong assignement of an auto-variable to an effective parameter of a function
     return true;
 
 }
-bool CheckAutoVariables::is_auto_var(const Token* t)
+bool CheckAutoVariables::isAutoVar(const Token* t)
 {
     std::list<std::string>::iterator id_vd;
     std::string v = t->str();
-    for (id_vd = vd_list.begin();id_vd != vd_list.end();id_vd++)
+    for (id_vd = vd_list.begin();id_vd != vd_list.end();++id_vd)
     {
         std::string vname = (*id_vd);
         if (vname == v)
@@ -188,7 +192,7 @@ void CheckAutoVariables::autoVariables()
         }
         else if (bindent > 0 && Token::Match(tok, "%var% = & %var%")) //Critical assignement
         {
-            if (error_av(tok->tokAt(0), tok->tokAt(3)))
+            if (errorAv(tok->tokAt(0), tok->tokAt(3)))
                 reportError(tok,
                             "error",
                             "autoVariables",
@@ -196,7 +200,7 @@ void CheckAutoVariables::autoVariables()
         }
         else if (bindent > 0 && Token::Match(tok, "%var% [ %any% ] = & %var%")) //Critical assignement
         {
-            if (error_av(tok->tokAt(0), tok->tokAt(6)))
+            if (errorAv(tok->tokAt(0), tok->tokAt(6)))
                 reportError(tok,
                             "error",
                             "autoVariables",
@@ -204,7 +208,7 @@ void CheckAutoVariables::autoVariables()
         }
         else if (bindent > 0 && Token::Match(tok, "return & %var%")) //Critical return
         {
-            if (is_auto_var(tok->tokAt(2)))
+            if (isAutoVar(tok->tokAt(2)))
                 reportError(tok,
                             "error",
                             "autoVariables",
