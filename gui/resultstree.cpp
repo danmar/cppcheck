@@ -77,7 +77,6 @@ void ResultsTree::AddErrorItem(const QString &file,
     }
 }
 
-
 ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
 {
     if (severity == "all")
