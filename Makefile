@@ -33,7 +33,6 @@ TESTOBJ =     test/testautovariables.o \
               test/testconstructors.o \
               test/testcppcheck.o \
               test/testdangerousfunctions.o \
-              test/testautovariables.o \
               test/testdivision.o \
               test/testfilelister.o \
               test/testfunctionusage.o \
@@ -184,9 +183,6 @@ test/testcppcheck.o: test/testcppcheck.cpp test/testsuite.h src/errorlogger.h sr
 
 test/testdangerousfunctions.o: test/testdangerousfunctions.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkdangerousfunctions.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testdangerousfunctions.o test/testdangerousfunctions.cpp
-
-test/testautovariables.o: test/testautovariables.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkdangerousfunctions.h src/check.h test/testsuite.h
-	$(CXX) $(CXXFLAGS) -c -o test/testautovariables.o test/testautovariables.cpp
 
 test/testdivision.o: test/testdivision.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkother.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testdivision.o test/testdivision.cpp
