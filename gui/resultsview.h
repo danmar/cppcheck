@@ -26,6 +26,8 @@
 #include <QProgressBar>
 #include "../src/errorlogger.h"
 #include "resultstree.h"
+#include "common.h"
+
 
 /**
 * @brief Widget to show cppcheck progressbar and result
@@ -35,8 +37,11 @@ class ResultsView : public QWidget
 {
     Q_OBJECT
 public:
+
     ResultsView(QSettings &settings);
     virtual ~ResultsView();
+
+    void ShowResults(ShowTypes type, bool show);
 
     /**
     * @brief Clear results
