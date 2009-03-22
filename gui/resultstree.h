@@ -63,7 +63,8 @@ protected:
     ShowTypes SeverityToShowType(const QString &severity);
     QString ShowTypeToString(ShowTypes type);
 
-    typedef struct {
+    typedef struct
+    {
         QString file;
         ShowTypes type;
         QString message;

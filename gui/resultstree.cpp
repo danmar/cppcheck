@@ -69,11 +69,11 @@ void ResultsTree::AddErrorItem(const QString &file,
     item.message = message;
     item.files = files;
     item.lines = lines;
-    mItems<<item;
+    mItems << item;
 
     if (mShowTypes[item.type])
     {
-        AddItem(mItems.size()-1);
+        AddItem(mItems.size() - 1);
     }
 }
 
@@ -140,7 +140,7 @@ void ResultsTree::ShowResults(ShowTypes type, bool show)
 void ResultsTree::RefreshTree()
 {
     mModel.removeRows(0, mModel.rowCount());
-    for (int i=0;i<mItems.size();i++)
+    for (int i = 0;i < mItems.size();i++)
     {
         if (mShowTypes[mItems[i].type])
         {

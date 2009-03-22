@@ -109,11 +109,11 @@ void MainWindow::LoadSettings()
     mActionShowUnused.setChecked(mSettings.value(tr("Show unused"), true).toBool());
     mActionShowErrors.setChecked(mSettings.value(tr("Show errors"), true).toBool());
 
-    mResults.ShowResults(SHOW_ALL,mActionShowAll.isChecked());
-    mResults.ShowResults(SHOW_ERRORS,mActionShowErrors.isChecked());
-    mResults.ShowResults(SHOW_SECURITY,mActionShowSecurity.isChecked());
-    mResults.ShowResults(SHOW_STYLE,mActionShowStyle.isChecked());
-    mResults.ShowResults(SHOW_UNUSED,mActionShowUnused.isChecked());
+    mResults.ShowResults(SHOW_ALL, mActionShowAll.isChecked());
+    mResults.ShowResults(SHOW_ERRORS, mActionShowErrors.isChecked());
+    mResults.ShowResults(SHOW_SECURITY, mActionShowSecurity.isChecked());
+    mResults.ShowResults(SHOW_STYLE, mActionShowStyle.isChecked());
+    mResults.ShowResults(SHOW_UNUSED, mActionShowUnused.isChecked());
 }
 
 void MainWindow::SaveSettings()
@@ -270,25 +270,25 @@ void MainWindow::EnableCheckButtons(bool enable)
 
 void MainWindow::ShowAll(bool checked)
 {
-    mResults.ShowResults(SHOW_ALL,checked);
+    mResults.ShowResults(SHOW_ALL, checked);
 }
 
 void MainWindow::ShowSecurity(bool checked)
 {
-    mResults.ShowResults(SHOW_SECURITY,checked);
+    mResults.ShowResults(SHOW_SECURITY, checked);
 }
 
 void MainWindow::ShowStyle(bool checked)
 {
-    mResults.ShowResults(SHOW_STYLE,checked);
+    mResults.ShowResults(SHOW_STYLE, checked);
 }
 
 void MainWindow::ShowUnused(bool checked)
 {
-    mResults.ShowResults(SHOW_UNUSED,checked);
+    mResults.ShowResults(SHOW_UNUSED, checked);
 }
 
 void MainWindow::ShowErrors(bool checked)
 {
-    mResults.ShowResults(SHOW_ERRORS,checked);
+    mResults.ShowResults(SHOW_ERRORS, checked);
 }

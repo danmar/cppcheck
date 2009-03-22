@@ -66,5 +66,5 @@ void ResultsView::Error(const QString &file,
 
 void ResultsView::ShowResults(ShowTypes type, bool show)
 {
-    mTree->ShowResults(type,show);
+    mTree->ShowResults(type, show);
 }
