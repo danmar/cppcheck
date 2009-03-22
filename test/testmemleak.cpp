@@ -164,6 +164,7 @@ private:
 
         TEST_CASE(realloc1);
         TEST_CASE(realloc2);
+        // TODO TEST_CASE(realloc3);
 
         TEST_CASE(assign);
 
@@ -1642,6 +1643,19 @@ private:
               "{\n"
               "    char *a = (char *)malloc(10);\n"
               "    a = (char *)realloc(a, 100);\n"
+              "    free(a);\n"
+              "}\n");
+
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void realloc3()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *a = 0;\n"
+              "    if ((a = realloc(a, 100)) == NULL)\n"
+              "        return;\n"
               "    free(a);\n"
               "}\n");
 
