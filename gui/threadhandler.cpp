@@ -39,6 +39,11 @@ void ThreadHandler::ClearFiles()
 void ThreadHandler::SetFiles(const QStringList &files)
 {
     mResults.SetFiles(files);
+    QString file;
+    qDebug()<<"Files to check:";
+    foreach(file,files) {
+        qDebug()<<file;
+    }
 }
 
 void ThreadHandler::Check(Settings settings)
@@ -46,6 +51,7 @@ void ThreadHandler::Check(Settings settings)
     if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs <= 0)
     {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
+        emit Done();
         return;
     }
 

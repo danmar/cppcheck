@@ -12,7 +12,6 @@ CONFIG += warn_on debug
 
 # Input
 HEADERS += 	mainwindow.h \
-		checkdialog.h \
 		checkthread.h \
 		resultsview.h \
 		resultstree.h \
@@ -41,7 +40,6 @@ HEADERS += 	mainwindow.h \
 
 SOURCES += 	main.cpp \
 		mainwindow.cpp\
-		checkdialog.cpp \
 		checkthread.cpp \
 		resultsview.cpp \
 		resultstree.cpp \

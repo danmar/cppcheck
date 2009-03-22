@@ -23,6 +23,7 @@
 
 #include <QThread>
 #include "../src/cppcheck.h"
+#include "../src/settings.h"
 #include "threadresult.h"
 
 /**

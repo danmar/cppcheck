@@ -22,6 +22,14 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QSettings>
+#include <QCheckBox>
+#include <QVBoxLayout>
+#include <QPushButton>
+
+
 
 /**
 * @brief Settings dialog
@@ -30,9 +38,116 @@
 class SettingsDialog : public QDialog
 {
 public:
-    SettingsDialog();
+    SettingsDialog(QSettings &programSettings);
     virtual ~SettingsDialog();
+    void SaveCheckboxValues();
 protected:
+/**
+    * @brief Load saved values
+    * Loads dialog size and column widths.
+    *
+    */
+    void SaveSettings();
+
+    /**
+    * @brief Save settings
+    * Save dialog size and column widths.
+    *
+    */
+    void LoadSettings();
+
+    /**
+    * @brief Save a single checkboxes value
+    *
+    * @param box checkbox to save
+    * @param name name for QSettings to store the value
+    */
+    void SaveCheckboxValue(QCheckBox *box, const QString &name);
+
+/**
+    * @brief Add a new checkbox to layout
+    *
+    * @param layout layout to add to
+    * @param label label for the checkbox
+    * @param settings QSettings name for default value
+    * @return newly created QCheckBox
+    */
+    QCheckBox* AddCheckbox(QVBoxLayout *layout,
+                           const QString &label,
+                           const QString &settings,
+                           bool value);
+
+    /**
+    * @brief Convert bool to Qt::CheckState
+    *
+    * @param yes value to convert
+    * @return value converted to Qt::CheckState
+    */
+    Qt::CheckState BoolToCheckState(bool yes);
+
+    /**
+    * @brief Converts Qt::CheckState to bool
+    *
+    * @param state Qt::CheckState to convert
+    * @return converted value
+    */
+    bool CheckStateToBool(Qt::CheckState state);
+
+    /**
+        * @brief How many threads should cppcheck have
+        *
+        */
+    QLineEdit *mJobs;
+
+    /**
+    * @brief Cppcheck setting
+    *
+    */
+    QCheckBox *mShowAll;
+
+    /**
+    * @brief Cppcheck setting
+    *
+    */
+    QCheckBox *mCheckCodingStyle;
+
+    /**
+    * @brief Cppcheck setting
+    *
+    */
+    QCheckBox *mErrorsOnly;
+
+    /**
+    * @brief Cppcheck setting
+    *
+    */
+    QCheckBox *mVerbose;
+
+    /**
+    * @brief Cppcheck setting
+    *
+    */
+    QCheckBox *mForce;
+
+    /**
+    * @brief Cppcheck setting
+    *
+    */
+    QCheckBox *mUnusedFunctions;
+
+    /**
+    * @brief Cppcheck setting
+    *
+    */
+    QCheckBox *mSecurity;
+
+
+
+        /**
+    * @brief Settings
+    *
+    */
+    QSettings &mSettings;
 private:
 };
 

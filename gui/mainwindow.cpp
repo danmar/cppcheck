@@ -21,24 +21,35 @@
 #include "mainwindow.h"
 #include <QDebug>
 #include <QMenu>
+#include <QDirIterator>
 #include <QMenuBar>
+#include "../src/filelister.h"
+
 
 MainWindow::MainWindow() :
         mSettings(tr("CppCheck"), tr("CppCheck-GUI")),
-        mExit(tr("E&xit"), this),
-        mCheck(tr("&Check"), this),
+        mActionExit(tr("E&xit"), this),
+        mActionCheckFiles(tr("&Check files(s)"), this),
+        mActionCheckDirectory(tr("&Check directory"), this),
+        mActionSettings(tr("&Settings"), this),
         mResults(mSettings)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
-    menu->addAction(&mCheck);
+    menu->addAction(&mActionCheckFiles);
+    menu->addAction(&mActionCheckDirectory);
     menu->addSeparator();
-    menu->addAction(&mExit);
+    menu->addAction(&mActionExit);
+
+    QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
+    menuprogram->addAction(&mActionSettings);
 
     setCentralWidget(&mResults);
 
 
-    connect(&mExit, SIGNAL(triggered()), this, SLOT(close()));
-    connect(&mCheck, SIGNAL(triggered()), this, SLOT(Check()));
+    connect(&mActionExit, SIGNAL(triggered()), this, SLOT(close()));
+    connect(&mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
+    connect(&mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
+    connect(&mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     LoadSettings();
     mThread.Initialize(&mResults);
@@ -46,7 +57,7 @@ MainWindow::MainWindow() :
 
 MainWindow::~MainWindow()
 {
-    //dtor
+    SaveSettings();
 }
 
 void MainWindow::LoadSettings()
@@ -70,22 +81,120 @@ void MainWindow::SaveSettings()
 }
 
 
-void MainWindow::Check()
+void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 {
-    CheckDialog dialog(mSettings);
-    if (dialog.exec() == QDialog::Accepted)
+    QFileDialog dialog(this);
+    dialog.setDirectory(QDir(mSettings.value(tr("Check path"),"").toString()));
+    dialog.setFileMode(mode);
+
+    if (dialog.exec())
     {
+        QStringList selected = dialog.selectedFiles();
+        QStringList fileNames;
+        QString selection;
+
+        foreach(selection,selected)
+        {
+            fileNames << RemoveUnacceptedFiles(GetFilesRecursively(selection));
+        }
+
         mResults.Clear();
         mThread.ClearFiles();
-        mThread.SetFiles(dialog.GetSelectedFiles());
-        mSettings.setValue(tr("Check path"), dialog.GetDefaultPath());
-        dialog.SaveCheckboxValues();
-        mCheck.setDisabled(true);
-        mThread.Check(dialog.GetSettings());
+        mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
+        mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
+        mActionCheckFiles.setDisabled(true);
+        mThread.Check(GetCppCheckSettings());
     }
 }
 
+void MainWindow::CheckFiles()
+{
+    DoCheckFiles(QFileDialog::ExistingFiles);
+}
+
+void MainWindow::CheckDirectory()
+{
+    DoCheckFiles(QFileDialog::DirectoryOnly);
+}
+
+Settings MainWindow::GetCppCheckSettings()
+{
+    Settings result;
+    result._debug = false;
+    result._showAll = true;
+    result._checkCodingStyle = true;
+    result._errorsOnly = false;
+    result._verbose = true;
+    result._force = true;
+    result._xml = false;
+    result._unusedFunctions = true;
+    result._security = true;
+    result._jobs = mSettings.value(tr("Check threads"), 1).toInt();
+    return result;
+}
+
+
+QStringList MainWindow::RemoveDuplicates(const QStringList &list)
+{
+    QHash<QString, int> hash;
+    QString str;
+    foreach(str, list)
+    {
+        hash[str] = 0;
+    }
+
+    return QStringList(hash.uniqueKeys());
+}
+
+QStringList MainWindow::GetFilesRecursively(const QString &path)
+{
+    QFileInfo info(path);
+    QStringList list;
+
+    if (info.isDir())
+    {
+        QDirIterator it(path, QDirIterator::Subdirectories);
+
+        while (it.hasNext())
+        {
+            list << it.next();
+        }
+    }
+    else
+    {
+        list << path;
+    }
+
+    return list;
+}
+
+QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
+{
+    QStringList result;
+    QString str;
+    foreach(str, list)
+    {
+        if (FileLister::AcceptFile(str.toStdString()))
+        {
+            result << str;
+        }
+    }
+
+    return result;
+}
+
+
 void MainWindow::CheckDone()
 {
-    mCheck.setDisabled(false);
+    mActionCheckFiles.setDisabled(false);
 }
+
+void MainWindow::ProgramSettings()
+{
+    SettingsDialog dialog(mSettings);
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        dialog.SaveCheckboxValues();
+    }
+}
+

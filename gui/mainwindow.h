@@ -25,10 +25,11 @@
 #include "resultsview.h"
 #include <QSettings>
 #include <QAction>
-#include "../src/settings.h"
+#include <QFileDialog>
 
-#include "checkdialog.h"
+
 #include "threadhandler.h"
+#include "settingsdialog.h"
 
 /**
 * @brief Main window for cppcheck-gui
@@ -44,10 +45,18 @@ public:
 public slots:
 
     /**
-    * @brief Slot for check menu item
+    * @brief Slot for check files menu item
     *
     */
-    void Check();
+    void CheckFiles();
+
+    /**
+    * @brief Slot for check directory menu item
+    *
+    */
+    void CheckDirectory();
+
+    void ProgramSettings();
 
 protected slots:
 
@@ -57,6 +66,11 @@ protected slots:
     */
     void CheckDone();
 protected:
+    void DoCheckFiles(QFileDialog::FileMode mode);
+    QStringList GetFilesRecursively(const QString &path);
+    QStringList RemoveDuplicates(const QStringList &list);
+    Settings GetCppCheckSettings();
+    QStringList RemoveUnacceptedFiles(const QStringList &list);
 
     /**
     * @brief Load program settings
@@ -80,13 +94,26 @@ protected:
     * @brief Menu action to exit program
     *
     */
-    QAction mExit;
+    QAction mActionExit;
 
     /**
-    * @brief Menu action to open checkdialog
+    * @brief Menu action to check files
     *
     */
-    QAction mCheck;
+    QAction mActionCheckFiles;
+
+    /**
+    * @brief Menu action to check a directory
+    *
+    */
+    QAction mActionCheckDirectory;
+
+    /**
+    * @brief Menu action to open settings dialog
+    *
+    */
+    QAction mActionSettings;
+
 
     /**
     * @brief Results for checking

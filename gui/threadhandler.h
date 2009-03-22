@@ -23,6 +23,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include "../src/settings.h"
 #include "../src/cppcheck.h"
 #include "threadresult.h"
 #include "checkthread.h"

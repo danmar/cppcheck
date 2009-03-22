@@ -26,7 +26,7 @@ ResultsTree::ResultsTree(QSettings &settings) :
 {
     setModel(&mModel);
     QStringList labels;
-    labels << tr("Filename && severity") << tr("Message");
+    labels << tr("severity")<<tr("Line") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
 
     LoadSettings();
@@ -53,22 +53,34 @@ void ResultsTree::AddErrorItem(const QString &file,
                                const QStringList &files,
                                const QList<int> &lines)
 {
-    Q_UNUSED(files);
-    Q_UNUSED(lines);
+    Q_UNUSED(file);
 
-    QStandardItem *fileitem = FindFileItem(file);
+    if (files.isEmpty())
+        return;
+
+    QString realfile = files[0];
+
+    if (realfile.isEmpty())
+        realfile = "Undefined file";
+
+    QStandardItem *fileitem = FindFileItem(realfile);
+
     if (!fileitem)
     {
-        fileitem = CreateItem(file);
+        //qDebug()<<"No previous error for file"<<realfile;
+        fileitem = CreateItem(realfile);
+        mModel.appendRow(fileitem);
     }
 
-    qDebug() << "Adding error for file" << file << ". Message is" << message;
+    //qDebug() << "Adding error for file" << realfile << ". Message is" << message;
 
     QList<QStandardItem*> list;
     list << CreateItem(severity);
+    list << CreateItem(QString("%1").arg(lines[0]));
     list << CreateItem(message);
     fileitem->appendRow(list);
-    mModel.appendRow(fileitem);
+
+    //qDebug()<<"\n";
 }
 
 QStandardItem *ResultsTree::FindFileItem(const QString &name)
