@@ -40,9 +40,10 @@ void ThreadHandler::SetFiles(const QStringList &files)
 {
     mResults.SetFiles(files);
     QString file;
-    qDebug()<<"Files to check:";
-    foreach(file,files) {
-        qDebug()<<file;
+    qDebug() << "Files to check:";
+    foreach(file, files)
+    {
+        qDebug() << file;
     }
 }
 

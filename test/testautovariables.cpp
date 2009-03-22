@@ -63,7 +63,7 @@ private:
     void run()
     {
         TEST_CASE(testautovar);
-	TEST_CASE(testautovararray);
+        TEST_CASE(testautovararray);
     }
 
 
@@ -76,7 +76,7 @@ private:
               "res=&num;");
         ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n"), errout.str());
     }
-  void testautovararray()
+    void testautovararray()
     {
         check("void func1(int* arr[2])\n"
               "{\n"

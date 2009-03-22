@@ -42,11 +42,11 @@ public:
     virtual ~SettingsDialog();
     void SaveCheckboxValues();
 protected:
-/**
-    * @brief Load saved values
-    * Loads dialog size and column widths.
-    *
-    */
+    /**
+        * @brief Load saved values
+        * Loads dialog size and column widths.
+        *
+        */
     void SaveSettings();
 
     /**
@@ -64,14 +64,14 @@ protected:
     */
     void SaveCheckboxValue(QCheckBox *box, const QString &name);
 
-/**
-    * @brief Add a new checkbox to layout
-    *
-    * @param layout layout to add to
-    * @param label label for the checkbox
-    * @param settings QSettings name for default value
-    * @return newly created QCheckBox
-    */
+    /**
+        * @brief Add a new checkbox to layout
+        *
+        * @param layout layout to add to
+        * @param label label for the checkbox
+        * @param settings QSettings name for default value
+        * @return newly created QCheckBox
+        */
     QCheckBox* AddCheckbox(QVBoxLayout *layout,
                            const QString &label,
                            const QString &settings,
@@ -143,7 +143,7 @@ protected:
 
 
 
-        /**
+    /**
     * @brief Settings
     *
     */

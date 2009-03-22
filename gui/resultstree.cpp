@@ -26,7 +26,7 @@ ResultsTree::ResultsTree(QSettings &settings) :
 {
     setModel(&mModel);
     QStringList labels;
-    labels << tr("severity")<<tr("Line") << tr("Message");
+    labels << tr("severity") << tr("Line") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
 
     LoadSettings();

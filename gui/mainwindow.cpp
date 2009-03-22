@@ -84,7 +84,7 @@ void MainWindow::SaveSettings()
 void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 {
     QFileDialog dialog(this);
-    dialog.setDirectory(QDir(mSettings.value(tr("Check path"),"").toString()));
+    dialog.setDirectory(QDir(mSettings.value(tr("Check path"), "").toString()));
     dialog.setFileMode(mode);
 
     if (dialog.exec())
@@ -93,7 +93,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         QStringList fileNames;
         QString selection;
 
-        foreach(selection,selected)
+        foreach(selection, selected)
         {
             fileNames << RemoveUnacceptedFiles(GetFilesRecursively(selection));
         }
