@@ -30,15 +30,37 @@ MainWindow::MainWindow() :
         mSettings(tr("CppCheck"), tr("CppCheck-GUI")),
         mActionExit(tr("E&xit"), this),
         mActionCheckFiles(tr("&Check files(s)"), this),
-        mActionCheckDirectory(tr("&Check directory"), this),
+        mActionClearResults(tr("Clear &results"), this),
+        mActionReCheck(tr("Recheck files"), this),
+        mActionCheckDirectory(tr("Check &directory"), this),
         mActionSettings(tr("&Settings"), this),
+        mActionShowAll(tr("Show &more errors"), this),
+        mActionShowSecurity(tr("Show &security errors"), this),
+        mActionShowStyle(tr("Show s&tyle errors"), this),
+        mActionShowUnused(tr("Show errors on &unused functions"), this),
+        mActionShowErrors(tr("Show &common errors"), this),
         mResults(mSettings)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
     menu->addAction(&mActionCheckFiles);
     menu->addAction(&mActionCheckDirectory);
+    menu->addAction(&mActionReCheck);
+    menu->addAction(&mActionClearResults);
     menu->addSeparator();
     menu->addAction(&mActionExit);
+
+    QMenu *menuview = menuBar()->addMenu(tr("&View"));
+    mActionShowAll.setCheckable(true);
+    mActionShowSecurity.setCheckable(true);
+    mActionShowStyle.setCheckable(true);
+    mActionShowUnused.setCheckable(true);
+    mActionShowErrors.setCheckable(true);
+
+    menuview->addAction(&mActionShowAll);
+    menuview->addAction(&mActionShowSecurity);
+    menuview->addAction(&mActionShowStyle);
+    menuview->addAction(&mActionShowUnused);
+    menuview->addAction(&mActionShowErrors);
 
     QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
     menuprogram->addAction(&mActionSettings);
@@ -50,9 +72,19 @@ MainWindow::MainWindow() :
     connect(&mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
     connect(&mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
     connect(&mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
+    connect(&mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
+
+    connect(&mActionShowAll, SIGNAL(toggled(bool)), this, SLOT(ShowAll(bool)));
+    connect(&mActionShowSecurity, SIGNAL(toggled(bool)), this, SLOT(ShowSecurity(bool)));
+    connect(&mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
+    connect(&mActionShowUnused, SIGNAL(toggled(bool)), this, SLOT(ShowUnused(bool)));
+    connect(&mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
+
+    connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     LoadSettings();
     mThread.Initialize(&mResults);
+    setWindowTitle(tr("CppCheck"));
 }
 
 MainWindow::~MainWindow()
@@ -71,6 +103,18 @@ void MainWindow::LoadSettings()
         resize(mSettings.value(tr("Window width"), 800).toInt(),
                mSettings.value(tr("Window height"), 600).toInt());
     }
+
+    mActionShowAll.setChecked(mSettings.value(tr("Show all"), true).toBool());
+    mActionShowSecurity.setChecked(mSettings.value(tr("Show security"), true).toBool());
+    mActionShowStyle.setChecked(mSettings.value(tr("Show style"), true).toBool());
+    mActionShowUnused.setChecked(mSettings.value(tr("Show unused"), true).toBool());
+    mActionShowErrors.setChecked(mSettings.value(tr("Show errors"), true).toBool());
+
+    mResults.ShowResults(SHOW_ALL, mActionShowAll.isChecked());
+    mResults.ShowResults(SHOW_ERRORS, mActionShowErrors.isChecked());
+    mResults.ShowResults(SHOW_SECURITY, mActionShowSecurity.isChecked());
+    mResults.ShowResults(SHOW_STYLE, mActionShowStyle.isChecked());
+    mResults.ShowResults(SHOW_UNUSED, mActionShowUnused.isChecked());
 }
 
 void MainWindow::SaveSettings()
@@ -78,6 +122,12 @@ void MainWindow::SaveSettings()
     mSettings.setValue(tr("Window width"), size().width());
     mSettings.setValue(tr("Window height"), size().height());
     mSettings.setValue(tr("Window maximized"), isMaximized());
+
+    mSettings.setValue(tr("Show all"), mActionShowAll.isChecked());
+    mSettings.setValue(tr("Show security"), mActionShowSecurity.isChecked());
+    mSettings.setValue(tr("Show style"), mActionShowStyle.isChecked());
+    mSettings.setValue(tr("Show unused"), mActionShowUnused.isChecked());
+    mSettings.setValue(tr("Show errors"), mActionShowErrors.isChecked());
 }
 
 
@@ -102,8 +152,8 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         mThread.ClearFiles();
         mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
         mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
-        mActionCheckFiles.setDisabled(true);
-        mThread.Check(GetCppCheckSettings());
+        EnableCheckButtons(false);
+        mThread.Check(GetCppCheckSettings(), false);
     }
 }
 
@@ -125,7 +175,7 @@ Settings MainWindow::GetCppCheckSettings()
     result._checkCodingStyle = true;
     result._errorsOnly = false;
     result._verbose = true;
-    result._force = true;
+    result._force = mSettings.value(tr("Check force"), 1).toBool();
     result._xml = false;
     result._unusedFunctions = true;
     result._security = true;
@@ -186,7 +236,7 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
 
 void MainWindow::CheckDone()
 {
-    mActionCheckFiles.setDisabled(false);
+    EnableCheckButtons(true);
 }
 
 void MainWindow::ProgramSettings()
@@ -198,3 +248,48 @@ void MainWindow::ProgramSettings()
     }
 }
 
+
+void MainWindow::ReCheck()
+{
+    ClearResults();
+    EnableCheckButtons(false);
+    mThread.Check(GetCppCheckSettings(), true);
+}
+
+void MainWindow::ClearResults()
+{
+    mResults.Clear();
+}
+
+void MainWindow::EnableCheckButtons(bool enable)
+{
+    mActionCheckFiles.setEnabled(enable);
+    mActionReCheck.setEnabled(enable);
+    mActionCheckDirectory.setEnabled(enable);
+}
+
+
+void MainWindow::ShowAll(bool checked)
+{
+    mResults.ShowResults(SHOW_ALL, checked);
+}
+
+void MainWindow::ShowSecurity(bool checked)
+{
+    mResults.ShowResults(SHOW_SECURITY, checked);
+}
+
+void MainWindow::ShowStyle(bool checked)
+{
+    mResults.ShowResults(SHOW_STYLE, checked);
+}
+
+void MainWindow::ShowUnused(bool checked)
+{
+    mResults.ShowResults(SHOW_UNUSED, checked);
+}
+
+void MainWindow::ShowErrors(bool checked)
+{
+    mResults.ShowResults(SHOW_ERRORS, checked);
+}
