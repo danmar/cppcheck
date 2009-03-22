@@ -30,13 +30,17 @@ MainWindow::MainWindow() :
         mSettings(tr("CppCheck"), tr("CppCheck-GUI")),
         mActionExit(tr("E&xit"), this),
         mActionCheckFiles(tr("&Check files(s)"), this),
-        mActionCheckDirectory(tr("&Check directory"), this),
+        mActionClearResults(tr("Clear &results"), this),
+        mActionReCheck(tr("Recheck files"), this),
+        mActionCheckDirectory(tr("Check &directory"), this),
         mActionSettings(tr("&Settings"), this),
         mResults(mSettings)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
     menu->addAction(&mActionCheckFiles);
     menu->addAction(&mActionCheckDirectory);
+    menu->addAction(&mActionReCheck);
+    menu->addAction(&mActionClearResults);
     menu->addSeparator();
     menu->addAction(&mActionExit);
 
@@ -50,6 +54,8 @@ MainWindow::MainWindow() :
     connect(&mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
     connect(&mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
     connect(&mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
+    connect(&mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
+    connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     LoadSettings();
     mThread.Initialize(&mResults);
@@ -102,8 +108,8 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         mThread.ClearFiles();
         mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
         mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
-        mActionCheckFiles.setDisabled(true);
-        mThread.Check(GetCppCheckSettings());
+        EnableCheckButtons(false);
+        mThread.Check(GetCppCheckSettings(),false);
     }
 }
 
@@ -125,7 +131,7 @@ Settings MainWindow::GetCppCheckSettings()
     result._checkCodingStyle = true;
     result._errorsOnly = false;
     result._verbose = true;
-    result._force = true;
+    result._force = mSettings.value(tr("Check force"), 1).toBool();
     result._xml = false;
     result._unusedFunctions = true;
     result._security = true;
@@ -186,7 +192,7 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
 
 void MainWindow::CheckDone()
 {
-    mActionCheckFiles.setDisabled(false);
+    EnableCheckButtons(true);
 }
 
 void MainWindow::ProgramSettings()
@@ -196,5 +202,25 @@ void MainWindow::ProgramSettings()
     {
         dialog.SaveCheckboxValues();
     }
+}
+
+
+void MainWindow::ReCheck()
+{
+    ClearResults();
+    EnableCheckButtons(false);
+    mThread.Check(GetCppCheckSettings(),true);
+}
+
+void MainWindow::ClearResults()
+{
+    mResults.Clear();
+}
+
+void MainWindow::EnableCheckButtons(bool enable)
+{
+    mActionCheckFiles.setEnabled(enable);
+    mActionReCheck.setEnabled(enable);
+    mActionCheckDirectory.setEnabled(enable);
 }
 

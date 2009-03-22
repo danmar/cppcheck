@@ -72,15 +72,11 @@ void ResultsTree::AddErrorItem(const QString &file,
         mModel.appendRow(fileitem);
     }
 
-    //qDebug() << "Adding error for file" << realfile << ". Message is" << message;
-
     QList<QStandardItem*> list;
     list << CreateItem(severity);
     list << CreateItem(QString("%1").arg(lines[0]));
     list << CreateItem(message);
     fileitem->appendRow(list);
-
-    //qDebug()<<"\n";
 }
 
 QStandardItem *ResultsTree::FindFileItem(const QString &name)
