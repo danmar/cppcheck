@@ -84,6 +84,7 @@ MainWindow::MainWindow() :
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     LoadSettings();
     mThread.Initialize(&mResults);
+    setWindowTitle(tr("CppCheck"));
 }
 
 MainWindow::~MainWindow()
