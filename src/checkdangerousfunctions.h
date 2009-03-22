@@ -52,6 +52,12 @@ private:
     void dangerousFunctiongets(const Token *tok);
     void dangerousFunctionscanf(const Token *tok);
 
+    void getErrorMessages()
+    {
+        dangerousFunctionmktemp(0);
+        dangerousFunctiongets(0);
+        dangerousFunctionscanf(0);
+    }
 
 
 };

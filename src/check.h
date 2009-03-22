@@ -61,8 +61,7 @@ public:
     virtual void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) = 0;
 
     /** get error messages */
-    virtual void getErrorMessages()
-    { }
+    virtual void getErrorMessages() = 0;
 
 protected:
     const Tokenizer * const _tokenizer;

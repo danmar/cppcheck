@@ -54,6 +54,11 @@ private:
     bool error_av(const Token* left, const Token* right);
     bool is_auto_var(const Token* t);
     void addVD(const Token* t);
+
+    void getErrorMessages()
+    {
+        reportError(0, "error", "autoVariables", "Wrong assignement of an auto-variable to an effective parameter of a function");
+    }
 };
 
 //---------------------------------------------------------------------------

@@ -52,6 +52,11 @@ public:
 
 private:
     void unvalidatedInput(const Token *tok);
+
+    void getErrorMessages()
+    {
+        unvalidatedInput(0);
+    }
 };
 
 //---------------------------------------------------------------------------

@@ -133,6 +133,21 @@ private:
     void mismatchSizeError(const Token *tok, const std::string &sz);
     void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname);
 
+
+    void getErrorMessages()
+    {
+        memleakError(0, "varname");
+        memleakallError(0, "varname");
+        resourceLeakError(0, "varname");
+        deallocDeallocError(0, "varname");
+        deallocuseError(0, "varname");
+        mismatchSizeError(0, "sz");
+
+        std::list<const Token *> callstack;
+        mismatchAllocDealloc(callstack, "varname");
+    }
+
+
 // Experimental functionality..
 protected:
     Token *functionParameterCode(const Token *ftok, int parameter);

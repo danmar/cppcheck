@@ -132,6 +132,27 @@ private:
     void strPlusChar(const Token *tok);
     void returnLocalVariable(const Token *tok);
 
+    void getErrorMessages()
+    {
+        cstyleCastError(0);
+        redundantIfDelete0Error(0);
+        redundantIfRemoveError(0);
+        dangerousUsageStrtolError(0);
+        ifNoActionError(0);
+        sprintfOverlappingDataError(0, "varname");
+        udivError(0);
+        udivWarning(0);
+        unusedStructMemberError(0, "structname", "varname");
+        passedByValueError(0, "parname");
+        constStatementError(0, "type");
+        charArrayIndexError(0);
+        charBitOpError(0);
+        variableScopeError(0, "varname");
+        conditionAlwaysTrueFalse(0, "true/false");
+        strPlusChar(0);
+        returnLocalVariable(0);
+    }
+
 };
 
 //---------------------------------------------------------------------------

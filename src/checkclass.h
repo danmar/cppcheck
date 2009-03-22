@@ -107,6 +107,17 @@ private:
     void operatorEqError(const Token *tok);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
 
+    void getErrorMessages()
+    {
+        noConstructorError(0, "classname");
+        uninitVarError(0, "classname", "varname");
+        unusedPrivateFunctionError(0, "classname", "funcname");
+        memsetClassError(0, "memfunc");
+        memsetStructError(0, "memfunc", "classname");
+        operatorEqError(0);
+        virtualDestructorError(0, "Base", "Derived");
+    }
+
 };
 //---------------------------------------------------------------------------
 #endif
