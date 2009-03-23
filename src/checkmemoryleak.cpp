@@ -330,10 +330,11 @@ bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[], bool
 
     const std::string end(endpar ? " )" : " [;)&|]");
 
-    return bool(Token::Match(tok, std::string("! " + varname + end).c_str()) ||
-                Token::simpleMatch(tok, std::string("! ( " + varname + " )" + end).c_str()) ||
-                Token::Match(tok, std::string("0 == " + varname + end).c_str()) ||
-                Token::simpleMatch(tok, std::string(varname + " == 0" + end).c_str()));
+    return bool(Token::Match(tok, ("! " + varname + end).c_str()) ||
+                Token::Match(tok, ("! ( " + varname + " )" + end).c_str()) ||
+                Token::Match(tok, ("0 == " + varname + end).c_str()) ||
+                Token::Match(tok, (varname + " == 0" + end).c_str()) ||
+                Token::Match(tok, ("( " + varname + " ) == 0" + end).c_str()));
 }
 
 Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz)

@@ -164,7 +164,7 @@ private:
 
         TEST_CASE(realloc1);
         TEST_CASE(realloc2);
-        // TODO TEST_CASE(realloc3);
+        TEST_CASE(realloc3);
 
         TEST_CASE(assign);
 
@@ -657,14 +657,14 @@ private:
     {
         check("static void f()\n"
               "{\n"
-              "	char *buf = NULL, *tmp;\n"
-              "	if (!(tmp = realloc(buf, 50)))\n"
-              "	{\n"
-              "		free(buf);\n"
-              "		return NULL;\n"
-              "	}\n"
-              "	buf = tmp;\n"
-              "	return buf;\n"
+              "    char *buf = NULL, *tmp;\n"
+              "    if (!(tmp = realloc(buf, 50)))\n"
+              "    {\n"
+              "        free(buf);\n"
+              "        return NULL;\n"
+              "    }\n"
+              "    buf = tmp;\n"
+              "    return buf;\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
@@ -673,11 +673,11 @@ private:
     {
         check("static void f()\n"
               "{\n"
-              "	char *buf = malloc(10);\n"
-              "	if (aa)\n"
-              "	    ;\n"
+              "    char *buf = malloc(10);\n"
+              "    if (aa)\n"
+              "        ;\n"
               "    else if (buf = realloc(buf, 100))\n"
-              "		;\n"
+              "        ;\n"
               "    free(buf);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
@@ -1487,8 +1487,8 @@ private:
         check("class A\n"
               "{\n"
               "public:\n"
-              "	   void a();\n"
-              "	   void doNothing() { }\n"
+              "    void a();\n"
+              "    void doNothing() { }\n"
               "};\n"
               "\n"
               "void A::a()\n"
@@ -1505,9 +1505,9 @@ private:
         check("class A\n"
               "{\n"
               "public:\n"
-              "	   int * p;\n"
-              "	   A();\n"
-              "	   ~A();\n"
+              "    int * p;\n"
+              "    A();\n"
+              "    ~A();\n"
               "};\n"
               "\n"
               "A::A()\n"
