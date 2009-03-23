@@ -1134,10 +1134,8 @@ void Tokenizer::simplifyTokenList()
     simplifyIfAddBraces();
     simplifyFunctionParameters();
 
-    // In case variable declarations have been updated...
-    setVarId();
-
     elseif();
+    simplifyIfAssign();
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -1146,6 +1144,9 @@ void Tokenizer::simplifyTokenList()
         if (Token::Match(tok, "default : %var%"))
             tok->next()->insertToken(";");
     }
+
+    // In case variable declarations have been updated...
+    setVarId();
 
     bool modified = true;
     while (modified)
@@ -1802,6 +1803,51 @@ bool Tokenizer::simplifyVarDecl()
         }
     }
 
+    return ret;
+}
+
+
+bool Tokenizer::simplifyIfAssign()
+{
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok->next(), "if ( (| %var% ="))
+        {
+            tok->deleteNext();
+
+            int numpar = 0;
+            while (tok->next()->str() == "(")
+            {
+                ++numpar;
+                tok->deleteNext();
+            }
+
+            Token *tok2 = tok;
+            int indentlevel = 0;
+            for (tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++indentlevel;
+                else if (tok2->str() == ")")
+                {
+                    if (indentlevel <= 0)
+                        break;
+                    --indentlevel;
+                }
+            }
+            if (tok2)
+            {
+                tok2 = tok2->previous();
+                tok2->insertToken(tok->strAt(1));
+                for (int p = 0; p < numpar; ++p)
+                    tok2->insertToken("(");
+                tok2->insertToken("if");
+                tok2->insertToken(";");
+                ret = true;
+            }
+        }
+    }
     return ret;
 }
 

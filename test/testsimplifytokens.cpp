@@ -84,6 +84,9 @@ private:
         TEST_CASE(template5);
 
         TEST_CASE(namespaces);
+
+        // Assignment in condition..
+        TEST_CASE(ifassign1);
     }
 
     std::string tok(const char code[])
@@ -544,6 +547,30 @@ private:
             ASSERT_EQUALS(expected, sizeof_(code));
         }
     }
+
+
+    std::string simplifyIfAssign(const char code[])
+    {
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyIfAssign();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << (tok->previous() ? " " : "") << tok->str();
+
+        return ostr.str();
+    }
+
+    void ifassign1()
+    {
+        ASSERT_EQUALS("; a = b ; if ( a ) ;", simplifyIfAssign(";if(a=b);"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) ;", simplifyIfAssign(";if((a=b()));"));
+    }
+
 };
 
 REGISTER_TEST(TestSimplifyTokens)

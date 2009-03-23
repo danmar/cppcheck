@@ -95,6 +95,12 @@ public:
     bool simplifyVarDecl();
 
 
+    /**
+     * simplify if-assignments..
+     * Example: "if(a=b);" => "a=b;if(a);"
+     */
+    bool simplifyIfAssign();
+
 protected:
 
     /** Add braces to an if-block
