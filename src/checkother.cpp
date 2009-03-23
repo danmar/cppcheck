@@ -712,6 +712,9 @@ void CheckOther::CheckCharVariable()
                         break;
                 }
 
+                else if (tok2->str() == "return")
+                    continue;
+
                 std::string temp = "%var% [ " + tok->str() + " ]";
                 if ((tok2->str() != ".") && Token::Match(tok2->next(), temp.c_str()))
                 {

@@ -39,6 +39,7 @@ private:
         TEST_CASE(array_index);
         TEST_CASE(bitop1);
         TEST_CASE(bitop2);
+        TEST_CASE(return1);
     }
 
     void check(const char code[])
@@ -105,6 +106,16 @@ private:
               "{\n"
               "    char ch;\n"
               "    func(&ch);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void return1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char c;\n"
+              "    return &c;\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
