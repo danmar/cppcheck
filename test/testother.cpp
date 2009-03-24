@@ -52,6 +52,7 @@ private:
         TEST_CASE(returnLocalVariable1);
 
         TEST_CASE(varScope1);
+        TEST_CASE(varScope2);
     }
 
     void check(const char code[])
@@ -311,6 +312,17 @@ private:
                  "    }\n"
                  "\n"
                  "    return 1;\n"
+                 "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void varScope2()
+    {
+        varScope("int foo()\n"
+                 "{\n"
+                 "    Error e;\n"
+                 "    e.SetValue(12);\n"
+                 "    throw e;\n"
                  "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

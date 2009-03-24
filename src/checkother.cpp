@@ -520,6 +520,7 @@ void CheckOther::CheckVariableScope()
                 continue;
 
             if ((tok1->str() == "return") ||
+                (tok1->str() == "throw") ||
                 (tok1->str() == "delete") ||
                 (tok1->str() == "goto") ||
                 (tok1->str() == "else"))
