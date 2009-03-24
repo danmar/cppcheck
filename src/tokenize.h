@@ -101,6 +101,12 @@ public:
      */
     bool simplifyIfAssign();
 
+    /**
+     * simplify if-not..
+     * Example: "if(0==x);" => "if(!x);"
+     */
+    bool simplifyIfNot();
+
 protected:
 
     /** Add braces to an if-block

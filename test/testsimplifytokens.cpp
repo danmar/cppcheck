@@ -87,6 +87,9 @@ private:
 
         // Assignment in condition..
         TEST_CASE(ifassign1);
+
+        // "if(0==x)" => "if(!x)"
+        TEST_CASE(ifnot);
     }
 
     std::string tok(const char code[])
@@ -569,6 +572,30 @@ private:
     {
         ASSERT_EQUALS("; a = b ; if ( a ) ;", simplifyIfAssign(";if(a=b);"));
         ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) ;", simplifyIfAssign(";if((a=b()));"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) ;", simplifyIfAssign(";if(!(a=b()));"));
+    }
+
+
+    std::string simplifyIfNot(const char code[])
+    {
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyIfNot();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << (tok->previous() ? " " : "") << tok->str();
+
+        return ostr.str();
+    }
+
+    void ifnot()
+    {
+        ASSERT_EQUALS("if ( ! x )", simplifyIfNot("if(0==x)"));
+        ASSERT_EQUALS("if ( ! ( a = b ) )", simplifyIfNot("if(0==(a=b))"));
     }
 
 };

@@ -1135,6 +1135,7 @@ void Tokenizer::simplifyTokenList()
     simplifyFunctionParameters();
 
     elseif();
+    simplifyIfNot();
     simplifyIfAssign();
 
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -1812,10 +1813,21 @@ bool Tokenizer::simplifyIfAssign()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok->next(), "if ( (| %var% ="))
+        if (Token::Match(tok->next(), "if ( (| %var% =") ||
+            Token::Match(tok->next(), "if ( ! ( %var% ="))
         {
+            // delete the "if"
             tok->deleteNext();
 
+            // Remember if there is a "!" or not. And delete it if there are.
+            bool isNot = false;
+            if (Token::simpleMatch(tok->tokAt(2), "!"))
+            {
+                isNot = true;
+                tok->next()->deleteNext();
+            }
+
+            // Delete paranthesis.. and remember how many there are.
             int numpar = 0;
             while (tok->next()->str() == "(")
             {
@@ -1823,6 +1835,7 @@ bool Tokenizer::simplifyIfAssign()
                 tok->deleteNext();
             }
 
+            // Skip the "%var% = ..."
             Token *tok2 = tok;
             int indentlevel = 0;
             for (tok2 = tok; tok2; tok2 = tok2->next())
@@ -1836,12 +1849,16 @@ bool Tokenizer::simplifyIfAssign()
                     --indentlevel;
                 }
             }
+
+            // Insert "; if ( .."
             if (tok2)
             {
                 tok2 = tok2->previous();
                 tok2->insertToken(tok->strAt(1));
                 for (int p = 0; p < numpar; ++p)
                     tok2->insertToken("(");
+                if (isNot)
+                    tok2->next()->insertToken("!");
                 tok2->insertToken("if");
                 tok2->insertToken(";");
                 ret = true;
@@ -1850,6 +1867,27 @@ bool Tokenizer::simplifyIfAssign()
     }
     return ret;
 }
+
+
+
+bool Tokenizer::simplifyIfNot()
+{
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "if ( 0 == %var% )") || Token::simpleMatch(tok, "if ( 0 == ("))
+        {
+            tok = tok->next();
+            tok->deleteNext();
+            tok->next()->str("!");
+            tok = tok->tokAt(3);
+            ret = true;
+        }
+    }
+    return ret;
+}
+
+
 
 
 bool Tokenizer::simplifyKnownVariables()
