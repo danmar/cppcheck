@@ -147,8 +147,8 @@ void CheckAutoVariables::autoVariables()
     {
 
         if (Token::Match(tok, "%type% %var% (") ||
-            Token::Match(tok, "%type% * %var% (") ||
-            Token::Match(tok, "%type% :: %var% ("))
+                Token::Match(tok, "%type% * %var% (") ||
+                Token::Match(tok, "%type% :: %var% ("))
         {
             begin_function = true;
             fp_list.clear();
@@ -206,7 +206,7 @@ void CheckAutoVariables::autoVariables()
                             "autoVariables",
                             "Wrong assignement of an auto-variable to an effective parameter of a function");
         }
-        else if (bindent > 0 && Token::Match(tok, "return & %var%")) //Critical return
+        else if (bindent > 0 && Token::Match(tok, "return & %var% ;")) //Critical return
         {
             if (isAutoVar(tok->tokAt(2)))
                 reportError(tok,
