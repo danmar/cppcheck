@@ -50,6 +50,8 @@ private:
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
 
         TEST_CASE(returnLocalVariable1);
+
+        TEST_CASE(varScope1);
     }
 
     void check(const char code[])
@@ -262,6 +264,55 @@ private:
                "    return str;\n"
                "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Returning pointer to local array variable\n"), errout.str());
+    }
+
+    void varScope(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for redundant code..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckOther checkOther(&tokenizer, &settings, this);
+        checkOther.CheckVariableScope();
+    }
+
+    void varScope1()
+    {
+        varScope("unsigned short foo()\n"
+                 "{\n"
+                 "    test_client CClient;\n"
+                 "    try\n"
+                 "    {\n"
+                 "        if (CClient.Open())\n"
+                 "        {\n"
+                 "            return 0;\n"
+                 "        }\n"
+                 "    }\n"
+                 "    catch (...)\n"
+                 "    {\n"
+                 "        return 2;\n"
+                 "    }\n"
+                 "\n"
+                 "    try\n"
+                 "    {\n"
+                 "        CClient.Close();\n"
+                 "    }\n"
+                 "    catch (...)\n"
+                 "    {\n"
+                 "        return 2;\n"
+                 "    }\n"
+                 "\n"
+                 "    return 1;\n"
+                 "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
