@@ -564,7 +564,7 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
             {
                 if (for_or_while && used)
                     return;
-                used1 = used;
+                used1 |= used;
                 used = false;
             }
         }
