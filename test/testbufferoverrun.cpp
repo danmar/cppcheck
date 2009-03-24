@@ -91,6 +91,7 @@ private:
         TEST_CASE(snprintf1);
         TEST_CASE(snprintf2);
         TEST_CASE(snprintf3);
+        TEST_CASE(snprintf4);
 
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
@@ -466,6 +467,16 @@ private:
               "{\n"
               "    char str[5];\n"
               "    snprintf(str, sizeof str, \"%s\", \"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void snprintf4()
+    {
+        check("void f(int x)\n"
+              "{\n"
+              "    char str[5];\n"
+              "    snprintf(str, 8 - x, \"abcdefghijkl\");\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

@@ -314,7 +314,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         }
 
         // snprintf..
-        if (varid > 0 && Token::Match(tok, "snprintf ( %varid% , %num%", varid))
+        if (varid > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", varid))
         {
             int n = std::atoi(tok->strAt(4));
             if (n > size)
