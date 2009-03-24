@@ -218,7 +218,7 @@ void CheckOther::WarningIf()
         }
     }
 
-    if (ErrorLogger::conditionAlwaysTrueFalse(*_settings))
+    if (_settings->_checkCodingStyle)
     {
         // Search for 'a=b; if (a==b)'
         for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -237,18 +237,24 @@ void CheckOther::WarningIf()
                 continue;
 
             // var1 = var2 ; if ( var3 cond var4 )
-            const char *var1 = tok->strAt(0);
-            const char *var2 = tok->strAt(2);
-            const char *var3 = tok->strAt(6);
+            unsigned int var1 = tok->tokAt(0)->varId();
+            unsigned int var2 = tok->tokAt(2)->varId();
+            unsigned int var3 = tok->tokAt(6)->varId();
             const char *cond = tok->strAt(7);
-            const char *var4 = tok->strAt(8);
+            unsigned int var4 = tok->tokAt(8)->varId();
+
+            if (var1 == 0 || var2 == 0 || var3 == 0 || var4 == 0)
+                continue;
+
+            if (var1 == var2 || var3 == var4)
+                continue;
 
             // Check that var3 is equal with either var1 or var2
-            if (strcmp(var1, var3) && strcmp(var2, var3))
+            if (var1 != var3 && var2 != var3)
                 continue;
 
             // Check that var4 is equal with either var1 or var2
-            if (strcmp(var1, var4) && strcmp(var2, var4))
+            if (var1 != var4 && var2 != var4)
                 continue;
 
             // Check that there is a condition..
@@ -263,7 +269,20 @@ void CheckOther::WarningIf()
                 }
             }
             if (!iscond)
-                break;
+                continue;
+
+            // If there are casting involved it's hard to know if the
+            // condition is true or false
+            const Token *vardecl1 = Token::findmatch(_tokenizer->tokens(), "; %type% %varid% ;", var1);
+            if (!vardecl1)
+                continue;
+            const Token *vardecl2 = Token::findmatch(_tokenizer->tokens(), "; %type% %varid% ;", var2);
+            if (!vardecl2)
+                continue;
+
+            // variable 1 & 2 must be the same type..
+            if (vardecl1->next()->str() != vardecl2->next()->str())
+                continue;
 
             // we found the error. Report.
             bool b = false;
