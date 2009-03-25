@@ -1834,7 +1834,7 @@ private:
     {
         check("void foo()\n"
               "{\n"
-              "    char *str = 0;\n"
+              "    char *str = malloc(10);\n"
               "    free(str);\n"
               "    char c = str[10];\n"
               "}\n");

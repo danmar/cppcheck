@@ -1933,10 +1933,10 @@ bool Tokenizer::simplifyKnownVariables()
                     if (tok3->varId() == varid)
                         break;
 
-                    // Replace variable with numeric constant..
-                    if (Token::Match(tok3, "if ( %varid% )", varid))
+                    // Using the variable in condition..
+                    if (Token::Match(tok3, "(|==|!=|<|<=|>|>= %varid% )|==|!=|<|<=|>|>=", varid))
                     {
-                        tok3 = tok3->next()->next();
+                        tok3 = tok3->next();
                         tok3->str(value.c_str());
                         ret = true;
                     }
