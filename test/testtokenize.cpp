@@ -102,7 +102,7 @@ private:
         TEST_CASE(varid3);
         TEST_CASE(varid4);
         TEST_CASE(varid5);
-        // TODO TEST_CASE(varid6);      // Function parameters aren't handled well yet
+        TEST_CASE(varid6);
         TEST_CASE(varid7);
         TEST_CASE(varidReturn);
         TEST_CASE(varid8);
@@ -937,7 +937,7 @@ private:
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
-                                   "1: void f ( int a@1 , int b@2 )\n"
+                                   "1: int f ( int a@1 , int b@2 )\n"
                                    "2: {\n"
                                    "3: return a@1 + b@2 ;\n"
                                    "4: }\n");
