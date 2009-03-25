@@ -147,8 +147,8 @@ void CheckAutoVariables::autoVariables()
     {
 
         if (Token::Match(tok, "%type% %var% (") ||
-                Token::Match(tok, "%type% * %var% (") ||
-                Token::Match(tok, "%type% :: %var% ("))
+            Token::Match(tok, "%type% * %var% (") ||
+            Token::Match(tok, "%type% :: %var% ("))
         {
             begin_function = true;
             fp_list.clear();
