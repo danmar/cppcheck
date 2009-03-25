@@ -104,6 +104,8 @@ private:
         TEST_CASE(assign1);
 
         TEST_CASE(alloc);    // Buffer allocated with new
+
+        TEST_CASE(memset1);
     }
 
 
@@ -576,6 +578,17 @@ private:
               "    s[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Array index out of bounds\n"), errout.str());
+    }
+
+
+    void memset1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char s[10];\n"
+              "    memset(s, 5, '*');\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) The size argument is given as a char constant\n"), errout.str());
     }
 };
 

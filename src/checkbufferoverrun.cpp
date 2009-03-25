@@ -71,6 +71,11 @@ void CheckBufferOverrunClass::outOfBounds(const Token *tok, const std::string &w
     reportError(tok, "error", "outOfBounds", what + " is out of bounds");
 }
 
+void CheckBufferOverrunClass::sizeArgumentAsChar(const Token *tok)
+{
+    reportError(tok, "all", "sizeArgumentAsChar", "The size argument is given as a char constant");
+}
+
 //---------------------------------------------------------------------------
 
 
@@ -163,13 +168,19 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
         {
             if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets"))
             {
-                if (Token::Match(tok->next(), "( %varid% , %num% , %num% )", varid) ||
-                    Token::Match(tok->next(), "( %var% , %varid% , %num% )", varid))
+                if (Token::Match(tok->next(), "( %varid% , %any% , %any% )", varid) ||
+                    Token::Match(tok->next(), "( %var% , %varid% , %any% )", varid))
                 {
-                    const char *num  = tok->strAt(6);
-                    if (std::atoi(num) > total_size)
+                    const Token *tokSz = tok->tokAt(6);
+                    if (tokSz->str()[0] == '\'')
+                        sizeArgumentAsChar(tok);
+                    else if (tokSz->isNumber())
                     {
-                        bufferOverrun(tok);
+                        const char *num  = tok->strAt(6);
+                        if (std::atoi(num) > total_size)
+                        {
+                            bufferOverrun(tok);
+                        }
                     }
                 }
             }

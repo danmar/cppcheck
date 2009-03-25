@@ -72,6 +72,7 @@ private:
     void bufferOverrun(const Token *tok);
     void strncatUsage(const Token *tok);
     void outOfBounds(const Token *tok, const std::string &what);
+    void sizeArgumentAsChar(const Token *tok);
 
     void getErrorMessages()
     {
@@ -79,6 +80,7 @@ private:
         bufferOverrun(0);
         strncatUsage(0);
         outOfBounds(0, "index");
+        sizeArgumentAsChar(0);
     }
 };
 
