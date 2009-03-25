@@ -105,6 +105,7 @@ private:
         // TODO TEST_CASE(varid6);      // Function parameters aren't handled well yet
         TEST_CASE(varid7);
         TEST_CASE(varidReturn);
+        TEST_CASE(varid8);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -1002,6 +1003,31 @@ private:
         ASSERT_EQUALS(expected, actual);
     }
 
+    void varid8()
+    {
+        const std::string code("void func()\n"
+                               "{\n"
+                               "    std::string str(\"test\");\n"
+                               "    str.clear();\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void func ( )\n"
+                                   "2: {\n"
+                                   "3: std :: string str@1 ( \"test\" ) ;\n"
+                                   "4: str@1 . clear@2 ( ) ;\n"
+                                   "5: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
 
 
 

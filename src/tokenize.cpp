@@ -626,6 +626,9 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "else|return"))
             continue;
 
+        if (Token::simpleMatch(tok, "std ::"))
+            tok = tok->tokAt(2);
+
         // Determine name of declared variable..
         const char *varname = 0;
         Token *tok2 = tok->tokAt(1);
@@ -638,8 +641,24 @@ void Tokenizer::setVarId()
             tok2 = tok2->next();
         }
 
+        // Is it a function?
+        if (tok2->str() == "(")
+        {
+            bool isfunc = false;
+            for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
+            {
+                if (tok3->str() == ")")
+                {
+                    isfunc = Token::simpleMatch(tok3, ") {");
+                    break;
+                }
+            }
+            if (isfunc)
+                continue;
+        }
+
         // Variable declaration found => Set variable ids
-        if (Token::Match(tok2, "[,);[=]") && varname)
+        if (Token::Match(tok2, "[,();[=]") && varname)
         {
             ++_varId;
             int indentlevel = 0;
