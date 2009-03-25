@@ -95,7 +95,7 @@ private:
         TEST_CASE(if6);     // Bug 2432631
         TEST_CASE(if7);     // Bug 2401436
         TEST_CASE(if8);     // Bug 2458532
-        // TODO TEST_CASE( if9 );   // if (realloc)
+        TEST_CASE(if9);     // if (realloc)
         TEST_CASE(if10);            // else if (realloc)
         TEST_CASE(if11);
 
@@ -135,7 +135,7 @@ private:
         TEST_CASE(func4);
         TEST_CASE(func5);
         TEST_CASE(func6);
-        // TODO TEST_CASE( func7 );
+        TEST_CASE(func7);
         TEST_CASE(func8);       // Using callback
         TEST_CASE(func9);       // Embedding the function call in a if-condition
         TEST_CASE(func10);      // Bug 2458510 - Function pointer
@@ -145,7 +145,7 @@ private:
 
         TEST_CASE(class1);
         TEST_CASE(class2);
-        // TODO TEST_CASE( class3 );
+        TEST_CASE(class3);
         TEST_CASE(class4);
         TEST_CASE(class5);
         TEST_CASE(class6);
@@ -168,14 +168,14 @@ private:
 
         TEST_CASE(assign);
 
-        // TODO TEST_CASE( varid );
+        TEST_CASE(varid);
 
         TEST_CASE(cast1);
         TEST_CASE(cast2);
         TEST_CASE(cast3);
 
 
-        // TODO TEST_CASE( structmember1 );
+        TEST_CASE(structmember1);
 
         TEST_CASE(dealloc_use_1);       // Deallocate and then use memory
         TEST_CASE(dealloc_use_2);       // Deallocate and then use memory. No error if "use" is &var
@@ -1195,7 +1195,7 @@ private:
               "    foo(p);\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), err);
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), err);
     }
 
 
@@ -1402,7 +1402,7 @@ private:
               "    }\n"
               "}\n", true);
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        TODO_ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void class4()
@@ -1731,7 +1731,7 @@ private:
               "    }\n"
               "    free(p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        TODO_ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void cast1()
@@ -1779,7 +1779,7 @@ private:
               "    delete abc;\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: abc.a\n"), errout.str());
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: abc.a\n"), errout.str());
     }
 
 

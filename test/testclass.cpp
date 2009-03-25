@@ -46,7 +46,7 @@ private:
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(privateCtor1);        // If constructor is private..
-        // TODO TEST_CASE(privateCtor2);        // If constructor is private..
+        TEST_CASE(privateCtor2);        // If constructor is private..
         TEST_CASE(function);            // Function is not variable
         TEST_CASE(uninitVarHeader1);    // Class is defined in header
         TEST_CASE(uninitVarHeader2);    // Class is defined in header
@@ -230,7 +230,7 @@ private:
                        "    Foo(int _i) { }\n"
                        "};\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:7] (style) Member variable not initialized in the constructor Foo::foo"), errout.str());
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:7] (style) Member variable not initialized in the constructor Foo::foo"), errout.str());
     }
 
 

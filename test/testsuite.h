@@ -38,6 +38,7 @@ protected:
     virtual void run() = 0;
 
     bool runTest(const char testname[]);
+
     void assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
     void assertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
 
@@ -57,5 +58,6 @@ public:
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
+#define TODO_ASSERT_EQUALS( EXPECTED , ACTUAL ) if (EXPECTED==ACTUAL) assertEquals(__FILE__, __LINE__, "TODO assertion", "The assertion succeeded")
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
