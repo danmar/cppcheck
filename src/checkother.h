@@ -44,8 +44,12 @@ public:
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
-        checkOther.CheckUnsignedDivision();
-        checkOther.CheckCharVariable();
+
+        if (settings->_checkCodingStyle)
+        {
+            checkOther.CheckUnsignedDivision();
+            checkOther.CheckCharVariable();
+        }
     }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
