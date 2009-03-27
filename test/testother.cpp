@@ -53,6 +53,8 @@ private:
 
         TEST_CASE(varScope1);
         TEST_CASE(varScope2);
+
+        TEST_CASE(nullpointer1);
     }
 
     void check(const char code[])
@@ -70,6 +72,9 @@ private:
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.WarningRedundantCode();
     }
+
+
+
 
     void delete1()
     {
@@ -325,6 +330,38 @@ private:
                  "    throw e;\n"
                  "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+
+
+
+    void checkNullPointer(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for redundant code..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckOther checkOther(&tokenizer, &settings, this);
+        checkOther.nullPointer();
+    }
+
+
+    void nullpointer1()
+    {
+        checkNullPointer("int foo(const Token *tok)\n"
+                         "{\n"
+                         "    while (tok);\n"
+                         "    tok = tok->next();\n"
+                         "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Possible null pointer dereference\n"), errout.str());
     }
 };
 

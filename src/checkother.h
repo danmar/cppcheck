@@ -70,6 +70,7 @@ public:
         checkOther.strPlusChar();
         checkOther.returnPointerToStackData();
         checkOther.InvalidFunctionUsage();
+        checkOther.nullPointer();
     }
 
     // Casting
@@ -108,6 +109,9 @@ public:
     /** Returning pointer to local data */
     void returnPointerToStackData();
 
+    /** possible null pointer dereference */
+    void nullPointer();
+
 protected:
     void CheckVariableScope_LookupVar(const Token *tok1, const char varname[]);
 
@@ -135,6 +139,7 @@ private:
     void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
     void strPlusChar(const Token *tok);
     void returnLocalVariable(const Token *tok);
+    void nullPointerError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -155,6 +160,7 @@ private:
         conditionAlwaysTrueFalse(0, "true/false");
         strPlusChar(0);
         returnLocalVariable(0);
+        nullPointerError(0);
     }
 
 };

@@ -908,6 +908,60 @@ void CheckOther::returnPointerToStackData()
 }
 
 
+
+void CheckOther::nullPointer()
+{
+    // Locate insufficient null-pointer handling after loop
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (! Token::Match(tok, "while ( %var% )"))
+            continue;
+
+        const unsigned int varid(tok->tokAt(2)->varId());
+        if (varid == 0)
+            continue;
+
+        // Locate the end of the while loop..
+        const Token *tok2 = tok->tokAt(4);
+        int indentlevel = 0;
+        while (tok2)
+        {
+            if (tok2->str() == "{")
+                ++indentlevel;
+            else if (tok2->str() == "}")
+            {
+                if (indentlevel <= 1)
+                    break;
+                --indentlevel;
+            }
+            else if (indentlevel == 0 && tok2->str() == ";")
+                break;
+            tok2 = tok2->next();
+        }
+
+        // Goto next token
+        tok2 = tok2 ? tok2->next() : 0;
+
+        // Check if the variable is dereferenced..
+        while (tok2)
+        {
+            if (tok2->str() == "{" || tok2->str() == "}")
+                break;
+
+            if (tok2->varId() == varid)
+            {
+                if (tok2->next()->str() == "." || Token::Match(tok2->next(), "= %varid% .", varid))
+                    nullPointerError(tok2);
+                break;
+            }
+
+            tok2 = tok2->next();
+        }
+    }
+}
+
+
+
 void CheckOther::cstyleCastError(const Token *tok)
 {
     reportError(tok, "style", "cstyleCast", "C-style pointer casting");
@@ -991,4 +1045,9 @@ void CheckOther::strPlusChar(const Token *tok)
 void CheckOther::returnLocalVariable(const Token *tok)
 {
     reportError(tok, "error", "returnLocalVariable", "Returning pointer to local array variable");
+}
+
+void CheckOther::nullPointerError(const Token *tok)
+{
+    reportError(tok, "error", "nullPointer", "Possible null pointer dereference");
 }
