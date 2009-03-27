@@ -641,6 +641,10 @@ void Tokenizer::setVarId()
             tok2 = tok2->next();
         }
 
+        // End of tokens reached..
+        if (!tok2)
+            break;
+
         // Is it a function?
         if (tok2->str() == "(")
         {
