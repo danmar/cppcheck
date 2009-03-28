@@ -64,6 +64,7 @@ private:
     {
         TEST_CASE(testautovar);
         TEST_CASE(testautovararray);
+        TEST_CASE(testautovarreturn);
     }
 
 
@@ -83,6 +84,14 @@ private:
               "    int num=2;"
               "arr[0]=&num;");
         ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n"), errout.str());
+    }
+    void testautovarreturn()
+    {
+        check("int* func1()\n"
+              "{\n"
+              "    int num=2;"
+              "return &num;");
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Return of the address of an auto-variable\n"), errout.str());
     }
 };
 
