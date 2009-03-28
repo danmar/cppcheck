@@ -623,7 +623,7 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "[,;{}(] %type%"))
             tok = tok->next();
 
-        if (Token::Match(tok, "else|return"))
+        if (Token::Match(tok, "else|return|typedef"))
             continue;
 
         if (Token::simpleMatch(tok, "std ::"))

@@ -106,6 +106,7 @@ private:
         TEST_CASE(varid7);
         TEST_CASE(varidReturn);
         TEST_CASE(varid8);
+        TEST_CASE(varid9);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -1028,6 +1029,25 @@ private:
 
         ASSERT_EQUALS(expected, actual);
     }
+
+    void varid9()
+    {
+        const std::string code("typedef int INT32;\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: typedef int INT32 ;\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
 
 
 
