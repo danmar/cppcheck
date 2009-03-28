@@ -29,6 +29,8 @@ public:
     ~Token();
     void str(const char s[]);
 
+    void concatStr(std::string const& b);
+
     const std::string &str() const
     {
         return _str;

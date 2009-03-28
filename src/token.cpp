@@ -58,6 +58,12 @@ void Token::str(const char s[])
     _varId = 0;
 }
 
+void Token::concatStr(std::string const& b)
+{
+    _str.erase(_str.length() - 1);
+    _str.append(b.begin() + 1, b.end());
+}
+
 void Token::deleteNext()
 {
     Token *n = _next;

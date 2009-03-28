@@ -811,10 +811,7 @@ void Tokenizer::simplifyTokenList()
         while (tok->str()[0] == '"' && tok->next() && tok->next()->str()[0] == '"')
         {
             // Two strings after each other, combine them
-            std::string temp = tok->str();
-            temp.erase(temp.length() - 1);
-            temp.append(tok->next()->str().substr(1));
-            tok->str(temp.c_str());
+            tok->concatStr(tok->next()->str());
             tok->deleteNext();
         }
     }
