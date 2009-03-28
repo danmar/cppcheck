@@ -147,19 +147,25 @@ void CheckAutoVariables::autoVariables()
     {
 
         if (Token::Match(tok, "%type% %var% (") ||
-            Token::Match(tok, "%type% * %var% (") ||
-            Token::Match(tok, "%type% :: %var% ("))
+                Token::Match(tok, "%type% * %var% (") ||
+                Token::Match(tok, "%type% :: %var% ("))
         {
             begin_function = true;
             fp_list.clear();
             vd_list.clear();
         }
-        else if (begin_function && begin_function_decl && Token::Match(tok, "%type% * %var%"))
+        else if (begin_function && begin_function_decl && Token::Match(tok, "%type% * * %var%"))
+        {
+            std::string var_name;
+
+            var_name = tok->tokAt(3)->str();
+            fp_list.push_back(var_name);
+        }
+        else if (begin_function && begin_function_decl && Token::Match(tok, "%type% * %var% ["))
         {
             std::string var_name;
 
             var_name = tok->tokAt(2)->str();
-            //cout << "FP " << tok->linenr() << " " << var_name << endl;
             fp_list.push_back(var_name);
         }
         else if (begin_function && Token::Match(tok, "("))

@@ -70,7 +70,7 @@ private:
 
     void testautovar()
     {
-        check("void func1(int *res)\n"
+        check("void func1(int **res)\n"
               "{\n"
               "    int num=2;"
               "res=&num;");
