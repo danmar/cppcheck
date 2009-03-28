@@ -71,6 +71,7 @@ public:
         checkOther.returnPointerToStackData();
         checkOther.InvalidFunctionUsage();
         checkOther.nullPointer();
+        checkOther.CheckZeroDivision();
     }
 
     // Casting
@@ -112,6 +113,9 @@ public:
     /** possible null pointer dereference */
     void nullPointer();
 
+    /** Check zero division*/
+    void CheckZeroDivision();
+
 protected:
     void CheckVariableScope_LookupVar(const Token *tok1, const char varname[]);
 
@@ -140,6 +144,7 @@ private:
     void strPlusChar(const Token *tok);
     void returnLocalVariable(const Token *tok);
     void nullPointerError(const Token *tok);
+    void zerodivWarning(const Token *tok);
 
     void getErrorMessages()
     {
@@ -161,6 +166,7 @@ private:
         strPlusChar(0);
         returnLocalVariable(0);
         nullPointerError(0);
+        zerodivWarning(0);
     }
 
 };

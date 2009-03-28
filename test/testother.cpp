@@ -35,6 +35,10 @@ private:
 
     void run()
     {
+        TEST_CASE(zeroDiv1);
+        TEST_CASE(zeroDiv2);
+        TEST_CASE(zeroDiv3);
+
         TEST_CASE(delete1);
         TEST_CASE(delete2);
 
@@ -64,6 +68,9 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
+        // Simplify token list..
+        tokenizer.simplifyTokenList();
+
         // Clear the error buffer..
         errout.str("");
 
@@ -71,8 +78,51 @@ private:
         Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.WarningRedundantCode();
+        checkOther.CheckZeroDivision();
     }
 
+
+
+
+    void zeroDiv1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    int a = 0;\n"
+              "    double b = 1.;\n"
+              "    cout<<b/a;\n"
+              "}");
+
+
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (style) Warning: Division with zero\n"), errout.str());
+    }
+
+    void zeroDiv2()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    int sum = 0;\n"
+              "    int n = 100;\n"
+              "    for(int i = 0; i < n; i ++)\n"
+              "    {\n"
+              "        sum += i; \n"
+              "    }\n"
+              "    cout<<b/sum;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void zeroDiv3()
+    {
+        check("int sum = 0;\n"
+              "void foo()\n"
+              "{\n"
+              "    int n = 100;\n"
+              "    cout<<b/sum;\n"
+              "}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (style) Warning: Division with zero\n"), errout.str());
+    }
 
 
 

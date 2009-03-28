@@ -962,6 +962,18 @@ void CheckOther::nullPointer()
 
 
 
+void CheckOther::CheckZeroDivision()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "/ 0"))
+            zerodivWarning(tok);
+    }
+}
+
+
+
+
 void CheckOther::cstyleCastError(const Token *tok)
 {
     reportError(tok, "style", "cstyleCast", "C-style pointer casting");
@@ -1050,4 +1062,9 @@ void CheckOther::returnLocalVariable(const Token *tok)
 void CheckOther::nullPointerError(const Token *tok)
 {
     reportError(tok, "error", "nullPointer", "Possible null pointer dereference");
+}
+
+void CheckOther::zerodivWarning(const Token *tok)
+{
+    reportError(tok, "style", "zerodivWarning", "Warning: Division with zero");
 }
