@@ -96,7 +96,7 @@ private:
         TEST_CASE(if7);     // Bug 2401436
         TEST_CASE(if8);     // Bug 2458532
         TEST_CASE(if9);     // if (realloc)
-        // TODO TEST_CASE(if10);    // else if (realloc)
+        TEST_CASE(if10);    // else if (realloc)
         TEST_CASE(if11);
 
         TEST_CASE(forwhile1);
@@ -106,7 +106,7 @@ private:
         TEST_CASE(forwhile5);
         TEST_CASE(forwhile6);
         TEST_CASE(forwhile7);
-        // TODO TEST_CASE(forwhile8);       // Bug 2429936
+        TEST_CASE(forwhile8);       // Bug 2429936
         //TEST_CASE(forwhile9);
         //TEST_CASE(forwhile10);
 
@@ -163,9 +163,9 @@ private:
         TEST_CASE(sizeof1);
 
         TEST_CASE(realloc1);
-        // TODO TEST_CASE(realloc2);
+        TEST_CASE(realloc2);
         TEST_CASE(realloc3);
-        // TODO TEST_CASE(realloc4);
+        TEST_CASE(realloc4);
 
         TEST_CASE(assign);
 
@@ -681,7 +681,7 @@ private:
               "        ;\n"
               "    free(buf);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:6]: (error) Memory leak: buf\n"), errout.str());
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:6]: (error) Memory leak: buf\n"), errout.str());
     }
 
     void if11()
@@ -832,7 +832,7 @@ private:
               "\n"
               "    return a;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:10]: (error) Memory leak: a\n"), errout.str());
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:10]: (error) Memory leak: a\n"), errout.str());
     }
 
 
@@ -1647,7 +1647,7 @@ private:
               "    free(a);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: a\n"), errout.str());
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: a\n"), errout.str());
     }
 
     void realloc3()
@@ -1673,7 +1673,7 @@ private:
               "    free(a);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: a\n"), errout.str());
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: a\n"), errout.str());
     }
 
 
