@@ -1010,12 +1010,15 @@ void Tokenizer::simplifyTokenList()
                 }
             }
 
-            std::ostringstream ostr;
-            ostr << sz;
-            tok->str(ostr.str().c_str());
-            while (tok->next()->str() != ")")
+            if (sz > 0)
+            {
+                std::ostringstream ostr;
+                ostr << sz;
+                tok->str(ostr.str().c_str());
+                while (tok->next()->str() != ")")
+                    tok->deleteNext();
                 tok->deleteNext();
-            tok->deleteNext();
+            }
         }
     }
 

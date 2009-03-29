@@ -75,6 +75,7 @@ private:
         TEST_CASE(sizeof4);
         TEST_CASE(sizeof5);
         TEST_CASE(sizeof6);
+        TEST_CASE(sizeof7);
         TEST_CASE(casting);
 
         TEST_CASE(template1);
@@ -446,6 +447,13 @@ private:
         expected << " ; int i ; " << sizeof(int) << " ;";
 
         ASSERT_EQUALS(expected.str(), sizeof_(code));
+    }
+
+    void sizeof7()
+    {
+        const char code[] = ";INT32 i[10];\n"
+                            "sizeof(i[0]);\n";
+        ASSERT_EQUALS(" ; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", sizeof_(code));
     }
 
     void casting()
