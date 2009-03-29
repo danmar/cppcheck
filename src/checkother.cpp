@@ -967,7 +967,7 @@ void CheckOther::CheckZeroDivision()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "/ 0"))
-            zerodivWarning(tok);
+            zerodivError(tok);
     }
 }
 
@@ -1064,7 +1064,7 @@ void CheckOther::nullPointerError(const Token *tok)
     reportError(tok, "error", "nullPointer", "Possible null pointer dereference");
 }
 
-void CheckOther::zerodivWarning(const Token *tok)
+void CheckOther::zerodivError(const Token *tok)
 {
-    reportError(tok, "style", "zerodivWarning", "Warning: Division with zero");
+    reportError(tok, "error", "zerodiv", "Division with zero");
 }
