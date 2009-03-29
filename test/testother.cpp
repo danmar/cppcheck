@@ -93,7 +93,7 @@ private:
               "}");
 
 
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Division with zero\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Division by zero\n"), errout.str());
     }
 
     void zeroDiv2()

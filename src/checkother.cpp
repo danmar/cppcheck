@@ -1066,5 +1066,5 @@ void CheckOther::nullPointerError(const Token *tok)
 
 void CheckOther::zerodivError(const Token *tok)
 {
-    reportError(tok, "error", "zerodiv", "Division with zero");
+    reportError(tok, "error", "zerodiv", "Division by zero");
 }
