@@ -725,7 +725,7 @@ void Tokenizer::simplifyNamespaces()
 {
     for (Token *token = _tokens; token; token = token->next())
     {
-        while (token->str() == "namespace" &&
+        while (token && token->str() == "namespace" &&
                (!token->previous() || token->previous()->str() != "using"))
         {
             // Token is namespace and there is no "using" before it.
@@ -759,6 +759,9 @@ void Tokenizer::simplifyNamespaces()
                 return;
             }
         }
+
+        if (!token)
+            break;
     }
 }
 

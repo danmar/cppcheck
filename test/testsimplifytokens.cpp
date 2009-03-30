@@ -557,6 +557,14 @@ private:
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
+
+        {
+            const char code[] = "int a; namespace b{ }";
+
+            const std::string expected(" int a ;");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 
 
