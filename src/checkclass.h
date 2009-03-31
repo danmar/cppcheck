@@ -101,20 +101,22 @@ private:
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname);
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
+    void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetClassError(const Token *tok, const std::string &memfunc);
     void memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname);
-    void operatorEqError(const Token *tok);
+    void operatorEqReturnError(const Token *tok);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
 
     void getErrorMessages()
     {
         noConstructorError(0, "classname");
         uninitVarError(0, "classname", "varname");
+        operatorEqVarError(0, "classname", "");
         unusedPrivateFunctionError(0, "classname", "funcname");
         memsetClassError(0, "memfunc");
         memsetStructError(0, "memfunc", "classname");
-        operatorEqError(0);
+        operatorEqReturnError(0);
         virtualDestructorError(0, "Base", "Derived");
     }
 

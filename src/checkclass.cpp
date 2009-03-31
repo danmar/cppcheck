@@ -371,7 +371,10 @@ void CheckClass::CheckConstructors(const Token *tok1, struct VAR *varlist, const
                 continue;
 
             // It's non-static and it's not initialized => error
-            uninitVarError(constructor_token, className, var->name);
+            if (strcmp(funcname, "operator =") == 0)
+                operatorEqVarError(constructor_token, className, var->name);
+            else
+                uninitVarError(constructor_token, className, var->name);
         }
 
         for (struct VAR *var = varlist; var; var = var->next)
@@ -590,7 +593,7 @@ void CheckClass::operatorEq()
     const Token *tok = Token::findmatch(_tokenizer->tokens(), "void operator = (");
     if (tok)
     {
-        operatorEqError(tok);
+        operatorEqReturnError(tok);
     }
 }
 //---------------------------------------------------------------------------
@@ -697,6 +700,11 @@ void CheckClass::uninitVarError(const Token *tok, const std::string &classname, 
     reportError(tok, "style", "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
 }
 
+void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
+{
+    reportError(tok, "all style", "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
+}
+
 void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
     reportError(tok, "style", "unusedPrivateFunction", "Unused private function '" + classname + "::" + funcname + "'");
@@ -712,7 +720,7 @@ void CheckClass::memsetStructError(const Token *tok, const std::string &memfunc,
     reportError(tok, "error", "memsetStruct", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'");
 }
 
-void CheckClass::operatorEqError(const Token *tok)
+void CheckClass::operatorEqReturnError(const Token *tok)
 {
     reportError(tok, "style", "operatorEq", "'operator=' should return something");
 }

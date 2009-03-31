@@ -197,7 +197,7 @@ private:
               "    void operator=() { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (style) Member variable not initialized in the constructor 'Fred::i'\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (all style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n"), errout.str());
     }
 
     void initvar_operator_eq3()
