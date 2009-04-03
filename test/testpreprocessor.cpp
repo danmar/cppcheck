@@ -823,9 +823,9 @@ private:
     void missing_doublequote()
     {
         const char filedata[] = "#define a\n"
-        "#ifdef 1\n"
-        "\"\n"
-        "#endif\n";
+                                "#ifdef 1\n"
+                                "\"\n"
+                                "#endif\n";
 
         // expand macros..
         errout.str("");
