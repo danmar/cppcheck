@@ -28,6 +28,8 @@
 #include <map>
 #include <string>
 
+extern std::ostringstream errout;
+
 class TestPreprocessor : public TestFixture
 {
 public:
@@ -42,9 +44,9 @@ public:
             return Preprocessor::replaceIfDefined(str);
         }
 
-        static std::string expandMacros(std::string code)
+        static std::string expandMacros(std::string code, ErrorLogger *errorLogger = 0)
         {
-            return Preprocessor::expandMacros(code);
+            return Preprocessor::expandMacros(code, "file.cpp", errorLogger);
         }
     };
 
@@ -112,6 +114,7 @@ private:
         TEST_CASE(ifdefwithfile);
         TEST_CASE(pragma);
         TEST_CASE(endifsemicolon);
+        TEST_CASE(missing_doublequote);
     }
 
 
@@ -815,6 +818,21 @@ private:
                       "\n"
                       "\n"
                       "}\n", actual[""]);
+    }
+
+    void missing_doublequote()
+    {
+        const char filedata[] = "#define a\n"
+        "#ifdef 1\n"
+        "\"\n"
+        "#endif\n";
+
+        // expand macros..
+        errout.str("");
+        std::string actual = OurPreprocessor::expandMacros(filedata, this);
+
+        ASSERT_EQUALS("", actual);
+        ASSERT_EQUALS("[file.cpp:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
     }
 };
 

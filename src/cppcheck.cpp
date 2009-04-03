@@ -327,7 +327,7 @@ unsigned int CppCheck::check()
             }
 
             cfg = *it;
-            std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it);
+            std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, _errorLogger);
 
             // If only errors are printed, print filename after the check
             if (_settings._errorsOnly == false && it != configurations.begin())

@@ -26,6 +26,7 @@
 #include <istream>
 #include <string>
 #include <list>
+#include "errorlogger.h"
 
 
 class Preprocessor
@@ -44,7 +45,7 @@ public:
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
      */
-    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths = std::list<std::string>());
+    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths = std::list<std::string>(), ErrorLogger *errorLogger = 0);
 
     /**
      * Extract the code for each configuration. Use this with getcode() to get the
@@ -71,7 +72,7 @@ public:
     /**
      * Get preprocessed code for a given configuration
      */
-    static std::string getcode(const std::string &filedata, std::string cfg);
+    static std::string getcode(const std::string &filedata, std::string cfg, const std::string &filename, ErrorLogger *errorLogger);
 
 protected:
 
@@ -83,7 +84,7 @@ protected:
      */
     static std::string replaceIfDefined(const std::string &str);
 
-    static std::string expandMacros(std::string code);
+    static std::string expandMacros(std::string code, const std::string &filename, ErrorLogger *errorLogger);
 
 private:
 

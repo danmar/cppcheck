@@ -184,13 +184,13 @@ std::string Preprocessor::read(std::istream &istr)
     return code.str();
 }
 
-void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths)
+void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths, ErrorLogger *errorLogger)
 {
     std::list<std::string> configs;
     std::string data;
     preprocess(istr, data, configs, filename, includePaths);
     for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
-        result[ *it ] = Preprocessor::getcode(data, *it);
+        result[ *it ] = Preprocessor::getcode(data, *it, filename, errorLogger);
 }
 
 std::string Preprocessor::removeSpaceNearNL(const std::string &str)
@@ -384,7 +384,7 @@ bool Preprocessor::match_cfg_def(std::string cfg, const std::string &def)
 }
 
 
-std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
+std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, const std::string &filename, ErrorLogger *errorLogger)
 {
     std::ostringstream ret;
 
@@ -467,7 +467,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg)
         ret << line << "\n";
     }
 
-    return expandMacros(ret.str());
+    return expandMacros(ret.str(), filename, errorLogger);
 }
 
 std::string Preprocessor::getHeaderFileName(const std::string &str)
@@ -708,7 +708,7 @@ public:
     }
 };
 
-std::string Preprocessor::expandMacros(std::string code)
+std::string Preprocessor::expandMacros(std::string code, const std::string &filename, ErrorLogger *errorLogger)
 {
     // Search for macros and expand them..
     std::string::size_type defpos = 0;
@@ -780,9 +780,21 @@ std::string Preprocessor::expandMacros(std::string code)
 
                     if (!code[pos1])
                     {
-                        // This should not happen, if it does, there is a bug in cppcheck.
-                        std::cout << "\n\n####### There is a bug in preprocessor.cpp that can cause crash, shutting down.\n\n" << std::endl;
-                        std::exit(0);
+                        // End of file was reached without finding pair
+                        if (errorLogger)
+                        {
+                            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                            ErrorLogger::ErrorMessage::FileLocation loc;
+                            loc.line = 0;
+                            loc.file = filename;
+                            locationList.push_back(loc);
+                            errorLogger->reportErr(
+                                ErrorLogger::ErrorMessage(locationList,
+                                                          "error",
+                                                          std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.",
+                                                          "noQuoteCharPair"));
+                        }
+                        return "";
                     }
                 }
                 continue;
