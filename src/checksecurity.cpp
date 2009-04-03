@@ -41,8 +41,14 @@ void CheckSecurity::readnum()
             tok = tok->next();
         }
 
+        if (!tok)
+            break;
+
         // Skip ahead a little with tok..
         tok = tok->tokAt(2);
+
+        if (!tok)
+            break;
 
         // Now take a look at the variable usage..
         if (varId == 0)
