@@ -206,11 +206,11 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             const Token *tok2 = tok->tokAt(2);
 
             // for - setup..
-            if (Token::Match(tok2, "%var% = 0 ;"))
+            if (Token::Match(tok2, "%var% = %any% ;"))
                 tok2 = tok2->tokAt(4);
-            else if (Token::Match(tok2, "%type% %var% = 0 ;"))
+            else if (Token::Match(tok2, "%type% %var% = %any% ;"))
                 tok2 = tok2->tokAt(5);
-            else if (Token::Match(tok2, "%type% %type% %var% = 0 ;"))
+            else if (Token::Match(tok2, "%type% %type% %var% = %any% ;"))
                 tok2 = tok2->tokAt(6);
             else
                 continue;

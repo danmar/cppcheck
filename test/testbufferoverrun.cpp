@@ -230,13 +230,36 @@ private:
 
     void array_index_3()
     {
-        check("void f()\n"
-              "{\n"
-              "    int val[50];\n"
-              "    for (i = 0; i < 100; i++)\n"
-              "        sum += val[i];\n"
-              "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Buffer overrun\n"), errout.str());
+        {
+            check("void f()\n"
+                  "{\n"
+                  "    int val[50];\n"
+                  "    for (i = 0; i < 100; i++)\n"
+                  "        sum += val[i];\n"
+                  "}\n");
+            ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Buffer overrun\n"), errout.str());
+        }
+
+        {
+            check("void f()\n"
+                  "{\n"
+                  "    int val[50];\n"
+                  "    for (i = 1; i < 100; i++)\n"
+                  "        sum += val[i];\n"
+                  "}\n");
+            ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Buffer overrun\n"), errout.str());
+        }
+
+
+        {
+            check("void f(int a)\n"
+                  "{\n"
+                  "    int val[50];\n"
+                  "    for (i = a; i < 100; i++)\n"
+                  "        sum += val[i];\n"
+                  "}\n");
+            ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Buffer overrun\n"), errout.str());
+        }
     }
 
 
@@ -384,10 +407,6 @@ private:
         std::string err(errout.str());
         ASSERT_EQUALS(std::string("[test.cpp:10]: (all) Array index out of bounds\n"), err);
     }
-
-
-
-
 
     void buffer_overrun_1()
     {
