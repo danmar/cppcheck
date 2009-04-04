@@ -107,8 +107,8 @@ private:
         TEST_CASE(forwhile6);
         TEST_CASE(forwhile7);
         TEST_CASE(forwhile8);       // Bug 2429936
-        //TEST_CASE(forwhile9);
-        //TEST_CASE(forwhile10);
+        TEST_CASE(forwhile9);
+        TEST_CASE(forwhile10);
 
         TEST_CASE(dowhile1);
 
@@ -842,13 +842,13 @@ private:
               "{\n"
               "    char *a = 0;\n"
               "    int i = 0;\n"
-              "    for( ;; )\n"
+              "    for(i = 0 ;i < 50 ; i++)\n"
               "    {\n"
-              "    if(i>=0)\n"
-              "        continue;\n"
-              "    a = realloc( a, i );\n"
-              "    if(i>=0)\n"
-              "        continue;\n"
+              "        if(func1(i))\n"
+              "            continue;\n"
+              "        a = realloc( a, i );\n"
+              "        if(func2(i))\n"
+              "            continue;\n"
               "    }\n"
               "\n"
               "    return a;\n"
@@ -863,13 +863,13 @@ private:
               "{\n"
               "    char *a = 0;\n"
               "    int i = 0;\n"
-              "    for( ;; )\n"
+              "    for(i = 0; i < 50; i++)\n"
               "    {\n"
-              "    if(i>=0)\n"
-              "        continue;\n"
-              "    a = realloc( a, i );\n"
-              "    if(i>=0)\n"
-              "        return;\n"
+              "        if(func1(i))\n"
+              "            continue;\n"
+              "        a = realloc( a, i );\n"
+              "        if(func2(i))\n"
+              "            return;\n"
               "    }\n"
               "\n"
               "    return a;\n"
