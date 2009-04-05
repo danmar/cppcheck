@@ -28,6 +28,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cctype>
+#include <vector>
 
 Preprocessor::Preprocessor()
 {
@@ -490,13 +491,18 @@ std::string Preprocessor::getHeaderFileName(const std::string &str)
 
 void Preprocessor::handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths)
 {
-//    std::string line;
-    std::string path = filename;
+    std::list<std::string> paths;
+    std::string path;
+    path = filename;
     path.erase(1 + path.find_last_of("\\/"));
+    paths.push_back(path);
     std::string::size_type pos = 0;
+    std::string::size_type endfilePos = 0;
     std::map<std::string, bool> handledFiles;
+    endfilePos = pos;
     while ((pos = code.find("#include", pos)) != std::string::npos)
     {
+
         // Accept only includes that are at the start of a line
         if (pos > 0 && code[pos-1] != '\n')
         {
@@ -504,6 +510,15 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             continue;
         }
 
+        // If endfile is encountered, we have moved to a next file in our stack,
+        // so remove last path in our list.
+        while ((endfilePos = code.find("#endfile", endfilePos)) != std::string::npos && endfilePos < pos)
+        {
+            paths.pop_back();
+            endfilePos += 8; // size of #endfile
+        }
+
+        endfilePos = pos;
         std::string::size_type end = code.find("\n", pos);
         std::string filename = code.substr(pos, end - pos);
 
@@ -541,9 +556,10 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
 
         if (processedFile.length() == 0)
         {
-            filename = path + filename;
+            filename = paths.back() + filename;
             std::ifstream fin(filename.c_str());
-            processedFile = Preprocessor::read(fin);
+            if (fin.is_open())
+                processedFile = Preprocessor::read(fin);
         }
 
         if (processedFile.length() > 0)
@@ -560,6 +576,9 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             processedFile = "#file \"" + filename + "\"\n" + processedFile + "\n#endfile";
             code.insert(pos, processedFile);
 
+            path = filename;
+            path.erase(1 + path.find_last_of("\\/"));
+            paths.push_back(path);
         }
     }
 }
