@@ -808,6 +808,17 @@ void Tokenizer::simplifyTokenList()
 
     simplifyNamespaces();
 
+    // Combine wide strings
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (tok->str() == "L" && tok->next() && tok->next()->str()[0] == '"')
+        {
+            // Combine 'L "string"'
+            tok->str(tok->next()->str().c_str());
+            tok->deleteNext();
+        }
+    }
+
     // Combine strings
     for (Token *tok = _tokens; tok; tok = tok->next())
     {

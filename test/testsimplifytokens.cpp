@@ -91,6 +91,7 @@ private:
 
         // "if(0==x)" => "if(!x)"
         TEST_CASE(ifnot);
+        TEST_CASE(combine_wstrings);
     }
 
     std::string tok(const char code[])
@@ -205,6 +206,27 @@ private:
         const char code2[] =  "void foo()\n"
                               "{\n"
                               "const char *a =\n"
+                              "{\n"
+                              "\"hello world\"\n"
+                              "};\n"
+                              "}\n";
+        ASSERT_EQUALS(tok(code2), tok(code1));
+    }
+
+    void combine_wstrings()
+    {
+        const char code1[] =  "void foo()\n"
+                              "{\n"
+                              "const wchar_t *a =\n"
+                              "{\n"
+                              "L\"hello \"\n"
+                              "L\"world\"\n"
+                              "};\n"
+                              "}\n";
+
+        const char code2[] =  "void foo()\n"
+                              "{\n"
+                              "const wchar_t *a =\n"
                               "{\n"
                               "\"hello world\"\n"
                               "};\n"
