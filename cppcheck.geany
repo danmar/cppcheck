@@ -7,8 +7,4 @@ description=
 run_cmd=
 
 [files]
-current_page=3
-FILE_NAME_0=1943;0;0;16;0;1;0;/home/daniel/cppcheck/src/check.h;
-FILE_NAME_1=2387;0;0;16;0;1;0;/home/daniel/cppcheck/src/checkstl.h;
-FILE_NAME_2=3967;1;0;16;0;1;0;/home/daniel/cppcheck/src/checkstl.cpp;
-FILE_NAME_3=2852;1;0;16;0;1;0;/home/daniel/cppcheck/test/teststl.cpp;
+current_page=0

@@ -38,6 +38,7 @@ TESTOBJ =     test/testautovariables.o \
               test/testfilelister.o \
               test/testfunctionusage.o \
               test/testincompletestatement.o \
+              test/testmathlib.o \
               test/testmemleak.o \
               test/testmemleakmp.o \
               test/testother.o \
@@ -150,7 +151,7 @@ src/filelister.o: src/filelister.cpp src/filelister.h
 src/main.o: src/main.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h
 	$(CXX) $(CXXFLAGS) -c -o src/main.o src/main.cpp
 
-src/mathlib.o: src/mathlib.cpp
+src/mathlib.o: src/mathlib.cpp src/mathlib.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/mathlib.o src/mathlib.cpp
 
 src/preprocessor.o: src/preprocessor.cpp src/preprocessor.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
@@ -200,6 +201,9 @@ test/testfunctionusage.o: test/testfunctionusage.cpp src/tokenize.h src/settings
 
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h src/checkother.h src/check.h
 	$(CXX) $(CXXFLAGS) -c -o test/testincompletestatement.o test/testincompletestatement.cpp
+
+test/testmathlib.o: test/testmathlib.cpp src/mathlib.h src/token.h test/testsuite.h src/errorlogger.h src/settings.h
+	$(CXX) $(CXXFLAGS) -c -o test/testmathlib.o test/testmathlib.cpp
 
 test/testmemleak.o: test/testmemleak.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkmemoryleak.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testmemleak.o test/testmemleak.cpp
