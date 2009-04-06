@@ -20,6 +20,7 @@ OBJECTS =     src/checkautovariables.o \
               src/errorlogger.o \
               src/filelister.o \
               src/main.o \
+              src/mathlib.o \
               src/preprocessor.o \
               src/settings.o \
               src/threadexecutor.o \
@@ -65,6 +66,7 @@ TESTOBJ =     test/testautovariables.o \
               src/cppcheckexecutor.o \
               src/errorlogger.o \
               src/filelister.o \
+              src/mathlib.o \
               src/preprocessor.o \
               src/settings.o \
               src/threadexecutor.o \
@@ -148,7 +150,10 @@ src/filelister.o: src/filelister.cpp src/filelister.h
 src/main.o: src/main.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h
 	$(CXX) $(CXXFLAGS) -c -o src/main.o src/main.cpp
 
-src/preprocessor.o: src/preprocessor.cpp src/preprocessor.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
+src/mathlib.o: src/mathlib.cpp
+	$(CXX) $(CXXFLAGS) -c -o src/mathlib.o src/mathlib.cpp
+
+src/preprocessor.o: src/preprocessor.cpp src/preprocessor.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/preprocessor.o src/preprocessor.cpp
 
 src/settings.o: src/settings.cpp src/settings.h
