@@ -166,7 +166,7 @@ src/threadexecutor.o: src/threadexecutor.cpp src/threadexecutor.h src/settings.h
 src/token.o: src/token.cpp src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/token.o src/token.cpp
 
-src/tokenize.o: src/tokenize.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/filelister.h
+src/tokenize.o: src/tokenize.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/filelister.h src/mathlib.h
 	$(CXX) $(CXXFLAGS) -c -o src/tokenize.o src/tokenize.cpp
 
 test/testautovariables.o: test/testautovariables.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkautovariables.h src/check.h test/testsuite.h

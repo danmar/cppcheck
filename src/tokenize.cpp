@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 #include "tokenize.h"
 #include "filelister.h"
+#include "mathlib.h"
 
 #include <locale>
 #include <fstream>
@@ -2109,36 +2110,26 @@ bool Tokenizer::simplifyCalculations()
         // (1-2)
         if (Token::Match(tok, "[[,(=<>] %num% [+-*/] %num% [],);=<>]"))
         {
-            int i1 = std::atoi(tok->strAt(1));
-            int i2 = std::atoi(tok->strAt(3));
-            if (i2 == 0 && *(tok->strAt(2)) == '/')
-            {
-                continue;
-            }
+            tok = tok->next();
 
-            switch (*(tok->strAt(2)))
+            switch (*(tok->strAt(1)))
             {
             case '+':
-                i1 += i2;
+                tok->str(MathLib::add(tok->str(), tok->strAt(2)).c_str());
                 break;
             case '-':
-                i1 -= i2;
+                tok->str(MathLib::subtract(tok->str(), tok->strAt(2)).c_str());
                 break;
             case '*':
-                i1 *= i2;
+                tok->str(MathLib::multiply(tok->str(), tok->strAt(2)).c_str());
                 break;
             case '/':
-                i1 /= i2;
+                tok->str(MathLib::divide(tok->str(), tok->strAt(2)).c_str());
                 break;
             }
-            tok = tok->next();
-            std::ostringstream str;
-            str <<  i1;
-            tok->str(str.str().c_str());
-            for (int i = 0; i < 2; i++)
-            {
-                tok->deleteNext();
-            }
+
+            tok->deleteNext();
+            tok->deleteNext();
 
             ret = true;
         }
