@@ -2112,6 +2112,10 @@ bool Tokenizer::simplifyCalculations()
         {
             tok = tok->next();
 
+            // Don't simplify "%num% / 0"
+            if (Token::simpleMatch(tok->next(), "/ 0"))
+                continue;
+
             switch (*(tok->strAt(1)))
             {
             case '+':
