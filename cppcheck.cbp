@@ -73,6 +73,8 @@
 		<Unit filename="src/filelister.cpp" />
 		<Unit filename="src/filelister.h" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/mathlib.cpp" />
+		<Unit filename="src/mathlib.h" />
 		<Unit filename="src/preprocessor.cpp" />
 		<Unit filename="src/preprocessor.h" />
 		<Unit filename="src/settings.cpp" />
@@ -93,6 +95,7 @@
 		<Unit filename="test/testfilelister.cpp" />
 		<Unit filename="test/testfunctionusage.cpp" />
 		<Unit filename="test/testincompletestatement.cpp" />
+		<Unit filename="test/testmathlib.cpp" />
 		<Unit filename="test/testmemleak.cpp" />
 		<Unit filename="test/testmemleakmp.cpp" />
 		<Unit filename="test/testother.cpp" />
