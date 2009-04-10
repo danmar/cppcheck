@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="cppcheck"
 	ProjectGUID="{ECA5D746-4926-48BA-A372-FC888498531F}"
 	Keyword="Win32Proj"
@@ -166,6 +166,14 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\src\check.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkautovariables.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\checkbufferoverrun.h"
 				>
 			</File>
@@ -194,6 +202,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\checksecurity.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\checkstl.h"
 				>
 			</File>
@@ -211,6 +223,10 @@
 			</File>
 			<File
 				RelativePath=".\src\filelister.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\mathlib.h"
 				>
 			</File>
 			<File
@@ -258,6 +274,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\checkautovariables.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\checkbufferoverrun.cpp"
 				>
 			</File>
@@ -286,6 +306,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\checksecurity.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\checkstl.cpp"
 				>
 			</File>
@@ -307,6 +331,10 @@
 			</File>
 			<File
 				RelativePath=".\src\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\mathlib.cpp"
 				>
 			</File>
 			<File

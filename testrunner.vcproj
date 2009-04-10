@@ -167,6 +167,14 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\src\check.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkautovariables.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\CheckBufferOverrun.h"
 				>
 			</File>
@@ -195,6 +203,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\checksecurity.h"
+				>
+			</File>
+			<File
 				RelativePath=".\src\checkstl.h"
 				>
 			</File>
@@ -216,6 +228,10 @@
 			</File>
 			<File
 				RelativePath=".\src\FileLister.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\mathlib.h"
 				>
 			</File>
 			<File
@@ -251,6 +267,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\src\checkautovariables.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\CheckBufferOverrun.cpp"
 				>
 			</File>
@@ -279,11 +299,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkstl.cpp"
+				RelativePath=".\src\checksecurity.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkvalidate.cpp"
+				RelativePath=".\src\checkstl.cpp"
 				>
 			</File>
 			<File
@@ -299,11 +319,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\mathlib.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\preprocessor.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\src\settings.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test\testautovariables.cpp"
 				>
 			</File>
 			<File
@@ -347,6 +375,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\test\testmathlib.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\test\testmemleak.cpp"
 				>
 			</File>
@@ -368,6 +400,10 @@
 			</File>
 			<File
 				RelativePath=".\test\testrunner.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test\testsecurity.cpp"
 				>
 			</File>
 			<File
@@ -396,10 +432,6 @@
 			</File>
 			<File
 				RelativePath=".\test\testunusedvar.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\test\testvalidate.cpp"
 				>
 			</File>
 			<File
