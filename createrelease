@@ -4,7 +4,7 @@
 # Archive files are created in user's home directory.
 
 # Tag to use
-tag=1.30
+tag=1.31
 
 # Name of release
 releasename=cppcheck-$tag
