@@ -281,3 +281,35 @@ void CheckStl::pushbackError(const Token *tok, const std::string &iterator_name)
 }
 
 
+
+
+void CheckStl::stlBoundries()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "for ("))
+        {
+            for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ";"; tok2 = tok2->next())
+            {
+                if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% < %var% . end ( ) ") &&
+                    tok2->str() == tok2->tokAt(8)->str() &&
+                    tok2->tokAt(2)->str() == tok2->tokAt(10)->str())
+                {
+                    stlBoundriesError(tok2);
+                    break;
+                }
+            }
+        }
+
+        if (Token::Match(tok, "while ( %var% < %var% . end ( )"))
+        {
+            stlBoundriesError(tok);
+        }
+    }
+}
+
+// Error message for bad boundry usage..
+void CheckStl::stlBoundriesError(const Token *tok)
+{
+    reportError(tok, "error", "stlBoundries", "STL range check should be using != and not < since the order of the pointers isn't guaranteed");
+}

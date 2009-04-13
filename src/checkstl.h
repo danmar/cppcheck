@@ -47,6 +47,7 @@ public:
         checkStl.iterators();
         checkStl.erase();
         checkStl.pushback();
+        checkStl.stlBoundries();
     }
 
 
@@ -72,6 +73,11 @@ public:
      */
     void pushback();
 
+    /**
+     * bad condition.. "it < alist.end()"
+     */
+    void stlBoundries();
+
 private:
 
     /**
@@ -85,6 +91,7 @@ private:
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
     void eraseError(const Token *tok);
     void pushbackError(const Token *tok, const std::string &iterator_name);
+    void stlBoundriesError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -92,6 +99,7 @@ private:
         stlOutOfBoundsError(0, "i", "foo");
         eraseError(0);
         pushbackError(0, "iterator");
+        stlBoundriesError(0);
     }
 };
 

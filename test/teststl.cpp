@@ -47,6 +47,8 @@ private:
 
         TEST_CASE(pushback1);
         TEST_CASE(invalidcode);
+
+        TEST_CASE(stlBoundries1);
     }
 
     void check(const char code[])
@@ -252,6 +254,19 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+
+    void stlBoundries1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    for (it = ab.begin(); it < ab.end(); ++it)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) STL range check should be using != and not < since the order of the pointers isn't guaranteed\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestStl)
