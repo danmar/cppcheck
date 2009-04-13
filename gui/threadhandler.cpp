@@ -41,7 +41,6 @@ void ThreadHandler::SetFiles(const QStringList &files)
 {
     mResults.SetFiles(files);
     mLastFiles = files;
-    QString file;
 }
 
 void ThreadHandler::Check(Settings settings, bool recheck)

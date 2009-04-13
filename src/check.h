@@ -69,7 +69,7 @@ protected:
     ErrorLogger * const _errorLogger;
 
     /** report an error */
-    void reportError(const Token *tok, const std::string severity, const std::string id, const std::string msg)
+    void reportError(const Token *tok, const std::string &severity, const std::string &id, const std::string &msg)
     {
         std::list<const Token *> callstack;
         callstack.push_back(tok);
@@ -77,7 +77,7 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> callstack, const std::string severity, const std::string id, const std::string msg)
+    void reportError(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg)
     {
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)

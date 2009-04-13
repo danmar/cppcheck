@@ -34,6 +34,7 @@
 		<Unit filename="gui/checkdialog.h" />
 		<Unit filename="gui/checkthread.cpp" />
 		<Unit filename="gui/checkthread.h" />
+		<Unit filename="gui/common.h" />
 		<Unit filename="gui/main.cpp" />
 		<Unit filename="gui/mainwindow.cpp" />
 		<Unit filename="gui/mainwindow.h" />
@@ -43,6 +44,10 @@
 		<Unit filename="gui/resultsview.h" />
 		<Unit filename="gui/settingsdialog.cpp" />
 		<Unit filename="gui/settingsdialog.h" />
+		<Unit filename="gui/threadhandler.cpp" />
+		<Unit filename="gui/threadhandler.h" />
+		<Unit filename="gui/threadresult.cpp" />
+		<Unit filename="gui/threadresult.h" />
 		<Unit filename="src/check.h" />
 		<Unit filename="src/checkautovariables.cpp" />
 		<Unit filename="src/checkautovariables.h" />
