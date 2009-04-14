@@ -436,8 +436,11 @@ void CheckClass::privateFunctions()
                 if (Token::Match(tok, "typedef %type% ("))
                     tok = tok->tokAt(2);
 
-                if (Token::Match(tok, "%var% (") &&
-                    !Token::Match(tok, classname.c_str()))
+                else if (Token::Match(tok, "[:,] %var% ("))
+                    tok = tok->tokAt(2);
+
+                else if (Token::Match(tok, "%var% (") &&
+                         !Token::Match(tok, classname.c_str()))
                 {
                     FuncList.push_back(tok);
                 }

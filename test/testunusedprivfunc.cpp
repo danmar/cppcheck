@@ -42,6 +42,8 @@ private:
 
         // [ 2236547 ] False positive --style unused function, called via pointer
         TEST_CASE(func_pointer);
+
+        TEST_CASE(ctor);
     }
 
 
@@ -165,6 +167,22 @@ private:
         ASSERT_EQUALS(std::string("[test.cpp:6]: (style) Unused private function 'Fred::get'\n"), errout.str());
     }
 
+
+    void ctor()
+    {
+        check("class PrivateCtor\n"
+              "{\n"
+              "private:\n"
+              "    PrivateCtor(int threadNum) :\n"
+              "        numOfThreads(threadNum)\n"
+              "    {\n"
+              "    }\n"
+              "\n"
+              "    int numOfThreads;\n"
+              "};\n");
+
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 
 
 };
