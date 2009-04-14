@@ -513,6 +513,9 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
         const std::string pattern(s + "> ");
         for (Token *tok2 = _tokens; tok2; tok2 = tok2->next())
         {
+            if (tok2->str() != name)
+                continue;
+
             if (!Token::Match(tok2, (pattern + (isfunc ? "(" : "%var%")).c_str()))
                 continue;
 
