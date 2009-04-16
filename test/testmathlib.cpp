@@ -38,9 +38,11 @@ private:
     void calculate()
     {
         ASSERT_EQUALS(std::string("256"), MathLib::add("0xff", "1"));
-        ASSERT_EQUALS(std::string("0.003"), MathLib::multiply("1e-3", "3"));
+        ASSERT_EQUALS(std::string("-0.003"), MathLib::multiply("-1e-3", "3"));
         ASSERT_EQUALS(std::string("5"), MathLib::divide("25.5", "5.1"));
-        TODO_ASSERT_EQUALS(std::string("1"), MathLib::divide("3", "2"));
+        ASSERT_EQUALS(std::string("-11.96"), MathLib::multiply("-2.3", "5.2"));
+        ASSERT_EQUALS(std::string("7"), MathLib::divide("21.", "3"));
+        ASSERT_EQUALS(std::string("1"), MathLib::divide("3", "2"));
     }
 };
 

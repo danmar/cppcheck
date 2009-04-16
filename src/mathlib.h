@@ -26,8 +26,13 @@
 class MathLib
 {
 private:
-    static double toNumber(const std::string & str);
-    static std::string toString(double d);
+    static long toLongNumber(const std::string & str);
+    static double toDoubleNumber(const std::string & str);
+
+    template<typename T>
+    static std::string toString(T d);
+
+    static bool isInt(const std::string & str);
 public:
     static std::string add(const std::string & first, const std::string & second);
     static std::string subtract(const std::string & first, const std::string & second);
