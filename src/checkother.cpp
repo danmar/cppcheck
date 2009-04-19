@@ -867,13 +867,26 @@ void CheckOther::returnPointerToStackData()
     std::list<unsigned int> arrayVar;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (!infunc && Token::simpleMatch(tok, ") {"))
+        // Is there a function declaration for a function that returns a pointer?
+        if (!infunc && (Token::Match(tok, "%type% * %var% (") || Token::Match(tok, "%type% * %var% :: %var% (")))
         {
-            infunc = true;
-            indentlevel = 0;
-            arrayVar.clear();
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == ")")
+                {
+                    tok = tok2;
+                    break;
+                }
+            }
+            if (Token::simpleMatch(tok, ") {"))
+            {
+                infunc = true;
+                indentlevel = 0;
+                arrayVar.clear();
+            }
         }
 
+        // Parsing a function that returns a pointer..
         if (infunc)
         {
             if (tok->str() == "{")

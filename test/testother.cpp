@@ -53,6 +53,7 @@ private:
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
 
         TEST_CASE(returnLocalVariable1);
+        TEST_CASE(returnLocalVariable2);
 
         TEST_CASE(varScope1);
         TEST_CASE(varScope2);
@@ -307,6 +308,16 @@ private:
                "    return str;\n"
                "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Returning pointer to local array variable\n"), errout.str());
+    }
+
+    void returnLocalVariable2()
+    {
+        retVar("std::string foo()\n"
+               "{\n"
+               "    char str[100] = {0};\n"
+               "    return str;\n"
+               "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void varScope(const char code[])
