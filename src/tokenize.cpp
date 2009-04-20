@@ -452,9 +452,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     // Remove "volatile"
     while (Token::simpleMatch(_tokens, "volatile"))
     {
-        Token *tok = _tokens;
-        _tokens = _tokens->next();
-        delete tok;
+        _tokens->deleteThis();
     }
     for (Token *tok = _tokens; tok; tok = tok->next())
     {

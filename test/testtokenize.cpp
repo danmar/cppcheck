@@ -130,6 +130,7 @@ private:
 
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
+        TEST_CASE(volatile_variables);
     }
 
 
@@ -1412,6 +1413,17 @@ private:
         const std::string actual(tokenizeAndStringify(code));
 
         ASSERT_EQUALS("void foo ( a , b ) unsigned int a ; unsigned int b ; { }", actual);
+    }
+
+    void volatile_variables()
+    {
+        const char code[] = "volatile int a=0;\n"
+                            "volatile int b=0;\n"
+                            "volatile int c=0;\n";
+
+        const std::string actual(tokenizeAndStringify(code));
+
+        ASSERT_EQUALS("int a ; a = 0 ;\nint b ; b = 0 ;\nint c ; c = 0 ;", actual);
     }
 };
 
