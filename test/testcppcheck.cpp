@@ -50,6 +50,8 @@ private:
     {
         TEST_CASE(linenumbers);
         // TEST_CASE(linenumbers2);
+
+        TEST_CASE(xml);
     }
 
     void linenumbers()
@@ -79,6 +81,15 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("[file.cpp:5]: (error) Memory leak: string\n", errout.str());
+    }
+
+
+    void xml()
+    {
+        // Test the errorlogger..
+        ErrorLogger::ErrorMessage errmsg;
+        errmsg._msg = "ab<cd>ef";
+        ASSERT_EQUALS("<error id=\"\" severity=\"\" msg=\"ab&lt;cd&gt;ef\"/>", errmsg.toXML());
     }
 };
 

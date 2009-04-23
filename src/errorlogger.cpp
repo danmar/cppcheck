@@ -118,11 +118,27 @@ std::string ErrorLogger::ErrorMessage::toXML() const
 {
     std::ostringstream xml;
     xml << "<error";
-    xml << " file=\"" << _callStack.back().file << "\"";
-    xml << " line=\"" << _callStack.back().line << "\"";
+    if (!_callStack.empty())
+    {
+        xml << " file=\"" << _callStack.back().file << "\"";
+        xml << " line=\"" << _callStack.back().line << "\"";
+    }
     xml << " id=\"" << _id << "\"";
     xml << " severity=\"" << _severity << "\"";
-    xml << " msg=\"" << _msg << "\"";
+
+    // Replace characters in message
+    std::string m(_msg);
+    std::string::size_type pos = 0;
+    while ((pos = m.find_first_of("<>", pos)) != std::string::npos)
+    {
+        if (m[pos] == '<')
+            m.insert(pos+1, "&lt;");
+        if (m[pos] == '>')
+            m.insert(pos+1, "&gt;");
+        m.erase(pos, 1);
+    }
+
+    xml << " msg=\"" << m << "\"";
     xml << "/>";
     return xml.str();
 }
