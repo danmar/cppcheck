@@ -132,9 +132,9 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     while ((pos = m.find_first_of("<>", pos)) != std::string::npos)
     {
         if (m[pos] == '<')
-            m.insert(pos+1, "&lt;");
+            m.insert(pos + 1, "&lt;");
         if (m[pos] == '>')
-            m.insert(pos+1, "&gt;");
+            m.insert(pos + 1, "&gt;");
         m.erase(pos, 1);
     }
 
