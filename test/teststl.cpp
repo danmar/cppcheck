@@ -46,6 +46,10 @@ private:
         TEST_CASE(eraseAssign);
 
         TEST_CASE(pushback1);
+        TEST_CASE(pushback2);
+        TEST_CASE(pushback3);
+        TEST_CASE(pushback4);
+
         TEST_CASE(invalidcode);
 
         TEST_CASE(stlBoundries1);
@@ -234,7 +238,6 @@ private:
 
 
 
-
     void pushback1()
     {
         check("void f()\n"
@@ -245,6 +248,48 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
     }
+
+    void pushback2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int>::const_iterator it = foo.begin();\n"
+              "    foo.push_back(123);\n"
+              "    {\n"
+              "        int *it = &foo[0];\n"
+              "        *it = 456;\n"
+              "    }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", errout.str());       // Ticket #262
+    }
+
+    void pushback3()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int>::const_iterator it = foo.begin();\n"
+              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        foo.push_back(123);\n"
+              "    }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+    }
+
+    void pushback4()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int> ints;\n"
+              "    ints.push_back(1);\n"
+              "    int *first = &ints[0];\n"
+              "    ints.push_back(2);\n"
+              "    *first;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) After push_back or push_front, the pointer 'first' may be invalid\n", errout.str());
+    }
+
+
 
     void invalidcode()
     {
