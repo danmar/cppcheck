@@ -107,6 +107,7 @@ private:
         TEST_CASE(varidReturn);
         TEST_CASE(varid8);
         TEST_CASE(varid9);
+        TEST_CASE(varidStl);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -1045,6 +1046,26 @@ private:
         const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: typedef int INT32 ;\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varidStl()
+    {
+        const std::string code("list<int> ints;\n"
+                               "list<int>::iterator it;\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: list < int > ints@1 ;\n"
+                                   "2: list < int > :: iterator it@2 ;\n");
 
         ASSERT_EQUALS(expected, actual);
     }

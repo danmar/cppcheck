@@ -631,6 +631,21 @@ void Tokenizer::setVarId()
         if (Token::simpleMatch(tok, "std ::"))
             tok = tok->tokAt(2);
 
+        // Skip template arguments..
+        if (Token::Match(tok, "%type% <"))
+        {
+            Token *tok2 = tok->tokAt(2);
+            while (tok2 && (tok2->isName() || tok2->str() == "*"))
+                tok2 = tok2->next();
+
+            if (Token::Match(tok2, "> %var%"))
+                tok = tok2;
+            else if (Token::Match(tok2, "> :: %var%"))
+                tok = tok2->next();
+            else
+                continue;       // Not code that I understand / not a variable declaration
+        }
+
         // Determine name of declared variable..
         const char *varname = 0;
         Token *tok2 = tok->tokAt(1);
