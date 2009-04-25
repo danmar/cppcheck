@@ -61,6 +61,7 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
 
         // Clear the error buffer..
         errout.str("");
@@ -260,7 +261,7 @@ private:
               "        *it = 456;\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());       // Ticket #262
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pushback3()

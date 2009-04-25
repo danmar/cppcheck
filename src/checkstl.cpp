@@ -232,7 +232,10 @@ void CheckStl::pushback()
                 break;
             if (Token::Match(tok, "> :: iterator|const_iterator %var% =|;"))
             {
-                const std::string iteratorname(tok->strAt(3));
+                const unsigned int iteratorid(tok->tokAt(3)->varId());
+                if (iteratorid == 0)
+                    continue;
+
                 std::string vectorname;
                 int indent = 0;
                 bool invalidIterator = false;
@@ -249,7 +252,7 @@ void CheckStl::pushback()
                     }
 
                     // Assigning iterator..
-                    if (Token::Match(tok2, (iteratorname + " = %var% . begin ( )").c_str()))
+                    if (Token::Match(tok2, "%varid% = %var% . begin ( )", iteratorid))
                     {
                         vectorname = tok2->strAt(2);
                         invalidIterator = false;
@@ -262,10 +265,10 @@ void CheckStl::pushback()
                     // Using invalid iterator..
                     if (invalidIterator)
                     {
-                        if (Token::Match(tok2, ("++|--|*|+|-|(|, " + iteratorname).c_str()))
-                            pushbackError(tok2, iteratorname);
-                        if (Token::Match(tok2, (iteratorname + " ++|--|+|-").c_str()))
-                            pushbackError(tok2, iteratorname);
+                        if (Token::Match(tok2, "++|--|*|+|-|(|, %varid%", iteratorid))
+                            pushbackError(tok2, tok2->strAt(1));
+                        if (Token::Match(tok2, "%varid% ++|--|+|-", iteratorid))
+                            pushbackError(tok2, tok2->str());
                     }
                 }
             }
