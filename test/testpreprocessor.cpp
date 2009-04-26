@@ -849,6 +849,19 @@ private:
             ASSERT_EQUALS("", actual);
             ASSERT_EQUALS("[abc.h:2]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }
+
+        {
+            const char filedata[] = "#define A 1\n"
+                                    "#define B \"\n"
+                                    "int a = A;\n";
+
+            // expand macros..
+            errout.str("");
+            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+
+            ASSERT_EQUALS("\n\nint a = 1;\n", actual);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 };
 

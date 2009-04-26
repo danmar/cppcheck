@@ -801,6 +801,17 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                 // End of line/file was reached without finding pair
                 if (pos1 >= code.size() || code[pos1] == '\n')
                 {
+                    std::string::size_type lineStart = code.rfind('\n', pos1 - 1);
+                    if (lineStart != std::string::npos)
+                    {
+                        if (code.substr(lineStart + 1, 7) == "#define")
+                        {
+                            // There is nothing wrong #define containing quote without
+                            // a pair.
+                            continue;
+                        }
+                    }
+
                     if (errorLogger)
                     {
                         std::string fname(filename);
