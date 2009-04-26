@@ -822,17 +822,33 @@ private:
 
     void missing_doublequote()
     {
-        const char filedata[] = "#define a\n"
-                                "#ifdef 1\n"
-                                "\"\n"
-                                "#endif\n";
+        {
+            const char filedata[] = "#define a\n"
+                                    "#ifdef 1\n"
+                                    "\"\n"
+                                    "#endif\n";
 
-        // expand macros..
-        errout.str("");
-        std::string actual = OurPreprocessor::expandMacros(filedata, this);
+            // expand macros..
+            errout.str("");
+            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
 
-        ASSERT_EQUALS("", actual);
-        ASSERT_EQUALS("[file.cpp:0]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
+            ASSERT_EQUALS("", actual);
+            ASSERT_EQUALS("[file.cpp:3]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
+        }
+
+        {
+            const char filedata[] = "#file abc.h\n"
+                                    "#define a\n"
+                                    "\"\n"
+                                    "#endfile\n";
+
+            // expand macros..
+            errout.str("");
+            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+
+            ASSERT_EQUALS("", actual);
+            ASSERT_EQUALS("[abc.h:2]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
+        }
     }
 };
 

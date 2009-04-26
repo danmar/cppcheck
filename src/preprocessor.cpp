@@ -789,33 +789,65 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             // String or char..
             if (code[pos1] == '\"' || code[pos1] == '\'')
             {
-                //char ch = code[pos1];
+                // Find the end of the string/char..
                 ++pos1;
-                while (code[pos1] != ch)
+                while (pos1 < code.size() && code[pos1] != ch && code[pos1] != '\n')
                 {
                     if (code[pos1] == '\\')
                         ++pos1;
                     ++pos1;
-
-                    if (!code[pos1])
-                    {
-                        // End of file was reached without finding pair
-                        if (errorLogger)
-                        {
-                            std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                            ErrorLogger::ErrorMessage::FileLocation loc;
-                            loc.line = 0;
-                            loc.file = filename;
-                            locationList.push_back(loc);
-                            errorLogger->reportErr(
-                                ErrorLogger::ErrorMessage(locationList,
-                                                          "error",
-                                                          std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.",
-                                                          "noQuoteCharPair"));
-                        }
-                        return "";
-                    }
                 }
+
+                // End of line/file was reached without finding pair
+                if (pos1 >= code.size() || code[pos1] == '\n')
+                {
+                    if (errorLogger)
+                    {
+                        std::string fname(filename);
+                        int lineno = 0;
+                        for (std::string::size_type p = pos1; p > 0; --p)
+                        {
+                            // newline..
+                            if (code[p-1] == '\n')
+                                lineno++;
+
+                            // #file..
+                            else if (code[p-1] == '#')
+                            {
+                                // Previous char should be a newline..
+                                if (p == 1 || code[p-2] == '\n')
+                                {
+                                    // #file..
+                                    if (code.substr(p - 1, 6) == "#file ")
+                                    {
+                                        fname = code.substr(p + 5, code.find("\n", p) - p - 5);
+                                        break;
+                                    }
+
+                                    else
+                                        ++lineno;
+                                }
+                            }
+
+                            // start of file..
+                            else if (p == 1)
+                                ++lineno;
+                        }
+
+                        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                        ErrorLogger::ErrorMessage::FileLocation loc;
+                        loc.line = lineno;
+                        loc.file = fname;
+                        locationList.push_back(loc);
+                        errorLogger->reportErr(
+                            ErrorLogger::ErrorMessage(locationList,
+                                                      "error",
+                                                      std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.",
+                                                      "noQuoteCharPair"));
+                    }
+                    return "";
+                }
+
                 continue;
             }
 
