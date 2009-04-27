@@ -23,6 +23,7 @@
 #include "token.h"
 
 #include <algorithm>
+#include <stdexcept>
 #include <sstream>
 #include <fstream>
 #include <iostream>
@@ -71,7 +72,7 @@ std::string Preprocessor::read(std::istream &istr)
     for (char ch = readChar(istr); istr.good(); ch = readChar(istr))
     {
         if (ch < 0)
-            continue;
+            throw std::runtime_error("The code contains characters that are unhandled");
 
         if (ch == '\n')
             ++lineno;
