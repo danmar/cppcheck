@@ -123,6 +123,12 @@ void TestFixture::assertEquals(const char *filename, int linenr, unsigned int ex
     assertEquals(filename, linenr, ostr1.str(), ostr2.str());
 }
 
+void TestFixture::assertThrowFail(const char *filename, int linenr)
+{
+    errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
+    << "The expected exception was not thrown" << std::endl;
+}
+
 void TestFixture::printTests()
 {
     const std::list<TestFixture *> &tests = TestRegistry::theInstance().tests();

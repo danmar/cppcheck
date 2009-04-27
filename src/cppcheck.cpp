@@ -32,6 +32,7 @@
 #include <cstring>
 #include <fstream>
 #include <map>
+#include <stdexcept>
 
 //---------------------------------------------------------------------------
 
@@ -297,44 +298,53 @@ unsigned int CppCheck::check()
         if (_settings._errorsOnly == false)
             _errorLogger->reportOut(std::string("Checking ") + fname + std::string("..."));
 
-        Preprocessor preprocessor;
-        std::list<std::string> configurations;
-        std::string filedata = "";
-        if (_fileContents.size() > 0 && _fileContents.find(_filenames[c]) != _fileContents.end())
+        try
         {
-            // File content was given as a string
-            std::istringstream iss(_fileContents[ _filenames[c] ]);
-            preprocessor.preprocess(iss, filedata, configurations, fname, _includePaths);
-        }
-        else
-        {
-            // Only file name was given, read the content from file
-            std::ifstream fin(fname.c_str());
-            preprocessor.preprocess(fin, filedata, configurations, fname, _includePaths);
-        }
+            Preprocessor preprocessor;
+            std::list<std::string> configurations;
+            std::string filedata = "";
 
-        int checkCount = 0;
-        for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it)
-        {
-            // Check only 12 first configurations, after that bail out, unless --force
-            // was used.
-            if (!_settings._force && checkCount > 11)
+            if (_fileContents.size() > 0 && _fileContents.find(_filenames[c]) != _fileContents.end())
             {
-                if (_settings._errorsOnly == false)
-                    _errorLogger->reportOut(std::string("Bailing out from checking ") + fname + ": Too many configurations. Recheck this file with --force if you want to check them all.");
-
-                break;
+                // File content was given as a string
+                std::istringstream iss(_fileContents[ _filenames[c] ]);
+                preprocessor.preprocess(iss, filedata, configurations, fname, _includePaths);
+            }
+            else
+            {
+                // Only file name was given, read the content from file
+                std::ifstream fin(fname.c_str());
+                preprocessor.preprocess(fin, filedata, configurations, fname, _includePaths);
             }
 
-            cfg = *it;
-            std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, _errorLogger);
+            int checkCount = 0;
+            for (std::list<std::string>::const_iterator it = configurations.begin(); it != configurations.end(); ++it)
+            {
+                // Check only 12 first configurations, after that bail out, unless --force
+                // was used.
+                if (!_settings._force && checkCount > 11)
+                {
+                    if (_settings._errorsOnly == false)
+                        _errorLogger->reportOut(std::string("Bailing out from checking ") + fname + ": Too many configurations. Recheck this file with --force if you want to check them all.");
 
-            // If only errors are printed, print filename after the check
-            if (_settings._errorsOnly == false && it != configurations.begin())
-                _errorLogger->reportOut(std::string("Checking ") + fname + ": " + cfg + std::string("..."));
+                    break;
+                }
 
-            checkFile(codeWithoutCfg, _filenames[c].c_str());
-            ++checkCount;
+                cfg = *it;
+                std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, _errorLogger);
+
+                // If only errors are printed, print filename after the check
+                if (_settings._errorsOnly == false && it != configurations.begin())
+                    _errorLogger->reportOut(std::string("Checking ") + fname + ": " + cfg + std::string("..."));
+
+                checkFile(codeWithoutCfg, _filenames[c].c_str());
+                ++checkCount;
+            }
+        }
+        catch (std::runtime_error &e)
+        {
+            // Exception was thrown when checking this file..
+            _errorLogger->reportOut("Bailing out from checking " + fname + ": " + e.what());
         }
 
         _errorLogger->reportStatus(c + 1, _filenames.size());

@@ -27,6 +27,8 @@
 #include "../src/tokenize.h"
 #include <map>
 #include <string>
+#include <sstream>
+#include <stdexcept>
 
 extern std::ostringstream errout;
 
@@ -115,6 +117,8 @@ private:
         TEST_CASE(pragma);
         TEST_CASE(endifsemicolon);
         TEST_CASE(missing_doublequote);
+
+        TEST_CASE(unicode1);
     }
 
 
@@ -862,6 +866,13 @@ private:
             ASSERT_EQUALS("\n\nint a = 1;\n", actual);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void unicode1()
+    {
+        const char filedata[] = {'a', (char)200, 0};
+        std::istringstream istr(filedata);
+        ASSERT_THROW(Preprocessor::read(istr), std::runtime_error);
     }
 };
 

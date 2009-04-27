@@ -41,6 +41,7 @@ protected:
 
     void assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
     void assertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
+    void assertThrowFail(const char *filename, int linenr);
 
 public:
     virtual void reportOut(const std::string &outmsg);
@@ -58,6 +59,7 @@ public:
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
+#define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (EXCEPTION &) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
 #define TODO_ASSERT_EQUALS( EXPECTED , ACTUAL ) if (EXPECTED==ACTUAL) assertEquals(__FILE__, __LINE__, "TODO assertion", "The assertion succeeded")
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
 
