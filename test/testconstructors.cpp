@@ -73,6 +73,8 @@ private:
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
+
+        TEST_CASE(operatorEqSTL);
     }
 
 
@@ -335,6 +337,25 @@ private:
               "    ~Fred() {}\n"
               "};\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void operatorEqSTL()
+    {
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    std::vector<int> ints;\n"
+              "public:\n"
+              "    Fred();\n"
+              "    void operator=(const Fred &f);\n"
+              "};\n"
+              "\n"
+              "Fred::Fred()\n"
+              "{ }\n"
+              "\n"
+              "void Fred::operator=(const Fred &f)\n"
+              "{ }");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:14] (style) Fred::ints is not modified in operator=\n"), errout.str());
     }
 };
 
