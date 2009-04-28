@@ -149,7 +149,7 @@ private:
                   "        }\n"
                   "    }\n"
                   "}\n");
-            // TODO ASSERT_EQUALS(std::string(""), errout.str());
+            TODO_ASSERT_EQUALS(std::string(""), errout.str());
         }
     }
 
