@@ -222,6 +222,48 @@ void CheckStl::eraseError(const Token *tok)
 
 void CheckStl::pushback()
 {
+    // Pointer can become invalid after push_back or push_front..
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var% = & %var% ["))
+        {
+            const unsigned int pointerId(tok->varId());
+            const unsigned int containerId(tok->tokAt(3)->varId());
+            if (pointerId == 0 || containerId == 0)
+                continue;
+
+            int indent = 0;
+            bool invalidPointer = false;
+            for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{" || tok2->str() == "(")
+                    ++indent;
+                else if (tok2->str() == "}" || tok2->str() == ")")
+                {
+                    if (indent == 0 && Token::simpleMatch(tok2, ") {"))
+                        tok2 = tok2->next();
+                    else
+                        --indent;
+                }
+
+                // push_back on vector..
+                if (Token::Match(tok2, "%varid% . push_front|push_back", containerId))
+                    invalidPointer = true;
+
+                // Using invalid pointer..
+                if (invalidPointer && tok2->varId() == pointerId)
+                {
+                    if (Token::simpleMatch(tok2->previous(), "*"))
+                        invalidPointerError(tok2, tok2->str());
+                    else if (Token::simpleMatch(tok2->next(), "."))
+                        invalidPointerError(tok2, tok2->str());
+                    break;
+                }
+            }
+        }
+    }
+
+    // Iterator becomes invalid after push_back or push_front..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "vector <"))
@@ -281,6 +323,13 @@ void CheckStl::pushback()
 void CheckStl::pushbackError(const Token *tok, const std::string &iterator_name)
 {
     reportError(tok, "error", "pushback", "After push_back or push_front, the iterator '" + iterator_name + "' may be invalid");
+}
+
+
+// Error message for bad iterator usage..
+void CheckStl::invalidPointerError(const Token *tok, const std::string &pointer_name)
+{
+    reportError(tok, "error", "pushback", "Invalid pointer '" + pointer_name + "' after push_back / push_front");
 }
 
 

@@ -287,7 +287,7 @@ private:
               "    ints.push_back(2);\n"
               "    *first;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) After push_back or push_front, the pointer 'first' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Invalid pointer 'first' after push_back / push_front\n", errout.str());
     }
 
 
