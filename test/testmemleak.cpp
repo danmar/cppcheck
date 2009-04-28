@@ -203,6 +203,8 @@ private:
         // VCL..
         TEST_CASE(vcl1);
         TEST_CASE(vcl2);
+
+        TEST_CASE(autoptr1);
     }
 
 
@@ -2041,6 +2043,18 @@ private:
                  "}\n", "TButton\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    void autoptr1()
+    {
+        check("std::auto_ptr<int> foo()\n"
+              "{\n"
+              "    int *i = new int;\n"
+              "    return std::auto_ptr<int>(i);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestMemleak)

@@ -607,10 +607,26 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         if (tok->str() == "return")
         {
             addtoken("return");
-            if (Token::simpleMatch(tok, std::string("return " + varnameStr).c_str()) ||
-                Token::simpleMatch(tok, std::string("return & " + varnameStr).c_str()))
+
+            // Returning a auto_ptr of this allocated variable..
+            if (Token::simpleMatch(tok->next(), "std :: auto_ptr <"))
+            {
+                const Token *tok2 = tok->tokAt(5);
+                while (tok2 && tok2->str() != ">")
+                    tok2 = tok2->next();
+                if (Token::simpleMatch(tok2, ("> ( " + varnameStr + " )").c_str()))
+                {
+                    addtoken("use");
+                    tok = tok2->tokAt(3);
+                }
+            }
+
+            else if (Token::Match(tok, ("return &| " + varnameStr).c_str()))
+            {
                 addtoken("use");
-            if (Token::simpleMatch(tok->next(), "("))
+            }
+
+            else if (Token::simpleMatch(tok->next(), "("))
             {
                 for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
                 {
