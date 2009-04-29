@@ -108,6 +108,7 @@ private:
         TEST_CASE(varid8);
         TEST_CASE(varid9);
         TEST_CASE(varidStl);
+        TEST_CASE(varid_delete);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -1070,7 +1071,31 @@ private:
         ASSERT_EQUALS(expected, actual);
     }
 
+    void varid_delete()
+    {
+        const std::string code("void f()\n"
+                               "{\n"
+                               "  int *a;\n"
+                               "  delete a;\n"
+                               "}\n");
 
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void f ( )\n"
+                                   "2: {\n"
+                                   "3: int * a@1 ;\n"
+                                   "4: delete a@1 ;\n"
+                                   "5: }\n");
+
+        TODO_ASSERT_EQUALS(expected, actual);
+    }
 
 
 
