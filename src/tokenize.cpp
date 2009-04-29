@@ -625,7 +625,7 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "[,;{}(] %type%"))
             tok = tok->next();
 
-        if (Token::Match(tok, "else|return|typedef"))
+        if (Token::Match(tok, "else|return|typedef|delete"))
             continue;
 
         if (Token::simpleMatch(tok, "std ::"))

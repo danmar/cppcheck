@@ -1094,7 +1094,7 @@ private:
                                    "4: delete a@1 ;\n"
                                    "5: }\n");
 
-        TODO_ASSERT_EQUALS(expected, actual);
+        ASSERT_EQUALS(expected, actual);
     }
 
 
