@@ -40,30 +40,28 @@ void CheckStl::iterators()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        // it = foo.begin(); it != bar.end()
-        if (Token::Match(tok, "%var% = %var% . begin ( ) ; %var% != %var% . end ( ) ;"))
+        if (Token::Match(tok, "%var% = %var% . begin ( ) ;"))
         {
-            // Different iterators..
-            if (tok->str() != tok->tokAt(8)->str())
-                continue;
-            // Same container..
-            if (tok->tokAt(2)->str() == tok->tokAt(10)->str())
-                continue;
-            iteratorsError(tok, tok->strAt(2), tok->strAt(10));
-        }
-
-        // it = foo.begin();
-        // while (it != bar.end())
-        if (Token::Match(tok, "%var% = %var% . begin ( ) ; while ( %var% != %var% . end ( )"))
-        {
-            // Different iterators..
-            if (tok->str() != tok->tokAt(10)->str())
-                continue;
-            // Same container..
-            if (tok->tokAt(2)->str() == tok->tokAt(12)->str())
+            const unsigned int iteratorId(tok->varId());
+            const unsigned int containerId(tok->tokAt(2)->varId());
+            if (iteratorId == 0 || containerId == 0)
                 continue;
 
-            iteratorsError(tok, tok->strAt(2), tok->strAt(12));
+            for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "}")
+                    break;
+                if (tok2->varId() == iteratorId)
+                {
+                    if (Token::Match(tok2->next(), "!= %var% . end ( )") && tok2->tokAt(2)->varId() != containerId)
+                        iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
+                }
+                else if (Token::Match(tok2, "%var% . insert|erase ( %varid%", iteratorId))
+                {
+                    if (tok2->varId() != containerId)
+                        iteratorsError(tok2, tok->strAt(2), tok2->str());
+                }
+            }
         }
     }
 }

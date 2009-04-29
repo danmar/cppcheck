@@ -76,35 +76,41 @@ private:
 
     void iterator1()
     {
-        check("void foo()\n"
+        check("void f()\n"
               "{\n"
-              "    for (it = foo.begin(); it != bar.end(); ++it)\n"
+              "    list<int> l1;\n"
+              "    list<int> l2;\n"
+              "    for (list<int>::iterator it = l1.begin(); it != l2.end(); ++it)\n"
               "    { }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Same iterator is used with both l1 and l2\n", errout.str());
     }
 
     void iterator2()
     {
         check("void foo()\n"
               "{\n"
-              "    it = foo.begin();\n"
-              "    while (it != bar.end())\n"
+              "    list<int> l1;\n"
+              "    list<int> l2;\n"
+              "    list<int>::iterator it = l1.begin();\n"
+              "    while (it != l2.end())\n"
               "    {\n"
               "        ++it;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with both l1 and l2\n", errout.str());
     }
 
     void iterator3()
     {
         check("void foo()\n"
               "{\n"
-              "    i = l1.begin();\n"
-              "    l2.insert(i, 0);\n"
+              "    list<int> l1;\n"
+              "    list<int> l2;\n"
+              "    list<int>::iterator it = l1.begin();\n"
+              "    l2.insert(it, 0);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Same iterator is used with both foo and bar\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with both l1 and l2\n", errout.str());
     }
 
 
