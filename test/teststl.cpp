@@ -37,6 +37,8 @@ private:
     {
         TEST_CASE(iterator1);
         TEST_CASE(iterator2);
+        TEST_CASE(iterator3);
+
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
         TEST_CASE(erase);
@@ -93,6 +95,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Same iterator is used with both foo and bar\n", errout.str());
+    }
+
+    void iterator3()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    i = l1.begin();\n"
+              "    l2.insert(i, 0);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Same iterator is used with both foo and bar\n", errout.str());
     }
 
 
