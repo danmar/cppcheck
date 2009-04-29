@@ -205,6 +205,7 @@ private:
         TEST_CASE(vcl2);
 
         TEST_CASE(autoptr1);
+        TEST_CASE(free_member_in_sub_func);
     }
 
 
@@ -2055,6 +2056,36 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void free_member_in_sub_func()
+    {
+        check("class Tokenizer\n"
+              "{\n"
+              "public:\n"
+              "    Tokenizer();\n"
+              "    ~Tokenizer();\n"
+              "\n"
+              "private:\n"
+              "    int *_tokens;\n"
+              "    static void deleteTokens(int *tok);\n"
+              "};\n"
+              "\n"
+              "Tokenizer::Tokenizer()\n"
+              "{\n"
+              "     _tokens = new int;\n"
+              "}\n"
+              "\n"
+              "Tokenizer::~Tokenizer()\n"
+              "{\n"
+              "    deleteTokens(_tokens);\n"
+              "    _tokens = 0;\n"
+              "}\n"
+              "\n"
+              "void Tokenizer::deleteTokens(int *tok)\n"
+              "{\n"
+              "    delete tok;\n"
+              "}\n", true);
+        TODO_ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestMemleak)
