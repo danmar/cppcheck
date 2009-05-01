@@ -90,6 +90,7 @@ private:
         TEST_CASE(simplifyKnownVariables7);
         TEST_CASE(simplifyKnownVariables8);
         TEST_CASE(simplifyKnownVariables9);
+        TEST_CASE(simplifyKnownVariables10);
 
         TEST_CASE(multiCompare);
 
@@ -634,7 +635,64 @@ private:
         ASSERT_EQUALS(std::string(" void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) ; }"), ostr.str());
     }
 
+    void simplifyKnownVariables10()
+    {
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  bool b=false;\n"
+                                "\n"
+                                "  {\n"
+                                "    b = true;\n"
+                                "  }\n"
+                                "\n"
+                                "  if( b )\n"
+                                "  {\n"
+                                "    a();\n"
+                                "  }\n"
+                                "}\n";
+            // tokenize..
+            OurTokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
 
+            tokenizer.setVarId();
+            tokenizer.simplifyKnownVariables();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void f ( ) { bool b ; b = false ; { b = true ; } if ( true ) { a ( ) ; } }"), ostr.str());
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  bool b=false;\n"
+                                "  { b = false; }\n"
+                                "  {\n"
+                                "    b = true;\n"
+                                "  }\n"
+                                "\n"
+                                "  if( b )\n"
+                                "  {\n"
+                                "    a();\n"
+                                "  }\n"
+                                "}\n";
+            // tokenize..
+            OurTokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.setVarId();
+            tokenizer.simplifyKnownVariables();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( true ) { a ( ) ; } }"), ostr.str());
+        }
+    }
 
     void multiCompare()
     {

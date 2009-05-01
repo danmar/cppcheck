@@ -1979,6 +1979,7 @@ bool Tokenizer::simplifyIfNot()
 
 bool Tokenizer::simplifyKnownVariables()
 {
+    createLinks();
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2013,7 +2014,9 @@ bool Tokenizer::simplifyKnownVariables()
                 for (Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
                 {
                     // Perhaps it's a loop => bail out
-                    if (Token::Match(tok3, "[{}]"))
+                    if (tok3->str() == "{" && Token::Match(tok3->previous(), ")"))
+                        break;
+                    else if (tok3->str() == "}" && Token::Match(tok3->link()->previous(), ")"))
                         break;
 
                     // Variable is used somehow in a non-defined pattern => bail out
