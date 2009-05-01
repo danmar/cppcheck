@@ -225,34 +225,15 @@ private:
 
     void inlineasm()
     {
-        const char filedata[] = "void foo()\n"
-                                "{\n"
-                                "    __asm\n"
-                                "    {\n"
-                                "        jmp $jump1\n"
-                                "        $jump1:\n"
-                                "    }\n"
-                                "}\n";
-
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(filedata);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // Expected result..
-        const char *expected[] =
         {
-            "void",
-            "foo",
-            "(",
-            ")",
-            "{",
-            "}",
-            0
-        };
+            const char code[] = "abc asm { mov ax,bx } def";
+            ASSERT_EQUALS("abc def", tokenizeAndStringify(code));
+        }
 
-        // Compare..
-        ASSERT_EQUALS(true, cmptok(expected, tokenizer.tokens()));
+        {
+            const char code[] = "abc __asm { mov ax,bx } def";
+            ASSERT_EQUALS("abc def", tokenizeAndStringify(code));
+        }
     }
 
 
