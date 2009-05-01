@@ -42,7 +42,7 @@ CheckClass instance;
 
 //---------------------------------------------------------------------------
 
-struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
+struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1, bool withClasses)
 {
     // Get variable list..
     struct VAR *varlist = NULL;
@@ -84,7 +84,9 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
         // Is it a variable declaration?
         else if (Token::Match(next, "%type% %var% ;"))
         {
-            if (next->isStandardType())
+            if (withClasses)
+                varname = next->strAt(1);
+            else if (next->isStandardType())
                 varname = next->strAt(1);
             else if (Token::findmatch(_tokenizer->tokens(), ("enum " + next->str()).c_str()))
                 varname = next->strAt(1);
@@ -100,6 +102,21 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1)
         else if (Token::Match(next, "%type% %type% * %var% ;"))
         {
             varname = next->strAt(3);
+        }
+
+        // std::string..
+        else if (withClasses && Token::Match(next, "std :: string %var% ;"))
+        {
+            varname = next->strAt(3);
+        }
+
+        // Container..
+        else if (withClasses && Token::Match(next, "std :: %type% <"))
+        {
+            while (next && next->str() != ">")
+                next = next->next();
+            if (Token::Match(next, "> %var% ;"))
+                varname = next->strAt(1);
         }
 
         // If the varname was set in one of the two if-block above, create a entry for this variable..
@@ -309,7 +326,7 @@ void CheckClass::constructors()
             if (ErrorLogger::noConstructor(*_settings))
             {
                 // If the class has member variables there should be an constructor
-                struct VAR *varlist = ClassChecking_GetVarList(tok1);
+                struct VAR *varlist = ClassChecking_GetVarList(tok1, false);
                 if (varlist)
                 {
                     noConstructorError(tok1, classNameToken->str());
@@ -327,30 +344,23 @@ void CheckClass::constructors()
             continue;
         }
 
-        // Check that all member variables are initialized..
-        struct VAR *varlist = ClassChecking_GetVarList(tok1);
-
         // Check constructors
-        CheckConstructors(tok1, varlist, className[0]);
+        CheckConstructors(tok1, className[0]);
 
         // Check assignment operators
-        CheckConstructors(tok1, varlist, "operator =");
-
-        // Delete the varlist..
-        while (varlist)
-        {
-            struct VAR *nextvar = varlist->next;
-            delete varlist;
-            varlist = nextvar;
-        }
+        CheckConstructors(tok1, "operator =");
 
         tok1 = Token::findmatch(tok1->next(), pattern_class);
     }
 }
 
-void CheckClass::CheckConstructors(const Token *tok1, struct VAR *varlist, const char funcname[])
+void CheckClass::CheckConstructors(const Token *tok1, const char funcname[])
 {
     const char * const className = tok1->strAt(1);
+
+    // Check that all member variables are initialized..
+    bool withClasses = bool(std::string(funcname) == "operator =");
+    struct VAR *varlist = ClassChecking_GetVarList(tok1, withClasses);
 
     int indentlevel = 0;
     const Token *constructor_token = Tokenizer::FindClassFunction(tok1, className, funcname, indentlevel);
@@ -383,6 +393,14 @@ void CheckClass::CheckConstructors(const Token *tok1, struct VAR *varlist, const
         constructor_token = Tokenizer::FindClassFunction(constructor_token->next(), className, funcname, indentlevel);
         callstack.clear();
         ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className, callstack);
+    }
+
+    // Delete the varlist..
+    while (varlist)
+    {
+        struct VAR *nextvar = varlist->next;
+        delete varlist;
+        varlist = nextvar;
     }
 }
 

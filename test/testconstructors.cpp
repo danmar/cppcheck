@@ -355,7 +355,7 @@ private:
               "\n"
               "void Fred::operator=(const Fred &f)\n"
               "{ }");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:14] (style) Fred::ints is not modified in operator=\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:13]: (all style) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n"), errout.str());
     }
 };
 
