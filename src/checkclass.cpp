@@ -359,7 +359,7 @@ void CheckClass::CheckConstructors(const Token *tok1, const char funcname[])
     const char * const className = tok1->strAt(1);
 
     // Check that all member variables are initialized..
-    bool withClasses = bool(std::string(funcname) == "operator =");
+    bool withClasses = bool(_settings->_showAll && std::string(funcname) == "operator =");
     struct VAR *varlist = ClassChecking_GetVarList(tok1, withClasses);
 
     int indentlevel = 0;
