@@ -331,10 +331,7 @@ bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[], bool
     const std::string end(endpar ? " &&|)" : " [;)&|]");
 
     return bool(Token::Match(tok, ("! " + varname + end).c_str()) ||
-                Token::Match(tok, ("! ( " + varname + " )" + end).c_str()) ||
-                Token::Match(tok, ("0 == " + varname + end).c_str()) ||
-                Token::Match(tok, (varname + " == 0" + end).c_str()) ||
-                Token::Match(tok, ("( " + varname + " ) == 0" + end).c_str()));
+                Token::Match(tok, ("! ( " + varname + " )" + end).c_str()));
 }
 
 Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz)
@@ -557,7 +554,21 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                         break;
                     }
                 }
-                addtoken((dep ? "ifv" : "if"));
+
+                if (Token::simpleMatch(tok, std::string("if ( ! " + varnameStr + " &&").c_str()))
+                {
+                    addtoken("if(!var)");
+                }
+                else if (tok->next() &&
+                         tok->next()->link() &&
+                         Token::simpleMatch(tok->next()->link()->previous()->previous()->previous(), std::string("&& ! " + varnameStr).c_str()))
+                {
+                    addtoken("if(!var)");
+                }
+                else
+                {
+                    addtoken((dep ? "ifv" : "if"));
+                }
             }
         }
 
@@ -1255,7 +1266,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
     }
 
     simplifycode(tok, all);
-    //tok->printOut("simplifycode result");
+    // tok->printOut("simplifycode result");
 
     // If the variable is not allocated at all => no memory leak
     if (Token::findmatch(tok, "alloc") == 0)

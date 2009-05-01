@@ -2108,7 +2108,7 @@ private:
               "\n"
               "  delete [] a;\n"
               "}\n", true);
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
