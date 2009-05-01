@@ -231,6 +231,11 @@ private:
         }
 
         {
+            const char code[] = "abc _asm { mov ax,bx } def";
+            ASSERT_EQUALS("abc def", tokenizeAndStringify(code));
+        }
+
+        {
             const char code[] = "abc __asm { mov ax,bx } def";
             ASSERT_EQUALS("abc def", tokenizeAndStringify(code));
         }

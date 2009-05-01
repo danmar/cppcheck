@@ -433,7 +433,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     // Remove __asm..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok->next(), "__asm|asm {"))
+        if (Token::Match(tok->next(), "__asm|_asm|asm {"))
         {
             while (tok->next())
             {
