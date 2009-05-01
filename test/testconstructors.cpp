@@ -35,7 +35,7 @@ public:
 private:
 
 
-    void check(const char code[])
+    void check(const char code[], bool showAll=false)
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -49,6 +49,7 @@ private:
         // Check class constructors..
         Settings settings;
         settings._checkCodingStyle = true;
+        settings._showAll = showAll;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
@@ -354,8 +355,8 @@ private:
               "{ }\n"
               "\n"
               "void Fred::operator=(const Fred &f)\n"
-              "{ }");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:13]: (all style) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n"), errout.str());
+              "{ }", true);
+        ASSERT_EQUALS(std::string("[test.cpp:13]: (all style) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n"), errout.str());
     }
 };
 
