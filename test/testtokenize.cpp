@@ -200,7 +200,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Expected result..
-        ASSERT_EQUALS(std::string(10000, 'a'), std::string(tokenizer.tokens()->aaaa()));
+        ASSERT_EQUALS(std::string(10000, 'a'), tokenizer.tokens()->str());
     }
 
 
