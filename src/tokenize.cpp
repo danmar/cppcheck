@@ -827,7 +827,7 @@ bool Tokenizer::createLinks()
         }
     }
 
-    if (links.size() > 0 || links2.size() > 0 )
+    if (links.size() > 0 || links2.size() > 0)
     {
         // Error, { and } don't match.
         return false;
@@ -1957,7 +1957,7 @@ bool Tokenizer::simplifyIfNot()
             ret = true;
         }
 
-        if (Token::Match(tok, "%var% == 0") )
+        if (Token::Match(tok, "%var% == 0"))
         {
             tok->deleteNext();
             tok->next()->str(tok->str().c_str());
@@ -1965,7 +1965,7 @@ bool Tokenizer::simplifyIfNot()
             ret = true;
         }
 
-        if ( tok->link() && Token::Match(tok, ") == 0") )
+        if (tok->link() && Token::Match(tok, ") == 0"))
         {
             tok->deleteNext();
             tok->deleteNext();
