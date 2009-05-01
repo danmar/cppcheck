@@ -2090,24 +2090,24 @@ private:
 
     void if_with_and()
     {
-        check(  "void f()\n"
-                "{\n"
-                "  char *a = new char[10];\n"
-                "  if (!a && b() )\n"
-                "    return;\n"
-                "\n"
-                "  delete [] a;\n"
-                "}\n", true);
+        check("void f()\n"
+              "{\n"
+              "  char *a = new char[10];\n"
+              "  if (!a && b() )\n"
+              "    return;\n"
+              "\n"
+              "  delete [] a;\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
 
-        check(  "void f()\n"
-                "{\n"
-                "  char *a = new char[10];\n"
-                "  if (b() && !a )\n"
-                "    return;\n"
-                "\n"
-                "  delete [] a;\n"
-                "}\n", true);
+        check("void f()\n"
+              "{\n"
+              "  char *a = new char[10];\n"
+              "  if (b() && !a )\n"
+              "    return;\n"
+              "\n"
+              "  delete [] a;\n"
+              "}\n", true);
         TODO_ASSERT_EQUALS("", errout.str());
     }
 };
