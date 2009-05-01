@@ -328,7 +328,7 @@ bool CheckMemoryLeakClass::notvar(const Token *tok, const char *varnames[], bool
         varname += varnames[i];
     }
 
-    const std::string end(endpar ? " )" : " [;)&|]");
+    const std::string end(endpar ? " &&|)" : " [;)&|]");
 
     return bool(Token::Match(tok, ("! " + varname + end).c_str()) ||
                 Token::Match(tok, ("! ( " + varname + " )" + end).c_str()) ||
