@@ -35,7 +35,7 @@ public:
 private:
 
 
-    void check(const char code[], bool showAll=false)
+    void check(const char code[], bool showAll = false)
     {
         // Tokenize..
         Tokenizer tokenizer;
