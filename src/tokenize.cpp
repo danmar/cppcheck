@@ -785,6 +785,7 @@ void Tokenizer::simplifyNamespaces()
 bool Tokenizer::createLinks()
 {
     std::list<Token*> links;
+    std::list<Token*> links2;
     for (Token *token = _tokens; token; token = token->next())
     {
         if (token->link())
@@ -808,9 +809,25 @@ bool Tokenizer::createLinks()
             links.back()->link(token);
             links.pop_back();
         }
+        else if (token->str() == "(")
+        {
+            links2.push_back(token);
+        }
+        else if (token->str() == ")")
+        {
+            if (links2.size() == 0)
+            {
+                // Error, ( and ) don't match.
+                return false;
+            }
+
+            token->link(links2.back());
+            links2.back()->link(token);
+            links2.pop_back();
+        }
     }
 
-    if (links.size() > 0)
+    if (links.size() > 0 || links2.size() > 0 )
     {
         // Error, { and } don't match.
         return false;
@@ -1926,23 +1943,39 @@ bool Tokenizer::simplifyIfAssign()
 
 bool Tokenizer::simplifyIfNot()
 {
+    // Make sure we have working links
+    createLinks();
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "if ( 0 == %var% )") || Token::simpleMatch(tok, "if ( 0 == ("))
+
+        if (Token::Match(tok, "0 == (") ||
+            Token::Match(tok, "0 == %var%"))
         {
-            tok = tok->next();
             tok->deleteNext();
-            tok->next()->str("!");
-            tok = tok->tokAt(3);
+            tok->str("!");
+            ret = true;
+        }
+
+        if (Token::Match(tok, "%var% == 0") )
+        {
+            tok->deleteNext();
+            tok->next()->str(tok->str().c_str());
+            tok->str("!");
+            ret = true;
+        }
+
+        if ( tok->link() && Token::Match(tok, ") == 0") )
+        {
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->link()->insertToken("(");
+            tok->link()->str("!");
             ret = true;
         }
     }
     return ret;
 }
-
-
-
 
 bool Tokenizer::simplifyKnownVariables()
 {
