@@ -31,7 +31,6 @@
 #include <sstream>
 #include <list>
 #include <algorithm>
-#include <cstdlib>
 #include <cctype>
 
 //---------------------------------------------------------------------------
@@ -1085,7 +1084,7 @@ void Tokenizer::simplifyTokenList()
         if (varid == 0)
             continue;
 
-        int total_size = size * std::atoi(tok->strAt(3));
+        int total_size = size * MathLib::toLongNumber(tok->strAt(3));
 
         // Replace 'sizeof(var)' with number
         int indentlevel = 0;

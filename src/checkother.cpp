@@ -20,13 +20,13 @@
 
 //---------------------------------------------------------------------------
 #include "checkother.h"
+#include "mathlib.h"
 #include "tokenize.h"
 
 #include <algorithm>
 #include <list>
 #include <map>
 #include <sstream>
-#include <cstdlib>     // <- atoi
 #include <cstring>
 #include <cctype>
 //---------------------------------------------------------------------------
@@ -328,7 +328,7 @@ void CheckOther::InvalidFunctionUsage()
                 {
                     if (Token::Match(tok2, ", %num% )"))
                     {
-                        int radix = std::atoi(tok2->strAt(1));
+                        int radix = MathLib::toLongNumber(tok2->next()->str());
                         if (!(radix == 0 || (radix >= 2 && radix <= 36)))
                         {
                             dangerousUsageStrtolError(tok2);
