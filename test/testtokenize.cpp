@@ -110,6 +110,7 @@ private:
         TEST_CASE(varid9);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
+        TEST_CASE(varid_class);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -1137,6 +1138,55 @@ private:
                                    "3: int * a@1 ;\n"
                                    "4: delete a@1 ;\n"
                                    "5: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+
+    void varid_class()
+    {
+        const std::string code("class Fred\n"
+                               "{\n"
+                               "private:\n"
+                               "    int i;\n"
+                               "\n"
+                               "    void foo1();\n"
+                               "    void foo2()\n"
+                               "    {\n"
+                               "        ++i;\n"
+                               "    }\n"
+                               "}\n"
+                               "\n"
+                               "Fred::foo1()\n"
+                               "{\n"
+                               "    i = 0;\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Fred\n"
+                                   "2: {\n"
+                                   "3: private:\n"
+                                   "4: int i@1 ;\n"
+                                   "5:\n"
+                                   "6: void foo1@2 ( ) ;\n"
+                                   "7: void foo2 ( )\n"
+                                   "8: {\n"
+                                   "9: ++ i@1 ;\n"
+                                   "10: }\n"
+                                   "11: }\n"
+                                   "12:\n"
+                                   "13: Fred :: foo1 ( )\n"
+                                   "14: {\n"
+                                   "15: i@1 = 0 ;\n"
+                                   "16: }\n");
 
         ASSERT_EQUALS(expected, actual);
     }

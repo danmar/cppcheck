@@ -730,6 +730,66 @@ void Tokenizer::setVarId()
             }
         }
     }
+
+    // class members..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "class %var% {"))
+        {
+            const std::string &classname(tok->next()->str());
+
+            unsigned int indentlevel = 0;
+
+            // What member variables are there in this class?
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                // Indentation..
+                if (tok2->str() == "{")
+                    ++indentlevel;
+                else if (tok2->str() == "}")
+                {
+                    if (indentlevel == 0)
+                        break;
+                    --indentlevel;
+                }
+
+                // If a variable id is found in the class declaration, start
+                // updating the variable ids in member functions..
+                else if (indentlevel == 1 && tok2->varId() > 0)
+                {
+                    const unsigned int varid(tok2->varId());
+                    const std::string &varname(tok2->str());
+
+                    for (Token *tok3 = tok; tok3; tok3 = tok3->next())
+                    {
+                        // Found a class function..
+                        if (Token::Match(tok3, (classname + " :: %var% (").c_str()))
+                        {
+                            unsigned int indentlevel2 = 0;
+                            while (tok3)
+                            {
+                                if (tok3->str() == "{")
+                                    ++indentlevel2;
+                                else if (tok3->str() == "}")
+                                {
+                                    if (indentlevel2 <= 1)
+                                        break;
+                                    --indentlevel2;
+                                }
+                                else if (indentlevel2 == 0 && tok3->str() == ";")
+                                    break;
+                                else if (indentlevel2 > 0 && tok3->varId() == 0 && tok3->str() == varname)
+                                    tok3->varId(varid);
+                                tok3 = tok3->next();
+                            }
+                            if (!tok3)
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 
