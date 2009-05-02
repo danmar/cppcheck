@@ -46,6 +46,7 @@ private:
         TEST_CASE(eraseReturn);
         TEST_CASE(eraseGoto);
         TEST_CASE(eraseAssign);
+        TEST_CASE(eraseDereference);
 
         TEST_CASE(pushback1);
         TEST_CASE(pushback2);
@@ -254,6 +255,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void eraseDereference()
+    {
+        check("void f(std::vector<ints> &ints)\n"
+              "{\n"
+              "    std::vector<int>::iterator iter;\n"
+              "    iter = ints.begin() + 2;\n"
+              "    ints.erase(iter);\n"
+              "    std::cout << (*iter) << std::endl;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Dereferencing invalid iterator\n", errout.str());
+    }
 
 
 
