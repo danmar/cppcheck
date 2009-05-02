@@ -33,6 +33,7 @@ private:
     void run()
     {
         TEST_CASE(calculate);
+        TEST_CASE(convert);
     }
 
     void calculate()
@@ -43,6 +44,13 @@ private:
         ASSERT_EQUALS(std::string("-11.96"), MathLib::multiply("-2.3", "5.2"));
         ASSERT_EQUALS(std::string("7"), MathLib::divide("21.", "3"));
         ASSERT_EQUALS(std::string("1"), MathLib::divide("3", "2"));
+    }
+
+    void convert()
+    {
+        ASSERT_EQUALS(10, MathLib::toLongNumber("0xa"));
+        ASSERT_EQUALS(8, MathLib::toLongNumber("010"));
+        ASSERT_EQUALS(10, MathLib::toLongNumber("10"));
     }
 };
 
