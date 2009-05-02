@@ -267,6 +267,8 @@ private:
               "    ints.erase(iter);\n"
               "    std::cout << (*iter) << std::endl;\n"
               "}\n");
+
+        // Ticket #277 - STL: Dereferencing an erased iterator
         TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Dereferencing invalid iterator\n", errout.str());
     }
 
