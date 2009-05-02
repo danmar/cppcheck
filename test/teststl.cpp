@@ -54,6 +54,8 @@ private:
         TEST_CASE(pushback3);
         TEST_CASE(pushback4);
 
+        TEST_CASE(insert1);
+
         TEST_CASE(invalidcode);
 
         TEST_CASE(stlBoundries1);
@@ -331,6 +333,20 @@ private:
               "    *first;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Invalid pointer 'first' after push_back / push_front\n", errout.str());
+    }
+
+
+
+
+    void insert1()
+    {
+        check("void f(std::vector<int> &ints)\n"
+              "{\n"
+              "    std::vector<int>::iterator iter = ints.begin() + 5;\n"
+              "    ints.insert(ints.begin(), 1);\n"
+              "    ++iter;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Invalid iterator 'iter' after insert\n", errout.str());
     }
 
 
