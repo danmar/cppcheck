@@ -97,7 +97,7 @@ void CheckHeaders::WarningIncludeHeader()
 
         // Get fileindex of included file..
         unsigned int hfile = 0;
-        const char *includefile = includetok->next()->aaaa();
+        const char *includefile = includetok->strAt(1);
         while (hfile < _tokenizer->getFiles()->size())
         {
             if (FileLister::SameFileName(_tokenizer->getFiles()->at(hfile).c_str(), includefile))
@@ -231,14 +231,14 @@ void CheckHeaders::WarningIncludeHeader()
             if (! tok1->isName())
                 continue;
 
-            if (std::find(namelist.begin(), namelist.end(), tok1->aaaa()) != namelist.end())
+            if (std::find(namelist.begin(), namelist.end(), tok1->str().c_str()) != namelist.end())
             {
                 Needed = true;
                 break;
             }
 
             if (! NeedDeclaration)
-                NeedDeclaration = (std::find(classlist.begin(), classlist.end(), tok1->aaaa()) != classlist.end());
+                NeedDeclaration = (std::find(classlist.begin(), classlist.end(), tok1->str().c_str()) != classlist.end());
         }
 
 

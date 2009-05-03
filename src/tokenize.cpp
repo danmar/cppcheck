@@ -138,7 +138,7 @@ void Tokenizer::InsertTokens(Token *dest, Token *src, unsigned int n)
 {
     while (n > 0)
     {
-        dest->insertToken(src->aaaa());
+        dest->insertToken(src->str().c_str());
         dest = dest->next();
         dest->fileIndex(src->fileIndex());
         dest->linenr(src->linenr());
@@ -1166,7 +1166,7 @@ void Tokenizer::simplifyTokenList()
         if (! Token::Match(tok, "%type% %var% [ %num% ] ;"))
             continue;
 
-        int size = SizeOfType(tok->aaaa());
+        int size = SizeOfType(tok->str().c_str());
         if (size <= 0)
             continue;
 
@@ -1247,7 +1247,7 @@ void Tokenizer::simplifyTokenList()
     // Replace "*(str + num)" => "str[num]"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (! strchr(";{}(=<>", tok->aaaa0()))
+        if (! strchr(";{}(=<>", tok->str()[0]))
             continue;
 
         Token *next = tok->next();
@@ -1928,23 +1928,23 @@ bool Tokenizer::simplifyVarDecl()
                 int parlevel = 0;
                 while (tok2)
                 {
-                    if (strchr("{(", tok2->aaaa0()))
+                    if (strchr("{(", tok2->str()[0]))
                     {
                         ++parlevel;
                     }
 
-                    else if (strchr("})", tok2->aaaa0()))
+                    else if (strchr("})", tok2->str()[0]))
                     {
                         if (parlevel < 0)
                             break;
                         --parlevel;
                     }
 
-                    else if (parlevel == 0 && strchr(";,", tok2->aaaa0()))
+                    else if (parlevel == 0 && strchr(";,", tok2->str()[0]))
                     {
                         // "type var ="   =>   "type var; var ="
                         Token *VarTok = type0->tokAt(typelen);
-                        if (VarTok->aaaa0() == '*')
+                        if (VarTok->str()[0] == '*')
                             VarTok = VarTok->next();
                         InsertTokens(eq, VarTok, 2);
                         eq->str(";");
@@ -2369,7 +2369,7 @@ void Tokenizer::fillFunctionList()
                     else
                     {
                         tok = tok2;
-                        while (tok->next() && !strchr(";{", tok->next()->aaaa0()))
+                        while (tok->next() && !strchr(";{", tok->strAt(1)[0]))
                             tok = tok->next();
                     }
                     break;
@@ -2438,7 +2438,7 @@ const char *Tokenizer::getParameterName(const Token *ftok, int par)
         if (ftok->str() == ",")
             ++_par;
         if (par == _par && Token::Match(ftok, "%var% [,)]"))
-            return ftok->aaaa();
+            return ftok->str().c_str();
     }
     return NULL;
 }

@@ -220,8 +220,8 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 continue;
 
             // Get index variable and stopsize.
-            const char *strindex = tok2->aaaa();
-            int value = ((tok2->next()->aaaa1() == '=') ? 1 : 0) + std::atoi(tok2->strAt(2));
+            const char *strindex = tok2->str().c_str();
+            int value = ((tok2->strAt(1)[1] == '=') ? 1 : 0) + std::atoi(tok2->strAt(2));
             if (value <= size)
                 continue;
 
@@ -305,10 +305,10 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
             int len = 0;
             for (const Token *tok2 = tok->tokAt(6); tok2 && tok2->str() != ")"; tok2 = tok2->next())
             {
-                if (tok2->aaaa0() == '\"')
+                if (tok2->str()[0] == '\"')
                 {
                     len -= 2;
-                    const char *str = tok->strAt(0);
+                    const char *str = tok->str().c_str();
                     while (*str)
                     {
                         if (*str == '\\')
@@ -385,7 +385,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 continue;
 
             // Find function..
-            const Token *ftok = _tokenizer->GetFunctionTokenByName(tok->aaaa());
+            const Token *ftok = _tokenizer->GetFunctionTokenByName(tok->str().c_str());
             if (!ftok)
                 continue;
 
@@ -407,7 +407,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 {
                     // Parameter name..
                     const char *parname[2];
-                    parname[0] = ftok->aaaa();
+                    parname[0] = ftok->str().c_str();
                     parname[1] = 0;
 
                     // Goto function body..
@@ -456,7 +456,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
         {
             varname[0] = tok->strAt(1);
             size = std::strtoul(tok->strAt(3), NULL, 10);
-            type = tok->aaaa();
+            type = tok->str().c_str();
             varid = tok->tokAt(1)->varId();
             nextTok = 6;
         }

@@ -147,7 +147,7 @@ private:
         unsigned int i = 0;
         for (; expected[i] && actual; ++i, actual = actual->next())
         {
-            if (strcmp(expected[i], actual->aaaa()) != 0)
+            if (strcmp(expected[i], actual->str().c_str()) != 0)
                 return false;
         }
         return (expected[i] == NULL && actual == NULL);
@@ -264,7 +264,7 @@ private:
         tokenizer.fillFunctionList();
 
         ASSERT_EQUALS(1, static_cast<unsigned int>(tokenizer.getFunctionList().size()));
-        ASSERT_EQUALS(std::string("b"), tokenizer.getFunctionList()[0]->aaaa());
+        ASSERT_EQUALS(std::string("b"), tokenizer.getFunctionList()[0]->str());
     }
 
     void const_and_volatile_functions()

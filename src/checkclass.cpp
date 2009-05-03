@@ -160,7 +160,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
         {
             if (Assign && Token::Match(ftok, "%var% ("))
             {
-                InitVar(varlist, ftok->aaaa());
+                InitVar(varlist, ftok->str().c_str());
             }
 
             Assign |= (ftok->str() == ":");
@@ -186,7 +186,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
         // Variable getting value from stream?
         if (Token::Match(ftok, ">> %var%"))
         {
-            InitVar(varlist, ftok->next()->aaaa());
+            InitVar(varlist, ftok->next()->str().c_str());
         }
 
         // Before a new statement there is "[{};)=]" or "else"
@@ -227,7 +227,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
             {
                 callstack.push_back(ftok->str());
                 int i = 0;
-                const Token *ftok2 = Tokenizer::FindClassFunction(tok1, classname, ftok->aaaa(), i);
+                const Token *ftok2 = Tokenizer::FindClassFunction(tok1, classname, ftok->str().c_str(), i);
                 ClassChecking_VarList_Initialize(tok1, ftok2, varlist, classname, callstack);
             }
         }
@@ -235,13 +235,13 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
         // Assignment of member variable?
         else if (Token::Match(ftok, "%var% ="))
         {
-            InitVar(varlist, ftok->aaaa());
+            InitVar(varlist, ftok->str().c_str());
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (Token::Match(ftok, "%var% . clear|Clear ("))
         {
-            InitVar(varlist, ftok->aaaa());
+            InitVar(varlist, ftok->str().c_str());
         }
     }
 }

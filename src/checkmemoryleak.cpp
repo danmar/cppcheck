@@ -574,7 +574,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
 
         if ((tok->str() == "else") || (tok->str() == "switch"))
         {
-            addtoken(tok->aaaa());
+            addtoken(tok->str().c_str());
         }
 
         if ((tok->str() == "case"))
@@ -1159,7 +1159,7 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
                         break;
                     }
 
-                    else if (strncmp(_tok->aaaa(), "if", 2) == 0)
+                    else if (strncmp(_tok->str().c_str(), "if", 2) == 0)
                         break;
 
                     else if (_tok->str() == "switch")

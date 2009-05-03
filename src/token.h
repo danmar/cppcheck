@@ -36,21 +36,6 @@ public:
         return _str;
     }
 
-    const char *aaaa() const
-    {
-        return _str.c_str();
-    }
-
-    char aaaa0() const
-    {
-        return _str[0];
-    }
-
-    char aaaa1() const
-    {
-        return _str[1];
-    }
-
     /**
      * Unlink and delete next token.
      */
