@@ -738,7 +738,7 @@ void Tokenizer::setVarId()
         {
             const std::string &classname(tok->next()->str());
 
-            unsigned int indentlevel = 0;
+            int indentlevel = 0;
 
             // What member variables are there in this class?
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
@@ -765,7 +765,7 @@ void Tokenizer::setVarId()
                         // Found a class function..
                         if (Token::Match(tok3, (classname + " :: %var% (").c_str()))
                         {
-                            unsigned int indentlevel2 = 0;
+                            int indentlevel2 = 0;
                             while (tok3)
                             {
                                 if (tok3->str() == "{")
