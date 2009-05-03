@@ -748,9 +748,9 @@ void Tokenizer::setVarId()
                     ++indentlevel;
                 else if (tok2->str() == "}")
                 {
+                    --indentlevel;
                     if (indentlevel == 0)
                         break;
-                    --indentlevel;
                 }
 
                 // If a variable id is found in the class declaration, start
@@ -772,9 +772,9 @@ void Tokenizer::setVarId()
                                     ++indentlevel2;
                                 else if (tok3->str() == "}")
                                 {
+                                    --indentlevel2;
                                     if (indentlevel2 <= 1)
                                         break;
-                                    --indentlevel2;
                                 }
                                 else if (indentlevel2 == 0 && tok3->str() == ";")
                                     break;
