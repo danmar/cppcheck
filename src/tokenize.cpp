@@ -393,27 +393,29 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     }
 
     // typedef..
-    for (Token *tok = _tokens; tok;)
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "typedef %type% %type% ;"))
+        if (tok->str() != "typedef")
+            continue;
+
+        if (Token::Match(tok->next(), "%type% %type% ;"))
         {
             const char *type1 = tok->strAt(1);
             const char *type2 = tok->strAt(2);
-            tok = const_cast<Token*>(tok->tokAt(4));
+            tok = const_cast<Token*>(tok->tokAt(3));
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == type2)
                     tok2->str(type1);
             }
-            continue;
         }
 
-        else if (Token::Match(tok, "typedef %type% %type% %type% ;"))
+        else if (Token::Match(tok->next(), "%type% %type% %type% ;"))
         {
             const char *type1 = tok->strAt(1);
             const char *type2 = tok->strAt(2);
             const char *type3 = tok->strAt(3);
-            tok = const_cast<Token*>(tok->tokAt(5));
+            tok = const_cast<Token*>(tok->tokAt(4));
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == type3)
@@ -423,10 +425,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
                     tok2 = tok2->next();
                 }
             }
-            continue;
         }
-
-        tok = tok->next();
     }
 
     // Remove __asm..
@@ -448,29 +447,14 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
         }
     }
 
-    // Remove "volatile"
-    while (Token::simpleMatch(_tokens, "volatile"))
+    // Remove "volatile" and "mutable"
+    while (_tokens && (_tokens->str() == "volatile" || _tokens->str() == "mutable"))
     {
         _tokens->deleteThis();
     }
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        while (Token::simpleMatch(tok->next(), "volatile"))
-        {
-            tok->deleteNext();
-        }
-    }
-
-    // Remove "mutable"
-    while (Token::simpleMatch(_tokens, "mutable"))
-    {
-        Token *tok = _tokens;
-        _tokens = _tokens->next();
-        delete tok;
-    }
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        while (Token::simpleMatch(tok->next(), "mutable"))
+        while (tok->next() && (tok->next()->str() == "volatile" || tok->next()->str() == "mutable"))
         {
             tok->deleteNext();
         }
