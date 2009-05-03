@@ -193,6 +193,11 @@ private:
      */
     void simplifyNamespaces();
 
+    /**
+     * Simplify templates
+     */
+    void simplifyTemplates();
+
     void InsertTokens(Token *dest, Token *src, unsigned int n);
 
     /**

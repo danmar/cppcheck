@@ -479,6 +479,12 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     simplifyVarDecl();
 
     // Handle templates..
+    simplifyTemplates();
+}
+//---------------------------------------------------------------------------
+
+void Tokenizer::simplifyTemplates()
+{
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (!Token::simpleMatch(tok, "template <"))
