@@ -2099,14 +2099,40 @@ bool Tokenizer::simplifyKnownVariables()
                     continue;
 
                 std::string value(tok2->strAt(2));
-
+                Token* bailOutFromLoop = 0;
                 for (Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
                 {
-                    // Perhaps it's a loop => bail out
-                    if (tok3->str() == "{" && Token::Match(tok3->previous(), ")"))
-                        break;
+                    if (bailOutFromLoop)
+                    {
+                        // This could be a loop, skip it, but only if it doesn't contain
+                        // the variable we are checking for. If it contains the variable
+                        // we will bail out.
+                        if (tok3->varId() == varid)
+                        {
+                            // Continue
+                            tok2 = bailOutFromLoop;
+                            break;
+                        }
+                        else if (tok3 == bailOutFromLoop)
+                        {
+                            // We have skipped the loop
+                            bailOutFromLoop = 0;
+                            continue;
+                        }
+
+                        continue;
+                    }
+                    else if (tok3->str() == "{" && Token::Match(tok3->previous(), ")"))
+                    {
+                        // There is a possible loop after the assignment. Try to skip it.
+                        bailOutFromLoop = tok3->link();
+                        continue;
+                    }
                     else if (tok3->str() == "}" && Token::Match(tok3->link()->previous(), ")"))
+                    {
+                        // Assignment was in the middle of possible loop, bail out.
                         break;
+                    }
 
                     // Variable is used somehow in a non-defined pattern => bail out
                     if (tok3->varId() == varid)

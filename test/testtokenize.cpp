@@ -697,6 +697,31 @@ private:
                 ostr << " " << tok->str();
             ASSERT_EQUALS(std::string(" void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( true ) { a ( ) ; } }"), ostr.str());
         }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  int b=0;\n"
+                                "  b = 1;\n"
+                                "  for( int i = 0; i < 10; i++ )"
+                                "  {\n"
+                                "  }\n"
+                                "\n"
+                                "  a(b);\n"
+                                "}\n";
+            // tokenize..
+            OurTokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.setVarId();
+            tokenizer.simplifyKnownVariables();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } a ( 1 ) ; }"), ostr.str());
+        }
     }
 
     void multiCompare()
