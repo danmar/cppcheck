@@ -63,6 +63,9 @@ public:
      */
     void iterators();
 
+    /** Dereferencing an erased iterator */
+    void dereferenceErasedError(const Token *tok, const std::string &itername);
+
     /**
      * Dangerous usage of erase
      */
@@ -97,6 +100,7 @@ private:
     void getErrorMessages()
     {
         iteratorsError(0, "container1", "container2");
+        dereferenceErasedError(0, "iter");
         stlOutOfBoundsError(0, "i", "foo");
         eraseError(0);
         pushbackError(0, "iterator");

@@ -35,18 +35,24 @@ void CheckStl::iteratorsError(const Token *tok, const std::string &container1, c
     reportError(tok, "error", "iterators", "Same iterator is used with both " + container1 + " and " + container2);
 }
 
+// Error message used when dereferencing an iterator that has been erased..
+void CheckStl::dereferenceErasedError(const Token *tok, const std::string &itername)
+{
+    reportError(tok, "error", "eraseDereference", "Dereferenced iterator '" + itername + "' has been erased");
+}
 
 void CheckStl::iterators()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "%var% = %var% . begin ( ) ;"))
+        if (Token::Match(tok, "%var% = %var% . begin ( ) ;|+"))
         {
             const unsigned int iteratorId(tok->varId());
             const unsigned int containerId(tok->tokAt(2)->varId());
             if (iteratorId == 0 || containerId == 0)
                 continue;
 
+            bool validIterator = true;
             for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "}")
@@ -60,6 +66,12 @@ void CheckStl::iterators()
                 {
                     if (tok2->varId() != containerId)
                         iteratorsError(tok2, tok->strAt(2), tok2->str());
+                    else if (tok2->strAt(2) == std::string("erase"))
+                        validIterator = false;
+                }
+                else if (!validIterator && tok2->Match(tok2, "* %varid%", iteratorId))
+                {
+                    dereferenceErasedError(tok2, tok2->strAt(1));
                 }
             }
         }

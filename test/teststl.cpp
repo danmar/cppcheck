@@ -39,6 +39,8 @@ private:
         TEST_CASE(iterator2);
         TEST_CASE(iterator3);
 
+        TEST_CASE(dereference);
+
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
         TEST_CASE(erase);
@@ -46,7 +48,6 @@ private:
         TEST_CASE(eraseReturn);
         TEST_CASE(eraseGoto);
         TEST_CASE(eraseAssign);
-        TEST_CASE(eraseDereference);
         TEST_CASE(eraseErase);
 
         TEST_CASE(pushback1);
@@ -116,6 +117,22 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with both l1 and l2\n", errout.str());
     }
+
+
+    // Dereferencing invalid pointer
+    void dereference()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int> ints;"
+              "    std::vector<int>::iterator iter;\n"
+              "    iter = ints.begin() + 2;\n"
+              "    ints.erase(iter);\n"
+              "    std::cout << (*iter) << std::endl;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
+    }
+
 
 
     void STLSize()
@@ -256,20 +273,6 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void eraseDereference()
-    {
-        check("void f(std::vector<ints> &ints)\n"
-              "{\n"
-              "    std::vector<int>::iterator iter;\n"
-              "    iter = ints.begin() + 2;\n"
-              "    ints.erase(iter);\n"
-              "    std::cout << (*iter) << std::endl;\n"
-              "}\n");
-
-        // Ticket #277 - STL: Dereferencing an erased iterator
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Dereferencing invalid iterator\n", errout.str());
     }
 
     void eraseErase()
