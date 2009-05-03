@@ -110,7 +110,11 @@ private:
         TEST_CASE(varid9);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
-        TEST_CASE(varid_class);
+
+        TEST_CASE(varidclass1);
+        TEST_CASE(varidclass2);
+        TEST_CASE(varidclass3);
+        TEST_CASE(varidclass4);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -1143,7 +1147,7 @@ private:
     }
 
 
-    void varid_class()
+    void varidclass1()
     {
         const std::string code("class Fred\n"
                                "{\n"
@@ -1187,6 +1191,121 @@ private:
                                    "14: {\n"
                                    "15: i@1 = 0 ;\n"
                                    "16: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+
+    void varidclass2()
+    {
+        const std::string code("class Fred\n"
+                               "{ void f(); };\n"
+                               "\n"
+                               "void A::foo1()\n"
+                               "{\n"
+                               "    int i = 0;\n"
+                               "}\n"
+                               "\n"
+                               "void Fred::f()\n"
+                               "{\n"
+                               "    i = 0;\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Fred\n"
+                                   "2: { void f@1 ( ) ; } ;\n"
+                                   "3:\n"
+                                   "4: void A :: foo1 ( )\n"
+                                   "5: {\n"
+                                   "6: int i@2 ; i@2 = 0 ;\n"
+                                   "7: }\n"
+                                   "8:\n"
+                                   "9: void Fred :: f ( )\n"
+                                   "10: {\n"
+                                   "11: i = 0 ;\n"
+                                   "12: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+
+    void varidclass3()
+    {
+        const std::string code("class Fred\n"
+                               "{ int i; void f(); };\n"
+                               "\n"
+                               "void Fred::f()\n"
+                               "{\n"
+                               "    i = 0;\n"
+                               "}\n"
+                               "\n"
+                               "void A::f()\n"
+                               "{\n"
+                               "    i = 0;\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Fred\n"
+                                   "2: { int i@1 ; void f@2 ( ) ; } ;\n"
+                                   "3:\n"
+                                   "4: void Fred :: f ( )\n"
+                                   "5: {\n"
+                                   "6: i@1 = 0 ;\n"
+                                   "7: }\n"
+                                   "8:\n"
+                                   "9: void A :: f ( )\n"
+                                   "10: {\n"
+                                   "11: i = 0 ;\n"
+                                   "12: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+
+    void varidclass4()
+    {
+        const std::string code("class Fred\n"
+                               "{ int i; void f(); };\n"
+                               "\n"
+                               "void Fred::f()\n"
+                               "{\n"
+                               "    if (i) { }\n"
+                               "    i = 0;\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Fred\n"
+                                   "2: { int i@1 ; void f@2 ( ) ; } ;\n"
+                                   "3:\n"
+                                   "4: void Fred :: f ( )\n"
+                                   "5: {\n"
+                                   "6: if ( i@1 ) { }\n"
+                                   "7: i@1 = 0 ;\n"
+                                   "8: }\n");
 
         ASSERT_EQUALS(expected, actual);
     }
