@@ -84,6 +84,7 @@ private:
         TEST_CASE(template4);
         TEST_CASE(template5);
         TEST_CASE(template6);
+        TEST_CASE(template7);
 
         TEST_CASE(namespaces);
 
@@ -576,6 +577,86 @@ private:
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
+    void template7()
+    {
+        // Typedef
+        {
+            const char code[] = "template <class T>\n"
+                                "class ABC\n"
+                                "{\n"
+                                "public:\n"
+                                "    typedef ABC<T> m;\n"
+                                "\n"
+                                "};\n"
+                                "\n"
+                                "int main()\n"
+                                "{}\n";
+
+            const std::string expected(" template < class T > "
+                                       "class ABC "
+                                       "{ "
+                                       "public: "
+                                       "typedef ABC<T> m ; "
+                                       "} ; "
+                                       "int main ( )"
+                                       " { }");
+
+            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "template <typename T> class ABC {\n"
+                                "public:\n"
+                                "    typedef std::vector<T> type;\n"
+                                "};\n"
+                                "int main() {\n"
+                                "    ABC<int>::type v;\n"
+                                "    v.push_back(4);\n"
+                                "    return 0;\n"
+                                "}\n";
+
+            const std::string expected(" template < typename T > class ABC {"
+                                       " public: "
+                                       "typedef std :: vector < T > type ; "
+                                       "} ; "
+                                       "int main ( ) { "
+                                       "std :: vector < int > v ; "
+                                       "v . push_back ( 4 ) ; "
+                                       "return 0 ; "
+                                       "}");
+
+            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "template <typename T> class ABC {\n"
+                                "public:\n"
+                                "    typedef std::vector<T> type;\n"
+                                "    void f()\n"
+                                "    {\n"
+                                "      ABC<int>::type v;\n"
+                                "      v.push_back(4);\n"
+                                "    }\n"
+                                "};\n"
+                                "\n"
+                                "int main() {\n"
+                                "    return 0;\n"
+                                "}";
+
+            const std::string expected(" template < typename T > class ABC "
+                                       "{"
+                                       " public: typedef std :: vector < T > type ;"
+                                       " void f ( ) "
+                                       "{ "
+                                       "std :: vector < int > v ;"
+                                       " v . push_back ( 4 ) ;"
+                                       " } "
+                                       "} ; "
+                                       "int main ( ) { return 0 ; }");
+
+            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+        }
+    }
 
     void namespaces()
     {
