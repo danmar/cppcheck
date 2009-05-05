@@ -934,6 +934,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                     else if (code[pos2] == '\n')
                     {
                         ++numberOfNewlines;
+                        continue;
                     }
 
                     if (parlevel == 1 && code[pos2] == ',')

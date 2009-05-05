@@ -113,6 +113,7 @@ private:
         TEST_CASE(stringify);
         TEST_CASE(stringify2);
         TEST_CASE(stringify3);
+        TEST_CASE(stringify4);
         TEST_CASE(ifdefwithfile);
         TEST_CASE(pragma);
         TEST_CASE(endifsemicolon);
@@ -781,6 +782,19 @@ private:
         std::string actual = OurPreprocessor::expandMacros(filedata);
 
         ASSERT_EQUALS("\ng(\"abc\");", actual);
+    }
+
+    void stringify4()
+    {
+        const char filedata[] = "#define A(x) #x\n"
+                                "1 A(\n"
+                                "abc\n"
+                                ") 2";
+
+        // expand macros..
+        std::string actual = OurPreprocessor::expandMacros(filedata);
+
+        ASSERT_EQUALS("\n1 \n\n\"abc\" 2", actual);
     }
 
     void pragma()
