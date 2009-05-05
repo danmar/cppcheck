@@ -83,6 +83,7 @@ private:
         TEST_CASE(template3);
         TEST_CASE(template4);
         TEST_CASE(template5);
+        TEST_CASE(template6);
 
         TEST_CASE(namespaces);
 
@@ -557,6 +558,20 @@ private:
                                    "Fred<float> fred ; "
                                    "class Fred<float> { } "
                                    "Fred<float> :: Fred<float> ( ) { }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template6()
+    {
+        const char code[] = "template <classname T> class Fred { };\n"
+                            "Fred<float> fred1;\n"
+                            "Fred<float> fred2;";
+
+        const std::string expected(" template < classname T > class Fred { } ;"
+                                   " Fred<float> fred1 ;"
+                                   " Fred<float> fred2 ;"
+                                   " class Fred<float> { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }

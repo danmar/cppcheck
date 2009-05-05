@@ -469,10 +469,30 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
 
 void Tokenizer::simplifyTemplates()
 {
+    // Locate templates..
+    std::list<Token *> templates;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (!Token::simpleMatch(tok, "template <"))
-            continue;
+        if (Token::simpleMatch(tok, "template <"))
+            templates.push_back(tok);
+    }
+    if (templates.empty())
+        return;
+
+    // Locate possible instantiations of templates..
+    std::list<Token *> used;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var% <") && tok->str() != "template")
+            used.push_back(tok);
+    }
+    if (used.empty())
+        return;
+
+    // expand templates
+    for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
+    {
+        Token *tok = *iter1;
 
         std::vector<std::string> type;
         for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next())
@@ -490,6 +510,7 @@ void Tokenizer::simplifyTemplates()
         const bool isfunc(tok->strAt(3)[0] == '(');
 
         // locate template usage..
+
         std::string s(name + " <");
         for (unsigned int i = 0; i < type.size(); ++i)
         {
@@ -498,8 +519,11 @@ void Tokenizer::simplifyTemplates()
             s += " %any% ";
         }
         const std::string pattern(s + "> ");
-        for (Token *tok2 = _tokens; tok2; tok2 = tok2->next())
+
+        for (std::list<Token *>::iterator iter2 = used.begin(); iter2 != used.end(); ++iter2)
         {
+            Token *tok2 = *iter2;
+
             if (tok2->str() != name)
                 continue;
 
