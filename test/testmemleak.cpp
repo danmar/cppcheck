@@ -2119,7 +2119,7 @@ private:
               "  FILE *f = popen (\"test\", \"w\");\n"
               "  int a = pclose(f);\n"
               "}\n");
-        TODO_ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
