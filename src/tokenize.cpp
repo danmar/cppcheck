@@ -483,8 +483,34 @@ void Tokenizer::simplifyTemplates()
     std::list<Token *> used;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "%var% <") && tok->str() != "template")
+        // template definition.. skip it
+        if (Token::simpleMatch(tok, "template <"))
+        {
+            unsigned int indentlevel = 0;
+            for (; tok; tok = tok->next())
+            {
+                if (tok->str() == "{")
+                {
+                    ++indentlevel;
+                }
+                else if (tok->str() == "}")
+                {
+                    if (indentlevel <= 1)
+                        break;
+                    --indentlevel;
+                }
+                else if (indentlevel == 0 && tok->str() == ";")
+                {
+                    break;
+                }
+            }
+            if (!tok)
+                break;
+        }
+        else if (Token::Match(tok, "%var% <"))
+        {
             used.push_back(tok);
+        }
     }
     if (used.empty())
         return;

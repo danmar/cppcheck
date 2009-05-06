@@ -579,7 +579,7 @@ private:
 
     void template7()
     {
-        // Typedef
+        // A template class that is not used => no simplification
         {
             const char code[] = "template <class T>\n"
                                 "class ABC\n"
@@ -587,21 +587,16 @@ private:
                                 "public:\n"
                                 "    typedef ABC<T> m;\n"
                                 "\n"
-                                "};\n"
-                                "\n"
-                                "int main()\n"
-                                "{}\n";
+                                "};\n";
 
             const std::string expected(" template < class T > "
                                        "class ABC "
                                        "{ "
                                        "public: "
-                                       "typedef ABC<T> m ; "
-                                       "} ; "
-                                       "int main ( )"
-                                       " { }");
+                                       "typedef ABC < T > m ; "
+                                       "} ;");
 
-            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, sizeof_(code));
         }
 
         {
