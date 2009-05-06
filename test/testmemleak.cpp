@@ -207,6 +207,7 @@ private:
         TEST_CASE(autoptr1);
         TEST_CASE(free_member_in_sub_func);
         TEST_CASE(if_with_and);
+        TEST_CASE(assign_pclose);
     }
 
 
@@ -2109,6 +2110,16 @@ private:
               "  delete [] a;\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign_pclose()
+    {
+        check("void f()\n"
+              "{\n"
+              "  FILE *f = popen (\"test\", \"w\");\n"
+              "  int a = pclose(f);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
