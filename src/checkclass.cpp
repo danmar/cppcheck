@@ -683,8 +683,9 @@ void CheckClass::virtualDestructor()
             // Find the destructor declaration for the base class.
             const Token *base = Token::findmatch(_tokenizer->tokens(), (std::string("%any% ~ ") + baseName[0] + " (").c_str());
             while (Token::Match(base, "::"))
-                base = Token::findmatch(base->next(), (std::string("%any% ~ ") + baseName[0] + + " (").c_str());
+                base = Token::findmatch(base->next(), (std::string("%any% ~ ") + baseName[0] + " (").c_str());
 
+            const Token *reverseTok = base;
             while (Token::Match(base, "%var%") && !Token::Match(base, "virtual"))
                 base = base->previous();
 
@@ -700,9 +701,41 @@ void CheckClass::virtualDestructor()
             }
 
             // There is a destructor. Check that it's virtual..
-            else if (base->str() != "virtual")
+            else if (base->str() == "virtual")
+                continue;
+
+            // Make sure that the destructor is public (protected or private
+            // would not compile if inheritance is used in a way that would
+            // cause the bug we are trying to find here.)
+            int indent = 0;
+            while (reverseTok)
             {
-                virtualDestructorError(base, baseName[0], derivedClass->str());
+                if (reverseTok->str() == "public:")
+                {
+                    virtualDestructorError(base, baseName[0], derivedClass->str());
+                    break;
+                }
+                else if (reverseTok->str() == "protected:" ||
+                         reverseTok->str() == "private:")
+                {
+                    // No bug, protected/private destructor is allowed
+                    break;
+                }
+                else if (reverseTok->str() == "{")
+                {
+                    indent++;
+                    if (indent >= 1)
+                    {
+                        // We have found the start of the class without any sign
+                        // of "public :" so we can assume that the destructor is not
+                        // public and there is no bug in the code we are checking.
+                        break;
+                    }
+                }
+                else if (reverseTok->str() == "}")
+                    indent--;
+
+                reverseTok = reverseTok->previous();
             }
         }
     }

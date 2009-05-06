@@ -41,6 +41,7 @@ private:
         TEST_CASE(virtualDestructor3);	// Base class has a destructor, but it's not virtual
         TEST_CASE(virtualDestructor4);	// Derived class doesn't have a destructor => no error
         TEST_CASE(virtualDestructor5);	// Derived class has empty destructor => no error
+        TEST_CASE(virtualDestructorProtected);
 
         TEST_CASE(uninitVar1);
         TEST_CASE(uninitVarEnum);
@@ -138,6 +139,23 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+    void virtualDestructorProtected()
+    {
+        // Base class has protected destructor, it makes Base *p = new Derived(); fail
+        // during compilation time, so error is not possible. => no error
+        checkVirtualDestructor("class A\n"
+                               "{\n"
+                               "protected:\n"
+                               "    ~A() { }\n"
+                               "};\n"
+                               "\n"
+                               "class B : public A\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~B() { int a; }\n"
+                               "};\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 
     void checkUninitVar(const char code[])
     {
