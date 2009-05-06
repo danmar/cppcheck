@@ -188,7 +188,7 @@ private:
                   "        }\n"
                   "    }\n"
                   "}\n");
-            TODO_ASSERT_EQUALS(std::string(""), errout.str());
+            ASSERT_EQUALS(std::string(""), errout.str());
         }
     }
 
