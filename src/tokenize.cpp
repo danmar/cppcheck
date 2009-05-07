@@ -474,7 +474,21 @@ void Tokenizer::simplifyTemplates()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "template <"))
-            templates.push_back(tok);
+        {
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                // Just a declaration => ignore this
+                if (tok2->str() == ";")
+                    break;
+
+                // Implementation => add to "templates"
+                if (tok2->str() == "{")
+                {
+                    templates.push_back(tok);
+                    break;
+                }
+            }
+        }
     }
     if (templates.empty())
         return;
