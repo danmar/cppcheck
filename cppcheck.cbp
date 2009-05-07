@@ -90,6 +90,7 @@
 		<Unit filename="src/token.h" />
 		<Unit filename="src/tokenize.cpp" />
 		<Unit filename="src/tokenize.h" />
+		<Unit filename="test/testautovariables.cpp" />
 		<Unit filename="test/testbufferoverrun.cpp" />
 		<Unit filename="test/testcharvar.cpp" />
 		<Unit filename="test/testclass.cpp" />
