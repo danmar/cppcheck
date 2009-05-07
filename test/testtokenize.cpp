@@ -139,6 +139,7 @@ private:
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(volatile_variables);
+        TEST_CASE(syntax_error);
     }
 
 
@@ -1708,6 +1709,33 @@ private:
         const std::string actual(tokenizeAndStringify(code));
 
         ASSERT_EQUALS("int a ; a = 0 ;\nint b ; b = 0 ;\nint c ; c = 0 ;", actual);
+    }
+
+    void syntax_error()
+    {
+        {
+            const char code[] = "void f() {}";
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            ASSERT_EQUALS(true, tokenizer.tokenize(istr, "test.cpp"));
+            ASSERT_EQUALS(std::string(""), errout.str());
+        }
+
+        {
+            const char code[] = "void f() {{}";
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
+            TODO_ASSERT_EQUALS(std::string("correct error message here"), errout.str());
+        }
+
+        {
+            const char code[] = "void f()) {}";
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
+            TODO_ASSERT_EQUALS(std::string("correct error message here"), errout.str());
+        }
     }
 };
 

@@ -112,7 +112,7 @@ private:
               "void f2(unsigned int i1)\n"
               "{\n"
               "    unsigned int i2;\n"
-              "    result = i2 / i1;\n"
+              "    result = i2 / i1;}\n"
              );
         ASSERT_EQUALS(std::string(""), errout.str());
     }
@@ -123,7 +123,7 @@ private:
               "void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
-              "    val = val / USER_HASH;\n"
+              "    val = val / USER_HASH;}\n"
              );
         ASSERT_EQUALS(std::string(""), errout.str());
     }
@@ -133,7 +133,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
-              "    int i = val / -2;\n"
+              "    int i = val / -2; }\n"
              );
         ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n"), errout.str());
     }
@@ -143,7 +143,7 @@ private:
         check("void foo()\n"
               "{\n"
               "    unsigned int val = 32;\n"
-              "    int i = -96 / val;\n"
+              "    int i = -96 / val; }\n"
              );
         ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n"), errout.str());
     }

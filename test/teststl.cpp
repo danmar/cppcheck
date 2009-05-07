@@ -358,11 +358,14 @@ private:
 
     void invalidcode()
     {
-        check("void f()\n"
-              "{\n"
-              "    for ( \n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
+        const std::string src = "void f()\n"
+                                "{\n"
+                                "    for ( \n"
+                                "}\n";
+
+        Tokenizer tokenizer;
+        std::istringstream istr(src);
+        ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
     }
 
 

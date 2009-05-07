@@ -380,7 +380,11 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Tokenize the file
     {
         std::istringstream istr(code);
-        _tokenizer.tokenize(istr, FileName);
+        if (!_tokenizer.tokenize(istr, FileName))
+        {
+            // File had syntax errors, abort
+            return;
+        }
     }
 
     // Set variable id

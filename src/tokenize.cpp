@@ -153,7 +153,7 @@ void Tokenizer::InsertTokens(Token *dest, Token *src, unsigned int n)
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
-void Tokenizer::tokenize(std::istream &code, const char FileName[])
+bool Tokenizer::tokenize(std::istream &code, const char FileName[])
 {
     // The "_files" vector remembers what files have been tokenized..
     _files.push_back(FileLister::simplifyPath(FileName));
@@ -336,6 +336,12 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
     }
     addtoken(CurrentToken.c_str(), lineno, FileIndex);
 
+    if (!createLinks())
+    {
+        // Source has syntax errors, can't proceed
+        return false;
+    }
+
     // Combine "- %num%" ..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -464,6 +470,7 @@ void Tokenizer::tokenize(std::istream &code, const char FileName[])
 
     // Handle templates..
     simplifyTemplates();
+    return true;
 }
 //---------------------------------------------------------------------------
 
@@ -945,6 +952,7 @@ bool Tokenizer::createLinks()
             if (links.size() == 0)
             {
                 // Error, { and } don't match.
+                syntaxError(token, '{');
                 return false;
             }
 
@@ -961,6 +969,7 @@ bool Tokenizer::createLinks()
             if (links2.size() == 0)
             {
                 // Error, ( and ) don't match.
+                syntaxError(token, '(');
                 return false;
             }
 
@@ -970,9 +979,17 @@ bool Tokenizer::createLinks()
         }
     }
 
-    if (links.size() > 0 || links2.size() > 0)
+    if (links.size() > 0)
     {
         // Error, { and } don't match.
+        syntaxError(_tokens, '{');
+        return false;
+    }
+
+    if (links2.size() > 0)
+    {
+        // Error, { and } don't match.
+        syntaxError(_tokens, '(');
         return false;
     }
 
@@ -2622,6 +2639,23 @@ const Token * Tokenizer::FindClassFunction(const Token *tok, const char classnam
     return NULL;
 }
 //---------------------------------------------------------------------------
+// Error message for bad iterator usage..
 
+void Tokenizer::syntaxError(const Token *tok, char c)
+{
+    std::cout << "### Error: Invalid number of character " << c << std::endl;
+    /*
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    ErrorLogger::ErrorMessage::FileLocation loc;
+    loc.line = tok->linenr();
+    loc.file = tok->fileIndex();
+    locationList.push_back(loc);
+    _errorLogger->reportErr(
+        ErrorLogger::ErrorMessage(locationList,
+                                  "error",
+                                  std::string("Invalid number of character (") + c + "). Can't process file. File is either invalid or unicode, which is currently not supported.",
+                                  "syntaxError"));
+                                  */
+}
 
 

@@ -45,8 +45,9 @@ public:
      * Tokenize code
      * @param code input stream for code
      * @param FileName The filename
+     * @return false if Source code contains syntax errors
      */
-    void tokenize(std::istream &code, const char FileName[]);
+    bool tokenize(std::istream &code, const char FileName[]);
 
     /** Set variable id */
     void setVarId();
@@ -207,6 +208,8 @@ private:
      * should mean that source code was not valid.
      */
     bool createLinks();
+
+    void syntaxError(const Token *tok, char c);
 
     Token *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;

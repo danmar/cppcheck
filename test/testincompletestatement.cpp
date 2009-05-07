@@ -142,8 +142,7 @@ private:
               "{\n"
               "{ 346.1,114.1 }, { 347.1,111.1 }\n"
               "};\n"
-              "}\n"
-              "};\n");
+              "}\n");
 
         ASSERT_EQUALS(std::string(""), errout.str());
     }
