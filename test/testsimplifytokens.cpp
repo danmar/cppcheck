@@ -85,6 +85,7 @@ private:
         TEST_CASE(template5);
         TEST_CASE(template6);
         TEST_CASE(template7);
+        TEST_CASE(template8);
 
         TEST_CASE(namespaces);
 
@@ -652,6 +653,48 @@ private:
             TODO_ASSERT_EQUALS(expected, sizeof_(code));
         }
     }
+
+    // Template definitions but no usage => no expansion
+    void template8()
+    {
+        const char code[] = "template<typename T> class A;\n"
+                            "template<typename T> class B;\n"
+                            "\n"
+                            "typedef A<int> x;\n"
+                            "typedef B<int> y;\n"
+                            "\n"
+                            "template<typename T> class A {\n"
+                            "    void f() {\n"
+                            "        B<T> a = B<T>::g();\n"
+                            "        T b = 0;\n"
+                            "        if (b)\n"
+                            "            b = 0;\n"
+                            "    }\n"
+                            "};\n"
+                            "\n"
+                            "template<typename T> inline B<T> h() { return B<T>(); }\n";
+
+        const std::string expected(" template < typename T > class A ;"
+                                   " template < typename T > class B ;"
+                                   ""
+                                   " typedef A < int > x ;"
+                                   " typedef B < int > y ;"
+                                   ""
+                                   " template < typename T > class A {"
+                                   " void f ( ) {"
+                                   " B < T > a = B < T > :: g ( ) ;"
+                                   " T b ; b = 0 ;"
+                                   " }"
+                                   " } ;"
+                                   ""
+                                   " template < typename T > inline B < T > h ( ) { return B < T > ( ) ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+
+
+
 
     void namespaces()
     {

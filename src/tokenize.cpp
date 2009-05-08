@@ -470,6 +470,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
 
     // Handle templates..
     simplifyTemplates();
+
     return true;
 }
 //---------------------------------------------------------------------------
@@ -528,7 +529,7 @@ void Tokenizer::simplifyTemplates()
             if (!tok)
                 break;
         }
-        else if (Token::Match(tok, "%var% <"))
+        else if (Token::Match(tok->previous(), "[{};] %var% <"))
         {
             used.push_back(tok);
         }
