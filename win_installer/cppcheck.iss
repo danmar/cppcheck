@@ -23,6 +23,11 @@
 #define MyAppURL "http://cppcheck.wiki.sourceforge.net/"
 #define MyAppExeName "cppcheck.exe"
 
+; Set this macro to point to folder where VS runtimes are
+; Runtime files are not included in repository so you need to
+; get them from elsewhere (e.g. from VS installation).
+#define RuntimesFolder "..\..\Runtimes"
+
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
@@ -64,7 +69,10 @@ Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Fla
 Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
 Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+; VS runtimes
+Source: {#RuntimesFolder}\Microsoft.VC90.CRT.manifest; DestDir: {app}
+Source: {#RuntimesFolder}\msvcp90.dll; DestDir: {app}
+Source: {#RuntimesFolder}\msvcr90.dll; DestDir: {app}
 
 [Icons]
 ; As cppcheck is a program run from command prompt, make icons to open

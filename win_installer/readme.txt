@@ -17,6 +17,15 @@ Files the installer needs:
 /COPYING
 /readme.txt
 
+VS Runtime files:
+Copy following files to same folder:
+- Microsoft.VC90.CRT.manifest
+- msvcp90.dll
+- msvcr90.dll
+and modify RuntimesFolder -macro in begin of cppcheck.iss to point to the
+folder where files are. You can find runtime files from VS installation or from
+net.
+
 Creating the installer executable:
 #1 Open the ISTool and load cppcheck.iss
 #2 Update the release version number:
