@@ -599,7 +599,7 @@ public:
     {
         // Tokenize the macro to make it easier to handle
         std::istringstream istr(macro.c_str());
-        tokenizer.tokenize(istr, "");
+        tokenizer.createTokens(istr);
 
         // macro name..
         if (tokens() && tokens()->isName())

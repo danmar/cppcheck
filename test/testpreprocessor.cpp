@@ -120,6 +120,7 @@ private:
         TEST_CASE(missing_doublequote);
 
         TEST_CASE(unicode1);
+        TEST_CASE(define_part_of_func);
     }
 
 
@@ -888,6 +889,26 @@ private:
         std::istringstream istr(filedata);
         ASSERT_THROW(Preprocessor::read(istr), std::runtime_error);
     }
+
+    void define_part_of_func()
+    {
+        const char filedata[] = "#define A g(\n"
+                                "void f() {\n"
+                                "  A );\n"
+                                "  }\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\nvoid f() {\ng( );\n}\n", actual[""]);
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestPreprocessor)

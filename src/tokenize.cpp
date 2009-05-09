@@ -153,11 +153,8 @@ void Tokenizer::InsertTokens(Token *dest, Token *src, unsigned int n)
 // Tokenize - tokenizes a given file.
 //---------------------------------------------------------------------------
 
-bool Tokenizer::tokenize(std::istream &code, const char FileName[])
+void Tokenizer::createTokens(std::istream &code)
 {
-    // The "_files" vector remembers what files have been tokenized..
-    _files.push_back(FileLister::simplifyPath(FileName));
-
     // line number in parsed code
     unsigned int lineno = 1;
 
@@ -335,6 +332,15 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
         CurrentToken += ch;
     }
     addtoken(CurrentToken.c_str(), lineno, FileIndex);
+
+}
+
+bool Tokenizer::tokenize(std::istream &code, const char FileName[])
+{
+    // The "_files" vector remembers what files have been tokenized..
+    _files.push_back(FileLister::simplifyPath(FileName));
+
+    createTokens(code);
 
     if (!createLinks())
     {

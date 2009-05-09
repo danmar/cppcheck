@@ -49,6 +49,12 @@ public:
      */
     bool tokenize(std::istream &code, const char FileName[]);
 
+    /**
+     * Create tokens from code.
+     * @param code input stream for code
+     */
+    void createTokens(std::istream &code);
+
     /** Set variable id */
     void setVarId();
 
