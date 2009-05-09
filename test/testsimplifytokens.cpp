@@ -86,6 +86,7 @@ private:
         TEST_CASE(template6);
         TEST_CASE(template7);
         TEST_CASE(template8);
+        TEST_CASE(template9);
 
         TEST_CASE(namespaces);
 
@@ -688,6 +689,32 @@ private:
                                    " } ;"
                                    ""
                                    " template < typename T > inline B < T > h ( ) { return B < T > ( ) ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template9()
+    {
+        const char code[] = "template < typename T > class A { } ;\n"
+                            "\n"
+                            "void f ( ) {\n"
+                            "    A<int> a ;\n"
+                            "}\n"
+                            "\n"
+                            "template < typename T >\n"
+                            "class B {\n"
+                            "    void g ( ) {\n"
+                            "        A < T > b = A < T > :: h ( ) ;\n"
+                            "    }\n"
+                            "} ;\n";
+
+        // The expected result..
+        std::string expected(std::string(" ") + code + " class A<int> { }");
+        std::string::size_type pos;
+        while ((pos = expected.find("\n")) != std::string::npos)
+            expected[pos] = ' ';
+        while ((pos = expected.find("  ")) != std::string::npos)
+            expected.erase(pos, 1);
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }

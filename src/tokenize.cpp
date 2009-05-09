@@ -593,8 +593,14 @@ void Tokenizer::simplifyTemplates()
             const std::string name2(name + "<" + type2 + ">");
 
             // Copy template..
+            int _indentlevel = 0;
             for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next())
             {
+                if (tok3->str() == "{")
+                    ++_indentlevel;
+                else if (tok3->str() == "}")
+                    --_indentlevel;
+
                 // Start of template..
                 if (tok3 == tok)
                 {
@@ -602,7 +608,7 @@ void Tokenizer::simplifyTemplates()
                 }
 
                 // member function implemented outside class definition
-                else if (Token::Match(tok3, (pattern + " :: %var% (").c_str()))
+                else if (_indentlevel == 0 && Token::Match(tok3, (pattern + " :: %var% (").c_str()))
                 {
                     addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
                     while (tok3->str() != "::")
@@ -616,6 +622,23 @@ void Tokenizer::simplifyTemplates()
                 int indentlevel = 0;
                 for (; tok3; tok3 = tok3->next())
                 {
+                    if (tok3->str() == "{")
+                        ++indentlevel;
+
+                    else if (tok3->str() == "}")
+                    {
+                        if (indentlevel <= 1)
+                        {
+                            // there is a bug if indentlevel is 0
+                            // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
+                            // if indentlevel ever becomes 0, cppcheck will write:
+                            // ### Error: Invalid number of character {
+                            addtoken("}", tok3->linenr(), tok3->fileIndex());
+                            break;
+                        }
+                        --indentlevel;
+                    }
+
                     {
                         // search for this token in the type vector
                         unsigned int itype = 0;
@@ -633,16 +656,6 @@ void Tokenizer::simplifyTemplates()
                         // copy
                         else
                             addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
-                    }
-
-                    if (tok3->str() == "{")
-                        ++indentlevel;
-
-                    else if (tok3->str() == "}")
-                    {
-                        if (indentlevel <= 1)
-                            break;
-                        --indentlevel;
                     }
                 }
             }
