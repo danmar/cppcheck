@@ -78,6 +78,7 @@ private:
         TEST_CASE(ifAddBraces3);
         TEST_CASE(ifAddBraces4);
         TEST_CASE(ifAddBraces5);
+        TEST_CASE(ifAddBraces6);
 
         TEST_CASE(numeric_true_condition);
 
@@ -436,6 +437,22 @@ private:
         ASSERT_EQUALS(std::string(" void f ( ) { for ( int i = 0 ; i < 2 ; i ++ ) { if ( true ) { return ; } } return ; }"), ostr.str());
     }
 
+    void ifAddBraces6()
+    {
+        const char code[] = "if()";
+
+        // tokenize..
+        OurTokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        ASSERT_EQUALS(false, tokenizer.simplifyIfAddBraces());
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" if ( )"), ostr.str());
+    }
 
     void simplifyKnownVariables1()
     {

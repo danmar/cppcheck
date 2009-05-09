@@ -1619,6 +1619,11 @@ bool Tokenizer::simplifyIfAddBraces()
             continue;
         }
 
+        // If there is no code after he if(), abort
+        if (!tok->next())
+            return false;
+
+
         // insert open brace..
         tok->insertToken("{");
         tok = tok->next();

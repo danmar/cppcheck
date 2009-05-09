@@ -365,7 +365,7 @@ private:
     {
         // remove parantheses..
         ASSERT_EQUALS("= p ; ", tok("= (p);"));
-        ASSERT_EQUALS("if ( a < p ) { ", tok("if(a<(p))"));
+        ASSERT_EQUALS("if ( a < p ) { } ", tok("if(a<(p)){}"));
 
         // keep parantheses..
         ASSERT_EQUALS("= a ; ", tok("= (char)a;"));
