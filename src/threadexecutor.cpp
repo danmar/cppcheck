@@ -191,9 +191,13 @@ void ThreadExecutor::writeToPipe(char type, const std::string &data)
     std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
     if (write(_pipe[1], out, len + 1 + sizeof(len)) <= 0)
     {
+        delete [] out;
+        out = 0;
         std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
         exit(0);
     }
+
+    delete [] out;
 }
 
 void ThreadExecutor::reportOut(const std::string &outmsg)
