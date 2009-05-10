@@ -964,7 +964,19 @@ void CheckOther::nullPointer()
             if (tok2->varId() == varid)
             {
                 if (tok2->next()->str() == "." || Token::Match(tok2->next(), "= %varid% .", varid))
-                    nullPointerError(tok2);
+                {
+                    // Is this variable a pointer?
+                    const Token *tok3 = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)]", varid);
+                    if (!tok3)
+                        break;
+
+                    if (!tok3->previous() ||
+                        Token::Match(tok3->previous(), "[({};]") ||
+                        tok3->previous()->isName())
+                    {
+                        nullPointerError(tok2);
+                    }
+                }
                 break;
             }
 

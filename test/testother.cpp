@@ -59,6 +59,7 @@ private:
         TEST_CASE(varScope2);
 
         TEST_CASE(nullpointer1);
+        TEST_CASE(nullpointer2);
     }
 
     void check(const char code[])
@@ -410,6 +411,18 @@ private:
                          "    tok = tok->next();\n"
                          "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Possible null pointer dereference\n"), errout.str());
+    }
+
+    void nullpointer2()
+    {
+        // Null pointer dereference can only happen with pointers
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "    Fred fred;\n"
+                         "    while (fred);\n"
+                         "    fred.hello();\n"
+                         "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
