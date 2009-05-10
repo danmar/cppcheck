@@ -662,6 +662,10 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         if (Token::Match(tok, "try|throw|catch"))
             addtoken(tok->strAt(0));
 
+        // exit..
+        if (Token::Match(tok->previous(), "[{};] exit ( %any% ) ;"))
+            addtoken("exit");
+
         // Assignment..
         if (Token::Match(tok, std::string("[)=] " + varnameStr + " [+;)]").c_str()) ||
             Token::Match(tok, std::string(varnameStr + " +=|-=").c_str()) ||
@@ -769,6 +773,23 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
             trylevel = indentlevel;
         else if (trylevel == -1 && tok2->str() == "throw")
             tok2->str("return");
+    }
+
+
+    // simplify "exit".. remove everything in its execution path
+    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+    {
+        if (tok2->str() != "exit")
+            continue;
+
+        // Found an "exit".. try to remove everything before it
+        const Token *tokEnd = tok2->next();
+        while (tok2->previous() && !Token::Match(tok2->previous(), "[{}]"))
+            tok2 = tok2->previous();
+        if (tok2->previous())
+            tok2 = tok2->previous();
+
+        Token::eraseTokens(tok2, tokEnd);
     }
 
     // reduce the code..

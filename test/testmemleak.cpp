@@ -208,6 +208,11 @@ private:
         TEST_CASE(free_member_in_sub_func);
         TEST_CASE(if_with_and);
         TEST_CASE(assign_pclose);
+
+        // Using the function "exit"
+        TEST_CASE(exit1);
+        TEST_CASE(exit2);
+
     }
 
 
@@ -2118,6 +2123,32 @@ private:
               "{\n"
               "  FILE *f = popen (\"test\", \"w\");\n"
               "  int a = pclose(f);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void exit1()
+    {
+        // Ticket #297
+        check("void f()\n"
+              "{\n"
+              "    char *out = new char[100];\n"
+              "    if (c())\n"
+              "    {\n"
+              "        delete [] out;\n"
+              "        exit(0);\n"
+              "    }\n"
+              "    delete [] out;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void exit2()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *out = new char[100];\n"
+              "    exit(0);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
