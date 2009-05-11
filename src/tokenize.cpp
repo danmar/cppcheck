@@ -39,13 +39,15 @@ Tokenizer::Tokenizer()
 {
     _tokens = 0;
     _tokensBack = 0;
+    _errorLogger = 0;
 }
 
-Tokenizer::Tokenizer(const Settings &settings)
+Tokenizer::Tokenizer(const Settings &settings, ErrorLogger *errorLogger)
 {
     _tokens = 0;
     _tokensBack = 0;
     _settings = settings;
+    _errorLogger = errorLogger;
 }
 
 Tokenizer::~Tokenizer()
@@ -2668,19 +2670,23 @@ const Token * Tokenizer::FindClassFunction(const Token *tok, const char classnam
 
 void Tokenizer::syntaxError(const Token *tok, char c)
 {
-    std::cout << "### Error: Invalid number of character " << c << std::endl;
-    /*
+    if (!_errorLogger)
+    {
+        std::cout << "### Unlogged error at Tokenizer::syntaxError" << std::endl;
+        return;
+    }
+
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     ErrorLogger::ErrorMessage::FileLocation loc;
     loc.line = tok->linenr();
-    loc.file = tok->fileIndex();
+    loc.file = file(tok);
     locationList.push_back(loc);
     _errorLogger->reportErr(
         ErrorLogger::ErrorMessage(locationList,
                                   "error",
-                                  std::string("Invalid number of character (") + c + "). Can't process file. File is either invalid or unicode, which is currently not supported.",
+                                  std::string("Invalid number of character (") + c + "). Can't process file.",
                                   "syntaxError"));
-                                  */
+
 }
 
 

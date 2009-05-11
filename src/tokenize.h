@@ -38,7 +38,7 @@ private:
 
 public:
     Tokenizer();
-    Tokenizer(const Settings &settings);
+    Tokenizer(const Settings &settings, ErrorLogger *errorLogger);
     ~Tokenizer();
 
     /**
@@ -222,6 +222,7 @@ private:
     std::vector<std::string> _files;
     Token *_tokens;
     Settings _settings;
+    ErrorLogger *_errorLogger;
 };
 
 //---------------------------------------------------------------------------

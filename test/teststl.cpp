@@ -358,14 +358,17 @@ private:
 
     void invalidcode()
     {
+        errout.str("");
         const std::string src = "void f()\n"
                                 "{\n"
                                 "    for ( \n"
                                 "}\n";
 
-        Tokenizer tokenizer;
+        Settings s;
+        Tokenizer tokenizer(s, this);
         std::istringstream istr(src);
         ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid number of character ((). Can't process file.\n", errout.str());
     }
 
 

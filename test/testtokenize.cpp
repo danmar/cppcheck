@@ -1730,28 +1730,33 @@ private:
 
     void syntax_error()
     {
+
+        Settings s;
         {
+            errout.str("");
             const char code[] = "void f() {}";
-            Tokenizer tokenizer;
+            Tokenizer tokenizer(s, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(true, tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS(std::string(""), errout.str());
         }
 
         {
+            errout.str("");
             const char code[] = "void f() {{}";
-            Tokenizer tokenizer;
+            Tokenizer tokenizer(s, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            TODO_ASSERT_EQUALS(std::string("correct error message here"), errout.str());
+            ASSERT_EQUALS(std::string("[test.cpp:1]: (error) Invalid number of character ({). Can't process file.\n"), errout.str());
         }
 
         {
+            errout.str("");
             const char code[] = "void f()) {}";
-            Tokenizer tokenizer;
+            Tokenizer tokenizer(s, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            TODO_ASSERT_EQUALS(std::string("correct error message here"), errout.str());
+            ASSERT_EQUALS(std::string("[test.cpp:1]: (error) Invalid number of character ((). Can't process file.\n"), errout.str());
         }
     }
 };
