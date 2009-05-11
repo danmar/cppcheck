@@ -159,7 +159,21 @@ std::string Preprocessor::read(std::istream &istr)
         // <backspace><newline>..
         else if (ch == '\\')
         {
-            char chNext = (char)istr.peek();
+            char chNext = 0;
+            while (true)
+            {
+                chNext = (char)istr.peek();
+                if (chNext != '\n' && chNext != '\r' &&
+                    (std::isspace(chNext) || std::iscntrl(chNext)))
+                {
+                    // Skip whitespace between <backspace> and <newline>
+                    (void)readChar(istr);
+                    continue;
+                }
+
+                break;
+            }
+
             if (chNext == '\n' || chNext == '\r')
             {
                 ++newlines;
