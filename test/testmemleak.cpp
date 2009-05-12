@@ -212,7 +212,7 @@ private:
         // Using the function "exit"
         TEST_CASE(exit1);
         TEST_CASE(exit2);
-
+        TEST_CASE(stdstring);
     }
 
 
@@ -2151,6 +2151,19 @@ private:
               "    exit(0);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void stdstring()
+    {
+        check("void f(std::string foo)\n"
+              "{\n"
+              "    char *out = new char[11];\n"
+              "    memset(&(out[0]), 0, 1);\n"
+              "}\n");
+
+        std::string err(errout.str());
+
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: out\n"), err);
     }
 };
 
