@@ -2670,6 +2670,11 @@ const Token * Tokenizer::FindClassFunction(const Token *tok, const char classnam
 
 void Tokenizer::syntaxError(const Token *tok, char c)
 {
+    if (_settings._debug)
+    {
+        _tokens->printOut();
+    }
+
     if (!_errorLogger)
     {
         std::cout << "### Unlogged error at Tokenizer::syntaxError" << std::endl;

@@ -122,6 +122,7 @@ private:
 
         TEST_CASE(unicode1);
         TEST_CASE(define_part_of_func);
+        TEST_CASE(multiline_comment);
     }
 
 
@@ -927,6 +928,27 @@ private:
         ASSERT_EQUALS("\nvoid f() {\ng( );\n}\n", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
+
+    void multiline_comment()
+    {
+        errout.str("");
+        const char filedata[] = "#define ABC {// \\\n"
+                                "}\n"
+                                "void f() ABC }\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        TODO_ASSERT_EQUALS("\n\nvoid f() { }\n", actual[""]);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
 
 };
 
