@@ -34,7 +34,7 @@ private:
     void run()
     {
         TEST_CASE(nextprevious);
-
+        TEST_CASE(multiCompare);
     }
 
     void nextprevious()
@@ -59,7 +59,26 @@ private:
         Tokenizer::deleteTokens(token);
     }
 
+    void multiCompare()
+    {
+        // Test for found
+        ASSERT_EQUALS(1, Token::multiCompare("one|two", "one"));
+        ASSERT_EQUALS(1, Token::multiCompare("one|two", "two"));
+        ASSERT_EQUALS(1, Token::multiCompare("verybig|two|", "two"));
 
+        // Test for empty string found
+        ASSERT_EQUALS(0, Token::multiCompare("|one|two", "notfound"));
+        ASSERT_EQUALS(0, Token::multiCompare("one||two", "notfound"));
+        ASSERT_EQUALS(0, Token::multiCompare("one|two|", "notfound"));
+
+        // Test for not found
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("one|two", "notfound")));
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("verybig|two", "s")));
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("one|two", "ne")));
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("abc|def", "a")));
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("abc|def", "abcd")));
+        ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("abc|def", "default")));
+    }
 };
 
 REGISTER_TEST(TestTOKEN)

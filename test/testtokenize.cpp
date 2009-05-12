@@ -93,8 +93,6 @@ private:
         TEST_CASE(simplifyKnownVariables9);
         TEST_CASE(simplifyKnownVariables10);
 
-        TEST_CASE(multiCompare);
-
         TEST_CASE(match1);
 
         TEST_CASE(match2);
@@ -740,27 +738,6 @@ private:
                 ostr << " " << tok->str();
             ASSERT_EQUALS(std::string(" void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } a ( 1 ) ; }"), ostr.str());
         }
-    }
-
-    void multiCompare()
-    {
-        // Test for found
-        ASSERT_EQUALS(1, Token::multiCompare("one|two", "one"));
-        ASSERT_EQUALS(1, Token::multiCompare("one|two", "two"));
-        ASSERT_EQUALS(1, Token::multiCompare("verybig|two|", "two"));
-
-        // Test for empty string found
-        ASSERT_EQUALS(0, Token::multiCompare("|one|two", "notfound"));
-        ASSERT_EQUALS(0, Token::multiCompare("one||two", "notfound"));
-        ASSERT_EQUALS(0, Token::multiCompare("one|two|", "notfound"));
-
-        // Test for not found
-        ASSERT_EQUALS(-1, Token::multiCompare("one|two", "notfound"));
-        ASSERT_EQUALS(-1, Token::multiCompare("verybig|two", "s"));
-        ASSERT_EQUALS(-1, Token::multiCompare("one|two", "ne"));
-        ASSERT_EQUALS(-1, Token::multiCompare("abc|def", "a"));
-        ASSERT_EQUALS(-1, Token::multiCompare("abc|def", "abcd"));
-        ASSERT_EQUALS(-1, Token::multiCompare("abc|def", "default"));
     }
 
     void match1()
