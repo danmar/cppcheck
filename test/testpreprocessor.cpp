@@ -234,7 +234,7 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
-        ASSERT_EQUALS("\n\" # ifdef WIN32\"\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\" #ifdef WIN32\"\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\n\n\nqwerty\n\n", actual["WIN32"]);
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
@@ -383,20 +383,39 @@ private:
 
     void comments1()
     {
-        const char filedata[] = "/*\n"
-                                "#ifdef WIN32\n"
-                                "#endif\n"
-                                "*/\n";
+        {
+            const char filedata[] = "/*\n"
+                                    "#ifdef WIN32\n"
+                                    "#endif\n"
+                                    "*/\n";
 
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual, "file.c");
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
 
-        // Compare results..
-        ASSERT_EQUALS("\n\n\n\n", actual[""]);
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+            // Compare results..
+            ASSERT_EQUALS("\n\n\n\n", actual[""]);
+            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        }
+
+        {
+            const char filedata[] = "/*\n"
+                                    "\x080 #ifdef WIN32\n"
+                                    "#endif\n"
+                                    "*/\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS("\n\n\n\n", actual[""]);
+            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        }
     }
 
 
@@ -944,7 +963,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        TODO_ASSERT_EQUALS("\n\nvoid f() { }\n", actual[""]);
+        ASSERT_EQUALS("\n\nvoid f() { }\n", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
 

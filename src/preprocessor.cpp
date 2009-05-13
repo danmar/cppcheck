@@ -71,9 +71,6 @@ std::string Preprocessor::read(std::istream &istr)
     std::ostringstream code;
     for (char ch = readChar(istr); istr.good(); ch = readChar(istr))
     {
-        if (ch < 0)
-            throw std::runtime_error("The code contains characters that are unhandled");
-
         if (ch == '\n')
             ++lineno;
 
@@ -84,7 +81,7 @@ std::string Preprocessor::read(std::istream &istr)
         // Skip spaces after ' ' and after '#'
         if (ch == ' ' && ignoreSpace)
             continue;
-        ignoreSpace = bool(ch == ' ' || ch == '#' || ch == '/');
+        ignoreSpace = bool(ch == ' ' || ch == '#' || ch == '/' || ch == '\n');
 
         if (needSpace)
         {
@@ -96,68 +93,8 @@ std::string Preprocessor::read(std::istream &istr)
         if (ch == '#')
             needSpace = true;
 
-        // Remove comments..
-        if (ch == '/')
-        {
-            char chNext = readChar(istr);
-
-            if (chNext == '/')
-            {
-                while (istr.good() && ch != '\n')
-                    ch = readChar(istr);
-                code << "\n";
-                ++lineno;
-            }
-
-            else if (chNext == '*')
-            {
-                char chPrev = 0;
-                while (istr.good() && (chPrev != '*' || ch != '/'))
-                {
-                    chPrev = ch;
-                    ch = readChar(istr);
-                    if (ch == '\n')
-                    {
-                        code << "\n";
-                        ++lineno;
-                    }
-                }
-            }
-
-            else
-            {
-                if (chNext == '\n')
-                    ++lineno;
-                code << std::string(1, ch) << std::string(1, chNext);
-            }
-        }
-
-        // String or char constants..
-        else if (ch == '\"' || ch == '\'')
-        {
-            code << std::string(1, ch);
-            char chNext;
-            do
-            {
-                chNext = (char)istr.get();
-                if (chNext == '\\')
-                {
-                    char chSeq = readChar(istr);
-                    if (chSeq == '\n')
-                        ++newlines;
-                    else
-                    {
-                        code << std::string(1, chNext);
-                        code << std::string(1, chSeq);
-                    }
-                }
-                else
-                    code << std::string(1, chNext);
-            }
-            while (istr.good() && chNext != ch);
-        }
         // <backspace><newline>..
-        else if (ch == '\\')
+        if (ch == '\\')
         {
             char chNext = 0;
             while (true)
@@ -182,6 +119,111 @@ std::string Preprocessor::read(std::istream &istr)
             else
                 code << "\\";
         }
+
+        // Just some code..
+        else
+        {
+            code << std::string(1, ch);
+
+            // if there has been <backspace><newline> sequences, add extra newlines..
+            if (ch == '\n' && newlines > 0)
+            {
+                code << std::string(newlines, '\n');
+                newlines = 0;
+            }
+        }
+    }
+
+    return removeComments(code.str());
+}
+
+
+
+std::string Preprocessor::removeComments(const std::string &str)
+{
+    // For the error report
+    int lineno = 1;
+
+    // handling <backspace><newline>
+    // when this is encountered the <backspace><newline> will be "skipped".
+    // on the next <newline>, extra newlines will be added
+    unsigned int newlines = 0;
+
+    std::ostringstream code;
+    for (std::string::size_type i = 0; i < str.length(); ++i)
+    {
+        char ch = str[i];
+        if (ch < 0)
+            throw std::runtime_error("The code contains characters that are unhandled");
+
+        // Remove comments..
+        if (ch == '/')
+        {
+            ++i;
+            char chNext = str[i];
+
+            if (chNext == '/')
+            {
+                while (i < str.length() && ch != '\n')
+                {
+                    ++i;
+                    ch = str[i];
+                }
+                code << "\n";
+                ++lineno;
+            }
+
+            else if (chNext == '*')
+            {
+                char chPrev = 0;
+                while (i < str.length() && (chPrev != '*' || ch != '/'))
+                {
+                    chPrev = ch;
+                    ++i;
+                    ch = str[i];
+                    if (ch == '\n')
+                    {
+                        code << "\n";
+                        ++lineno;
+                    }
+                }
+            }
+
+            else
+            {
+                if (chNext == '\n')
+                    ++lineno;
+                code << std::string(1, ch) << std::string(1, chNext);
+            }
+        }
+
+        // String or char constants..
+        else if (ch == '\"' || ch == '\'')
+        {
+            code << std::string(1, ch);
+            char chNext;
+            do
+            {
+                ++i;
+                chNext = str[i];
+                if (chNext == '\\')
+                {
+                    ++i;
+                    char chSeq = str[i];
+                    if (chSeq == '\n')
+                        ++newlines;
+                    else
+                    {
+                        code << std::string(1, chNext);
+                        code << std::string(1, chSeq);
+                    }
+                }
+                else
+                    code << std::string(1, chNext);
+            }
+            while (i < str.length() && chNext != ch);
+        }
+
 
         // Just some code..
         else

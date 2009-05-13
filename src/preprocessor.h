@@ -86,6 +86,13 @@ protected:
 
     static std::string expandMacros(std::string code, const std::string &filename, ErrorLogger *errorLogger);
 
+    /**
+     * Remove comments from code. This should only be called from read().
+     * @param str Code processed by read().
+     * @return code without comments
+     */
+    static std::string removeComments(const std::string &str);
+
 private:
 
     /**
