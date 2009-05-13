@@ -122,6 +122,7 @@ private:
 
         TEST_CASE(unicode1);
         TEST_CASE(define_part_of_func);
+        TEST_CASE(conditionalDefine);
         TEST_CASE(multiline_comment);
     }
 
@@ -947,6 +948,29 @@ private:
         ASSERT_EQUALS("\nvoid f() {\ng( );\n}\n", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
+
+    void conditionalDefine()
+    {
+        const char filedata[] = "#ifdef A\n"
+                                "#define N 10\n"
+                                "#else\n"
+                                "#define N 20\n"
+                                "#endif\n"
+                                "N";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n\n\n\n\n20\n", actual[""]);
+        TODO_ASSERT_EQUALS("\n\n\n\n\n10\n", actual["A"]);
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void multiline_comment()
     {
