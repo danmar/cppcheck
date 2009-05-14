@@ -81,7 +81,7 @@ std::string Preprocessor::read(std::istream &istr)
         // Skip spaces after ' ' and after '#'
         if (ch == ' ' && ignoreSpace)
             continue;
-        ignoreSpace = bool(ch == ' ' || ch == '#' || ch == '/' || ch == '\n');
+        ignoreSpace = bool(ch == ' ' || ch == '#' || ch == '\n');
 
         if (needSpace)
         {
@@ -148,8 +148,8 @@ std::string Preprocessor::removeComments(const std::string &str)
     // when this is encountered the <backspace><newline> will be "skipped".
     // on the next <newline>, extra newlines will be added
     unsigned int newlines = 0;
-
     std::ostringstream code;
+    char previous = 0;
     for (std::string::size_type i = 0; i < str.length(); ++i)
     {
         char ch = str[i];
@@ -157,43 +157,31 @@ std::string Preprocessor::removeComments(const std::string &str)
             throw std::runtime_error("The code contains characters that are unhandled");
 
         // Remove comments..
-        if (ch == '/')
+        if (str.compare(i, 2, "//", 0, 2) == 0)
         {
+            i = str.find('\n', i);
+            if (i == std::string::npos)
+                break;
+
+            code << "\n";
+            previous = '\n';
+            ++lineno;
+        }
+        else if (str.compare(i, 2, "/*", 0, 2) == 0)
+        {
+            char chPrev = 0;
             ++i;
-            char chNext = str[i];
-
-            if (chNext == '/')
+            while (i < str.length() && (chPrev != '*' || ch != '/'))
             {
-                while (i < str.length() && ch != '\n')
+                chPrev = ch;
+                ++i;
+                ch = str[i];
+                if (ch == '\n')
                 {
-                    ++i;
-                    ch = str[i];
-                }
-                code << "\n";
-                ++lineno;
-            }
-
-            else if (chNext == '*')
-            {
-                char chPrev = 0;
-                while (i < str.length() && (chPrev != '*' || ch != '/'))
-                {
-                    chPrev = ch;
-                    ++i;
-                    ch = str[i];
-                    if (ch == '\n')
-                    {
-                        code << "\n";
-                        ++lineno;
-                    }
-                }
-            }
-
-            else
-            {
-                if (chNext == '\n')
+                    code << "\n";
+                    previous = '\n';
                     ++lineno;
-                code << std::string(1, ch) << std::string(1, chNext);
+                }
             }
         }
 
@@ -216,10 +204,14 @@ std::string Preprocessor::removeComments(const std::string &str)
                     {
                         code << std::string(1, chNext);
                         code << std::string(1, chSeq);
+                        previous = chSeq;
                     }
                 }
                 else
+                {
                     code << std::string(1, chNext);
+                    previous = chNext;
+                }
             }
             while (i < str.length() && chNext != ch);
         }
@@ -228,13 +220,23 @@ std::string Preprocessor::removeComments(const std::string &str)
         // Just some code..
         else
         {
-            code << std::string(1, ch);
+            if (ch == ' ' && previous == ' ')
+            {
+                // Skip double white space
+            }
+            else
+            {
+                code << std::string(1, ch);
+                previous = ch;
+            }
+
 
             // if there has been <backspace><newline> sequences, add extra newlines..
             if (ch == '\n' && newlines > 0)
             {
                 code << std::string(newlines, '\n');
                 newlines = 0;
+                previous = '\n';
             }
         }
     }

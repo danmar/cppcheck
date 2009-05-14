@@ -417,6 +417,23 @@ private:
             ASSERT_EQUALS("\n\n\n\n", actual[""]);
             ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         }
+
+        {
+            const char filedata[] = "void f()\n"
+                                    "{\n"
+                                    "  *p = a / *b / *c;\n"
+                                    "}\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS("void f()\n{\n*p = a / *b / *c;\n}\n", actual[""]);
+            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        }
     }
 
 
@@ -511,7 +528,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         Preprocessor preprocessor;
-        ASSERT_EQUALS("#define str \"abc\"  \"def\" \n\nabcdef = str;\n", preprocessor.read(istr));
+        ASSERT_EQUALS("#define str \"abc\" \"def\" \n\nabcdef = str;\n", preprocessor.read(istr));
     }
 
     void multiline2()
@@ -523,7 +540,7 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         Preprocessor preprocessor;
-        ASSERT_EQUALS("#define sqr(aa) aa *  aa\n\nsqr(5);\n", preprocessor.read(istr));
+        ASSERT_EQUALS("#define sqr(aa) aa * aa\n\nsqr(5);\n", preprocessor.read(istr));
     }
 
     void multiline3()
