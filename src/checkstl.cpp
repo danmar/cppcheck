@@ -335,23 +335,39 @@ void CheckStl::stlBoundries()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "for ("))
+        // Declaring iterator..
+        if (Token::Match(tok, "list <"))
         {
-            for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ";"; tok2 = tok2->next())
+            while (tok && tok->str() != ">")
+                tok = tok->next();
+            if (!tok)
+                break;
+
+            if (Token::Match(tok, "> :: iterator|const_iterator %var% =|;"))
             {
-                if (Token::Match(tok2, "%var% = %var% . begin ( ) ; %var% < %var% . end ( ) ") &&
-                    tok2->str() == tok2->tokAt(8)->str() &&
-                    tok2->tokAt(2)->str() == tok2->tokAt(10)->str())
+                const unsigned int iteratorid(tok->tokAt(3)->varId());
+                if (iteratorid == 0)
+                    continue;
+
+                // Using "iterator < ..." is not allowed
+                unsigned int indentlevel = 0;
+                for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
                 {
-                    stlBoundriesError(tok2);
-                    break;
+                    if (tok2->str() == "{")
+                        ++indentlevel;
+                    else if (tok2->str() == "}")
+                    {
+                        if (indentlevel == 0)
+                            break;
+                        --indentlevel;
+                    }
+                    else if (tok2->varId() == iteratorid && tok2->next() && tok2->next()->str() == "<")
+                    {
+                        stlBoundriesError(tok2);
+                        break;
+                    }
                 }
             }
-        }
-
-        if (Token::Match(tok, "while ( %var% < %var% . end ( )"))
-        {
-            stlBoundriesError(tok);
         }
     }
 }

@@ -377,10 +377,19 @@ private:
     {
         check("void f()\n"
               "{\n"
+              "    std::list<int>::iterator it;\n"
               "    for (it = ab.begin(); it < ab.end(); ++it)\n"
               "        ;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) STL range check should be using != and not < since the order of the pointers isn't guaranteed\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) STL range check should be using != and not < since the order of the pointers isn't guaranteed\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int>::iterator it;\n"
+              "    for (it = ab.begin(); it < ab.end(); ++it)\n"
+              "        ;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 };
