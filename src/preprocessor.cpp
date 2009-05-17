@@ -508,9 +508,15 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
                 match &= bool(*it);
         }
 
-        if (line.find("#file \"") == 0 ||
-            line.find("#endfile") == 0 ||
-            line.find("#define") == 0)
+
+        if (!match && line.find("#define") == 0)
+        {
+            // Remove define that is not part of this configuration
+            line = "";
+        }
+        else if (line.find("#file \"") == 0 ||
+                 line.find("#endfile") == 0 ||
+                 line.find("#define") == 0)
         {
             // We must not remove #file tags or line numbers
             // are corrupted. File tags are removed by the tokenizer.

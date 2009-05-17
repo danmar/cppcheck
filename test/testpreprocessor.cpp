@@ -984,7 +984,7 @@ private:
         // Compare results..
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n\n\n\n\n20\n", actual[""]);
-        TODO_ASSERT_EQUALS("\n\n\n\n\n10\n", actual["A"]);
+        ASSERT_EQUALS("\n\n\n\n\n10\n", actual["A"]);
         ASSERT_EQUALS("", errout.str());
     }
 
