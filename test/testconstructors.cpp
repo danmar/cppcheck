@@ -323,7 +323,7 @@ private:
               "    Fred() { }\n"
               "    static void *p;\n"
               "};\n");
-        ASSERT_EQUALS("", errout.str());    
+        ASSERT_EQUALS("", errout.str());
     }
 
 

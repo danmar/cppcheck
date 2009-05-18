@@ -77,11 +77,11 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1, 
 
         // If next token contains a ":".. it is not part of a variable declaration
         if (next->str().find(":") != std::string::npos)
-        	continue;
+            continue;
 
         // Variable declarations that start with "static" shall be ignored..
         if (next->str() == "static")
-        	continue;
+            continue;
 
         // Is it a variable declaration?
         if (Token::Match(next, "%type% %var% ;"))
