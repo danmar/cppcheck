@@ -713,10 +713,8 @@ public:
         return _name;
     }
 
-    const std::string code(const std::vector<std::string> &params2) const
+    bool code(const std::vector<std::string> &params2, std::string &macrocode) const
     {
-        std::string macrocode;
-
         if (_params.empty())
         {
             std::string::size_type pos = _macro.find(" ");
@@ -765,12 +763,18 @@ public:
                                         optcomma = false;
                                         str += params2[j];
                                     }
-                                    break;
                                 }
-                                if (stringify)
+                                else if (i >= params2.size())
+                                {
+                                    // Macro had more parameters than caller used.
+                                    macrocode = "";
+                                    return false;
+                                }
+                                else if (stringify)
                                     str = "\"" + params2[i] + "\"";
                                 else
                                     str = params2[i];
+
                                 break;
                             }
                         }
@@ -788,7 +792,7 @@ public:
             }
         }
 
-        return macrocode;
+        return true;
     }
 };
 
@@ -879,6 +883,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
 
                     if (errorLogger)
                     {
+                        // TODO, duplicate code. Refactor
                         std::string fname(filename);
                         int lineno = 0;
                         for (std::string::size_type p = pos1; p > 0; --p)
@@ -1022,7 +1027,58 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                 continue;
 
             // Create macro code..
-            const std::string macrocode(std::string(numberOfNewlines, '\n') + macro.code(params));
+            std::string tempMacro;
+            if (!macro.code(params, tempMacro))
+            {
+                // Syntax error in code
+                if (errorLogger)
+                {
+                    std::string fname(filename);
+                    int lineno = 1;
+                    for (std::string::size_type p = pos1; p > 0; --p)
+                    {
+                        // newline..
+                        if (code[p-1] == '\n')
+                            lineno++;
+
+                        // #file..
+                        else if (code[p-1] == '#')
+                        {
+                            // Previous char should be a newline..
+                            if (p == 1 || code[p-2] == '\n')
+                            {
+                                // #file..
+                                if (code.substr(p - 1, 6) == "#file ")
+                                {
+                                    fname = code.substr(p + 5, code.find("\n", p) - p - 5);
+                                    break;
+                                }
+
+                                else
+                                    ++lineno;
+                            }
+                        }
+
+                        // start of file..
+                        else if (p == 1)
+                            ++lineno;
+                    }
+
+                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                    ErrorLogger::ErrorMessage::FileLocation loc;
+                    loc.line = lineno;
+                    loc.file = fname;
+                    locationList.push_back(loc);
+                    errorLogger->reportErr(
+                        ErrorLogger::ErrorMessage(locationList,
+                                                  "error",
+                                                  std::string("Syntax error. Not enough parameters for macro '") + macro.name() + "'.",
+                                                  "syntaxError"));
+                }
+                return "";
+            }
+
+            const std::string macrocode(std::string(numberOfNewlines, '\n') + tempMacro);
 
             // Insert macro code..
             if (!macro.params().empty())

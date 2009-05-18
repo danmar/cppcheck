@@ -124,6 +124,7 @@ private:
         TEST_CASE(define_part_of_func);
         TEST_CASE(conditionalDefine);
         TEST_CASE(multiline_comment);
+        TEST_CASE(macro_parameters);
     }
 
 
@@ -1008,6 +1009,28 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void macro_parameters()
+    {
+        errout.str("");
+        const char filedata[] = "#define BC(a, b, c, arg...) \\\n"
+                                "AB(a, b, c, ## arg)\n"
+                                "\n"
+                                "void f()\n"
+                                "{\n"
+                                "  BC(3);\n"
+                                "}\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c", std::list<std::string>(), this);
+
+        // Compare results..
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("[file.c:6]: (error) Syntax error. Not enough parameters for macro 'BC'.\n", errout.str());
+    }
 
 
 };
