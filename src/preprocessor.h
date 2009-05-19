@@ -76,6 +76,8 @@ public:
 
 protected:
 
+    static void writeError(const std::string &fileName, const std::string &code, size_t pos, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
+
     /**
      * Replace "#if defined" with "#ifdef" where possible
      *

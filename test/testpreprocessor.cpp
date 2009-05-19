@@ -913,7 +913,7 @@ private:
         }
 
         {
-            const char filedata[] = "#file abc.h\n"
+            const char filedata[] = "#file \"abc.h\"\n"
                                     "#define a\n"
                                     "\"\n"
                                     "#endfile\n";
@@ -924,6 +924,20 @@ private:
 
             ASSERT_EQUALS("", actual);
             ASSERT_EQUALS("[abc.h:2]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
+        }
+
+        {
+            const char filedata[] = "#file \"abc.h\"\n"
+                                    "#define a\n"
+                                    "#endfile\n"
+                                    "\"\n";
+
+            // expand macros..
+            errout.str("");
+            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+
+            ASSERT_EQUALS("", actual);
+            ASSERT_EQUALS("[file.cpp:2]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }
 
         {

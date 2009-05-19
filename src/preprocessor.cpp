@@ -21,6 +21,7 @@
 #include "preprocessor.h"
 #include "tokenize.h"
 #include "token.h"
+#include "filelister.h"
 
 #include <algorithm>
 #include <stdexcept>
@@ -29,7 +30,186 @@
 #include <iostream>
 #include <cstdlib>
 #include <cctype>
+#include <cstring>
 #include <vector>
+
+void Preprocessor::writeError(const std::string &fileName, const std::string &code, size_t endPos, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText)
+{
+    if (!errorLogger)
+    {
+        return;
+    }
+
+    // line number in parsed code
+    unsigned int lineno = 1;
+
+    // The current token being parsed
+    std::string CurrentToken;
+
+    // lineNumbers holds line numbers for files in fileIndexes
+    // every time an include file is complitely parsed, last item in the vector
+    // is removed and lineno is set to point to that value.
+    std::vector<unsigned int> lineNumbers;
+
+    // fileIndexes holds index for _files vector about currently parsed files
+    // every time an include file is complitely parsed, last item in the vector
+    // is removed and FileIndex is set to point to that value.
+    std::vector<std::string> fileIndexes;
+
+    // FileIndex. What file in the _files vector is read now?
+    std::string FileIndex = fileName;
+
+    // Read one byte at a time from code and create tokens
+    if (endPos > code.length())
+        endPos = code.length();
+
+    for (size_t codePos = 0; codePos < endPos; ++codePos)
+    {
+
+        char ch = code[codePos];
+
+        // We are not handling UTF and stuff like that. Code is supposed to plain simple text.
+        if (ch < 0)
+            continue;
+
+        // char/string..
+        if (ch == '\'' || ch == '\"')
+        {
+            std::string line;
+
+            // read char
+            bool special = false;
+            char c = ch;
+            do
+            {
+                // Append token..
+                line += c;
+
+                if (c == '\n')
+                    ++lineno;
+
+                // Special sequence '\.'
+                if (special)
+                    special = false;
+                else
+                    special = (c == '\\');
+
+                // Get next character
+                ++codePos;
+                c = code[codePos];
+            }
+            while (codePos < endPos && (special || c != ch));
+            line += ch;
+
+            // Handle #file "file.h"
+            if (CurrentToken == "#file")
+            {
+                // Extract the filename
+                line = line.substr(1, line.length() - 2);
+
+                // Has this file been tokenized already?
+                ++lineno;
+                fileIndexes.push_back(FileIndex);
+                FileIndex = FileLister::simplifyPath(line.c_str());
+                lineNumbers.push_back(lineno);
+                lineno = 0;
+            }
+
+            CurrentToken.clear();
+
+            continue;
+        }
+
+        if (strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch))
+        {
+            if (ch == '.' &&
+                CurrentToken.length() > 0 &&
+                std::isdigit(CurrentToken[0]))
+            {
+                // Don't separate doubles "5.4"
+            }
+            else if (strchr("+-", ch) &&
+                     CurrentToken.length() > 0 &&
+                     std::isdigit(CurrentToken[0]) &&
+                     CurrentToken[CurrentToken.length()-1] == 'e')
+            {
+                // Don't separate doubles "4.2e+10"
+            }
+            else
+            {
+                if (CurrentToken == "#file")
+                {
+                    // Handle this where strings are handled
+                    continue;
+                }
+                else if (CurrentToken == "#endfile")
+                {
+                    if (lineNumbers.empty() || fileIndexes.empty())
+                    {
+                        std::cerr << "####### Preprocessor bug! #######\n";
+                        std::exit(0);
+                    }
+
+                    lineno = lineNumbers.back();
+                    lineNumbers.pop_back();
+                    FileIndex = fileIndexes.back();
+                    fileIndexes.pop_back();
+                    CurrentToken.clear();
+                    continue;
+                }
+
+                // If token contains # characters, split it up
+                std::string temp;
+                for (std::string::size_type i = 0; i < CurrentToken.length(); ++i)
+                {
+                    if (CurrentToken[i] == '#' && CurrentToken.length() + 1 > i && CurrentToken[i+1] == '#')
+                    {
+                        temp.clear();
+                        ++i;
+                    }
+                    else
+                        temp += CurrentToken[i];
+                }
+
+                CurrentToken.clear();
+
+                if (ch == '\n')
+                {
+                    ++lineno;
+                    continue;
+                }
+                else if (ch == ' ')
+                {
+                    continue;
+                }
+
+                CurrentToken += ch;
+                // Add "++", "--" or ">>" token
+                if ((ch == '+' || ch == '-' || ch == '>') && (code[codePos+1] == ch))
+                {
+                    ++codePos;
+                    CurrentToken += code[codePos];
+                }
+                CurrentToken.clear();
+                continue;
+            }
+        }
+
+        CurrentToken += ch;
+    }
+
+
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    ErrorLogger::ErrorMessage::FileLocation loc;
+    loc.line = lineno;
+    loc.file = FileIndex;
+    locationList.push_back(loc);
+    errorLogger->reportErr(
+        ErrorLogger::ErrorMessage(locationList,
+                                  "error",
+                                  errorText,
+                                  errorType));
+}
 
 Preprocessor::Preprocessor()
 {
@@ -881,51 +1061,13 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                         }
                     }
 
-                    if (errorLogger)
-                    {
-                        // TODO, duplicate code. Refactor
-                        std::string fname(filename);
-                        int lineno = 0;
-                        for (std::string::size_type p = pos1; p > 0; --p)
-                        {
-                            // newline..
-                            if (code[p-1] == '\n')
-                                lineno++;
+                    writeError(filename,
+                               code,
+                               pos1,
+                               errorLogger,
+                               "noQuoteCharPair",
+                               std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.");
 
-                            // #file..
-                            else if (code[p-1] == '#')
-                            {
-                                // Previous char should be a newline..
-                                if (p == 1 || code[p-2] == '\n')
-                                {
-                                    // #file..
-                                    if (code.substr(p - 1, 6) == "#file ")
-                                    {
-                                        fname = code.substr(p + 5, code.find("\n", p) - p - 5);
-                                        break;
-                                    }
-
-                                    else
-                                        ++lineno;
-                                }
-                            }
-
-                            // start of file..
-                            else if (p == 1)
-                                ++lineno;
-                        }
-
-                        std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                        ErrorLogger::ErrorMessage::FileLocation loc;
-                        loc.line = lineno;
-                        loc.file = fname;
-                        locationList.push_back(loc);
-                        errorLogger->reportErr(
-                            ErrorLogger::ErrorMessage(locationList,
-                                                      "error",
-                                                      std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.",
-                                                      "noQuoteCharPair"));
-                    }
                     return "";
                 }
 
@@ -1031,50 +1173,16 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             if (!macro.code(params, tempMacro))
             {
                 // Syntax error in code
-                if (errorLogger)
-                {
-                    std::string fname(filename);
-                    int lineno = 1;
-                    for (std::string::size_type p = pos1; p > 0; --p)
-                    {
-                        // newline..
-                        if (code[p-1] == '\n')
-                            lineno++;
 
-                        // #file..
-                        else if (code[p-1] == '#')
-                        {
-                            // Previous char should be a newline..
-                            if (p == 1 || code[p-2] == '\n')
-                            {
-                                // #file..
-                                if (code.substr(p - 1, 6) == "#file ")
-                                {
-                                    fname = code.substr(p + 5, code.find("\n", p) - p - 5);
-                                    break;
-                                }
 
-                                else
-                                    ++lineno;
-                            }
-                        }
+                writeError(filename,
+                           code,
+                           pos1,
+                           errorLogger,
+                           "syntaxError",
+                           std::string("Syntax error. Not enough parameters for macro '") + macro.name() + "'.");
 
-                        // start of file..
-                        else if (p == 1)
-                            ++lineno;
-                    }
 
-                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-                    ErrorLogger::ErrorMessage::FileLocation loc;
-                    loc.line = lineno;
-                    loc.file = fname;
-                    locationList.push_back(loc);
-                    errorLogger->reportErr(
-                        ErrorLogger::ErrorMessage(locationList,
-                                                  "error",
-                                                  std::string("Syntax error. Not enough parameters for macro '") + macro.name() + "'.",
-                                                  "syntaxError"));
-                }
                 return "";
             }
 
