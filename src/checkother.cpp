@@ -102,7 +102,7 @@ void CheckOther::WarningRedundantCode()
             }
             else if (Token::Match(tok2, "delete [ ] %var% ; }"))
             {
-                err = (strcmp(tok2->strAt(1), varname1) == 0);
+                err = (strcmp(tok2->strAt(3), varname1) == 0);
             }
             else if (Token::Match(tok2, "free ( %var% ) ; }"))
             {
@@ -121,7 +121,7 @@ void CheckOther::WarningRedundantCode()
             }
             else if (Token::Match(tok2, "delete [ ] %var% ;"))
             {
-                err = (strcmp(tok2->strAt(1), varname1) == 0);
+                err = (strcmp(tok2->strAt(3), varname1) == 0);
             }
             else if (Token::Match(tok2, "free ( %var% ) ;"))
             {
