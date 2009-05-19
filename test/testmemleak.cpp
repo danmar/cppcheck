@@ -213,6 +213,8 @@ private:
         TEST_CASE(exit1);
         TEST_CASE(exit2);
         TEST_CASE(stdstring);
+
+        TEST_CASE(strndup_function);
     }
 
 
@@ -2165,6 +2167,16 @@ private:
 
         TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: out\n"), err);
     }
+
+    void strndup_function()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *out = strndup(\"text\", 3);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Memory leak: out\n"), errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestMemleak)

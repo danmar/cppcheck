@@ -57,6 +57,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
     //     * var = (char *)malloc(10);
     //     * var = new char[10];
     //     * var = strdup("hello");
+    //     * var = strndup("hello", 3);
     if (tok2 && tok2->str() == "(")
     {
         while (tok2 && tok2->str() != ")")
@@ -72,6 +73,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
     const char *mallocfunc[] = {"malloc",
                                 "calloc",
                                 "strdup",
+                                "strndup",
                                 "kmalloc",
                                 "kzalloc",
                                 "kcalloc",
