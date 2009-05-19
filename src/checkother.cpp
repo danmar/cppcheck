@@ -82,7 +82,7 @@ void CheckOther::WarningRedundantCode()
             varname1 = tok->strAt(2);
             tok2 = tok->tokAt(4);
         }
-        else if (Token::Match(tok, "if ( %var% != NULL )"))
+        else if (Token::Match(tok, "if ( %var% != 0 )"))
         {
             varname1 = tok->strAt(2);
             tok2 = tok->tokAt(6);
