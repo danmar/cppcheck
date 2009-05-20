@@ -125,6 +125,7 @@ private:
         TEST_CASE(conditionalDefine);
         TEST_CASE(multiline_comment);
         TEST_CASE(macro_parameters);
+        TEST_CASE(newline_in_macro);
     }
 
 
@@ -1044,6 +1045,27 @@ private:
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("", actual[""]);
         ASSERT_EQUALS("[file.c:6]: (error) Syntax error. Not enough parameters for macro 'BC'.\n", errout.str());
+    }
+
+    void newline_in_macro()
+    {
+        errout.str("");
+        const char filedata[] = "#define ABC(str) printf( str )\n"
+                                "void f()\n"
+                                "{\n"
+                                "  ABC(\"\\n\");\n"
+                                "}\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c", std::list<std::string>(), this);
+
+        // Compare results..
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\nvoid f()\n{\nprintf(\"\\n\");\n}\n", actual[""]);
+        ASSERT_EQUALS("", errout.str());
     }
 
 

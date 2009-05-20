@@ -1130,11 +1130,6 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                         while (pos2 < code.length() && code[pos2] != ch)
                         {
                             par += code[pos2];
-                            if (code[pos2] == '\\')
-                            {
-                                par += code[pos2];
-                                ++pos2;
-                            }
                             ++pos2;
                         }
                         if (pos2 == code.length())
