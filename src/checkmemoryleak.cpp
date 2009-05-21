@@ -111,10 +111,10 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
         return NewArray;
 
     if (Token::Match(tok2, "fopen ("))
-        return FOPEN;
+        return File;
 
     if (Token::Match(tok2, "popen ("))
-        return POPEN;
+        return Pipe;
 
     // Userdefined allocation function..
     std::list<AllocFunc>::const_iterator it = _listAllocFunc.begin();
@@ -189,10 +189,10 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType(const 
         return gMalloc;
 
     if (Token::simpleMatch(tok, std::string("fclose ( " + names + " )").c_str()))
-        return FOPEN;
+        return File;
 
     if (Token::simpleMatch(tok, std::string("pclose ( " + names + " )").c_str()))
-        return POPEN;
+        return Pipe;
 
     return No;
 }
@@ -304,8 +304,8 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
 
 void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all)
 {
-    if (alloctype == CheckMemoryLeakClass::FOPEN ||
-        alloctype == CheckMemoryLeakClass::POPEN)
+    if (alloctype == CheckMemoryLeakClass::File ||
+        alloctype == CheckMemoryLeakClass::Pipe)
         resourceLeakError(tok, varname);
     else if (all)
         memleakallError(tok, varname);
