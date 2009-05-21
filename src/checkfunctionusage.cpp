@@ -68,9 +68,9 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
         // Check that ") {" is found..
         for (const Token *tok2 = funcname; tok2; tok2 = tok2->next())
         {
-            if (Token::Match(tok2, ")"))
+            if (Token::simpleMatch(tok2, ")"))
             {
-                if (! Token::Match(tok2, ") {") && ! Token::Match(tok2, ") const {"))
+                if (! Token::simpleMatch(tok2, ") {") && ! Token::simpleMatch(tok2, ") const {"))
                     funcname = NULL;
                 break;
             }
@@ -120,7 +120,7 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
                 else if (tok2->str() == ")")
                 {
                     --parlevel;
-                    if (parlevel == 0 && (Token::Match(tok2, ") {") || Token::Match(tok2, ") const")))
+                    if (parlevel == 0 && (Token::simpleMatch(tok2, ") {") || Token::simpleMatch(tok2, ") const")))
                         funcname = NULL;
                     if (parlevel <= 0)
                         break;

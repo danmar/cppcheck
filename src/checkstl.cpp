@@ -141,7 +141,7 @@ void CheckStl::erase()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "for ("))
+        if (Token::simpleMatch(tok, "for ("))
         {
             for (const Token *tok2 = tok->tokAt(2); tok2 && tok2->str() != ";"; tok2 = tok2->next())
             {
@@ -262,7 +262,7 @@ void CheckStl::pushback()
     // Iterator becomes invalid after push_back or push_front..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "vector <"))
+        if (Token::simpleMatch(tok, "vector <"))
         {
             while (tok && tok->str() != ">")
                 tok = tok->next();
@@ -336,7 +336,7 @@ void CheckStl::stlBoundries()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring iterator..
-        if (Token::Match(tok, "list <"))
+        if (Token::simpleMatch(tok, "list <"))
         {
             while (tok && tok->str() != ">")
                 tok = tok->next();

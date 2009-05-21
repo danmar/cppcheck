@@ -157,7 +157,7 @@ void CheckOther::redundantCondition2()
     const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
     while (tok)
     {
-        bool b = Token::Match(tok->tokAt(15), "{");
+        bool b = Token::simpleMatch(tok->tokAt(15), "{");
 
         // Get tokens for the fields %var% and %any%
         const Token *var1 = tok->tokAt(2);
@@ -317,11 +317,11 @@ void CheckOther::InvalidFunctionUsage()
         int param = 1;
         for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
         {
-            if (Token::Match(tok2, "("))
+            if (Token::simpleMatch(tok2, "("))
                 ++parlevel;
-            else if (Token::Match(tok2, ")"))
+            else if (Token::simpleMatch(tok2, ")"))
                 --parlevel;
-            else if (parlevel == 1 && Token::Match(tok2, ","))
+            else if (parlevel == 1 && Token::simpleMatch(tok2, ","))
             {
                 ++param;
                 if (param == 3)
@@ -508,7 +508,7 @@ void CheckOther::CheckVariableScope()
             if (indentlevel == 0)
                 func = false;
         }
-        if (indentlevel == 0 && Token::Match(tok, ") {"))
+        if (indentlevel == 0 && Token::simpleMatch(tok, ") {"))
         {
             func = true;
         }
@@ -543,7 +543,7 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
     const Token *tok = tok1;
 
     // Skip the variable declaration..
-    while (tok && !Token::Match(tok, ";"))
+    while (tok && !Token::simpleMatch(tok, ";"))
         tok = tok->next();
 
     // Check if the variable is used in this indentlevel..
@@ -778,12 +778,12 @@ void CheckOther::CheckIncompleteStatement()
         if (parlevel != 0)
             continue;
 
-        if (Token::Match(tok, "= {"))
+        if (Token::simpleMatch(tok, "= {"))
         {
             /* We are in an assignment, so it's not a statement.
              * Skip until ";" */
 
-            while (!Token::Match(tok, ";"))
+            while (!Token::simpleMatch(tok, ";"))
             {
                 int level = 0;
                 do

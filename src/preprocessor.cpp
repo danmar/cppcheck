@@ -861,7 +861,7 @@ public:
                 {
                     if (tok->str() == ")")
                         break;
-                    if (Token::Match(tok, ". . . )"))
+                    if (Token::simpleMatch(tok, ". . . )"))
                     {
                         _variadic = true;
                         break;
@@ -959,7 +959,7 @@ public:
                             }
                         }
                     }
-                    if (_variadic && Token::Match(tok, ",") && tok->next() && Token::Match(tok->next(), "##"))
+                    if (_variadic && Token::simpleMatch(tok, ",") && tok->next() && Token::simpleMatch(tok->next(), "##"))
                     {
                         optcomma = true;
                         continue;

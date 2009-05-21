@@ -1159,26 +1159,26 @@ void Tokenizer::simplifyTokenList()
             {
                 if (Token::Match(tempToken, "%var%"))
                 {
-                    if (Token::Match(tempToken->next(), "."))
+                    if (Token::simpleMatch(tempToken->next(), "."))
                     {
                         // We are checking a class or struct, search next varname
                         tempToken = tempToken->tokAt(1);
                         continue;
                     }
-                    else if (Token::Match(tempToken->next(), "- >"))
+                    else if (Token::simpleMatch(tempToken->next(), "- >"))
                     {
                         // We are checking a class or struct, search next varname
                         tempToken = tempToken->tokAt(2);
                         continue;
                     }
-                    else if (Token::Match(tempToken->next(), "++") ||
-                             Token::Match(tempToken->next(), "--"))
+                    else if (Token::simpleMatch(tempToken->next(), "++") ||
+                             Token::simpleMatch(tempToken->next(), "--"))
                     {
                         // We have variable++ or variable--, there should be
                         // nothing after this
                         tempToken = tempToken->tokAt(2);
                     }
-                    else if (Token::Match(tempToken->next(), "["))
+                    else if (Token::simpleMatch(tempToken->next(), "["))
                     {
                         // TODO: We need to find closing ], then check for
                         // dots and arrows "var[some[0]]->other"
@@ -2136,7 +2136,7 @@ bool Tokenizer::simplifyIfNot()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
 
-        if (Token::Match(tok, "0 == (") ||
+        if (Token::simpleMatch(tok, "0 == (") ||
             Token::Match(tok, "0 == %var%"))
         {
             tok->deleteNext();
@@ -2152,7 +2152,7 @@ bool Tokenizer::simplifyIfNot()
             ret = true;
         }
 
-        if (tok->link() && Token::Match(tok, ") == 0"))
+        if (tok->link() && Token::simpleMatch(tok, ") == 0"))
         {
             tok->deleteNext();
             tok->deleteNext();
@@ -2220,13 +2220,13 @@ bool Tokenizer::simplifyKnownVariables()
 
                         continue;
                     }
-                    else if (tok3->str() == "{" && Token::Match(tok3->previous(), ")"))
+                    else if (tok3->str() == "{" && Token::simpleMatch(tok3->previous(), ")"))
                     {
                         // There is a possible loop after the assignment. Try to skip it.
                         bailOutFromLoop = tok3->link();
                         continue;
                     }
-                    else if (tok3->str() == "}" && Token::Match(tok3->link()->previous(), ")"))
+                    else if (tok3->str() == "}" && Token::simpleMatch(tok3->link()->previous(), ")"))
                     {
                         // Assignment was in the middle of possible loop, bail out.
                         break;

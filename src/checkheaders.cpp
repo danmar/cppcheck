@@ -56,7 +56,7 @@ void CheckHeaders::WarningHeaderWithImplementation()
         if (tok->fileIndex() == 0)
             continue;
 
-        if (Token::Match(tok, ") {"))
+        if (Token::simpleMatch(tok, ") {"))
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found implementation in header";
