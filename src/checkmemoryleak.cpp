@@ -70,15 +70,15 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
         return No;
 
     // Does tok2 point on "malloc", "strdup" or "kmalloc"..
-    const char *mallocfunc[] = {"malloc",
-                                "calloc",
-                                "strdup",
-                                "strndup",
-                                "kmalloc",
-                                "kzalloc",
-                                "kcalloc",
-                                0
-                               };
+    static const char * const mallocfunc[] = {"malloc",
+            "calloc",
+            "strdup",
+            "strndup",
+            "kmalloc",
+            "kzalloc",
+            "kcalloc",
+            0
+                                             };
     for (unsigned int i = 0; mallocfunc[i]; i++)
     {
         if (tok2->str() == mallocfunc[i])
@@ -86,18 +86,18 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
     }
 
     // Does tok2 point on "g_malloc", "g_strdup", ..
-    const char *gmallocfunc[] = {"g_new",
-                                 "g_new0",
-                                 "g_try_new",
-                                 "g_try_new0",
-                                 "g_malloc",
-                                 "g_malloc0",
-                                 "g_try_malloc",
-                                 "g_try_malloc0",
-                                 "g_strdup",
-                                 "g_strndup",
-                                 0
-                                };
+    static const char * const gmallocfunc[] = {"g_new",
+            "g_new0",
+            "g_try_new",
+            "g_try_new0",
+            "g_malloc",
+            "g_malloc0",
+            "g_try_malloc",
+            "g_try_malloc0",
+            "g_strdup",
+            "g_strndup",
+            0
+                                              };
     for (unsigned int i = 0; gmallocfunc[i]; i++)
     {
         if (tok2->str() == gmallocfunc[i])
