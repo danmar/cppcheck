@@ -2165,7 +2165,7 @@ private:
 
         std::string err(errout.str());
 
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: out\n"), err);
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Memory leak: out\n"), err);
     }
 
     void strndup_function()

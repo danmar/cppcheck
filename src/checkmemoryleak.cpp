@@ -1384,6 +1384,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
 void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
 {
     bool classmember = false;
+    bool beforeParameters = false;
     bool infunc = false;
     int indentlevel = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -1400,11 +1401,17 @@ void CheckMemoryLeakClass::CheckMemoryLeak_InFunction()
             if (Token::simpleMatch(tok, ") {"))
                 infunc = true;
 
-            else if (tok->str() == "::")
+            else if (tok->str() == "(")
+                beforeParameters = false;
+
+            else if (tok->str() == "::" && beforeParameters)
                 classmember = true;
 
             else if (Token::Match(tok, "[;}]"))
+            {
                 infunc = classmember = false;
+                beforeParameters = true;
+            }
         }
 
         // Declare a local variable => Check
