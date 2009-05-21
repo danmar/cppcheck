@@ -66,10 +66,8 @@ private:
         AllocType   alloctype;
 
         AllocFunc(const char f[], AllocType a)
-        {
-            funcname = f;
-            alloctype = a;
-        }
+                : funcname(f), alloctype(a)
+        { }
     };
 
     void CheckMemoryLeak_ClassMembers_Variable(const char classname[], const Token *tokVarname);
