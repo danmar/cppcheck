@@ -217,6 +217,12 @@ private:
         TEST_CASE(strndup_function);
         TEST_CASE(fcloseall_function);
         TEST_CASE(file_functions);
+
+        TEST_CASE(opendir_function);
+        TEST_CASE(fdopendir_function);
+        TEST_CASE(closedir_function);
+        TEST_CASE(dir_functions);
+
         TEST_CASE(pointer_to_pointer);
     }
 
@@ -2188,6 +2194,63 @@ private:
               "    fcloseall();\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void opendir_function()
+    {
+        check("void f()\n"
+              "{\n"
+              "    DIR *f = opendir(\".\");\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Resource leak: f\n"), errout.str());
+    }
+
+    void fdopendir_function()
+    {
+        check("void f(int fd)\n"
+              "{\n"
+              "    DIR *f = fdopendir(fd);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Resource leak: f\n"), errout.str());
+    }
+
+    void closedir_function()
+    {
+        check("void f()\n"
+              "{\n"
+              "    DIR *f = opendir(\".\");\n"
+              "    closedir(f);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        check("void f(int fd)\n"
+              "{\n"
+              "    DIR *f = fdopendir(fd);\n"
+              "    closedir(f);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    DIR * f = opendir(dirname);\n"
+              "    if (closedir(f));\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void dir_functions()
+    {
+        check("void f()\n"
+              "{\n"
+              "    DIR *f = opendir(dir);\n"
+              "    readdir(f);\n;"
+              "    readdir_r(f, entry, res);\n;"
+              "    rewinddir(f);\n;"
+              "    telldir(f);\n;"
+              "    seekdir(f, 2)\n;"
+              "    scandir(f, namelist, filter, comp);\n;"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:10]: (error) Resource leak: f\n"), errout.str());
     }
 
     void file_functions()
