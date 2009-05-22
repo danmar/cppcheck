@@ -216,6 +216,7 @@ private:
 
         TEST_CASE(strndup_function);
         TEST_CASE(fcloseall_function);
+        TEST_CASE(pointer_to_pointer);
     }
 
 
@@ -2188,6 +2189,16 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+    void pointer_to_pointer()
+    {
+        check("void f(char **data)\n"
+              "{\n"
+              "    char *c = new char[12];\n"
+              "    *c = 0;\n"
+              "    *data = c;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 };
 
 REGISTER_TEST(TestMemleak)

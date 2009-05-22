@@ -2188,8 +2188,9 @@ bool Tokenizer::simplifyKnownVariables()
                     break;
             }
 
-            else if (Token::Match(tok2, "%var% = %num% ;") ||
-                     Token::Match(tok2, "%var% = %bool% ;"))
+            else if (tok2->previous()->str() != "*" &&
+                     (Token::Match(tok2, "%var% = %num% ;") ||
+                      Token::Match(tok2, "%var% = %bool% ;")))
             {
                 unsigned int varid = tok2->varId();
                 if (varid == 0)
