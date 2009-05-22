@@ -1171,8 +1171,7 @@ void Tokenizer::simplifyTokenList()
                         tempToken = tempToken->tokAt(2);
                         continue;
                     }
-                    else if (Token::simpleMatch(tempToken->next(), "++") ||
-                             Token::simpleMatch(tempToken->next(), "--"))
+                    else if (Token::Match(tempToken->next(), "++|--"))
                     {
                         // We have variable++ or variable--, there should be
                         // nothing after this

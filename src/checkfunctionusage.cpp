@@ -120,7 +120,7 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
                 else if (tok2->str() == ")")
                 {
                     --parlevel;
-                    if (parlevel == 0 && (Token::simpleMatch(tok2, ") {") || Token::simpleMatch(tok2, ") const")))
+                    if (parlevel == 0 && (Token::Match(tok2, ") const|{")))
                         funcname = NULL;
                     if (parlevel <= 0)
                         break;

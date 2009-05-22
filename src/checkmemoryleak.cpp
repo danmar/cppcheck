@@ -1206,7 +1206,7 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
                     erase(tok2, tok2->tokAt(2));
                     tok2 = tok2->next();
                     bool first = true;
-                    while (Token::simpleMatch(tok2, "case") || Token::simpleMatch(tok2, "default"))
+                    while (Token::Match(tok2, "case|default"))
                     {
                         bool def = Token::simpleMatch(tok2, "default");
                         tok2->str(first ? "if" : "}");
