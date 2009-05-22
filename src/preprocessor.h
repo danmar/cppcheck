@@ -95,6 +95,13 @@ protected:
      */
     static std::string removeComments(const std::string &str);
 
+    /**
+     * Returns the string between double quote characters or < > characters.
+     * @param str e.g. '#include "menu.h"' or '#include <menu.h>'
+     * @return e.g. 'menu.h' or empty string if double quotes
+     * or < > were not found.
+     */
+    static std::string getHeaderFileName(const std::string &str);
 private:
 
     /**
@@ -128,13 +135,6 @@ private:
      */
     static void handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths);
 
-    /**
-     * Returns the string between double quote characters.
-     * @param str e.g. '#include "menu.h"'
-     * @return e.g. 'menu.h' or empty string if double quotes were
-     * not found.
-     */
-    static std::string getHeaderFileName(const std::string &str);
 };
 
 //---------------------------------------------------------------------------

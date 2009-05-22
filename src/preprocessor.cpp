@@ -719,13 +719,17 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
 std::string Preprocessor::getHeaderFileName(const std::string &str)
 {
     std::string result;
-    std::string::size_type i = str.find("\"");
+    std::string::size_type i = str.find_first_of("<\"");
     if (i == std::string::npos)
         return result;
 
+    char c = str[i];
+    if (c == '<')
+        c = '>';
+
     for (i = i + 1; i < str.length(); ++i)
     {
-        if (str[i] == '"')
+        if (str[i] == c)
             break;
 
         result.append(1, str[i]);

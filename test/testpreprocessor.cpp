@@ -50,6 +50,11 @@ public:
         {
             return Preprocessor::expandMacros(code, "file.cpp", errorLogger);
         }
+
+        static std::string getHeaderFileName(const std::string &str)
+        {
+            return Preprocessor::getHeaderFileName(str);
+        }
     };
 
 private:
@@ -126,6 +131,7 @@ private:
         TEST_CASE(multiline_comment);
         TEST_CASE(macro_parameters);
         TEST_CASE(newline_in_macro);
+        TEST_CASE(includes);
     }
 
 
@@ -1068,7 +1074,11 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
+    void includes()
+    {
+        ASSERT_EQUALS("a.h", OurPreprocessor::getHeaderFileName("#include \"a.h\""));
+        ASSERT_EQUALS("a.h", OurPreprocessor::getHeaderFileName("#include <a.h>"));
+    }
 };
 
 REGISTER_TEST(TestPreprocessor)
