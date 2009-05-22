@@ -18,7 +18,7 @@
  */
 
 //---------------------------------------------------------------------------
-// Buffer overrun..
+// Dangerous functions
 //---------------------------------------------------------------------------
 
 #include "checkdangerousfunctions.h"
@@ -42,10 +42,6 @@ namespace
 {
 CheckDangerousFunctionsClass instance;
 }
-
-//---------------------------------------------------------------------------
-// Dangerous functions
-//---------------------------------------------------------------------------
 
 void CheckDangerousFunctionsClass::dangerousFunctions()
 {

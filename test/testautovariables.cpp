@@ -53,7 +53,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Check for buffer overruns..
+        // Check auto variables
         Settings settings;
         settings._showAll = true;
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);

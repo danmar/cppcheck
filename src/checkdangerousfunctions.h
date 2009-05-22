@@ -43,7 +43,7 @@ public:
         checkDangerousFunctionsClass.dangerousFunctions();
     }
 
-    /** Check for buffer overruns */
+    /** Check for dangerous functions */
     void dangerousFunctions();
 
 private:

@@ -45,7 +45,7 @@ public:
         checkAutoVariables.autoVariables();
     }
 
-    /** Check for buffer overruns */
+    /** Check auto variables */
     void autoVariables();
 
 private:

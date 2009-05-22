@@ -53,7 +53,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Check for buffer overruns..
+        // Check for dangerous functions..
         Settings settings;
         settings._showAll = true;
         CheckDangerousFunctionsClass checkDangerousFunctions(&tokenizer, &settings, this);
