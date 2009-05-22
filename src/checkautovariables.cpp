@@ -106,7 +106,7 @@ bool isTypeName(const Token *tok)
 {
     bool ret = false;
     std::string _str = tok->str();
-    const char *type[] = {"case", "return", "delete", 0};
+    static const char * const type[] = {"case", "return", "delete", 0};
     for (int i = 0; type[i]; i++)
         ret |= (_str == type[i]);
     return !ret;

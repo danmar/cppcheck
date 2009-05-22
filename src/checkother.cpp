@@ -258,7 +258,7 @@ void CheckOther::WarningIf()
                 continue;
 
             // Check that there is a condition..
-            const char *p[6] = {"==", "<=", ">=", "!=", "<", ">"};
+            static const char * const p[6] = {"==", "<=", ">=", "!=", "<", ">"};
             bool iscond = false;
             for (int i = 0; i < 6; i++)
             {

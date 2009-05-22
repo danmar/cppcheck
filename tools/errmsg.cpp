@@ -128,9 +128,9 @@ int main()
     // Generate documentation..
     std::cout << "Generate doc.." << std::endl;
     const unsigned int NUMSUITE = 5;
+    static const char * const suite[NUMSUITE] = { "error", "all", "style", "all + style", "security" };
     for (unsigned int i = 0; i < NUMSUITE; ++i)
     {
-        const char *suite[NUMSUITE] = { "error", "all", "style", "all + style", "security" };
         const Message::Settings settings[NUMSUITE] = { Message::error, Message::all, Message::style, Message::style_all, Message::security };
         std::cout << "    =" << suite[i] << "=" << std::endl;
         for (std::list<Message>::const_iterator it = err.begin(); it != err.end(); ++it)
