@@ -188,7 +188,8 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType(const 
     if (Token::simpleMatch(tok, std::string("g_free ( " + names + " ) ;").c_str()))
         return gMalloc;
 
-    if (Token::simpleMatch(tok, std::string("fclose ( " + names + " )").c_str()))
+    if (Token::simpleMatch(tok, std::string("fclose ( " + names + " )").c_str()) ||
+        Token::simpleMatch(tok, "fcloseall ( )"))
         return File;
 
     if (Token::simpleMatch(tok, std::string("pclose ( " + names + " )").c_str()))

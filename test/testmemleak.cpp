@@ -215,6 +215,7 @@ private:
         TEST_CASE(stdstring);
 
         TEST_CASE(strndup_function);
+        TEST_CASE(fcloseall_function);
     }
 
 
@@ -2175,6 +2176,16 @@ private:
               "    char *out = strndup(\"text\", 3);\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Memory leak: out\n"), errout.str());
+    }
+
+    void fcloseall_function()
+    {
+        check("void f()\n"
+              "{\n"
+              "    FILE *f = fopen(fname, str);\n"
+              "    fcloseall();\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 };
