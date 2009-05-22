@@ -22,16 +22,12 @@
 //---------------------------------------------------------------------------
 
 #include "checkautovariables.h"
-#include "tokenize.h"
 
 #include <algorithm>
 #include <sstream>
 #include <list>
-#include <cstring>
 #include <iostream>
 #include <string>
-
-#include <cstdlib>     // <- strtoul
 
 //---------------------------------------------------------------------------
 

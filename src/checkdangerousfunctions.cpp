@@ -23,17 +23,6 @@
 
 #include "checkdangerousfunctions.h"
 
-#include "tokenize.h"
-#include "token.h"
-
-#include <algorithm>
-#include <sstream>
-#include <list>
-#include <cstring>
-
-
-#include <cstdlib>     // <- strtoul
-
 //---------------------------------------------------------------------------
 
 
