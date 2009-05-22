@@ -51,7 +51,7 @@ public:
             return Preprocessor::expandMacros(code, "file.cpp", errorLogger);
         }
 
-        static std::string getHeaderFileName(const std::string &str)
+        static int getHeaderFileName(std::string &str)
         {
             return Preprocessor::getHeaderFileName(str);
         }
@@ -1076,8 +1076,23 @@ private:
 
     void includes()
     {
-        ASSERT_EQUALS("a.h", OurPreprocessor::getHeaderFileName("#include \"a.h\""));
-        ASSERT_EQUALS("a.h", OurPreprocessor::getHeaderFileName("#include <a.h>"));
+        {
+            std::string src = "#include a.h";
+            ASSERT_EQUALS(0, OurPreprocessor::getHeaderFileName(src));
+            ASSERT_EQUALS("", src);
+        }
+
+        {
+            std::string src = "#include \"b.h\"";
+            ASSERT_EQUALS(1, OurPreprocessor::getHeaderFileName(src));
+            ASSERT_EQUALS("b.h", src);
+        }
+
+        {
+            std::string src = "#include <c.h>";
+            ASSERT_EQUALS(2, OurPreprocessor::getHeaderFileName(src));
+            ASSERT_EQUALS("c.h", src);
+        }
     }
 };
 

@@ -716,12 +716,15 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     return expandMacros(ret.str(), filename, errorLogger);
 }
 
-std::string Preprocessor::getHeaderFileName(const std::string &str)
+int Preprocessor::getHeaderFileName(std::string &str)
 {
     std::string result;
     std::string::size_type i = str.find_first_of("<\"");
     if (i == std::string::npos)
-        return result;
+    {
+        str = "";
+        return 0;
+    }
 
     char c = str[i];
     if (c == '<')
@@ -735,7 +738,11 @@ std::string Preprocessor::getHeaderFileName(const std::string &str)
         result.append(1, str[i]);
     }
 
-    return result;
+    str = result;
+    if (c == '"')
+        return 1;
+    else
+        return 2;
 }
 
 void Preprocessor::handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths)
@@ -774,8 +781,8 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
         // Remove #include clause
         code.erase(pos, end - pos);
 
-        filename = getHeaderFileName(filename);
-        if (filename.length() == 0)
+        int headerType = getHeaderFileName(filename);
+        if (headerType == 0)
             continue;
 
         std::string tempFile = filename;
@@ -803,7 +810,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             }
         }
 
-        if (processedFile.length() == 0)
+        if (headerType == 1 && processedFile.length() == 0)
         {
             filename = paths.back() + filename;
             std::ifstream fin(filename.c_str());
