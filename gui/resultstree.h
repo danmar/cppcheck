@@ -63,7 +63,8 @@ protected:
     const QString &file,
     const int line,
     const QString &severity,
-    const QString &message);
+    const QString &message,
+    const bool hide);
 
     void AddItem(int index);
     void RefreshTree();

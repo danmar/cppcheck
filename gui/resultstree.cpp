@@ -68,14 +68,15 @@ void ResultsTree::AddErrorItem(const QString &file,
         realfile = "Undefined file";
     }
 
-
+    bool hide = !mShowTypes[SeverityToShowType(severity)];
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
     QStandardItem *item = AddBacktraceFiles(EnsureFileItem(realfile),
                                             realfile,
                                             lines[0].toInt(),
                                             severity,
-                                            message);
+                                            message,
+                                            hide);
 
 
     //Add user data to that item
@@ -89,21 +90,27 @@ void ResultsTree::AddErrorItem(const QString &file,
     //Add backtrace files as children
     for (int i=1;i<files.size() && i < lines.size();i++)
     {
-        AddBacktraceFiles(item,files[i],lines[i].toInt(),severity,message);
+        AddBacktraceFiles(item,files[i],lines[i].toInt(),severity,message,hide);
     }
 
     //TODO just hide/show current error and it's file
     //since this does a lot of unnecessary work
-    RefreshTree();
+    if (!hide) {
+        ShowFileItem(realfile);
+    }
 }
 
 QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
         const QString &file,
         const int line,
         const QString &severity,
-        const QString &message)
+        const QString &message,
+        const bool hide)
 
 {
+    if (!parent) {
+        return 0;
+    }
 
     QList<QStandardItem*> list;
     list << CreateItem(file);
@@ -112,16 +119,11 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateItem(message);
 
 
+    QModelIndex index = QModelIndex();
 
-    if (parent)
-    {
-        parent->appendRow(list);
+    parent->appendRow(list);
 
-    }
-    else
-    {
-        mModel.appendRow(list);
-    }
+    setRowHidden(parent->rowCount()-1,parent->index(),hide);
 
     //TODO Does this leak memory? Should items from list be deleted?
 
