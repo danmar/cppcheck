@@ -1,12 +1,12 @@
 /*
 This is testing data for the GUI.
-Used for testing GUI with various error styles reported by cppcheck. 
+Used for testing GUI with various error styles reported by cppcheck.
 Not meant to be compiled.
 */
 
 void unused()
 {
-	int a = 15;
+    int a = 15;
 }
 
 void f(char k)

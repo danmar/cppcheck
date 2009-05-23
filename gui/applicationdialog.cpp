@@ -26,8 +26,8 @@
 #include <QDebug>
 
 ApplicationDialog::ApplicationDialog(const QString &name,
-const QString &path,
-const QString &title)
+                                     const QString &path,
+                                     const QString &title)
 {
     QVBoxLayout *layout = new QVBoxLayout();
     mName = new QLineEdit(name);
@@ -51,7 +51,7 @@ const QString &title)
     layout->addWidget(new QLabel(tr("Application to execute")));
     layout->addWidget(mPath);
     QPushButton *browse = new QPushButton(tr("Browse"));
-    connect(browse,SIGNAL(clicked()), this, SLOT(Browse()));
+    connect(browse, SIGNAL(clicked()), this, SLOT(Browse()));
     layout->addWidget(browse);
 
     QPushButton *cancel = new QPushButton(tr("Cancel"));

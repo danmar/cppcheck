@@ -20,13 +20,18 @@
 
 #include "resultstree.h"
 #include <QDebug>
+#include <QMenu>
+#include <QSignalMapper>
+#include <QProcess>
 
-ResultsTree::ResultsTree(QSettings &settings) :
-        mSettings(settings)
+ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
+        mSettings(settings),
+        mApplications(list),
+        mContextItem(0)
 {
     setModel(&mModel);
     QStringList labels;
-    labels <<tr("File")<< tr("Severity") << tr("Line") << tr("Message");
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
 
     LoadSettings();
@@ -88,14 +93,15 @@ void ResultsTree::AddErrorItem(const QString &file,
     item->setData(QVariant(data));
 
     //Add backtrace files as children
-    for (int i=1;i<files.size() && i < lines.size();i++)
+    for (int i = 1;i < files.size() && i < lines.size();i++)
     {
-        AddBacktraceFiles(item,files[i],lines[i].toInt(),severity,message,hide);
+        AddBacktraceFiles(item, files[i], lines[i].toInt(), severity, message, hide);
     }
 
     //TODO just hide/show current error and it's file
     //since this does a lot of unnecessary work
-    if (!hide) {
+    if (!hide)
+    {
         ShowFileItem(realfile);
     }
 }
@@ -108,7 +114,8 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
         const bool hide)
 
 {
-    if (!parent) {
+    if (!parent)
+    {
         return 0;
     }
 
@@ -123,7 +130,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 
     parent->appendRow(list);
 
-    setRowHidden(parent->rowCount()-1,parent->index(),hide);
+    setRowHidden(parent->rowCount() - 1, parent->index(), hide);
 
     //TODO Does this leak memory? Should items from list be deleted?
 
@@ -204,10 +211,10 @@ void ResultsTree::RefreshTree()
     //Get the amount of files in the tree
     int filecount = mModel.rowCount();
 
-    for (int i=0;i<filecount;i++)
+    for (int i = 0;i < filecount;i++)
     {
         //Get file i
-        QStandardItem *file = mModel.item(i,0);
+        QStandardItem *file = mModel.item(i, 0);
         if (!file)
         {
             continue;
@@ -219,10 +226,10 @@ void ResultsTree::RefreshTree()
         //By default it shouldn't be visible
         bool show = false;
 
-        for (int j=0;j<errorcount;j++)
+        for (int j = 0;j < errorcount;j++)
         {
             //Get the error itself
-            QStandardItem *child = file->child(j,0);
+            QStandardItem *child = file->child(j, 0);
             if (!child)
             {
                 continue;
@@ -237,7 +244,7 @@ void ResultsTree::RefreshTree()
             bool hide = !mShowTypes[VariantToShowType(data["severity"])];
 
             //Hide/show accordingly
-            setRowHidden(j,file->index(),hide);
+            setRowHidden(j, file->index(), hide);
 
             //If it was shown then the file itself has to be shown aswell
             if (!hide)
@@ -247,7 +254,7 @@ void ResultsTree::RefreshTree()
         }
 
         //Show the file if any of it's errors are visible
-        setRowHidden(i,QModelIndex(),!show);
+        setRowHidden(i, QModelIndex(), !show);
     }
 }
 
@@ -293,6 +300,108 @@ void ResultsTree::ShowFileItem(const QString &name)
     QStandardItem *item = FindFileItem(name);
     if (item)
     {
-        setRowHidden(0,mModel.indexFromItem(item),false);
+        setRowHidden(0, mModel.indexFromItem(item), false);
+    }
+}
+
+void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
+{
+    QModelIndex index = indexAt(e->pos());
+    if (index.isValid())
+    {
+        mContextItem = mModel.itemFromIndex(index);
+        if (mContextItem && mApplications.GetApplicationCount() > 0 && mContextItem->parent())
+        {
+
+            //Create a new context menu
+            QMenu menu(this);
+            //Store all applications in a list
+            QList<QAction*> actions;
+
+            //Create a signal mapper so we don't have to store data to class
+            //member variables
+            QSignalMapper *signalMapper = new QSignalMapper(this);
+
+            //Go through all applications and add them to the context menu
+            for (int i = 0;i < mApplications.GetApplicationCount();i++)
+            {
+                //Create an action for the application
+                QAction *start = new QAction(mApplications.GetApplicationName(i), &menu);
+
+                //Add it to our list so we can disconnect later on
+                actions << start;
+
+                //Add it to context menu
+                menu.addAction(start);
+
+                //Connect the signal to signal mapper
+                connect(start, SIGNAL(triggered()), signalMapper, SLOT(map()));
+
+                //Add a new mapping
+                signalMapper->setMapping(start, i);
+            }
+
+            connect(signalMapper, SIGNAL(mapped(int)),
+                    this, SLOT(Context(int)));
+
+            //Start the menu
+            menu.exec(e->globalPos());
+
+
+            //Disconnect all signals
+            for (int i = 0;i < actions.size();i++)
+            {
+
+                disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
+            }
+
+
+            disconnect(signalMapper, SIGNAL(mapped(int)),
+                       this, SLOT(Context(int)));
+            //And remove the signal mapper
+            delete signalMapper;
+        }
+
+    }
+}
+
+
+void ResultsTree::Context(int application)
+{
+    if (mContextItem)
+    {
+        QVariantMap data = mContextItem->data().toMap();
+
+        QString program = mApplications.GetApplicationPath(application);
+
+        //TODO Check which line was actually right clicked, now defaults to 0
+        unsigned int index = 0;
+
+        //Replace (file) with filename
+        QStringList files = data["files"].toStringList();
+        if (files.size() > 0)
+        {
+            program.replace("(file)", files[index], Qt::CaseInsensitive);
+        }
+        else
+        {
+            qDebug("Failed to get filename!");
+        }
+
+
+        QVariantList lines = data["lines"].toList();
+        if (lines.size() > 0)
+        {
+            program.replace("(line)", QString("%1").arg(lines[index].toInt()), Qt::CaseInsensitive);
+        }
+        else
+        {
+            qDebug("Failed to get filenumber!");
+        }
+
+        program.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
+        program.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
+
+        QProcess::execute(program);
     }
 }

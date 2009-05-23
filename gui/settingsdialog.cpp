@@ -58,7 +58,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
 
     //General tab
     QWidget *general = new QWidget();
-    tabs->addTab(general,tr("General"));
+    tabs->addTab(general, tr("General"));
 
 
     //layout for general tab
@@ -83,7 +83,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
 
     //Add tab for setting user startable applications
     QWidget *applications = new QWidget();
-    tabs->addTab(applications,tr("Applications"));
+    tabs->addTab(applications, tr("Applications"));
 
     QVBoxLayout *appslayout = new QVBoxLayout();
     mListWidget = new QListWidget();
@@ -105,8 +105,8 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     connect(modify, SIGNAL(clicked()),
             this, SLOT(ModifyApplication()));
 
-    connect(mListWidget,SIGNAL(itemDoubleClicked(QListWidgetItem *)),
-            this,SLOT(ModifyApplication()));
+    connect(mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
+            this, SLOT(ModifyApplication()));
 
 
     PopulateListWidget();
@@ -175,11 +175,11 @@ void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
 
 void SettingsDialog::AddApplication()
 {
-    ApplicationDialog dialog("","",tr("Add a new application"));
+    ApplicationDialog dialog("", "", tr("Add a new application"));
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        mApplications.AddApplicationType(dialog.GetName(),dialog.GetPath());
+        mApplications.AddApplicationType(dialog.GetName(), dialog.GetPath());
         mListWidget->addItem(dialog.GetName());
     }
 }
@@ -190,9 +190,9 @@ void SettingsDialog::DeleteApplication()
     QList<QListWidgetItem *> selected = mListWidget->selectedItems();
     QListWidgetItem *item = 0;
 
-    foreach(item,selected)
+    foreach(item, selected)
     {
-        qDebug()<<item;
+        qDebug() << item;
         mApplications.RemoveApplication(mListWidget->row(item));
         mListWidget->clear();
         PopulateListWidget();
@@ -203,7 +203,7 @@ void SettingsDialog::ModifyApplication()
 {
     QList<QListWidgetItem *> selected = mListWidget->selectedItems();
     QListWidgetItem *item = 0;
-    foreach(item,selected)
+    foreach(item, selected)
     {
         int row = mListWidget->row(item);
 
@@ -213,7 +213,7 @@ void SettingsDialog::ModifyApplication()
 
         if (dialog.exec() == QDialog::Accepted)
         {
-            mApplications.SetApplicationType(row,dialog.GetName(),dialog.GetPath());
+            mApplications.SetApplicationType(row, dialog.GetName(), dialog.GetPath());
             item->setText(dialog.GetName());
         }
     }
@@ -221,7 +221,7 @@ void SettingsDialog::ModifyApplication()
 
 void SettingsDialog::PopulateListWidget()
 {
-    for (int i=0;i<mApplications.GetApplicationCount();i++)
+    for (int i = 0;i < mApplications.GetApplicationCount();i++)
     {
         mListWidget->addItem(mApplications.GetApplicationName(i));
     }

@@ -38,7 +38,7 @@ class ResultsView : public QWidget
     Q_OBJECT
 public:
 
-    ResultsView(QSettings &settings);
+    ResultsView(QSettings &settings, ApplicationList &list);
     virtual ~ResultsView();
 
     void ShowResults(ShowTypes type, bool show);

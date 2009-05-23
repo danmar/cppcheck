@@ -25,7 +25,9 @@
 #include <QStandardItemModel>
 #include <QStandardItem>
 #include <QSettings>
+#include <QContextMenuEvent>
 #include "common.h"
+#include "applicationlist.h"
 
 
 /**
@@ -34,8 +36,9 @@
 */
 class ResultsTree : public QTreeView
 {
+    Q_OBJECT
 public:
-    ResultsTree(QSettings &settings);
+    ResultsTree(QSettings &settings, ApplicationList &list);
     virtual ~ResultsTree();
 
     /**
@@ -58,13 +61,22 @@ public:
     void Clear();
 
     void ShowResults(ShowTypes type, bool show);
+protected slots:
+    /**
+    * @brief Slot for context menu item to open an error with specified application
+    *
+    * @param application Index of the application to open the error
+    */
+    void Context(int application);
 protected:
+    void contextMenuEvent(QContextMenuEvent * e);
+
     QStandardItem *AddBacktraceFiles(QStandardItem *parent,
-    const QString &file,
-    const int line,
-    const QString &severity,
-    const QString &message,
-    const bool hide);
+                                     const QString &file,
+                                     const int line,
+                                     const QString &severity,
+                                     const QString &message,
+                                     const bool hide);
 
     void AddItem(int index);
     void RefreshTree();
@@ -129,6 +141,14 @@ protected:
     QSettings &mSettings;
 
     bool mShowTypes[SHOW_NONE];
+
+    ApplicationList &mApplications;
+
+    /**
+    * @brief Right clicked item (used by context menu slots)
+    *
+    */
+    QStandardItem *mContextItem;
 private:
 };
 

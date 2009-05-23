@@ -35,9 +35,11 @@ void ApplicationList::LoadSettings(QSettings &programSettings)
 
     QStringList names = programSettings.value(tr("Application names"), QStringList()).toStringList();
     QStringList paths = programSettings.value(tr("Application paths"), QStringList()).toStringList();
-    if (names.size() == paths.size()) {
-        for(int i=0;i<names.size();i++) {
-            AddApplicationType(names[i],paths[i]);
+    if (names.size() == paths.size())
+    {
+        for (int i = 0;i < names.size();i++)
+        {
+            AddApplicationType(names[i], paths[i]);
         }
     }
 }
@@ -47,13 +49,14 @@ void ApplicationList::SaveSettings(QSettings &programSettings)
     QStringList names;
     QStringList paths;
 
-    for(int i=0;i<GetApplicationCount();i++) {
-        names<<GetApplicationName(i);
-        paths<<GetApplicationPath(i);
+    for (int i = 0;i < GetApplicationCount();i++)
+    {
+        names << GetApplicationName(i);
+        paths << GetApplicationPath(i);
     }
 
-    programSettings.setValue(tr("Application names"),names);
-    programSettings.setValue(tr("Application paths"),paths);
+    programSettings.setValue(tr("Application names"), names);
+    programSettings.setValue(tr("Application paths"), paths);
 
 }
 
@@ -100,11 +103,11 @@ void ApplicationList::AddApplicationType(const QString &name, const QString &pat
     ApplicationType type;
     type.Name = name;
     type.Path = path;
-    mApplications<<type;
+    mApplications << type;
 }
 
 void ApplicationList::RemoveApplication(const int index)
 {
-mApplications.removeAt(index);
+    mApplications.removeAt(index);
 }
 

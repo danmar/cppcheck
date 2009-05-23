@@ -22,7 +22,7 @@
 #include <QDebug>
 #include <QVBoxLayout>
 
-ResultsView::ResultsView(QSettings &settings)
+ResultsView::ResultsView(QSettings &settings, ApplicationList &list)
 {
     QVBoxLayout *layout = new QVBoxLayout();
     setLayout(layout);
@@ -31,7 +31,7 @@ ResultsView::ResultsView(QSettings &settings)
     layout->addWidget(mProgress);
     mProgress->setMinimum(0);
 
-    mTree = new ResultsTree(settings);
+    mTree = new ResultsTree(settings, list);
     layout->addWidget(mTree);
 
 }

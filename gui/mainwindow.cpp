@@ -41,7 +41,7 @@ MainWindow::MainWindow() :
         mActionShowErrors(tr("Show &common errors"), this),
         mActionShowCheckAll(tr("Check all"), this),
         mActionShowUncheckAll(tr("Uncheck all"), this),
-        mResults(mSettings)
+        mResults(mSettings, mApplications)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
     menu->addAction(&mActionCheckFiles);
@@ -249,7 +249,7 @@ void MainWindow::CheckDone()
 
 void MainWindow::ProgramSettings()
 {
-    SettingsDialog dialog(mSettings,mApplications);
+    SettingsDialog dialog(mSettings, mApplications);
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveCheckboxValues();
