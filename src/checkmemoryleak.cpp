@@ -214,7 +214,7 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
         return 0;
 
     // I/O functions that are not allocating nor deallocating memory..
-    if (Token::Match(tok, "fgets|fgetc|fputs|fputc|printf"))
+    if (Token::Match(tok, "fgets|fgetc|fputs|fputc|feof|printf"))
         return 0;
 
     // Convert functions that are not allocating nor deallocating memory..
