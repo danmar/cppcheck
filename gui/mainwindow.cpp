@@ -121,6 +121,7 @@ void MainWindow::LoadSettings()
     mResults.ShowResults(SHOW_SECURITY, mActionShowSecurity.isChecked());
     mResults.ShowResults(SHOW_STYLE, mActionShowStyle.isChecked());
     mResults.ShowResults(SHOW_UNUSED, mActionShowUnused.isChecked());
+    mApplications.LoadSettings(mSettings);
 }
 
 void MainWindow::SaveSettings()
@@ -134,6 +135,7 @@ void MainWindow::SaveSettings()
     mSettings.setValue(tr("Show style"), mActionShowStyle.isChecked());
     mSettings.setValue(tr("Show unused"), mActionShowUnused.isChecked());
     mSettings.setValue(tr("Show errors"), mActionShowErrors.isChecked());
+    mApplications.SaveSettings(mSettings);
 }
 
 
@@ -247,7 +249,7 @@ void MainWindow::CheckDone()
 
 void MainWindow::ProgramSettings()
 {
-    SettingsDialog dialog(mSettings);
+    SettingsDialog dialog(mSettings,mApplications);
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveCheckboxValues();

@@ -21,18 +21,49 @@
 #include "settingsdialog.h"
 #include <QLabel>
 #include <QDebug>
+#include <QTabWidget>
+#include "applicationdialog.h"
 
-SettingsDialog::SettingsDialog(QSettings &programSettings) :
-        mSettings(programSettings)
+SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list) :
+        mSettings(programSettings),
+        mApplications(list)
 {
+    //Create a layout for the settings dialog
+    QVBoxLayout *dialoglayout = new QVBoxLayout();
+
+    //Create a tabwidget and add it to dialogs layout
+    QTabWidget *tabs = new QTabWidget();
+    dialoglayout->addWidget(tabs);
+
+    //Add ok and cancel buttons
     QPushButton *cancel = new QPushButton(tr("Cancel"));
     QPushButton *ok = new QPushButton(tr("Ok"));
 
-    //Main layout
+    //Add a layout for ok/cancel buttons
+    QHBoxLayout *buttonLayout = new QHBoxLayout();
+
+    buttonLayout->addWidget(ok);
+    buttonLayout->addWidget(cancel);
+    //Add button layout to the main dialog layout
+    dialoglayout->addLayout(buttonLayout);
+
+    //Connect OK buttons
+    connect(ok, SIGNAL(clicked()),
+            this, SLOT(accept()));
+    connect(cancel, SIGNAL(clicked()),
+            this, SLOT(reject()));
+
+
+    //Begin adding tabs and tab content
+
+    //General tab
+    QWidget *general = new QWidget();
+    tabs->addTab(general,tr("General"));
+
+
+    //layout for general tab
     QVBoxLayout *layout = new QVBoxLayout();
 
-    //Layout for ok/cancel buttons
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
 
     //Number of jobs
     QHBoxLayout *jobsLayout = new QHBoxLayout();
@@ -48,21 +79,41 @@ SettingsDialog::SettingsDialog(QSettings &programSettings) :
                          tr("Check force"),
                          false);
 
+    general->setLayout(layout);
+
+    //Add tab for setting user startable applications
+    QWidget *applications = new QWidget();
+    tabs->addTab(applications,tr("Applications"));
+
+    QVBoxLayout *appslayout = new QVBoxLayout();
+    mListWidget = new QListWidget();
+    appslayout->addWidget(mListWidget);
+    applications->setLayout(appslayout);
+
+    QPushButton *add = new QPushButton(tr("Add application"));
+    appslayout->addWidget(add);
+    connect(add, SIGNAL(clicked()),
+            this, SLOT(AddApplication()));
+
+    QPushButton *del = new QPushButton(tr("Delete application"));
+    appslayout->addWidget(del);
+    connect(del, SIGNAL(clicked()),
+            this, SLOT(DeleteApplication()));
+
+    QPushButton *modify = new QPushButton(tr("Modify application"));
+    appslayout->addWidget(modify);
+    connect(modify, SIGNAL(clicked()),
+            this, SLOT(ModifyApplication()));
+
+    connect(mListWidget,SIGNAL(itemDoubleClicked(QListWidgetItem *)),
+            this,SLOT(ModifyApplication()));
 
 
-
-    buttonLayout->addWidget(ok);
-    buttonLayout->addWidget(cancel);
-    layout->addLayout(buttonLayout);
+    PopulateListWidget();
 
 
-    connect(ok, SIGNAL(clicked()),
-            this, SLOT(accept()));
-    connect(cancel, SIGNAL(clicked()),
-            this, SLOT(reject()));
-
+    setLayout(dialoglayout);
     setWindowTitle(tr("Settings"));
-    setLayout(layout);
     LoadSettings();
 }
 
@@ -121,3 +172,58 @@ void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
 {
     mSettings.setValue(name, CheckStateToBool(box->checkState()));
 }
+
+void SettingsDialog::AddApplication()
+{
+    ApplicationDialog dialog("","",tr("Add a new application"));
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        mApplications.AddApplicationType(dialog.GetName(),dialog.GetPath());
+        mListWidget->addItem(dialog.GetName());
+    }
+}
+
+void SettingsDialog::DeleteApplication()
+{
+
+    QList<QListWidgetItem *> selected = mListWidget->selectedItems();
+    QListWidgetItem *item = 0;
+
+    foreach(item,selected)
+    {
+        qDebug()<<item;
+        mApplications.RemoveApplication(mListWidget->row(item));
+        mListWidget->clear();
+        PopulateListWidget();
+    }
+}
+
+void SettingsDialog::ModifyApplication()
+{
+    QList<QListWidgetItem *> selected = mListWidget->selectedItems();
+    QListWidgetItem *item = 0;
+    foreach(item,selected)
+    {
+        int row = mListWidget->row(item);
+
+        ApplicationDialog dialog(mApplications.GetApplicationName(row),
+                                 mApplications.GetApplicationPath(row),
+                                 tr("Modify an application"));
+
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            mApplications.SetApplicationType(row,dialog.GetName(),dialog.GetPath());
+            item->setText(dialog.GetName());
+        }
+    }
+}
+
+void SettingsDialog::PopulateListWidget()
+{
+    for (int i=0;i<mApplications.GetApplicationCount();i++)
+    {
+        mListWidget->addItem(mApplications.GetApplicationName(i));
+    }
+}
+

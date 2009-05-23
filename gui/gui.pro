@@ -18,6 +18,8 @@ HEADERS += 	mainwindow.h \
 		settingsdialog.h \
 		threadresult.h \
 		threadhandler.h \
+		applicationlist.h \
+		applicationdialog.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
@@ -50,6 +52,8 @@ SOURCES += 	main.cpp \
 		threadresult.cpp \
 		threadhandler.cpp \
 		settingsdialog.cpp \
+		applicationlist.cpp \
+		applicationdialog.cpp \
 		../src/checkautovariables.cpp \
 		../src/checkdangerousfunctions.cpp \
 		../src/checkmemoryleak.cpp \

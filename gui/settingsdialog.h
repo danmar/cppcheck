@@ -28,7 +28,10 @@
 #include <QCheckBox>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include "applicationlist.h"
 
+#include <QListWidget>
+#include <QKeyEvent>
 
 
 /**
@@ -37,11 +40,18 @@
 */
 class SettingsDialog : public QDialog
 {
+    Q_OBJECT
 public:
-    SettingsDialog(QSettings &programSettings);
+    SettingsDialog(QSettings &programSettings, ApplicationList &list);
     virtual ~SettingsDialog();
     void SaveCheckboxValues();
+
+protected slots:
+    void AddApplication();
+    void DeleteApplication();
+    void ModifyApplication();
 protected:
+    void PopulateListWidget();
     /**
         * @brief Load saved values
         * Loads dialog size and column widths.
@@ -106,12 +116,19 @@ protected:
     */
     QCheckBox *mForce;
 
+    /**
+    * @brief List of all applications that can be started when right clicking
+    * an error
+    */
+    QListWidget *mListWidget;
+
 
     /**
     * @brief Settings
     *
     */
     QSettings &mSettings;
+    ApplicationList &mApplications;
 private:
 };
 

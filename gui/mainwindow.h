@@ -161,6 +161,8 @@ protected:
     */
     ThreadHandler mThread;
 
+    ApplicationList mApplications;
+
 private:
 };
 
