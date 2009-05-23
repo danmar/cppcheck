@@ -57,7 +57,7 @@ public slots:
                const QString &severity,
                const QString &message,
                const QStringList &files,
-               const QList<int> &lines);
+               const QVariantList &lines);
 protected:
     /**
     * @brief Tree to show cppcheck's results

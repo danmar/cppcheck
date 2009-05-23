@@ -24,6 +24,7 @@
 #include <QMutex>
 #include <QObject>
 #include <QStringList>
+#include <QVariant>
 #include "../src/errorlogger.h"
 
 /**
@@ -55,7 +56,7 @@ signals:
                const QString &severity,
                const QString &message,
                const QStringList &files,
-               const QList<int> &lines);
+               const QVariantList &lines);
 
 protected:
     mutable QMutex mutex;

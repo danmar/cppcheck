@@ -59,7 +59,7 @@ void ResultsView::Error(const QString &file,
                         const QString &severity,
                         const QString &message,
                         const QStringList &files,
-                        const QList<int> &lines)
+                        const QVariantList &lines)
 {
     mTree->AddErrorItem(file, severity, message, files, lines);
 }

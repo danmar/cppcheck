@@ -26,7 +26,7 @@ ResultsTree::ResultsTree(QSettings &settings) :
 {
     setModel(&mModel);
     QStringList labels;
-    labels << tr("severity") << tr("Line") << tr("Message");
+    labels <<tr("File")<< tr("Severity") << tr("Line") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
 
     LoadSettings();
@@ -51,30 +51,91 @@ void ResultsTree::AddErrorItem(const QString &file,
                                const QString &severity,
                                const QString &message,
                                const QStringList &files,
-                               const QList<int> &lines)
+                               const QVariantList &lines)
 {
     Q_UNUSED(file);
 
+
     if (files.isEmpty())
+    {
         return;
+    }
 
     QString realfile = files[0];
 
     if (realfile.isEmpty())
-        realfile = "Undefined file";
-
-    ErrorItem item;
-    item.file = realfile;
-    item.type = SeverityToShowType(severity);
-    item.message = message;
-    item.files = files;
-    item.lines = lines;
-    mItems << item;
-
-    if (mShowTypes[item.type])
     {
-        AddItem(mItems.size() - 1);
+        realfile = "Undefined file";
     }
+
+
+    //Create the base item for the error and ensure it has a proper
+    //file item as a parent
+    QStandardItem *item = AddBacktraceFiles(EnsureFileItem(realfile),
+                                            realfile,
+                                            lines[0].toInt(),
+                                            severity,
+                                            message);
+
+
+    //Add user data to that item
+    QMap<QString, QVariant> data;
+    data["severity"]  = SeverityToShowType(severity);
+    data["message"]  = message;
+    data["files"]  = files;
+    data["lines"]  = lines;
+    item->setData(QVariant(data));
+
+    //Add backtrace files as children
+    for (int i=1;i<files.size() && i < lines.size();i++)
+    {
+        AddBacktraceFiles(item,files[i],lines[i].toInt(),severity,message);
+    }
+
+    //TODO just hide/show current error and it's file
+    //since this does a lot of unnecessary work
+    RefreshTree();
+}
+
+QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
+        const QString &file,
+        const int line,
+        const QString &severity,
+        const QString &message)
+
+{
+
+    QList<QStandardItem*> list;
+    list << CreateItem(file);
+    list << CreateItem(severity);
+    list << CreateItem(QString("%1").arg(line));
+    list << CreateItem(message);
+
+
+
+    if (parent)
+    {
+        parent->appendRow(list);
+
+    }
+    else
+    {
+        mModel.appendRow(list);
+    }
+
+    //TODO Does this leak memory? Should items from list be deleted?
+
+    return list[0];
+}
+
+ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
+{
+    int value = data.toInt();
+    if (value < SHOW_ALL && value > SHOW_ERRORS)
+    {
+        return SHOW_NONE;
+    }
+    return (ShowTypes)value;
 }
 
 ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
@@ -95,14 +156,15 @@ QStandardItem *ResultsTree::FindFileItem(const QString &name)
 {
     QList<QStandardItem *> list = mModel.findItems(name);
     if (list.size() > 0)
+    {
         return list[0];
+    }
     return 0;
 }
 
 void ResultsTree::Clear()
 {
     mModel.removeRows(0, mModel.rowCount());
-    mItems.clear();
 }
 
 void ResultsTree::LoadSettings()
@@ -126,26 +188,64 @@ void ResultsTree::SaveSettings()
 
 void ResultsTree::ShowResults(ShowTypes type, bool show)
 {
-    if (type != SHOW_NONE)
+    if (type != SHOW_NONE && mShowTypes[type] != show)
     {
-        if (mShowTypes[type] != show)
-        {
-            mShowTypes[type] = show;
-            RefreshTree();
-        }
+        mShowTypes[type] = show;
+        RefreshTree();
+
     }
 }
 
 
 void ResultsTree::RefreshTree()
 {
-    mModel.removeRows(0, mModel.rowCount());
-    for (int i = 0;i < mItems.size();i++)
+    //Get the amount of files in the tree
+    int filecount = mModel.rowCount();
+
+    for (int i=0;i<filecount;i++)
     {
-        if (mShowTypes[mItems[i].type])
+        //Get file i
+        QStandardItem *file = mModel.item(i,0);
+        if (!file)
         {
-            AddItem(i);
+            continue;
         }
+
+        //Get the amount of errors this file contains
+        int errorcount = file->rowCount();
+
+        //By default it shouldn't be visible
+        bool show = false;
+
+        for (int j=0;j<errorcount;j++)
+        {
+            //Get the error itself
+            QStandardItem *child = file->child(j,0);
+            if (!child)
+            {
+                continue;
+            }
+
+            //Get error's user data
+            QVariant userdata = child->data();
+            //Convert it to QVariantMap
+            QVariantMap data = userdata.toMap();
+
+            //Check if this error should be hidden
+            bool hide = !mShowTypes[VariantToShowType(data["severity"])];
+
+            //Hide/show accordingly
+            setRowHidden(j,file->index(),hide);
+
+            //If it was shown then the file itself has to be shown aswell
+            if (!hide)
+            {
+                show = true;
+            }
+        }
+
+        //Show the file if any of it's errors are visible
+        setRowHidden(i,QModelIndex(),!show);
     }
 }
 
@@ -170,24 +270,27 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
     return "";
 }
 
-
-void ResultsTree::AddItem(int index)
+QStandardItem *ResultsTree::EnsureFileItem(const QString &name)
 {
-    if (index >= 0 && index < mItems.size())
-    {
-        QStandardItem *fileitem = FindFileItem(mItems[index].file);
-        if (!fileitem)
-        {
-            //qDebug()<<"No previous error for file"<<realfile;
-            fileitem = CreateItem(mItems[index].file);
-            mModel.appendRow(fileitem);
-        }
+    QStandardItem *item = FindFileItem(name);
 
-        QList<QStandardItem*> list;
-        list << CreateItem(ShowTypeToString(mItems[index].type));
-        list << CreateItem(QString("%1").arg(mItems[index].lines[0]));
-        list << CreateItem(mItems[index].message);
-        fileitem->appendRow(list);
+    if (item)
+    {
+        return item;
     }
+
+    item = CreateItem(name);
+
+    mModel.appendRow(item);
+
+    return item;
 }
 
+void ResultsTree::ShowFileItem(const QString &name)
+{
+    QStandardItem *item = FindFileItem(name);
+    if (item)
+    {
+        setRowHidden(0,mModel.indexFromItem(item),false);
+    }
+}

@@ -23,7 +23,7 @@
 
 typedef enum
 {
-    SHOW_ALL,
+    SHOW_ALL = 0,
     SHOW_STYLE,
     SHOW_SECURITY,
     SHOW_UNUSED,

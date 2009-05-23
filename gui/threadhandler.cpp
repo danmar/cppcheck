@@ -139,12 +139,12 @@ void ThreadHandler::Initialize(ResultsView *view)
                                     const QString &,
                                     const QString &,
                                     const QStringList &,
-                                    const QList<int> &)),
+                                    const QVariantList &)),
             view, SLOT(Error(const QString &,
                              const QString &,
                              const QString &,
                              const QStringList &,
-                             const QList<int> &)));
+                             const QVariantList &)));
 
 }
 

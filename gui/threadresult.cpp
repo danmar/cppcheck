@@ -47,7 +47,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
     QMutexLocker locker(&mutex);
 
-    QList<int> lines;
+    QVariantList lines;
     QStringList files;
 
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = msg._callStack.begin();

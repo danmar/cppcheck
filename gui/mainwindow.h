@@ -57,6 +57,8 @@ public slots:
     void ShowStyle(bool checked);
     void ShowUnused(bool checked);
     void ShowErrors(bool checked);
+    void CheckAll();
+    void UncheckAll();
 
     /**
     * @brief Slot for check directory menu item
@@ -74,6 +76,7 @@ protected slots:
     */
     void CheckDone();
 protected:
+    void ToggleAllChecked(bool checked);
     void EnableCheckButtons(bool enable);
     void DoCheckFiles(QFileDialog::FileMode mode);
     QStringList GetFilesRecursively(const QString &path);
@@ -141,6 +144,8 @@ protected:
     QAction mActionShowStyle;
     QAction mActionShowUnused;
     QAction mActionShowErrors;
+    QAction mActionShowCheckAll;
+    QAction mActionShowUncheckAll;
 
 
 

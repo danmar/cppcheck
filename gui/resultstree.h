@@ -27,6 +27,7 @@
 #include <QSettings>
 #include "common.h"
 
+
 /**
 * @brief Cppcheck's results are shown in this tree
 *
@@ -48,7 +49,7 @@ public:
                       const QString &severity,
                       const QString &message,
                       const QStringList &files,
-                      const QList<int> &lines);
+                      const QVariantList &lines);
 
     /**
     * @brief Clear all errors from the tree
@@ -58,21 +59,18 @@ public:
 
     void ShowResults(ShowTypes type, bool show);
 protected:
+    QStandardItem *AddBacktraceFiles(QStandardItem *parent,
+    const QString &file,
+    const int line,
+    const QString &severity,
+    const QString &message);
+
     void AddItem(int index);
     void RefreshTree();
+    ShowTypes VariantToShowType(const QVariant &data);
     ShowTypes SeverityToShowType(const QString &severity);
     QString ShowTypeToString(ShowTypes type);
 
-    typedef struct
-    {
-        QString file;
-        ShowTypes type;
-        QString message;
-        QStringList files;
-        QList<int> lines;
-    }ErrorItem;
-
-    QList<ErrorItem> mItems;
     /**
     * @brief Load all settings
     * Colum widths
@@ -100,6 +98,22 @@ protected:
     * @return pointer to file item or null if none found
     */
     QStandardItem *FindFileItem(const QString &name);
+
+
+    /**
+    * @brief Ensures there's a item in the model for the specified file
+    *
+    * @param name Filename
+    * @return QStandardItem to be used as a parent for all errors for specified file
+    */
+    QStandardItem *EnsureFileItem(const QString &name);
+
+    /**
+    * @brief Show a file item
+    *
+    * @param name Filename of the fileitem
+    */
+    void ShowFileItem(const QString &name);
 
     /**
     * @brief Item model for tree

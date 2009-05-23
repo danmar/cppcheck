@@ -39,6 +39,8 @@ MainWindow::MainWindow() :
         mActionShowStyle(tr("Show s&tyle errors"), this),
         mActionShowUnused(tr("Show errors on &unused functions"), this),
         mActionShowErrors(tr("Show &common errors"), this),
+        mActionShowCheckAll(tr("Check all"), this),
+        mActionShowUncheckAll(tr("Uncheck all"), this),
         mResults(mSettings)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
@@ -61,6 +63,8 @@ MainWindow::MainWindow() :
     menuview->addAction(&mActionShowStyle);
     menuview->addAction(&mActionShowUnused);
     menuview->addAction(&mActionShowErrors);
+    menuview->addAction(&mActionShowCheckAll);
+    menuview->addAction(&mActionShowUncheckAll);
 
     QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
     menuprogram->addAction(&mActionSettings);
@@ -79,6 +83,8 @@ MainWindow::MainWindow() :
     connect(&mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
     connect(&mActionShowUnused, SIGNAL(toggled(bool)), this, SLOT(ShowUnused(bool)));
     connect(&mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
+    connect(&mActionShowCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
+    connect(&mActionShowUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
 
     connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
@@ -292,4 +298,32 @@ void MainWindow::ShowUnused(bool checked)
 void MainWindow::ShowErrors(bool checked)
 {
     mResults.ShowResults(SHOW_ERRORS, checked);
+}
+
+void MainWindow::CheckAll()
+{
+    ToggleAllChecked(true);
+}
+
+void MainWindow::UncheckAll()
+{
+    ToggleAllChecked(false);
+}
+
+void MainWindow::ToggleAllChecked(bool checked)
+{
+    mActionShowAll.setChecked(checked);
+    ShowAll(checked);
+
+    mActionShowSecurity.setChecked(checked);
+    ShowSecurity(checked);
+
+    mActionShowStyle.setChecked(checked);
+    ShowStyle(checked);
+
+    mActionShowUnused.setChecked(checked);
+    ShowUnused(checked);
+
+    mActionShowErrors.setChecked(checked);
+    ShowErrors(checked);
 }
