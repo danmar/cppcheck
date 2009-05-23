@@ -18,25 +18,29 @@ HEADERS += 	mainwindow.h \
 		settingsdialog.h \
 		threadresult.h \
 		threadhandler.h \
+		../src/checkautovariables.h \
+		../src/checkdangerousfunctions.h \
+		../src/checkheaders.h \
+		../src/checksecurity.h \
+		../src/cppcheck.h \
+		../src/mathlib.h \
+		../src/settings.h \
+		../src/tokenize.h \
 		../src/checkbufferoverrun.h \
-           	../src/checkclass.h \
-           	../src/checkdangerousfunctions.h \
-           	../src/checkfunctionusage.h \
-           	../src/checkheaders.h \
-           	../src/checkmemoryleak.h \
-           	../src/checkother.h \
-           	../src/checksecurity.h \
-           	../src/checkstl.h \
-           	../src/cppcheck.h \
-           	../src/cppcheckexecutor.h \
-           	../src/errorlogger.h \
-           	../src/filelister.h \
-           	../src/preprocessor.h \
-           	../src/resource.h \
-           	../src/settings.h \
-           	../src/threadexecutor.h \
-           	../src/token.h \
-           	../src/tokenize.h 
+		../src/checkfunctionusage.h \
+		../src/checkmemoryleak.h \
+		../src/checkstl.h \
+		../src/errorlogger.h \
+		../src/preprocessor.h \
+		../src/threadexecutor.h \
+		../src/checkclass.h \
+		../src/check.h \
+		../src/checkother.h \
+		../src/cppcheckexecutor.h \
+		../src/filelister.h \
+		../src/resource.h \
+		../src/token.h 
+
 
 SOURCES += 	main.cpp \
 		mainwindow.cpp\
@@ -46,21 +50,23 @@ SOURCES += 	main.cpp \
 		threadresult.cpp \
 		threadhandler.cpp \
 		settingsdialog.cpp \
+		../src/checkautovariables.cpp \
+		../src/checkdangerousfunctions.cpp \
+		../src/checkmemoryleak.cpp \
+		../src/checkstl.cpp \
+		../src/errorlogger.cpp \
+		../src/mathlib.cpp \
+		../src/threadexecutor.cpp \
 		../src/checkbufferoverrun.cpp \
-           	../src/checkclass.cpp \
-           	../src/checkdangerousfunctions.cpp \
-           	../src/checkfunctionusage.cpp \
-           	../src/checkheaders.cpp \
-           	../src/checkmemoryleak.cpp \
-           	../src/checkother.cpp \
-           	../src/checksecurity.cpp \
-           	../src/checkstl.cpp \
-           	../src/cppcheck.cpp \
-           	../src/cppcheckexecutor.cpp \
-           	../src/errorlogger.cpp \
-           	../src/filelister.cpp \
-           	../src/preprocessor.cpp \
-           	../src/settings.cpp \
-           	../src/threadexecutor.cpp \
-           	../src/token.cpp \
-           	../src/tokenize.cpp 
+		../src/checkfunctionusage.cpp \
+		../src/checkother.cpp \
+		../src/cppcheck.cpp \
+		../src/filelister.cpp \
+		../src/preprocessor.cpp \
+		../src/token.cpp \
+		../src/checkclass.cpp \
+		../src/checkheaders.cpp \
+		../src/checksecurity.cpp \
+		../src/cppcheckexecutor.cpp \
+		../src/settings.cpp \
+		../src/tokenize.cpp
