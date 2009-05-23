@@ -25,6 +25,7 @@
 #include <QFileDialog>
 #include <QDebug>
 
+
 ApplicationDialog::ApplicationDialog(const QString &name,
                                      const QString &path,
                                      const QString &title)

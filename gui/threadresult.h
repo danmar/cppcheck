@@ -37,9 +37,29 @@ class ThreadResult : public QObject, public ErrorLogger
 public:
     ThreadResult();
     virtual ~ThreadResult();
+
+    /**
+    * @brief Get next unprocessed file
+    * @return File path
+    */
     QString GetNextFile();
+
+    /**
+    * @brief Set list of files to check
+    * @param files List of files to check
+    */
     void SetFiles(const QStringList &files);
+
+    /**
+    * @brief Clear files to check
+    *
+    */
     void ClearFiles();
+
+    /**
+    * @brief Get the number of files to check
+    *
+    */
     int GetFileCount();
 
     /**
@@ -49,9 +69,29 @@ public:
     void reportErr(const ErrorLogger::ErrorMessage &msg);
     void reportStatus(unsigned int index, unsigned int max);
 public slots:
+
+    /**
+    * @brief Slot threads use to signal this class that a spesific file is checked
+    * @param file File taht is checked
+    */
     void FileChecked(const QString &file);
 signals:
+    /**
+    * @brief Progress signal
+    * @param value Current progress
+    * @param max Maximum progress
+    */
     void Progress(int value, int max);
+
+    /**
+    * @brief Signal of a new error
+    *
+    * @param file filename
+    * @param severity error severity
+    * @param message error message
+    * @param files list of files affected by the error
+    * @param lines list of file line numers affected by the error
+    */
     void Error(const QString &file,
                const QString &severity,
                const QString &message,
@@ -59,9 +99,29 @@ signals:
                const QVariantList &lines);
 
 protected:
+
+    /**
+    * @brief Mutex
+    *
+    */
     mutable QMutex mutex;
+
+    /**
+    * @brief List of files to check
+    *
+    */
     QStringList mFiles;
+
+    /**
+    * @brief Max progress
+    *
+    */
     int mMaxProgress;
+
+    /**
+    * @brief Current progress
+    *
+    */
     int mProgress;
 private:
 };

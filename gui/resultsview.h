@@ -41,6 +41,13 @@ public:
     ResultsView(QSettings &settings, ApplicationList &list);
     virtual ~ResultsView();
 
+    /**
+    * @brief Function to show/hide certain type of errors
+    * Refreshes the tree.
+    *
+    * @param type Type of error to show/hide
+    * @param Should specified errors be shown (true) or hidden (false)
+    */
     void ShowResults(ShowTypes type, bool show);
 
     /**
@@ -49,10 +56,24 @@ public:
     */
     void Clear();
 public slots:
+
     /**
-    * Slots for CheckThread's signals
+    * @brief Slot for updating the checking progress
+    *
+    * @param value Current progress value
+    * @param max Maximum progress value
     */
     void Progress(int value, int max);
+
+    /**
+    * @brief Slot for new error to be displayed
+    *
+    * @param file filename
+    * @param severity error severity
+    * @param message error message
+    * @param files list of files affected by the error
+    * @param lines list of file line numers affected by the error
+    */
     void Error(const QString &file,
                const QString &severity,
                const QString &message,

@@ -20,7 +20,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-
+/**
+* @brief List of error types to show
+*
+*/
 typedef enum
 {
     SHOW_ALL = 0,

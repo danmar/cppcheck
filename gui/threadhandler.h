@@ -39,9 +39,30 @@ class ThreadHandler : public QObject
 public:
     ThreadHandler();
     virtual ~ThreadHandler();
+
+    /**
+    * @brief Set the number of threads to use
+    * @param count The number of threads to use
+    */
     void SetThreadCount(const int count);
+
+    /**
+    * @brief Initialize the threads (connect all signals to resultsview's slots)
+    *
+    * @param view View to show error results
+    */
     void Initialize(ResultsView *view);
+
+    /**
+    * @brief Load settings
+    * @param settings QSettings to load settings from
+    */
     void LoadSettings(QSettings &settings);
+
+    /**
+    * @brief Save settings
+    * @param settings QSettings to save settings to
+    */
     void SaveSettings(QSettings &settings);
 
     /**
@@ -57,19 +78,63 @@ public:
     */
     void SetFiles(const QStringList &files);
 
+    /**
+    * @brief Start the threads to check the files
+    *
+    * @param settings Settings for checking
+    * @param recheck Should we reuse the files we checked earleir
+    */
     void Check(Settings settings, bool recheck);
 
 
 signals:
+    /**
+    * @brief Signal that all threads are done
+    *
+    */
     void Done();
 protected slots:
+
+    /**
+    * @brief Slot to stop all threads
+    *
+    */
     void Stop();
+
+    /**
+    * @brief Slot that a single thread is done
+    *
+    */
     void ThreadDone();
 protected:
+    /**
+    * @brief List of files checked last time (used when rechecking)
+    *
+    */
     QStringList mLastFiles;
+
+    /**
+    * @brief Function to delete all threads
+    *
+    */
     void RemoveThreads();
+
+    /**
+    * @brief Thread results are stored here
+    *
+    */
     ThreadResult mResults;
+
+    /**
+    * @brief List of threads currently in use
+    *
+    */
     QList<CheckThread *> mThreads;
+
+    /**
+    * @brief The amount of threads currently running
+    *
+    */
     int mRunningThreadCount;
 private:
 };

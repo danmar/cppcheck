@@ -204,7 +204,6 @@ void ResultsTree::ShowResults(ShowTypes type, bool show)
     {
         mShowTypes[type] = show;
         RefreshTree();
-
     }
 }
 
@@ -261,26 +260,6 @@ void ResultsTree::RefreshTree()
     }
 }
 
-QString ResultsTree::ShowTypeToString(ShowTypes type)
-{
-    switch (type)
-    {
-    case SHOW_ALL:
-        return "all";
-    case SHOW_ERRORS:
-        return "error";
-    case SHOW_STYLE:
-        return "style";
-    case SHOW_SECURITY:
-        return "security";
-    case SHOW_UNUSED:
-        return "unused";
-    case SHOW_NONE:
-        return "none";
-    }
-
-    return "";
-}
 
 QStandardItem *ResultsTree::EnsureFileItem(const QString &name)
 {
@@ -349,7 +328,6 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
             //Start the menu
             menu.exec(e->globalPos());
-
 
             //Disconnect all signals
             for (int i = 0;i < actions.size();i++)

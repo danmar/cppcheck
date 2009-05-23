@@ -46,7 +46,9 @@ public:
     *
     * @param file filename
     * @param severity error severity
-    * @param error error message
+    * @param message error message
+    * @param files list of files affected by the error
+    * @param lines list of file line numers affected by the error
     */
     void AddErrorItem(const QString &file,
                       const QString &severity,
@@ -60,9 +62,22 @@ public:
     */
     void Clear();
 
+    /**
+    * @brief Function to show/hide certain type of errors
+    * Refreshes the tree.
+    *
+    * @param type Type of error to show/hide
+    * @param Should specified errors be shown (true) or hidden (false)
+    */
     void ShowResults(ShowTypes type, bool show);
 protected slots:
+    /**
+    * @brief Slot to quickstart an error with default application
+    *
+    * @param index Model index to specify which error item to open
+    */
     void QuickStartApplication(const QModelIndex &index);
+
     /**
     * @brief Slot for context menu item to open an error with specified application
     *
@@ -70,9 +85,34 @@ protected slots:
     */
     void Context(int application);
 protected:
+
+    /**
+    * @brief Helper function to open an error within target with application
+    *
+    *
+    * @param target Error tree item to open
+    * @param application Index of the application to open with
+    */
     void StartApplication(QStandardItem *target, int application);
+
+    /**
+    * @brief Context menu event (user right clicked on the tree)
+    *
+    * @param e Event
+    */
     void contextMenuEvent(QContextMenuEvent * e);
 
+    /**
+    * @brief Add a new error item beneath a file or a backtrace item beneath an error
+    *
+    * @param parent Parent for the item. Either a file item or an error item
+    * @param file Filename of the error
+    * @param line Line numer
+    * @param severity Error severity
+    * @param message Error message
+    * @param hide Should this be hidden (true) or shown (false)
+    * @return newly created QStandardItem *
+    */
     QStandardItem *AddBacktraceFiles(QStandardItem *parent,
                                      const QString &file,
                                      const int line,
@@ -80,11 +120,28 @@ protected:
                                      const QString &message,
                                      const bool hide);
 
-    void AddItem(int index);
+
+    /**
+    * @brief Refresh tree by checking which of the items should be shown
+    * and which should be hidden
+    *
+    */
     void RefreshTree();
+
+    /**
+    * @brief Convert QVariant (that contains an int) to Showtypes value
+    *
+    * @param data QVariant (that contains an int) to be converted
+    * @return data converted to ShowTypes
+    */
     ShowTypes VariantToShowType(const QVariant &data);
+
+    /**
+    * @brief Convert severity string to ShowTypes value
+    * @param severity Error severity string
+    * @return Severity converted to ShowTypes value
+    */
     ShowTypes SeverityToShowType(const QString &severity);
-    QString ShowTypeToString(ShowTypes type);
 
     /**
     * @brief Load all settings
@@ -142,8 +199,17 @@ protected:
     */
     QSettings &mSettings;
 
+    /**
+    * @brief List of bools to determine which of ShowTypes to display on the tree
+    * (true) and which of them should be hidden (false)
+    *
+    */
     bool mShowTypes[SHOW_NONE];
 
+    /**
+    * @brief List of applications to open errors with
+    *
+    */
     ApplicationList &mApplications;
 
     /**

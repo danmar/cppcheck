@@ -23,21 +23,62 @@
 #include <QDialog>
 #include <QLineEdit>
 
-
+/**
+* @brief Dialog to edit a startable application.
+* User can open errors with user specified applications. This is a dialog
+* to modify/add an application to open errors with.
+*
+*/
 class ApplicationDialog : public QDialog
 {
     Q_OBJECT
 public:
+    /**
+    * @brief Constructor
+    *
+    * @param name Default name for the application to start
+    * @param path Path for the application
+    * @param title Title for the dialog
+    */
     ApplicationDialog(const QString &name,
                       const QString &path,
                       const QString &title);
     virtual ~ApplicationDialog();
+
+    /**
+    * @brief Get modified name
+    * This is just a name to display the application. This has nothing to do
+    * with executing the application.
+    *
+    * @return Modified name
+    */
     QString GetName();
+
+    /**
+    * @brief Get modified path
+    * This also contains all parameters user wants to specify.
+    * @return Modified path
+    */
     QString GetPath();
 protected slots:
+
+    /**
+    * @brief Slot to browse for an application
+    *
+    */
     void Browse();
 protected:
+    /**
+    * @brief Editbox for the application's name
+    * This is just a name to display the application. This has nothing to do
+    * with executing the application.
+    */
     QLineEdit *mName;
+
+    /**
+    * @brief Editbox for the application's path
+    * This also contains all parameters user wants to specify.
+    */
     QLineEdit *mPath;
 private:
 };

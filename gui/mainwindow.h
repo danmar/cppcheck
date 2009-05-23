@@ -49,15 +49,57 @@ public slots:
     *
     */
     void CheckFiles();
+
+    /**
+    * @brief Slot to recheck files
+    *
+    */
     void ReCheck();
+
+    /**
+    * @brief Slot to clear all search results
+    *
+    */
     void ClearResults();
 
+    /**
+    * @brief Show errors with type "all"
+    * @param checked Should errors be shown (truw) or hidden (false)
+    */
     void ShowAll(bool checked);
+
+    /**
+    * @brief Show errors with type "security"
+    * @param checked Should errors be shown (truw) or hidden (false)
+    */
     void ShowSecurity(bool checked);
+
+    /**
+    * @brief Show errors with type "style"
+    * @param checked Should errors be shown (truw) or hidden (false)
+    */
     void ShowStyle(bool checked);
+
+    /**
+    * @brief Show errors with type "unused"
+    * @param checked Should errors be shown (truw) or hidden (false)
+    */
     void ShowUnused(bool checked);
+
+    /**
+    * @brief Show errors with type "error"
+    * @param checked Should errors be shown (truw) or hidden (false)
+    */
     void ShowErrors(bool checked);
+
+    /**
+    * @brief Slot to check all "Show errors" menu items
+    */
     void CheckAll();
+
+    /**
+    * @brief Slot to uncheck all "Show errors" menu items
+    */
     void UncheckAll();
 
     /**
@@ -66,6 +108,10 @@ public slots:
     */
     void CheckDirectory();
 
+    /**
+    * @brief Slot to open program's settings dialog
+    *
+    */
     void ProgramSettings();
 
 protected slots:
@@ -76,11 +122,47 @@ protected slots:
     */
     void CheckDone();
 protected:
+
+    /**
+    * @brief Helper function to toggle all show error menu items
+    * @param checked Should all errors be shown (true) or hidden (false)
+    */
     void ToggleAllChecked(bool checked);
+
+    /**
+    * @brief Helper function to enable/disable all check,recheck buttons
+    *
+    */
     void EnableCheckButtons(bool enable);
+
+    /**
+    * @brief Helper function to open a dialog to ask user to select files to check
+    *
+    * @param mode Dialog open mode (files or directories)
+    */
     void DoCheckFiles(QFileDialog::FileMode mode);
+
+    /**
+    * @brief Get all files recursively from given path
+    *
+    * @param path Path to get files from
+    * @return List of file paths
+    */
     QStringList GetFilesRecursively(const QString &path);
+
+    /**
+    * @brief Get our default cppcheck settings
+    *
+    * @return Default cppcheck settings
+    */
     Settings GetCppCheckSettings();
+
+    /**
+    * @brief Removes all unaccepted (by cppcheck core) files from the list
+    *
+    * @param list List to remove unaccepted files from
+    * @return List of files that are all accepted by cppcheck core
+    */
     QStringList RemoveUnacceptedFiles(const QStringList &list);
 
     /**
@@ -138,12 +220,46 @@ protected:
     */
     QAction mActionSettings;
 
+    /**
+    * @brief Action to show errors with type "all"
+    *
+    */
     QAction mActionShowAll;
+
+    /**
+    * @brief Action to show errors with type "security"
+    *
+    */
     QAction mActionShowSecurity;
+
+    /**
+    * @brief Action to show errors with type "style"
+    *
+    */
     QAction mActionShowStyle;
+
+    /**
+    * @brief Action to show errors with type "unused"
+    *
+    */
     QAction mActionShowUnused;
+
+    /**
+    * @brief Action to show errors with type "error"
+    *
+    */
     QAction mActionShowErrors;
+
+    /**
+    * @brief Action to check all "show error" menu items
+    *
+    */
     QAction mActionShowCheckAll;
+
+    /**
+    * @brief Action to uncheck all "show error" menu items
+    *
+    */
     QAction mActionShowUncheckAll;
 
 
@@ -160,6 +276,10 @@ protected:
     */
     ThreadHandler mThread;
 
+    /**
+    * @brief List of user defined applications to open errors with
+    *
+    */
     ApplicationList mApplications;
 
 private:

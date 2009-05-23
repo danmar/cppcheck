@@ -44,12 +44,37 @@ class SettingsDialog : public QDialog
 public:
     SettingsDialog(QSettings &programSettings, ApplicationList &list);
     virtual ~SettingsDialog();
+
+    /**
+    * @brief Save all values to QSettings
+    *
+    */
     void SaveCheckboxValues();
 
 protected slots:
+
+    /**
+    * @brief Slot for adding a new application to the list
+    *
+    */
     void AddApplication();
+
+    /**
+    * @brief Slot for deleting an application from the list
+    *
+    */
     void DeleteApplication();
+
+    /**
+    * @brief Slot for modifying an application in the list
+    *
+    */
     void ModifyApplication();
+
+    /**
+    * @brief Slot for making the selected application as the default (first)
+    *
+    */
     void DefaultApplication();
 protected:
     void PopulateListWidget();
@@ -129,6 +154,11 @@ protected:
     *
     */
     QSettings &mSettings;
+
+    /**
+    * @brief List of applications user has specified
+    *
+    */
     ApplicationList &mApplications;
 private:
 };

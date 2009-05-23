@@ -24,40 +24,126 @@
 #include <QSettings>
 
 
+/**
+* @brief List of applications user has specified to open errors with
+* Each application has a name and a path. Name is displayed to the user
+* and has no other meaning. It isn't used to start the application.
+* Path contains the path to the application as well as the executable itself and
+* any possible argument user might want to specify.
+*
+* User can also specify certain predefined strings to path. These strings
+* will be replaced with appropriate values concerning the error. Strings are:
+* (file) - Filename containing the error
+* (line) - Line number containing the error
+* (message) - Error message
+* (severity) - Error severity
+*
+* Example opening a file with Kate and make Kate scroll to the corret line:
+* kate -l(line) (file)
+*
+*/
 class ApplicationList : public QObject
 {
 public:
+
+    /**
+    * @brief Struct containing information of the application
+    *
+    */
     typedef struct
     {
+        /**
+        * @brief Applicaton's name
+        *
+        */
         QString Name;
+
+        /**
+        * @brief Application's path and commandline arguments
+        *
+        */
         QString Path;
     }ApplicationType;
 
     ApplicationList();
     virtual ~ApplicationList();
 
+    /**
+    * @brief Load all applications
+    *
+    * @param programSettings QSettings to load application list from
+    */
     void LoadSettings(QSettings &programSettings);
 
+    /**
+    * @brief Save all applications
+    * @param programSettings QSettings to save applications to
+    */
     void SaveSettings(QSettings &programSettings);
 
+    /**
+    * @brief Get the amount of applications in the list
+    * @return The count of applications
+    */
     int GetApplicationCount();
 
-    QString GetApplicationName(const  int index);
+    /**
+    * @brief Get spesific application's name
+    *
+    * @param index Index of the application whose name to get
+    * @return Name of the application
+    */
+    QString GetApplicationName(const int index);
 
-    QString GetApplicationPath(const  int index);
+    /**
+    * @brief Get Application's path
+    *
+    * @param index of the application whose path to get
+    * @return Application's path
+    */
+    QString GetApplicationPath(const int index);
 
-    void SetApplicationType(const  int index,
+    /**
+    * @brief Modify an application
+    *
+    * @param index Index of the application to modify
+    * @param name New name for the application
+    * @param path New path for the application
+    */
+    void SetApplicationType(const int index,
                             const QString &name,
                             const QString &path);
 
+    /**
+    * @brief Add a new application
+    *
+    * @param name Name of the application
+    * @param path Path to the application
+    */
     void AddApplicationType(const QString &name, const QString &path);
 
+    /**
+    * @brief Remove an application from the list
+    *
+    * @param index Index of the application to remove.
+    */
     void RemoveApplication(const int index);
 
+    /**
+    * @brief Move certain application as first.
+    * Position of the application is used by the application to determine
+    * which of the applications is the default application. First application
+    * (index 0) is the default application.
+    *
+    * @param index Index of the application to make the default one
+    */
     void MoveFirst(const int index);
 protected:
 
-
+    /**
+    * @brief List of applications
+    *
+    */
     QList<ApplicationType> mApplications;
 private:
 };
