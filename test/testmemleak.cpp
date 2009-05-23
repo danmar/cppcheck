@@ -216,6 +216,7 @@ private:
 
         TEST_CASE(strndup_function);
         TEST_CASE(fcloseall_function);
+        TEST_CASE(file_functions);
         TEST_CASE(pointer_to_pointer);
     }
 
@@ -2187,6 +2188,33 @@ private:
               "    fcloseall();\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void file_functions()
+    {
+        check("void f()\n"
+              "{\n"
+              "FILE *f = fopen(fname, str);\n"
+              "feof(f);\n"
+              "clearerr(in);\n"
+              "ferror(in);\n"
+              "fread(ptr, 10, 1, in);\n"
+              "fwrite(ptr, 10, 1, in);\n"
+              "fflush(in);\n"
+              "setbuf(in, buf);\n"
+              "setbuffer(in, buf, 100);\n"
+              "setlinebuf(in);\n"
+              "setvbuf(in, buf, _IOLBF, 0);\n"
+              "fseek(in, 10, SEEK_SET);\n"
+              "fseeko(in, 10, SEEK_SET);\n"
+              "ftell(in);\n"
+              "ftello(in);\n"
+              "rewind(in);\n"
+              "fsetpos(in, 0);\n"
+              "fgetpos(in, 10);\n"
+              "fprintf(in, \"text\\n\");\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:22]: (error) Resource leak: f\n"), errout.str());
     }
 
     void pointer_to_pointer()
