@@ -111,3 +111,12 @@ void ApplicationList::RemoveApplication(const int index)
     mApplications.removeAt(index);
 }
 
+
+void ApplicationList::MoveFirst(const int index)
+{
+    if (index < mApplications.size() && index > 0)
+    {
+        mApplications.move(index, 0);
+    }
+}
+

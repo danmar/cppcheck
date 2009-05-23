@@ -50,6 +50,7 @@ protected slots:
     void AddApplication();
     void DeleteApplication();
     void ModifyApplication();
+    void DefaultApplication();
 protected:
     void PopulateListWidget();
     /**

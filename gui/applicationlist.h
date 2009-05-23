@@ -53,6 +53,8 @@ public:
     void AddApplicationType(const QString &name, const QString &path);
 
     void RemoveApplication(const int index);
+
+    void MoveFirst(const int index);
 protected:
 
 

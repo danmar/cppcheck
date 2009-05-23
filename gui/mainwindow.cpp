@@ -191,19 +191,6 @@ Settings MainWindow::GetCppCheckSettings()
     return result;
 }
 
-
-QStringList MainWindow::RemoveDuplicates(const QStringList &list)
-{
-    QHash<QString, int> hash;
-    QString str;
-    foreach(str, list)
-    {
-        hash[str] = 0;
-    }
-
-    return QStringList(hash.uniqueKeys());
-}
-
 QStringList MainWindow::GetFilesRecursively(const QString &path)
 {
     QFileInfo info(path);

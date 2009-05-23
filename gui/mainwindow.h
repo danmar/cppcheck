@@ -80,7 +80,6 @@ protected:
     void EnableCheckButtons(bool enable);
     void DoCheckFiles(QFileDialog::FileMode mode);
     QStringList GetFilesRecursively(const QString &path);
-    QStringList RemoveDuplicates(const QStringList &list);
     Settings GetCppCheckSettings();
     QStringList RemoveUnacceptedFiles(const QStringList &list);
 

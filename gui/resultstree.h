@@ -62,6 +62,7 @@ public:
 
     void ShowResults(ShowTypes type, bool show);
 protected slots:
+    void QuickStartApplication(const QModelIndex &index);
     /**
     * @brief Slot for context menu item to open an error with specified application
     *
@@ -69,6 +70,7 @@ protected slots:
     */
     void Context(int application);
 protected:
+    void StartApplication(QStandardItem *target, int application);
     void contextMenuEvent(QContextMenuEvent * e);
 
     QStandardItem *AddBacktraceFiles(QStandardItem *parent,

@@ -105,10 +105,15 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     connect(modify, SIGNAL(clicked()),
             this, SLOT(ModifyApplication()));
 
+    QPushButton *def = new QPushButton(tr("Make default application"));
+    appslayout->addWidget(def);
+    connect(def, SIGNAL(clicked()),
+            this, SLOT(DefaultApplication()));
+
     connect(mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
             this, SLOT(ModifyApplication()));
 
-
+    mListWidget->setSortingEnabled(false);
     PopulateListWidget();
 
 
@@ -216,6 +221,18 @@ void SettingsDialog::ModifyApplication()
             mApplications.SetApplicationType(row, dialog.GetName(), dialog.GetPath());
             item->setText(dialog.GetName());
         }
+    }
+}
+
+void SettingsDialog::DefaultApplication()
+{
+    QList<QListWidgetItem *> selected = mListWidget->selectedItems();
+    if (selected.size() > 0)
+    {
+        int index = mListWidget->row(selected[0]);
+        mApplications.MoveFirst(index);
+        mListWidget->clear();
+        PopulateListWidget();
     }
 }
 

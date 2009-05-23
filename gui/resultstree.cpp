@@ -33,8 +33,11 @@ ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
     QStringList labels;
     labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
-
+    setExpandsOnDoubleClick(false);
     LoadSettings();
+    connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
+            this, SLOT(QuickStartApplication(const QModelIndex &)));
+
 }
 
 ResultsTree::~ResultsTree()
@@ -365,12 +368,11 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
     }
 }
 
-
-void ResultsTree::Context(int application)
+void ResultsTree::StartApplication(QStandardItem *target, int application)
 {
-    if (mContextItem)
+    if (target && application >= 0 && application < mApplications.GetApplicationCount())
     {
-        QVariantMap data = mContextItem->data().toMap();
+        QVariantMap data = target->data().toMap();
 
         QString program = mApplications.GetApplicationPath(application);
 
@@ -402,6 +404,17 @@ void ResultsTree::Context(int application)
         program.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
         program.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
 
-        QProcess::execute(program);
+        QProcess::startDetached(program);
     }
+}
+
+
+void ResultsTree::Context(int application)
+{
+    StartApplication(mContextItem, application);
+}
+
+void ResultsTree::QuickStartApplication(const QModelIndex &index)
+{
+    StartApplication(mModel.itemFromIndex(index), 0);
 }
