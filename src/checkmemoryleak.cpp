@@ -116,7 +116,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
     if (Token::simpleMatch(tok2, "popen ("))
         return Pipe;
 
-    if (Token::simpleMatch(tok2, "opendir (") || Token::simpleMatch(tok2, "fdopendir ("))
+    if (Token::Match(tok2, "opendir|fdopendir ("))
         return Dir;
 
     // Userdefined allocation function..
