@@ -181,9 +181,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType(const 
 
     if (Token::simpleMatch(tok, std::string("free ( " + names + " ) ;").c_str()) ||
         Token::simpleMatch(tok, std::string("kfree ( " + names + " ) ;").c_str()))
-    {
         return Malloc;
-    }
 
     if (Token::simpleMatch(tok, std::string("g_free ( " + names + " ) ;").c_str()))
         return gMalloc;
