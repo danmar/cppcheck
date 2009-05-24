@@ -63,10 +63,10 @@ signals:
 protected:
     ThreadResult &mResult;
     /**
-    * @brief CppCheck itself
+    * @brief Cppcheck itself
     *
     */
-    CppCheck mCppCheck;
+    CppCheck mCppcheck;
 private:
 };
 

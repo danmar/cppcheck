@@ -61,6 +61,7 @@ public:
     */
     QString GetPath();
 protected slots:
+    void Ok();
 
     /**
     * @brief Slot to browse for an application

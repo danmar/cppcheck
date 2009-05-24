@@ -23,24 +23,26 @@
 #include <QMenu>
 #include <QDirIterator>
 #include <QMenuBar>
+#include <QMessageBox>
 #include "../src/filelister.h"
-
+#include "../src/cppcheckexecutor.h"
 
 MainWindow::MainWindow() :
-        mSettings(tr("CppCheck"), tr("CppCheck-GUI")),
+        mSettings(tr("Cppcheck"), tr("Cppcheck-GUI")),
         mActionExit(tr("E&xit"), this),
         mActionCheckFiles(tr("&Check files(s)"), this),
         mActionClearResults(tr("Clear &results"), this),
         mActionReCheck(tr("Recheck files"), this),
         mActionCheckDirectory(tr("Check &directory"), this),
         mActionSettings(tr("&Settings"), this),
-        mActionShowAll(tr("Show &more errors"), this),
+        mActionShowAll(tr("show possible false positives"), this),
         mActionShowSecurity(tr("Show &security errors"), this),
         mActionShowStyle(tr("Show s&tyle errors"), this),
         mActionShowUnused(tr("Show errors on &unused functions"), this),
         mActionShowErrors(tr("Show &common errors"), this),
         mActionShowCheckAll(tr("Check all"), this),
         mActionShowUncheckAll(tr("Uncheck all"), this),
+        mActionAbout(tr("About"), this),
         mResults(mSettings, mApplications)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
@@ -69,6 +71,9 @@ MainWindow::MainWindow() :
     QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
     menuprogram->addAction(&mActionSettings);
 
+    QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
+    menuHelp->addAction(&mActionAbout);
+
     setCentralWidget(&mResults);
 
 
@@ -87,10 +92,13 @@ MainWindow::MainWindow() :
     connect(&mActionShowUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
 
     connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
+
+    connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
+
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     LoadSettings();
     mThread.Initialize(&mResults);
-    setWindowTitle(tr("CppCheck"));
+    setWindowTitle(tr("Cppcheck"));
 }
 
 MainWindow::~MainWindow()
@@ -161,7 +169,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
         mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
         EnableCheckButtons(false);
-        mThread.Check(GetCppCheckSettings(), false);
+        mThread.Check(GetCppcheckSettings(), false);
     }
 }
 
@@ -175,7 +183,7 @@ void MainWindow::CheckDirectory()
     DoCheckFiles(QFileDialog::DirectoryOnly);
 }
 
-Settings MainWindow::GetCppCheckSettings()
+Settings MainWindow::GetCppcheckSettings()
 {
     Settings result;
     result._debug = false;
@@ -188,6 +196,11 @@ Settings MainWindow::GetCppCheckSettings()
     result._unusedFunctions = true;
     result._security = true;
     result._jobs = mSettings.value(tr("Check threads"), 1).toInt();
+
+    if (result._jobs <= 0) {
+        result._jobs = 1;
+    }
+
     return result;
 }
 
@@ -248,7 +261,7 @@ void MainWindow::ReCheck()
 {
     ClearResults();
     EnableCheckButtons(false);
-    mThread.Check(GetCppCheckSettings(), true);
+    mThread.Check(GetCppcheckSettings(), true);
 }
 
 void MainWindow::ClearResults()
@@ -315,4 +328,24 @@ void MainWindow::ToggleAllChecked(bool checked)
 
     mActionShowErrors.setChecked(checked);
     ShowErrors(checked);
+}
+
+void MainWindow::About()
+{
+    //TODO make a "GetVersionNumber" function to core cppcheck
+    CppCheckExecutor exec;
+    CppCheck check(exec);
+    const char *argv[] = {"","--version"};
+    QString version = check.parseFromArgs(2, argv).c_str();
+    version.replace("Cppcheck ","");
+
+        QMessageBox msgBox;
+        msgBox.setWindowTitle(tr("About..."));
+        msgBox.setText(QString("Cppcheck - A tool for static C/C++ code analysis.\nVersion %1\n\n" \
+                        "This program is licensed under the terms\n" \
+                        "of the GNU General Public License version 3\n" \
+                        "Available online under:\n" \
+                        "http://www.gnu.org/licenses/gpl-3.0.html\n\nSee AUTHORS file for the list of developers." \
+                        ).arg(version));
+        msgBox.exec();
 }

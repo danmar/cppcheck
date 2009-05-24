@@ -100,6 +100,10 @@ void ApplicationList::SetApplicationType(const int index,
 
 void ApplicationList::AddApplicationType(const QString &name, const QString &path)
 {
+    if (name.isEmpty() || path.isEmpty()) {
+        return;
+    }
+
     ApplicationType type;
     type.Name = name;
     type.Path = path;

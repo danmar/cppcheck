@@ -23,7 +23,7 @@
 
 CheckThread::CheckThread(ThreadResult &result) :
         mResult(result),
-        mCppCheck(result)
+        mCppcheck(result)
 {
     //ctor
 }
@@ -35,7 +35,7 @@ CheckThread::~CheckThread()
 
 void CheckThread::Check(Settings settings)
 {
-    mCppCheck.settings(settings);
+    mCppcheck.settings(settings);
     start();
 }
 
@@ -47,9 +47,9 @@ void CheckThread::run()
     while (!file.isEmpty())
     {
         qDebug() << "Checking file" << file;
-        mCppCheck.addFile(file.toStdString());
-        mCppCheck.check();
-        mCppCheck.clearFiles();
+        mCppcheck.addFile(file.toStdString());
+        mCppcheck.check();
+        mCppcheck.clearFiles();
         emit FileChecked(file);
 
         file = mResult.GetNextFile();

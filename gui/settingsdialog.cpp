@@ -68,9 +68,13 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     //Number of jobs
     QHBoxLayout *jobsLayout = new QHBoxLayout();
     mJobs = new QLineEdit(programSettings.value(tr("Check threads"), 1).toString());
+    mJobs->setValidator(new QIntValidator(1,9999,this));
+
     jobsLayout->addWidget(new QLabel(tr("Number of threads: ")));
     jobsLayout->addWidget(mJobs);
-    mJobs->setValidator(new QIntValidator(this));
+
+
+
     layout->addLayout(jobsLayout);
 
     //Force
@@ -169,7 +173,12 @@ void SettingsDialog::SaveSettings()
 
 void SettingsDialog::SaveCheckboxValues()
 {
-    mSettings.setValue(tr("Check threads"), mJobs->text().toInt());
+    int jobs = mJobs->text().toInt();
+    if (jobs <= 0) {
+        jobs = 1;
+    }
+
+    mSettings.setValue(tr("Check threads"), jobs);
     SaveCheckboxValue(mForce, tr("Check force"));
 }
 
@@ -197,7 +206,6 @@ void SettingsDialog::DeleteApplication()
 
     foreach(item, selected)
     {
-        qDebug() << item;
         mApplications.RemoveApplication(mListWidget->row(item));
         mListWidget->clear();
         PopulateListWidget();

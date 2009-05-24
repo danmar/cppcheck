@@ -114,6 +114,12 @@ public slots:
     */
     void ProgramSettings();
 
+    /**
+    * @brief Slot to open program's about dialog
+    *
+    */
+    void About();
+
 protected slots:
 
     /**
@@ -155,7 +161,7 @@ protected:
     *
     * @return Default cppcheck settings
     */
-    Settings GetCppCheckSettings();
+    Settings GetCppcheckSettings();
 
     /**
     * @brief Removes all unaccepted (by cppcheck core) files from the list
@@ -261,6 +267,12 @@ protected:
     *
     */
     QAction mActionShowUncheckAll;
+
+    /**
+    * @brief Action show about dialog
+    *
+    */
+    QAction mActionAbout;
 
 
 

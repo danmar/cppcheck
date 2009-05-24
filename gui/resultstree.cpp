@@ -348,7 +348,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
 void ResultsTree::StartApplication(QStandardItem *target, int application)
 {
-    if (target && application >= 0 && application < mApplications.GetApplicationCount())
+    if (target && application >= 0 && application < mApplications.GetApplicationCount() && target->parent())
     {
         QVariantMap data = target->data().toMap();
 

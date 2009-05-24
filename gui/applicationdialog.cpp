@@ -24,6 +24,7 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <QDebug>
+#include <QMessageBox>
 
 
 ApplicationDialog::ApplicationDialog(const QString &name,
@@ -66,7 +67,7 @@ ApplicationDialog::ApplicationDialog(const QString &name,
 
     //Connect OK buttons
     connect(ok, SIGNAL(clicked()),
-            this, SLOT(accept()));
+            this, SLOT(Ok()));
     connect(cancel, SIGNAL(clicked()),
             this, SLOT(reject()));
     setLayout(layout);
@@ -105,3 +106,15 @@ QString ApplicationDialog::GetPath()
 {
     return mPath->text();
 }
+
+void ApplicationDialog::Ok()
+{
+    if (mName->text().isEmpty() || mPath->text().isEmpty()) {
+        QMessageBox msgBox;
+        msgBox.setText("You must specify a name and a path for the application!");
+        msgBox.exec();
+    } else {
+    accept();
+    }
+}
+
