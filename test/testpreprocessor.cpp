@@ -598,9 +598,17 @@ private:
 
     void macro_simple1()
     {
-        const char filedata[] = "#define AAA(aa) f(aa)\n"
-                                "AAA(5);\n";
-        ASSERT_EQUALS("\nf(5);\n", OurPreprocessor::expandMacros(filedata));
+        {
+            const char filedata[] = "#define AAA(aa) f(aa)\n"
+                                    "AAA(5);\n";
+            ASSERT_EQUALS("\nf(5);\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            const char filedata[] = "#define AAA(aa) f(aa)\n"
+                                    "AAA (5);\n";
+            ASSERT_EQUALS("\nf(5);\n", OurPreprocessor::expandMacros(filedata));
+        }
     }
 
     void macro_simple2()

@@ -1111,6 +1111,9 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
 
             if (macro.params().size())
             {
+                if (code[pos2] == ' ')
+                    pos2++;
+
                 if (code[pos2] != '(')
                     continue;
 
