@@ -28,6 +28,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
         mSettings(programSettings),
         mApplications(list)
 {
+    mTempApplications.Copy(list);
     //Create a layout for the settings dialog
     QVBoxLayout *dialoglayout = new QVBoxLayout();
 
@@ -49,7 +50,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
 
     //Connect OK buttons
     connect(ok, SIGNAL(clicked()),
-            this, SLOT(accept()));
+            this, SLOT(Ok()));
     connect(cancel, SIGNAL(clicked()),
             this, SLOT(reject()));
 
@@ -194,7 +195,7 @@ void SettingsDialog::AddApplication()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        mApplications.AddApplicationType(dialog.GetName(), dialog.GetPath());
+        mTempApplications.AddApplicationType(dialog.GetName(), dialog.GetPath());
         mListWidget->addItem(dialog.GetName());
     }
 }
@@ -207,7 +208,7 @@ void SettingsDialog::DeleteApplication()
 
     foreach(item, selected)
     {
-        mApplications.RemoveApplication(mListWidget->row(item));
+        mTempApplications.RemoveApplication(mListWidget->row(item));
         mListWidget->clear();
         PopulateListWidget();
     }
@@ -221,13 +222,13 @@ void SettingsDialog::ModifyApplication()
     {
         int row = mListWidget->row(item);
 
-        ApplicationDialog dialog(mApplications.GetApplicationName(row),
-                                 mApplications.GetApplicationPath(row),
+        ApplicationDialog dialog(mTempApplications.GetApplicationName(row),
+                                 mTempApplications.GetApplicationPath(row),
                                  tr("Modify an application"));
 
         if (dialog.exec() == QDialog::Accepted)
         {
-            mApplications.SetApplicationType(row, dialog.GetName(), dialog.GetPath());
+            mTempApplications.SetApplicationType(row, dialog.GetName(), dialog.GetPath());
             item->setText(dialog.GetName());
         }
     }
@@ -239,7 +240,7 @@ void SettingsDialog::DefaultApplication()
     if (selected.size() > 0)
     {
         int index = mListWidget->row(selected[0]);
-        mApplications.MoveFirst(index);
+        mTempApplications.MoveFirst(index);
         mListWidget->clear();
         PopulateListWidget();
     }
@@ -247,9 +248,16 @@ void SettingsDialog::DefaultApplication()
 
 void SettingsDialog::PopulateListWidget()
 {
-    for (int i = 0;i < mApplications.GetApplicationCount();i++)
+    for (int i = 0;i < mTempApplications.GetApplicationCount();i++)
     {
-        mListWidget->addItem(mApplications.GetApplicationName(i));
+        mListWidget->addItem(mTempApplications.GetApplicationName(i));
     }
 }
+
+void SettingsDialog::Ok()
+{
+    mApplications.Copy(mTempApplications);
+    accept();
+}
+
 

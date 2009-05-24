@@ -138,8 +138,20 @@ public:
     * @param index Index of the application to make the default one
     */
     void MoveFirst(const int index);
+
+    /**
+    * @brief Remove all applications from this list and copy all applications from
+    * list given as a parameter.
+    * @param list Copying source
+    */
+    void Copy(ApplicationList &list);
 protected:
 
+    /**
+    * @brief Clear the list
+    *
+    */
+    void Clear();
     /**
     * @brief List of applications
     *

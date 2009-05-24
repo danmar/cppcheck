@@ -27,7 +27,7 @@ ApplicationList::ApplicationList()
 
 ApplicationList::~ApplicationList()
 {
-    //dtor
+    Clear();
 }
 
 void ApplicationList::LoadSettings(QSettings &programSettings)
@@ -123,5 +123,20 @@ void ApplicationList::MoveFirst(const int index)
     {
         mApplications.move(index, 0);
     }
+}
+
+
+void ApplicationList::Copy(ApplicationList &list)
+{
+    Clear();
+    for (int i=0;i<list.GetApplicationCount();i++)
+    {
+        AddApplicationType(list.GetApplicationName(i),list.GetApplicationPath(i));
+    }
+}
+
+void ApplicationList::Clear()
+{
+    mApplications.clear();
 }
 

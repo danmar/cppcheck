@@ -52,6 +52,11 @@ public:
     void SaveCheckboxValues();
 
 protected slots:
+    /**
+    * @brief Slot for clicking OK.
+    *
+    */
+    void Ok();
 
     /**
     * @brief Slot for adding a new application to the list
@@ -77,7 +82,13 @@ protected slots:
     */
     void DefaultApplication();
 protected:
+
+    /**
+    * @brief Clear all applications from the list and re insert them from mTempApplications
+    *
+    */
     void PopulateListWidget();
+
     /**
         * @brief Load saved values
         * Loads dialog size and column widths.
@@ -160,6 +171,13 @@ protected:
     *
     */
     ApplicationList &mApplications;
+
+    /**
+    * @brief Temporary list of applications
+    * This will be copied to actual list of applications (mApplications)
+    * when user clicks ok.
+    */
+    ApplicationList mTempApplications;
 private:
 };
 
