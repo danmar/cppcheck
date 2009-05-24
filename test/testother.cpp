@@ -145,6 +145,20 @@ private:
               "        delete p;\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (p != NULL)\n"
+              "        delete p;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (p)\n"
+              "        delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
     }
 
     void unreachable1()

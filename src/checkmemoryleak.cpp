@@ -116,6 +116,9 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
     if (Token::simpleMatch(tok2, "popen ("))
         return Pipe;
 
+    if (Token::Match(tok2, "opendir|fdopendir ("))
+        return Dir;
+
     // Userdefined allocation function..
     std::list<AllocFunc>::const_iterator it = _listAllocFunc.begin();
     while (it != _listAllocFunc.end())
@@ -181,9 +184,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType(const 
 
     if (Token::simpleMatch(tok, std::string("free ( " + names + " ) ;").c_str()) ||
         Token::simpleMatch(tok, std::string("kfree ( " + names + " ) ;").c_str()))
-    {
         return Malloc;
-    }
 
     if (Token::simpleMatch(tok, std::string("g_free ( " + names + " ) ;").c_str()))
         return gMalloc;
@@ -194,6 +195,9 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetDeallocationType(const 
 
     if (Token::simpleMatch(tok, std::string("pclose ( " + names + " )").c_str()))
         return Pipe;
+
+    if (Token::simpleMatch(tok, std::string("closedir ( " + names + " )").c_str()))
+        return Dir;
 
     return No;
 }
@@ -217,6 +221,11 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
     if (Token::Match(tok, "fgets|fgetc|fputs|fputc|feof|ferror|clearerr|printf|fprintf") ||
         Token::Match(tok, "fread|fwrite|fflush|fseek|fseeko|ftell|ftello|fsetpos|fgetpos") ||
         Token::Match(tok, "setvbuf|setbuf|setbuffer|setlinebuf|rewind"))
+        return 0;
+
+    // Functions to work with directories that are not allocating nor
+    // deallocating memory..
+    if (Token::Match(tok, "readdir|readdir_r|rewinddir|telldir|seekdir|scandir"))
         return 0;
 
     // Convert functions that are not allocating nor deallocating memory..
@@ -308,7 +317,8 @@ const char * CheckMemoryLeakClass::call_func(const Token *tok, std::list<const T
 void CheckMemoryLeakClass::MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all)
 {
     if (alloctype == CheckMemoryLeakClass::File ||
-        alloctype == CheckMemoryLeakClass::Pipe)
+        alloctype == CheckMemoryLeakClass::Pipe ||
+        alloctype == CheckMemoryLeakClass::Dir)
         resourceLeakError(tok, varname);
     else if (all)
         memleakallError(tok, varname);
@@ -544,7 +554,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
                         if (parlevel <= 0)
                             break;
                     }
-                    if (Token::simpleMatch(tok2, std::string("fclose ( " + varnameStr + " )").c_str()))
+                    if (Token::Match(tok2, std::string("fclose|closedir ( " + varnameStr + " )").c_str()))
                     {
                         addtoken("dealloc");
                         addtoken(";");
