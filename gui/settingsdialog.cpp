@@ -68,7 +68,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     //Number of jobs
     QHBoxLayout *jobsLayout = new QHBoxLayout();
     mJobs = new QLineEdit(programSettings.value(tr("Check threads"), 1).toString());
-    mJobs->setValidator(new QIntValidator(1,9999,this));
+    mJobs->setValidator(new QIntValidator(1, 9999, this));
 
     jobsLayout->addWidget(new QLabel(tr("Number of threads: ")));
     jobsLayout->addWidget(mJobs);
@@ -174,7 +174,8 @@ void SettingsDialog::SaveSettings()
 void SettingsDialog::SaveCheckboxValues()
 {
     int jobs = mJobs->text().toInt();
-    if (jobs <= 0) {
+    if (jobs <= 0)
+    {
         jobs = 1;
     }
 

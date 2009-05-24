@@ -197,7 +197,8 @@ Settings MainWindow::GetCppcheckSettings()
     result._security = true;
     result._jobs = mSettings.value(tr("Check threads"), 1).toInt();
 
-    if (result._jobs <= 0) {
+    if (result._jobs <= 0)
+    {
         result._jobs = 1;
     }
 
@@ -335,17 +336,17 @@ void MainWindow::About()
     //TODO make a "GetVersionNumber" function to core cppcheck
     CppCheckExecutor exec;
     CppCheck check(exec);
-    const char *argv[] = {"","--version"};
+    const char *argv[] = {"", "--version"};
     QString version = check.parseFromArgs(2, argv).c_str();
-    version.replace("Cppcheck ","");
+    version.replace("Cppcheck ", "");
 
-        QMessageBox msgBox;
-        msgBox.setWindowTitle(tr("About..."));
-        msgBox.setText(QString("Cppcheck - A tool for static C/C++ code analysis.\nVersion %1\n\n" \
-                        "This program is licensed under the terms\n" \
-                        "of the GNU General Public License version 3\n" \
-                        "Available online under:\n" \
-                        "http://www.gnu.org/licenses/gpl-3.0.html\n\nSee AUTHORS file for the list of developers." \
-                        ).arg(version));
-        msgBox.exec();
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(tr("About..."));
+    msgBox.setText(QString("Cppcheck - A tool for static C/C++ code analysis.\nVersion %1\n\n" \
+                           "This program is licensed under the terms\n" \
+                           "of the GNU General Public License version 3\n" \
+                           "Available online under:\n" \
+                           "http://www.gnu.org/licenses/gpl-3.0.html\n\nSee AUTHORS file for the list of developers." \
+                          ).arg(version));
+    msgBox.exec();
 }

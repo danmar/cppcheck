@@ -109,12 +109,15 @@ QString ApplicationDialog::GetPath()
 
 void ApplicationDialog::Ok()
 {
-    if (mName->text().isEmpty() || mPath->text().isEmpty()) {
+    if (mName->text().isEmpty() || mPath->text().isEmpty())
+    {
         QMessageBox msgBox;
         msgBox.setText("You must specify a name and a path for the application!");
         msgBox.exec();
-    } else {
-    accept();
+    }
+    else
+    {
+        accept();
     }
 }
 
