@@ -2198,8 +2198,20 @@ bool Tokenizer::simplifyKnownVariables()
 
                 std::string value(tok2->strAt(2));
                 Token* bailOutFromLoop = 0;
+                int indentlevel3 = indentlevel;     // indentlevel for tok3
                 for (Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
                 {
+                    if (tok3->str() == "{")
+                    {
+                        ++indentlevel3;
+                    }
+                    else if (tok3->str() == "}")
+                    {
+                        --indentlevel3;
+                        if (indentlevel3 < indentlevel)
+                            break;
+                    }
+
                     if (bailOutFromLoop)
                     {
                         // This could be a loop, skip it, but only if it doesn't contain

@@ -67,6 +67,7 @@ private:
         TEST_CASE(paranthesesVar);      // Remove redundant parantheses around variable .. "( %var% )"
         TEST_CASE(declareVar);
 
+        TEST_CASE(dontRemoveIncrement);
         TEST_CASE(removePostIncrement);
         TEST_CASE(removePreIncrement);
 
@@ -381,6 +382,33 @@ private:
         ASSERT_EQUALS(code, tok(code));
     }
 
+
+    void dontRemoveIncrement()
+    {
+        {
+            const char code[] = "void f(int a)\n"
+                                "{\n"
+                                "    if (a > 10)\n"
+                                "        a = 5;\n"
+                                "    else\n"
+                                "        a = 10;\n"
+                                "    a++;\n"
+                                "}\n";
+            ASSERT_EQUALS(std::string("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } a ++ ; } "), tok(code));
+        }
+
+        {
+            const char code[] = "void f(int a)\n"
+                                "{\n"
+                                "    if (a > 10)\n"
+                                "        a = 5;\n"
+                                "    else\n"
+                                "        a = 10;\n"
+                                "    ++a;\n"
+                                "}\n";
+            ASSERT_EQUALS(std::string("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } ++ a ; } "), tok(code));
+        }
+    }
 
     void removePostIncrement()
     {
