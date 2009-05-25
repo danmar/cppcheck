@@ -67,6 +67,8 @@ private:
         TEST_CASE(paranthesesVar);      // Remove redundant parantheses around variable .. "( %var% )"
         TEST_CASE(declareVar);
 
+        TEST_CASE(removePostIncrement);
+
         TEST_CASE(elseif1);
 
         TEST_CASE(sizeof1);
@@ -377,6 +379,20 @@ private:
         const char code[] = "void f ( ) { char str [ 100 ] = \"100\" ; } ";
         ASSERT_EQUALS(code, tok(code));
     }
+
+
+    void removePostIncrement()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    unsigned int c = 0;\n"
+                            "    c++;\n"
+                            "    if (c>0) { c++; }\n"
+                            "    c++;\n"
+                            "}\n";
+        ASSERT_EQUALS(std::string("void f ( ) { int c ; c = 3 ; ; { ; } ; } "), tok(code));
+    }
+
 
     std::string elseif(const char code[])
     {

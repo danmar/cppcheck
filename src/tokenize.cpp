@@ -2255,7 +2255,7 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3->next(), "%varid% ++|--", varid))
                     {
                         const std::string op(tok3->strAt(2));
-                        if (Token::Match(tok3, "; %any% %any% ;"))
+                        if (Token::Match(tok3, "[{};] %any% %any% ;"))
                         {
                             tok3->deleteNext();
                             tok3->deleteNext();
