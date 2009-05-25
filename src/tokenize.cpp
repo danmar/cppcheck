@@ -2275,7 +2275,7 @@ bool Tokenizer::simplifyKnownVariables()
                     {
                         incdec(value, tok3->strAt(1));
                         tok2->tokAt(2)->str(value.c_str());
-                        if (Token::Match(tok3, "; %any% %any% ;"))
+                        if (Token::Match(tok3, "[;{}] %any% %any% ;"))
                         {
                             tok3->deleteNext();
                             tok3->deleteNext();

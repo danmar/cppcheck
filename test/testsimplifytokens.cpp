@@ -68,6 +68,7 @@ private:
         TEST_CASE(declareVar);
 
         TEST_CASE(removePostIncrement);
+        TEST_CASE(removePreIncrement);
 
         TEST_CASE(elseif1);
 
@@ -389,6 +390,19 @@ private:
                             "    c++;\n"
                             "    if (c>0) { c++; }\n"
                             "    c++;\n"
+                            "}\n";
+        ASSERT_EQUALS(std::string("void f ( ) { int c ; c = 3 ; ; { ; } ; } "), tok(code));
+    }
+
+
+    void removePreIncrement()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    unsigned int c = 0;\n"
+                            "    ++c;\n"
+                            "    if (c>0) { ++c; }\n"
+                            "    ++c;\n"
                             "}\n";
         ASSERT_EQUALS(std::string("void f ( ) { int c ; c = 3 ; ; { ; } ; } "), tok(code));
     }
