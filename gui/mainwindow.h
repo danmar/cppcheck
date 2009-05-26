@@ -120,6 +120,13 @@ public slots:
     */
     void About();
 
+
+    /**
+    * @brief Slot to stop processing files
+    *
+    */
+    void Save();
+
 protected slots:
 
     /**
@@ -274,6 +281,17 @@ protected:
     */
     QAction mActionAbout;
 
+    /**
+    * @brief Action stop checking files
+    *
+    */
+    QAction mActionStop;
+
+    /**
+    * @brief Action save found errors to a file
+    *
+    */
+    QAction mActionSave;
 
 
     /**

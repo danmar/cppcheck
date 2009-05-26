@@ -85,6 +85,13 @@ protected slots:
     */
     void Context(int application);
 protected:
+    /**
+    * @brief Convert a severity string to a icon filename
+    *
+    * @param severity Severity string
+    * @param Icon filename
+    */
+    QString SeverityToIcon(const QString &severity);
 
     /**
     * @brief Helper function to open an error within target with application
@@ -111,6 +118,7 @@ protected:
     * @param severity Error severity
     * @param message Error message
     * @param hide Should this be hidden (true) or shown (false)
+    * @param addicon Should a default backtrace item icon be added
     * @return newly created QStandardItem *
     */
     QStandardItem *AddBacktraceFiles(QStandardItem *parent,
@@ -118,7 +126,8 @@ protected:
                                      const int line,
                                      const QString &severity,
                                      const QString &message,
-                                     const bool hide);
+                                     const bool hide,
+                                     const QString &icon);
 
 
     /**

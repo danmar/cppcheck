@@ -24,6 +24,7 @@
 #include <QDirIterator>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QToolBar>
 #include "../src/filelister.h"
 #include "../src/cppcheckexecutor.h"
 
@@ -43,13 +44,17 @@ MainWindow::MainWindow() :
         mActionShowCheckAll(tr("Check all"), this),
         mActionShowUncheckAll(tr("Uncheck all"), this),
         mActionAbout(tr("About"), this),
+        mActionStop(tr("Stop checking"), this),
+        mActionSave(tr("Save results to a file"), this),
         mResults(mSettings, mApplications)
 {
     QMenu *menu = menuBar()->addMenu(tr("&File"));
     menu->addAction(&mActionCheckFiles);
     menu->addAction(&mActionCheckDirectory);
     menu->addAction(&mActionReCheck);
+    menu->addAction(&mActionStop);
     menu->addAction(&mActionClearResults);
+    menu->addAction(&mActionSave);
     menu->addSeparator();
     menu->addAction(&mActionExit);
 
@@ -93,12 +98,42 @@ MainWindow::MainWindow() :
 
     connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
-    connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
+    //TODO: This crashed
+    //connect(&mActionStop, SIGNAL(triggered()), &mThread, SLOT(Stop()));
+    connect(&mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
 
+    connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
+
+    //Toolbar
+    QToolBar *toolbar =  addToolBar("Toolbar");
+    toolbar->setIconSize(QSize(22,22));
+
+    mActionCheckDirectory.setIcon(QIcon("icon.svg"));
+    mActionReCheck.setIcon(QIcon("images/view-refresh.png"));
+    mActionSettings.setIcon(QIcon("images/preferences-system.png"));
+    mActionAbout.setIcon(QIcon("images/help-browser.png"));
+    mActionStop.setIcon(QIcon("images/process-stop.png"));
+    mActionSave.setIcon(QIcon("images/media-floppy.png"));
+    mActionClearResults.setIcon(QIcon("images/edit-clear.png"));
+
+    toolbar->addAction(&mActionCheckDirectory);
+    toolbar->addAction(&mActionSave);
+    toolbar->addAction(&mActionReCheck);
+    toolbar->addAction(&mActionStop);
+    toolbar->addAction(&mActionClearResults);
+    toolbar->addAction(&mActionSettings);
+    toolbar->addAction(&mActionAbout);
+
+
+
+
+
     LoadSettings();
     mThread.Initialize(&mResults);
     setWindowTitle(tr("Cppcheck"));
+
+    EnableCheckButtons(true);
 }
 
 MainWindow::~MainWindow()
@@ -272,6 +307,7 @@ void MainWindow::ClearResults()
 
 void MainWindow::EnableCheckButtons(bool enable)
 {
+    mActionStop.setEnabled(!enable);
     mActionCheckFiles.setEnabled(enable);
     mActionReCheck.setEnabled(enable);
     mActionCheckDirectory.setEnabled(enable);
@@ -350,3 +386,13 @@ void MainWindow::About()
                           ).arg(version));
     msgBox.exec();
 }
+
+
+void MainWindow::Save()
+{
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(tr("Not implemented yet..."));
+    msgBox.setText(tr("Not implemented yet..."));
+    msgBox.exec();
+}
+

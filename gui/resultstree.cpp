@@ -84,7 +84,8 @@ void ResultsTree::AddErrorItem(const QString &file,
                                             lines[0].toInt(),
                                             severity,
                                             message,
-                                            hide);
+                                            hide,
+                                            SeverityToIcon(severity));
 
 
     //Add user data to that item
@@ -95,10 +96,17 @@ void ResultsTree::AddErrorItem(const QString &file,
     data["lines"]  = lines;
     item->setData(QVariant(data));
 
+
     //Add backtrace files as children
     for (int i = 1;i < files.size() && i < lines.size();i++)
     {
-        AddBacktraceFiles(item, files[i], lines[i].toInt(), severity, message, hide);
+        AddBacktraceFiles(item,
+        files[i],
+        lines[i].toInt(),
+        severity,
+        message,
+        hide,
+        "images/go-down.png");
     }
 
     //TODO just hide/show current error and it's file
@@ -114,7 +122,8 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
         const int line,
         const QString &severity,
         const QString &message,
-        const bool hide)
+        const bool hide,
+        const QString &icon)
 
 {
     if (!parent)
@@ -134,6 +143,10 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     parent->appendRow(list);
 
     setRowHidden(parent->rowCount() - 1, parent->index(), hide);
+
+    if (!icon.isEmpty()) {
+        list[0]->setIcon(QIcon(icon));
+    }
 
     //TODO Does this leak memory? Should items from list be deleted?
 
@@ -271,6 +284,7 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &name)
     }
 
     item = CreateItem(name);
+    item->setIcon(QIcon("images/text-x-generic.png"));
 
     mModel.appendRow(item);
 
@@ -395,4 +409,16 @@ void ResultsTree::Context(int application)
 void ResultsTree::QuickStartApplication(const QModelIndex &index)
 {
     StartApplication(mModel.itemFromIndex(index), 0);
+}
+
+QString ResultsTree::SeverityToIcon(const QString &severity)
+{
+      if (severity == "all")
+        return "images/dialog-warning.png";
+    if (severity == "error")
+        return "images/dialog-error.png";
+    if (severity == "style")
+        return "images/dialog-information.png";
+
+    return "";
 }
