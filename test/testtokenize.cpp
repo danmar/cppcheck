@@ -1735,6 +1735,16 @@ private:
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS(std::string("[test.cpp:1]: (error) Invalid number of character ((). Can't process file.\n"), errout.str());
         }
+
+        {
+            errout.str("");
+            const char code[] = "namespace extract{\nB(weighted_moment)\n}\nusing extract::weighted_moment;\n";
+            Tokenizer tokenizer(s, this);
+            std::istringstream istr(code);
+            ASSERT_EQUALS(true, tokenizer.tokenize(istr, "test.cpp"));
+            tokenizer.simplifyTokenList();
+            ASSERT_EQUALS(std::string(""), errout.str());
+        }
     }
 };
 

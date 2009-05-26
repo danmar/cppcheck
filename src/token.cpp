@@ -104,12 +104,19 @@ void Token::deleteThis()
 void Token::replace(Token *replaceThis, Token *start, Token *end)
 {
     // Fix the whole in the old location of start and end
-    start->previous()->next(end->next());
-    end->next()->previous(start->previous());
+    if (start->previous())
+        start->previous()->next(end->next());
+
+    if (end->next())
+        end->next()->previous(start->previous());
 
     // Move start and end to their new location
-    replaceThis->previous()->next(start);
-    replaceThis->next()->previous(end);
+    if (replaceThis->previous())
+        replaceThis->previous()->next(start);
+
+    if (replaceThis->next())
+        replaceThis->next()->previous(end);
+
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
 
