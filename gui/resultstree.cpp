@@ -101,12 +101,12 @@ void ResultsTree::AddErrorItem(const QString &file,
     for (int i = 1;i < files.size() && i < lines.size();i++)
     {
         AddBacktraceFiles(item,
-        files[i],
-        lines[i].toInt(),
-        severity,
-        message,
-        hide,
-        "images/go-down.png");
+                          files[i],
+                          lines[i].toInt(),
+                          severity,
+                          message,
+                          hide,
+                          "images/go-down.png");
     }
 
     //TODO just hide/show current error and it's file
@@ -144,7 +144,8 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 
     setRowHidden(parent->rowCount() - 1, parent->index(), hide);
 
-    if (!icon.isEmpty()) {
+    if (!icon.isEmpty())
+    {
         list[0]->setIcon(QIcon(icon));
     }
 
@@ -413,7 +414,7 @@ void ResultsTree::QuickStartApplication(const QModelIndex &index)
 
 QString ResultsTree::SeverityToIcon(const QString &severity)
 {
-      if (severity == "all")
+    if (severity == "all")
         return "images/dialog-warning.png";
     if (severity == "error")
         return "images/dialog-error.png";

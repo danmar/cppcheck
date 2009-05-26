@@ -107,7 +107,7 @@ MainWindow::MainWindow() :
 
     //Toolbar
     QToolBar *toolbar =  addToolBar("Toolbar");
-    toolbar->setIconSize(QSize(22,22));
+    toolbar->setIconSize(QSize(22, 22));
 
     mActionCheckDirectory.setIcon(QIcon("icon.svg"));
     mActionReCheck.setIcon(QIcon("images/view-refresh.png"));
