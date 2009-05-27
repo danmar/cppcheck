@@ -16,6 +16,10 @@ Files the installer needs:
 /Release/cppcheck.exe
 /COPYING
 /readme.txt
+/AUTHORS
+
+NOTE: Remember to convert COPYING and AUTHORS to Windows EOL format! Otherwise
+Windows Notepad (default viewer) can't show then properly.
 
 VS Runtime files:
 Copy following files to same folder:

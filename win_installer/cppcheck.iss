@@ -90,7 +90,11 @@ Source: {#RuntimesFolder}\msvcr90.dll; DestDir: {app}
 Name: {group}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}
 Name: {group}\{cm:ProgramOnTheWeb,{#MyAppName}}; Filename: {#MyAppURL}
 Name: {group}\{cm:UninstallProgram,{#MyAppName}}; Filename: {uninstallexe}
+; Desktop icon
 Name: {commondesktop}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}; Tasks: desktopicon
+; Doc icons
+Name: {group}\Authors; Filename: {app}\AUTHORS.txt; IconFileName: {win}\NOTEPAD.EXE
+Name: {group}\Copying; Filename: {app}\COPYING.txt; IconFileName: {win}\NOTEPAD.EXE
 
 [Code]
 function ModPathDir(): TArrayOfString;
