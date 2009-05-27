@@ -157,7 +157,7 @@ private:
     }
 
 
-    std::string tokenizeAndStringify(const char code[], bool simplify=false)
+    std::string tokenizeAndStringify(const char code[], bool simplify = false)
     {
         // tokenize..
         Tokenizer tokenizer;

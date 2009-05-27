@@ -224,6 +224,7 @@ private:
         TEST_CASE(dir_functions);
 
         TEST_CASE(pointer_to_pointer);
+        TEST_CASE(dealloc_and_alloc_in_func);
     }
 
 
@@ -2289,6 +2290,25 @@ private:
               "    *data = c;\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void dealloc_and_alloc_in_func()
+    {
+        check("char *f( const char *x )\n"
+              "{\n"
+              "  delete [] x;\n"
+              "  return new char[10];\n"
+              "}\n"
+              "\n"
+              "int main()\n"
+              "{\n"
+              "  char *a=0;\n"
+              "  a = f( a );\n"
+              "  a[0] = 1;\n"
+              "  delete [] a;\n"
+              "  return 0;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
