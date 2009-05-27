@@ -1776,8 +1776,20 @@ bool Tokenizer::simplifyCasts()
 
         else if (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <"))
         {
-            while (tok->next() && tok->next()->str() != ">")
+            unsigned int level = 0;
+            while (tok->next())
+            {
+                const Token *next = tok->next();
+                if (next->str() == "<")
+                    ++level;
+                else if (next->str() == ">")
+                {
+                    --level;
+                    if (level == 0)
+                        break;
+                }
                 tok->deleteNext();
+            }
             tok->deleteNext();
             tok->deleteNext();
             Token *tok2 = tok;

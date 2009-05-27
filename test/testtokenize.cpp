@@ -66,6 +66,7 @@ private:
         TEST_CASE(longtok);
 
         TEST_CASE(removeCast1);
+        TEST_CASE(removeCast2);
 
         TEST_CASE(inlineasm);
 
@@ -226,6 +227,24 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" int * f ( int * ) ;"), ostr.str());
+    }
+
+    // remove static_cast..
+    void removeCast2()
+    {
+        const char code[] = "t = (static_cast<std::vector<int> *>(&p));\n";
+
+        // tokenize..
+        OurTokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyCasts();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" t = ( & p ) ;"), ostr.str());
     }
 
 
