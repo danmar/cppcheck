@@ -46,17 +46,21 @@ VersionInfoDescription=cppcheck installer
 
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
-AllowNoIcons=yes
+AllowNoIcons=true
 LicenseFile=..\COPYING
 
 OutputBaseFilename={#MyAppName}-{#AppVersion}-setup
 
-ChangesEnvironment=yes
+ChangesEnvironment=true
 OutputDir=..\Build
 
 Compression=lzma/ultra
 InternalCompressLevel=ultra
 SolidCompression=true
+
+; Installer graphics
+WizardSmallImageFile=.\icon.bmp
+WizardImageStretch=false
 
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl
