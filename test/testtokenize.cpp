@@ -110,6 +110,7 @@ private:
         TEST_CASE(varid9);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
+        TEST_CASE(varid_functions);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -1119,7 +1120,7 @@ private:
                                    "1: void func ( )\n"
                                    "2: {\n"
                                    "3: std :: string str@1 ( \"test\" ) ;\n"
-                                   "4: str@1 . clear@2 ( ) ;\n"
+                                   "4: str@1 . clear ( ) ;\n"
                                    "5: }\n");
 
         ASSERT_EQUALS(expected, actual);
@@ -1189,6 +1190,50 @@ private:
         ASSERT_EQUALS(expected, actual);
     }
 
+    void varid_functions()
+    {
+        {
+            const std::string code("void f();\n"
+                                   "void f(){}\n");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.setVarId();
+
+            // result..
+            const std::string actual(tokenizer.tokens()->stringifyList(true));
+            const std::string expected("\n\n##file 0\n"
+                                       "1: void f ( ) ;\n"
+                                       "2: void f ( ) { }\n");
+
+            ASSERT_EQUALS(expected, actual);
+        }
+
+        {
+            const std::string code("A f(3);\n"
+                                   "A f2(true);\n"
+                                   "A g();\n"
+                                   "A e(int c);\n");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.setVarId();
+
+            // result..
+            const std::string actual(tokenizer.tokens()->stringifyList(true));
+            const std::string expected("\n\n##file 0\n"
+                                       "1: A f@1 ( 3 ) ;\n"
+                                       "2: A f2@2 ( true ) ;\n"
+                                       "3: A g ( ) ;\n"
+                                       "4: A e ( int c@3 ) ;\n");
+
+            ASSERT_EQUALS(expected, actual);
+        }
+    }
 
     void varidclass1()
     {
@@ -1223,7 +1268,7 @@ private:
                                    "3: private:\n"
                                    "4: int i@1 ;\n"
                                    "5:\n"
-                                   "6: void foo1@2 ( ) ;\n"
+                                   "6: void foo1 ( ) ;\n"
                                    "7: void foo2 ( )\n"
                                    "8: {\n"
                                    "9: ++ i@1 ;\n"
@@ -1264,11 +1309,11 @@ private:
         const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Fred\n"
-                                   "2: { void f@1 ( ) ; } ;\n"
+                                   "2: { void f ( ) ; } ;\n"
                                    "3:\n"
                                    "4: void A :: foo1 ( )\n"
                                    "5: {\n"
-                                   "6: int i@2 ; i@2 = 0 ;\n"
+                                   "6: int i@1 ; i@1 = 0 ;\n"
                                    "7: }\n"
                                    "8:\n"
                                    "9: void Fred :: f ( )\n"
@@ -1305,7 +1350,7 @@ private:
         const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Fred\n"
-                                   "2: { int i@1 ; void f@2 ( ) ; } ;\n"
+                                   "2: { int i@1 ; void f ( ) ; } ;\n"
                                    "3:\n"
                                    "4: void Fred :: f ( )\n"
                                    "5: {\n"
@@ -1342,7 +1387,7 @@ private:
         const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Fred\n"
-                                   "2: { int i@1 ; void f@2 ( ) ; } ;\n"
+                                   "2: { int i@1 ; void f ( ) ; } ;\n"
                                    "3:\n"
                                    "4: void Fred :: f ( )\n"
                                    "5: {\n"

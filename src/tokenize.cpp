@@ -747,17 +747,22 @@ void Tokenizer::setVarId()
         // Is it a function?
         if (tok2->str() == "(")
         {
-            bool isfunc = false;
-            for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
-            {
-                if (tok3->str() == ")")
-                {
-                    isfunc = Token::simpleMatch(tok3, ") {");
-                    break;
-                }
-            }
-            if (isfunc)
+            // Search for function declaration, e.g. void f();
+            if (Token::simpleMatch(tok2->next(), ") ;"))
                 continue;
+
+            // Search for function declaration, e.g. void f( int c );
+            if (Token::Match(tok2->next(), "%num%") ||
+                Token::Match(tok2->next(), "%bool%") ||
+                tok2->next()->str()[0] == '"' ||
+                tok2->next()->varId() != 0)
+            {
+                // This is not a function
+            }
+            else
+            {
+                continue;
+            }
         }
 
         // Variable declaration found => Set variable ids
@@ -799,8 +804,11 @@ void Tokenizer::setVarId()
     // Struct/Class members
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        // str.clear is a variable
+        // str.clear() is a member function
         if (tok->varId() != 0 &&
             Token::Match(tok->next(), ". %var%") &&
+            !Token::Match(tok->tokAt(3), "(") &&
             tok->tokAt(2)->varId() == 0)
         {
             ++_varId;
