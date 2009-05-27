@@ -57,6 +57,7 @@ private:
 
         TEST_CASE(varScope1);
         TEST_CASE(varScope2);
+        TEST_CASE(varScope3);
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -391,6 +392,21 @@ private:
                  "    Error e;\n"
                  "    e.SetValue(12);\n"
                  "    throw e;\n"
+                 "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void varScope3()
+    {
+        varScope("void foo()\n"
+                 "{\n"
+                 "    int i;\n"
+                 "    int *p = 0;\n"
+                 "    if (abc)\n"
+                 "    {\n"
+                 "        p = &i;\n"
+                 "    }\n"
+                 "    *p = 1;\n"
                  "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

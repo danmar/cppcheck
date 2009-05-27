@@ -580,6 +580,11 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
             --parlevel;
         }
 
+        // Bail out if references are used
+        else if (Token::simpleMatch(tok, (std::string("& ") + varname).c_str()))
+        {
+            return;
+        }
 
         else if (tok->str() == varname)
         {
