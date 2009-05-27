@@ -140,6 +140,8 @@ private:
         TEST_CASE(vardecl2);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
+
+        TEST_CASE(removeKeywords);
     }
 
 
@@ -155,12 +157,14 @@ private:
     }
 
 
-    std::string tokenizeAndStringify(const char code[])
+    std::string tokenizeAndStringify(const char code[], bool simplify=false)
     {
         // tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        if (simplify)
+            tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
@@ -1765,6 +1769,16 @@ private:
             ASSERT_EQUALS(std::string(""), errout.str());
         }
     }
+
+    void removeKeywords()
+    {
+        const char code[] = "if (__builtin_expect(!!(x), 1));";
+
+        const std::string actual(tokenizeAndStringify(code, true));
+
+        ASSERT_EQUALS("if ( ! ! x ) { ; }", actual);
+    }
+
 };
 
 REGISTER_TEST(TestTokenizer)

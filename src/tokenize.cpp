@@ -1047,7 +1047,7 @@ void Tokenizer::simplifyTokenList()
     }
 
     // Remove unwanted keywords
-    static const char* unwantedWords[] = { "unsigned", "unlikely" };
+    static const char* unwantedWords[] = { "unsigned", "unlikely", "likely" };
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         for (unsigned ui = 0; ui < sizeof(unwantedWords) / sizeof(unwantedWords[0]) && tok->next(); ui++)
@@ -1056,6 +1056,31 @@ void Tokenizer::simplifyTokenList()
             {
                 tok->deleteNext();
                 break;
+            }
+        }
+        if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
+        {
+            unsigned int parlevel = 0;
+            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+                if (parlevel == 1 && tok2->str() == ",")
+                {
+                    if (Token::Match(tok2, ", %num% )"))
+                    {
+                        tok->deleteNext();
+                        tok2->deleteThis();
+                        tok2->deleteThis();
+                    }
+                    break;
+                }
             }
         }
     }
