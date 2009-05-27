@@ -46,17 +46,22 @@ VersionInfoDescription=cppcheck installer
 
 DefaultDirName={pf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
-AllowNoIcons=yes
+AllowNoIcons=true
 LicenseFile=..\COPYING
 
 OutputBaseFilename={#MyAppName}-{#AppVersion}-setup
 
-ChangesEnvironment=yes
+ChangesEnvironment=true
 OutputDir=..\Build
 
 Compression=lzma/ultra
 InternalCompressLevel=ultra
 SolidCompression=true
+
+; Installer graphics
+WizardImageFile=.\LargeLogo.bmp
+WizardSmallImageFile=.\icon.bmp
+WizardImageStretch=false
 
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl
@@ -65,10 +70,15 @@ Name: english; MessagesFile: compiler:Default.isl
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
 Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Flags: unchecked
 
+[InstallDelete]
+; Name was changed to COPYING.txt so remove the old file.
+Type: files; Name: {app}\COPYING
+
 [Files]
 Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
-Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
+Source: ..\COPYING; DestDir: {app}; DestName: COPYING.txt; Flags: ignoreversion
 Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion
+Source: ..\AUTHORS; DestDir: {app}; DestName: AUTHORS.txt; Flags: ignoreversion
 ; VS runtimes
 Source: {#RuntimesFolder}\Microsoft.VC90.CRT.manifest; DestDir: {app}
 Source: {#RuntimesFolder}\msvcp90.dll; DestDir: {app}
@@ -80,7 +90,11 @@ Source: {#RuntimesFolder}\msvcr90.dll; DestDir: {app}
 Name: {group}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}
 Name: {group}\{cm:ProgramOnTheWeb,{#MyAppName}}; Filename: {#MyAppURL}
 Name: {group}\{cm:UninstallProgram,{#MyAppName}}; Filename: {uninstallexe}
+; Desktop icon
 Name: {commondesktop}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}; Tasks: desktopicon
+; Doc icons
+Name: {group}\Authors; Filename: {app}\AUTHORS.txt; IconFileName: {win}\NOTEPAD.EXE
+Name: {group}\Copying; Filename: {app}\COPYING.txt; IconFileName: {win}\NOTEPAD.EXE
 
 [Code]
 function ModPathDir(): TArrayOfString;

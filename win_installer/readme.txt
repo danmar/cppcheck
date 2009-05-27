@@ -16,6 +16,10 @@ Files the installer needs:
 /Release/cppcheck.exe
 /COPYING
 /readme.txt
+/AUTHORS
+
+NOTE: Remember to convert COPYING and AUTHORS to Windows EOL format! Otherwise
+Windows Notepad (default viewer) can't show then properly.
 
 VS Runtime files:
 Copy following files to same folder:
@@ -35,5 +39,5 @@ Creating the installer executable:
 #4 Compile the installer
    - from menu: Project / Compile Setup
 
-If compilation succeeds, the installer executable is created into folder
-/win_installer/output. The filename is cppcheck-[version]-setup.exe.
+If compilation succeeds, the installer executable is created into /Build
+-folder. The filename is cppcheck-[version]-setup.exe.
