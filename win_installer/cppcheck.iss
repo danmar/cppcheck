@@ -59,6 +59,7 @@ InternalCompressLevel=ultra
 SolidCompression=true
 
 ; Installer graphics
+WizardImageFile=.\LargeLogo.bmp
 WizardSmallImageFile=.\icon.bmp
 WizardImageStretch=false
 
