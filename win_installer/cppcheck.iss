@@ -70,11 +70,15 @@ Name: english; MessagesFile: compiler:Default.isl
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
 Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Flags: unchecked
 
+[InstallDelete]
+; Name was changed to COPYING.txt so remove the old file.
+Type: files; Name: {app}\COPYING
+
 [Files]
 Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
-Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
+Source: ..\COPYING; DestDir: {app}; DestName: COPYING.txt; Flags: ignoreversion
 Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion
-Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion
+Source: ..\AUTHORS; DestDir: {app}; DestName: AUTHORS.txt; Flags: ignoreversion
 ; VS runtimes
 Source: {#RuntimesFolder}\Microsoft.VC90.CRT.manifest; DestDir: {app}
 Source: {#RuntimesFolder}\msvcp90.dll; DestDir: {app}
