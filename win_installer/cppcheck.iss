@@ -74,6 +74,7 @@ Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Fla
 Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
 Source: ..\COPYING; DestDir: {app}; Flags: ignoreversion
 Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion
+Source: ..\AUTHORS; DestDir: {app}; Flags: ignoreversion
 ; VS runtimes
 Source: {#RuntimesFolder}\Microsoft.VC90.CRT.manifest; DestDir: {app}
 Source: {#RuntimesFolder}\msvcp90.dll; DestDir: {app}
