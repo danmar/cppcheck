@@ -1631,7 +1631,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { if ( ( true ) == true ) { } }"), ostr.str());
+        TODO_ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
     }
 
     void simplify_numeric_condition()
