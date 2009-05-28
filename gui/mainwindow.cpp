@@ -70,6 +70,7 @@ MainWindow::MainWindow() :
     menuview->addAction(&mActionShowStyle);
     menuview->addAction(&mActionShowUnused);
     menuview->addAction(&mActionShowErrors);
+    menuview->addSeparator();
     menuview->addAction(&mActionShowCheckAll);
     menuview->addAction(&mActionShowUncheckAll);
 
