@@ -2390,9 +2390,12 @@ bool Tokenizer::simplifyRedundantParanthesis()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        while (Token::simpleMatch(tok, "( ("))
+        bool foundSomething = true;
+        while (foundSomething && Token::simpleMatch(tok, "( ("))
         {
+            foundSomething = false;
             int parlevel = 0;
+
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "(")
@@ -2408,6 +2411,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
                             tok->deleteNext();
                             tok2->deleteNext();
                             ret = true;
+                            foundSomething = true;
                         }
                         break;
                     }
