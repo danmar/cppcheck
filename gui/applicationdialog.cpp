@@ -43,7 +43,7 @@ ApplicationDialog::ApplicationDialog(const QString &name,
                        "(message) - Error message\n" \
                        "(severity) - Error severity\n" \
                        "\n" \
-                       "Example opening a file with Kate and make Kate scroll to the corret line:\n" \
+                       "Example opening a file with Kate and make Kate scroll to the correct line:\n" \
                        "kate -l(line) (file)");
 
     layout->addWidget(new QLabel(guide));
