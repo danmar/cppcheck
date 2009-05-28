@@ -2390,7 +2390,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::simpleMatch(tok, "( ("))
+        while (Token::simpleMatch(tok, "( ("))
         {
             int parlevel = 0;
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
@@ -2407,6 +2407,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
                         {
                             tok->deleteNext();
                             tok2->deleteNext();
+                            ret = true;
                         }
                         break;
                     }

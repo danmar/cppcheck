@@ -127,7 +127,8 @@ private:
 
         TEST_CASE(simplify_function_parameters);
 
-        TEST_CASE(reduce_redundant_paranthesis);        // Ticket #61
+        TEST_CASE(removeParantheses1);        // Ticket #61
+        TEST_CASE(removeParantheses2);
 
         TEST_CASE(simplify_numeric_condition);
         TEST_CASE(tokenize_double);
@@ -1571,7 +1572,7 @@ private:
 
 
     // Simplify "((..))" into "(..)"
-    void reduce_redundant_paranthesis()
+    void removeParantheses1()
     {
         const char code[] = "void foo()\n"
                             "{\n"
@@ -1590,6 +1591,28 @@ private:
             ostr << " " << tok->str();
         ASSERT_EQUALS(std::string(" void foo ( ) { free ( p ) ; }"), ostr.str());
     }
+
+    void removeParantheses2()
+    {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    if (__builtin_expect((s == NULL), 0))\n"
+                            "        return;\n"
+                            "}";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(std::string(" void foo ( ) { if ( ! s ) { return ; } }"), ostr.str());
+    }
+
 
 
 
