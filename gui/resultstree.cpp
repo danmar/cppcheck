@@ -285,7 +285,7 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &name)
     }
 
     item = CreateItem(name);
-    item->setIcon(QIcon("images/text-x-generic.png"));
+    item->setIcon(QIcon(":images/text-x-generic.png"));
 
     mModel.appendRow(item);
 

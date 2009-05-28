@@ -1,0 +1,17 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>icon.png</file>
+    <file>icon.svg</file>
+    <file>images/dialog-error.png</file>
+    <file>images/dialog-information.png</file>
+    <file>images/dialog-warning.png</file>
+    <file>images/edit-clear.png</file>
+    <file>images/go-down.png</file>
+    <file>images/help-browser.png</file>
+    <file>images/media-floppy.png</file>
+    <file>images/preferences-system.png</file>
+    <file>images/process-stop.png</file>
+    <file>images/text-x-generic.png</file>
+    <file>images/view-refresh.png</file>
+</qresource>
+</RCC>

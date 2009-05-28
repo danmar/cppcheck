@@ -109,13 +109,13 @@ MainWindow::MainWindow() :
     QToolBar *toolbar =  addToolBar("Toolbar");
     toolbar->setIconSize(QSize(22, 22));
 
-    mActionCheckDirectory.setIcon(QIcon("icon.svg"));
-    mActionReCheck.setIcon(QIcon("images/view-refresh.png"));
-    mActionSettings.setIcon(QIcon("images/preferences-system.png"));
-    mActionAbout.setIcon(QIcon("images/help-browser.png"));
-    mActionStop.setIcon(QIcon("images/process-stop.png"));
-    mActionSave.setIcon(QIcon("images/media-floppy.png"));
-    mActionClearResults.setIcon(QIcon("images/edit-clear.png"));
+    mActionCheckDirectory.setIcon(QIcon(":icon.svg"));
+    mActionReCheck.setIcon(QIcon(":images/view-refresh.png"));
+    mActionSettings.setIcon(QIcon(":images/preferences-system.png"));
+    mActionAbout.setIcon(QIcon(":images/help-browser.png"));
+    mActionStop.setIcon(QIcon(":images/process-stop.png"));
+    mActionSave.setIcon(QIcon(":images/media-floppy.png"));
+    mActionClearResults.setIcon(QIcon(":images/edit-clear.png"));
 
     toolbar->addAction(&mActionCheckDirectory);
     toolbar->addAction(&mActionSave);

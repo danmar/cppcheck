@@ -9,6 +9,7 @@ INCLUDEPATH += .
 MOC_DIR = temp
 OBJECTS_DIR = temp
 CONFIG += warn_on debug
+RESOURCES = gui.qrc
 
 # Input
 HEADERS += 	mainwindow.h \
