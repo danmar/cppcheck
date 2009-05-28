@@ -11,3 +11,7 @@ tools/errmsg
 # VS build files
 Build/
 BuildTmp/
+# GUI build folders
+gui/debug/
+gui/release/
+gui/temp/
