@@ -1744,28 +1744,54 @@ bool Tokenizer::simplifyConditions()
         if (! tok4)
             break;
         if ((tok->str() == "&&" || tok->str() == "||" || tok->str() == "(") &&
-            Token::Match(tok->tokAt(1), "%num% %any% %num%") &&
+            (Token::Match(tok->tokAt(1), "%num% %any% %num%") ||
+             Token::Match(tok->tokAt(1), "%bool% %any% %bool%")) &&
             (tok4->str() == "&&" || tok4->str() == "||" || tok4->str() == ")"))
         {
-            double op1 = (strstr(tok->strAt(1), "0x")) ? std::strtol(tok->strAt(1), 0, 16) : std::atof(tok->strAt(1));
-            double op2 = (strstr(tok->strAt(3), "0x")) ? std::strtol(tok->strAt(3), 0, 16) : std::atof(tok->strAt(3));
             std::string cmp = tok->strAt(2);
-
             bool result = false;
-            if (cmp == "==")
-                result = (op1 == op2);
-            else if (cmp == "!=")
-                result = (op1 != op2);
-            else if (cmp == ">=")
-                result = (op1 >= op2);
-            else if (cmp == ">")
-                result = (op1 > op2);
-            else if (cmp == "<=")
-                result = (op1 <= op2);
-            else if (cmp == "<")
-                result = (op1 < op2);
+            if (Token::Match(tok->tokAt(1), "%num%"))
+            {
+                // Compare numbers
+                double op1 = (strstr(tok->strAt(1), "0x")) ? std::strtol(tok->strAt(1), 0, 16) : std::atof(tok->strAt(1));
+                double op2 = (strstr(tok->strAt(3), "0x")) ? std::strtol(tok->strAt(3), 0, 16) : std::atof(tok->strAt(3));
+
+                if (cmp == "==")
+                    result = (op1 == op2);
+                else if (cmp == "!=")
+                    result = (op1 != op2);
+                else if (cmp == ">=")
+                    result = (op1 >= op2);
+                else if (cmp == ">")
+                    result = (op1 > op2);
+                else if (cmp == "<=")
+                    result = (op1 <= op2);
+                else if (cmp == "<")
+                    result = (op1 < op2);
+                else
+                    cmp = "";
+            }
             else
-                cmp = "";
+            {
+                // Compare boolean
+                bool op1 = (tok->strAt(1) == std::string("true"));
+                bool op2 = (tok->strAt(3) == std::string("true"));
+
+                if (cmp == "==")
+                    result = (op1 == op2);
+                else if (cmp == "!=")
+                    result = (op1 != op2);
+                else if (cmp == ">=")
+                    result = (op1 >= op2);
+                else if (cmp == ">")
+                    result = (op1 > op2);
+                else if (cmp == "<=")
+                    result = (op1 <= op2);
+                else if (cmp == "<")
+                    result = (op1 < op2);
+                else
+                    cmp = "";
+            }
 
             if (! cmp.empty())
             {
@@ -2387,36 +2413,40 @@ bool Tokenizer::elseif()
 
 bool Tokenizer::simplifyRedundantParanthesis()
 {
+    if (!createLinks())
+        return false;
+
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        bool foundSomething = true;
-        while (foundSomething && Token::simpleMatch(tok, "( ("))
+        if (tok->str() != "(")
+            continue;
+
+        while (Token::simpleMatch(tok, "( (") &&
+               tok->link()->previous() == tok->next()->link())
         {
-            foundSomething = false;
-            int parlevel = 0;
+            // We have "(( *something* ))", remove the inner
+            // paranthesis
+            tok->deleteNext();
+            tok->link()->previous()->previous()->deleteNext();
+            ret = true;
+        }
 
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                    ++parlevel;
+        if (Token::Match(tok, "( ( %bool% )") ||
+            Token::Match(tok, "( ( %num% )"))
+        {
+            tok->tokAt(2)->deleteNext();
+            tok->deleteNext();
+            ret = true;
+        }
 
-                else if (tok2->str() == ")")
-                {
-                    --parlevel;
-                    if (parlevel == 1)
-                    {
-                        if (Token::simpleMatch(tok2, ") )"))
-                        {
-                            tok->deleteNext();
-                            tok2->deleteNext();
-                            ret = true;
-                            foundSomething = true;
-                        }
-                        break;
-                    }
-                }
-            }
+        if (Token::Match(tok, "( %bool% ) )") ||
+            Token::Match(tok, "( %num% ) )"))
+        {
+            tok = tok->next();
+            tok->deleteNext();
+            tok->previous()->deleteThis();
+            ret = true;
         }
     }
     return ret;

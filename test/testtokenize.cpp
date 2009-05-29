@@ -1616,22 +1616,43 @@ private:
 
     void removeParantheses3()
     {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    if (( true )==true){}\n"
-                            "}";
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if (( true )==(true)){}\n"
+                                "}";
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        TODO_ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if (( 2 )==(2)){}\n"
+                                "}";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
+        }
     }
 
     void simplify_numeric_condition()
