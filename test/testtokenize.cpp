@@ -1,7 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2009 Daniel Marjamäki, Reijo Tomperi, Nicolas Le Cam,
- * Leandro Penz, Kimmo Varis, Vesa Pikki
+ * Copyright (C) 2007-2009 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1616,22 +1615,43 @@ private:
 
     void removeParantheses3()
     {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    if (( true )==true){}\n"
-                            "}";
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if (( true )==(true)){}\n"
+                                "}";
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyTokenList();
+            tokenizer.simplifyTokenList();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        TODO_ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if (( 2 )==(2)){}\n"
+                                "}";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
+        }
     }
 
     void simplify_numeric_condition()
