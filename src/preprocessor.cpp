@@ -67,9 +67,17 @@ void Preprocessor::writeError(const std::string &fileName, const std::string &co
 
         char ch = code[codePos];
 
-        // We are not handling UTF and stuff like that. Code is supposed to plain simple text.
+        // UTF / extended ASCII => The output from the preprocessor should only be standard ASCII
         if (ch < 0)
-            continue;
+        {
+            // TODO: Remove characters that are redundant
+
+            // TODO: Convert characters that are needed to standard ASCII
+
+            // Not sure how to handle this character. Bailing out.
+            if (ch < 0)
+                continue;
+        }
 
         // char/string..
         if (ch == '\'' || ch == '\"')
