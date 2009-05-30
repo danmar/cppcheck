@@ -31,9 +31,7 @@
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #include <shlwapi.h>
-#if !defined(QT_CORE_LIB)
 #pragma comment(lib, "shlwapi.lib")
-#endif
 #endif
 
 std::string FileLister::simplifyPath(const char *originalPath)
@@ -152,32 +150,65 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-////// This code is for MinGW and Qt                ///////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-#if defined(__MINGW32__) && defined(QT_CORE_LIB)
-void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
-{
-    //This method is not used by Qt build
-}
-
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
-////// This code is for Visual C++ and Qt           ///////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-#if defined(_MSC_VER) && defined(QT_CORE_LIB)
-void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
-{
-    //This method is not used by Qt build
-}
-
-#endif
-
-///////////////////////////////////////////////////////////////////////////////
 ////// This code is for Borland C++ and Visual C++ ////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if (defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)) && !defined(QT_CORE_LIB)
+#if (defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__))
+
+// Windows QT build is Unicode build. And cppcheck is ANSI build. So we must
+// convert data given to WinAPI functions from ANSI to Unicode. Likewise we
+// must convert data we get from WinAPI from Unicode to ANSI.
+
+#if defined(QT_CORE_LIB)
+
+static bool TransformUcs2ToAnsi(LPCWSTR psUcs, LPSTR psAnsi, int nAnsi)
+{
+    WideCharToMultiByte(CP_ACP, 0, psUcs, -1, psAnsi, nAnsi, NULL, NULL);
+    return true;
+}
+
+static bool TransformAnsiToUcs2(LPCSTR psAnsi, LPWSTR psUcs, UINT nUcs)
+{
+    MultiByteToWideChar(CP_ACP, 0, psAnsi, -1, psUcs, nUcs);
+    return true;
+}
+
+static BOOL MyIsDirectory(std::string path)
+{
+    wchar_t * unicodeCleanPath = new wchar_t[path.size() + 1];
+    TransformAnsiToUcs2(path.c_str(), unicodeCleanPath,
+                        (path.size() * sizeof wchar_t) + 1);
+    // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
+    BOOL res = PathIsDirectory(unicodeCleanPath);
+    delete [] unicodeCleanPath;
+    return res;
+}
+
+static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
+{
+    wchar_t * unicodeOss = new wchar_t[path.size() + 1];
+    TransformAnsiToUcs2(path.c_str(), unicodeOss, (path.size() + 1) * sizeof wchar_t);
+    HANDLE hFind = FindFirstFile(unicodeOss, findData);
+    delete [] unicodeOss;
+    return hFind;
+}
+
+#else // defined(QT_CORE_LIB)
+
+static BOOL MyIsDirectory(std::string path)
+{
+    // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
+    BOOL res = PathIsDirectory(path.c_str());
+    return res;
+}
+
+static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
+{
+    HANDLE hFind = FindFirstFile(path.c_str(), findData);
+    return hFind;
+}
+
+#endif // defined(QT_CORE_LIB)
 
 void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
@@ -191,8 +222,7 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 
     oss << cleanedPath;
 
-    // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    if (PathIsDirectory(cleanedPath.c_str()))
+    if (MyIsDirectory(cleanedPath.c_str()))
     {
         char c = cleanedPath[ cleanedPath.size()-1 ];
         switch (c)
@@ -220,7 +250,7 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
     }
 
     WIN32_FIND_DATA ffd;
-    HANDLE hFind = FindFirstFile(oss.str().c_str(), &ffd);
+    HANDLE hFind = MyFindFirstFile(oss.str(), &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
         return;
 
@@ -229,15 +259,22 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
         if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
             continue;
 
+#if defined(QT_CORE_LIB)
+        char * ansiFfd = new char[wcslen(ffd.cFileName) + 1];
+        TransformUcs2ToAnsi(ffd.cFileName, ansiFfd, wcslen(ffd.cFileName) + 1);
+#else // defined(QT_CORE_LIB)
+        char * ansiFfd = &ffd.cFileName[0];
+#endif // defined(QT_CORE_LIB)
+
         std::ostringstream fname;
-        fname << bdir.str().c_str() << ffd.cFileName;
+        fname << bdir.str().c_str() << ansiFfd;
 
         if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
         {
             // File
 
             // If recursive is not used, accept all files given by user
-            if (!recursive || FileLister::AcceptFile(ffd.cFileName))
+            if (!recursive || FileLister::AcceptFile(ansiFfd))
                 filenames.push_back(fname.str());
         }
         else if (recursive)
@@ -245,6 +282,9 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
             // Directory
             FileLister::RecursiveAddFiles(filenames, fname.str().c_str(), recursive);
         }
+#if defined(QT_CORE_LIB)
+        delete [] ansiFfd;
+#endif // defined(QT_CORE_LIB)
     }
     while (FindNextFile(hFind, &ffd) != FALSE);
 
@@ -256,8 +296,6 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 }
 
 #endif
-
-
 
 //---------------------------------------------------------------------------
 
