@@ -1274,9 +1274,9 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
         while (Token::Match(tok2, "[;{}] ;"))
             erase(tok2, tok2->tokAt(2));
     }
-    if ((result = Token::findmatch(tok, "dealloc [;{}] use|use_ ;")) != NULL)
+    if ((result = Token::findmatch(tok, "[;{}] dealloc [;{}] use|use_ ;")) != NULL)
     {
-        deallocuseError(result->tokAt(2), varname);
+        deallocuseError(result->tokAt(3), varname);
     }
 
     // Replace "&use" with "use". Replace "use_" with ";"

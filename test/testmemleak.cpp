@@ -2307,7 +2307,7 @@ private:
               "  delete [] a;\n"
               "  return 0;\n"
               "}\n");
-        TODO_ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 
