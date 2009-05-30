@@ -1,17 +1,22 @@
 cppcheck
+testrunner
 *.o
 *.bak
+tools/dmake
+tools/errmsg
 # VS generated files
 *.ncb
 *.suo
 *.user
-testrunner
-tools/dmake
-tools/errmsg
-# VS build files
+# VS build folders
 Build/
 BuildTmp/
 # GUI build folders
 gui/debug/
 gui/release/
 gui/temp/
+# Other (generated) GUI files
+gui/Makefile
+gui/gui
+gui/qrc_gui.cpp
+
