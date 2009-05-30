@@ -212,7 +212,7 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
     else
     {
         std::string::size_type pos;
-        pos = path.find_last_of('\\');
+        pos = cleanedPath.find_last_of('\\');
         if (std::string::npos != pos)
         {
             bdir << cleanedPath.substr(0, pos + 1);
