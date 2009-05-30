@@ -31,7 +31,6 @@
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #include <shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
 #endif
 
 std::string FileLister::simplifyPath(const char *originalPath)
@@ -175,9 +174,9 @@ static bool TransformAnsiToUcs2(LPCSTR psAnsi, LPWSTR psUcs, UINT nUcs)
 
 static BOOL MyIsDirectory(std::string path)
 {
-    wchar_t * unicodeCleanPath = new wchar_t[path.size() + 1];
+    WCHAR * unicodeCleanPath = new WCHAR[path.size() + 1];
     TransformAnsiToUcs2(path.c_str(), unicodeCleanPath,
-                        (path.size() * sizeof wchar_t) + 1);
+                        (path.size() * sizeof(WCHAR)) + 1);
     // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
     BOOL res = PathIsDirectory(unicodeCleanPath);
     delete [] unicodeCleanPath;
@@ -186,8 +185,8 @@ static BOOL MyIsDirectory(std::string path)
 
 static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
 {
-    wchar_t * unicodeOss = new wchar_t[path.size() + 1];
-    TransformAnsiToUcs2(path.c_str(), unicodeOss, (path.size() + 1) * sizeof wchar_t);
+    WCHAR * unicodeOss = new wchar_t[path.size() + 1];
+    TransformAnsiToUcs2(path.c_str(), unicodeOss, (path.size() + 1) * sizeof(WCHAR));
     HANDLE hFind = FindFirstFile(unicodeOss, findData);
     delete [] unicodeOss;
     return hFind;
