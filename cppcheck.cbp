@@ -30,20 +30,24 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="gui/checkdialog.cpp" />
-		<Unit filename="gui/checkdialog.h" />
+		<Unit filename="gui/applicationdialog.cpp" />
+		<Unit filename="gui/applicationdialog.h" />
+		<Unit filename="gui/applicationlist.cpp" />
+		<Unit filename="gui/applicationlist.h" />
 		<Unit filename="gui/checkthread.cpp" />
 		<Unit filename="gui/checkthread.h" />
 		<Unit filename="gui/common.h" />
 		<Unit filename="gui/main.cpp" />
 		<Unit filename="gui/mainwindow.cpp" />
 		<Unit filename="gui/mainwindow.h" />
+		<Unit filename="gui/qrc_gui.cpp" />
 		<Unit filename="gui/resultstree.cpp" />
 		<Unit filename="gui/resultstree.h" />
 		<Unit filename="gui/resultsview.cpp" />
 		<Unit filename="gui/resultsview.h" />
 		<Unit filename="gui/settingsdialog.cpp" />
 		<Unit filename="gui/settingsdialog.h" />
+		<Unit filename="gui/test.cpp" />
 		<Unit filename="gui/threadhandler.cpp" />
 		<Unit filename="gui/threadhandler.h" />
 		<Unit filename="gui/threadresult.cpp" />
