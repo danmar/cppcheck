@@ -10,6 +10,9 @@ MOC_DIR = temp
 OBJECTS_DIR = temp
 CONFIG += warn_on debug
 RESOURCES = gui.qrc
+
+# Windows-specific options
+CONFIG += embed_manifest_exe
 RC_FILE = cppcheck-gui.rc
 win32:LIBS += -lshlwapi
 
