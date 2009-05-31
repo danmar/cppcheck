@@ -92,7 +92,7 @@ private:
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS(std::string("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : Base { public: ~Derived() { (void)11; } };");
@@ -105,11 +105,11 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS(std::string("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS(std::string("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Class Base which is inherited by class Derived does not have a virtual destructor\n", errout.str());
     }
 
     void virtualDestructor4()
@@ -247,7 +247,7 @@ private:
                        "    Foo(int _i) { }\n"
                        "};\n");
 
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:7] (style) Member variable not initialized in the constructor Foo::foo"), errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7] (style) Member variable not initialized in the constructor Foo::foo", errout.str());
     }
 
 

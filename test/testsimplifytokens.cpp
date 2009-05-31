@@ -397,7 +397,7 @@ private:
                                 "        a = 10;\n"
                                 "    a++;\n"
                                 "}\n";
-            ASSERT_EQUALS(std::string("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } a ++ ; } "), tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } a ++ ; } ", tok(code));
         }
 
         {
@@ -409,7 +409,7 @@ private:
                                 "        a = 10;\n"
                                 "    ++a;\n"
                                 "}\n";
-            ASSERT_EQUALS(std::string("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } ++ a ; } "), tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } ++ a ; } ", tok(code));
         }
     }
 
@@ -422,7 +422,7 @@ private:
                             "    if (c>0) { c++; }\n"
                             "    c++;\n"
                             "}\n";
-        ASSERT_EQUALS(std::string("void f ( ) { int c ; c = 3 ; ; { ; } ; } "), tok(code));
+        ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; } ", tok(code));
     }
 
 
@@ -435,7 +435,7 @@ private:
                             "    if (c>0) { ++c; }\n"
                             "    ++c;\n"
                             "}\n";
-        ASSERT_EQUALS(std::string("void f ( ) { int c ; c = 3 ; ; { ; } ; } "), tok(code));
+        ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; } ", tok(code));
     }
 
 
@@ -496,7 +496,7 @@ private:
                             "    sizeof(i);\n"
                             "    sizeof(*i);\n"
                             "}\n";
-        ASSERT_EQUALS(std::string(" void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }"), sizeof_(code));
+        ASSERT_EQUALS(" void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }", sizeof_(code));
     }
 
     void sizeof3()
@@ -507,14 +507,14 @@ private:
                             "    int i[10];\n"
                             "    sizeof(i);\n"
                             "}\n";
-        ASSERT_EQUALS(std::string(" static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }"), sizeof_(code));
+        ASSERT_EQUALS(" static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }", sizeof_(code));
     }
 
     void sizeof4()
     {
         const char code[] = "int i[10];\n"
                             "sizeof(i[0]);\n";
-        ASSERT_EQUALS(std::string(" int i [ 10 ] ; 4 ;"), sizeof_(code));
+        ASSERT_EQUALS(" int i [ 10 ] ; 4 ;", sizeof_(code));
     }
 
     void sizeof5()
@@ -522,7 +522,7 @@ private:
         const char code[] =
             "for (int i = 0; i < sizeof(g_ReservedNames[0]); i++)"
             "{}";
-        ASSERT_EQUALS(std::string(" for ( int i = 0 ; i < 100 ; i ++ ) { }"), sizeof_(code));
+        ASSERT_EQUALS(" for ( int i = 0 ; i < 100 ; i ++ ) { }", sizeof_(code));
     }
 
     void sizeof6()

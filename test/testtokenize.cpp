@@ -233,7 +233,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" int * f ( int * ) ;"), ostr.str());
+        ASSERT_EQUALS(" int * f ( int * ) ;", ostr.str());
     }
 
     // remove static_cast..
@@ -251,7 +251,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" t = ( & p ) ;"), ostr.str());
+        ASSERT_EQUALS(" t = ( & p ) ;", ostr.str());
     }
 
 
@@ -290,7 +290,7 @@ private:
         tokenizer.fillFunctionList();
 
         ASSERT_EQUALS(1, static_cast<unsigned int>(tokenizer.getFunctionList().size()));
-        ASSERT_EQUALS(std::string("b"), tokenizer.getFunctionList()[0]->str());
+        ASSERT_EQUALS("b", tokenizer.getFunctionList()[0]->str());
     }
 
     void const_and_volatile_functions()
@@ -323,9 +323,9 @@ private:
         ASSERT_EQUALS(3, static_cast<unsigned int>(tokenizer.getFunctionList().size()));
         if (tokenizer.getFunctionList().size() == 3)
         {
-            ASSERT_EQUALS(std::string("a"), tokenizer.getFunctionList()[0]->str());
-            ASSERT_EQUALS(std::string("b"), tokenizer.getFunctionList()[1]->str());
-            ASSERT_EQUALS(std::string("c"), tokenizer.getFunctionList()[2]->str());
+            ASSERT_EQUALS("a", tokenizer.getFunctionList()[0]->str());
+            ASSERT_EQUALS("b", tokenizer.getFunctionList()[1]->str());
+            ASSERT_EQUALS("c", tokenizer.getFunctionList()[2]->str());
         }
     }
 
@@ -347,7 +347,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { { ; } }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { { ; } }", ostr.str());
     }
 
     void ifAddBraces1()
@@ -368,7 +368,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { if ( a ) { ; } else { ; } }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { if ( a ) { ; } else { ; } }", ostr.str());
     }
 
     void ifAddBraces2()
@@ -388,7 +388,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { if ( a ) { if ( b ) { } } }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { if ( a ) { if ( b ) { } } }", ostr.str());
     }
 
     void ifAddBraces3()
@@ -408,7 +408,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { if ( a ) { for ( ; ; ) { } } }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { if ( a ) { for ( ; ; ) { } } }", ostr.str());
     }
 
     void ifAddBraces4()
@@ -433,7 +433,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" char * foo ( ) { char * str ; str = malloc ( 10 ) ; if ( somecondition ) { for ( ; ; ) { } } return str ; }"), ostr.str());
+        ASSERT_EQUALS(" char * foo ( ) { char * str ; str = malloc ( 10 ) ; if ( somecondition ) { for ( ; ; ) { } } return str ; }", ostr.str());
     }
 
     void ifAddBraces5()
@@ -458,7 +458,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { for ( int i = 0 ; i < 2 ; i ++ ) { if ( true ) { return ; } } return ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { for ( int i = 0 ; i < 2 ; i ++ ) { if ( true ) { return ; } } return ; }", ostr.str());
     }
 
     void ifAddBraces6()
@@ -475,7 +475,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" if ( )"), ostr.str());
+        ASSERT_EQUALS(" if ( )", ostr.str());
     }
 
     void simplifyKnownVariables1()
@@ -497,7 +497,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { int a ; a = 10 ; if ( 10 ) ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { int a ; a = 10 ; if ( 10 ) ; }", ostr.str());
     }
 
     void simplifyKnownVariables2()
@@ -520,7 +520,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) ; }", ostr.str());
     }
 
     void simplifyKnownVariables3()
@@ -546,7 +546,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { int a ; a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { int a ; a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) ; }", ostr.str());
     }
 
     void simplifyKnownVariables4()
@@ -568,7 +568,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { int a ; a = 4 ; if ( g ( 4 ) ) ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { int a ; a = 4 ; if ( g ( 4 ) ) ; }", ostr.str());
     }
 
     void simplifyKnownVariables5()
@@ -590,7 +590,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { int a ; a = 4 ; if ( a = 5 ) ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { int a ; a = 4 ; if ( a = 5 ) ; }", ostr.str());
     }
 
     void simplifyKnownVariables6()
@@ -613,7 +613,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { char str [ 2 ] ; int a ; a = 4 ; str [ 4 ] = 0 ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { char str [ 2 ] ; int a ; a = 4 ; str [ 4 ] = 0 ; }", ostr.str());
     }
 
     void simplifyKnownVariables7()
@@ -635,7 +635,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { int i ; i = 24 ; abc [ 22 ] = 1 ; abc [ 24 ] = 2 ; }"), ostr.str());
+        ASSERT_EQUALS(" void foo ( ) { int i ; i = 24 ; abc [ 22 ] = 1 ; abc [ 24 ] = 2 ; }", ostr.str());
     }
 
     void simplifyKnownVariables8()
@@ -657,7 +657,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { int i ; i = 23 ; ; abc [ 23 ] = 0 ; }"), ostr.str());
+        ASSERT_EQUALS(" void foo ( ) { int i ; i = 23 ; ; abc [ 23 ] = 0 ; }", ostr.str());
     }
 
     void simplifyKnownVariables9()
@@ -679,7 +679,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) ; }"), ostr.str());
+        ASSERT_EQUALS(" void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) ; }", ostr.str());
     }
 
     void simplifyKnownVariables10()
@@ -709,7 +709,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            TODO_ASSERT_EQUALS(std::string(" void f ( ) { bool b ; b = false ; { b = true ; } if ( true ) { a ( ) ; } }"), ostr.str());
+            TODO_ASSERT_EQUALS(" void f ( ) { bool b ; b = false ; { b = true ; } if ( true ) { a ( ) ; } }", ostr.str());
         }
 
         {
@@ -737,7 +737,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            TODO_ASSERT_EQUALS(std::string(" void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( true ) { a ( ) ; } }"), ostr.str());
+            TODO_ASSERT_EQUALS(" void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( true ) { a ( ) ; } }", ostr.str());
         }
 
         {
@@ -762,7 +762,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } a ( 1 ) ; }"), ostr.str());
+            ASSERT_EQUALS(" void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } a ( 1 ) ; }", ostr.str());
         }
     }
 
@@ -1553,7 +1553,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void f ( int x ) { }"), ostr.str());
+            ASSERT_EQUALS(" void f ( int x ) { }", ostr.str());
         }
 
         {
@@ -1571,7 +1571,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void f ( int x , char y ) { }"), ostr.str());
+            ASSERT_EQUALS(" void f ( int x , char y ) { }", ostr.str());
         }
 
         {
@@ -1593,7 +1593,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void foo ( ) { if ( x ) { int x ; } { } }"), ostr.str());
+            ASSERT_EQUALS(" void foo ( ) { if ( x ) { int x ; } { } }", ostr.str());
         }
     }
 
@@ -1616,7 +1616,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { free ( p ) ; }"), ostr.str());
+        ASSERT_EQUALS(" void foo ( ) { free ( p ) ; }", ostr.str());
     }
 
     void removeParantheses2()
@@ -1637,7 +1637,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void foo ( ) { if ( ! s ) { return ; } }"), ostr.str());
+        ASSERT_EQUALS(" void foo ( ) { if ( ! s ) { return ; } }", ostr.str());
     }
 
     void removeParantheses3()
@@ -1658,7 +1658,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
+            ASSERT_EQUALS(" void foo ( ) { { } }", ostr.str());
         }
 
         {
@@ -1677,7 +1677,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
+            ASSERT_EQUALS(" void foo ( ) { { } }", ostr.str());
         }
 
         {
@@ -1696,7 +1696,7 @@ private:
             std::ostringstream ostr;
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
                 ostr << " " << tok->str();
-            ASSERT_EQUALS(std::string(" void foo ( ) { if ( g ( 10 ) ) { } }"), ostr.str());
+            ASSERT_EQUALS(" void foo ( ) { if ( g ( 10 ) ) { } }", ostr.str());
         }
     }
 
@@ -1722,7 +1722,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { int x ; x = 0 ; if ( ! x ) { } }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { int x ; x = 0 ; if ( ! x ) { } }", ostr.str());
     }
 
     void tokenize_double()
@@ -1744,7 +1744,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { double a ; a = 4.2 ; float b ; b = 4.2f ; double c ; c = 4.2e+10 ; double d ; d = 4.2e-10 ; int e ; e = 4 + 2 ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { double a ; a = 4.2 ; float b ; b = 4.2f ; double c ; c = 4.2e+10 ; double d ; d = 4.2e-10 ; int e ; e = 4 + 2 ; }", ostr.str());
     }
 
     void tokenize_strings()
@@ -1768,7 +1768,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { const char * a ; a = { \"hello more world\" } ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { const char * a ; a = { \"hello more world\" } ; }", ostr.str());
     }
 
     void simplify_constants()
@@ -1796,7 +1796,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(std::string(" void f ( ) { const int a = 45 ; { int b ; b = 45 ; } } void g ( ) { int a ; a = 2 ; }"), ostr.str());
+        ASSERT_EQUALS(" void f ( ) { const int a = 45 ; { int b ; b = 45 ; } } void g ( ) { int a ; a = 2 ; }", ostr.str());
     }
 
     void simplify_constants2()
@@ -1899,7 +1899,7 @@ private:
             Tokenizer tokenizer(s, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS(std::string("[test.cpp:1]: (error) Invalid number of character ({). Can't process file.\n"), errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Invalid number of character ({). Can't process file.\n", errout.str());
         }
 
         {
@@ -1908,7 +1908,7 @@ private:
             Tokenizer tokenizer(s, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS(std::string("[test.cpp:1]: (error) Invalid number of character ((). Can't process file.\n"), errout.str());
+            ASSERT_EQUALS("[test.cpp:1]: (error) Invalid number of character ((). Can't process file.\n", errout.str());
         }
 
         {

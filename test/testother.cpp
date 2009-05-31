@@ -95,7 +95,7 @@ private:
               "}");
 
 
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Division by zero\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Division by zero\n", errout.str());
     }
 
     void zeroDiv2()
@@ -137,28 +137,28 @@ private:
               "        delete p;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    if (p)\n"
               "        delete p;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    if (p != NULL)\n"
               "        delete p;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    if (p)\n"
               "        delete [] p;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
     }
 
     void unreachable1()
@@ -203,7 +203,7 @@ private:
                      "    char buf[100];\n"
                      "    sprintf(buf,\"%s\",buf);\n"
                      "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Overlapping data buffer buf\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Overlapping data buffer buf\n", errout.str());
     }
 
     void sprintf2()
@@ -271,7 +271,7 @@ private:
                     "{\n"
                     "    const char *p = \"/usr\" + '/';\n"
                     "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Unusual pointer arithmetic\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Unusual pointer arithmetic\n", errout.str());
     }
 
     void strPlusChar2()
@@ -282,7 +282,7 @@ private:
                     "    char ch = '/';\n"
                     "    const char *p = \"/usr\" + ch;\n"
                     "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Unusual pointer arithmetic\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Unusual pointer arithmetic\n", errout.str());
     }
 
     void strPlusChar3()
@@ -322,7 +322,7 @@ private:
                "    char str[100] = {0};\n"
                "    return str;\n"
                "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Returning pointer to local array variable\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to local array variable\n", errout.str());
     }
 
     void returnLocalVariable2()
@@ -439,7 +439,7 @@ private:
                          "    while (tok);\n"
                          "    tok = tok->next();\n"
                          "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Possible null pointer dereference\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference\n", errout.str());
     }
 
     void nullpointer2()

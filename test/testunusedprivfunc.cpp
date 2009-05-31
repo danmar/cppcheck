@@ -81,7 +81,7 @@ private:
               "unsigned int Fred::f()\n"
               "{ }\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Unused private function 'Fred::f'\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Unused private function 'Fred::f'\n", errout.str());
     }
 
 
@@ -163,7 +163,7 @@ private:
               "Fred::Fred()\n"
               "{}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:6]: (style) Unused private function 'Fred::get'\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Unused private function 'Fred::get'\n", errout.str());
     }
 
 

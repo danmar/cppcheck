@@ -197,7 +197,7 @@ private:
               "    int data[2];\n"
               "    data[ sizeof(data[0]) ] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -211,7 +211,7 @@ private:
               "    str[15] = 0;\n"
               "    str[16] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -223,7 +223,7 @@ private:
               "    str[15] = 0;\n"
               "    str[16] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -236,7 +236,7 @@ private:
                   "    for (i = 0; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Buffer overrun\n"), errout.str());
+            ASSERT_EQUALS("[test.cpp:5]: (all) Buffer overrun\n", errout.str());
         }
 
         {
@@ -246,7 +246,7 @@ private:
                   "    for (i = 1; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Buffer overrun\n"), errout.str());
+            ASSERT_EQUALS("[test.cpp:5]: (all) Buffer overrun\n", errout.str());
         }
 
 
@@ -257,7 +257,7 @@ private:
                   "    for (i = a; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Buffer overrun\n"), errout.str());
+            ASSERT_EQUALS("[test.cpp:5]: (all) Buffer overrun\n", errout.str());
         }
     }
 
@@ -270,7 +270,7 @@ private:
               "    int i[SIZE];\n"
               "    i[SIZE] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -281,7 +281,7 @@ private:
               "    int i[10];\n"
               "    i[ sizeof(i) - 1 ] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -297,7 +297,7 @@ private:
               "    struct ABC abc;\n"
               "    abc.str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:9]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -312,7 +312,7 @@ private:
               "{\n"
               "    abc->str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -330,7 +330,7 @@ private:
               "    struct ABC abc;\n"
               "    abc.str[SIZE] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:11]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (all) Array index out of bounds\n", errout.str());
     }
 
     void array_index_9()
@@ -345,7 +345,7 @@ private:
               "    char str[5];\n"
               "    memclr( str );   // ERROR\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:9] -> [test.cpp:3]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -365,7 +365,7 @@ private:
               "{\n"
               "    memclr(abc->str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:13] -> [test.cpp:8]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -386,7 +386,7 @@ private:
               "        abc->str[10] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:12]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -404,7 +404,7 @@ private:
               "    str[10] = 0;\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string("[test.cpp:10]: (all) Array index out of bounds\n"), err);
+        ASSERT_EQUALS("[test.cpp:10]: (all) Array index out of bounds\n", err);
     }
 
     void buffer_overrun_1()
@@ -414,7 +414,7 @@ private:
               "    char str[3];\n"
               "    strcpy(str, \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Buffer overrun\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Buffer overrun\n", errout.str());
     }
 
 
@@ -429,7 +429,7 @@ private:
               "{\n"
               "    strcpy( abc->str, \"abcdef\" );\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: (all) Buffer overrun\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (all) Buffer overrun\n", errout.str());
     }
 
 
@@ -444,7 +444,7 @@ private:
               "        a[i] = 0;\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string("[test.cpp:7]: (all) Buffer overrun\n"), err);
+        ASSERT_EQUALS("[test.cpp:7]: (all) Buffer overrun\n", err);
     }
 
 
@@ -458,7 +458,7 @@ private:
               "    char str[3];\n"
               "    sprintf(str, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Buffer overrun\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Buffer overrun\n", errout.str());
     }
 
     void snprintf1()
@@ -468,7 +468,7 @@ private:
               "    char str[5];\n"
               "    snprintf(str, 10, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) snprintf size is out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) snprintf size is out of bounds\n", errout.str());
     }
 
     void snprintf2()
@@ -512,7 +512,7 @@ private:
               "    strncpy(str, a, 10);\n"
               "    strncat(str, b, 10);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Dangerous usage of strncat, possible buffer overrun\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (all) Dangerous usage of strncat, possible buffer overrun\n", errout.str());
     }
 
     void strncat2()
@@ -522,7 +522,7 @@ private:
               "    char str[5];\n"
               "    strncat(str, a, 5);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Dangerous usage of strncat, possible buffer overrun\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Dangerous usage of strncat, possible buffer overrun\n", errout.str());
     }
 
 
@@ -534,7 +534,7 @@ private:
               "    char str[10];\n"
               "    cin >> str;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Buffer overrun\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Buffer overrun\n", errout.str());
     }
 
 
@@ -576,7 +576,7 @@ private:
               "{\n"
               "    str[3] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -588,14 +588,14 @@ private:
               "    char *s = new char[10];\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Array index out of bounds\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    char *s = malloc(10);\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) Array index out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -606,7 +606,7 @@ private:
               "    char s[10];\n"
               "    memset(s, 5, '*');\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (all) The size argument is given as a char constant\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (all) The size argument is given as a char constant\n", errout.str());
     }
 };
 

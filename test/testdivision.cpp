@@ -74,7 +74,7 @@ private:
               "    unsigned int uvar = 2;\n"
               "    return ivar / uvar;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all style) Warning: Division with signed and unsigned operators\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (all style) Warning: Division with signed and unsigned operators\n", errout.str());
     }
 
     void division2()
@@ -85,7 +85,7 @@ private:
               "    unsigned int uvar = 2;\n"
               "    return uvar / ivar;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all style) Warning: Division with signed and unsigned operators\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (all style) Warning: Division with signed and unsigned operators\n", errout.str());
     }
 
     void division3()
@@ -98,7 +98,7 @@ private:
               "    u32 uvar = 2;\n"
               "    return uvar / ivar;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:7]: (all style) Warning: Division with signed and unsigned operators\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (all style) Warning: Division with signed and unsigned operators\n", errout.str());
     }
 
     void division4()
@@ -134,7 +134,7 @@ private:
               "    unsigned int val = 32;\n"
               "    int i = val / -2; }\n"
              );
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n", errout.str());
     }
 
     void division7()
@@ -144,7 +144,7 @@ private:
               "    unsigned int val = 32;\n"
               "    int i = -96 / val; }\n"
              );
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Unsigned division. The result will be wrong.\n", errout.str());
     }
 };
 

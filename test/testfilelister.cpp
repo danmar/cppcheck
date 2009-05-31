@@ -35,16 +35,16 @@ private:
 
     void simplify_path()
     {
-        ASSERT_EQUALS(std::string("index.h"), FileLister::simplifyPath("index.h"));
-        ASSERT_EQUALS(std::string("/index.h"), FileLister::simplifyPath("/index.h"));
-        ASSERT_EQUALS(std::string("/path/"), FileLister::simplifyPath("/path/"));
-        ASSERT_EQUALS(std::string("/"), FileLister::simplifyPath("/"));
-        ASSERT_EQUALS(std::string("./index.h"), FileLister::simplifyPath("./index.h"));
-        ASSERT_EQUALS(std::string("../index.h"), FileLister::simplifyPath("../index.h"));
-        ASSERT_EQUALS(std::string("/index.h"), FileLister::simplifyPath("/path/../index.h"));
-        ASSERT_EQUALS(std::string("/index.h"), FileLister::simplifyPath("/path/../other/../index.h"));
-        ASSERT_EQUALS(std::string("/index.h"), FileLister::simplifyPath("/path/../other///././../index.h"));
-        ASSERT_EQUALS(std::string("../path/index.h"), FileLister::simplifyPath("../path/other/../index.h"));
+        ASSERT_EQUALS("index.h", FileLister::simplifyPath("index.h"));
+        ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/index.h"));
+        ASSERT_EQUALS("/path/", FileLister::simplifyPath("/path/"));
+        ASSERT_EQUALS("/", FileLister::simplifyPath("/"));
+        ASSERT_EQUALS("./index.h", FileLister::simplifyPath("./index.h"));
+        ASSERT_EQUALS("../index.h", FileLister::simplifyPath("../index.h"));
+        ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/path/../index.h"));
+        ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/path/../other/../index.h"));
+        ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/path/../other///././../index.h"));
+        ASSERT_EQUALS("../path/index.h", FileLister::simplifyPath("../path/other/../index.h"));
     }
 
 

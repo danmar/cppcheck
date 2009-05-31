@@ -144,7 +144,7 @@ private:
               "       foo[ii] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds\n", errout.str());
     }
 
     void STLSizeNoErr()

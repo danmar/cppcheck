@@ -74,7 +74,7 @@ private:
               "{\n"
               "    int num=2;"
               "res=&num;}");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n", errout.str());
     }
     void testautovararray()
     {
@@ -82,7 +82,7 @@ private:
               "{\n"
               "    int num=2;"
               "arr[0]=&num;}");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n", errout.str());
     }
     void testautovarreturn()
     {
@@ -90,7 +90,7 @@ private:
               "{\n"
               "    int num=2;"
               "return &num;}");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (error) Return of the address of an auto-variable\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return of the address of an auto-variable\n", errout.str());
     }
 };
 

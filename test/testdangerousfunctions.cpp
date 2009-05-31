@@ -74,7 +74,7 @@ private:
               "{\n"
               "    char *x = mktemp(\"/tmp/zxcv\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Found 'mktemp'. You should use 'mkstemp' instead\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Found 'mktemp'. You should use 'mkstemp' instead\n", errout.str());
     }
 
     void testgets()
@@ -83,7 +83,7 @@ private:
               "{\n"
               "    char *x = gets();\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Found 'gets'. You should use 'fgets' instead\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Found 'gets'. You should use 'fgets' instead\n", errout.str());
     }
 
     void testscanf()
@@ -93,7 +93,7 @@ private:
               "    char *x;\n"
               "    scanf(\"%s\", x);\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Found 'scanf'. You should use 'fgets' instead\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Found 'scanf'. You should use 'fgets' instead\n", errout.str());
     }
 
 };

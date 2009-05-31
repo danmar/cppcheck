@@ -90,7 +90,7 @@ private:
               "    \"abc\";\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant code: Found a statement that begins with string constant\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant code: Found a statement that begins with string constant\n", errout.str());
     }
 
     void test3()
@@ -125,7 +125,7 @@ private:
               "    50;\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string("[test.cpp:3]: (style) Redundant code: Found a statement that begins with numeric constant\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant code: Found a statement that begins with numeric constant\n", errout.str());
     }
 
     void test_numeric()

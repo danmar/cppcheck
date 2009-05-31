@@ -100,7 +100,7 @@ private:
               "    Fred() { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
 
@@ -114,7 +114,7 @@ private:
               "};\n"
               "Fred::Fred()\n"
               "{ }\n");
-        ASSERT_EQUALS(std::string("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::i'\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
 
@@ -133,7 +133,7 @@ private:
               "{\n"
               "    i = _i;\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: (style) Member variable not initialized in the constructor 'Fred::i'\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
 
@@ -200,7 +200,7 @@ private:
               "    void operator=() { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS(std::string("[test.cpp:5]: (all style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (all style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
     }
 
     void initvar_operator_eq3()
@@ -310,7 +310,7 @@ private:
               "};\n"
               "Fred::Fred()\n"
               "{ }");
-        ASSERT_EQUALS(std::string("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::s'\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::s'\n", errout.str());
     }
 
 
@@ -369,7 +369,7 @@ private:
               "\n"
               "void Fred::operator=(const Fred &f)\n"
               "{ }", true);
-        ASSERT_EQUALS(std::string("[test.cpp:13]: (all style) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n"), errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (all style) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n", errout.str());
     }
 };
 
