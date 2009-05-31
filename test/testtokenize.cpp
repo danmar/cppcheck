@@ -1652,6 +1652,25 @@ private:
                 ostr << " " << tok->str();
             ASSERT_EQUALS(std::string(" void foo ( ) { { } }"), ostr.str());
         }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if( g(10)){}\n"
+                                "}";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(std::string(" void foo ( ) { if ( g ( 10 ) ) { } }"), ostr.str());
+        }
     }
 
     void simplify_numeric_condition()

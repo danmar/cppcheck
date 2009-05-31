@@ -2458,15 +2458,6 @@ bool Tokenizer::simplifyRedundantParanthesis()
             tok->deleteNext();
             ret = true;
         }
-
-        if (Token::Match(tok, "( %bool% ) )") ||
-            Token::Match(tok, "( %num% ) )"))
-        {
-            tok = tok->next();
-            tok->deleteNext();
-            tok->previous()->deleteThis();
-            ret = true;
-        }
     }
     return ret;
 }
