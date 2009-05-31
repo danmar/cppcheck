@@ -368,7 +368,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // Combine tokens..
     for (Token *tok = _tokens; tok && tok->next(); tok = tok->next())
     {
-        static const char* combineWithNext[][3] =
+        static const char * const combineWithNext[][3] =
         {
             { "<", "<", "<<" },
 
