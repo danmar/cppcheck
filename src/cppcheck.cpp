@@ -355,7 +355,7 @@ unsigned int CppCheck::check()
     {
         _errout.str("");
         if (_settings._errorsOnly == false)
-            _errorLogger->reportOut("Checking usage of global functions (this may take several minutes)..");
+            _errorLogger->reportOut("Checking usage of global functions..");
 
         _checkFunctionUsage.check();
     }
