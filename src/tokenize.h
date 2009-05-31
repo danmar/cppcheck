@@ -113,6 +113,12 @@ public:
      */
     bool simplifyIfNot();
 
+    /**
+     * simplify the "not" keyword to "!"
+     * Example: "if (not p)" => "if (!p)"
+     */
+    bool simplifyNot();
+
 protected:
 
     /** Add braces to an if-block

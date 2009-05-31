@@ -1420,6 +1420,7 @@ void Tokenizer::simplifyTokenList()
 
     elseif();
     simplifyIfNot();
+    simplifyNot();
     simplifyIfAssign();
 
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -2232,6 +2233,25 @@ bool Tokenizer::simplifyIfNot()
     }
     return ret;
 }
+
+
+bool Tokenizer::simplifyNot()
+{
+    // "if (not p)" => "if (!p)"
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "if|while ( not %var%"))
+            tok->next()->next()->str("!");
+        if (Token::Match(tok, "&& not %var%"))
+            tok->next()->str("!");
+        if (Token::Match(tok, "|| not %var%"))
+            tok->next()->str("!");
+    }
+    return ret;
+}
+
+
 
 bool Tokenizer::simplifyKnownVariables()
 {

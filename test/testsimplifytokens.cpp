@@ -99,6 +99,9 @@ private:
         // "if(0==x)" => "if(!x)"
         TEST_CASE(ifnot);
         TEST_CASE(combine_wstrings);
+
+        // Simplify "not" to "!" (#345)
+        TEST_CASE(not1);
     }
 
     std::string tok(const char code[])
@@ -857,6 +860,32 @@ private:
         ASSERT_EQUALS("if ( b ( ) && ! a )", simplifyIfNot("if( b() && 0 == a )"));
         ASSERT_EQUALS("if ( ! ( a = b ) )", simplifyIfNot("if((a=b)==0)"));
     }
+
+
+
+    std::string simplifyNot(const char code[])
+    {
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyNot();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << (tok->previous() ? " " : "") << tok->str();
+
+        return ostr.str();
+    }
+
+    void not1()
+    {
+        ASSERT_EQUALS("if ( ! p )", simplifyNot("if (not p)"));
+        ASSERT_EQUALS("if ( p && ! q )", simplifyNot("if (p && not q)"));
+        ASSERT_EQUALS("void foo ( not i )", simplifyNot("void foo ( not i )"));
+    }
+
 
 };
 
