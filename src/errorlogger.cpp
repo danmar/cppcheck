@@ -46,7 +46,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok)
     {
         std::ostringstream smallStream;
-        smallStream << (*tok).line << ":" << (*tok).file;
+        smallStream << (*tok).line << ":" << (*tok).getfile();
         oss << smallStream.str().length() << " " << smallStream.str();
     }
     return oss.str();
@@ -119,7 +119,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     xml << "<error";
     if (!_callStack.empty())
     {
-        xml << " file=\"" << _callStack.back().file << "\"";
+        xml << " file=\"" << _callStack.back().getfile() << "\"";
         xml << " line=\"" << _callStack.back().line << "\"";
     }
     xml << " id=\"" << _id << "\"";
@@ -191,6 +191,41 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMes
 {
     std::ostringstream ostr;
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok)
-        ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).file << ":" << (*tok).line << "]";
+        ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).getfile() << ":" << (*tok).line << "]";
     return ostr.str();
 }
+
+
+std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
+{
+    std::string f(file);
+
+    // replace "/ab/.." with "/"..
+    std::string::size_type pos = 0;
+    while ((pos = f.find("..", pos + 1)) != std::string::npos)
+    {
+        // position must be at least 4..
+        if (pos < 4)
+            continue;
+
+        // Previous char must be a separator..
+        if (f[pos-1] != '/' && f[pos-2] != '\\')
+            continue;
+
+        // Next char must be a separator..
+        if (f[pos+2] != '/' && f[pos+2] != '\\')
+            continue;
+
+        // Locate previous separator..
+        std::string::size_type sep = f.find_last_of("/\\", pos - 2);
+        if (sep == std::string::npos)
+            continue;
+
+        // Delete substring..
+        f.erase(sep, pos + 2 - sep);
+        pos = sep;
+    }
+
+    return f;
+}
+

@@ -50,6 +50,8 @@ public:
             {
                 line = 0;
             }
+
+            std::string getfile() const;
             std::string file;
             unsigned int line;
         };

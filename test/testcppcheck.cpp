@@ -51,6 +51,8 @@ private:
         // TEST_CASE(linenumbers2);
 
         TEST_CASE(xml);
+
+        TEST_CASE(include);
     }
 
     void linenumbers()
@@ -90,6 +92,18 @@ private:
         errmsg._msg = "ab<cd>ef";
         ASSERT_EQUALS("<error id=\"\" severity=\"\" msg=\"ab&lt;cd&gt;ef\"/>", errmsg.toXML());
     }
+
+
+    void include()
+    {
+        ErrorLogger::ErrorMessage errmsg;
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.file = "ab/cd/../ef.h";
+        errmsg._callStack.push_back(loc);
+        ASSERT_EQUALS("<error file=\"ab/ef.h\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errmsg.toXML());
+        ASSERT_EQUALS("[ab/ef.h:0]: ", errmsg.toText());
+    }
+
 };
 
 REGISTER_TEST(TestCppcheck)
