@@ -1140,6 +1140,8 @@ void Tokenizer::simplifyTokenList()
     _typeSize["long"] = sizeof(long);
     _typeSize["float"] = sizeof(float);
     _typeSize["double"] = sizeof(double);
+    _typeSize["*"] = sizeof(void *);
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "class|struct %var%"))
@@ -1286,19 +1288,22 @@ void Tokenizer::simplifyTokenList()
     // Replace 'sizeof(var)'
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        // type array [ num ] ;
-        if (! Token::Match(tok, "%type% %var% [ %num% ] ;"))
+        if (! Token::Match(tok, "%type% *| %var% [ %num% ] ;"))
             continue;
 
-        int size = SizeOfType(tok->str().c_str());
+        const int type_tok = ((tok->next()->str() == "*") ? 1 : 0);
+        const int varname_tok = type_tok + 1;
+        const int num_tok = varname_tok + 2;
+
+        int size = SizeOfType(tok->tokAt(type_tok)->str().c_str());
         if (size <= 0)
             continue;
 
-        const unsigned int varid = tok->next()->varId();
+        const unsigned int varid = tok->tokAt(varname_tok)->varId();
         if (varid == 0)
             continue;
 
-        int total_size = size * MathLib::toLongNumber(tok->strAt(3));
+        int total_size = size * MathLib::toLongNumber(tok->strAt(num_tok));
 
         // Replace 'sizeof(var)' with number
         int indentlevel = 0;

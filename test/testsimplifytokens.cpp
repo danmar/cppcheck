@@ -79,6 +79,7 @@ private:
         TEST_CASE(sizeof5);
         TEST_CASE(sizeof6);
         TEST_CASE(sizeof7);
+        TEST_CASE(sizeof8);
         TEST_CASE(casting);
 
         TEST_CASE(template1);
@@ -540,6 +541,43 @@ private:
         const char code[] = ";INT32 i[10];\n"
                             "sizeof(i[0]);\n";
         ASSERT_EQUALS(" ; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", sizeof_(code));
+    }
+
+    void sizeof8()
+    {
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  char* ptrs[2];\n"
+                                "  int a = sizeof( ptrs );\n"
+                                "}\n";
+            std::ostringstream oss;
+            oss << (sizeof(void *) * 2);
+            ASSERT_EQUALS(" void f ( ) { char * ptrs [ 2 ] ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  char* ptrs[55];\n"
+                                "  int a = sizeof( ptrs );\n"
+                                "}\n";
+            std::ostringstream oss;
+            oss << (sizeof(void *) * 55);
+            ASSERT_EQUALS(" void f ( ) { char * ptrs [ 55 ] ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+        }
+
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  char* ptrs;\n"
+                                "  int a = sizeof( ptrs );\n"
+                                "}\n";
+            std::ostringstream oss;
+            oss << sizeof(void *);
+            TODO_ASSERT_EQUALS(" void f ( ) { char * ptrs ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+        }
     }
 
     void casting()
