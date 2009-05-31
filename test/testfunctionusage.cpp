@@ -39,6 +39,7 @@ private:
         TEST_CASE(return1);
         TEST_CASE(callback1);
         TEST_CASE(else1);
+        TEST_CASE(functionpointer);
     }
 
     void check(const char code[])
@@ -96,6 +97,20 @@ private:
               "    else f1();\n"
               "}\n");
         std::string err(errout.str());
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void functionpointer()
+    {
+        check("namespace abc {\n"
+              "void foo() { }\n"
+              "};\n"
+              "\n"
+              "int main()\n"
+              "{\n"
+              "    f(&abc::foo);\n"
+              "    return 0\n"
+              "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
