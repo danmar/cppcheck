@@ -1292,22 +1292,23 @@ void Tokenizer::simplifyTokenList()
             continue;
 
         const int type_tok = ((tok->next()->str() == "*") ? 1 : 0);
-        const int varname_tok = type_tok + 1;
-        const int num_tok = varname_tok + 2;
 
         int size = SizeOfType(tok->tokAt(type_tok)->str().c_str());
         if (size <= 0)
             continue;
 
+        const int varname_tok = type_tok + 1;
         const unsigned int varid = tok->tokAt(varname_tok)->varId();
         if (varid == 0)
             continue;
 
+        const int num_tok = varname_tok + 2;
         int total_size = size * MathLib::toLongNumber(tok->strAt(num_tok));
 
         // Replace 'sizeof(var)' with number
         int indentlevel = 0;
-        for (Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next())
+        const int next_tok = num_tok + 3;
+        for (Token *tok2 = tok->tokAt(next_tok); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "{")
             {
