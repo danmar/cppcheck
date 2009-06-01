@@ -85,6 +85,7 @@ private:
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
         TEST_CASE(buffer_overrun_3);
+        TEST_CASE(buffer_overrun_4);
 
         TEST_CASE(sprintf1);
         TEST_CASE(snprintf1);
@@ -407,6 +408,8 @@ private:
         ASSERT_EQUALS("[test.cpp:10]: (all) Array index out of bounds\n", err);
     }
 
+
+
     void buffer_overrun_1()
     {
         check("void f()\n"
@@ -448,6 +451,16 @@ private:
     }
 
 
+    void buffer_overrun_4()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    const char *p[2];\n"
+              "    for (int i = 0; i < 8; ++i)\n"
+              "        p[i] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (all) Buffer overrun\n", errout.str());
+    }
 
 
 

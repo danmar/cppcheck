@@ -451,13 +451,16 @@ void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
         unsigned int varid = 0;
         int nextTok = 0;
 
-        if (Token::Match(tok, "%type% %var% [ %num% ] [;=]"))
+        if (Token::Match(tok, "%type% *| %var% [ %num% ] [;=]"))
         {
-            varname[0] = tok->strAt(1);
-            size = std::strtoul(tok->strAt(3), NULL, 10);
-            type = tok->str().c_str();
-            varid = tok->tokAt(1)->varId();
-            nextTok = 6;
+            unsigned int varpos = 1;
+            if (tok->next()->str() == "*")
+                ++varpos;
+            varname[0] = tok->strAt(varpos);
+            size = std::strtoul(tok->strAt(varpos + 2), NULL, 10);
+            type = tok->strAt(varpos - 1);
+            varid = tok->tokAt(varpos)->varId();
+            nextTok = varpos + 5;
         }
         else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
         {
@@ -480,7 +483,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
             continue;
         }
 
-        int total_size = size * _tokenizer->SizeOfType(type);
+        int total_size = size * ((*type == '*') ? 4 : _tokenizer->SizeOfType(type));
         if (total_size == 0)
             continue;
 
