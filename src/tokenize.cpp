@@ -1233,8 +1233,7 @@ void Tokenizer::simplifyTokenList()
         if (Token::Match(tok, "sizeof ( %type% * )"))
         {
             std::ostringstream str;
-            // 'sizeof(type *)' has the same size as 'sizeof(char *)'
-            str << sizeof(char *);
+            str << SizeOfType(tok->strAt(3));
             tok->str(str.str().c_str());
 
             for (int i = 0; i < 4; i++)
