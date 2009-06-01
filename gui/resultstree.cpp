@@ -105,7 +105,7 @@ void ResultsTree::AddErrorItem(const QString &file,
                           severity,
                           message,
                           hide,
-                          "images/go-down.png");
+                          ":images/go-down.png");
     }
 
     //TODO just hide/show current error and it's file
@@ -414,11 +414,11 @@ void ResultsTree::QuickStartApplication(const QModelIndex &index)
 QString ResultsTree::SeverityToIcon(const QString &severity)
 {
     if (severity == "all")
-        return "images/dialog-warning.png";
+        return ":images/dialog-warning.png";
     if (severity == "error")
-        return "images/dialog-error.png";
+        return ":images/dialog-error.png";
     if (severity == "style")
-        return "images/dialog-information.png";
+        return ":images/dialog-information.png";
 
     return "";
 }
