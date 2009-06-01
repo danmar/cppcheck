@@ -1151,30 +1151,32 @@ void Tokenizer::simplifyTokenList()
     }
 
 
-    // Replace 'sizeof(var)'..
+    // Replace 'sizeof(var)' with 'sizeof(type)'
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[;{}] %type% %var% ;") && tok->tokAt(2)->varId() > 0)
-        {
-            const unsigned int varid = tok->tokAt(2)->varId();
+        if (! Token::Match(tok, "[;{}] %type% %var% ;"))
+            continue;
 
-            // Replace 'sizeof(var)' with 'sizeof(type)'
-            int indentlevel = 0;
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        if (tok->tokAt(2)->varId() <= 0)
+            continue;
+
+        const unsigned int varid = tok->tokAt(2)->varId();
+
+        int indentlevel = 0;
+        for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "{")
+                ++indentlevel;
+            else if (tok2->str() == "}")
             {
-                if (tok2->str() == "{")
-                    ++indentlevel;
-                else if (tok2->str() == "}")
-                {
-                    --indentlevel;
-                    if (indentlevel < 0)
-                        break;
-                }
-                else if (Token::Match(tok2, "sizeof ( %varid% )", varid))
-                {
-                    tok2 = tok2->tokAt(2);
-                    tok2->str(tok->strAt(1));
-                }
+                --indentlevel;
+                if (indentlevel < 0)
+                    break;
+            }
+            else if (Token::Match(tok2, "sizeof ( %varid% )", varid))
+            {
+                tok2 = tok2->tokAt(2);
+                tok2->str(tok->strAt(1));
             }
         }
     }
