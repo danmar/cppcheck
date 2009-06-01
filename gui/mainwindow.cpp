@@ -105,8 +105,7 @@ MainWindow::MainWindow() :
 
     connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
-    //TODO: This crashed
-    //connect(&mActionStop, SIGNAL(triggered()), &mThread, SLOT(Stop()));
+    connect(&mActionStop, SIGNAL(triggered()), &mThread, SLOT(Stop()));
     connect(&mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
 
     connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));

@@ -49,6 +49,8 @@ public:
     */
     void run();
 
+    void stop();
+
 
 signals:
 
@@ -60,6 +62,27 @@ signals:
 
     void FileChecked(const QString &file);
 protected:
+
+    /**
+    * @brief States for the check thread.
+    * Whole purpose of these states is to allow stopping of the checking. When
+    * stopping we say for the thread (Stopping) that "stop when current check
+    * has been completed. Thread must be stopped cleanly, just terminating thread
+    * likely causes unpredictable side-effedts.
+    */
+    enum State
+    {
+        Running, /**< The thread is checking. */
+        Stopping, /**< The thread will stop after current work. */
+        Stopped, /**< The thread has been stopped. */
+        Ready, /**< The thread is ready. */
+    };
+
+    /**
+    * @brief Thread's current execution state.
+    */
+    State mState;
+
     ThreadResult &mResult;
     /**
     * @brief Cppcheck itself

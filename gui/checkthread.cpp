@@ -40,10 +40,11 @@ void CheckThread::Check(Settings settings)
 
 void CheckThread::run()
 {
+    mState = Running;
     QString file;
     file = mResult.GetNextFile();
 
-    while (!file.isEmpty())
+    while (!file.isEmpty() && mState == Running)
     {
         qDebug() << "Checking file" << file;
         mCppcheck.addFile(file.toStdString());
@@ -51,11 +52,18 @@ void CheckThread::run()
         mCppcheck.clearFiles();
         emit FileChecked(file);
 
-        file = mResult.GetNextFile();
+        if (mState == Running)
+            file = mResult.GetNextFile();
     }
+    if (mState == Running)
+        mState = Ready;
+	else
+        mState = Stopped;
 
     emit Done();
 }
 
-
-
+void CheckThread::stop()
+{
+    mState = Stopping;
+}

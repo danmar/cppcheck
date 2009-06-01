@@ -124,7 +124,7 @@ void ThreadHandler::Stop()
 {
     for (int i = 0;i < mThreads.size();i++)
     {
-        mThreads[i]->terminate();
+        mThreads[i]->stop();
     }
 }
 
