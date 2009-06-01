@@ -214,6 +214,7 @@ private:
         TEST_CASE(stdstring);
 
         TEST_CASE(strndup_function);
+        TEST_CASE(tmpfile_function);
         TEST_CASE(fcloseall_function);
         TEST_CASE(file_functions);
 
@@ -2186,11 +2187,57 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: out\n", errout.str());
     }
 
+    void tmpfile_function()
+    {
+        check("void f()\n"
+              "{\n"
+              "    FILE *f = tmpfile();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: f\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    FILE *f = tmpfile();\n"
+              "    if (!f)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: f\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    FILE *f = tmpfile();\n"
+              "    fclose(f);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    FILE *f = tmpfile();\n"
+              "    if (!f)\n"
+              "        return;\n"
+              "    fclose(f);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE *f()\n"
+              "{\n"
+              "    return tmpfile();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void fcloseall_function()
     {
         check("void f()\n"
               "{\n"
               "    FILE *f = fopen(fname, str);\n"
+              "    fcloseall();\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    FILE *f = tmpfile();\n"
               "    fcloseall();\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());

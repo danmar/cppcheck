@@ -109,7 +109,7 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
     if (Token::Match(tok2, "new %type% ["))
         return NewArray;
 
-    if (Token::simpleMatch(tok2, "fopen ("))
+    if (Token::Match(tok2, "fopen|tmpfile ("))
         return File;
 
     if (Token::simpleMatch(tok2, "popen ("))
