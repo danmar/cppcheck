@@ -1154,13 +1154,15 @@ void Tokenizer::simplifyTokenList()
     // Replace 'sizeof(var)' with 'sizeof(type)'
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (! Token::Match(tok, "[;{}] %type% %var% ;"))
+        if (! Token::Match(tok, "[;{}] %type% *| %var% ;"))
             continue;
 
-        if (tok->tokAt(2)->varId() <= 0)
-            continue;
+        const int type_tok = (tok->tokAt(2)->str() == "*" ? 2 : 1);
+        const int varname_tok = type_tok + 1;
+        const unsigned int varid = tok->tokAt(varname_tok)->varId();
 
-        const unsigned int varid = tok->tokAt(2)->varId();
+        if (varid <= 0)
+            continue;
 
         int indentlevel = 0;
         for (Token *tok2 = tok; tok2; tok2 = tok2->next())
@@ -1176,7 +1178,7 @@ void Tokenizer::simplifyTokenList()
             else if (Token::Match(tok2, "sizeof ( %varid% )", varid))
             {
                 tok2 = tok2->tokAt(2);
-                tok2->str(tok->strAt(1));
+                tok2->str(tok->strAt(type_tok));
             }
         }
     }
@@ -1230,13 +1232,19 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
-        if (Token::Match(tok, "sizeof ( %type% * )"))
+        // sizeof(type *) => sizeof(*)
+        if (Token::Match(tok, "sizeof ( %type% *)"))
+        {
+            tok->next()->deleteNext();
+        }
+
+        if (Token::Match(tok, "sizeof ( * )"))
         {
             std::ostringstream str;
-            str << SizeOfType(tok->strAt(3));
+            str << SizeOfType(tok->strAt(2));
             tok->str(str.str().c_str());
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 3; i++)
             {
                 tok->deleteNext();
             }

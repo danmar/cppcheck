@@ -576,7 +576,7 @@ private:
                                 "}\n";
             std::ostringstream oss;
             oss << sizeof(void *);
-            TODO_ASSERT_EQUALS(" void f ( ) { char * ptrs ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS(" void f ( ) { char * ptrs ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
         }
     }
 
