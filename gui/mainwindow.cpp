@@ -42,6 +42,8 @@ MainWindow::MainWindow() :
         mActionShowErrors(tr("Show &common errors"), this),
         mActionShowCheckAll(tr("Check all"), this),
         mActionShowUncheckAll(tr("Uncheck all"), this),
+        mActionShowCollapseAll(tr("Collapse all"), this),
+        mActionShowExpandAll(tr("Expand all"), this),
         mActionAbout(tr("About"), this),
         mActionStop(tr("Stop checking"), this),
         mActionSave(tr("Save results to a file"), this),
@@ -72,6 +74,9 @@ MainWindow::MainWindow() :
     menuview->addSeparator();
     menuview->addAction(&mActionShowCheckAll);
     menuview->addAction(&mActionShowUncheckAll);
+    menuview->addSeparator();
+    menuview->addAction(&mActionShowCollapseAll);
+    menuview->addAction(&mActionShowExpandAll);
 
     QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
     menuprogram->addAction(&mActionSettings);
@@ -95,6 +100,8 @@ MainWindow::MainWindow() :
     connect(&mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
     connect(&mActionShowCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
     connect(&mActionShowUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
+    connect(&mActionShowCollapseAll, SIGNAL(triggered()), &mResults, SLOT(CollapseAllResults()));
+    connect(&mActionShowExpandAll, SIGNAL(triggered()), &mResults, SLOT(ExpandAllResults()));
 
     connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 

@@ -275,6 +275,18 @@ protected:
     QAction mActionShowUncheckAll;
 
     /**
+    * @brief Action to collapse all items in the result tree.
+    *
+    */
+    QAction mActionShowCollapseAll;
+
+    /**
+    * @brief Action to expand all items in the result tree.
+    *
+    */
+    QAction mActionShowExpandAll;
+
+    /**
     * @brief Action show about dialog
     *
     */
@@ -291,7 +303,6 @@ protected:
     *
     */
     QAction mActionSave;
-
 
     /**
     * @brief Results for checking

@@ -67,3 +67,13 @@ void ResultsView::ShowResults(ShowTypes type, bool show)
 {
     mTree->ShowResults(type, show);
 }
+
+void ResultsView::CollapseAllResults()
+{
+    mTree->collapseAll();
+}
+
+void ResultsView::ExpandAllResults()
+{
+    mTree->expandAll();
+}

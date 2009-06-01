@@ -78,6 +78,17 @@ public slots:
                const QString &message,
                const QStringList &files,
                const QVariantList &lines);
+
+    /**
+    * @brief Collapse all results in the result list.
+    */
+    void CollapseAllResults();
+
+    /**
+    * @brief Expand all results in the result list.
+    */
+    void ExpandAllResults();
+
 protected:
     /**
     * @brief Tree to show cppcheck's results
