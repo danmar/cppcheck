@@ -57,7 +57,7 @@ void CheckThread::run()
     }
     if (mState == Running)
         mState = Ready;
-	else
+    else
         mState = Stopped;
 
     emit Done();
