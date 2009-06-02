@@ -451,6 +451,10 @@ void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
         unsigned int varid = 0;
         int nextTok = 0;
 
+        // if the previous token exists, it must be either a variable name or "[;{}]"
+        if (tok->previous() && (!tok->previous()->isName() && !Token::Match(tok->previous(), "[;{}]")))
+            continue;
+
         if (Token::Match(tok, "%type% *| %var% [ %num% ] [;=]"))
         {
             unsigned int varpos = 1;

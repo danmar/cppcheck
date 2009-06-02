@@ -460,6 +460,15 @@ private:
               "        p[i] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (all) Buffer overrun\n", errout.str());
+
+        // No false positive
+        check("void foo(int x, int y)\n"
+              "{\n"
+              "    const char *p[2];\n"
+              "    x = y * p[1];\n"
+              "    p[1] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
