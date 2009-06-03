@@ -1333,7 +1333,7 @@ void CheckMemoryLeakClass::CheckMemoryLeak_CheckScope(const Token *Tok1, const c
         MemoryLeak(result->tokAt(3), varname, alloctype, all);
     }
 
-    else if ((result = Token::findmatch(tok, "alloc ; alloc|assign|return ;")) != NULL)
+    else if ((result = Token::findmatch(tok, "alloc ; alloc|assign|return callfunc| ;")) != NULL)
     {
         MemoryLeak(result->tokAt(2), varname, alloctype, all);
     }

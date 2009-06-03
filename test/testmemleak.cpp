@@ -1993,6 +1993,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: p\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    int *p = new int[100];\n"
+              "    p = g();\n"
+              "    delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
     }
 
     void unknownFunction3()
