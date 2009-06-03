@@ -110,6 +110,7 @@ MainWindow::MainWindow() :
 
     connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
+    connect(&mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
 
     //Toolbar
     QToolBar *toolbar =  addToolBar("Toolbar");
@@ -140,6 +141,9 @@ MainWindow::MainWindow() :
     setWindowTitle(tr("Cppcheck"));
 
     EnableCheckButtons(true);
+
+    mActionClearResults.setEnabled(false);
+    mActionSave.setEnabled(false);
 }
 
 MainWindow::~MainWindow()
@@ -210,6 +214,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
         mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
         EnableCheckButtons(false);
+        mResults.SetCheckDirectory(dialog.directory().absolutePath());
         mThread.Check(GetCppcheckSettings(), false);
     }
 }
@@ -295,6 +300,9 @@ void MainWindow::ProgramSettings()
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveCheckboxValues();
+        mResults.UpdateSettings(dialog.ShowFullPath(),
+                                dialog.SaveFullPath(),
+                                dialog.SaveAllErrors());
     }
 }
 
@@ -309,6 +317,8 @@ void MainWindow::ReCheck()
 void MainWindow::ClearResults()
 {
     mResults.Clear();
+    mActionClearResults.setEnabled(false);
+    mActionSave.setEnabled(false);
 }
 
 void MainWindow::EnableCheckButtons(bool enable)
@@ -396,9 +406,30 @@ void MainWindow::About()
 
 void MainWindow::Save()
 {
-    QMessageBox msgBox;
-    msgBox.setWindowTitle(tr("Not implemented yet..."));
-    msgBox.setText(tr("Not implemented yet..."));
-    msgBox.exec();
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+
+    QStringList filters;
+    filters << tr("XML files (*.xml)") << tr("Text files (*.txt)");
+    dialog.setNameFilters(filters);
+
+    if (dialog.exec())
+    {
+        QStringList list = dialog.selectedFiles();
+
+        if (list.size() > 0)
+        {
+            bool xml = (dialog.selectedNameFilter() == filters[0] && list[0].endsWith(".xml", Qt::CaseInsensitive));
+            mResults.Save(list[0], xml);
+        }
+    }
 }
+
+void MainWindow::ResultsAdded()
+{
+    mActionClearResults.setEnabled(true);
+    mActionSave.setEnabled(true);
+}
+
 

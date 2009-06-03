@@ -133,6 +133,12 @@ protected slots:
     *
     */
     void CheckDone();
+
+    /**
+    * @brief Slot for enabling save and clear button
+    *
+    */
+    void ResultsAdded();
 protected:
 
     /**

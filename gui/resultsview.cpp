@@ -20,6 +20,7 @@
 #include "resultsview.h"
 #include <QDebug>
 #include <QVBoxLayout>
+#include <QFile>
 
 ResultsView::ResultsView(QSettings &settings, ApplicationList &list)
 {
@@ -58,9 +59,11 @@ void ResultsView::Error(const QString &file,
                         const QString &severity,
                         const QString &message,
                         const QStringList &files,
-                        const QVariantList &lines)
+                        const QVariantList &lines,
+                        const QString &id)
 {
-    mTree->AddErrorItem(file, severity, message, files, lines);
+    mTree->AddErrorItem(file, severity, message, files, lines, id);
+    emit GotResults();
 }
 
 void ResultsView::ShowResults(ShowTypes type, bool show)
@@ -77,3 +80,29 @@ void ResultsView::ExpandAllResults()
 {
     mTree->expandAll();
 }
+
+void ResultsView::Save(const QString &filename, bool xml)
+{
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        return;
+    }
+
+    QTextStream out(&file);
+    mTree->SaveResults(out, xml);
+}
+
+
+void ResultsView::UpdateSettings(bool showFullPath,
+                                 bool saveFullPath,
+                                 bool saveAllErrors)
+{
+    mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors);
+}
+
+void ResultsView::SetCheckDirectory(const QString &dir)
+{
+    mTree->SetCheckDirectory(dir);
+}
+

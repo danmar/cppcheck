@@ -22,11 +22,13 @@
 #include <QMenu>
 #include <QSignalMapper>
 #include <QProcess>
+#include <QDir>
 
 ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
         mSettings(settings),
         mApplications(list),
-        mContextItem(0)
+        mContextItem(0),
+        mCheckPath("")
 {
     setModel(&mModel);
     QStringList labels;
@@ -58,7 +60,8 @@ void ResultsTree::AddErrorItem(const QString &file,
                                const QString &severity,
                                const QString &message,
                                const QStringList &files,
-                               const QVariantList &lines)
+                               const QVariantList &lines,
+                               const QString &id)
 {
     Q_UNUSED(file);
 
@@ -68,7 +71,7 @@ void ResultsTree::AddErrorItem(const QString &file,
         return;
     }
 
-    QString realfile = files[0];
+    QString realfile = StripPath(files[0], false);
 
     if (realfile.isEmpty())
     {
@@ -93,6 +96,7 @@ void ResultsTree::AddErrorItem(const QString &file,
     data["message"]  = message;
     data["files"]  = files;
     data["lines"]  = lines;
+    data["id"]  = id;
     item->setData(QVariant(data));
 
 
@@ -100,7 +104,7 @@ void ResultsTree::AddErrorItem(const QString &file,
     for (int i = 1;i < files.size() && i < lines.size();i++)
     {
         AddBacktraceFiles(item,
-                          files[i],
+                          StripPath(files[i], false),
                           lines[i].toInt(),
                           severity,
                           message,
@@ -142,6 +146,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     parent->appendRow(list);
 
     setRowHidden(parent->rowCount() - 1, parent->index(), hide);
+
 
     if (!icon.isEmpty())
     {
@@ -200,6 +205,10 @@ void ResultsTree::LoadSettings()
         QString temp = QString(tr("Result column %1 width")).arg(i);
         setColumnWidth(i, mSettings.value(temp, 800 / mModel.columnCount()).toInt());
     }
+
+    mSaveFullPath = mSettings.value(tr("Save full path"), false).toBool();
+    mSaveAllErrors = mSettings.value(tr("Save all errors"), false).toBool();
+    mShowFullPath = mSettings.value(tr("Show full path"), false).toBool();
 }
 
 void ResultsTree::SaveSettings()
@@ -422,3 +431,251 @@ QString ResultsTree::SeverityToIcon(const QString &severity)
 
     return "";
 }
+
+void ResultsTree::SaveResults(QTextStream &out, bool xml)
+{
+    if (xml)
+    {
+        out << "<?xml version=\"1.0\"?>" << endl << "<results>" << endl;
+    }
+
+    for (int i = 0;i < mModel.rowCount();i++)
+    {
+        QStandardItem *item = mModel.item(i, 0);
+        SaveErrors(out, item, xml);
+    }
+
+    if (xml)
+    {
+        out << "</results>" << endl;
+    }
+}
+
+void ResultsTree::SaveErrors(QTextStream &out, QStandardItem *item, bool xml)
+{
+    if (!item)
+    {
+        return;
+    }
+
+    //qDebug() << item->text() << "has" << item->rowCount() << "errors";
+
+    for (int i = 0;i < item->rowCount();i++)
+    {
+        QStandardItem *error = item->child(i, 0);
+
+        if (!error)
+        {
+            continue;
+        }
+
+        if (isRowHidden(i, item->index()) && !mSaveAllErrors)
+        {
+            continue;
+        }
+
+        //Get error's user data
+        QVariant userdata = error->data();
+        //Convert it to QVariantMap
+        QVariantMap data = userdata.toMap();
+
+        QString line;
+        QString severity = ShowTypeToString(VariantToShowType(data["severity"]));
+        QString message = data["message"].toString();
+        QString id = data["id"].toString();
+        QStringList files = data["files"].toStringList();
+        QVariantList lines = data["lines"].toList();
+
+        if (files.size() <= 0 || lines.size() <= 0 || lines.size() != files.size())
+        {
+            continue;
+        }
+
+
+
+        if (xml)
+        {
+            /*
+            Error example from the core program in xml
+            <error file="gui/test.cpp" line="14" id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"/>
+            The callstack seems to be ignored here aswell, instead last item of the stack is used
+            */
+            line = QString("<error file=\"%1\" line=\"%2\" id=\"%3\" severity=\"%4\" msg=\"%5\"/>").
+                   arg(StripPath(files[files.size()-1], true)). //filename
+                   arg(lines[lines.size()-1].toInt()). //line
+                   arg(id). //ID
+                   arg(severity). //severity
+                   arg(message); //Message
+
+        }
+        else
+        {
+            /*
+            Error example from the core program in text
+            [gui/test.cpp:23] -> [gui/test.cpp:14]: (error) Mismatching allocation and deallocation: k
+            */
+            for (int i = 0;i < lines.size();i++)
+            {
+                line += QString("[%1:%2]").arg(StripPath(files[i], true)).arg(lines[i].toInt());
+                if (i < lines.size() - 1 && lines.size() > 0)
+                {
+                    line += " -> ";
+                }
+
+                if (i == lines.size() - 1)
+                {
+                    line += ": ";
+                }
+            }
+
+            line += QString("(%1) %2").arg(severity).arg(message);
+        }
+
+        out << line << endl;
+
+    }
+}
+
+QString ResultsTree::ShowTypeToString(ShowTypes type)
+{
+    switch (type)
+    {
+    case SHOW_ALL:
+        return "all";
+        break;
+
+    case SHOW_STYLE:
+        return "style";
+        break;
+
+    case SHOW_SECURITY:
+        return "security";
+        break;
+
+    case SHOW_UNUSED:
+        return "unused";
+        break;
+
+    case SHOW_ERRORS:
+        return "error";
+        break;
+
+    case SHOW_NONE:
+        return "";
+        break;
+    }
+
+    return "";
+}
+
+void ResultsTree::UpdateSettings(bool showFullPath,
+                                 bool saveFullPath,
+                                 bool saveAllErrors)
+{
+    if (mShowFullPath != showFullPath)
+    {
+        mShowFullPath = showFullPath;
+        RefreshFilePaths();
+    }
+
+    mSaveFullPath = saveFullPath;
+    mSaveAllErrors = saveAllErrors;
+}
+
+void ResultsTree::SetCheckDirectory(const QString &dir)
+{
+    mCheckPath = dir;
+}
+
+QString ResultsTree::StripPath(const QString &path, bool saving)
+{
+    if ((!saving && mShowFullPath) || (saving && mSaveFullPath))
+    {
+        return QString(path);
+    }
+
+    QDir dir(mCheckPath);
+    return dir.relativeFilePath(path);
+}
+
+void ResultsTree::RefreshFilePaths(QStandardItem *item)
+{
+    if (!item)
+    {
+        return;
+    }
+
+    //Mark that this file's path hasn't been updated yet
+    bool updated = false;
+
+    //Loop through all errors within this file
+    for (int i = 0;i < item->rowCount();i++)
+    {
+
+        //Get error i
+        QStandardItem *error = item->child(i, 0);
+
+        if (!error)
+        {
+            continue;
+        }
+
+
+        //Get error's user data
+        QVariant userdata = error->data();
+        //Convert it to QVariantMap
+        QVariantMap data = userdata.toMap();
+
+        //Get list of files
+        QStringList files = data["files"].toStringList();
+
+        //We should always have at least 1 file per error
+        if (files.size() == 0)
+        {
+            continue;
+        }
+
+        //Update this error's text
+        error->setText(StripPath(files[0], false));
+
+
+        //If this error has backtraces make sure the files list has enough filenames
+        if (error->rowCount() <= files.size() - 1)
+        {
+            //Loop through all files within the error
+            for (int j = 0;j < error->rowCount();j++)
+            {
+                //Get file
+                QStandardItem *file = error->child(j, 0);
+                if (!file)
+                {
+                    continue;
+                }
+                //Update file's path
+                file->setText(StripPath(files[j+1], false));
+            }
+        }
+
+        //if the main file hasn't been updated yet, update it now
+        if (!updated)
+        {
+            updated = true;
+            item->setText(error->text());
+        }
+
+    }
+}
+
+
+void ResultsTree::RefreshFilePaths()
+{
+    qDebug("Refreshing file paths");
+
+    //Go through all file items (these are parent items that contain the errors)
+    for (int i = 0;i < mModel.rowCount();i++)
+    {
+        RefreshFilePaths(mModel.item(i, 0));
+    }
+
+}
+
