@@ -27,7 +27,7 @@
 #include <QContextMenuEvent>
 #include "common.h"
 #include "applicationlist.h"
-
+#include <QTextStream>
 
 /**
 * @brief Cppcheck's results are shown in this tree
