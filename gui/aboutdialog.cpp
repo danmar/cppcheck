@@ -27,9 +27,18 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
         , mVersion(version)
 {
     setWindowTitle(tr("About cppcheck"));
+    // Left icon area and right text area
+    QHBoxLayout *iconLayout = new QHBoxLayout(this);
+    // Keep icon at the top of the dialog
+    QVBoxLayout *iconVLayout = new QVBoxLayout(this);
+    // Texts
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    // Keep close button in right
     QHBoxLayout *btnLayout = new QHBoxLayout(this);
 
+    QIcon *icon = new QIcon(":icon.png");
+    QLabel *iconLabel = new QLabel();
+    iconLabel->setPixmap(icon->pixmap(QSize(48, 48)));
     QLabel *name = new QLabel(tr("Cppcheck - A tool for static C/C++ code analysis."));
     QLabel *ver = new QLabel(QString(tr("Version %1")).arg(mVersion));
     QLabel *copy = new QLabel(("Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team."));
@@ -46,6 +55,12 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
     mainLayout->addStretch();
 
     mainLayout->addLayout(btnLayout);
+
+    iconVLayout->addWidget(iconLabel);
+    iconVLayout->addStretch();
+    iconLayout->addLayout(iconVLayout);
+    iconLayout->addLayout(mainLayout);
+
     btnLayout->addStretch();
     btnLayout->addWidget(quit);
 
