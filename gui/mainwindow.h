@@ -142,6 +142,11 @@ protected slots:
 protected:
 
     /**
+    * @brief Event coming when application is about to close.
+    */
+    virtual void closeEvent(QCloseEvent *event);
+
+    /**
     * @brief Helper function to toggle all show error menu items
     * @param checked Should all errors be shown (true) or hidden (false)
     */

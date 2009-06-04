@@ -85,6 +85,12 @@ public:
     */
     void Check(Settings settings, bool recheck);
 
+    /**
+    * @brief Is checking running?
+    *
+    * @return true if check is running, false otherwise.
+    */
+    bool IsChecking() const;
 
 signals:
     /**

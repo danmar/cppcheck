@@ -359,6 +359,22 @@ void MainWindow::UncheckAll()
     ToggleAllChecked(false);
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    // Check that we aren't checking files
+    if (!mThread.IsChecking())
+        event->accept();
+    else
+    {
+        QString msg(tr("Cannot exit while checking.\n\n" \
+                       "Stop the checking before exiting."));
+        QMessageBox *box = new QMessageBox(QMessageBox::Warning,
+                                           tr("cppcheck"), msg);
+        box->show();
+        event->ignore();
+    }
+}
+
 void MainWindow::ToggleAllChecked(bool checked)
 {
     mActionShowAll.setChecked(checked);

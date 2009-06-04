@@ -71,6 +71,11 @@ void ThreadHandler::Check(Settings settings, bool recheck)
     }
 }
 
+bool ThreadHandler::IsChecking() const
+{
+    return mRunningThreadCount > 0;
+}
+
 void ThreadHandler::SetThreadCount(const int count)
 {
     if (mRunningThreadCount > 0 ||
