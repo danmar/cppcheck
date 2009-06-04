@@ -42,6 +42,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     //Add a layout for ok/cancel buttons
     QHBoxLayout *buttonLayout = new QHBoxLayout();
 
+    buttonLayout->addStretch();
     buttonLayout->addWidget(ok);
     buttonLayout->addWidget(cancel);
     //Add button layout to the main dialog layout
@@ -53,17 +54,14 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     connect(cancel, SIGNAL(clicked()),
             this, SLOT(reject()));
 
-
     //Begin adding tabs and tab content
 
     //General tab
     QWidget *general = new QWidget();
     tabs->addTab(general, tr("General"));
 
-
     //layout for general tab
     QVBoxLayout *layout = new QVBoxLayout();
-
 
     //Number of jobs
     QHBoxLayout *jobsLayout = new QHBoxLayout();
@@ -72,8 +70,6 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
 
     jobsLayout->addWidget(new QLabel(tr("Number of threads: ")));
     jobsLayout->addWidget(mJobs);
-
-
 
     layout->addLayout(jobsLayout);
 
@@ -88,6 +84,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
                                 tr("Show full path"),
                                 false);
 
+    layout->addStretch();
     general->setLayout(layout);
 
     //Add tab for setting user startable applications
@@ -125,11 +122,9 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     mListWidget->setSortingEnabled(false);
     PopulateListWidget();
 
-
     //report tab
     QWidget *report = new QWidget();
     tabs->addTab(report, tr("Reports"));
-
 
     QVBoxLayout *reportlayout = new QVBoxLayout();
     mSaveAllErrors = AddCheckbox(reportlayout,
@@ -141,8 +136,8 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
                                 tr("Save full path to files in reports"),
                                 tr("Save full path"),
                                 false);
+    reportlayout->addStretch();
     report->setLayout(reportlayout);
-
     setLayout(dialoglayout);
     setWindowTitle(tr("Settings"));
     LoadSettings();
@@ -298,6 +293,3 @@ bool SettingsDialog::SaveAllErrors()
 {
     return CheckStateToBool(mSaveAllErrors->checkState());
 }
-
-
-
