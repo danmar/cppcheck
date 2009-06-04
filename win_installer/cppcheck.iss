@@ -1,5 +1,5 @@
 ; cppcheck InnoSetup installer script
-; Copyright (c) 2009 Kimmo Varis
+; Copyright (C) 2007-2009 Daniel Marjamäki and Cppcheck team.
 
 ; This program is free software: you can redistribute it and/or modify
 ; it under the terms of the GNU General Public License as published by
@@ -22,10 +22,13 @@
 #define AppVersion "1.32"
 #define MyAppURL "http://cppcheck.wiki.sourceforge.net/"
 #define MyAppExeName "cppcheck.exe"
+#define QTGuiExe "gui.exe"
+#define QTGuiName "cppcheck GUI"
 
-; Set this macro to point to folder where VS runtimes are
+; Set this macro to point to folder where VS and QT runtimes are
 ; Runtime files are not included in repository so you need to
-; get them from elsewhere (e.g. from VS installation).
+; get them from elsewhere. VS runtimes come with VS installation. QT runtimes
+; you must compile yourself.
 #define RuntimesFolder "..\..\Runtimes"
 
 [Setup]
@@ -66,6 +69,18 @@ WizardImageStretch=false
 [Languages]
 Name: english; MessagesFile: compiler:Default.isl
 
+[Types]
+Name: full; Description: Full installation
+Name: compact; Description: Compact installation
+Name: custom; Description: Custom installation; Flags: iscustom
+
+; We have two components:
+; - Core contains all C-runtimes, command line executable and basic documents
+; - QTGui contains QT libraries and QT-based GUI
+[Components]
+Name: Core; Description: Core files (command line executable); Types: full custom compact; Flags: fixed
+Name: QTGui; Description: QT-based GUI [Experimental]; Types: full
+
 [Tasks]
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
 Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Flags: unchecked
@@ -75,26 +90,31 @@ Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Fla
 Type: files; Name: {app}\COPYING
 
 [Files]
-Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion
-Source: ..\COPYING; DestDir: {app}; DestName: COPYING.txt; Flags: ignoreversion
-Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion
-Source: ..\AUTHORS; DestDir: {app}; DestName: AUTHORS.txt; Flags: ignoreversion
+Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion; Components: Core
+Source: ..\gui\Release\gui.exe; DestDir: {app}; Flags: ignoreversion; Components: QTGui
+Source: ..\COPYING; DestDir: {app}; DestName: COPYING.txt; Flags: ignoreversion; Components: Core
+Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion; Components: Core
+Source: ..\AUTHORS; DestDir: {app}; DestName: AUTHORS.txt; Flags: ignoreversion; Components: Core
 ; VS runtimes
-Source: {#RuntimesFolder}\Microsoft.VC90.CRT.manifest; DestDir: {app}
-Source: {#RuntimesFolder}\msvcp90.dll; DestDir: {app}
-Source: {#RuntimesFolder}\msvcr90.dll; DestDir: {app}
+Source: {#RuntimesFolder}\Microsoft.VC90.CRT.manifest; DestDir: {app}; Components: Core
+Source: {#RuntimesFolder}\msvcp90.dll; DestDir: {app}; Components: Core
+Source: {#RuntimesFolder}\msvcr90.dll; DestDir: {app}; Components: Core
+; QT runtimes
+Source: {#RuntimesFolder}\QtCore4.dll; DestDir: {app}; Components: QTGui
+Source: {#RuntimesFolder}\QtGui4.dll; DestDir: {app}; Components: QTGui
 
 [Icons]
 ; As cppcheck is a program run from command prompt, make icons to open
 ; command prompt in install folder
-Name: {group}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}
-Name: {group}\{cm:ProgramOnTheWeb,{#MyAppName}}; Filename: {#MyAppURL}
-Name: {group}\{cm:UninstallProgram,{#MyAppName}}; Filename: {uninstallexe}
+Name: {group}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}; Components: Core
+Name: {group}\{#QTGuiName}; Filename: {app}\{#QTGuiExe}; WorkingDir: {app}; Components: QTGui
+Name: {group}\{cm:ProgramOnTheWeb,{#MyAppName}}; Filename: {#MyAppURL}; Components: Core
+Name: {group}\{cm:UninstallProgram,{#MyAppName}}; Filename: {uninstallexe}; Components: Core
 ; Desktop icon
-Name: {commondesktop}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}; Tasks: desktopicon
+Name: {commondesktop}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}; Tasks: desktopicon; Components: Core
 ; Doc icons
-Name: {group}\Authors; Filename: {app}\AUTHORS.txt; IconFileName: {win}\NOTEPAD.EXE
-Name: {group}\Copying; Filename: {app}\COPYING.txt; IconFileName: {win}\NOTEPAD.EXE
+Name: {group}\Authors; Filename: {app}\AUTHORS.txt; IconFileName: {win}\NOTEPAD.EXE; Components: Core
+Name: {group}\Copying; Filename: {app}\COPYING.txt; IconFileName: {win}\NOTEPAD.EXE; Components: Core
 
 [Code]
 function ModPathDir(): TArrayOfString;
