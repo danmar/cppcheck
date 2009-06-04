@@ -24,6 +24,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QToolBar>
+#include "aboutdialog.h"
 #include "../src/filelister.h"
 #include "../src/cppcheckexecutor.h"
 
@@ -385,15 +386,8 @@ void MainWindow::About()
     QString version = check.parseFromArgs(2, argv).c_str();
     version.replace("Cppcheck ", "");
 
-    QMessageBox msgBox;
-    msgBox.setWindowTitle(tr("About..."));
-    msgBox.setText(QString("Cppcheck - A tool for static C/C++ code analysis.\nVersion %1\n\n" \
-                           "This program is licensed under the terms\n" \
-                           "of the GNU General Public License version 3\n" \
-                           "Available online under:\n" \
-                           "http://www.gnu.org/licenses/gpl-3.0.html\n\nSee AUTHORS file for the list of developers." \
-                          ).arg(version));
-    msgBox.exec();
+    AboutDialog *dlg = new AboutDialog(version, this);
+    dlg->show();
 }
 
 
