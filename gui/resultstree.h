@@ -27,7 +27,7 @@
 #include <QContextMenuEvent>
 #include "common.h"
 #include "applicationlist.h"
-
+#include <QTextStream>
 
 /**
 * @brief Cppcheck's results are shown in this tree
@@ -53,7 +53,8 @@ public:
                       const QString &severity,
                       const QString &message,
                       const QStringList &files,
-                      const QVariantList &lines);
+                      const QVariantList &lines,
+                      const QString &id);
 
     /**
     * @brief Clear all errors from the tree
@@ -69,6 +70,29 @@ public:
     * @param Should specified errors be shown (true) or hidden (false)
     */
     void ShowResults(ShowTypes type, bool show);
+
+    /**
+    * @brief Save results to a text stream
+    *
+    */
+    void SaveResults(QTextStream &out, bool xml);
+
+    /**
+    * @brief Update tree settings
+    *
+    * @param showFullPath Show full path of files in the tree
+    * @param saveFullPath Save full path of files in reports
+    * @param saveAllErrors Save all visible errors
+    */
+    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors);
+
+    /**
+    * @brief Set the directory we are checking
+    *
+    * This is used to split error file path to relative if necessary
+    * @param dir Directory we are checking
+    */
+    void SetCheckDirectory(const QString &dir);
 protected slots:
     /**
     * @brief Slot to quickstart an error with default application
@@ -84,6 +108,38 @@ protected slots:
     */
     void Context(int application);
 protected:
+
+    /**
+    * @brief Hides/shows full file path on all error file items according to mShowFullPath
+    *
+    */
+    void RefreshFilePaths();
+
+    /**
+    * @brief Hides/shows full file path on all error file items according to mShowFullPath
+    * @param item Parent item whose childrens paths to change
+    */
+    void RefreshFilePaths(QStandardItem *item);
+
+
+    /**
+    * @brief Removes checking directory from given path if mShowFullPath is false
+    *
+    * @param path Path to remove checking directory
+    * @param saving are we saving? Check mSaveFullPath instead
+    * @return Path that has checking directory removed
+    */
+    QString StripPath(const QString &path, bool saving);
+
+
+    /**
+    * @brief Save all errors under spesified item
+    *
+    * @param item Item whose errors to save
+    * @param xml Should errors be saved as xml (true) or as text (false)
+    */
+    void SaveErrors(QTextStream &out, QStandardItem *item, bool xml);
+
     /**
     * @brief Convert a severity string to a icon filename
     *
@@ -150,6 +206,13 @@ protected:
     * @return Severity converted to ShowTypes value
     */
     ShowTypes SeverityToShowType(const QString &severity);
+
+    /**
+    * @brief Convert ShowType to severity string
+    * @param type ShowType to convert
+    * @return ShowType converted to string
+    */
+    QString ShowTypeToString(ShowTypes type);
 
     /**
     * @brief Load all settings
@@ -225,6 +288,30 @@ protected:
     *
     */
     QStandardItem *mContextItem;
+
+    /**
+    * @brief Should full path of files be shown (true) or relative (false)
+    *
+    */
+    bool mShowFullPath;
+
+    /**
+    * @brief Should full path of files be saved
+    *
+    */
+    bool mSaveFullPath;
+
+    /**
+    * @brief Save all errors (true) or only visible (false)
+    *
+    */
+    bool mSaveAllErrors;
+
+    /**
+    * @brief Path we are currently checking
+    *
+    */
+    QString mCheckPath;
 private:
 };
 

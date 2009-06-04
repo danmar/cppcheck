@@ -50,6 +50,27 @@ public:
     */
     void SaveCheckboxValues();
 
+    /**
+    * @brief Get checkbox value for mShowFullPath
+    *
+    * @return should full path of errors be shown in the tree
+    */
+    bool ShowFullPath();
+
+    /**
+    * @brief Get checkbox value for mSaveFullPath
+    *
+    * @return should full path of files be saved when creating a report
+    */
+    bool SaveFullPath();
+
+    /**
+    * @brief Get checkbox value for mSaveAllErrors
+    *
+    * @return should all errors be saved to report
+    */
+    bool SaveAllErrors();
+
 protected slots:
     /**
     * @brief Slot for clicking OK.
@@ -151,6 +172,24 @@ protected:
     *
     */
     QCheckBox *mForce;
+
+    /**
+    * @brief Save all errors
+    *
+    */
+    QCheckBox *mSaveAllErrors;
+
+    /**
+    * @brief Save full path of the file in error reports
+    *
+    */
+    QCheckBox *mSaveFullPath;
+
+    /**
+    * @brief Show full path of file in results view
+    *
+    */
+    QCheckBox *mShowFullPath;
 
     /**
     * @brief List of all applications that can be started when right clicking

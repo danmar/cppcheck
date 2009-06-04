@@ -1723,6 +1723,17 @@ bool Tokenizer::simplifyConditions()
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        if (Token::Match(tok, "! %num%") || Token::Match(tok, "! %bool%"))
+        {
+            if (tok->next()->str() == "0" || tok->next()->str() == "false")
+                tok->str("true");
+            else
+                tok->str("false");
+
+            tok->deleteNext();
+            ret = true;
+        }
+
         if (Token::simpleMatch(tok, "( true &&") || Token::simpleMatch(tok, "&& true &&") || Token::simpleMatch(tok->next(), "&& true )"))
         {
             tok->deleteNext();
@@ -2354,7 +2365,7 @@ bool Tokenizer::simplifyKnownVariables()
                         break;
 
                     // Using the variable in condition..
-                    if (Token::Match(tok3, "(|==|!=|<|<=|>|>= %varid% )|==|!=|<|<=|>|>=", varid))
+                    if (Token::Match(tok3, "(|!|==|!=|<|<=|>|>= %varid% )|==|!=|<|<=|>|>=", varid))
                     {
                         tok3 = tok3->next();
                         tok3->str(value.c_str());

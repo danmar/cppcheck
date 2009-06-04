@@ -83,6 +83,11 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
                          tr("Check force"),
                          false);
 
+    mShowFullPath = AddCheckbox(layout,
+                                tr("Show full path of files"),
+                                tr("Show full path"),
+                                false);
+
     general->setLayout(layout);
 
     //Add tab for setting user startable applications
@@ -120,6 +125,23 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     mListWidget->setSortingEnabled(false);
     PopulateListWidget();
 
+
+    //report tab
+    QWidget *report = new QWidget();
+    tabs->addTab(report, tr("Reports"));
+
+
+    QVBoxLayout *reportlayout = new QVBoxLayout();
+    mSaveAllErrors = AddCheckbox(reportlayout,
+                                 tr("Save all errors when creating report"),
+                                 tr("Save all errors"),
+                                 false);
+
+    mSaveFullPath = AddCheckbox(reportlayout,
+                                tr("Save full path to files in reports"),
+                                tr("Save full path"),
+                                false);
+    report->setLayout(reportlayout);
 
     setLayout(dialoglayout);
     setWindowTitle(tr("Settings"));
@@ -181,6 +203,9 @@ void SettingsDialog::SaveCheckboxValues()
 
     mSettings.setValue(tr("Check threads"), jobs);
     SaveCheckboxValue(mForce, tr("Check force"));
+    SaveCheckboxValue(mSaveAllErrors, tr("Save all errors"));
+    SaveCheckboxValue(mSaveFullPath, tr("Save full path"));
+    SaveCheckboxValue(mShowFullPath, tr("Show full path"));
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
@@ -258,5 +283,21 @@ void SettingsDialog::Ok()
     mApplications.Copy(mTempApplications);
     accept();
 }
+
+bool SettingsDialog::ShowFullPath()
+{
+    return CheckStateToBool(mShowFullPath->checkState());
+}
+
+bool SettingsDialog::SaveFullPath()
+{
+    return CheckStateToBool(mSaveFullPath->checkState());
+}
+
+bool SettingsDialog::SaveAllErrors()
+{
+    return CheckStateToBool(mSaveAllErrors->checkState());
+}
+
 
 

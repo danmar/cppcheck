@@ -54,6 +54,41 @@ public:
     *
     */
     void Clear();
+
+    /**
+    * @brief Save results to a file
+    *
+    * @param filename Filename to save results to
+    * @param xml should results be saved as xml (true) or txt (false)
+    */
+    void Save(const QString &filename, bool xml);
+
+    /**
+    * @brief Update tree settings
+    *
+    * @param showFullPath Show full path of files in the tree
+    * @param saveFullPath Save full path of files in reports
+    * @param saveAllErrors Save all visible errors
+    */
+    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors);
+
+    /**
+    * @brief Set the directory we are checking
+    *
+    * This is used to split error file path to relative if necessary
+    * @param dir Directory we are checking
+    */
+    void SetCheckDirectory(const QString &dir);
+
+signals:
+
+    /**
+    * @brief Signal to be emitted when we have results
+    *
+    */
+    void GotResults();
+
+
 public slots:
 
     /**
@@ -77,7 +112,8 @@ public slots:
                const QString &severity,
                const QString &message,
                const QStringList &files,
-               const QVariantList &lines);
+               const QVariantList &lines,
+               const QString &error);
 
     /**
     * @brief Collapse all results in the result list.

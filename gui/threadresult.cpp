@@ -61,7 +61,8 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
                QString(msg._severity.c_str()),
                QString(msg._msg.c_str()),
                files,
-               lines);
+               lines,
+               QString(msg._id.c_str()));
 
 
 

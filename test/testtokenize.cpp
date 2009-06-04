@@ -480,24 +480,47 @@ private:
 
     void simplifyKnownVariables1()
     {
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    int a = 10;\n"
-                            "    if (a);\n"
-                            "}\n";
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    int a = 10;\n"
+                                "    if (a);\n"
+                                "}\n";
 
-        // tokenize..
-        OurTokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+            // tokenize..
+            OurTokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.setVarId();
-        tokenizer.simplifyKnownVariables();
+            tokenizer.setVarId();
+            tokenizer.simplifyKnownVariables();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { int a ; a = 10 ; if ( 10 ) ; }", ostr.str());
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(" void f ( ) { int a ; a = 10 ; if ( 10 ) ; }", ostr.str());
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    int a = 10;\n"
+                                "    if (!a);\n"
+                                "}\n";
+
+            // tokenize..
+            OurTokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.setVarId();
+            tokenizer.simplifyKnownVariables();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(" void f ( ) { int a ; a = 10 ; if ( ! 10 ) ; }", ostr.str());
+        }
     }
 
     void simplifyKnownVariables2()
@@ -1702,27 +1725,101 @@ private:
 
     void simplify_numeric_condition()
     {
-        const char code[] =
-            "void f()\n"
-            "{\n"
-            "int x = 0;\n"
-            "if( !x || 0 )\n"
-            "{\n"
-            "}\n"
-            "}";
+        {
+            const char code[] =
+                "void f()\n"
+                "{\n"
+                "int x = 0;\n"
+                "if( !x || 0 )\n"
+                "{ g();\n"
+                "}\n"
+                "}";
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.setVarId();
-        tokenizer.simplifyTokenList();
+            tokenizer.setVarId();
+            tokenizer.simplifyTokenList();
 
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { int x ; x = 0 ; if ( ! x ) { } }", ostr.str());
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(" void f ( ) { int x ; x = 0 ; { g ( ) ; } }", ostr.str());
+        }
+
+        {
+            const char code[] =
+                "void f()\n"
+                "{\n"
+                "int x = 1;\n"
+                "if( !x )\n"
+                "{ g();\n"
+                "}\n"
+                "}";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.setVarId();
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(" void f ( ) { int x ; x = 1 ; }", ostr.str());
+        }
+
+        {
+            const char code[] =
+                "void f()\n"
+                "{\n"
+                "bool x = true;\n"
+                "if( !x )\n"
+                "{ g();\n"
+                "}\n"
+                "}";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.setVarId();
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(" void f ( ) { bool x ; x = true ; }", ostr.str());
+        }
+
+        {
+            const char code[] =
+                "void f()\n"
+                "{\n"
+                "bool x = false;\n"
+                "if( !x )\n"
+                "{ g();\n"
+                "}\n"
+                "}";
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+
+            tokenizer.setVarId();
+            tokenizer.simplifyTokenList();
+
+            std::ostringstream ostr;
+            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+                ostr << " " << tok->str();
+            ASSERT_EQUALS(" void f ( ) { bool x ; x = false ; { g ( ) ; } }", ostr.str());
+        }
     }
 
     void tokenize_double()
