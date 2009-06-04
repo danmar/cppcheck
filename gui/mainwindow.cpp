@@ -86,7 +86,6 @@ MainWindow::MainWindow() :
 
     setCentralWidget(&mResults);
 
-
     connect(&mActionExit, SIGNAL(triggered()), this, SLOT(close()));
     connect(&mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
     connect(&mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
@@ -131,10 +130,6 @@ MainWindow::MainWindow() :
     toolbar->addAction(&mActionClearResults);
     toolbar->addAction(&mActionSettings);
     toolbar->addAction(&mActionAbout);
-
-
-
-
 
     LoadSettings();
     mThread.Initialize(&mResults);
@@ -190,7 +185,6 @@ void MainWindow::SaveSettings()
     mSettings.setValue(tr("Show errors"), mActionShowErrors.isChecked());
     mApplications.SaveSettings(mSettings);
 }
-
 
 void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 {
@@ -305,7 +299,6 @@ void MainWindow::ProgramSettings()
                                 dialog.SaveAllErrors());
     }
 }
-
 
 void MainWindow::ReCheck()
 {
@@ -431,5 +424,3 @@ void MainWindow::ResultsAdded()
     mActionClearResults.setEnabled(true);
     mActionSave.setEnabled(true);
 }
-
-
