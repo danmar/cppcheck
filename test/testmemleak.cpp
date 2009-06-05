@@ -123,6 +123,7 @@ private:
         TEST_CASE(ret5);        // Bug 2458436 - return use
         TEST_CASE(ret6);
         TEST_CASE(ret7);
+        TEST_CASE(ret8);
 
         TEST_CASE(mismatch1);
         TEST_CASE(mismatch2);
@@ -1090,6 +1091,16 @@ private:
               "{\n"
               "    char *c = new char[50];\n"
               "    return memcpy(c, \"foo\",4);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ret8()
+    {
+        check("char *foo()\n"
+              "{\n"
+              "    char *c = new char[50];\n"
+              "    return ((char *)(c+1));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
