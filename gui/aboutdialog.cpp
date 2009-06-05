@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2009 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2009 Daniel MarjamÃ¤ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
     iconLabel->setPixmap(icon->pixmap(QSize(48, 48)));
     QLabel *name = new QLabel(tr("Cppcheck - A tool for static C/C++ code analysis."));
     QLabel *ver = new QLabel(QString(tr("Version %1")).arg(mVersion));
-    QLabel *copy = new QLabel(("Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team."));
+    QLabel *copy = new QLabel(("Copyright (C) 2007-2009 Daniel MarjamÃ¤ki and cppcheck team."));
     copy->setWordWrap(true);
     QLabel *gpl = new QLabel(tr("This program is licensed under the terms " \
                                 "of the GNU General Public License version 3"));
