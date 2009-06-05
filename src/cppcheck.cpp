@@ -207,6 +207,16 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             _settings.autoDealloc(f);
         }
 
+        // print all possible error messages..
+        else if (strcmp(argv[i], "--errorlist") == 0)
+        {
+            // call all "getErrorMessages" in all registered Check classes
+            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+            {
+                (*it)->getErrorMessages();
+            }
+        }
+
         else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
         {
             return "cppcheck: error: unrecognized command line option \"" + std::string(argv[i]) + "\"\n";
