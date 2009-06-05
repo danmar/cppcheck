@@ -110,7 +110,7 @@ private:
               "    }\n"
               "    cout<<b/sum;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -125,7 +125,7 @@ private:
               "        p = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void delete2()
@@ -172,7 +172,7 @@ private:
               "        break;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -213,7 +213,7 @@ private:
                      "    char buf[100];\n"
                      "    sprintf(buf,\"%i\",sizeof(buf));\n"
                      "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf3()
@@ -224,7 +224,7 @@ private:
                      "    sprintf(buf,\"%i\",sizeof(buf));\n"
                      "    if (buf[0]);\n"
                      "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf4()
@@ -240,7 +240,7 @@ private:
                      "    struct A a;\n"
                      "    snprintf(a.filename, 128, \"%s\", filename);\n"
                      "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -293,7 +293,7 @@ private:
                     "    std::string temp = \"/tmp\";\n"
                     "    std::string path = temp + '/' + \"sub\" + '/';\n"
                     "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -332,7 +332,7 @@ private:
                "    char str[100] = {0};\n"
                "    return str;\n"
                "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varScope(const char code[])
@@ -381,7 +381,7 @@ private:
                  "\n"
                  "    return 1;\n"
                  "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varScope2()
@@ -392,7 +392,7 @@ private:
                  "    e.SetValue(12);\n"
                  "    throw e;\n"
                  "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varScope3()
@@ -407,7 +407,7 @@ private:
                  "    }\n"
                  "    *p = 1;\n"
                  "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -451,7 +451,7 @@ private:
                          "    while (fred);\n"
                          "    fred.hello();\n"
                          "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

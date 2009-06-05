@@ -66,7 +66,7 @@ private:
               "    { }\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void return1()
@@ -76,7 +76,7 @@ private:
               "    return f1();\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void callback1()
@@ -86,7 +86,7 @@ private:
               "    void (*f)() = cond ? f1 : NULL;\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void else1()
@@ -97,7 +97,7 @@ private:
               "    else f1();\n"
               "}\n");
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionpointer()
@@ -111,7 +111,7 @@ private:
               "    f(&abc::foo);\n"
               "    return 0\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

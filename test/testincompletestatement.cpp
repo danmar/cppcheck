@@ -80,7 +80,7 @@ private:
               "#endif\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test2()
@@ -100,7 +100,7 @@ private:
               "    const char *str[] = { \"abc\" };\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test4()
@@ -115,7 +115,7 @@ private:
               "};\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test5()
@@ -143,13 +143,13 @@ private:
               "};\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void intarray()
     {
         check("int arr[] = { 100/2, 1*100 };\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structarraynull()
@@ -158,7 +158,7 @@ private:
               "    { 100/2, 1*100 }\n"
               "    { 90, 70 }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structarray()
@@ -167,7 +167,7 @@ private:
               "    { 100/2, 1*100 }\n"
               "    { 90, 70 }\n"
               "};\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

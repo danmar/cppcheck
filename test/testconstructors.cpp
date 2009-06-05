@@ -146,7 +146,7 @@ private:
               "    { this->i = 0; }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_if()
@@ -163,7 +163,7 @@ private:
               "    }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_operator_eq1()
@@ -187,7 +187,7 @@ private:
               "};\n");
 
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), err);
+        ASSERT_EQUALS("", err);
     }
 
 
@@ -214,7 +214,7 @@ private:
               "    Init() { i = 0; }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_same_classname()
@@ -240,7 +240,7 @@ private:
               "}\n");
 
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), err);
+        ASSERT_EQUALS("", err);
     }
 
     void initvar_chained_assign()
@@ -261,7 +261,7 @@ private:
               "}\n");
 
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), err);
+        ASSERT_EQUALS("", err);
     }
 
 
@@ -296,7 +296,7 @@ private:
               "}\n");
 
         std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), err);
+        ASSERT_EQUALS("", err);
     }
 
 
@@ -337,7 +337,7 @@ private:
               "};\n"
               "Fred::Fred()\n"
               "{ }");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_destructor()
@@ -350,7 +350,7 @@ private:
               "    Fred() : var(0) {}\n"
               "    ~Fred() {}\n"
               "};\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void operatorEqSTL()

@@ -245,7 +245,7 @@ private:
               "    Fred *f = new Fred;\n"
               "    return f;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simple3()
@@ -255,7 +255,7 @@ private:
               "    char *s = new char[100];\n"
               "    return (char *)s;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -277,7 +277,7 @@ private:
               "    struct *str = new strlist;\n"
               "    return &str->s;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -289,7 +289,7 @@ private:
               "    char *str2 = (char *)str;\n"
               "    free(str2);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -301,7 +301,7 @@ private:
               "{\n"
               "    Fred *f = new Fred;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -315,7 +315,7 @@ private:
               "        { }\n"
               "    return str;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -327,7 +327,7 @@ private:
               "    c->free(c);\n"
               "    delete c;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simple10()
@@ -337,7 +337,7 @@ private:
               "    FILE * f = fopen(fname, str);\n"
               "    if ( fclose(f) != NULL );\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -371,7 +371,7 @@ private:
               "        DeleteString(str);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -384,7 +384,7 @@ private:
               "    *somestr = str;\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -402,7 +402,7 @@ private:
               "        delete [] a;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -432,7 +432,7 @@ private:
               "        return;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -459,7 +459,7 @@ private:
               "    }\n"
               "    delete [] str;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -478,7 +478,7 @@ private:
               "    }\n"
               "    delete [] str;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -508,7 +508,7 @@ private:
               "    }\n"
               "    return s;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -523,7 +523,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -537,7 +537,7 @@ private:
               "        delete [] s;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -555,7 +555,7 @@ private:
               "        str[0] = s;\n"
               "    }\n"
               "}\n", true);
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -584,7 +584,7 @@ private:
               "        return;\n"
               "    kfree( smp );\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if3()
@@ -595,7 +595,7 @@ private:
               "    if (0 != s)\n"
               "        foo(s);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if4()
@@ -609,7 +609,7 @@ private:
               "    if (b)\n"
               "        free(s);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if5()
@@ -621,7 +621,7 @@ private:
               "        return;\n"
               "    free(p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if6()
@@ -637,7 +637,7 @@ private:
               "\n"
               "    fclose( a );\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if7()
@@ -654,7 +654,7 @@ private:
               "        delete [] a;\n"
               "    else {}\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if8()
@@ -689,7 +689,7 @@ private:
               "    buf = tmp;\n"
               "    return buf;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void if10()
@@ -739,7 +739,7 @@ private:
               "    }\n"
               "    free(str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -801,7 +801,7 @@ private:
               "    }\n"
               "    return str;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -875,7 +875,7 @@ private:
               "\n"
               "    return a;\n"
               "}\n", true);
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -932,7 +932,7 @@ private:
               "    };\n"
               "    delete [] str;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switch2()
@@ -984,7 +984,7 @@ private:
               "    return *str = ret;\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1030,7 +1030,7 @@ private:
               "    char *c = new char[50];\n"
               "    return (c ? c : NULL);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ret6()
@@ -1040,7 +1040,7 @@ private:
               "    char *c = new char[50];\n"
               "    return strcpy(c, \"foo\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ret7()
@@ -1050,7 +1050,7 @@ private:
               "    char *c = new char[50];\n"
               "    return memcpy(c, \"foo\",4);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1076,7 +1076,7 @@ private:
               "    fp = popen();\n"
               "    pclose(fp);\n"
               "}\n", false);
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mismatch3()
@@ -1091,7 +1091,7 @@ private:
               "    if (abc) fclose(fp);\n"
               "    else pclose(fp);\n"
               "}\n", false);
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mismatch4()
@@ -1124,7 +1124,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1135,7 +1135,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo.add(p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1165,7 +1165,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1229,7 +1229,7 @@ private:
               "    char *str = new char[100];"
               "    (*release)(str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1247,7 +1247,7 @@ private:
               "        return;\n"
               "    delete [] a;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void func10()
@@ -1257,7 +1257,7 @@ private:
               "    char *c = malloc(50);\n"
               "    (fnc)(c);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void func11()
@@ -1267,7 +1267,7 @@ private:
               "    char *c = malloc(50);\n"
               "    (s1->fnc)(c);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void func12()
@@ -1287,7 +1287,7 @@ private:
               "\n"
               "    add_list(base);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void func13()
@@ -1297,7 +1297,7 @@ private:
               "    char *p = malloc(100);\n"
               "    foo(&p);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1425,7 +1425,7 @@ private:
               "    }\n"
               "}\n", true);
 
-        TODO_ASSERT_EQUALS(std::string(""), errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     void class4()
@@ -1600,7 +1600,7 @@ private:
               "    }\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1619,7 +1619,7 @@ private:
               "    func(&ab->a);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1682,7 +1682,7 @@ private:
               "    free(a);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc4()
@@ -1717,7 +1717,7 @@ private:
               "    free(p);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1726,7 +1726,7 @@ private:
               "    free(p);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1735,7 +1735,7 @@ private:
               "    free(a - 10);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1744,7 +1744,7 @@ private:
               "    free(a - 10);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1752,7 +1752,7 @@ private:
               "    list += a;\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1767,7 +1767,7 @@ private:
               "    }\n"
               "    free(p);\n"
               "}\n");
-        TODO_ASSERT_EQUALS(std::string(""), errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     void cast1()
@@ -1788,7 +1788,7 @@ private:
               "    free((void *)a);\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cast3()
@@ -1799,7 +1799,7 @@ private:
               "    free(reinterpret_cast<void *>(a));\n"
               "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1840,7 +1840,7 @@ private:
               "    free(str);\n"
               "    foo(&str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dealloc_use_3()
@@ -1852,7 +1852,7 @@ private:
               "    f1(&str);\n"
               "    f2(str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dealloc_use_4()
@@ -1863,7 +1863,7 @@ private:
               "    ReadDir( subdir );\n"
               "    closedir(subdir);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dealloc_use_5()
@@ -1885,7 +1885,7 @@ private:
               "    free(str);\n"
               "    printf(\"free %x\", str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dealloc_use_7()
@@ -1919,7 +1919,7 @@ private:
               "    fprintf(fd, \"test\");\n"
               "    fclose(fd);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void strcat_result_assignment()
@@ -1932,7 +1932,7 @@ private:
               "    free( p );\n"
               "    return 0;\n"
               "}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1943,7 +1943,7 @@ private:
               "{\n"
               "    Fred *f = new Fred;\n"
               "}\n", false);
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2144,7 +2144,7 @@ private:
               "  FILE *f = popen (\"test\", \"w\");\n"
               "  int a = pclose(f);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void exit1()
@@ -2160,7 +2160,7 @@ private:
               "    }\n"
               "    delete [] out;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void exit2()
@@ -2170,7 +2170,7 @@ private:
               "    char *out = new char[100];\n"
               "    exit(0);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void stdstring()
@@ -2241,14 +2241,14 @@ private:
               "    FILE *f = fopen(fname, str);\n"
               "    fcloseall();\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
               "    FILE *f = tmpfile();\n"
               "    fcloseall();\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void opendir_function()
@@ -2276,21 +2276,21 @@ private:
               "    DIR *f = opendir(\".\");\n"
               "    closedir(f);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int fd)\n"
               "{\n"
               "    DIR *f = fdopendir(fd);\n"
               "    closedir(f);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    DIR * f = opendir(dirname);\n"
               "    if (closedir(f));\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dir_functions()
@@ -2343,7 +2343,7 @@ private:
               "    *c = 0;\n"
               "    *data = c;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dealloc_and_alloc_in_func()
@@ -2362,7 +2362,7 @@ private:
               "  delete [] a;\n"
               "  return 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

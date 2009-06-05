@@ -81,10 +81,10 @@ private:
         // Base class not found
 
         checkVirtualDestructor("class Derived : public Base { };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Derived : Base { };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void virtualDestructor2()
@@ -97,7 +97,7 @@ private:
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void virtualDestructor3()
@@ -119,11 +119,11 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void virtualDestructor5()
@@ -132,11 +132,11 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() {} };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void virtualDestructorProtected()
@@ -154,7 +154,7 @@ private:
                                "public:\n"
                                "    ~B() { int a; }\n"
                                "};\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkUninitVar(const char code[])
@@ -223,7 +223,7 @@ private:
                        "    }\n"
                        "};\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarTypedef()
@@ -246,7 +246,7 @@ private:
                        "    Foo() { }\n"
                        "};\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void privateCtor2()
@@ -282,7 +282,7 @@ private:
                        "    return p;\n"
                        "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 

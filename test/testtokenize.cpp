@@ -1987,7 +1987,7 @@ private:
             Tokenizer tokenizer(s, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(true, tokenizer.tokenize(istr, "test.cpp"));
-            ASSERT_EQUALS(std::string(""), errout.str());
+            ASSERT_EQUALS("", errout.str());
         }
 
         {
@@ -2015,7 +2015,7 @@ private:
             std::istringstream istr(code);
             ASSERT_EQUALS(true, tokenizer.tokenize(istr, "test.cpp"));
             tokenizer.simplifyTokenList();
-            ASSERT_EQUALS(std::string(""), errout.str());
+            ASSERT_EQUALS("", errout.str());
         }
     }
 
