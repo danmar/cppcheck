@@ -28,13 +28,13 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
 {
     setWindowTitle(tr("About cppcheck"));
     // Left icon area and right text area
-    QHBoxLayout *iconLayout = new QHBoxLayout(this);
+    QHBoxLayout *iconLayout = new QHBoxLayout();
     // Keep icon at the top of the dialog
-    QVBoxLayout *iconVLayout = new QVBoxLayout(this);
+    QVBoxLayout *iconVLayout = new QVBoxLayout();
     // Texts
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout();
     // Keep close button in right
-    QHBoxLayout *btnLayout = new QHBoxLayout(this);
+    QHBoxLayout *btnLayout = new QHBoxLayout();
 
     QIcon *icon = new QIcon(":icon.png");
     QLabel *iconLabel = new QLabel();
@@ -63,6 +63,7 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
 
     btnLayout->addStretch();
     btnLayout->addWidget(quit);
+    setLayout(iconLayout);
 
     connect(quit, SIGNAL(clicked()), this, SLOT(close()));
 }
