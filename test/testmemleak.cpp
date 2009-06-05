@@ -69,6 +69,7 @@ private:
         TEST_CASE(simple8);
         TEST_CASE(simple9);     // Bug 2435468 - member function "free"
         TEST_CASE(simple10);    // fclose in a if condition
+        TEST_CASE(new_nothrow);
 
         TEST_CASE(alloc_alloc_1);
 
@@ -340,8 +341,48 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void new_nothrow()
+    {
+        check("void f()\n"
+              "{\n"
+              "    int *p = new(std::nothrow) int;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
 
+        check("void f()\n"
+              "{\n"
+              "    using std::nothrow;\n"
+              "    int *p = new(nothrow) int;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
 
+        check("void f()\n"
+              "{\n"
+              "    int *p = new(std::nothrow) int[10];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    using namespace std;\n"
+              "    int *p = new(nothrow) int[10];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int *p = new(std::nothrow) int;\n"
+              "    delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: p\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int *p = new(std::nothrow) int[10];\n"
+              "    delete p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: p\n", errout.str());
+    }
 
     void alloc_alloc_1()
     {

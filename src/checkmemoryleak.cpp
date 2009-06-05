@@ -103,10 +103,14 @@ CheckMemoryLeakClass::AllocType CheckMemoryLeakClass::GetAllocationType(const To
             return gMalloc;
     }
 
-    if (Token::Match(tok2, "new %type% [;()]"))
+    if (Token::Match(tok2, "new %type% [;()]") ||
+        Token::Match(tok2, "new ( std :: nothrow ) %type% [;()]") ||
+        Token::Match(tok2, "new ( nothrow ) %type% [;()]"))
         return New;
 
-    if (Token::Match(tok2, "new %type% ["))
+    if (Token::Match(tok2, "new %type% [") ||
+        Token::Match(tok2, "new ( std :: nothrow ) %type% [") ||
+        Token::Match(tok2, "new ( nothrow ) %type% ["))
         return NewArray;
 
     if (Token::Match(tok2, "fopen|tmpfile ("))
