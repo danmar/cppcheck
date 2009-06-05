@@ -45,6 +45,7 @@ private:
         TEST_CASE(uninitVar1);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
+        TEST_CASE(uninitVarTypedef);
         TEST_CASE(privateCtor1);        // If constructor is private..
         TEST_CASE(privateCtor2);        // If constructor is private..
         TEST_CASE(function);            // Function is not variable
@@ -225,6 +226,18 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+    void uninitVarTypedef()
+    {
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "public:\n"
+                       "    typedef int * pointer;\n"
+                       "    Foo() : a(0) {}\n"
+                       "    pointer a;\n"
+                       "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void privateCtor1()
     {
