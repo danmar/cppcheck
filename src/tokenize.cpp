@@ -1465,6 +1465,7 @@ void Tokenizer::simplifyTokenList()
         modified |= removeReduntantConditions();
         modified |= simplifyRedundantParanthesis();
         modified |= simplifyCalculations();
+        modified |= simplifyQuestionMark();
     }
 
     createLinks();
@@ -1840,6 +1841,51 @@ bool Tokenizer::simplifyConditions()
     return ret;
 }
 
+bool Tokenizer::simplifyQuestionMark()
+{
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() != "?")
+            continue;
+
+        if (!tok->previous() || !tok->previous()->previous())
+            continue;
+
+        if (!Token::Match(tok->previous()->previous(), "[=,(]"))
+            continue;
+
+        if (!Token::Match(tok->previous(), "%bool%") &&
+            !Token::Match(tok->previous(), "%num%"))
+            continue;
+
+        if (tok->previous()->str() == "false" ||
+            tok->previous()->str() == "0")
+        {
+            // Use code after semicolon, remove code before it.
+            const Token *end = Token::findmatch(tok, ":");
+            if (!end || !end->next())
+                continue;
+
+            end = end->next();
+            tok = tok->previous();
+            while (tok->next() != end)
+            {
+                tok->deleteNext();
+            }
+
+            Token *temp = tok;
+            tok = tok->next();
+            temp->deleteThis();
+        }
+        else
+        {
+            // Use code before semicolon
+        }
+    }
+
+    return ret;
+}
 
 bool Tokenizer::simplifyCasts()
 {

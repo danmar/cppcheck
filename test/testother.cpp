@@ -111,9 +111,13 @@ private:
               "    cout<<b/sum;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    int a = 0 ? (2/0) : 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
-
-
 
     void delete1()
     {

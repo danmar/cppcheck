@@ -100,6 +100,11 @@ public:
      */
     bool simplifyVarDecl();
 
+    /**
+     * Simplify question mark - colon operator
+     * Example: 0 ? (2/0) : 0 => 0
+     */
+    bool simplifyQuestionMark();
 
     /**
      * simplify if-assignments..
