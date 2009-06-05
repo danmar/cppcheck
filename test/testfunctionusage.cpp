@@ -37,6 +37,7 @@ private:
     {
         TEST_CASE(incondition);
         TEST_CASE(return1);
+        TEST_CASE(return2);
         TEST_CASE(callback1);
         TEST_CASE(else1);
         TEST_CASE(functionpointer);
@@ -76,6 +77,15 @@ private:
               "    return f1();\n"
               "}\n");
         std::string err(errout.str());
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return2()
+    {
+        check("char * foo()\n"
+              "{\n"
+              "    return *foo();\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

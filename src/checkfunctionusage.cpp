@@ -99,16 +99,17 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
 
         if (Token::Match(tok->next(), "%var% ("))
         {
-            if (tok->str() == "*" || (tok->isName() && !Token::Match(tok, "else|return")))
-                continue;
             funcname = tok->next();
         }
 
-        if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
+        else if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
             funcname = tok->next();
 
-        if (Token::Match(tok, "[(,] & %var% :: %var% [,)]"))
+        else if (Token::Match(tok, "[(,] & %var% :: %var% [,)]"))
             funcname = tok->tokAt(4);
+
+        else
+            continue;
 
         // funcname ( => Assert that the end paranthesis isn't followed by {
         if (Token::Match(funcname, "%var% ("))
