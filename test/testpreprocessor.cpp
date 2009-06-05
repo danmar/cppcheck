@@ -103,6 +103,7 @@ private:
         TEST_CASE(macro_simple6);
         TEST_CASE(macro_simple7);
         TEST_CASE(macro_simple8);
+        TEST_CASE(macro_simple9);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
         TEST_CASE(string1);
@@ -663,6 +664,14 @@ private:
                                 "#define ABCD 1234\n"
                                 "ABC ABCD";
         ASSERT_EQUALS("\n\n123 1234", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple9()
+    {
+        const char filedata[] = "#define ABC(a) f(a)\n"
+                                "ABC( \"\\\"\" );\n"
+                                "ABC( \"g\" );";
+        ASSERT_EQUALS("\nf(\"\\\"\");\nf(\"g\");", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_mismatch()
