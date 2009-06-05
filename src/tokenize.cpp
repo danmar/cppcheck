@@ -1250,6 +1250,12 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
+        else if (Token::Match(tok, "sizeof ( %var% )") && tok->tokAt(2)->varId() > 0)
+        {
+            // don't try to replace size of variable if variable has
+            // similar name with type (#329)
+        }
+
         else if (Token::Match(tok, "sizeof ( %type% )"))
         {
             const char *type = tok->strAt(2);

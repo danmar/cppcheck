@@ -68,6 +68,7 @@ private:
 
         TEST_CASE(sizeof1);
         TEST_CASE(sizeof2);
+        TEST_CASE(sizeof3);
 
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
@@ -201,8 +202,17 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (all) Array index out of bounds\n", errout.str());
     }
 
-
-
+    void sizeof3()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char group[32];\n"
+              "    snprintf(group, sizeof(group), \"%u\", 0);\n"
+              "    struct group *gr;\n"
+              "    snprintf(group, sizeof(group), \"%u\", gr->gr_gid);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void array_index_1()
     {
