@@ -116,7 +116,9 @@ void ApplicationDialog::Ok()
     }
     else
     {
-        accept();
+		// Convert possible native (Windows) path to internal presentation format
+		mPath->setText(QDir::fromNativeSeparators(mPath->text()));
+		accept();
     }
 }
 
