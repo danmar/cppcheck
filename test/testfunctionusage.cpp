@@ -66,7 +66,6 @@ private:
               "    if (f1())\n"
               "    { }\n"
               "}\n");
-        std::string err(errout.str());
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -76,7 +75,6 @@ private:
               "{\n"
               "    return f1();\n"
               "}\n");
-        std::string err(errout.str());
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -95,7 +93,6 @@ private:
               "{\n"
               "    void (*f)() = cond ? f1 : NULL;\n"
               "}\n");
-        std::string err(errout.str());
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -106,7 +103,6 @@ private:
               "    if (cond) ;\n"
               "    else f1();\n"
               "}\n");
-        std::string err(errout.str());
         ASSERT_EQUALS("", errout.str());
     }
 
