@@ -28,7 +28,9 @@
 
 ApplicationDialog::ApplicationDialog(const QString &name,
                                      const QString &path,
-                                     const QString &title)
+                                     const QString &title,
+                                     QWidget *parent) :
+        QDialog(parent)
 {
     QVBoxLayout *layout = new QVBoxLayout();
     mName = new QLineEdit(name);

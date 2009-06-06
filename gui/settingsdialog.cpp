@@ -214,7 +214,7 @@ void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
 
 void SettingsDialog::AddApplication()
 {
-    ApplicationDialog dialog("", "", tr("Add a new application"));
+    ApplicationDialog dialog("", "", tr("Add a new application"), this);
 
     if (dialog.exec() == QDialog::Accepted)
     {
