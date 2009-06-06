@@ -473,6 +473,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
         }
     }
 
+    // replace "unsigned i" with "unsigned int i"
+    unsignedint();
+
     simplifyVarDecl();
 
     // Handle templates..
@@ -2211,6 +2214,30 @@ bool Tokenizer::simplifyVarDecl()
     }
 
     return ret;
+}
+
+
+void Tokenizer::unsignedint()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        // A variable declaration where the "int" is left out?
+        if (!Token::Match(tok, "unsigned %var% [;,=]"))
+            continue;
+
+        // Previous token should either be a symbol or one of "{};"
+        if (tok->previous() &&
+            !tok->previous()->isName() &&
+            !Token::Match(tok->previous(), "[{};]"))
+            continue;
+
+        // next token should not be a standard type?
+        if (tok->next()->isStandardType())
+            continue;
+
+        // The "int" is missing.. add it
+        tok->insertToken("int");
+    }
 }
 
 

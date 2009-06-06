@@ -145,6 +145,9 @@ private:
         TEST_CASE(syntax_error);
 
         TEST_CASE(removeKeywords);
+
+        // unsigned i; => unsigned int i;
+        TEST_CASE(unsigned1);
     }
 
 
@@ -2026,6 +2029,28 @@ private:
         const std::string actual(tokenizeAndStringify(code, true));
 
         ASSERT_EQUALS("if ( ! ! x ) { ; }", actual);
+    }
+
+
+    /**
+     * tokenize "unsigned i" => "unsigned int i"
+     * tokenize "unsigned int" => "unsigned int"
+     */
+    void unsigned1()
+    {
+        // No changes..
+        {
+            const char code[] = "void foo ( unsigned int , unsigned float ) ;";
+            ASSERT_EQUALS(code, tokenizeAndStringify(code));
+        }
+
+        // insert "int" after "unsigned"..
+        {
+            const char code1[] = "unsigned i ;";
+            const char code2[] = "unsigned int i ;";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+        }
+
     }
 
 };
