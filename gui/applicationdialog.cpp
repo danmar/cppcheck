@@ -34,6 +34,7 @@ ApplicationDialog::ApplicationDialog(const QString &name,
 {
     QVBoxLayout *layout = new QVBoxLayout();
     mName = new QLineEdit(name);
+    mName->setMaxLength(100); // Should be plenty for app name
     mPath = new QLineEdit(path);
 
     QString guide = tr("Here you can add applications that can open error files.\n" \
