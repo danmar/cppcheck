@@ -595,25 +595,25 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
             addtoken(tok->str().c_str());
         }
 
-        if ((tok->str() == "case"))
+        else if ((tok->str() == "case"))
         {
             addtoken("case");
             addtoken(";");
         }
 
-        if ((tok->str() == "default"))
+        else if ((tok->str() == "default"))
         {
             addtoken("default");
             addtoken(";");
         }
 
         // Loops..
-        if ((tok->str() == "for") || (tok->str() == "while"))
+        else if ((tok->str() == "for") || (tok->str() == "while"))
         {
             addtoken("loop");
             isloop = true;
         }
-        if ((tok->str() == "do"))
+        else if ((tok->str() == "do"))
         {
             addtoken("do");
         }
@@ -633,7 +633,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         }
 
         // Return..
-        if (tok->str() == "return")
+        else if (tok->str() == "return")
         {
             addtoken("return");
 
@@ -684,7 +684,7 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         }
 
         // throw..
-        if (Token::Match(tok, "try|throw|catch"))
+        else if (Token::Match(tok, "try|throw|catch"))
             addtoken(tok->strAt(0));
 
         // exit..
@@ -694,7 +694,8 @@ Token *CheckMemoryLeakClass::getcode(const Token *tok, std::list<const Token *> 
         // Assignment..
         if (Token::Match(tok, std::string("[)=] " + varnameStr + " [+;)]").c_str()) ||
             Token::Match(tok, std::string(varnameStr + " +=|-=").c_str()) ||
-            Token::Match(tok, std::string("+=|<< " + varnameStr + " ;").c_str()))
+            Token::Match(tok, std::string("+=|<< " + varnameStr + " ;").c_str()) ||
+            Token::Match(tok, std::string("= strcpy|strcat|memmove|memcpy ( " + varnameStr + " ,").c_str()))
         {
             addtoken("use");
         }

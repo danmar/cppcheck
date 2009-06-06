@@ -190,6 +190,7 @@ private:
         // free a free'd pointer
         TEST_CASE(freefree1);
         TEST_CASE(freefree2);
+        TEST_CASE(strcpy_result_assignment);
         TEST_CASE(strcat_result_assignment);
 
         TEST_CASE(all1);                // Extra checking when --all is given
@@ -1971,6 +1972,16 @@ private:
               "    fprintf(fd, \"test\");\n"
               "    fclose(fd);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void strcpy_result_assignment()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *p1 = malloc(10);\n"
+              "    char *p2 = strcpy(p1, \"a\");\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
