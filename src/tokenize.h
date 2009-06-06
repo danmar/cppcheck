@@ -101,6 +101,12 @@ public:
     bool simplifyVarDecl();
 
     /**
+     * insert an "int" after "unsigned" if needed:
+     * "unsigned i" => "unsigned int i"
+     */
+    void unsignedint();
+
+    /**
      * Simplify question mark - colon operator
      * Example: 0 ? (2/0) : 0 => 0
      */
