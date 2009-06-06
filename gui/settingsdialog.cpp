@@ -18,12 +18,16 @@
 
 
 #include "settingsdialog.h"
+#include <QDialog>
+#include <QWidget>
 #include <QLabel>
 #include <QDebug>
 #include <QTabWidget>
 #include "applicationdialog.h"
 
-SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list) :
+SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list,
+                               QWidget *parent) :
+        QDialog(parent),
         mSettings(programSettings),
         mApplications(list)
 {

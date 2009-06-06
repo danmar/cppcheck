@@ -291,7 +291,7 @@ void MainWindow::CheckDone()
 
 void MainWindow::ProgramSettings()
 {
-    SettingsDialog dialog(mSettings, mApplications);
+    SettingsDialog dialog(mSettings, mApplications, this);
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveCheckboxValues();
