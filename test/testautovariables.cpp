@@ -75,6 +75,13 @@ private:
               "    int num=2;"
               "res=&num;}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n", errout.str());
+
+        check("void func1(int **res)\n"
+              "{\n"
+              "    int num = 2;\n"
+              "    foo.res = &num;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
     void testautovararray()
     {
