@@ -18,18 +18,18 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckFunctionUsageH
-#define CheckFunctionUsageH
+#ifndef checkunusedfunctionsH
+#define checkunusedfunctionsH
 //---------------------------------------------------------------------------
 
 #include "tokenize.h"
 #include "errorlogger.h"
 
-class CheckFunctionUsage
+class CheckUnusedFunctions
 {
 public:
-    CheckFunctionUsage(ErrorLogger *errorLogger = 0);
-    ~CheckFunctionUsage();
+    CheckUnusedFunctions(ErrorLogger *errorLogger = 0);
+    ~CheckUnusedFunctions();
 
     /**
      * Errors found by this class are forwarded to the given

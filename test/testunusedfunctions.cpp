@@ -19,15 +19,15 @@
 
 #include "../src/tokenize.h"
 #include "testsuite.h"
-#include "../src/checkfunctionusage.h"
+#include "../src/checkunusedfunctions.h"
 #include <sstream>
 
 extern std::ostringstream errout;
 
-class TestFunctionUsage : public TestFixture
+class TestUnusedFunctions : public TestFixture
 {
 public:
-    TestFunctionUsage() : TestFixture("TestFunctionUsage")
+    TestUnusedFunctions() : TestFixture("TestUnusedFunctions")
     { }
 
 private:
@@ -54,9 +54,9 @@ private:
         errout.str("");
 
         // Check for unused functions..
-        CheckFunctionUsage checkFunctionUsage(this);
-        checkFunctionUsage.parseTokens(tokenizer);
-        checkFunctionUsage.check();
+        CheckUnusedFunctions checkUnusedFunctions(this);
+        checkUnusedFunctions.parseTokens(tokenizer);
+        checkUnusedFunctions.check();
     }
 
     void incondition()
@@ -121,5 +121,5 @@ private:
     }
 };
 
-REGISTER_TEST(TestFunctionUsage)
+REGISTER_TEST(TestUnusedFunctions)
 

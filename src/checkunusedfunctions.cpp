@@ -18,7 +18,7 @@
 
 
 //---------------------------------------------------------------------------
-#include "checkfunctionusage.h"
+#include "checkunusedfunctions.h"
 #include "tokenize.h"
 //---------------------------------------------------------------------------
 
@@ -29,22 +29,22 @@
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-CheckFunctionUsage::CheckFunctionUsage(ErrorLogger *errorLogger)
+CheckUnusedFunctions::CheckUnusedFunctions(ErrorLogger *errorLogger)
 {
     _errorLogger = errorLogger;
 }
 
-CheckFunctionUsage::~CheckFunctionUsage()
+CheckUnusedFunctions::~CheckUnusedFunctions()
 {
 
 }
 
-void CheckFunctionUsage::setErrorLogger(ErrorLogger *errorLogger)
+void CheckUnusedFunctions::setErrorLogger(ErrorLogger *errorLogger)
 {
     _errorLogger = errorLogger;
 }
 
-void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 {
     // Function declarations..
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
@@ -147,7 +147,7 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
 
 
 
-void CheckFunctionUsage::check()
+void CheckUnusedFunctions::check()
 {
     for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it)
     {

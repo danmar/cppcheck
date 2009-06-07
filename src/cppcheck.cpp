@@ -20,7 +20,6 @@
 #include "preprocessor.h" // preprocessor.
 #include "tokenize.h"   // <- Tokenizer
 
-#include "checkfunctionusage.h"
 #include "filelister.h"
 
 #include "check.h"
@@ -297,7 +296,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 
 unsigned int CppCheck::check()
 {
-    _checkFunctionUsage.setErrorLogger(this);
+    _checkUnusedFunctions.setErrorLogger(this);
     std::sort(_filenames.begin(), _filenames.end());
     for (unsigned int c = 0; c < _filenames.size(); c++)
     {
@@ -367,7 +366,7 @@ unsigned int CppCheck::check()
         if (_settings._errorsOnly == false)
             _errorLogger->reportOut("Checking usage of global functions..");
 
-        _checkFunctionUsage.check();
+        _checkUnusedFunctions.check();
     }
 
 
@@ -410,7 +409,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     _tokenizer.simplifyTokenList();
 
     if (_settings._unusedFunctions)
-        _checkFunctionUsage.parseTokens(_tokenizer);
+        _checkUnusedFunctions.parseTokens(_tokenizer);
 
     // call all "runSimplifiedChecks" in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
