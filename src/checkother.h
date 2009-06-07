@@ -147,6 +147,7 @@ private:
 
     void getErrorMessages()
     {
+        std::cout << "===other===" << "\n";
         cstyleCastError(0);
         redundantIfDelete0Error(0);
         redundantIfRemoveError(0);

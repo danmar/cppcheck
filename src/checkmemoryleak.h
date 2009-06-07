@@ -133,6 +133,7 @@ private:
 
     void getErrorMessages()
     {
+        std::cout << "===memory leaks===" << "\n";
         memleakError(0, "varname");
         memleakallError(0, "varname");
         resourceLeakError(0, "varname");
