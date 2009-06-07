@@ -2234,6 +2234,14 @@ private:
               "    exit(0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char *out = new char[100];\n"
+              "    if( out ) {}\n"
+              "    exit(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void stdstring()

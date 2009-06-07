@@ -809,13 +809,26 @@ void CheckMemoryLeakClass::simplifycode(Token *tok, bool &all)
             continue;
 
         // Found an "exit".. try to remove everything before it
-        const Token *tokEnd = tok2->next();
-        while (tok2->previous() && !Token::Match(tok2->previous(), "[{}]"))
+        Token *tokEnd = tok2->next();
+        int indentlevel = 0;
+        while (tok2->previous())
+        {
             tok2 = tok2->previous();
-        if (tok2->previous())
-            tok2 = tok2->previous();
+            if (tok2->str() == "}")
+            {
+                indentlevel--;
+            }
+            else if (tok2->str() == "{")
+            {
+                if (indentlevel == 0)
+                    break;
+
+                indentlevel++;
+            }
+        }
 
         Token::eraseTokens(tok2, tokEnd);
+        tok2 = tokEnd;
     }
 
     // reduce the code..
