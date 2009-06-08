@@ -271,9 +271,15 @@ void SettingsDialog::DefaultApplication()
 
 void SettingsDialog::PopulateListWidget()
 {
-    for (int i = 0;i < mTempApplications.GetApplicationCount();i++)
+    for (int i = 0; i < mTempApplications.GetApplicationCount(); i++)
     {
         mListWidget->addItem(mTempApplications.GetApplicationName(i));
+    }
+
+    // If list contains items select first item
+    if (mTempApplications.GetApplicationCount())
+    {
+        mListWidget->setCurrentRow(0);
     }
 }
 
