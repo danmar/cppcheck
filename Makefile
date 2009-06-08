@@ -39,7 +39,6 @@ TESTOBJ =     test/testautovariables.o \
               test/testincompletestatement.o \
               test/testmathlib.o \
               test/testmemleak.o \
-              test/testmemleakmp.o \
               test/testother.o \
               test/testpreprocessor.o \
               test/testredundantif.o \
@@ -204,9 +203,6 @@ test/testmathlib.o: test/testmathlib.cpp src/mathlib.h src/token.h test/testsuit
 
 test/testmemleak.o: test/testmemleak.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkmemoryleak.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testmemleak.o test/testmemleak.cpp
-
-test/testmemleakmp.o: test/testmemleakmp.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkmemoryleak.h src/check.h test/testsuite.h
-	$(CXX) $(CXXFLAGS) -c -o test/testmemleakmp.o test/testmemleakmp.cpp
 
 test/testother.o: test/testother.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkother.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testother.o test/testother.cpp

@@ -19,7 +19,7 @@
 
 
 
-
+#define UNIT_TESTING
 #include "../src/tokenize.h"
 #include "../src/checkmemoryleak.h"
 #include "testsuite.h"
@@ -53,8 +53,9 @@ private:
         settings._debug = true;
         settings._showAll = showAll;
         tokenizer.fillFunctionList();
-        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.CheckMemoryLeak();
+        CheckMemoryLeak checkMemoryLeak(&tokenizer, &settings, this);
+        checkMemoryLeak.CheckMemoryLeak_InFunction();
+        checkMemoryLeak.CheckMemoryLeak_ClassMembers();
     }
 
     void run()
@@ -2102,8 +2103,8 @@ private:
             settings.autoDealloc(istr);
         }
 
-        CheckMemoryLeakClass checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.CheckMemoryLeak();
+        CheckMemoryLeak checkMemoryLeak(&tokenizer, &settings, this);
+        checkMemoryLeak.CheckMemoryLeak_InFunction();
     }
 
 

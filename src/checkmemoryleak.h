@@ -19,8 +19,8 @@
 
 
 //---------------------------------------------------------------------------
-#ifndef CheckMemoryLeakH
-#define CheckMemoryLeakH
+#ifndef checkmemoryleakH
+#define checkmemoryleakH
 //---------------------------------------------------------------------------
 
 /** \brief Check for memory leaks */
@@ -33,26 +33,27 @@
 
 class Token;
 
-class CheckMemoryLeakClass : public Check
+class CheckMemoryLeak : public Check
 {
 public:
-    CheckMemoryLeakClass() : Check()
+    CheckMemoryLeak() : Check()
     { }
 
-    CheckMemoryLeakClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckMemoryLeak(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
-        CheckMemoryLeakClass checkMemoryLeakClass(tokenizer, settings, errorLogger);
-        checkMemoryLeakClass.CheckMemoryLeak();
+        CheckMemoryLeak checkMemoryLeak(tokenizer, settings, errorLogger);
+        checkMemoryLeak.CheckMemoryLeak_InFunction();
+        if (settings->_showAll)
+            checkMemoryLeak.CheckMemoryLeak_ClassMembers();
     }
 
-
-    void CheckMemoryLeak();
-
+#ifndef UNIT_TESTING
 private:
+#endif
 
     /** What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
     enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Pipe, Dir, Many };
