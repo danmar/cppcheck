@@ -35,7 +35,7 @@ ApplicationDialog::ApplicationDialog(const QString &name,
     QVBoxLayout *layout = new QVBoxLayout();
     mName = new QLineEdit(name);
     mName->setMaxLength(100); // Should be plenty for app name
-    mPath = new QLineEdit(path);
+    mPath = new QLineEdit(QDir::toNativeSeparators(path));
 
     QString guide = tr("Here you can add applications that can open error files.\n" \
                        "Specify a name for the application and the application to execute.\n\n" \
@@ -93,7 +93,7 @@ void ApplicationDialog::Browse()
         QStringList list = dialog.selectedFiles();
         if (list.size() > 0)
         {
-            mPath->setText(list[0]);
+            mPath->setText(QDir::toNativeSeparators(list[0]));
         }
     }
 }
