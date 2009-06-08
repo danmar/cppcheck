@@ -29,10 +29,10 @@
 
 extern std::ostringstream errout;
 
-class TestMemleak : public TestFixture
+class TestMemleakInFunction : public TestFixture
 {
 public:
-    TestMemleak() : TestFixture("TestMemleak")
+    TestMemleakInFunction() : TestFixture("TestMemleakInFunction")
     { }
 
 private:
@@ -53,9 +53,8 @@ private:
         settings._debug = true;
         settings._showAll = showAll;
         tokenizer.fillFunctionList();
-        CheckMemoryLeak checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.CheckMemoryLeak_InFunction();
-        checkMemoryLeak.CheckMemoryLeak_ClassMembers();
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
+        checkMemoryLeak.check();
     }
 
     void run()
@@ -145,18 +144,6 @@ private:
         TEST_CASE(func12);
         TEST_CASE(func13);
 
-        TEST_CASE(class1);
-        TEST_CASE(class2);
-        TEST_CASE(class3);
-        TEST_CASE(class4);
-        TEST_CASE(class5);
-        TEST_CASE(class6);
-        TEST_CASE(class7);
-        TEST_CASE(class8);
-        TEST_CASE(class9);
-        TEST_CASE(class10);
-        TEST_CASE(class11);
-
         TEST_CASE(throw1);
         TEST_CASE(throw2);
 
@@ -208,7 +195,6 @@ private:
         TEST_CASE(vcl2);
 
         TEST_CASE(autoptr1);
-        TEST_CASE(free_member_in_sub_func);
         TEST_CASE(if_with_and);
         TEST_CASE(assign_pclose);
 
@@ -1393,235 +1379,6 @@ private:
 
 
 
-    void class1()
-    {
-        check("class Fred\n"
-              "{\n"
-              "private:\n"
-              "    char *str1;\n"
-              "    char *str2;\n"
-              "public:\n"
-              "    Fred();\n"
-              "    ~Fred();\n"
-              "};\n"
-              "\n"
-              "Fred::Fred()\n"
-              "{\n"
-              "    str1 = new char[10];\n"
-              "    str2 = new char[10];\n"
-              "}\n"
-              "\n"
-              "Fred::~Fred()\n"
-              "{\n"
-              "    delete [] str2;\n"
-              "}\n", true);
-
-        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: Fred::str1\n", errout.str());
-    }
-
-
-    void class2()
-    {
-        check("class Fred\n"
-              "{\n"
-              "private:\n"
-              "    char *str1;\n"
-              "public:\n"
-              "    Fred();\n"
-              "    ~Fred();\n"
-              "};\n"
-              "\n"
-              "Fred::Fred()\n"
-              "{\n"
-              "    str1 = new char[10];\n"
-              "}\n"
-              "\n"
-              "Fred::~Fred()\n"
-              "{\n"
-              "    free(str1);\n"
-              "}\n", true);
-
-        ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
-    }
-
-    void class3()
-    {
-        check("class Token;\n"
-              "\n"
-              "class Tokenizer\n"
-              "{\n"
-              "private:\n"
-              "    Token *_tokens;\n"
-              "\n"
-              "public:\n"
-              "    Tokenizer();\n"
-              "    ~Tokenizer();\n"
-              "    void deleteTokens(Token *tok);\n"
-              "};\n"
-              "\n"
-              "Tokenizer::Tokenizer()\n"
-              "{\n"
-              "    _tokens = new Token;\n"
-              "}\n"
-              "\n"
-              "Tokenizer::~Tokenizer()\n"
-              "{\n"
-              "    deleteTokens(_tokens);\n"
-              "}\n"
-              "\n"
-              "void Tokenizer::deleteTokens(Token *tok)\n"
-              "{\n"
-              "    while (tok)\n"
-              "    {\n"
-              "        Token *next = tok->next();\n"
-              "        delete tok;\n"
-              "        tok = next;\n"
-              "    }\n"
-              "}\n", true);
-
-        TODO_ASSERT_EQUALS("", errout.str());
-    }
-
-    void class4()
-    {
-        check("struct ABC;\n"
-              "class Fred\n"
-              "{\n"
-              "private:\n"
-              "    void addAbc(ABC *abc);\n"
-              "public:\n"
-              "    void click();\n"
-              "};\n"
-              "\n"
-              "void Fred::addAbc(ABC* abc)\n"
-              "{\n"
-              "    AbcPosts->Add(abc);\n"
-              "}\n"
-              "\n"
-              "void Fred::click()\n"
-              "{\n"
-              "    ABC *p = new ABC;\n"
-              "    addAbc( p );\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void class5()
-    {
-        check("class Fred\n"
-              "{\n"
-              "public:\n"
-              "    void foo();\n"
-              "};\n"
-              "\n"
-              "void Fred::foo()\n"
-              "{\n"
-              "    char *str = new char[100];\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: str\n", errout.str());
-    }
-
-    void class6()
-    {
-        check("class Fred\n"
-              "{\n"
-              "public:\n"
-              "    void foo();\n"
-              "};\n"
-              "\n"
-              "void Fred::foo()\n"
-              "{\n"
-              "    char *str = new char[100];\n"
-              "    delete [] str;\n"
-              "    hello();\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void class7()
-    {
-        check("class Fred\n"
-              "{\n"
-              "public:\n"
-              "    int *i;\n"
-              "    Fred();\n"
-              "    ~Fred();\n"
-              "};\n"
-              "\n"
-              "Fred::Fred()\n"
-              "{\n"
-              "    this->i = new int;\n"
-              "}\n"
-              "Fred::~Fred()\n"
-              "{\n"
-              "    delete this->i;\n"
-              "}\n", true);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void class8()
-    {
-        check("class A\n"
-              "{\n"
-              "public:\n"
-              "    void a();\n"
-              "    void doNothing() { }\n"
-              "};\n"
-              "\n"
-              "void A::a()\n"
-              "{\n"
-              "    int* c = new int(1);\n"
-              "    delete c;\n"
-              "    doNothing(c);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void class9()
-    {
-        check("class A\n"
-              "{\n"
-              "public:\n"
-              "    int * p;\n"
-              "    A();\n"
-              "    ~A();\n"
-              "};\n"
-              "\n"
-              "A::A()\n"
-              "{ p = new int; }\n"
-              "\n"
-              "A::~A()\n"
-              "{ delete (p); }\n", true);
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void class10()
-    {
-        check("class A\n"
-              "{\n"
-              "public:\n"
-              "    int * p;\n"
-              "    A() { p = new int; }\n"
-              "};\n", true);
-        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: A::p\n", errout.str());
-    }
-
-    void class11()
-    {
-        check("class A\n"
-              "{\n"
-              "public:\n"
-              "    int * p;\n"
-              "    A();\n"
-              "};\n"
-              "A::A() : p(new int[10])\n"
-              "{ }", true);
-        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: A::p\n", errout.str());
-    }
-
-
-
-
 
     void throw1()
     {
@@ -2103,8 +1860,8 @@ private:
             settings.autoDealloc(istr);
         }
 
-        CheckMemoryLeak checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.CheckMemoryLeak_InFunction();
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
+        checkMemoryLeak.check();
     }
 
 
@@ -2145,37 +1902,6 @@ private:
               "    return std::auto_ptr<int>(i);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void free_member_in_sub_func()
-    {
-        check("class Tokenizer\n"
-              "{\n"
-              "public:\n"
-              "    Tokenizer();\n"
-              "    ~Tokenizer();\n"
-              "\n"
-              "private:\n"
-              "    int *_tokens;\n"
-              "    static void deleteTokens(int *tok);\n"
-              "};\n"
-              "\n"
-              "Tokenizer::Tokenizer()\n"
-              "{\n"
-              "     _tokens = new int;\n"
-              "}\n"
-              "\n"
-              "Tokenizer::~Tokenizer()\n"
-              "{\n"
-              "    deleteTokens(_tokens);\n"
-              "    _tokens = 0;\n"
-              "}\n"
-              "\n"
-              "void Tokenizer::deleteTokens(int *tok)\n"
-              "{\n"
-              "    delete tok;\n"
-              "}\n", true);
-        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     void if_with_and()
@@ -2438,6 +2164,311 @@ private:
     }
 };
 
-REGISTER_TEST(TestMemleak)
+static TestMemleakInFunction testMemleakInFunction;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class TestMemleakInClass : public TestFixture
+{
+public:
+    TestMemleakInClass() : TestFixture("TestMemleakInClass")
+    { }
+
+private:
+    void check(const char code[], bool showAll = false)
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for memory leaks..
+        Settings settings;
+        settings._debug = true;
+        settings._showAll = showAll;
+        tokenizer.fillFunctionList();
+        CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
+        checkMemoryLeak.check();
+    }
+
+    void run()
+    {
+        TEST_CASE(class1);
+        TEST_CASE(class2);
+        TEST_CASE(class3);
+        TEST_CASE(class4);
+        TEST_CASE(class6);
+        TEST_CASE(class7);
+        TEST_CASE(class8);
+        TEST_CASE(class9);
+        TEST_CASE(class10);
+        TEST_CASE(class11);
+
+        TEST_CASE(free_member_in_sub_func);
+    }
+
+
+    void class1()
+    {
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    char *str1;\n"
+              "    char *str2;\n"
+              "public:\n"
+              "    Fred();\n"
+              "    ~Fred();\n"
+              "};\n"
+              "\n"
+              "Fred::Fred()\n"
+              "{\n"
+              "    str1 = new char[10];\n"
+              "    str2 = new char[10];\n"
+              "}\n"
+              "\n"
+              "Fred::~Fred()\n"
+              "{\n"
+              "    delete [] str2;\n"
+              "}\n", true);
+
+        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: Fred::str1\n", errout.str());
+    }
+
+
+    void class2()
+    {
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    char *str1;\n"
+              "public:\n"
+              "    Fred();\n"
+              "    ~Fred();\n"
+              "};\n"
+              "\n"
+              "Fred::Fred()\n"
+              "{\n"
+              "    str1 = new char[10];\n"
+              "}\n"
+              "\n"
+              "Fred::~Fred()\n"
+              "{\n"
+              "    free(str1);\n"
+              "}\n", true);
+
+        ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
+    }
+
+    void class3()
+    {
+        check("class Token;\n"
+              "\n"
+              "class Tokenizer\n"
+              "{\n"
+              "private:\n"
+              "    Token *_tokens;\n"
+              "\n"
+              "public:\n"
+              "    Tokenizer();\n"
+              "    ~Tokenizer();\n"
+              "    void deleteTokens(Token *tok);\n"
+              "};\n"
+              "\n"
+              "Tokenizer::Tokenizer()\n"
+              "{\n"
+              "    _tokens = new Token;\n"
+              "}\n"
+              "\n"
+              "Tokenizer::~Tokenizer()\n"
+              "{\n"
+              "    deleteTokens(_tokens);\n"
+              "}\n"
+              "\n"
+              "void Tokenizer::deleteTokens(Token *tok)\n"
+              "{\n"
+              "    while (tok)\n"
+              "    {\n"
+              "        Token *next = tok->next();\n"
+              "        delete tok;\n"
+              "        tok = next;\n"
+              "    }\n"
+              "}\n", true);
+
+        TODO_ASSERT_EQUALS("", errout.str());
+    }
+
+    void class4()
+    {
+        check("struct ABC;\n"
+              "class Fred\n"
+              "{\n"
+              "private:\n"
+              "    void addAbc(ABC *abc);\n"
+              "public:\n"
+              "    void click();\n"
+              "};\n"
+              "\n"
+              "void Fred::addAbc(ABC* abc)\n"
+              "{\n"
+              "    AbcPosts->Add(abc);\n"
+              "}\n"
+              "\n"
+              "void Fred::click()\n"
+              "{\n"
+              "    ABC *p = new ABC;\n"
+              "    addAbc( p );\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class6()
+    {
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    void foo();\n"
+              "};\n"
+              "\n"
+              "void Fred::foo()\n"
+              "{\n"
+              "    char *str = new char[100];\n"
+              "    delete [] str;\n"
+              "    hello();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class7()
+    {
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    int *i;\n"
+              "    Fred();\n"
+              "    ~Fred();\n"
+              "};\n"
+              "\n"
+              "Fred::Fred()\n"
+              "{\n"
+              "    this->i = new int;\n"
+              "}\n"
+              "Fred::~Fred()\n"
+              "{\n"
+              "    delete this->i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class8()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    void a();\n"
+              "    void doNothing() { }\n"
+              "};\n"
+              "\n"
+              "void A::a()\n"
+              "{\n"
+              "    int* c = new int(1);\n"
+              "    delete c;\n"
+              "    doNothing(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class9()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    int * p;\n"
+              "    A();\n"
+              "    ~A();\n"
+              "};\n"
+              "\n"
+              "A::A()\n"
+              "{ p = new int; }\n"
+              "\n"
+              "A::~A()\n"
+              "{ delete (p); }\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class10()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    int * p;\n"
+              "    A() { p = new int; }\n"
+              "};\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: A::p\n", errout.str());
+    }
+
+    void class11()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    int * p;\n"
+              "    A();\n"
+              "};\n"
+              "A::A() : p(new int[10])\n"
+              "{ }", true);
+        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: A::p\n", errout.str());
+    }
+
+
+    void free_member_in_sub_func()
+    {
+        check("class Tokenizer\n"
+              "{\n"
+              "public:\n"
+              "    Tokenizer();\n"
+              "    ~Tokenizer();\n"
+              "\n"
+              "private:\n"
+              "    int *_tokens;\n"
+              "    static void deleteTokens(int *tok);\n"
+              "};\n"
+              "\n"
+              "Tokenizer::Tokenizer()\n"
+              "{\n"
+              "     _tokens = new int;\n"
+              "}\n"
+              "\n"
+              "Tokenizer::~Tokenizer()\n"
+              "{\n"
+              "    deleteTokens(_tokens);\n"
+              "    _tokens = 0;\n"
+              "}\n"
+              "\n"
+              "void Tokenizer::deleteTokens(int *tok)\n"
+              "{\n"
+              "    delete tok;\n"
+              "}\n", true);
+        TODO_ASSERT_EQUALS("", errout.str());
+    }
+};
+
+static TestMemleakInClass testMemleakInClass;
 
