@@ -23,7 +23,13 @@
 #define checkmemoryleakH
 //---------------------------------------------------------------------------
 
-/** \brief Check for memory leaks */
+/**
+ * Check for memory leaks
+ *
+ * The checking is split up into two specialized classes.
+ * CheckMemoryLeakInFunction can detect when a function variable is allocated but not deallocated properly.
+ * CheckMemoryLeakInClass can detect when a class variable is allocated but not deallocated properly.
+ */
 
 #include "check.h"
 
@@ -66,7 +72,15 @@ protected:
 
 
 
-
+/**
+ * Check function variables.
+ *
+ * The checking is done by looking at each function variable separately. By repeating these 4 steps over and over:
+ * 1. locate a function variable
+ * 2. create a simple token list that describes the usage of the function variable.
+ * 3. simplify the token list.
+ * 4. finally, check if the simplified token list contain any leaks.
+ */
 
 class CheckMemoryLeakInFunction : public CheckMemoryLeak, public Check
 {
@@ -142,6 +156,10 @@ private:
 
 
 
+/**
+ * Check class variables
+ * variables that are allocated in the constructor should be deallocated in the destructor
+ */
 
 class CheckMemoryLeakInClass : public CheckMemoryLeak, public Check
 {
