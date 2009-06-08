@@ -82,7 +82,6 @@ ApplicationDialog::~ApplicationDialog()
     //dtor
 }
 
-
 void ApplicationDialog::Browse()
 {
     QFileDialog dialog(this);
@@ -93,7 +92,18 @@ void ApplicationDialog::Browse()
         QStringList list = dialog.selectedFiles();
         if (list.size() > 0)
         {
-            mPath->setText(QDir::toNativeSeparators(list[0]));
+            QString path(QDir::toNativeSeparators(list[0]));
+
+            // In Windows we must surround paths including spaces with quotation marks.
+#ifdef Q_WS_WIN
+            if (path.indexOf(" ") > -1)
+            {
+                path.insert(0, "\"");
+                path.append("\"");
+            }
+#endif // Q_WS_WIN
+
+            mPath->setText(path);
         }
     }
 }
