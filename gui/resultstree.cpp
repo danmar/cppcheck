@@ -23,6 +23,7 @@
 #include <QSignalMapper>
 #include <QProcess>
 #include <QDir>
+#include <QMessageBox>
 
 ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
         mSettings(settings),
@@ -398,7 +399,19 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         program.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
         program.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
 
-        QProcess::startDetached(program);
+        bool success = QProcess::startDetached(program);
+        if (!success)
+        {
+            QString app = mApplications.GetApplicationName(application);
+            QString text = tr("Could not start ") + app + "\n\n";
+            text += tr("Please check the application path and parameters are correct.");
+
+            QMessageBox msgbox(this);
+            msgbox.setWindowTitle("Cppcheck");
+            msgbox.setText(text);
+            msgbox.setIcon(QMessageBox::Critical);
+            msgbox.exec();
+        }
     }
 }
 
