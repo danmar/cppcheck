@@ -188,10 +188,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkfunctionusage.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\checkheaders.h"
 				>
 			</File>
@@ -209,6 +205,10 @@
 			</File>
 			<File
 				RelativePath=".\src\checkstl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkunusedfunctions.h"
 				>
 			</File>
 			<File
@@ -292,10 +292,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkfunctionusage.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\checkheaders.cpp"
 				>
 			</File>
@@ -313,6 +309,10 @@
 			</File>
 			<File
 				RelativePath=".\src\checkstl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkunusedfunctions.cpp"
 				>
 			</File>
 			<File
