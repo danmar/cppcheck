@@ -163,7 +163,7 @@ void ResultsView::SetCheckDirectory(const QString &dir)
 
 void ResultsView::CheckingStarted()
 {
-mProgress->setVisible(true);
+    mProgress->setVisible(true);
 }
 
 
