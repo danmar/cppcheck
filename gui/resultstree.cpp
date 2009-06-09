@@ -36,10 +36,10 @@ ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
     labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
     setExpandsOnDoubleClick(false);
+    setSortingEnabled(true);
     LoadSettings();
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
             this, SLOT(QuickStartApplication(const QModelIndex &)));
-
 }
 
 ResultsTree::~ResultsTree()
@@ -47,15 +47,12 @@ ResultsTree::~ResultsTree()
     SaveSettings();
 }
 
-
-
 QStandardItem *ResultsTree::CreateItem(const QString &name)
 {
     QStandardItem *item = new QStandardItem(name);
     item->setEditable(false);
     return item;
 }
-
 
 void ResultsTree::AddErrorItem(const QString &file,
                                const QString &severity,
@@ -65,7 +62,6 @@ void ResultsTree::AddErrorItem(const QString &file,
                                const QString &id)
 {
     Q_UNUSED(file);
-
 
     if (files.isEmpty())
     {
@@ -99,7 +95,6 @@ void ResultsTree::AddErrorItem(const QString &file,
     data["lines"]  = lines;
     data["id"]  = id;
     item->setData(QVariant(data));
-
 
     //Add backtrace files as children
     for (int i = 1;i < files.size() && i < lines.size();i++)
@@ -141,13 +136,11 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateItem(QString("%1").arg(line));
     list << CreateItem(message);
 
-
     QModelIndex index = QModelIndex();
 
     parent->appendRow(list);
 
     setRowHidden(parent->rowCount() - 1, parent->index(), hide);
-
 
     if (!icon.isEmpty())
     {
@@ -417,7 +410,19 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         program.replace("(message)", data["message"].toString(), Qt::CaseInsensitive);
         program.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
 
-        QProcess::startDetached(program);
+        bool success = QProcess::startDetached(program);
+        if (!success)
+        {
+            QString app = mApplications.GetApplicationName(application);
+            QString text = tr("Could not start ") + app + "\n\n";
+            text += tr("Please check the application path and parameters are correct.");
+
+            QMessageBox msgbox(this);
+            msgbox.setWindowTitle("Cppcheck");
+            msgbox.setText(text);
+            msgbox.setIcon(QMessageBox::Critical);
+            msgbox.exec();
+        }
     }
 }
 
@@ -544,7 +549,6 @@ void ResultsTree::SaveErrors(QTextStream &out, QStandardItem *item, bool xml)
         }
 
         out << line << endl;
-
     }
 }
 
@@ -623,7 +627,6 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
     //Loop through all errors within this file
     for (int i = 0;i < item->rowCount();i++)
     {
-
         //Get error i
         QStandardItem *error = item->child(i, 0);
 
@@ -631,7 +634,6 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
         {
             continue;
         }
-
 
         //Get error's user data
         QVariant userdata = error->data();
@@ -649,7 +651,6 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
 
         //Update this error's text
         error->setText(StripPath(files[0], false));
-
 
         //If this error has backtraces make sure the files list has enough filenames
         if (error->rowCount() <= files.size() - 1)
@@ -678,7 +679,6 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
     }
 }
 
-
 void ResultsTree::RefreshFilePaths()
 {
     qDebug("Refreshing file paths");
@@ -688,6 +688,4 @@ void ResultsTree::RefreshFilePaths()
     {
         RefreshFilePaths(mModel.item(i, 0));
     }
-
 }
-

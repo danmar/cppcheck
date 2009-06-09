@@ -26,7 +26,7 @@
 #include <map>
 #include "settings.h"
 #include "errorlogger.h"
-#include "checkfunctionusage.h"
+#include "checkunusedfunctions.h"
 
 /**
  * This is the base class which will use other classes to do
@@ -135,7 +135,7 @@ private:
     std::vector<std::string> _filenames;
     /** Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
-    CheckFunctionUsage _checkFunctionUsage;
+    CheckUnusedFunctions _checkUnusedFunctions;
     ErrorLogger *_errorLogger;
 
     /** Current configuration */

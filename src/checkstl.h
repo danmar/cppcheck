@@ -98,6 +98,7 @@ private:
 
     void getErrorMessages()
     {
+        std::cout << "===stl===" << "\n";
         iteratorsError(0, "container1", "container2");
         dereferenceErasedError(0, "iter");
         stlOutOfBoundsError(0, "i", "foo");

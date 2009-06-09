@@ -45,6 +45,7 @@ private:
         TEST_CASE(uninitVar1);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
+        TEST_CASE(uninitVarTypedef);
         TEST_CASE(privateCtor1);        // If constructor is private..
         TEST_CASE(privateCtor2);        // If constructor is private..
         TEST_CASE(function);            // Function is not variable
@@ -80,10 +81,10 @@ private:
         // Base class not found
 
         checkVirtualDestructor("class Derived : public Base { };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Derived : Base { };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void virtualDestructor2()
@@ -96,7 +97,7 @@ private:
 
         checkVirtualDestructor("class Base { };\n"
                                "class Derived : Base { public: ~Derived() { (void)11; } };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void virtualDestructor3()
@@ -118,11 +119,11 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : private Fred, public Base { };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void virtualDestructor5()
@@ -131,11 +132,11 @@ private:
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived() {} };");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkVirtualDestructor("class Base { public: ~Base(); };\n"
                                "class Derived : public Base { public: ~Derived(); }; Derived::~Derived() {}");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void virtualDestructorProtected()
@@ -153,7 +154,7 @@ private:
                                "public:\n"
                                "    ~B() { int a; }\n"
                                "};\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkUninitVar(const char code[])
@@ -222,9 +223,21 @@ private:
                        "    }\n"
                        "};\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitVarTypedef()
+    {
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "public:\n"
+                       "    typedef int * pointer;\n"
+                       "    Foo() : a(0) {}\n"
+                       "    pointer a;\n"
+                       "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void privateCtor1()
     {
@@ -233,7 +246,7 @@ private:
                        "    Foo() { }\n"
                        "};\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void privateCtor2()
@@ -269,7 +282,7 @@ private:
                        "    return p;\n"
                        "}\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 

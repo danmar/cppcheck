@@ -28,11 +28,14 @@
 
 ApplicationDialog::ApplicationDialog(const QString &name,
                                      const QString &path,
-                                     const QString &title)
+                                     const QString &title,
+                                     QWidget *parent) :
+        QDialog(parent)
 {
     QVBoxLayout *layout = new QVBoxLayout();
     mName = new QLineEdit(name);
-    mPath = new QLineEdit(path);
+    mName->setMaxLength(100); // Should be plenty for app name
+    mPath = new QLineEdit(QDir::toNativeSeparators(path));
 
     QString guide = tr("Here you can add applications that can open error files.\n" \
                        "Specify a name for the application and the application to execute.\n\n" \
@@ -79,7 +82,6 @@ ApplicationDialog::~ApplicationDialog()
     //dtor
 }
 
-
 void ApplicationDialog::Browse()
 {
     QFileDialog dialog(this);
@@ -90,7 +92,18 @@ void ApplicationDialog::Browse()
         QStringList list = dialog.selectedFiles();
         if (list.size() > 0)
         {
-            mPath->setText(list[0]);
+            QString path(QDir::toNativeSeparators(list[0]));
+
+            // In Windows we must surround paths including spaces with quotation marks.
+#ifdef Q_WS_WIN
+            if (path.indexOf(" ") > -1)
+            {
+                path.insert(0, "\"");
+                path.append("\"");
+            }
+#endif // Q_WS_WIN
+
+            mPath->setText(path);
         }
     }
 }
@@ -116,6 +129,8 @@ void ApplicationDialog::Ok()
     }
     else
     {
+        // Convert possible native (Windows) path to internal presentation format
+        mPath->setText(QDir::fromNativeSeparators(mPath->text()));
         accept();
     }
 }

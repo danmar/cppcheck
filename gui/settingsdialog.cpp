@@ -18,12 +18,16 @@
 
 
 #include "settingsdialog.h"
+#include <QDialog>
+#include <QWidget>
 #include <QLabel>
 #include <QDebug>
 #include <QTabWidget>
 #include "applicationdialog.h"
 
-SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list) :
+SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list,
+                               QWidget *parent) :
+        QDialog(parent),
         mSettings(programSettings),
         mApplications(list)
 {
@@ -210,7 +214,7 @@ void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
 
 void SettingsDialog::AddApplication()
 {
-    ApplicationDialog dialog("", "", tr("Add a new application"));
+    ApplicationDialog dialog("", "", tr("Add a new application"), this);
 
     if (dialog.exec() == QDialog::Accepted)
     {
@@ -267,9 +271,15 @@ void SettingsDialog::DefaultApplication()
 
 void SettingsDialog::PopulateListWidget()
 {
-    for (int i = 0;i < mTempApplications.GetApplicationCount();i++)
+    for (int i = 0; i < mTempApplications.GetApplicationCount(); i++)
     {
         mListWidget->addItem(mTempApplications.GetApplicationName(i));
+    }
+
+    // If list contains items select first item
+    if (mTempApplications.GetApplicationCount())
+    {
+        mListWidget->setCurrentRow(0);
     }
 }
 

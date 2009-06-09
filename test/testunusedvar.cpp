@@ -89,7 +89,7 @@ private:
               "    int b = abc.b;\n"
               "    int c = abc.c;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember3()
@@ -109,7 +109,7 @@ private:
               "    int b = abc[0].b;\n"
               "    int c = abc[0].c;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -125,7 +125,7 @@ private:
               "    ABC abc;\n"
               "    if (abc.a == 2);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -147,7 +147,7 @@ private:
               "    struct AB ab;\n"
               "    ab.reset();\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

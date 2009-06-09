@@ -20,7 +20,6 @@
 #include "preprocessor.h" // preprocessor.
 #include "tokenize.h"   // <- Tokenizer
 
-#include "checkfunctionusage.h"
 #include "filelister.h"
 
 #include "check.h"
@@ -74,7 +73,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
     for (int i = 1; i < argc; i++)
     {
         if (strcmp(argv[i], "--version") == 0)
-            return "Cppcheck 1.32\n";
+            return "Cppcheck 1.33\n";
 
         // Flag used for various purposes during debugging
         if (strcmp(argv[i], "--debug") == 0)
@@ -207,6 +206,16 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             _settings.autoDealloc(f);
         }
 
+        // print all possible error messages..
+        else if (strcmp(argv[i], "--errorlist") == 0)
+        {
+            // call all "getErrorMessages" in all registered Check classes
+            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+            {
+                (*it)->getErrorMessages();
+            }
+        }
+
         else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
         {
             return "cppcheck: error: unrecognized command line option \"" + std::string(argv[i]) + "\"\n";
@@ -287,7 +296,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 
 unsigned int CppCheck::check()
 {
-    _checkFunctionUsage.setErrorLogger(this);
+    _checkUnusedFunctions.setErrorLogger(this);
     std::sort(_filenames.begin(), _filenames.end());
     for (unsigned int c = 0; c < _filenames.size(); c++)
     {
@@ -357,7 +366,7 @@ unsigned int CppCheck::check()
         if (_settings._errorsOnly == false)
             _errorLogger->reportOut("Checking usage of global functions..");
 
-        _checkFunctionUsage.check();
+        _checkUnusedFunctions.check();
     }
 
 
@@ -400,7 +409,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     _tokenizer.simplifyTokenList();
 
     if (_settings._unusedFunctions)
-        _checkFunctionUsage.parseTokens(_tokenizer);
+        _checkUnusedFunctions.parseTokens(_tokenizer);
 
     // call all "runSimplifiedChecks" in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)

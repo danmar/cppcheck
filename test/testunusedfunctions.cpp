@@ -19,15 +19,15 @@
 
 #include "../src/tokenize.h"
 #include "testsuite.h"
-#include "../src/checkfunctionusage.h"
+#include "../src/checkunusedfunctions.h"
 #include <sstream>
 
 extern std::ostringstream errout;
 
-class TestFunctionUsage : public TestFixture
+class TestUnusedFunctions : public TestFixture
 {
 public:
-    TestFunctionUsage() : TestFixture("TestFunctionUsage")
+    TestUnusedFunctions() : TestFixture("TestUnusedFunctions")
     { }
 
 private:
@@ -37,6 +37,7 @@ private:
     {
         TEST_CASE(incondition);
         TEST_CASE(return1);
+        TEST_CASE(return2);
         TEST_CASE(callback1);
         TEST_CASE(else1);
         TEST_CASE(functionpointer);
@@ -53,9 +54,9 @@ private:
         errout.str("");
 
         // Check for unused functions..
-        CheckFunctionUsage checkFunctionUsage(this);
-        checkFunctionUsage.parseTokens(tokenizer);
-        checkFunctionUsage.check();
+        CheckUnusedFunctions checkUnusedFunctions(this);
+        checkUnusedFunctions.parseTokens(tokenizer);
+        checkUnusedFunctions.check();
     }
 
     void incondition()
@@ -65,8 +66,7 @@ private:
               "    if (f1())\n"
               "    { }\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void return1()
@@ -75,8 +75,16 @@ private:
               "{\n"
               "    return f1();\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return2()
+    {
+        check("char * foo()\n"
+              "{\n"
+              "    return *foo();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void callback1()
@@ -85,8 +93,7 @@ private:
               "{\n"
               "    void (*f)() = cond ? f1 : NULL;\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void else1()
@@ -96,8 +103,7 @@ private:
               "    if (cond) ;\n"
               "    else f1();\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionpointer()
@@ -111,9 +117,9 @@ private:
               "    f(&abc::foo);\n"
               "    return 0\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
-REGISTER_TEST(TestFunctionUsage)
+REGISTER_TEST(TestUnusedFunctions)
 

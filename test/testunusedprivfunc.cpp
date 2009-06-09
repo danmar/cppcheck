@@ -100,7 +100,7 @@ private:
               "\n"
               "A::A()\n"
               "{ }\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -116,7 +116,7 @@ private:
               "\n"
               "A::~A()\n"
               "{ B(); }\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -132,7 +132,7 @@ private:
               "\n"
               "A::A() : _owner(false)\n"
               "{ b(); }\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -180,7 +180,7 @@ private:
               "    int numOfThreads;\n"
               "};\n");
 
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 

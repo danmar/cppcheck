@@ -82,6 +82,10 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1, 
         if (next->str() == "static")
             continue;
 
+        // Type definitions shall be ignored..
+        if (next->str() == "typedef")
+            continue;
+
         // Is it a variable declaration?
         if (Token::Match(next, "%type% %var% ;"))
         {

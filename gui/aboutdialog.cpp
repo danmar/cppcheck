@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2009 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2009 Daniel MarjamÃ¤ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,20 +28,20 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
 {
     setWindowTitle(tr("About cppcheck"));
     // Left icon area and right text area
-    QHBoxLayout *iconLayout = new QHBoxLayout(this);
+    QHBoxLayout *iconLayout = new QHBoxLayout();
     // Keep icon at the top of the dialog
-    QVBoxLayout *iconVLayout = new QVBoxLayout(this);
+    QVBoxLayout *iconVLayout = new QVBoxLayout();
     // Texts
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout();
     // Keep close button in right
-    QHBoxLayout *btnLayout = new QHBoxLayout(this);
+    QHBoxLayout *btnLayout = new QHBoxLayout();
 
     QIcon *icon = new QIcon(":icon.png");
     QLabel *iconLabel = new QLabel();
     iconLabel->setPixmap(icon->pixmap(QSize(48, 48)));
     QLabel *name = new QLabel(tr("Cppcheck - A tool for static C/C++ code analysis."));
     QLabel *ver = new QLabel(QString(tr("Version %1")).arg(mVersion));
-    QLabel *copy = new QLabel(("Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team."));
+    QLabel *copy = new QLabel(("Copyright (C) 2007-2009 Daniel MarjamÃ¤ki and cppcheck team."));
     copy->setWordWrap(true);
     QLabel *gpl = new QLabel(tr("This program is licensed under the terms " \
                                 "of the GNU General Public License version 3"));
@@ -63,6 +63,7 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
 
     btnLayout->addStretch();
     btnLayout->addWidget(quit);
+    setLayout(iconLayout);
 
     connect(quit, SIGNAL(clicked()), this, SLOT(close()));
 }

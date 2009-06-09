@@ -30,6 +30,8 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
+		<Unit filename="gui/aboutdialog.cpp" />
+		<Unit filename="gui/aboutdialog.h" />
 		<Unit filename="gui/applicationdialog.cpp" />
 		<Unit filename="gui/applicationdialog.h" />
 		<Unit filename="gui/applicationlist.cpp" />

@@ -59,6 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="shlwapi.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -127,6 +128,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="shlwapi.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
@@ -186,10 +188,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkfunctionusage.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\checkheaders.h"
 				>
 			</File>
@@ -207,6 +205,10 @@
 			</File>
 			<File
 				RelativePath=".\src\checkstl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkunusedfunctions.h"
 				>
 			</File>
 			<File
@@ -290,10 +292,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkfunctionusage.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\checkheaders.cpp"
 				>
 			</File>
@@ -311,6 +309,10 @@
 			</File>
 			<File
 				RelativePath=".\src\checkstl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkunusedfunctions.cpp"
 				>
 			</File>
 			<File

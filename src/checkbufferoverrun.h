@@ -75,6 +75,7 @@ private:
 
     void getErrorMessages()
     {
+        std::cout << "===buffer overruns===" << "\n";
         arrayIndexOutOfBounds(0);
         bufferOverrun(0);
         strncatUsage(0);

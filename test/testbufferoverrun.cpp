@@ -68,6 +68,7 @@ private:
 
         TEST_CASE(sizeof1);
         TEST_CASE(sizeof2);
+        TEST_CASE(sizeof3);
 
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
@@ -123,7 +124,7 @@ private:
               "        char str[50];\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -145,7 +146,7 @@ private:
               "{\n"
               "    strcpy(buf, str);\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -156,7 +157,7 @@ private:
               "    char data[1];\n"
               "    return abc.data[1];\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -168,7 +169,7 @@ private:
               "    char data[100];\n"
               "    const char *p = &data[100];\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -181,7 +182,7 @@ private:
               "    char data[10];\n"
               "    data[ sizeof(*data) ] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sizeof2()
@@ -191,7 +192,7 @@ private:
               "    char data[10];\n"
               "    data[ sizeof(data[0]) ] = 0;\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("static void f()\n"
               "{\n"
@@ -201,8 +202,17 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (all) Array index out of bounds\n", errout.str());
     }
 
-
-
+    void sizeof3()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char group[32];\n"
+              "    snprintf(group, sizeof(group), \"%u\", 0);\n"
+              "    struct group *gr;\n"
+              "    snprintf(group, sizeof(group), \"%u\", gr->gr_gid);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void array_index_1()
     {
@@ -500,7 +510,7 @@ private:
               "    char str[5];\n"
               "    snprintf(str, 5, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void snprintf3()
@@ -510,7 +520,7 @@ private:
               "    char str[5];\n"
               "    snprintf(str, sizeof str, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void snprintf4()
@@ -520,7 +530,7 @@ private:
               "    char str[5];\n"
               "    snprintf(str, 8 - x, \"abcdefghijkl\");\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -572,7 +582,7 @@ private:
               "        str[30] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -587,7 +597,7 @@ private:
               "        memset(str,0,50);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assign1()

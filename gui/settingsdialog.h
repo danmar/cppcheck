@@ -41,7 +41,7 @@ class SettingsDialog : public QDialog
 {
     Q_OBJECT
 public:
-    SettingsDialog(QSettings &programSettings, ApplicationList &list);
+    SettingsDialog(QSettings &programSettings, ApplicationList &list, QWidget *parent = 0);
     virtual ~SettingsDialog();
 
     /**

@@ -158,7 +158,7 @@ private:
                   "       foo[ii] = 0;\n"
                   "    }\n"
                   "}\n");
-            ASSERT_EQUALS(std::string(""), errout.str());
+            ASSERT_EQUALS("", errout.str());
         }
 
         {
@@ -169,7 +169,7 @@ private:
                   "    {\n"
                   "    }\n"
                   "}\n");
-            ASSERT_EQUALS(std::string(""), errout.str());
+            ASSERT_EQUALS("", errout.str());
         }
 
         {
@@ -187,7 +187,7 @@ private:
                   "        }\n"
                   "    }\n"
                   "}\n");
-            ASSERT_EQUALS(std::string(""), errout.str());
+            ASSERT_EQUALS("", errout.str());
         }
     }
 

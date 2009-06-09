@@ -38,10 +38,12 @@ public:
     * @param name Default name for the application to start
     * @param path Path for the application
     * @param title Title for the dialog
+    * @param parent Parent widget
     */
     ApplicationDialog(const QString &name,
                       const QString &path,
-                      const QString &title);
+                      const QString &title,
+                      QWidget *parent = 0);
     virtual ~ApplicationDialog();
 
     /**

@@ -56,6 +56,7 @@ private:
 
     void getErrorMessages()
     {
+        std::cout << "===dangerous functions===" << "\n";
         dangerousFunctionmktemp(0);
         dangerousFunctiongets(0);
         dangerousFunctionscanf(0);

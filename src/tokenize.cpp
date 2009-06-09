@@ -473,6 +473,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
         }
     }
 
+    // replace "unsigned i" with "unsigned int i"
+    unsignedint();
+
     simplifyVarDecl();
 
     // Handle templates..
@@ -1250,6 +1253,12 @@ void Tokenizer::simplifyTokenList()
             }
         }
 
+        else if (Token::Match(tok, "sizeof ( %var% )") && tok->tokAt(2)->varId() > 0)
+        {
+            // don't try to replace size of variable if variable has
+            // similar name with type (#329)
+        }
+
         else if (Token::Match(tok, "sizeof ( %type% )"))
         {
             const char *type = tok->strAt(2);
@@ -1459,6 +1468,7 @@ void Tokenizer::simplifyTokenList()
         modified |= removeReduntantConditions();
         modified |= simplifyRedundantParanthesis();
         modified |= simplifyCalculations();
+        modified |= simplifyQuestionMark();
     }
 
     createLinks();
@@ -1834,6 +1844,51 @@ bool Tokenizer::simplifyConditions()
     return ret;
 }
 
+bool Tokenizer::simplifyQuestionMark()
+{
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() != "?")
+            continue;
+
+        if (!tok->previous() || !tok->previous()->previous())
+            continue;
+
+        if (!Token::Match(tok->previous()->previous(), "[=,(]"))
+            continue;
+
+        if (!Token::Match(tok->previous(), "%bool%") &&
+            !Token::Match(tok->previous(), "%num%"))
+            continue;
+
+        if (tok->previous()->str() == "false" ||
+            tok->previous()->str() == "0")
+        {
+            // Use code after semicolon, remove code before it.
+            const Token *end = Token::findmatch(tok, ":");
+            if (!end || !end->next())
+                continue;
+
+            end = end->next();
+            tok = tok->previous();
+            while (tok->next() != end)
+            {
+                tok->deleteNext();
+            }
+
+            Token *temp = tok;
+            tok = tok->next();
+            temp->deleteThis();
+        }
+        else
+        {
+            // Use code before semicolon
+        }
+    }
+
+    return ret;
+}
 
 bool Tokenizer::simplifyCasts()
 {
@@ -2159,6 +2214,30 @@ bool Tokenizer::simplifyVarDecl()
     }
 
     return ret;
+}
+
+
+void Tokenizer::unsignedint()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        // A variable declaration where the "int" is left out?
+        if (!Token::Match(tok, "unsigned %var% [;,=]"))
+            continue;
+
+        // Previous token should either be a symbol or one of "{};"
+        if (tok->previous() &&
+            !tok->previous()->isName() &&
+            !Token::Match(tok->previous(), "[{};]"))
+            continue;
+
+        // next token should not be a standard type?
+        if (tok->next()->isStandardType())
+            continue;
+
+        // The "int" is missing.. add it
+        tok->insertToken("int");
+    }
 }
 
 

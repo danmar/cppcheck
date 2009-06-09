@@ -36,9 +36,9 @@ HEADERS += 	mainwindow.h \
 		../src/settings.h \
 		../src/tokenize.h \
 		../src/checkbufferoverrun.h \
-		../src/checkfunctionusage.h \
 		../src/checkmemoryleak.h \
 		../src/checkstl.h \
+		../src/checkunusedfunctions.h \
 		../src/errorlogger.h \
 		../src/preprocessor.h \
 		../src/threadexecutor.h \
@@ -70,7 +70,6 @@ SOURCES += 	main.cpp \
 		../src/mathlib.cpp \
 		../src/threadexecutor.cpp \
 		../src/checkbufferoverrun.cpp \
-		../src/checkfunctionusage.cpp \
 		../src/checkother.cpp \
 		../src/cppcheck.cpp \
 		../src/filelister.cpp \
@@ -80,5 +79,6 @@ SOURCES += 	main.cpp \
 		../src/checkheaders.cpp \
 		../src/checksecurity.cpp \
 		../src/cppcheckexecutor.cpp \
+		../src/checkunusedfunctions.cpp \
 		../src/settings.cpp \
 		../src/tokenize.cpp

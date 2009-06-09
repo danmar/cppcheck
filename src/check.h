@@ -24,6 +24,7 @@
 #include "errorlogger.h"
 
 #include <list>
+#include <iostream>
 
 class Check
 {
@@ -78,6 +79,13 @@ protected:
     /** report an error */
     void reportError(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg)
     {
+        // No errorLogger => just report the message to stdout
+        if (_errorLogger == NULL)
+        {
+            std::cout << "(" << severity << ") " << msg << std::endl;
+            return;
+        }
+
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
         {

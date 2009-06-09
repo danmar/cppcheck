@@ -8,6 +8,8 @@ tools/errmsg
 *.ncb
 *.suo
 *.user
+*.idb
+*.pdb
 # VS build folders
 Build/
 BuildTmp/
@@ -17,6 +19,9 @@ gui/release/
 gui/temp/
 # Other (generated) GUI files
 gui/Makefile
+gui/Makefile.debug
+gui/Makefile.release
+gui/gui.sln
+gui/gui.vcproj
 gui/gui
 gui/qrc_gui.cpp
-

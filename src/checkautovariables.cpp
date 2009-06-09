@@ -191,17 +191,17 @@ void CheckAutoVariables::autoVariables()
                 continue;
             addVD(tok->tokAt(2));
         }
-        else if (bindent > 0 && Token::Match(tok, "%var% = & %var%")) //Critical assignement
+        else if (bindent > 0 && Token::Match(tok, "[;{}] %var% = & %var%")) //Critical assignement
         {
-            if (errorAv(tok->tokAt(0), tok->tokAt(3)))
+            if (errorAv(tok->tokAt(1), tok->tokAt(4)))
                 reportError(tok,
                             "error",
                             "autoVariables",
                             "Wrong assignement of an auto-variable to an effective parameter of a function");
         }
-        else if (bindent > 0 && Token::Match(tok, "%var% [ %any% ] = & %var%")) //Critical assignement
+        else if (bindent > 0 && Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%")) //Critical assignement
         {
-            if (errorAv(tok->tokAt(0), tok->tokAt(6)))
+            if (errorAv(tok->tokAt(1), tok->tokAt(7)))
                 reportError(tok,
                             "error",
                             "autoVariables",

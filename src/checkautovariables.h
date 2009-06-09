@@ -56,6 +56,7 @@ private:
 
     void getErrorMessages()
     {
+        std::cout << "===auto variables===" << "\n";
         reportError(0, "error", "autoVariables", "Wrong assignement of an auto-variable to an effective parameter of a function");
     }
 };

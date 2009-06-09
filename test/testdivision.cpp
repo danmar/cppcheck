@@ -113,7 +113,7 @@ private:
               "    unsigned int i2;\n"
               "    result = i2 / i1;}\n"
              );
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void division5()
@@ -124,7 +124,7 @@ private:
               "    unsigned int val = 32;\n"
               "    val = val / USER_HASH;}\n"
              );
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void division6()

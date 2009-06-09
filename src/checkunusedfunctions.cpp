@@ -18,7 +18,7 @@
 
 
 //---------------------------------------------------------------------------
-#include "checkfunctionusage.h"
+#include "checkunusedfunctions.h"
 #include "tokenize.h"
 //---------------------------------------------------------------------------
 
@@ -29,22 +29,22 @@
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
 
-CheckFunctionUsage::CheckFunctionUsage(ErrorLogger *errorLogger)
+CheckUnusedFunctions::CheckUnusedFunctions(ErrorLogger *errorLogger)
 {
     _errorLogger = errorLogger;
 }
 
-CheckFunctionUsage::~CheckFunctionUsage()
+CheckUnusedFunctions::~CheckUnusedFunctions()
 {
 
 }
 
-void CheckFunctionUsage::setErrorLogger(ErrorLogger *errorLogger)
+void CheckUnusedFunctions::setErrorLogger(ErrorLogger *errorLogger)
 {
     _errorLogger = errorLogger;
 }
 
-void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
+void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
 {
     // Function declarations..
     for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
@@ -99,16 +99,17 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
 
         if (Token::Match(tok->next(), "%var% ("))
         {
-            if (tok->str() == "*" || (tok->isName() && !Token::Match(tok, "else|return")))
-                continue;
             funcname = tok->next();
         }
 
-        if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
+        else if (Token::Match(tok, "[;{}.,()[=+-/&|!?:] %var% [(),;:}]"))
             funcname = tok->next();
 
-        if (Token::Match(tok, "[(,] & %var% :: %var% [,)]"))
+        else if (Token::Match(tok, "[(,] & %var% :: %var% [,)]"))
             funcname = tok->tokAt(4);
+
+        else
+            continue;
 
         // funcname ( => Assert that the end paranthesis isn't followed by {
         if (Token::Match(funcname, "%var% ("))
@@ -146,7 +147,7 @@ void CheckFunctionUsage::parseTokens(const Tokenizer &tokenizer)
 
 
 
-void CheckFunctionUsage::check()
+void CheckUnusedFunctions::check()
 {
     for (std::map<std::string, FunctionUsage>::const_iterator it = _functions.begin(); it != _functions.end(); ++it)
     {

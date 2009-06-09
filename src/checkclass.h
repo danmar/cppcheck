@@ -109,6 +109,7 @@ private:
 
     void getErrorMessages()
     {
+        std::cout << "===classes===" << "\n";
         noConstructorError(0, "classname");
         uninitVarError(0, "classname", "varname");
         operatorEqVarError(0, "classname", "");

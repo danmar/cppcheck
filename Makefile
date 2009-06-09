@@ -9,12 +9,12 @@ OBJECTS =     src/checkautovariables.o \
               src/checkbufferoverrun.o \
               src/checkclass.o \
               src/checkdangerousfunctions.o \
-              src/checkfunctionusage.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
               src/checkother.o \
               src/checksecurity.o \
               src/checkstl.o \
+              src/checkunusedfunctions.o \
               src/cppcheck.o \
               src/cppcheckexecutor.o \
               src/errorlogger.o \
@@ -36,11 +36,9 @@ TESTOBJ =     test/testautovariables.o \
               test/testdangerousfunctions.o \
               test/testdivision.o \
               test/testfilelister.o \
-              test/testfunctionusage.o \
               test/testincompletestatement.o \
               test/testmathlib.o \
               test/testmemleak.o \
-              test/testmemleakmp.o \
               test/testother.o \
               test/testpreprocessor.o \
               test/testredundantif.o \
@@ -51,18 +49,19 @@ TESTOBJ =     test/testautovariables.o \
               test/testsuite.o \
               test/testtoken.o \
               test/testtokenize.o \
+              test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
               test/testunusedvar.o \
               src/checkautovariables.o \
               src/checkbufferoverrun.o \
               src/checkclass.o \
               src/checkdangerousfunctions.o \
-              src/checkfunctionusage.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
               src/checkother.o \
               src/checksecurity.o \
               src/checkstl.o \
+              src/checkunusedfunctions.o \
               src/cppcheck.o \
               src/cppcheckexecutor.o \
               src/errorlogger.o \
@@ -118,16 +117,13 @@ src/checkclass.o: src/checkclass.cpp src/checkclass.h src/check.h src/tokenize.h
 src/checkdangerousfunctions.o: src/checkdangerousfunctions.cpp src/checkdangerousfunctions.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkdangerousfunctions.o src/checkdangerousfunctions.cpp
 
-src/checkfunctionusage.o: src/checkfunctionusage.cpp src/checkfunctionusage.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
-	$(CXX) $(CXXFLAGS) -c -o src/checkfunctionusage.o src/checkfunctionusage.cpp
-
 src/checkheaders.o: src/checkheaders.cpp src/checkheaders.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/filelister.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkheaders.o src/checkheaders.cpp
 
-src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
+src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/mathlib.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkmemoryleak.o src/checkmemoryleak.cpp
 
-src/checkother.o: src/checkother.cpp src/checkother.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
+src/checkother.o: src/checkother.cpp src/checkother.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/mathlib.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkother.o src/checkother.cpp
 
 src/checksecurity.o: src/checksecurity.cpp src/checksecurity.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
@@ -136,10 +132,13 @@ src/checksecurity.o: src/checksecurity.cpp src/checksecurity.h src/check.h src/t
 src/checkstl.o: src/checkstl.cpp src/checkstl.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkstl.o src/checkstl.cpp
 
-src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkfunctionusage.h src/tokenize.h src/token.h src/preprocessor.h src/filelister.h src/check.h
+src/checkunusedfunctions.o: src/checkunusedfunctions.cpp src/checkunusedfunctions.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
+	$(CXX) $(CXXFLAGS) -c -o src/checkunusedfunctions.o src/checkunusedfunctions.cpp
+
+src/cppcheck.o: src/cppcheck.cpp src/cppcheck.h src/settings.h src/errorlogger.h src/checkunusedfunctions.h src/tokenize.h src/token.h src/preprocessor.h src/filelister.h src/check.h
 	$(CXX) $(CXXFLAGS) -c -o src/cppcheck.o src/cppcheck.cpp
 
-src/cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h src/cppcheck.h src/checkfunctionusage.h src/tokenize.h src/token.h src/threadexecutor.h
+src/cppcheckexecutor.o: src/cppcheckexecutor.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h src/cppcheck.h src/checkunusedfunctions.h src/tokenize.h src/token.h src/threadexecutor.h
 	$(CXX) $(CXXFLAGS) -c -o src/cppcheckexecutor.o src/cppcheckexecutor.cpp
 
 src/errorlogger.o: src/errorlogger.cpp src/errorlogger.h src/settings.h src/tokenize.h src/token.h
@@ -154,13 +153,13 @@ src/main.o: src/main.cpp src/cppcheckexecutor.h src/errorlogger.h src/settings.h
 src/mathlib.o: src/mathlib.cpp src/mathlib.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/mathlib.o src/mathlib.cpp
 
-src/preprocessor.o: src/preprocessor.cpp src/preprocessor.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
+src/preprocessor.o: src/preprocessor.cpp src/preprocessor.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h src/filelister.h
 	$(CXX) $(CXXFLAGS) -c -o src/preprocessor.o src/preprocessor.cpp
 
 src/settings.o: src/settings.cpp src/settings.h
 	$(CXX) $(CXXFLAGS) -c -o src/settings.o src/settings.cpp
 
-src/threadexecutor.o: src/threadexecutor.cpp src/threadexecutor.h src/settings.h src/errorlogger.h src/cppcheck.h src/checkfunctionusage.h src/tokenize.h src/token.h
+src/threadexecutor.o: src/threadexecutor.cpp src/threadexecutor.h src/settings.h src/errorlogger.h src/cppcheck.h src/checkunusedfunctions.h src/tokenize.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/threadexecutor.o src/threadexecutor.cpp
 
 src/token.o: src/token.cpp src/token.h
@@ -184,7 +183,7 @@ test/testclass.o: test/testclass.cpp src/tokenize.h src/settings.h src/errorlogg
 test/testconstructors.o: test/testconstructors.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkclass.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testconstructors.o test/testconstructors.cpp
 
-test/testcppcheck.o: test/testcppcheck.cpp test/testsuite.h src/errorlogger.h src/settings.h src/cppcheck.h src/checkfunctionusage.h src/tokenize.h src/token.h
+test/testcppcheck.o: test/testcppcheck.cpp test/testsuite.h src/errorlogger.h src/settings.h src/cppcheck.h src/checkunusedfunctions.h src/tokenize.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o test/testcppcheck.o test/testcppcheck.cpp
 
 test/testdangerousfunctions.o: test/testdangerousfunctions.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkdangerousfunctions.h src/check.h test/testsuite.h
@@ -196,9 +195,6 @@ test/testdivision.o: test/testdivision.cpp src/tokenize.h src/settings.h src/err
 test/testfilelister.o: test/testfilelister.cpp test/testsuite.h src/errorlogger.h src/settings.h src/filelister.h
 	$(CXX) $(CXXFLAGS) -c -o test/testfilelister.o test/testfilelister.cpp
 
-test/testfunctionusage.o: test/testfunctionusage.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h test/testsuite.h src/checkfunctionusage.h
-	$(CXX) $(CXXFLAGS) -c -o test/testfunctionusage.o test/testfunctionusage.cpp
-
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h src/checkother.h src/check.h
 	$(CXX) $(CXXFLAGS) -c -o test/testincompletestatement.o test/testincompletestatement.cpp
 
@@ -207,9 +203,6 @@ test/testmathlib.o: test/testmathlib.cpp src/mathlib.h src/token.h test/testsuit
 
 test/testmemleak.o: test/testmemleak.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkmemoryleak.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testmemleak.o test/testmemleak.cpp
-
-test/testmemleakmp.o: test/testmemleakmp.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkmemoryleak.h src/check.h test/testsuite.h
-	$(CXX) $(CXXFLAGS) -c -o test/testmemleakmp.o test/testmemleakmp.cpp
 
 test/testother.o: test/testother.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkother.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testother.o test/testother.cpp
@@ -240,6 +233,9 @@ test/testtoken.o: test/testtoken.cpp test/testsuite.h src/errorlogger.h src/sett
 
 test/testtokenize.o: test/testtokenize.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o test/testtokenize.o test/testtokenize.cpp
+
+test/testunusedfunctions.o: test/testunusedfunctions.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h test/testsuite.h src/checkunusedfunctions.h
+	$(CXX) $(CXXFLAGS) -c -o test/testunusedfunctions.o test/testunusedfunctions.cpp
 
 test/testunusedprivfunc.o: test/testunusedprivfunc.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checkclass.h src/check.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testunusedprivfunc.o test/testunusedprivfunc.cpp
