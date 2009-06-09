@@ -386,8 +386,9 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
     {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
-                        tr("You can open this error by specifying applications in program's settings.",
-                           this));
+                        tr("You can open this error by specifying applications in program's settings."),
+                        QMessageBox::Ok,
+                        this);
         msg.exec();
         return;
     }
