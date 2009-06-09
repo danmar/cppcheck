@@ -227,6 +227,8 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
             return;
         }
 
+        mResults.CheckingStarted();
+
         mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
         mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
         EnableCheckButtons(false);

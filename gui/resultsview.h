@@ -83,6 +83,12 @@ public:
     */
     void SetCheckDirectory(const QString &dir);
 
+    /**
+    * @brief Inform the view that checking has started
+    *
+    * At the moment this only displays the progressbar
+    */
+    void CheckingStarted();
 signals:
 
     /**
