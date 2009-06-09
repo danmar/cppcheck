@@ -24,6 +24,7 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QToolBar>
+#include <QKeySequence>
 #include "aboutdialog.h"
 #include "../src/filelister.h"
 #include "../src/cppcheckexecutor.h"
@@ -132,6 +133,11 @@ MainWindow::MainWindow() :
     toolbar->addAction(&mActionSettings);
     toolbar->addAction(&mActionAbout);
 
+    mActionReCheck.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
+    mActionCheckDirectory.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    mActionSave.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
+    mActionAbout.setShortcut(QKeySequence(Qt::Key_F1));
+
     LoadSettings();
     mThread.Initialize(&mResults);
     setWindowTitle(tr("Cppcheck"));
@@ -209,9 +215,15 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 
         if (fileNames.isEmpty())
         {
-            QMessageBox msgBox;
-            msgBox.setText("No suitable files found to check!");
-            msgBox.exec();
+
+            QMessageBox msg(QMessageBox::Warning,
+                            tr("Cppcheck"),
+                            tr("No suitable files found to check!"),
+                            QMessageBox::Ok,
+                            this);
+
+            msg.exec();
+
             return;
         }
 
@@ -306,7 +318,8 @@ void MainWindow::ProgramSettings()
         dialog.SaveCheckboxValues();
         mResults.UpdateSettings(dialog.ShowFullPath(),
                                 dialog.SaveFullPath(),
-                                dialog.SaveAllErrors());
+                                dialog.SaveAllErrors(),
+                                dialog.ShowNoErrorsMessage());
     }
 }
 
@@ -375,11 +388,18 @@ void MainWindow::closeEvent(QCloseEvent *event)
         event->accept();
     else
     {
-        QString msg(tr("Cannot exit while checking.\n\n" \
-                       "Stop the checking before exiting."));
-        QMessageBox *box = new QMessageBox(QMessageBox::Warning,
-                                           tr("cppcheck"), msg);
-        box->show();
+        QString text(tr("Cannot exit while checking.\n\n" \
+                        "Stop the checking before exiting."));
+
+        QMessageBox msg(QMessageBox::Warning,
+                        tr("Cppcheck"),
+                        text,
+                        QMessageBox::Ok,
+                        this);
+
+        msg.exec();
+
+
         event->ignore();
     }
 }

@@ -70,7 +70,10 @@ public:
     * @param saveFullPath Save full path of files in reports
     * @param saveAllErrors Save all visible errors
     */
-    void UpdateSettings(bool showFullPath, bool saveFullPath, bool saveAllErrors);
+    void UpdateSettings(bool showFullPath,
+                        bool saveFullPath,
+                        bool saveAllErrors,
+                        bool showNoErrorsMessage);
 
     /**
     * @brief Set the directory we are checking
@@ -137,6 +140,16 @@ protected:
     *
     */
     QProgressBar *mProgress;
+
+    /**
+    * @brief Have any errors been found
+    */
+    bool mErrorsFound;
+
+    /**
+    * @brief Should we show a "No errors found dialog" everytime no errors were found?
+    */
+    bool mShowNoErrorsMessage;
 
 private:
 };

@@ -79,7 +79,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
 
     //Force
     mForce = AddCheckbox(layout,
-                         tr("Force checking on files that have \"too many\" configurations"),
+                         tr("Check all #ifdef configurations"),
                          tr("Check force"),
                          false);
 
@@ -87,6 +87,11 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
                                 tr("Show full path of files"),
                                 tr("Show full path"),
                                 false);
+
+    mShowNoErrorsMessage = AddCheckbox(layout,
+                                       tr("Show \"No errors found\" message when no errors found"),
+                                       tr("Show no errors message"),
+                                       true);
 
     layout->addStretch();
     general->setLayout(layout);
@@ -115,7 +120,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     connect(modify, SIGNAL(clicked()),
             this, SLOT(ModifyApplication()));
 
-    QPushButton *def = new QPushButton(tr("Make default application"));
+    QPushButton *def = new QPushButton(tr("Set as default application"));
     appslayout->addWidget(def);
     connect(def, SIGNAL(clicked()),
             this, SLOT(DefaultApplication()));
@@ -205,6 +210,7 @@ void SettingsDialog::SaveCheckboxValues()
     SaveCheckboxValue(mSaveAllErrors, tr("Save all errors"));
     SaveCheckboxValue(mSaveFullPath, tr("Save full path"));
     SaveCheckboxValue(mShowFullPath, tr("Show full path"));
+    SaveCheckboxValue(mShowNoErrorsMessage, tr("Show no errors message"));
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
@@ -303,3 +309,11 @@ bool SettingsDialog::SaveAllErrors()
 {
     return CheckStateToBool(mSaveAllErrors->checkState());
 }
+
+bool SettingsDialog::ShowNoErrorsMessage()
+{
+    return CheckStateToBool(mShowNoErrorsMessage->checkState());
+}
+
+
+

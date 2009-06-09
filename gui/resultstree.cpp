@@ -29,7 +29,8 @@ ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
         mSettings(settings),
         mApplications(list),
         mContextItem(0),
-        mCheckPath("")
+        mCheckPath(""),
+        mVisibleErrors(false)
 {
     setModel(&mModel);
     QStringList labels;
@@ -76,6 +77,13 @@ void ResultsTree::AddErrorItem(const QString &file,
     }
 
     bool hide = !mShowTypes[SeverityToShowType(severity)];
+
+    //if there is at least on error that is not hidden, we have a visible error
+    if (!hide)
+    {
+        mVisibleErrors = true;
+    }
+
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
     QStandardItem *item = AddBacktraceFiles(EnsureFileItem(realfile, hide),
@@ -226,6 +234,7 @@ void ResultsTree::ShowResults(ShowTypes type, bool show)
 
 void ResultsTree::RefreshTree()
 {
+    mVisibleErrors = false;
     //Get the amount of files in the tree
     int filecount = mModel.rowCount();
 
@@ -260,6 +269,11 @@ void ResultsTree::RefreshTree()
 
             //Check if this error should be hidden
             bool hide = !mShowTypes[VariantToShowType(data["severity"])];
+
+            if (!hide)
+            {
+                mVisibleErrors = true;
+            }
 
             //Hide/show accordingly
             setRowHidden(j, file->index(), hide);
@@ -370,9 +384,10 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
     //If there are now application's specified, tell the user about it
     if (mApplications.GetApplicationCount() == 0)
     {
-        QMessageBox msgBox;
-        msgBox.setText("You can open this error by specifying applications in program's settings.");
-        msgBox.exec();
+        QMessageBox msg(QMessageBox::Warning,
+                        tr("Cppcheck"),
+                        tr("You can open this error by specifying applications in program's settings."));
+        msg.exec();
         return;
     }
 
@@ -421,6 +436,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
             msgbox.setWindowTitle("Cppcheck");
             msgbox.setText(text);
             msgbox.setIcon(QMessageBox::Critical);
+
             msgbox.exec();
         }
     }
@@ -688,4 +704,9 @@ void ResultsTree::RefreshFilePaths()
     {
         RefreshFilePaths(mModel.item(i, 0));
     }
+}
+
+bool ResultsTree::VisibleErrors()
+{
+    return mVisibleErrors;
 }

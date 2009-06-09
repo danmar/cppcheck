@@ -64,6 +64,14 @@ public:
     */
     bool SaveFullPath();
 
+
+    /**
+    * @brief Get checkbox value for mNoErrorsMessage
+    *
+    * @return Should "no errors message" be hidden
+    */
+    bool ShowNoErrorsMessage();
+
     /**
     * @brief Get checkbox value for mSaveAllErrors
     *
@@ -190,6 +198,12 @@ protected:
     *
     */
     QCheckBox *mShowFullPath;
+
+    /**
+    * @brief Show a message dialog when no errors are found (false)
+    *
+    */
+    QCheckBox *mShowNoErrorsMessage;
 
     /**
     * @brief List of all applications that can be started when right clicking

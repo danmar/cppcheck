@@ -123,9 +123,14 @@ void ApplicationDialog::Ok()
 {
     if (mName->text().isEmpty() || mPath->text().isEmpty())
     {
-        QMessageBox msgBox;
-        msgBox.setText("You must specify a name and a path for the application!");
-        msgBox.exec();
+        QMessageBox msg(QMessageBox::Warning,
+                        tr("Cppcheck"),
+                        tr("You must specify a name and a path for the application!"),
+                        QMessageBox::Ok,
+                        this);
+
+        msg.exec();
+
     }
     else
     {

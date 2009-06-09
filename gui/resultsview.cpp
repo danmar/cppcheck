@@ -21,8 +21,11 @@
 #include <QDebug>
 #include <QVBoxLayout>
 #include <QFile>
+#include <QMessageBox>
 
-ResultsView::ResultsView(QSettings &settings, ApplicationList &list)
+ResultsView::ResultsView(QSettings &settings, ApplicationList &list) :
+        mErrorsFound(false),
+        mShowNoErrorsMessage(true)
 {
     QVBoxLayout *layout = new QVBoxLayout();
     setLayout(layout);
@@ -35,6 +38,8 @@ ResultsView::ResultsView(QSettings &settings, ApplicationList &list)
     mTree = new ResultsTree(settings, list);
     layout->addWidget(mTree);
 
+    mShowNoErrorsMessage = settings.value(tr("Show no errors message"), true).toBool();
+
 }
 
 ResultsView::~ResultsView()
@@ -46,6 +51,11 @@ ResultsView::~ResultsView()
 void ResultsView::Clear()
 {
     mTree->Clear();
+    mErrorsFound = false;
+
+    //Clear the progressbar
+    mProgress->setMaximum(100);
+    mProgress->setValue(0);
 }
 
 
@@ -57,6 +67,32 @@ void ResultsView::Progress(int value, int max)
     if (value >= max)
     {
         mProgress->setVisible(false);
+        //Should we inform user of non visible/not found errors?
+        if (mShowNoErrorsMessage)
+        {   //Tell user that we found no errors
+            if (!mErrorsFound)
+            {
+                QMessageBox msg(QMessageBox::Information,
+                                tr("Cppcheck"),
+                                tr("No errors found."),
+                                QMessageBox::Ok,
+                                this);
+
+                msg.exec();
+            } //If we have errors but they aren't visible, tell user about it
+            else if (!mTree->VisibleErrors())
+            {
+                QString text = tr("Errors found from the file, but they are configured to be hidden.\n"\
+                                  "To toggle what kind of errors are shown, open view menu.");
+                QMessageBox msg(QMessageBox::Information,
+                                tr("Cppcheck"),
+                                text,
+                                QMessageBox::Ok,
+                                this);
+
+                msg.exec();
+            }
+        }
     }
     else
     {
@@ -71,6 +107,7 @@ void ResultsView::Error(const QString &file,
                         const QVariantList &lines,
                         const QString &id)
 {
+    mErrorsFound = true;
     mTree->AddErrorItem(file, severity, message, files, lines, id);
     emit GotResults();
 }
@@ -92,6 +129,13 @@ void ResultsView::ExpandAllResults()
 
 void ResultsView::Save(const QString &filename, bool xml)
 {
+    if (!mErrorsFound)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("No errors found, nothing to save.");
+        msgBox.exec();
+    }
+
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
@@ -105,9 +149,11 @@ void ResultsView::Save(const QString &filename, bool xml)
 
 void ResultsView::UpdateSettings(bool showFullPath,
                                  bool saveFullPath,
-                                 bool saveAllErrors)
+                                 bool saveAllErrors,
+                                 bool showNoErrorsMessage)
 {
     mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors);
+    mShowNoErrorsMessage = showNoErrorsMessage;
 }
 
 void ResultsView::SetCheckDirectory(const QString &dir)

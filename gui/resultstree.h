@@ -93,6 +93,13 @@ public:
     * @param dir Directory we are checking
     */
     void SetCheckDirectory(const QString &dir);
+
+    /**
+    * @brief Check if there are any visible errors
+    * @return true if there is at least one visible error
+    */
+    bool VisibleErrors();
+
 protected slots:
     /**
     * @brief Slot to quickstart an error with default application
@@ -107,6 +114,7 @@ protected slots:
     * @param application Index of the application to open the error
     */
     void Context(int application);
+
 protected:
 
     /**
@@ -313,6 +321,13 @@ protected:
     *
     */
     QString mCheckPath;
+
+    /**
+    * @brief Are there any visible errors
+    *
+    */
+    bool mVisibleErrors;
+
 private:
 };
 
