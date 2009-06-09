@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9,00"
+	Version="9.00"
 	Name="testrunner"
 	ProjectGUID="{ABA515EF-1C57-4980-8E40-2C937D212C9D}"
 	Keyword="Win32Proj"
@@ -60,6 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="shlwapi.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -128,6 +129,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="shlwapi.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -187,10 +189,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkfunctionusage.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\CheckHeaders.h"
 				>
 			</File>
@@ -208,6 +206,10 @@
 			</File>
 			<File
 				RelativePath=".\src\checkstl.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkunusedfunctions.h"
 				>
 			</File>
 			<File
@@ -283,10 +285,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkfunctionusage.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\CheckHeaders.cpp"
 				>
 			</File>
@@ -304,6 +302,10 @@
 			</File>
 			<File
 				RelativePath=".\src\checkstl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\checkunusedfunctions.cpp"
 				>
 			</File>
 			<File
@@ -367,10 +369,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\test\testfunctionusage.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\test\testincompletestatement.cpp"
 				>
 			</File>
@@ -380,10 +378,6 @@
 			</File>
 			<File
 				RelativePath=".\test\testmemleak.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\test\testmemleakmp.cpp"
 				>
 			</File>
 			<File
@@ -424,6 +418,10 @@
 			</File>
 			<File
 				RelativePath=".\test\testtokenize.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\test\testunusedfunctions.cpp"
 				>
 			</File>
 			<File
