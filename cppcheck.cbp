@@ -63,8 +63,6 @@
 		<Unit filename="src/checkclass.h" />
 		<Unit filename="src/checkdangerousfunctions.cpp" />
 		<Unit filename="src/checkdangerousfunctions.h" />
-		<Unit filename="src/checkfunctionusage.cpp" />
-		<Unit filename="src/checkfunctionusage.h" />
 		<Unit filename="src/checkheaders.cpp" />
 		<Unit filename="src/checkheaders.h" />
 		<Unit filename="src/checkmemoryleak.cpp" />
@@ -75,6 +73,8 @@
 		<Unit filename="src/checksecurity.h" />
 		<Unit filename="src/checkstl.cpp" />
 		<Unit filename="src/checkstl.h" />
+		<Unit filename="src/checkunusedfunctions.cpp" />
+		<Unit filename="src/checkunusedfunctions.h" />
 		<Unit filename="src/cppcheck.cpp" />
 		<Unit filename="src/cppcheck.h" />
 		<Unit filename="src/cppcheckexecutor.cpp" />
@@ -105,11 +105,9 @@
 		<Unit filename="test/testdangerousfunctions.cpp" />
 		<Unit filename="test/testdivision.cpp" />
 		<Unit filename="test/testfilelister.cpp" />
-		<Unit filename="test/testfunctionusage.cpp" />
 		<Unit filename="test/testincompletestatement.cpp" />
 		<Unit filename="test/testmathlib.cpp" />
 		<Unit filename="test/testmemleak.cpp" />
-		<Unit filename="test/testmemleakmp.cpp" />
 		<Unit filename="test/testother.cpp" />
 		<Unit filename="test/testpreprocessor.cpp" />
 		<Unit filename="test/testredundantif.cpp" />
@@ -121,6 +119,7 @@
 		<Unit filename="test/testsuite.h" />
 		<Unit filename="test/testtoken.cpp" />
 		<Unit filename="test/testtokenize.cpp" />
+		<Unit filename="test/testunusedfunctions.cpp" />
 		<Unit filename="test/testunusedprivfunc.cpp" />
 		<Unit filename="test/testunusedvar.cpp" />
 		<Unit filename="tools/dmake.cpp">
