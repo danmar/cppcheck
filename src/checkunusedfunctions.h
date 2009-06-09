@@ -53,12 +53,8 @@ private:
     class FunctionUsage
     {
     public:
-        FunctionUsage()
-        {
-            filename = "";
-            usedOtherFile = false;
-            usedSameFile = false;
-        }
+        FunctionUsage() : usedSameFile(false), usedOtherFile(false)
+        { }
 
         std::string filename;
         bool   usedSameFile;
