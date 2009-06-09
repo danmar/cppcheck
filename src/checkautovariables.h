@@ -42,10 +42,14 @@ public:
     {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.autoVariables();
+        checkAutoVariables.returnPointerToLocalArray();
     }
 
     /** Check auto variables */
     void autoVariables();
+
+    /** Returning pointer to local array */
+    void returnPointerToLocalArray();
 
 private:
     std::list<std::string> fp_list;
@@ -54,10 +58,17 @@ private:
     bool isAutoVar(const Token* t);
     void addVD(const Token* t);
 
+
+
+
+    void errorReturnPointerToLocalArray(const Token *tok);
+
+
     void getErrorMessages()
     {
         std::cout << "===auto variables===" << "\n";
         reportError(0, "error", "autoVariables", "Wrong assignement of an auto-variable to an effective parameter of a function");
+        errorReturnPointerToLocalArray(0);
     }
 };
 

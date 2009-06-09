@@ -223,4 +223,70 @@ void CheckAutoVariables::autoVariables()
 
 
 
+void CheckAutoVariables::returnPointerToLocalArray()
+{
+    bool infunc = false;
+    int indentlevel = 0;
+    std::list<unsigned int> arrayVar;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // Is there a function declaration for a function that returns a pointer?
+        if (!infunc && (Token::Match(tok, "%type% * %var% (") || Token::Match(tok, "%type% * %var% :: %var% (")))
+        {
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == ")")
+                {
+                    tok = tok2;
+                    break;
+                }
+            }
+            if (Token::simpleMatch(tok, ") {"))
+            {
+                infunc = true;
+                indentlevel = 0;
+                arrayVar.clear();
+            }
+        }
+
+        // Parsing a function that returns a pointer..
+        if (infunc)
+        {
+            if (tok->str() == "{")
+                ++indentlevel;
+            else if (tok->str() == "}")
+            {
+                --indentlevel;
+                if (indentlevel <= 0)
+                    infunc = false;
+                continue;
+            }
+
+            // Declaring a local array..
+            if (Token::Match(tok, "[;{}] %type% %var% ["))
+            {
+                arrayVar.push_back(tok->tokAt(2)->varId());
+            }
+
+            // Return pointer to local array variable..
+            if (Token::Match(tok, "return %var% ;"))
+            {
+                unsigned int varid = tok->next()->varId();
+                if (varid > 0 && std::find(arrayVar.begin(), arrayVar.end(), varid) != arrayVar.end())
+                    errorReturnPointerToLocalArray(tok);
+            }
+        }
+
+        // Declaring array variable..
+
+
+    }
+}
+
+void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
+{
+    reportError(tok, "error", "returnLocalVariable", "Returning pointer to local array variable");
+}
+
+
 
