@@ -214,6 +214,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             {
                 (*it)->getErrorMessages();
             }
+            return "";
         }
 
         else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
