@@ -175,17 +175,7 @@ void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const To
 }
 
 
-void ErrorLogger::_writemsg(const std::string &msg, const std::string &id)
-{
-    std::ostringstream xml;
-    xml << "<error";
-    xml << " id=\"" << id << "\"";
-    xml << " msg=\"" << msg << "\"";
-    xml << ">";
 
-    std::list<ErrorLogger::ErrorMessage::FileLocation> loc;
-    reportErr(ErrorLogger::ErrorMessage(loc, "", msg, "id"));
-}
 
 std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
 {

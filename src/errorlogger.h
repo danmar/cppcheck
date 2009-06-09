@@ -160,8 +160,14 @@ public:
 
     void unusedFunction(const std::string &filename, const std::string &funcname)
     {
-        _writemsg("[" + filename + "]: The function '" + funcname + "' is never used", "unusedFunction");
+        std::list<ErrorLogger::ErrorMessage::FileLocation> loc;
+        ErrorLogger::ErrorMessage::FileLocation fileLoc;
+        fileLoc.file = filename;
+        fileLoc.line = 1;
+        loc.push_back(fileLoc);
+        reportErr(ErrorLogger::ErrorMessage(loc, "style", "The function '" + funcname + "' is never used", "unusedFunction"));
     }
+
     static bool unusedFunction(const Settings &s)
     {
         return s._checkCodingStyle || s._showAll;
@@ -329,6 +335,5 @@ public:
 private:
     void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id);
     void _writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id);
-    void _writemsg(const std::string &msg, const std::string &id);
 };
 #endif
