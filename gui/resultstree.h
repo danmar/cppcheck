@@ -247,9 +247,10 @@ protected:
     * @brief Ensures there's a item in the model for the specified file
     *
     * @param name Filename
+    * @param hide is the error (we want this file item for) hidden?
     * @return QStandardItem to be used as a parent for all errors for specified file
     */
-    QStandardItem *EnsureFileItem(const QString &name);
+    QStandardItem *EnsureFileItem(const QString &name, bool hide);
 
     /**
     * @brief Show a file item

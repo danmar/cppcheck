@@ -206,6 +206,15 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 
         mResults.Clear();
         mThread.ClearFiles();
+
+        if (fileNames.isEmpty())
+        {
+            QMessageBox msgBox;
+            msgBox.setText("No suitable files found to check!");
+            msgBox.exec();
+            return;
+        }
+
         mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
         mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
         EnableCheckButtons(false);

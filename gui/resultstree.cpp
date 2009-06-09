@@ -23,6 +23,7 @@
 #include <QSignalMapper>
 #include <QProcess>
 #include <QDir>
+#include <QMessageBox>
 
 ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
         mSettings(settings),
@@ -81,7 +82,7 @@ void ResultsTree::AddErrorItem(const QString &file,
     bool hide = !mShowTypes[SeverityToShowType(severity)];
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem *item = AddBacktraceFiles(EnsureFileItem(realfile),
+    QStandardItem *item = AddBacktraceFiles(EnsureFileItem(realfile, hide),
                                             realfile,
                                             lines[0].toInt(),
                                             severity,
@@ -283,7 +284,7 @@ void ResultsTree::RefreshTree()
 }
 
 
-QStandardItem *ResultsTree::EnsureFileItem(const QString &name)
+QStandardItem *ResultsTree::EnsureFileItem(const QString &name, bool hide)
 {
     QStandardItem *item = FindFileItem(name);
 
@@ -296,6 +297,8 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &name)
     item->setIcon(QIcon(":images/text-x-generic.png"));
 
     mModel.appendRow(item);
+
+    setRowHidden(mModel.rowCount() - 1, QModelIndex(), hide);
 
     return item;
 }
@@ -371,6 +374,15 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
 void ResultsTree::StartApplication(QStandardItem *target, int application)
 {
+    //If there are now application's specified, tell the user about it
+    if (mApplications.GetApplicationCount() == 0)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("You can open this error by specifying applications in program's settings.");
+        msgBox.exec();
+        return;
+    }
+
     if (target && application >= 0 && application < mApplications.GetApplicationCount() && target->parent())
     {
         QVariantMap data = target->data().toMap();

@@ -30,6 +30,7 @@ ResultsView::ResultsView(QSettings &settings, ApplicationList &list)
     mProgress = new QProgressBar();
     layout->addWidget(mProgress);
     mProgress->setMinimum(0);
+    mProgress->setVisible(false);
 
     mTree = new ResultsTree(settings, list);
     layout->addWidget(mTree);
@@ -53,6 +54,14 @@ void ResultsView::Progress(int value, int max)
 {
     mProgress->setMaximum(max);
     mProgress->setValue(value);
+    if (value >= max)
+    {
+        mProgress->setVisible(false);
+    }
+    else
+    {
+        mProgress->setVisible(true);
+    }
 }
 
 void ResultsView::Error(const QString &file,
