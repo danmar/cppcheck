@@ -54,9 +54,9 @@ private:
 
         // Check auto variables
         Settings settings;
-        settings._showAll = true;
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.autoVariables();
+        checkAutoVariables.returnPointerToLocalArray();
     }
 
     void run()
@@ -64,6 +64,9 @@ private:
         TEST_CASE(testautovar);
         TEST_CASE(testautovararray);
         TEST_CASE(testautovarreturn);
+
+        TEST_CASE(returnLocalVariable1);
+        TEST_CASE(returnLocalVariable2);
     }
 
 
@@ -98,6 +101,27 @@ private:
               "    int num=2;"
               "return &num;}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return of the address of an auto-variable\n", errout.str());
+    }
+
+
+    void returnLocalVariable1()
+    {
+        check("char *foo()\n"
+              "{\n"
+              "    char str[100] = {0};\n"
+              "    return str;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to local array variable\n", errout.str());
+    }
+
+    void returnLocalVariable2()
+    {
+        check("std::string foo()\n"
+              "{\n"
+              "    char str[100] = {0};\n"
+              "    return str;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

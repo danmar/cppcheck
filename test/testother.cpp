@@ -51,9 +51,6 @@ private:
         TEST_CASE(strPlusChar2);     // "/usr" + ch
         TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
 
-        TEST_CASE(returnLocalVariable1);
-        TEST_CASE(returnLocalVariable2);
-
         TEST_CASE(varScope1);
         TEST_CASE(varScope2);
         TEST_CASE(varScope3);
@@ -301,43 +298,6 @@ private:
     }
 
 
-
-    void retVar(const char code[])
-    {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // Clear the error buffer..
-        errout.str("");
-
-        // Check for redundant code..
-        Settings settings;
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.returnPointerToStackData();
-    }
-
-    void returnLocalVariable1()
-    {
-        retVar("char *foo()\n"
-               "{\n"
-               "    char str[100] = {0};\n"
-               "    return str;\n"
-               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to local array variable\n", errout.str());
-    }
-
-    void returnLocalVariable2()
-    {
-        retVar("std::string foo()\n"
-               "{\n"
-               "    char str[100] = {0};\n"
-               "    return str;\n"
-               "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
 
     void varScope(const char code[])
     {

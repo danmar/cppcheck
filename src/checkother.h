@@ -67,7 +67,6 @@ public:
         }
 
         checkOther.strPlusChar();
-        checkOther.returnPointerToStackData();
         checkOther.InvalidFunctionUsage();
         checkOther.nullPointer();
         checkOther.CheckZeroDivision();
@@ -106,9 +105,6 @@ public:
     /** str plus char */
     void strPlusChar();
 
-    /** Returning pointer to local data */
-    void returnPointerToStackData();
-
     /** possible null pointer dereference */
     void nullPointer();
 
@@ -141,7 +137,6 @@ private:
     void variableScopeError(const Token *tok, const std::string &varname);
     void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
     void strPlusChar(const Token *tok);
-    void returnLocalVariable(const Token *tok);
     void nullPointerError(const Token *tok);
     void zerodivError(const Token *tok);
 
@@ -164,7 +159,6 @@ private:
         variableScopeError(0, "varname");
         conditionAlwaysTrueFalse(0, "true/false");
         strPlusChar(0);
-        returnLocalVariable(0);
         nullPointerError(0);
         zerodivError(0);
     }
