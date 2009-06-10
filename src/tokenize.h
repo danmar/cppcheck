@@ -97,6 +97,8 @@ public:
 
     /**
      * Simplify variable declarations
+     * @return true if something is modified
+     *         false if nothing is done.
      */
     bool simplifyVarDecl();
 
@@ -109,26 +111,42 @@ public:
     /**
      * Simplify question mark - colon operator
      * Example: 0 ? (2/0) : 0 => 0
+     * @return true if something is modified
+     *         false if nothing is done.
      */
     bool simplifyQuestionMark();
 
     /**
      * simplify if-assignments..
      * Example: "if(a=b);" => "a=b;if(a);"
+     * @return true if something is modified
+     *         false if nothing is done.
      */
     bool simplifyIfAssign();
 
     /**
      * simplify if-not..
      * Example: "if(0==x);" => "if(!x);"
+     * @return true if something is modified
+     *         false if nothing is done.
      */
     bool simplifyIfNot();
 
     /**
      * simplify the "not" keyword to "!"
      * Example: "if (not p)" => "if (!p)"
+     * @return true if something is modified
+     *         false if nothing is done.
      */
     bool simplifyNot();
+
+    /**
+     * Simplify comma near keywords into a semicolon
+     * Example: "delete a, delete b" => "delete a; delete b;"
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
+    bool simplifyCommaNearKeyWords();
 
 protected:
 

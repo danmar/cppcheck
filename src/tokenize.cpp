@@ -1483,6 +1483,7 @@ void Tokenizer::simplifyTokenList()
         modified |= simplifyQuestionMark();
     }
 
+    simplifyCommaNearKeyWords();
     createLinks();
     if (_settings._debug)
     {
@@ -2913,4 +2914,22 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 
 }
 
+bool Tokenizer::simplifyCommaNearKeyWords()
+{
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() != ",")
+            continue;
 
+        // We must not accept just any keyword, e.g. accepting int
+        // would cause function parameters to corrupt.
+        if (!Token::Match(tok->next(), "delete"))
+            continue;
+
+        tok->str(";");
+        ret = true;
+    }
+
+    return ret;
+}

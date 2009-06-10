@@ -77,6 +77,7 @@ public:
      * Possible patterns
      * "%any%" any token
      * "%var%" any token which is a name or type e.g. "hello" or "int"
+     * "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
      * "%num%" Any numeric token, e.g. "23"
      * "%bool%" true or false
      * "%str%" Any token starting with "-character (C-string).
@@ -105,6 +106,7 @@ public:
     bool isNumber() const;
     bool isBoolean() const;
     bool isStandardType() const;
+
     static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
 
     /**

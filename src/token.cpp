@@ -302,9 +302,21 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         if (str[0] == '%')
         {
             // Any symbolname..
-            if (strcmp(str, "%var%") == 0 || strcmp(str, "%type%") == 0)
+            if (strcmp(str, "%var%") == 0)
             {
                 if (!tok->isName())
+                    return false;
+
+                patternIdentified = true;
+            }
+
+            // Type..
+            if (strcmp(str, "%type%") == 0)
+            {
+                if (!tok->isName())
+                    return false;
+
+                if (tok->str() == "delete")
                     return false;
 
                 patternIdentified = true;

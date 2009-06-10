@@ -105,6 +105,7 @@ private:
 
         // Simplify "not" to "!" (#345)
         TEST_CASE(not1);
+        TEST_CASE(comma_keyword);
     }
 
     std::string tok(const char code[])
@@ -932,6 +933,15 @@ private:
         ASSERT_EQUALS("void foo ( not i )", simplifyNot("void foo ( not i )"));
     }
 
+    void comma_keyword()
+    {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    char *a, *b;\n"
+                            "    delete a, delete b;\n"
+                            "}\n";
+        ASSERT_EQUALS(" void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", sizeof_(code));
+    }
 
 };
 
