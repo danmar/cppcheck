@@ -476,10 +476,22 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // replace "unsigned i" with "unsigned int i"
     unsignedint();
 
+    // Split up variable declarations.
     simplifyVarDecl();
 
     // Handle templates..
     simplifyTemplates();
+
+    // change array to pointer..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%type% %var% [ ] [,;=]"))
+        {
+            tok->next()->deleteNext();
+            tok->next()->deleteNext();
+            tok->insertToken("*");
+        }
+    }
 
     return true;
 }

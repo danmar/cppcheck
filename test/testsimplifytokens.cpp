@@ -66,6 +66,8 @@ private:
         TEST_CASE(paranthesesVar);      // Remove redundant parantheses around variable .. "( %var% )"
         TEST_CASE(declareVar);
 
+        TEST_CASE(declareArray);
+
         TEST_CASE(dontRemoveIncrement);
         TEST_CASE(removePostIncrement);
         TEST_CASE(removePreIncrement);
@@ -385,6 +387,12 @@ private:
         ASSERT_EQUALS(code, tok(code));
     }
 
+    void declareArray()
+    {
+        const char code[] = "void f ( ) { char str [ ] = \"100\" ; } ";
+        const char expected[] = "void f ( ) { char * str ; str = \"100\" ; } ";
+        ASSERT_EQUALS(expected, tok(code));
+    }
 
     void dontRemoveIncrement()
     {
