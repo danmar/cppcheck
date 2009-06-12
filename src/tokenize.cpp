@@ -1032,7 +1032,7 @@ bool Tokenizer::createLinks()
 
     if (links2.size() > 0)
     {
-        // Error, { and } don't match.
+        // Error, ( and ) don't match.
         syntaxError(_tokens, '(');
         return false;
     }
