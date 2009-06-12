@@ -228,10 +228,10 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
             {
                 doc << "===" << (*it)->name() << "===\n"
-                    << (*it)->classInfo() << "\n\n";
+                << (*it)->classInfo() << "\n\n";
             }
             doc << "===" << "Unused functions" << "===\n"
-                << "Check for functions that are never called\n";
+            << "Check for functions that are never called\n";
             std::string doc2(doc.str());
             while (doc2.find("\n\n\n") != std::string::npos)
                 doc2.erase(doc2.find("\n\n\n"), 1);
