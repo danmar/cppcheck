@@ -163,6 +163,23 @@ private:
         zerodivError(0);
     }
 
+    std::string classInfo() const
+    {
+        return "Other checks\n"
+               " * C-style pointer cast in cpp file\n"
+               " * redundant if\n"
+               " * bad usage of the function 'strtol'\n"
+               " * bad usage of the function 'sprintf' (overlapping data)\n"
+               " * division with zero\n"
+               " * unsigned division\n"
+               " * unused struct member\n"
+               " * passing parameter by value\n"
+               " * char array-index\n"
+               " * char operand in a bit operation\n"
+               " * condition that is always true/false\n"
+               " * unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
+               " * dereferencing a null pointer\n";
+    }
 };
 
 //---------------------------------------------------------------------------

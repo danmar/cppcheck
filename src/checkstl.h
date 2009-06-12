@@ -107,6 +107,15 @@ private:
         invalidPointerError(0, "pointer");
         stlBoundriesError(0);
     }
+
+    std::string classInfo() const
+    {
+        return "STL usage:\n"
+               " * out of bounds errors\n"
+               " * misuse of iterators when iterating through a container\n"
+               " * dereferencing an erased iterator\n"
+               " * for vectors: using iterator/pointer after push_back has been used\n";
+    }
 };
 
 //---------------------------------------------------------------------------

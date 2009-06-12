@@ -63,6 +63,9 @@ public:
     /** get error messages */
     virtual void getErrorMessages() = 0;
 
+    /** get information about this class */
+    virtual std::string classInfo() const = 0;
+
 protected:
     const Tokenizer * const _tokenizer;
     const Settings * const _settings;

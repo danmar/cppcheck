@@ -152,6 +152,11 @@ private:
     void getErrorMessages()
     { }
 
+    std::string classInfo() const
+    {
+        return "Memory leaks (function variables)[BR]\n"
+               "Is there any allocated memory when a function goes out of scope";
+    }
 };
 
 
@@ -199,6 +204,11 @@ private:
     void getErrorMessages()
     { }
 
+    std::string classInfo() const
+    {
+        return "Memory leaks (class variables)[BR]\n"
+               "If the constructor allocate memory then the destructor must deallocate it.";
+    }
 };
 
 

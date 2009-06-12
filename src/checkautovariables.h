@@ -70,6 +70,16 @@ private:
         reportError(0, "error", "autoVariables", "Wrong assignement of an auto-variable to an effective parameter of a function");
         errorReturnPointerToLocalArray(0);
     }
+
+    std::string classInfo() const
+    {
+        return "Auto variables are deallocated when they go out of scope. "
+               "A pointer to an auto variable is therefore only valid as "
+               "long as the auto variable is in scope.[BR]\n"
+               "Check:\n"
+               " * returning a pointer to auto variable\n"
+               " * assignement of an auto-variable to an effective parameter of a function\n";
+    }
 };
 
 //---------------------------------------------------------------------------

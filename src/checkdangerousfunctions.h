@@ -62,7 +62,13 @@ private:
         dangerousFunctionscanf(0);
     }
 
-
+    std::string classInfo() const
+    {
+        return "Warn if any of these deprecated functions are used:\n"
+               " * mktemp\n"
+               " * gets\n"
+               " * scanf\n";
+    }
 };
 
 //---------------------------------------------------------------------------

@@ -82,6 +82,11 @@ private:
         outOfBounds(0, "index");
         sizeArgumentAsChar(0);
     }
+
+    std::string classInfo() const
+    {
+        return "out of bounds checking";
+    }
 };
 
 //---------------------------------------------------------------------------

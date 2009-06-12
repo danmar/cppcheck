@@ -57,6 +57,11 @@ private:
         std::cout << "===security===" << "\n";
         unvalidatedInput(0);
     }
+
+    std::string classInfo() const
+    {
+        return "This is an unfinnished check that will detect unvalidated input.\n";
+    }
 };
 
 //---------------------------------------------------------------------------
