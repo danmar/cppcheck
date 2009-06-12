@@ -128,13 +128,18 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     // Replace characters in message
     std::string m(_msg);
     std::string::size_type pos = 0;
-    while ((pos = m.find_first_of("<>", pos)) != std::string::npos)
+    while ((pos = m.find_first_of("<>&\"", pos)) != std::string::npos)
     {
         if (m[pos] == '<')
             m.insert(pos + 1, "&lt;");
-        if (m[pos] == '>')
+        else if (m[pos] == '>')
             m.insert(pos + 1, "&gt;");
+        else if (m[pos] == '&')
+            m.insert(pos + 1, "&amp;");
+        else if (m[pos] == '"')
+            m.insert(pos + 1, "&quot;");
         m.erase(pos, 1);
+        ++pos;
     }
 
     xml << " msg=\"" << m << "\"";
