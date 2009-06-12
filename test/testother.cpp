@@ -54,6 +54,7 @@ private:
         TEST_CASE(varScope1);
         TEST_CASE(varScope2);
         TEST_CASE(varScope3);
+        TEST_CASE(varScope4);
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -370,6 +371,15 @@ private:
                  "        p = &i;\n"
                  "    }\n"
                  "    *p = 1;\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope4()
+    {
+        varScope("void foo()\n"
+                 "{\n"
+                 "    int i;\n"
                  "}\n");
         ASSERT_EQUALS("", errout.str());
     }

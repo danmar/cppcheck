@@ -454,7 +454,6 @@ void CheckOther::CheckUnsignedDivision()
 // Check scope of variables..
 //---------------------------------------------------------------------------
 
-
 void CheckOther::CheckVariableScope()
 {
     // Walk through all tokens..
@@ -526,8 +525,7 @@ void CheckOther::CheckVariableScope()
                 continue;
 
             // Variable declaration?
-            if (Token::Match(tok1, "%var% %var% ;") ||
-                Token::Match(tok1, "%var% %var% ="))
+            if (Token::Match(tok1, "%type% %var% [;=]"))
             {
                 CheckVariableScope_LookupVar(tok1, tok1->strAt(1));
             }
@@ -550,7 +548,7 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
     int indentlevel = 0;
     int parlevel = 0;
     bool for_or_while = false;
-    while (indentlevel >= 0 && tok)
+    while (tok)
     {
         if (tok->str() == "{")
         {
@@ -559,6 +557,8 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
 
         else if (tok->str() == "}")
         {
+            if (indentlevel == 0)
+                break;
             --indentlevel;
             if (indentlevel == 0)
             {
@@ -603,8 +603,11 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
         tok = tok->next();
     }
 
-    // Warning if "used" is true
-    variableScopeError(tok1, varname);
+    // Warning if this variable:
+    // * not used in this indentlevel
+    // * used in lower indentlevel
+    if (!used && used1)
+        variableScopeError(tok1, varname);
 }
 //---------------------------------------------------------------------------
 
