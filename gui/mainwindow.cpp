@@ -454,8 +454,22 @@ void MainWindow::Save()
 
         if (list.size() > 0)
         {
-            bool xml = (dialog.selectedNameFilter() == filters[0] && list[0].endsWith(".xml", Qt::CaseInsensitive));
-            mResults.Save(list[0], xml);
+            QString filename = list[0];
+
+            //Check if xml file type was selected
+            bool xml = (dialog.selectedNameFilter() == filters[0]);
+
+            //Force xml extension to the file
+            if (xml && !filename.endsWith(".xml", Qt::CaseInsensitive)) {
+                filename+=".xml";
+            }
+
+            //Force .txt extension
+            if (!xml && !filename.endsWith(".txt", Qt::CaseInsensitive)) {
+                filename+=".txt";
+            }
+
+            mResults.Save(filename, xml);
         }
     }
 }
