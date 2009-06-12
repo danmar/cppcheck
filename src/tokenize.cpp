@@ -1884,15 +1884,14 @@ bool Tokenizer::simplifyQuestionMark()
                 continue;
 
             end = end->next();
-            tok = tok->previous();
+            tok = tok->previous()->previous();
             while (tok->next() != end)
             {
                 tok->deleteNext();
             }
 
-            Token *temp = tok;
             tok = tok->next();
-            temp->deleteThis();
+            ret = true;
         }
         else
         {
