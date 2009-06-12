@@ -2579,6 +2579,24 @@ bool Tokenizer::simplifyRedundantParanthesis()
             ret = true;
         }
 
+        while (Token::Match(tok->previous(), "[;{] ( delete %var% ) ;"))
+        {
+            // We have "( delete var )", remove the outer
+            // paranthesis
+            tok->tokAt(3)->deleteThis();
+            tok->deleteThis();
+            ret = true;
+        }
+
+        while (Token::Match(tok->previous(), "[;{] ( delete [ ] %var% ) ;"))
+        {
+            // We have "( delete [] var )", remove the outer
+            // paranthesis
+            tok->tokAt(5)->deleteThis();
+            tok->deleteThis();
+            ret = true;
+        }
+
         if (Token::Match(tok, "( ( %bool% )") ||
             Token::Match(tok, "( ( %num% )"))
         {
