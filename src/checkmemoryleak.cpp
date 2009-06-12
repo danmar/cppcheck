@@ -280,6 +280,33 @@ bool CheckMemoryLeakInFunction::notvar(const Token *tok, const char *varnames[],
 }
 
 
+static int countParameters(const Token *tok)
+{
+    if (!Token::Match(tok, "%var% ("))
+        return -1;
+    if (Token::Match(tok->tokAt(2), "void| )"))
+        return 0;
+
+    int numpar = 1;
+    int parlevel = 0;
+    for (; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            ++parlevel;
+
+        else if (tok->str() == ")")
+        {
+            if (parlevel <= 1)
+                return numpar;
+            --parlevel;
+        }
+
+        else if (parlevel == 1 && tok->str() == ",")
+            ++numpar;
+    }
+
+    return -1;
+}
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
@@ -328,6 +355,11 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     }
     callstack.push_back(tok);
 
+    // how many parameters is there in the function call?
+    int numpar = countParameters(tok);
+    if (numpar <= 0)
+        return "callfunc";
+
     int par = 1;
     int parlevel = 0;
     std::string pattern = "[,()] ";
@@ -361,6 +393,11 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             if (Token::Match(tok, pattern.c_str()))
             {
                 const Token *ftok = _tokenizer->GetFunctionTokenByName(funcname.c_str());
+
+                // how many parameters does the function want?
+                if (numpar != countParameters(ftok))
+                    return "recursive";
+
                 const char *parname = Tokenizer::getParameterName(ftok, par);
                 if (! parname)
                     return "recursive";

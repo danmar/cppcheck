@@ -143,6 +143,7 @@ private:
         TEST_CASE(func11);      // Bug 2458510 - Function pointer
         TEST_CASE(func12);
         TEST_CASE(func13);
+        TEST_CASE(func14);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1340,7 +1341,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
+    void func14()
+    {
+        // It is not known what the "foo" that only takes one parameter does..
+        check("static void foo(char *a, char *b)\n"
+              "{\n"
+              "    free(a);\n"
+              "    free(b);\n"
+              "}\n"
+              "static void f()\n"
+              "{\n"
+              "    char *p = malloc(100);\n"
+              "    foo(p);\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     /*
