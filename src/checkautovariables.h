@@ -79,7 +79,7 @@ private:
     std::string classInfo() const
     {
         return "Auto variables are deallocated when they go out of scope. "
-               "A pointer to an auto variable is therefore only valid as long as the auto variable is in scope.[BR]\n"
+               "A pointer to an auto variable is therefore only valid as long as the auto variable is in scope.\n"
                "Check:\n"
                " * returning a pointer to auto variable\n"
                " * assignment of an auto-variable to an effective parameter of a function\n";
