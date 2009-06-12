@@ -152,10 +152,14 @@ private:
     void getErrorMessages()
     { }
 
+    std::string name() const
+    {
+        return "Memory leaks (function variables)";
+    }
+
     std::string classInfo() const
     {
-        return "Memory leaks (function variables)[BR]\n"
-               "Is there any allocated memory when a function goes out of scope";
+        return "Is there any allocated memory when a function goes out of scope";
     }
 };
 
@@ -204,10 +208,14 @@ private:
     void getErrorMessages()
     { }
 
+    std::string name() const
+    {
+        return "Memory leaks (class variables)";
+    }
+
     std::string classInfo() const
     {
-        return "Memory leaks (class variables)[BR]\n"
-               "If the constructor allocate memory then the destructor must deallocate it.";
+        return "If the constructor allocate memory then the destructor must deallocate it.";
     }
 };
 

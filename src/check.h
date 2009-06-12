@@ -34,6 +34,7 @@ public:
             : _tokenizer(0), _settings(0), _errorLogger(0)
     {
         instances().push_back(this);
+        instances().sort();
     }
 
     /** This constructor is used when running checks.. */
@@ -62,6 +63,9 @@ public:
 
     /** get error messages */
     virtual void getErrorMessages() = 0;
+
+    /** class name */
+    virtual std::string name() const = 0;
 
     /** get information about this class */
     virtual std::string classInfo() const = 0;
@@ -101,7 +105,16 @@ protected:
         _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList, severity, msg, id));
     }
 
+private:
+    // compare the names of Check classes
+    bool operator<(const Check *other)
+    {
+        return (name() < other->name());
+    }
+
 };
+
+
 
 #endif
 

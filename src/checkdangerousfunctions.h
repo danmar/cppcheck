@@ -62,6 +62,11 @@ private:
         dangerousFunctionscanf(0);
     }
 
+    std::string name() const
+    {
+        return "Deprecated functions";
+    }
+
     std::string classInfo() const
     {
         return "Warn if any of these deprecated functions are used:\n"

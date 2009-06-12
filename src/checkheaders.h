@@ -36,6 +36,11 @@ public:
 private:
     const Tokenizer *_tokenizer;
     ErrorLogger *_errorLogger;
+
+    std::string name() const
+    {
+        return "Headers";
+    }
 };
 
 //---------------------------------------------------------------------------

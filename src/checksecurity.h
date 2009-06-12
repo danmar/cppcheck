@@ -58,6 +58,11 @@ private:
         unvalidatedInput(0);
     }
 
+    std::string name() const
+    {
+        return "Security";
+    }
+
     std::string classInfo() const
     {
         return "This is an unfinnished check that will detect unvalidated input.\n";

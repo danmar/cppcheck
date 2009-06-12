@@ -83,6 +83,11 @@ private:
         sizeArgumentAsChar(0);
     }
 
+    std::string name() const
+    {
+        return "Bounds checking";
+    }
+
     std::string classInfo() const
     {
         return "out of bounds checking";

@@ -66,6 +66,9 @@ void CppCheck::clearFiles()
     _fileContents.clear();
 }
 
+
+
+
 std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 {
     std::vector<std::string> pathnames;
@@ -214,6 +217,25 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             {
                 (*it)->getErrorMessages();
             }
+            return "";
+        }
+
+        // documentation..
+        else if (strcmp(argv[i], "--doc") == 0)
+        {
+            std::ostringstream doc;
+            // Get documentation..
+            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+            {
+                doc << "===" << (*it)->name() << "===\n"
+                    << (*it)->classInfo() << "\n\n";
+            }
+            doc << "===" << "Unused functions" << "===\n"
+                << "Check for functions that are never called\n";
+            std::string doc2(doc.str());
+            while (doc2.find("\n\n\n") != std::string::npos)
+                doc2.erase(doc2.find("\n\n\n"), 1);
+            std::cout << doc2;
             return "";
         }
 

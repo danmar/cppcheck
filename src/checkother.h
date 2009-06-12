@@ -163,6 +163,11 @@ private:
         zerodivError(0);
     }
 
+    std::string name() const
+    {
+        return "Other";
+    }
+
     std::string classInfo() const
     {
         return "Other checks\n"
@@ -171,14 +176,14 @@ private:
                " * bad usage of the function 'strtol'\n"
                " * bad usage of the function 'sprintf' (overlapping data)\n"
                " * division with zero\n"
-               " * unsigned division\n"
+               " * [[CheckUnsignedDivision|unsigned division]]\n"
                " * unused struct member\n"
                " * passing parameter by value\n"
-               " * char array-index\n"
-               " * char operand in a bit operation\n"
+               " * [[charvar|check how signed char variables are used]]\n"
                " * condition that is always true/false\n"
                " * unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
-               " * dereferencing a null pointer\n";
+               " * dereferencing a null pointer\n"
+               " * [[IncompleteStatement|Incomplete statement]]\n";
     }
 };
 
