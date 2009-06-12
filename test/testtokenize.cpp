@@ -130,6 +130,7 @@ private:
         TEST_CASE(removeParantheses1);        // Ticket #61
         TEST_CASE(removeParantheses2);
         TEST_CASE(removeParantheses3);
+        TEST_CASE(removeParantheses4);       // Ticket #390
 
         TEST_CASE(simplify_numeric_condition);
         TEST_CASE(tokenize_double);
@@ -1724,6 +1725,27 @@ private:
                 ostr << " " << tok->str();
             ASSERT_EQUALS(" void foo ( ) { if ( g ( 10 ) ) { } }", ostr.str());
         }
+    }
+
+    // Simplify "( function (..))" into "function (..)"
+    void removeParantheses4()
+    {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    (free(p));\n"
+                            "}";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(" void foo ( ) { free ( p ) ; }", ostr.str());
     }
 
     void simplify_numeric_condition()

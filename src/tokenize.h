@@ -209,7 +209,9 @@ private:
     bool simplifyFunctionReturn();
 
     /**
-     * Remove redundant paranthesis: "((x))" => "(x)"
+     * Remove redundant paranthesis:
+     * - "((x))" => "(x)"
+     * - "(function())" => "function()"
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */

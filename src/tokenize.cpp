@@ -2569,6 +2569,16 @@ bool Tokenizer::simplifyRedundantParanthesis()
             ret = true;
         }
 
+        while (Token::Match(tok->previous(), "[;{] ( %var% (") &&
+               tok->link()->previous() == tok->tokAt(2)->link())
+        {
+            // We have "( func ( *something* ))", remove the outer
+            // paranthesis
+            tok->link()->deleteThis();
+            tok->deleteThis();
+            ret = true;
+        }
+
         if (Token::Match(tok, "( ( %bool% )") ||
             Token::Match(tok, "( ( %num% )"))
         {
