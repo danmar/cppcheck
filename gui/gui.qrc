@@ -1,7 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
     <file>icon.png</file>
-    <file>icon.svg</file>
     <file>images/dialog-error.png</file>
     <file>images/dialog-information.png</file>
     <file>images/dialog-warning.png</file>
