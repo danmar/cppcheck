@@ -27,6 +27,7 @@ HEADERS += 	mainwindow.h \
 		applicationlist.h \
 		applicationdialog.h \
 		aboutdialog.h \
+        common.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
