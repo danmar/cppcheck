@@ -13,8 +13,6 @@ RESOURCES = gui.qrc
 
 # Windows-specific options
 CONFIG += embed_manifest_exe
-RC_FILE = cppcheck-gui.rc
-win32:LIBS += -lshlwapi
 
 # Input
 HEADERS += 	mainwindow.h \
@@ -27,7 +25,7 @@ HEADERS += 	mainwindow.h \
 		applicationlist.h \
 		applicationdialog.h \
 		aboutdialog.h \
-        common.h \
+		common.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
@@ -48,7 +46,6 @@ HEADERS += 	mainwindow.h \
 		../src/checkother.h \
 		../src/cppcheckexecutor.h \
 		../src/filelister.h \
-		../src/resource.h \
 		../src/token.h 
 
 
@@ -83,3 +80,10 @@ SOURCES += 	main.cpp \
 		../src/checkunusedfunctions.cpp \
 		../src/settings.cpp \
 		../src/tokenize.cpp
+
+
+win32 {
+	RC_FILE = cppcheck-gui.rc
+	HEADERS += ../src/resource.h
+	LIBS += -lshlwapi
+}
