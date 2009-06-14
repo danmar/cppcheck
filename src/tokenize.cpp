@@ -831,7 +831,7 @@ void Tokenizer::setVarId()
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->varId() == tok->varId() && Token::simpleMatch(tok2->next(), pattern.c_str()))
-                    tok2->next()->next()->varId(_varId);
+                    tok2->tokAt(2)->varId(_varId);
             }
         }
     }
@@ -1462,7 +1462,7 @@ void Tokenizer::simplifyTokenList()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "case %any% : %var%"))
-            tok->next()->next()->insertToken(";");
+            tok->tokAt(2)->insertToken(";");
         if (Token::Match(tok, "default : %var%"))
             tok->next()->insertToken(";");
     }
@@ -1775,7 +1775,7 @@ bool Tokenizer::simplifyConditions()
         if (Token::Match(tok, "if|while ( %num%") &&
             (tok->tokAt(3)->str() == ")" || tok->tokAt(3)->str() == "||" || tok->tokAt(3)->str() == "&&"))
         {
-            tok->next()->next()->str((tok->tokAt(2)->str() != "0") ? "true" : "false");
+            tok->tokAt(2)->str((tok->tokAt(2)->str() != "0") ? "true" : "false");
             ret = true;
         }
         Token *tok2 = tok->tokAt(2);
@@ -2149,7 +2149,7 @@ bool Tokenizer::simplifyVarDecl()
 
         else if (Token::Match(tok2, "%type% * %var% ,|="))
         {
-            if (tok2->next()->next()->str() != "operator")
+            if (tok2->tokAt(2)->str() != "operator")
                 tok2 = tok2->tokAt(3);    // The ',' token
             else
                 tok2 = NULL;
@@ -2359,7 +2359,7 @@ bool Tokenizer::simplifyNot()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "if|while ( not %var%"))
-            tok->next()->next()->str("!");
+            tok->tokAt(2)->str("!");
         if (Token::Match(tok, "&& not %var%"))
             tok->next()->str("!");
         if (Token::Match(tok, "|| not %var%"))

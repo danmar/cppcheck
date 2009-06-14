@@ -935,7 +935,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::Match(tok2->next(), "{ %var% ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(2));
-                Token::eraseTokens(tok2->next()->next(), tok2->tokAt(4));
+                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(4));
                 done = false;
             }
             if (Token::Match(tok2->next(), "{ %var% %var% ; }"))
@@ -1135,7 +1135,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::simpleMatch(tok2->next(), "do { alloc ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
-                Token::eraseTokens(tok2->next()->next(), tok2->tokAt(4));
+                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(4));
                 done = false;
             }
 
@@ -1161,7 +1161,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::Match(tok2->next(), "loop { %var% ; break ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
-                Token::eraseTokens(tok2->next()->next(), tok2->tokAt(6));
+                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(6));
                 done = false;
             }
 
@@ -1210,7 +1210,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             // Reduce "[;{}] return ; %var%" => "[;{}] return ;"
             if (Token::Match(tok2, "[;{}] return ; %var%"))
             {
-                Token::eraseTokens(tok2->next()->next(), tok2->tokAt(4));
+                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(4));
                 done = false;
             }
 
@@ -1342,7 +1342,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                         if (Token::simpleMatch(tok2, "break ;"))
                         {
                             tok2->str(";");
-                            tok2 = tok2->next()->next();
+                            tok2 = tok2->tokAt(2);
                         }
                     }
                 }
