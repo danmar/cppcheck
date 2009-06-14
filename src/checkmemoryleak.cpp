@@ -656,7 +656,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
                 else if (tok->next() &&
                          tok->next()->link() &&
-                         Token::simpleMatch(tok->next()->link()->previous()->previous()->previous(), std::string("&& ! " + varnameStr).c_str()))
+                         Token::simpleMatch(tok->next()->link()->tokAt(-3), std::string("&& ! " + varnameStr).c_str()))
                 {
                     addtoken("if(!var)");
                 }
