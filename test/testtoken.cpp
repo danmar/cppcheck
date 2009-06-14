@@ -51,7 +51,7 @@ private:
 
         ASSERT_EQUALS(last->str(), "3");
         ASSERT_EQUALS(last->previous()->str(), "2");
-        ASSERT_EQUALS(last->previous()->previous()->str(), "1");
+        ASSERT_EQUALS(last->tokAt(-2)->str(), "1");
         if (token->previous())
             ASSERT_EQUALS("Null was expected", "");
 

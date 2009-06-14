@@ -1865,10 +1865,10 @@ bool Tokenizer::simplifyQuestionMark()
         if (tok->str() != "?")
             continue;
 
-        if (!tok->previous() || !tok->previous()->previous())
+        if (!tok->previous() || !tok->tokAt(-2))
             continue;
 
-        if (!Token::Match(tok->previous()->previous(), "[=,(]"))
+        if (!Token::Match(tok->tokAt(-2), "[=,(]"))
             continue;
 
         if (!Token::Match(tok->previous(), "%bool%") &&
@@ -1884,7 +1884,7 @@ bool Tokenizer::simplifyQuestionMark()
                 continue;
 
             end = end->next();
-            tok = tok->previous()->previous();
+            tok = tok->tokAt(-2);
             while (tok->next() != end)
             {
                 tok->deleteNext();
@@ -2564,7 +2564,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
             // We have "(( *something* ))", remove the inner
             // paranthesis
             tok->deleteNext();
-            tok->link()->previous()->previous()->deleteNext();
+            tok->link()->tokAt(-2)->deleteNext();
             ret = true;
         }
 
