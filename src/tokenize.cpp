@@ -104,7 +104,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     {
         _tokens = new Token;
         _tokensBack = _tokens;
-        _tokensBack->str(str2.str().c_str());
+        _tokensBack->str(str2.str());
     }
 
     _tokensBack->linenr(lineno);
@@ -841,7 +841,7 @@ void Tokenizer::setVarId()
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->varId() == tok->varId() && Token::simpleMatch(tok2->next(), pattern.c_str()))
-                    tok2->next()->next()->varId(_varId);
+                    tok2->tokAt(2)->varId(_varId);
             }
         }
     }
@@ -1267,7 +1267,7 @@ void Tokenizer::simplifyTokenList()
         {
             std::ostringstream str;
             str << SizeOfType(tok->strAt(2));
-            tok->str(str.str().c_str());
+            tok->str(str.str());
 
             for (int i = 0; i < 3; i++)
             {
@@ -1289,7 +1289,7 @@ void Tokenizer::simplifyTokenList()
             {
                 std::ostringstream str;
                 str << size;
-                tok->str(str.str().c_str());
+                tok->str(str.str());
                 for (int i = 0; i < 3; i++)
                 {
                     tok->deleteNext();
@@ -1317,7 +1317,7 @@ void Tokenizer::simplifyTokenList()
             {
                 std::ostringstream ostr;
                 ostr << sz;
-                tok->str(ostr.str().c_str());
+                tok->str(ostr.str());
                 while (tok->next()->str() != ")")
                     tok->deleteNext();
                 tok->deleteNext();
@@ -1366,7 +1366,7 @@ void Tokenizer::simplifyTokenList()
             {
                 std::ostringstream str;
                 str << total_size;
-                tok2->str(str.str().c_str());
+                tok2->str(str.str());
                 // Delete the other tokens..
                 for (int i = 0; i < 3; i++)
                 {
@@ -1472,7 +1472,7 @@ void Tokenizer::simplifyTokenList()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "case %any% : %var%"))
-            tok->next()->next()->insertToken(";");
+            tok->tokAt(2)->insertToken(";");
         if (Token::Match(tok, "default : %var%"))
             tok->next()->insertToken(";");
     }
@@ -1785,7 +1785,7 @@ bool Tokenizer::simplifyConditions()
         if (Token::Match(tok, "if|while ( %num%") &&
             (tok->tokAt(3)->str() == ")" || tok->tokAt(3)->str() == "||" || tok->tokAt(3)->str() == "&&"))
         {
-            tok->next()->next()->str((tok->tokAt(2)->str() != "0") ? "true" : "false");
+            tok->tokAt(2)->str((tok->tokAt(2)->str() != "0") ? "true" : "false");
             ret = true;
         }
         Token *tok2 = tok->tokAt(2);
@@ -1875,10 +1875,10 @@ bool Tokenizer::simplifyQuestionMark()
         if (tok->str() != "?")
             continue;
 
-        if (!tok->previous() || !tok->previous()->previous())
+        if (!tok->previous() || !tok->tokAt(-2))
             continue;
 
-        if (!Token::Match(tok->previous()->previous(), "[=,(]"))
+        if (!Token::Match(tok->tokAt(-2), "[=,(]"))
             continue;
 
         if (!Token::Match(tok->previous(), "%bool%") &&
@@ -1894,7 +1894,7 @@ bool Tokenizer::simplifyQuestionMark()
                 continue;
 
             end = end->next();
-            tok = tok->previous()->previous();
+            tok = tok->tokAt(-2);
             while (tok->next() != end)
             {
                 tok->deleteNext();
@@ -2159,7 +2159,7 @@ bool Tokenizer::simplifyVarDecl()
 
         else if (Token::Match(tok2, "%type% * %var% ,|="))
         {
-            if (tok2->next()->next()->str() != "operator")
+            if (tok2->tokAt(2)->str() != "operator")
                 tok2 = tok2->tokAt(3);    // The ',' token
             else
                 tok2 = NULL;
@@ -2344,7 +2344,7 @@ bool Tokenizer::simplifyIfNot()
         if (Token::Match(tok, "%var% == 0"))
         {
             tok->deleteNext();
-            tok->next()->str(tok->str().c_str());
+            tok->next()->str(tok->str());
             tok->str("!");
             ret = true;
         }
@@ -2369,7 +2369,7 @@ bool Tokenizer::simplifyNot()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "if|while ( not %var%"))
-            tok->next()->next()->str("!");
+            tok->tokAt(2)->str("!");
         if (Token::Match(tok, "&& not %var%"))
             tok->next()->str("!");
         if (Token::Match(tok, "|| not %var%"))
@@ -2574,7 +2574,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
             // We have "(( *something* ))", remove the inner
             // paranthesis
             tok->deleteNext();
-            tok->link()->previous()->previous()->deleteNext();
+            tok->link()->tokAt(-2)->deleteNext();
             ret = true;
         }
 

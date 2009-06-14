@@ -86,9 +86,7 @@ private:
               "public:\n"
               "    int i;\n"
               "};\n");
-        std::string actual(errout.str());
-        std::string expected("[test.cpp:1]: (style) The class 'Fred' has no constructor\n");
-        ASSERT_EQUALS(expected, actual);
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' has no constructor\n", errout.str());
     }
 
 
@@ -186,8 +184,7 @@ private:
               "    { i = fred.i; return *this; }\n"
               "};\n");
 
-        std::string err(errout.str());
-        ASSERT_EQUALS("", err);
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -239,8 +236,7 @@ private:
               "    };\n"
               "}\n");
 
-        std::string err(errout.str());
-        ASSERT_EQUALS("", err);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_chained_assign()
@@ -260,8 +256,7 @@ private:
               "    m_iMyInt1 = m_iMyInt2 = 0;\n"
               "}\n");
 
-        std::string err(errout.str());
-        ASSERT_EQUALS("", err);
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -295,8 +290,7 @@ private:
               "    m_iMyInt = 0;\n"
               "}\n");
 
-        std::string err(errout.str());
-        ASSERT_EQUALS("", err);
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -656,7 +656,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
                 else if (tok->next() &&
                          tok->next()->link() &&
-                         Token::simpleMatch(tok->next()->link()->previous()->previous()->previous(), std::string("&& ! " + varnameStr).c_str()))
+                         Token::simpleMatch(tok->next()->link()->tokAt(-3), std::string("&& ! " + varnameStr).c_str()))
                 {
                     addtoken("if(!var)");
                 }
@@ -935,13 +935,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::Match(tok2->next(), "{ %var% ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(2));
-                Token::eraseTokens(tok2->next()->next(), tok2->tokAt(4));
+                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(4));
                 done = false;
             }
             if (Token::Match(tok2->next(), "{ %var% %var% ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(2));
-                Token::eraseTokens(tok2->next()->next()->next(), tok2->tokAt(5));
+                Token::eraseTokens(tok2->tokAt(3), tok2->tokAt(5));
                 done = false;
             }
 
@@ -1125,7 +1125,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
             if (! _settings->_showAll && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
             {
-                tok2 = tok2->next()->next()->next();
+                tok2 = tok2->tokAt(3);
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
@@ -1135,7 +1135,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::simpleMatch(tok2->next(), "do { alloc ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
-                Token::eraseTokens(tok2->next()->next(), tok2->tokAt(4));
+                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(4));
                 done = false;
             }
 
@@ -1152,7 +1152,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 // erase "loop {"
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 // erase "if break|continue ; }"
-                tok2 = tok2->next()->next()->next()->next();
+                tok2 = tok2->tokAt(4);
                 Token::eraseTokens(tok2, tok2->tokAt(5));
                 done = false;
             }
@@ -1161,7 +1161,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::Match(tok2->next(), "loop { %var% ; break ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
-                Token::eraseTokens(tok2->next()->next(), tok2->tokAt(6));
+                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(6));
                 done = false;
             }
 
@@ -1210,14 +1210,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             // Reduce "[;{}] return ; %var%" => "[;{}] return ;"
             if (Token::Match(tok2, "[;{}] return ; %var%"))
             {
-                Token::eraseTokens(tok2->next()->next(), tok2->tokAt(4));
+                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(4));
                 done = false;
             }
 
             // Reduce "[;{}] return use ; %var%" => "[;{}] return use ;"
             if (Token::Match(tok2, "[;{}] return use ; %var%"))
             {
-                Token::eraseTokens(tok2->next()->next()->next(), tok2->tokAt(5));
+                Token::eraseTokens(tok2->tokAt(3), tok2->tokAt(5));
                 done = false;
             }
 
@@ -1342,7 +1342,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                         if (Token::simpleMatch(tok2, "break ;"))
                         {
                             tok2->str(";");
-                            tok2 = tok2->next()->next();
+                            tok2 = tok2->tokAt(2);
                         }
                     }
                 }

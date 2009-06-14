@@ -26,6 +26,8 @@ class Token
 public:
     Token();
     ~Token();
+
+    void str(const std::string &s);
     void str(const char s[]);
 
     void concatStr(std::string const& b);

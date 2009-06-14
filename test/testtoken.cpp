@@ -42,16 +42,16 @@ private:
         token->str("1");
         token->insertToken("2");
         token->next()->insertToken("3");
-        Token *last = token->next()->next();
+        Token *last = token->tokAt(2);
         ASSERT_EQUALS(token->str(), "1");
         ASSERT_EQUALS(token->next()->str(), "2");
-        ASSERT_EQUALS(token->next()->next()->str(), "3");
+        ASSERT_EQUALS(token->tokAt(2)->str(), "3");
         if (last->next())
             ASSERT_EQUALS("Null was expected", "");
 
         ASSERT_EQUALS(last->str(), "3");
         ASSERT_EQUALS(last->previous()->str(), "2");
-        ASSERT_EQUALS(last->previous()->previous()->str(), "1");
+        ASSERT_EQUALS(last->tokAt(-2)->str(), "1");
         if (token->previous())
             ASSERT_EQUALS("Null was expected", "");
 
