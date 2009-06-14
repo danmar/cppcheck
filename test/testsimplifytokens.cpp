@@ -93,6 +93,7 @@ private:
         TEST_CASE(template7);
         TEST_CASE(template8);
         TEST_CASE(template9);
+        TEST_CASE(template10);
 
         TEST_CASE(namespaces);
 
@@ -826,6 +827,26 @@ private:
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
+    void template10()
+    {
+        const char code[] = "template <int ui, typename T> T * foo()\n"
+                            "{ return new T[ui]; }\n"
+                            "\n"
+                            "void f ( )\n"
+                            "{\n"
+                            "    foo<3,int>();\n"
+                            "}\n";
+
+        // The expected result..
+        const std::string expected(" template < int ui , typename T > T * foo ( )"
+                                   " { return new T [ ui ] ; }"
+                                   " void f ( )"
+                                   " {"
+                                   " foo<3,int> ( ) ;"
+                                   " }"
+                                   " int * foo<3,int> ( ) { return new int [ 3 ] ; }");
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
 
 
 
