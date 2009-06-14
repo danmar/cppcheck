@@ -115,6 +115,18 @@ protected slots:
     */
     void Context(int application);
 
+    /**
+    * @brief Slot for context menu item to copy filename to clipboard
+    *
+    */
+    void CopyFilename();
+
+    /**
+    * @brief Slot for context menu item to copy full path to clipboard
+    *
+    */
+    void CopyFullPath();
+
 protected:
 
     /**
@@ -157,13 +169,20 @@ protected:
     QString SeverityToIcon(const QString &severity);
 
     /**
-    * @brief Helper function to open an error within target with application
-    *
+    * @brief Helper function to open an error within target with application*
     *
     * @param target Error tree item to open
     * @param application Index of the application to open with
     */
     void StartApplication(QStandardItem *target, int application);
+
+    /**
+    * @brief Helper function to copy filename/full path to the clipboard
+    *
+    * @param target Error tree item to open
+    * @param fullpath Are we copying full path or only filename?
+    */
+    void CopyPath(QStandardItem *target, bool fullPath);
 
     /**
     * @brief Context menu event (user right clicked on the tree)
@@ -254,11 +273,11 @@ protected:
     /**
     * @brief Ensures there's a item in the model for the specified file
     *
-    * @param name Filename
+    * @param fullpath Full path to the file item.
     * @param hide is the error (we want this file item for) hidden?
     * @return QStandardItem to be used as a parent for all errors for specified file
     */
-    QStandardItem *EnsureFileItem(const QString &name, bool hide);
+    QStandardItem *EnsureFileItem(const QString &fullpath, bool hide);
 
     /**
     * @brief Show a file item

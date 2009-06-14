@@ -18,12 +18,15 @@
 
 
 #include "resultstree.h"
+#include <QApplication>
 #include <QDebug>
 #include <QMenu>
 #include <QSignalMapper>
 #include <QProcess>
 #include <QDir>
 #include <QMessageBox>
+#include <QFileInfo>
+#include <QClipboard>
 
 ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
         mSettings(settings),
@@ -86,7 +89,7 @@ void ResultsTree::AddErrorItem(const QString &file,
 
     //Create the base item for the error and ensure it has a proper
     //file item as a parent
-    QStandardItem *item = AddBacktraceFiles(EnsureFileItem(realfile, hide),
+    QStandardItem *item = AddBacktraceFiles(EnsureFileItem(files[0], hide),
                                             realfile,
                                             lines[0].toInt(),
                                             severity,
@@ -290,9 +293,9 @@ void ResultsTree::RefreshTree()
     }
 }
 
-
-QStandardItem *ResultsTree::EnsureFileItem(const QString &name, bool hide)
+QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, bool hide)
 {
+    QString name = StripPath(fullpath, false);
     QStandardItem *item = FindFileItem(name);
 
     if (item)
@@ -303,6 +306,10 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &name, bool hide)
     item = CreateItem(name);
     item->setIcon(QIcon(":images/text-x-generic.png"));
 
+    //Add user data to that item
+    QMap<QString, QVariant> data;
+    data["files"] = fullpath;
+    item->setData(QVariant(data));
     mModel.appendRow(item);
 
     setRowHidden(mModel.rowCount() - 1, QModelIndex(), hide);
@@ -325,18 +332,19 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
     if (index.isValid())
     {
         mContextItem = mModel.itemFromIndex(index);
+
+        //Create a new context menu
+        QMenu menu(this);
+
+        //Store all applications in a list
+        QList<QAction*> actions;
+
+        //Create a signal mapper so we don't have to store data to class
+        //member variables
+        QSignalMapper *signalMapper = new QSignalMapper(this);
+
         if (mContextItem && mApplications.GetApplicationCount() > 0 && mContextItem->parent())
         {
-
-            //Create a new context menu
-            QMenu menu(this);
-            //Store all applications in a list
-            QList<QAction*> actions;
-
-            //Create a signal mapper so we don't have to store data to class
-            //member variables
-            QSignalMapper *signalMapper = new QSignalMapper(this);
-
             //Go through all applications and add them to the context menu
             for (int i = 0;i < mApplications.GetApplicationCount();i++)
             {
@@ -358,17 +366,38 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
             connect(signalMapper, SIGNAL(mapped(int)),
                     this, SLOT(Context(int)));
+        }
 
-            //Start the menu
-            menu.exec(e->globalPos());
+        // Add menuitems to copy full path/filename to clipboard
+        if (mContextItem)
+        {
+            if (mApplications.GetApplicationCount() > 0)
+            {
+                menu.addSeparator();
+            }
 
+            //Create an action for the application
+            QAction *copyfilename = new QAction(tr("Copy filename"), &menu);
+            QAction *copypath = new QAction(tr("Copy full path"), &menu);
+
+            menu.addAction(copyfilename);
+            menu.addAction(copypath);
+
+            connect(copyfilename, SIGNAL(triggered()), this, SLOT(CopyFilename()));
+            connect(copypath, SIGNAL(triggered()), this, SLOT(CopyFullPath()));
+        }
+
+        //Start the menu
+        menu.exec(e->globalPos());
+
+        if (mContextItem && mApplications.GetApplicationCount() > 0 && mContextItem->parent())
+        {
             //Disconnect all signals
             for (int i = 0;i < actions.size();i++)
             {
 
                 disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
             }
-
 
             disconnect(signalMapper, SIGNAL(mapped(int)),
                        this, SLOT(Context(int)));
@@ -444,6 +473,15 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
     }
 }
 
+void ResultsTree::CopyFilename()
+{
+    CopyPath(mContextItem, false);
+}
+
+void ResultsTree::CopyFullPath()
+{
+    CopyPath(mContextItem, true);
+}
 
 void ResultsTree::Context(int application)
 {
@@ -453,6 +491,34 @@ void ResultsTree::Context(int application)
 void ResultsTree::QuickStartApplication(const QModelIndex &index)
 {
     StartApplication(mModel.itemFromIndex(index), 0);
+}
+
+void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
+{
+    if (target)
+    {
+        QVariantMap data = target->data().toMap();
+        QString pathStr;
+
+        //Replace (file) with filename
+        QStringList files = data["files"].toStringList();
+        if (files.size() > 0)
+        {
+            pathStr = files[0];
+            if (!fullPath)
+            {
+                QFileInfo fi(pathStr);
+                pathStr = fi.fileName();
+            }
+        }
+        else
+        {
+            qDebug("Failed to get filename!");
+        }
+
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(pathStr);
+    }
 }
 
 QString ResultsTree::SeverityToIcon(const QString &severity)
