@@ -414,8 +414,7 @@ private:
               "{\n"
               "    str[10] = 0;\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS("[test.cpp:10]: (all) Array index out of bounds\n", err);
+        ASSERT_EQUALS("[test.cpp:10]: (all) Array index out of bounds\n", errout.str());
     }
 
 
@@ -456,8 +455,7 @@ private:
               "    for (i = 0; i <= 10; ++i)\n"
               "        a[i] = 0;\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS("[test.cpp:7]: (all) Buffer overrun\n", err);
+        ASSERT_EQUALS("[test.cpp:7]: (all) Buffer overrun\n", errout.str());
     }
 
 

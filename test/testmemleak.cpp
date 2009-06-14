@@ -1222,8 +1222,8 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n", true);
-        std::string err(errout.str());
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: str\n", err);
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: str\n",
+                      errout.str());
     }
 
 
@@ -1239,8 +1239,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        std::string err(errout.str());
-        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: p\n", err);
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: p\n", errout.str());
     }
 
 
@@ -1258,8 +1257,7 @@ private:
               "    char *p = new char[100];\n"
               "    foo(p);\n"
               "}\n");
-        std::string err(errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p\n", err);
+        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: p\n", errout.str());
     }
 
 
@@ -1471,9 +1469,7 @@ private:
               "    return;\n"
               "}\n");
 
-        std::string err(errout.str());
-
-        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: s2\n", err);
+        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: s2\n", errout.str());
     }
 
 
@@ -1995,9 +1991,7 @@ private:
               "    memset(&(out[0]), 0, 1);\n"
               "}\n");
 
-        std::string err(errout.str());
-
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: out\n", err);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: out\n", errout.str());
     }
 
     void strndup_function()
