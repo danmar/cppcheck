@@ -571,13 +571,23 @@ void Tokenizer::simplifyTemplates()
                 type.push_back(tok->str());
         }
 
+        // bail out if the end of the file was reached
         if (!tok)
             break;
 
-        // name of template function/class..
-        const std::string name(tok->strAt(2));
+        // if this is a template function, get the position of the function name
+        unsigned int pos = 0;
+        if (Token::Match(tok, "> %type% *| %var% ("))
+            pos = 2;
+        else if (Token::Match(tok, "> %type% %type% *| %var% ("))
+            pos = 3;
+        if (pos > 0 && tok->tokAt(pos)->str() == "*")
+            ++pos;
 
-        const bool isfunc(tok->strAt(3)[0] == '(');
+        // name of template function/class..
+        const std::string name(tok->strAt(pos > 0 ? pos : 2));
+
+        const bool isfunc(pos > 0);
 
         // locate template usage..
 
