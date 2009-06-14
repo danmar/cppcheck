@@ -941,7 +941,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::Match(tok2->next(), "{ %var% %var% ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(2));
-                Token::eraseTokens(tok2->next()->next()->next(), tok2->tokAt(5));
+                Token::eraseTokens(tok2->tokAt(3), tok2->tokAt(5));
                 done = false;
             }
 
@@ -1125,7 +1125,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
             if (! _settings->_showAll && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
             {
-                tok2 = tok2->next()->next()->next();
+                tok2 = tok2->tokAt(3);
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
@@ -1217,7 +1217,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             // Reduce "[;{}] return use ; %var%" => "[;{}] return use ;"
             if (Token::Match(tok2, "[;{}] return use ; %var%"))
             {
-                Token::eraseTokens(tok2->next()->next()->next(), tok2->tokAt(5));
+                Token::eraseTokens(tok2->tokAt(3), tok2->tokAt(5));
                 done = false;
             }
 
