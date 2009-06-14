@@ -1152,7 +1152,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 // erase "loop {"
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 // erase "if break|continue ; }"
-                tok2 = tok2->next()->next()->next()->next();
+                tok2 = tok2->tokAt(4);
                 Token::eraseTokens(tok2, tok2->tokAt(5));
                 done = false;
             }
