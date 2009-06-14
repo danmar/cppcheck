@@ -513,7 +513,7 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
 std::string Preprocessor::getdef(std::string line, bool def)
 {
     // If def is true, the line must start with "#ifdef"
-    if (def && line.find("#ifdef ") != 0 && line.find("#if ") != 0 && line.find("#elif ") != 0)
+    if (def && line.find("#ifdef ") != 0 && line.find("#if ") != 0 && line.find("#elif ") != 0 && line.find("#if defined ") != 0)
     {
         return "";
     }
@@ -525,7 +525,10 @@ std::string Preprocessor::getdef(std::string line, bool def)
     }
 
     // Remove the "#ifdef" or "#ifndef"
-    line.erase(0, line.find(" "));
+    if (line.find("#if defined ") == 0)
+        line.erase(0, 11);
+    else
+        line.erase(0, line.find(" "));
 
     // Remove all spaces.
     while (line.find(" ") != std::string::npos)
