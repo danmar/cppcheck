@@ -54,43 +54,8 @@ MainWindow::MainWindow() :
         mActionSave(tr("Save results to a file"), this),
         mResults(mSettings, mApplications)
 {
-    QMenu *menu = menuBar()->addMenu(tr("&File"));
-    menu->addAction(&mActionCheckFiles);
-    menu->addAction(&mActionCheckDirectory);
-    menu->addAction(&mActionReCheck);
-    menu->addAction(&mActionStop);
-    menu->addAction(&mActionClearResults);
-    menu->addAction(&mActionSave);
-    menu->addSeparator();
-    menu->addAction(&mActionExit);
-
-    QMenu *menuview = menuBar()->addMenu(tr("&View"));
-    mActionShowAll.setCheckable(true);
-    mActionShowSecurity.setCheckable(true);
-    mActionShowStyle.setCheckable(true);
-    mActionShowUnused.setCheckable(true);
-    mActionShowErrors.setCheckable(true);
-
-    menuview->addAction(&mActionShowAll);
-    menuview->addAction(&mActionShowSecurity);
-    menuview->addAction(&mActionShowStyle);
-    menuview->addAction(&mActionShowUnused);
-    menuview->addAction(&mActionShowErrors);
-    menuview->addSeparator();
-    menuview->addAction(&mActionShowCheckAll);
-    menuview->addAction(&mActionShowUncheckAll);
-    menuview->addSeparator();
-    menuview->addAction(&mActionShowCollapseAll);
-    menuview->addAction(&mActionShowExpandAll);
-
-    QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
-    menuprogram->addAction(&mActionSettings);
-
-    QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
-    menuHelp->addAction(&mActionShowLicense);
-    menuHelp->addAction(&mActionShowAuthors);
-    menuHelp->addSeparator();
-    menuHelp->addAction(&mActionAbout);
+    CreateMenus();
+    CreateToolbar();
 
     setCentralWidget(&mResults);
 
@@ -118,12 +83,9 @@ MainWindow::MainWindow() :
     connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
     connect(&mActionShowLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
     connect(&mActionShowAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
+
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     connect(&mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
-
-    //Toolbar
-    QToolBar *toolbar =  addToolBar("Toolbar");
-    toolbar->setIconSize(QSize(22, 22));
 
     mActionCheckDirectory.setIcon(QIcon(":icon.png"));
     mActionReCheck.setIcon(QIcon(":images/view-refresh.png"));
@@ -132,14 +94,6 @@ MainWindow::MainWindow() :
     mActionStop.setIcon(QIcon(":images/process-stop.png"));
     mActionSave.setIcon(QIcon(":images/media-floppy.png"));
     mActionClearResults.setIcon(QIcon(":images/edit-clear.png"));
-
-    toolbar->addAction(&mActionCheckDirectory);
-    toolbar->addAction(&mActionSave);
-    toolbar->addAction(&mActionReCheck);
-    toolbar->addAction(&mActionStop);
-    toolbar->addAction(&mActionClearResults);
-    toolbar->addAction(&mActionSettings);
-    toolbar->addAction(&mActionAbout);
 
     mActionReCheck.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
     mActionCheckDirectory.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
@@ -159,6 +113,65 @@ MainWindow::MainWindow() :
 MainWindow::~MainWindow()
 {
     SaveSettings();
+}
+
+void MainWindow::CreateMenus()
+{
+    // File-menu
+    QMenu *menu = menuBar()->addMenu(tr("&File"));
+    menu->addAction(&mActionCheckFiles);
+    menu->addAction(&mActionCheckDirectory);
+    menu->addAction(&mActionReCheck);
+    menu->addAction(&mActionStop);
+    menu->addAction(&mActionClearResults);
+    menu->addAction(&mActionSave);
+    menu->addSeparator();
+    menu->addAction(&mActionExit);
+
+    // View-menu
+    QMenu *menuview = menuBar()->addMenu(tr("&View"));
+    menuview->addAction(&mActionShowAll);
+    menuview->addAction(&mActionShowSecurity);
+    menuview->addAction(&mActionShowStyle);
+    menuview->addAction(&mActionShowUnused);
+    menuview->addAction(&mActionShowErrors);
+    menuview->addSeparator();
+    menuview->addAction(&mActionShowCheckAll);
+    menuview->addAction(&mActionShowUncheckAll);
+    menuview->addSeparator();
+    menuview->addAction(&mActionShowCollapseAll);
+    menuview->addAction(&mActionShowExpandAll);
+
+    mActionShowAll.setCheckable(true);
+    mActionShowSecurity.setCheckable(true);
+    mActionShowStyle.setCheckable(true);
+    mActionShowUnused.setCheckable(true);
+    mActionShowErrors.setCheckable(true);
+
+    // Program-menu
+    QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
+    menuprogram->addAction(&mActionSettings);
+
+    // Help-menu
+    QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
+    menuHelp->addAction(&mActionShowLicense);
+    menuHelp->addAction(&mActionShowAuthors);
+    menuHelp->addSeparator();
+    menuHelp->addAction(&mActionAbout);
+}
+
+void MainWindow::CreateToolbar()
+{
+    QToolBar *toolbar = addToolBar("Toolbar");
+    toolbar->setIconSize(QSize(22, 22));
+
+    toolbar->addAction(&mActionCheckDirectory);
+    toolbar->addAction(&mActionSave);
+    toolbar->addAction(&mActionReCheck);
+    toolbar->addAction(&mActionStop);
+    toolbar->addAction(&mActionClearResults);
+    toolbar->addAction(&mActionSettings);
+    toolbar->addAction(&mActionAbout);
 }
 
 void MainWindow::LoadSettings()

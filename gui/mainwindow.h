@@ -153,6 +153,16 @@ protected slots:
 protected:
 
     /**
+    * @brief Create main window menus.
+    */
+    void CreateMenus();
+
+    /**
+    * @brief Create main window toolbar.
+    */
+    void CreateToolbar();
+
+    /**
     * @brief Event coming when application is about to close.
     */
     virtual void closeEvent(QCloseEvent *event);
