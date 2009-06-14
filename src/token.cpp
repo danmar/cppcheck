@@ -44,7 +44,7 @@ Token::~Token()
 
 }
 
-void Token::str(const char s[])
+void Token::str(const std::string &s)
 {
     _str = s;
     _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
@@ -55,6 +55,11 @@ void Token::str(const char s[])
         _isBoolean = false;
 
     _varId = 0;
+}
+
+void Token::str(const char s[])
+{
+	str(std::string(s));
 }
 
 void Token::concatStr(std::string const& b)

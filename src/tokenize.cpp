@@ -104,7 +104,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     {
         _tokens = new Token;
         _tokensBack = _tokens;
-        _tokensBack->str(str2.str().c_str());
+        _tokensBack->str(str2.str());
     }
 
     _tokensBack->linenr(lineno);
@@ -1257,7 +1257,7 @@ void Tokenizer::simplifyTokenList()
         {
             std::ostringstream str;
             str << SizeOfType(tok->strAt(2));
-            tok->str(str.str().c_str());
+            tok->str(str.str());
 
             for (int i = 0; i < 3; i++)
             {
@@ -1279,7 +1279,7 @@ void Tokenizer::simplifyTokenList()
             {
                 std::ostringstream str;
                 str << size;
-                tok->str(str.str().c_str());
+                tok->str(str.str());
                 for (int i = 0; i < 3; i++)
                 {
                     tok->deleteNext();
@@ -1307,7 +1307,7 @@ void Tokenizer::simplifyTokenList()
             {
                 std::ostringstream ostr;
                 ostr << sz;
-                tok->str(ostr.str().c_str());
+                tok->str(ostr.str());
                 while (tok->next()->str() != ")")
                     tok->deleteNext();
                 tok->deleteNext();
@@ -1356,7 +1356,7 @@ void Tokenizer::simplifyTokenList()
             {
                 std::ostringstream str;
                 str << total_size;
-                tok2->str(str.str().c_str());
+                tok2->str(str.str());
                 // Delete the other tokens..
                 for (int i = 0; i < 3; i++)
                 {
@@ -2334,7 +2334,7 @@ bool Tokenizer::simplifyIfNot()
         if (Token::Match(tok, "%var% == 0"))
         {
             tok->deleteNext();
-            tok->next()->str(tok->str().c_str());
+            tok->next()->str(tok->str());
             tok->str("!");
             ret = true;
         }
