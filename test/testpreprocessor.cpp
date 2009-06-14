@@ -726,13 +726,25 @@ private:
 
     void preprocessor_undef()
     {
-        const char filedata[] = "#define AAA int a;\n"
-                                "#undef AAA\n"
-                                "#define AAA char b=0;\n"
-                                "AAA\n";
+        {
+            const char filedata[] = "#define AAA int a;\n"
+                                    "#undef AAA\n"
+                                    "#define AAA char b=0;\n"
+                                    "AAA\n";
 
-        // Compare results..
-        ASSERT_EQUALS("\n\n\nchar b=0;\n", OurPreprocessor::expandMacros(filedata));
+            // Compare results..
+            ASSERT_EQUALS("\n\n\nchar b=0;\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            // ticket #403
+            const char filedata[] = "#define z p[2]\n"
+                                    "#undef z\n"
+                                    "int z;\n"
+                                    "z = 0;\n";
+
+            ASSERT_EQUALS("\n\nint z;\nz = 0;\n", OurPreprocessor::getcode(filedata, "", "", NULL));
+        }
     }
 
     void defdef()

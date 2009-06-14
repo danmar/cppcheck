@@ -703,7 +703,8 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
         }
         else if (line.find("#file \"") == 0 ||
                  line.find("#endfile") == 0 ||
-                 line.find("#define") == 0)
+                 line.find("#define") == 0 ||
+                 line.find("#undef") == 0)
         {
             // We must not remove #file tags or line numbers
             // are corrupted. File tags are removed by the tokenizer.
@@ -712,7 +713,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
                  line[0] == '#')
         {
             // Remove #if, #else, #pragma etc, leaving only
-            // #define, #file and #endfile. and also lines
+            // #define, #undef, #file and #endfile. and also lines
             // which are not part of this configuration.
             line = "";
         }
