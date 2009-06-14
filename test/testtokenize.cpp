@@ -144,6 +144,7 @@ private:
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
+        TEST_CASE(vardecl4);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
 
@@ -2041,6 +2042,27 @@ private:
         const char code[] = "void f() { char * p = foo<10,char>(); }";
         const std::string actual(tokenizeAndStringify(code));
         ASSERT_EQUALS("void f ( ) { char * p ; p = foo < 10 , char > ( ) ; }", actual);
+    }
+
+    void vardecl4()
+    {
+        // ticket #346
+
+        const char code1[] = "void *p = NULL;";
+        const char res1[]  = "void * p ; p = NULL ;";
+        ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
+
+        const char code2[] = "const void *p = NULL;";
+        const char res2[]  = "const void * p ; p = NULL ;";
+        ASSERT_EQUALS(res2, tokenizeAndStringify(code2));
+
+        const char code3[] = "void * const p = NULL;";
+        const char res3[]  = "void * const p ; p = NULL ;";
+        ASSERT_EQUALS(res3, tokenizeAndStringify(code3));
+
+        const char code4[] = "const void * const p = NULL;";
+        const char res4[]  = "const void * const p ; p = NULL ;";
+        ASSERT_EQUALS(res4, tokenizeAndStringify(code4));
     }
 
     void volatile_variables()

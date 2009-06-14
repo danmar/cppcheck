@@ -1544,11 +1544,17 @@ void CheckMemoryLeakInFunction::check()
             if (sz < 1)
                 sz = 1;
 
-            if (Token::Match(tok, "[{};] %type% * %var% [;=]"))
-                checkScope(tok->next(), tok->strAt(3), classmember, sz);
+            if (Token::Match(tok, "[{};] %type% * const| %var% [;=]"))
+            {
+                const int varname_tok = (tok->tokAt(3)->str() != "const" ? 3 : 4);
+                checkScope(tok->next(), tok->strAt(varname_tok), classmember, sz);
+            }
 
-            else if (Token::Match(tok, "[{};] %type% %type% * %var% [;=]"))
-                checkScope(tok->next(), tok->strAt(4), classmember, sz);
+            else if (Token::Match(tok, "[{};] %type% %type% * const| %var% [;=]"))
+            {
+                const int varname_tok = (tok->tokAt(4)->str() != "const" ? 4 : 5);
+                checkScope(tok->next(), tok->strAt(varname_tok), classmember, sz);
+            }
         }
     }
 }

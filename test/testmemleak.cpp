@@ -227,6 +227,15 @@ private:
               "    int *a = new int[10];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
+
+        // ticket #346
+        check("void f()\n"
+              "{\n"
+              "    int * const a = new int[10];\n"
+              "    const int * const b = new int[10];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n[test.cpp:5]: (error) Memory leak: b\n",
+                      errout.str());
     }
 
     void simple2()
