@@ -55,6 +55,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         if (tok->str().find(":") != std::string::npos)
             continue;
 
+        // If this is a template function, skip it
+        if (Token::simpleMatch(tok->previous(), ">"))
+            continue;
+
         const Token *funcname = 0;
 
         if (Token::Match(tok, "%type% %var% ("))

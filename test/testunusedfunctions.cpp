@@ -41,6 +41,7 @@ private:
         TEST_CASE(callback1);
         TEST_CASE(else1);
         TEST_CASE(functionpointer);
+        TEST_CASE(template1);
     }
 
     void check(const char code[])
@@ -115,6 +116,18 @@ private:
               "int main()\n"
               "{\n"
               "    f(&abc::foo);\n"
+              "    return 0\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template1()
+    {
+        check("template<class T> void foo() { }\n"
+              "\n"
+              "int main()\n"
+              "{\n"
+              "    foo<int>();\n"
               "    return 0\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
