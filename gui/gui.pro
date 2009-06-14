@@ -26,6 +26,7 @@ HEADERS += 	mainwindow.h \
 		applicationdialog.h \
 		aboutdialog.h \
 		common.h \
+		fileviewdialog.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
@@ -60,6 +61,7 @@ SOURCES += 	main.cpp \
 		applicationlist.cpp \
 		applicationdialog.cpp \
 		aboutdialog.cpp \
+		fileviewdialog.cpp \
 		../src/checkautovariables.cpp \
 		../src/checkdangerousfunctions.cpp \
 		../src/checkmemoryleak.cpp \

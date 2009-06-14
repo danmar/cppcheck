@@ -26,6 +26,7 @@
 #include <QToolBar>
 #include <QKeySequence>
 #include "aboutdialog.h"
+#include "fileviewdialog.h"
 #include "../src/filelister.h"
 #include "../src/cppcheckexecutor.h"
 
@@ -47,6 +48,8 @@ MainWindow::MainWindow() :
         mActionShowCollapseAll(tr("Collapse all"), this),
         mActionShowExpandAll(tr("Expand all"), this),
         mActionAbout(tr("About"), this),
+        mActionShowLicense(tr("License..."), this),
+        mActionShowAuthors(tr("Authors..."), this),
         mActionStop(tr("Stop checking"), this),
         mActionSave(tr("Save results to a file"), this),
         mResults(mSettings, mApplications)
@@ -84,6 +87,9 @@ MainWindow::MainWindow() :
     menuprogram->addAction(&mActionSettings);
 
     QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
+    menuHelp->addAction(&mActionShowLicense);
+    menuHelp->addAction(&mActionShowAuthors);
+    menuHelp->addSeparator();
     menuHelp->addAction(&mActionAbout);
 
     setCentralWidget(&mResults);
@@ -110,6 +116,8 @@ MainWindow::MainWindow() :
     connect(&mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
 
     connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
+    connect(&mActionShowLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
+    connect(&mActionShowAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
     connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     connect(&mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
 
@@ -434,9 +442,20 @@ void MainWindow::About()
     version.replace("Cppcheck ", "");
 
     AboutDialog *dlg = new AboutDialog(version, this);
-    dlg->show();
+    dlg->exec();
 }
 
+void MainWindow::ShowLicense()
+{
+    FileViewDialog *dlg = new FileViewDialog(":COPYING", this);
+    dlg->exec();
+}
+
+void MainWindow::ShowAuthors()
+{
+    FileViewDialog *dlg = new FileViewDialog(":AUTHORS", this);
+    dlg->exec();
+}
 
 void MainWindow::Save()
 {

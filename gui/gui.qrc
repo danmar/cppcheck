@@ -12,5 +12,8 @@
     <file>images/process-stop.png</file>
     <file>images/text-x-generic.png</file>
     <file>images/view-refresh.png</file>
+
+    <file alias="COPYING">../COPYING</file>
+    <file alias="AUTHORS">../AUTHORS</file>
 </qresource>
 </RCC>

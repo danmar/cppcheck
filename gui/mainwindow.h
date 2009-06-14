@@ -119,6 +119,17 @@ public slots:
     */
     void About();
 
+    /**
+    * @brief Slot to to show license text
+    *
+    */
+    void ShowLicense();
+
+    /**
+    * @brief Slot to to show authors list
+    *
+    */
+    void ShowAuthors();
 
     /**
     * @brief Slot to stop processing files
@@ -230,7 +241,6 @@ protected:
     */
     QAction mActionReCheck;
 
-
     /**
     * @brief Menu action to check a directory
     *
@@ -298,10 +308,22 @@ protected:
     QAction mActionShowExpandAll;
 
     /**
-    * @brief Action show about dialog
+    * @brief Action to show about dialog
     *
     */
     QAction mActionAbout;
+
+    /**
+    * @brief Action to show license text
+    *
+    */
+    QAction mActionShowLicense;
+
+    /**
+    * @brief Action to show authors list
+    *
+    */
+    QAction mActionShowAuthors;
 
     /**
     * @brief Action stop checking files
