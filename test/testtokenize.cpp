@@ -143,6 +143,7 @@ private:
 
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
+        TEST_CASE(vardecl3);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
 
@@ -2033,6 +2034,13 @@ private:
         const std::string actual(tokenizeAndStringify(code));
 
         ASSERT_EQUALS("void foo ( a , b ) unsigned int a ; unsigned int b ; { }", actual);
+    }
+
+    void vardecl3()
+    {
+        const char code[] = "void f() { char * p = foo<10,char>(); }";
+        const std::string actual(tokenizeAndStringify(code));
+        ASSERT_EQUALS("void f ( ) { char * p ; p = foo < 10 , char > ( ) ; }", actual);
     }
 
     void volatile_variables()

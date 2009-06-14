@@ -551,7 +551,7 @@ void Tokenizer::simplifyTemplates()
             if (!tok)
                 break;
         }
-        else if (Token::Match(tok->previous(), "[{};] %var% <"))
+        else if (Token::Match(tok->previous(), "[{};=] %var% <"))
         {
             used.push_back(tok);
         }
@@ -2199,14 +2199,14 @@ bool Tokenizer::simplifyVarDecl()
                 int parlevel = 0;
                 while (tok2)
                 {
-                    if (strchr("{(", tok2->str()[0]))
+                    if (strchr("{(<", tok2->str()[0]))
                     {
                         ++parlevel;
                     }
 
-                    else if (strchr("})", tok2->str()[0]))
+                    else if (strchr("})>", tok2->str()[0]))
                     {
-                        if (parlevel < 0)
+                        if (parlevel <= 0)
                             break;
                         --parlevel;
                     }

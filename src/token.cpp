@@ -59,7 +59,7 @@ void Token::str(const std::string &s)
 
 void Token::str(const char s[])
 {
-	str(std::string(s));
+    str(std::string(s));
 }
 
 void Token::concatStr(std::string const& b)
