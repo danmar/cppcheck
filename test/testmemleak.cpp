@@ -70,6 +70,15 @@ private:
                                 "{ return new char[100]; }";
             ASSERT_EQUALS(CheckMemoryLeak::NewArray, functionReturnType(code));
         }
+
+        {
+            const char code[] = "char *foo()\n"
+                                "{\n"
+                                "    char *p = new char[100];\n"
+                                "    return p;\n"
+                                "}";
+            ASSERT_EQUALS(CheckMemoryLeak::NewArray, functionReturnType(code));
+        }
     }
 };
 
@@ -1430,7 +1439,6 @@ private:
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
     }
-
 
 
 

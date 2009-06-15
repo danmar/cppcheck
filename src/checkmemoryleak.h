@@ -52,7 +52,7 @@ public:
     void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
     void MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[]);
     AllocType GetDeallocationType(const Token *tok, const char *varnames[]);
-    AllocType GetAllocationType(const Token *tok2);
+    AllocType GetAllocationType(const Token *tok2) const;
     AllocType GetReallocationType(const Token *tok2);
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
 

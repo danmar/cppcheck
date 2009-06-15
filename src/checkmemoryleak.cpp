@@ -51,7 +51,7 @@ bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok) con
 }
 //---------------------------------------------------------------------------
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::GetAllocationType(const Token *tok2)
+CheckMemoryLeak::AllocType CheckMemoryLeak::GetAllocationType(const Token *tok2) const
 {
     // What we may have...
     //     * var = (char *)malloc(10);
@@ -272,15 +272,57 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
         {
             if (parlevel != 1)
                 return No;
-            if (Token::Match(tok, ") const| { return new %type% ; }"))
-                return New;
-            if (Token::Match(tok, ") const| { return new %type% [ %any% ] ; }"))
-                return NewArray;
             break;
         }
 
         tok = tok->next();
     }
+
+    // Is this the start of a function?
+    if (!Token::Match(tok, ") const| {"))
+        return No;
+
+    while (tok->str() != "{")
+        tok = tok->next();
+    tok = tok ? tok->next() : 0;
+
+    // Inspect the statements..
+    std::string varname;
+    AllocType allocType = No;
+    while (tok)
+    {
+        // variable declaration..
+        if (Token::Match(tok, "%type% * %var% ;"))
+        {
+            tok = tok->tokAt(4);
+            continue;
+        }
+
+        if (varname.empty() && Token::Match(tok,"%var% = "))
+        {
+            varname = tok->str();
+            allocType = GetAllocationType(tok->tokAt(2));
+            if (allocType == No)
+                return No;
+            while (tok && tok->str() != ";")
+                tok = tok->next();
+            tok = tok ? tok->next() : 0;
+            continue;
+        }
+
+        if (tok->str() == "return")
+        {
+            if (varname.size() && Token::Match(tok->next(), (varname + " ;").c_str()))
+                return allocType;
+            if (Token::Match(tok, "return new %type% ;"))
+                return New;
+            if (Token::Match(tok, "return new %type% [ %any% ] ;"))
+                return NewArray;
+        }
+
+        return No;
+    }
+
     return No;
 }
 
