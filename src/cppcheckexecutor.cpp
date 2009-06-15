@@ -42,8 +42,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         _settings = cppCheck.settings();
         if (_settings._xml)
         {
-            reportErr("<?xml version=\"1.0\"?>");
-            reportErr("<results>");
+            reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
         }
 
         unsigned int returnValue = 0;
@@ -67,7 +66,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
         if (_settings._xml)
         {
-            reportErr("</results>");
+            reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
         }
 
         if (returnValue)

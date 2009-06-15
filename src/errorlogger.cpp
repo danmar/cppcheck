@@ -113,6 +113,17 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     return true;
 }
 
+std::string ErrorLogger::ErrorMessage::getXMLHeader()
+{
+    return  "<?xml version=\"1.0\"?>\n"
+            "<results>";
+}
+
+std::string ErrorLogger::ErrorMessage::getXMLFooter()
+{
+    return "</results>";
+}
+
 std::string ErrorLogger::ErrorMessage::toXML() const
 {
     std::ostringstream xml;

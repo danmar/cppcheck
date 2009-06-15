@@ -59,6 +59,10 @@ public:
         ErrorMessage(const std::list<FileLocation> &callStack, const std::string &severity, const std::string &msg, const std::string &id);
         ErrorMessage();
         std::string toXML() const;
+
+        static std::string getXMLHeader();
+        static std::string getXMLFooter();
+
         std::string toText() const;
         std::string serialize() const;
         bool deserialize(const std::string &data);
