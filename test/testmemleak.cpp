@@ -24,10 +24,60 @@
 #include "../src/checkmemoryleak.h"
 #include "testsuite.h"
 
-#include <iostream>
 #include <sstream>
 
 extern std::ostringstream errout;
+
+
+class TestMemleak : private TestFixture
+{
+public:
+    TestMemleak() : TestFixture("TestMemleak")
+    { }
+
+private:
+    void run()
+    {
+        TEST_CASE(testFunctionReturnType);
+    }
+
+    CheckMemoryLeak::AllocType functionReturnType(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        return ((const CheckMemoryLeak *)0)->functionReturnType(tokenizer.tokens());
+    }
+
+    void testFunctionReturnType()
+    {
+        {
+            const char code[] = "const char *foo()\n"
+                                "{ return 0; }";
+            ASSERT_EQUALS(CheckMemoryLeak::No, functionReturnType(code));
+        }
+
+        {
+            const char code[] = "Fred *newFred()\n"
+                                "{ return new Fred; }";
+            ASSERT_EQUALS(CheckMemoryLeak::New, functionReturnType(code));
+        }
+
+        {
+            const char code[] = "char *foo()\n"
+                                "{ return new char[100]; }";
+            ASSERT_EQUALS(CheckMemoryLeak::NewArray, functionReturnType(code));
+        }
+    }
+};
+
+static TestMemleak testMemleak;
+
+
+
+
 
 class TestMemleakInFunction : public TestFixture
 {
@@ -144,6 +194,8 @@ private:
         TEST_CASE(func12);
         TEST_CASE(func13);
         TEST_CASE(func14);
+
+        TEST_CASE(allocfunc1);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1366,37 +1418,19 @@ private:
     }
 
 
-    /*
-        void func3()
-        {
-            check( "static char *dmalloc()\n"
-                   "{\n"
-                   "    char *p = new char[100];\n"
-                   "    return p;\n"
-                   "}\n"
-                   "static void f()\n"
-                   "{\n"
-                   "    char *p = dmalloc();\n"
-                   "}\n" );
-            ASSERT_EQUALS( std::string("[test.cpp:9]: Memory leak: p\n"), errout.str() );
-        }
+    void allocfunc1()
+    {
+        check("static char *a()\n"
+              "{\n"
+              "    return new char[100];\n"
+              "}\n"
+              "static void b()\n"
+              "{\n"
+              "    char *p = a();\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
+    }
 
-
-        void func4()
-        {
-            check( "static char *dmalloc()\n"
-                   "{\n"
-                   "    char *p = new char[100];\n"
-                   "    return p;\n"
-                   "}\n"
-                   "static void f()\n"
-                   "{\n"
-                   "    char *p = dmalloc();\n"
-                   "    delete p;\n"
-                   "}\n" );
-            ASSERT_EQUALS( std::string("[test.cpp:9]: Mismatching allocation and deallocation: p\n"), errout.str() );
-        }
-    */
 
 
 

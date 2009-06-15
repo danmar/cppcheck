@@ -252,7 +252,37 @@ void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &calls
     error(callstack, "error", "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
 }
 
+CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok) const
+{
+    // Locate the start of the function..
+    unsigned int parlevel = 0;
+    while (tok)
+    {
+        if (tok->str() == "{" || tok->str() == "}")
+            return No;
 
+        if (tok->str() == "(")
+        {
+            if (parlevel != 0)
+                return No;
+            ++parlevel;
+        }
+
+        else if (tok->str() == ")")
+        {
+            if (parlevel != 1)
+                return No;
+            if (Token::Match(tok, ") const| { return new %type% ; }"))
+                return New;
+            if (Token::Match(tok, ") const| { return new %type% [ %any% ] ; }"))
+                return NewArray;
+            break;
+        }
+
+        tok = tok->next();
+    }
+    return No;
+}
 
 
 
@@ -354,6 +384,14 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             return "recursive";
     }
     callstack.push_back(tok);
+
+    // Check if this is a function that allocates memory..
+    {
+        const Token *ftok = _tokenizer->GetFunctionTokenByName(funcname.c_str());
+        AllocType a = functionReturnType(ftok);
+        if (a != No)
+            return "alloc";
+    }
 
     // how many parameters is there in the function call?
     int numpar = countParameters(tok);

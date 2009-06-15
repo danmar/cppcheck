@@ -43,7 +43,7 @@ class Token;
 
 class CheckMemoryLeak
 {
-protected:
+public:
     CheckMemoryLeak() { }
 
     /** What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
@@ -68,6 +68,9 @@ protected:
     // error message
     virtual void error(const Token *tok, const std::string &severity, const std::string &id, const std::string &msg) = 0;
     virtual void error(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg) = 0;
+
+    /** What type of allocated memory does the given function return? */
+    AllocType functionReturnType(const Token *tok) const;
 };
 
 
