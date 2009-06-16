@@ -386,8 +386,28 @@ void CheckClass::CheckConstructors(const Token *tok1, const char funcname[])
                 continue;
 
             // It's non-static and it's not initialized => error
-            if (strcmp(funcname, "operator =") == 0)
-                operatorEqVarError(constructor_token, className, var->name);
+            if (Token::simpleMatch(constructor_token, "operator = (") ||
+                Token::simpleMatch(constructor_token->tokAt(2), "operator = ("))
+            {
+                const Token *operStart = 0;
+                if (Token::simpleMatch(constructor_token, "operator = ("))
+                    operStart = constructor_token->tokAt(2);
+                else
+                    operStart = constructor_token->tokAt(4);
+
+                bool classNameUsed = false;
+                for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next())
+                {
+                    if (operTok->str() == className)
+                    {
+                        classNameUsed = true;
+                        break;
+                    }
+                }
+
+                if (classNameUsed)
+                    operatorEqVarError(constructor_token, className, var->name);
+            }
             else
                 uninitVarError(constructor_token, className, var->name);
         }

@@ -185,6 +185,25 @@ private:
               "};\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "  public:\n"
+              "  A() : i(0), j(0) {}\n"
+              "\n"
+              "  A &operator=(const int &value)\n"
+              "  {\n"
+              "    i = value;\n"
+              "    return (*this);\n"
+              "  }\n"
+              "\n"
+              "  int i;\n"
+              "  int j;\n"
+              "};\n"
+              "\n"
+              "int main() {}\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -194,7 +213,7 @@ private:
               "{\n"
               "public:\n"
               "    Fred() { i = 0; }\n"
-              "    void operator=() { }\n"
+              "    void operator=(const Fred &fred) { }\n"
               "    int i;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (all style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
@@ -206,9 +225,9 @@ private:
               "{\n"
               "public:\n"
               "    Fred() { Init(); }\n"
-              "    void operator=() { Init(); }\n"
+              "    void operator=(const Fred &fred) { Init(); }\n"
               "private:\n"
-              "    Init() { i = 0; }\n"
+              "    void Init() { i = 0; }\n"
               "    int i;\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
