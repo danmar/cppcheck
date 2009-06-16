@@ -223,5 +223,58 @@ private:
 };
 
 
+
+/**
+ * Check class variables
+ * variables that are allocated in the constructor should be deallocated in the destructor
+ */
+
+class CheckMemoryLeakStructMember : public CheckMemoryLeak, public Check
+{
+public:
+    CheckMemoryLeakStructMember() : Check()
+    { }
+
+    CheckMemoryLeakStructMember(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : Check(tokenizer, settings, errorLogger)
+    { }
+
+    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        CheckMemoryLeakStructMember checkMemoryLeak(tokenizer, settings, errorLogger);
+        checkMemoryLeak.check();
+    }
+
+    void check()
+    {
+        // TODO
+    }
+
+private:
+
+    void error(const Token *tok, const std::string &severity, const std::string &id, const std::string &msg)
+    {
+        reportError(tok, severity, id, msg);
+    }
+
+    void error(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg)
+    {
+        reportError(callstack, severity, id, msg);
+    }
+
+    void getErrorMessages()
+    { }
+
+    std::string name() const
+    {
+        return "Memory leaks (struct members)";
+    }
+
+    std::string classInfo() const
+    {
+        return "Don't forget to free struct members";
+    }
+};
+
 //---------------------------------------------------------------------------
 #endif

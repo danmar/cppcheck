@@ -2549,3 +2549,52 @@ private:
 
 static TestMemleakInClass testMemleakInClass;
 
+
+
+
+
+
+
+class TestMemleakStructMember : public TestFixture
+{
+public:
+    TestMemleakStructMember() : TestFixture("TestMemleakStructMember")
+    { }
+
+private:
+    void check(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for memory leaks..
+        Settings settings;
+        CheckMemoryLeakStructMember checkMemoryLeakStructMember(&tokenizer, &settings, this);
+        checkMemoryLeakStructMember.check();
+    }
+
+    void run()
+    {
+        TEST_CASE(test1);
+    }
+
+    void test1()
+    {
+        check("static void foo()\n"
+              "{\n"
+              "    struct ABC abc;\n"
+              "    abc.a = malloc(10);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: abc.a\n", errout.str());
+    }
+};
+
+
+static TestMemleakStructMember testMemleakStructMember;
+
