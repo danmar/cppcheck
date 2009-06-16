@@ -298,7 +298,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
             continue;
         }
 
-        if (varname.empty() && Token::Match(tok,"%var% = "))
+        if (varname.empty() && Token::Match(tok, "%var% = "))
         {
             varname = tok->str();
             allocType = GetAllocationType(tok->tokAt(2));
@@ -1025,8 +1025,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
+            // Reduce "if if" => "if"
+            else if (Token::Match(tok2, "if if|callfunc"))
+            {
+                Token::eraseTokens(tok2, tok2->tokAt(2));
+                done = false;
+            }
 
-            if (Token::simpleMatch(tok2->next(), "if"))
+            else if (Token::simpleMatch(tok2->next(), "if"))
             {
                 // Delete empty if that is not followed by an else
                 if (Token::Match(tok2->next(), "if ; !!else"))
@@ -1072,13 +1078,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     {
                         Token::eraseTokens(tok2, tok2->tokAt(2));
                     }
-                    done = false;
-                }
-
-                // Reduce "if if" => "if"
-                else if (Token::simpleMatch(tok2, "if if"))
-                {
-                    Token::eraseTokens(tok2, tok2->tokAt(2));
                     done = false;
                 }
 
@@ -1487,7 +1486,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const char varname
     }
 
     simplifycode(tok, all);
-    // tok->printOut("simplifycode result");
+    //tok->printOut("simplifycode result");
 
     // If the variable is not allocated at all => no memory leak
     if (Token::findmatch(tok, "alloc") == 0)
