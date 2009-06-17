@@ -1322,14 +1322,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
-            // Reduce "if* alloc ; dealloc ;" => ";"
-            if (Token::simpleMatch(tok2->tokAt(2), "alloc ; dealloc ;") &&
-                tok2->next()->str().find("if") == 0)
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(5));
-                done = false;
-            }
-
             // Delete second use in "use ; use ;"
             while (Token::Match(tok2, "[;{}] use ; use ;"))
             {
