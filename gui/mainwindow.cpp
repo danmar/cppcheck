@@ -489,39 +489,32 @@ void MainWindow::ShowAuthors()
 
 void MainWindow::Save()
 {
-    QFileDialog dialog(this);
-    dialog.setFileMode(QFileDialog::AnyFile);
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    QString selectedFilter;
+    QString filter(tr("XML files (*.xml);;Text files (*.txt)"));
+    QString selectedFile = QFileDialog::getSaveFileName(this,
+                           tr("Save the report file"),
+                           QString(),
+                           filter,
+                           &selectedFilter);
 
-    QStringList filters;
-    filters << tr("XML files (*.xml)") << tr("Text files (*.txt)");
-    dialog.setNameFilters(filters);
-
-    if (dialog.exec())
+    if (!selectedFile.isEmpty())
     {
-        QStringList list = dialog.selectedFiles();
+        //Check if xml file type was selected
+        bool xml = selectedFilter == tr("XML files (*.xml)");
 
-        if (list.size() > 0)
+        //Force xml extension to the file
+        if (xml && !selectedFile.endsWith(".xml", Qt::CaseInsensitive))
         {
-            QString filename = list[0];
-
-            //Check if xml file type was selected
-            bool xml = (dialog.selectedNameFilter() == filters[0]);
-
-            //Force xml extension to the file
-            if (xml && !filename.endsWith(".xml", Qt::CaseInsensitive))
-            {
-                filename += ".xml";
-            }
-
-            //Force .txt extension
-            if (!xml && !filename.endsWith(".txt", Qt::CaseInsensitive))
-            {
-                filename += ".txt";
-            }
-
-            mResults.Save(filename, xml);
+            selectedFile += ".xml";
         }
+
+        //Force .txt extension
+        if (!xml && !selectedFile.endsWith(".txt", Qt::CaseInsensitive))
+        {
+            selectedFile += ".txt";
+        }
+
+        mResults.Save(selectedFile, xml);
     }
 }
 
