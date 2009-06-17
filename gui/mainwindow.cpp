@@ -25,6 +25,7 @@
 #include <QMessageBox>
 #include <QToolBar>
 #include <QKeySequence>
+#include <QFileInfo>
 #include "aboutdialog.h"
 #include "fileviewdialog.h"
 #include "../src/filelister.h"
@@ -216,13 +217,28 @@ void MainWindow::SaveSettings()
 
 void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 {
-    QFileDialog dialog(this);
-    dialog.setDirectory(QDir(mSettings.value(tr("Check path"), "").toString()));
-    dialog.setFileMode(mode);
+    QStringList selected;
 
-    if (dialog.exec())
+    // NOTE: we use QFileDialog::getOpenFileNames() and
+    // QFileDialog::getExistingDirectory() because they show native Windows
+    // selection dialog which is a lot more usable than QT:s own dialog.
+    if (mode == QFileDialog::ExistingFiles)
     {
-        QStringList selected = dialog.selectedFiles();
+        selected = QFileDialog::getOpenFileNames(this,
+                   tr("Select files to check"),
+                   mSettings.value(tr("Check path"), "").toString());
+    }
+    else if (mode == QFileDialog::DirectoryOnly)
+    {
+        QString dir = QFileDialog::getExistingDirectory(this,
+                      tr("Select directory to check"),
+                      mSettings.value(tr("Check path"), "").toString());
+        if (!dir.isEmpty())
+            selected.append(dir);
+    }
+
+    if (selected.count() > 0)
+    {
         QStringList fileNames;
         QString selection;
 
@@ -236,24 +252,23 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 
         if (fileNames.isEmpty())
         {
-
             QMessageBox msg(QMessageBox::Warning,
                             tr("Cppcheck"),
                             tr("No suitable files found to check!"),
                             QMessageBox::Ok,
                             this);
-
             msg.exec();
-
             return;
         }
 
         mResults.CheckingStarted();
 
         mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
-        mSettings.setValue(tr("Check path"), dialog.directory().absolutePath());
+        QFileInfo inf(fileNames[0]);
+        QString absDirectory = inf.absoluteDir().path();
+        mSettings.setValue(tr("Check path"), absDirectory);
         EnableCheckButtons(false);
-        mResults.SetCheckDirectory(dialog.directory().absolutePath());
+        mResults.SetCheckDirectory(absDirectory);
         mThread.Check(GetCppcheckSettings(), false);
     }
 }
