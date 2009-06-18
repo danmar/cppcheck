@@ -261,6 +261,15 @@ std::string Preprocessor::read(std::istream &istr)
         if (ch == '\n')
             ++lineno;
 
+        // UTF / extended ASCII => The output from the preprocessor should
+        // only be standard ASCII.
+        // In C/C++ code the UTF and extented ASCII (8-bit ASCII) can only
+        // appear in comments, strings and char constants. So the safest thing
+        // to do is replace it with space char. We CAN'T change string lengths
+        // by ignoring characters.
+        if (ch < 0)
+            ch = ' ';
+
         // Replace assorted special chars with spaces..
         if ((ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';
