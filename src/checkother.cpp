@@ -48,6 +48,9 @@ void CheckOther::WarningOldStylePointerCast()
         if (!Token::Match(tok, "( %type% * ) %var%"))
             continue;
 
+        if (Token::simpleMatch(tok->tokAt(4), "const"))
+            continue;
+
         // Is "type" a class?
         const std::string pattern("class " + tok->next()->str());
         if (!Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
