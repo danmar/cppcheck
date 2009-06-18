@@ -1291,7 +1291,7 @@ private:
 
             ASSERT_EQUALS(expected, actual);
         }
-        
+
         {
             const std::string code("void f1(int &p)\n"
                                    "{\n"
