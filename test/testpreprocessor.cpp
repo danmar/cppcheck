@@ -114,6 +114,7 @@ private:
         TEST_CASE(preprocessor_include_in_str);
         TEST_CASE(fmt1);
         TEST_CASE(fmt2);
+        TEST_CASE(fmt3);
         TEST_CASE(multi_character_character);
 
         TEST_CASE(stringify);
@@ -820,7 +821,12 @@ private:
         ASSERT_EQUALS("\nprintf(\"hello\");", actual);
     }
 
-
+    void fmt3()
+    {
+        const char filedata[] = "#define FRED(...) { fred(__VA_ARGS__); }\n"
+                                "FRED(123)";
+        ASSERT_EQUALS("\n{ fred(123); }", OurPreprocessor::expandMacros(filedata));
+    }
 
 
 

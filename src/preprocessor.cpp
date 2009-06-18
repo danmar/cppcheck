@@ -892,6 +892,9 @@ public:
                         _params.push_back(tok->str());
                 }
             }
+
+            else if (Token::Match(tokens(), "%var% ( . . . )"))
+                _variadic = true;
         }
     }
 
@@ -917,7 +920,36 @@ public:
 
     bool code(const std::vector<std::string> &params2, std::string &macrocode) const
     {
-        if (_params.empty())
+        if (_params.empty() && _variadic)
+        {
+            std::string s;
+            for (unsigned int i = 0; i < params2.size(); ++i)
+            {
+                if (i > 0)
+                    s += ",";
+                s += params2[i];
+            }
+
+            macrocode = _macro.substr(1 + _macro.find(")"));
+            if (macrocode.empty())
+                return true;
+
+            std::string::size_type pos = 0;
+            // Remove leading spaces
+            if ((pos = macrocode.find_first_not_of(" ")) > 0)
+                macrocode.erase(0,pos);
+            // Remove ending newline
+            if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
+                macrocode.erase(pos);
+            // Replace "__VA_ARGS__" with parameters
+            while ((pos = macrocode.find("__VA_ARGS__")) != std::string::npos)
+            {
+                macrocode.erase(pos, 11);
+                macrocode.insert(pos, s);
+            }
+        }
+
+        else if (_params.empty())
         {
             std::string::size_type pos = _macro.find(" ");
             if (pos == std::string::npos)
@@ -1101,11 +1133,11 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             if (code.substr(pos1, macro.name().length()) != macro.name())
                 continue;
 
-            // Previous char must not be alphanumeric or '_'
+            // Previous char must not be alphanumeric nor '_'
             if (pos1 != 0 && (std::isalnum(code[pos1-1]) || code[pos1-1] == '_'))
                 continue;
 
-            // The char after the macroname must not be alphanumeric or '_'
+            // The char after the macroname must not be alphanumeric nor '_'
             if (pos1 + macro.name().length() < code.length())
             {
                 std::string::size_type pos2 = pos1 + macro.name().length();
@@ -1120,7 +1152,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
 
             unsigned int numberOfNewlines = 0;
 
-            if (macro.params().size())
+            if (macro.variadic() || macro.params().size())
             {
                 if (code[pos2] == ' ')
                     pos2++;
@@ -1215,7 +1247,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             const std::string macrocode(std::string(numberOfNewlines, '\n') + tempMacro);
 
             // Insert macro code..
-            if (!macro.params().empty())
+            if (macro.variadic() || !macro.params().empty())
                 ++pos2;
 
             code.erase(pos1, pos2 - pos1);
