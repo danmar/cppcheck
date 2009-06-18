@@ -734,6 +734,9 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "else|return|typedef|delete"))
             continue;
 
+        if (Token::simpleMatch(tok, "const"))
+            tok = tok->next();
+
         if (Token::simpleMatch(tok, "std ::"))
             tok = tok->tokAt(2);
 
@@ -759,7 +762,7 @@ void Tokenizer::setVarId()
         {
             if (tok2->isName())
                 varname = tok2->strAt(0);
-            else if (tok2->str() != "*")
+            else if (tok2->str() != "*" && tok2->str() != "&")
                 break;
             tok2 = tok2->next();
         }

@@ -1291,6 +1291,46 @@ private:
 
             ASSERT_EQUALS(expected, actual);
         }
+        
+        {
+            const std::string code("void f1(int &p)\n"
+                                   "{\n"
+                                   "    p = 0;\n"
+                                   "}\n"
+                                   "void f2(std::string &str)\n"
+                                   "{\n"
+                                   "   str.clear();\n"
+                                   "}\n"
+                                   "void f3(const std::string &s)\n"
+                                   "{\n"
+                                   "    s.size();\n"
+                                   "}\n");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.setVarId();
+
+            // result..
+            const std::string actual(tokenizer.tokens()->stringifyList(true));
+            const std::string expected("\n\n##file 0\n"
+                                       "1: void f1 ( int & p@1 )\n"
+                                       "2: {\n"
+                                       "3: p@1 = 0 ;\n"
+                                       "4: }\n"
+                                       "5: void f2 ( std :: string & str@2 )\n"
+                                       "6: {\n"
+                                       "7: str@2 . clear ( ) ;\n"
+                                       "8: }\n"
+                                       "9: void f3 ( const std :: string & s@3 )\n"
+                                       "10: {\n"
+                                       "11: s@3 . size ( ) ;\n"
+                                       "12: }\n");
+
+            ASSERT_EQUALS(expected, actual);
+        }
+
     }
 
     void varidclass1()
