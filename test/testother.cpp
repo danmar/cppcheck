@@ -58,6 +58,8 @@ private:
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
+
+        TEST_CASE(oldStylePointerCast);
     }
 
     void check(const char code[])
@@ -427,6 +429,35 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void checkOldStylePointerCast(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for redundant code..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckOther checkOther(&tokenizer, &settings, this);
+        checkOther.WarningOldStylePointerCast();
+    }
+
+    void oldStylePointerCast()
+    {
+        checkOldStylePointerCast("class B;\n"
+                                 "class A\n"
+                                 "{\n"
+                                 "  virtual void abc(B *) const = 0;\n"
+                                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestOther)

@@ -978,12 +978,23 @@ private:
 
     void comma_keyword()
     {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    char *a, *b;\n"
-                            "    delete a, delete b;\n"
-                            "}\n";
-        ASSERT_EQUALS(" void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", sizeof_(code));
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    char *a, *b;\n"
+                                "    delete a, delete b;\n"
+                                "}\n";
+            ASSERT_EQUALS(" void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", sizeof_(code));
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    char *a, *b;\n"
+                                "    delete a, b;\n"
+                                "}\n";
+            ASSERT_EQUALS(" void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", sizeof_(code));
+        }
     }
 
 };
