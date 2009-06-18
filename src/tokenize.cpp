@@ -2976,11 +2976,21 @@ bool Tokenizer::simplifyCommaNearKeyWords()
 
         // We must not accept just any keyword, e.g. accepting int
         // would cause function parameters to corrupt.
-        if (!Token::Match(tok->next(), "delete"))
-            continue;
-
-        tok->str(";");
-        ret = true;
+        if (Token::Match(tok->next(), "delete"))
+        {
+            // Handle "delete a, delete b;"
+            tok->str(";");
+            ret = true;
+        }
+        else if (tok->previous() &&
+                 Token::Match(tok->previous()->previous(), "delete") &&
+                 tok->next()->varId() != 0)
+        {
+            // Handle "delete a, b;"
+            tok->str(";");
+            tok->insertToken("delete");
+            ret = true;
+        }
     }
 
     return ret;
