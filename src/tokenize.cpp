@@ -1384,7 +1384,7 @@ void Tokenizer::simplifyTokenList()
     {
         if (Token::Match(tok, "const %type% %var% = %num% ;"))
         {
-            const char *sym = tok->strAt(2);
+            unsigned int varId = tok->tokAt(2)->varId();
             const char *num = tok->strAt(4);
             int indent = 1;
             for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
@@ -1401,9 +1401,7 @@ void Tokenizer::simplifyTokenList()
                 }
 
                 // Compare constants, but don't touch members of other structures
-                else if (tok2->str() == sym &&
-                         tok2->previous() &&
-                         tok2->previous()->str() != ".")
+                else if (tok2->varId() == varId)
                 {
                     tok2->str(num);
                 }
