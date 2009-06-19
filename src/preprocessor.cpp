@@ -262,7 +262,7 @@ std::string Preprocessor::read(std::istream &istr)
             ++lineno;
 
         // Replace assorted special chars with spaces..
-        if ((ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
+        if ((ch > 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';
 
         // Skip spaces after ' ' and after '#'
@@ -274,7 +274,7 @@ std::string Preprocessor::read(std::istream &istr)
         {
             if (ch == '(')
                 code << " ";
-            else if (! std::isalpha(ch))
+            else if ((ch > 0) && ! std::isalpha(ch))
                 needSpace = false;
         }
         if (ch == '#')
@@ -287,7 +287,7 @@ std::string Preprocessor::read(std::istream &istr)
             while (true)
             {
                 chNext = (char)istr.peek();
-                if (chNext != '\n' && chNext != '\r' &&
+                if (chNext != '\n' && chNext != '\r' && (chNext > 0) &&
                     (std::isspace(chNext) || std::iscntrl(chNext)))
                 {
                     // Skip whitespace between <backspace> and <newline>
