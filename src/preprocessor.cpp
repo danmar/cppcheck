@@ -937,7 +937,7 @@ public:
             std::string::size_type pos = 0;
             // Remove leading spaces
             if ((pos = macrocode.find_first_not_of(" ")) > 0)
-                macrocode.erase(0,pos);
+                macrocode.erase(0, pos);
             // Remove ending newline
             if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
                 macrocode.erase(pos);
