@@ -593,14 +593,27 @@ private:
 
     void casting()
     {
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "for (int i = 0; i < static_cast<int>(3); ++i) {}\n"
-                            "}\n";
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "for (int i = 0; i < static_cast<int>(3); ++i) {}\n"
+                                "}\n";
 
-        const std::string expected(" void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }");
+            const std::string expected(" void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }");
 
-        ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    p = const_cast<char *> qtu ();\n"
+                                "}\n";
+
+            const std::string expected(" void f ( ) { p = const_cast < char * > qtu ( ) ; }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 
 

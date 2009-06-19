@@ -1939,36 +1939,39 @@ bool Tokenizer::simplifyCasts()
 
         else if (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <"))
         {
+            Token *tok2 = tok->next();
             unsigned int level = 0;
-            while (tok->next())
+            while (tok2)
             {
-                const Token *next = tok->next();
-                if (next->str() == "<")
+                if (tok2->str() == "<")
                     ++level;
-                else if (next->str() == ">")
+                else if (tok2->str() == ">")
                 {
                     --level;
                     if (level == 0)
                         break;
                 }
-                tok->deleteNext();
-            }
-            tok->deleteNext();
-            tok->deleteNext();
-            Token *tok2 = tok;
-            int parlevel = 0;
-            while (tok2->next() && parlevel >= 0)
-            {
                 tok2 = tok2->next();
-                if (Token::simpleMatch(tok2->next(), "("))
-                    ++parlevel;
-                else if (Token::simpleMatch(tok2->next(), ")"))
-                    --parlevel;
             }
-            if (tok2->next())
-                tok2->deleteNext();
 
-            ret = true;
+            if (Token::simpleMatch(tok2, "> ("))
+            {
+                Token::eraseTokens(tok, tok2->tokAt(2));
+                tok2 = tok;
+                int parlevel = 0;
+                while (tok2->next() && parlevel >= 0)
+                {
+                    tok2 = tok2->next();
+                    if (Token::simpleMatch(tok2->next(), "("))
+                        ++parlevel;
+                    else if (Token::simpleMatch(tok2->next(), ")"))
+                        --parlevel;
+                }
+                if (tok2->next())
+                    tok2->deleteNext();
+
+                ret = true;
+            }
         }
     }
 
