@@ -1000,7 +1000,7 @@ private:
     {
         const char filedata[] = {'a', (char)200, 0};
         std::istringstream istr(filedata);
-        ASSERT_EQUALS(Preprocessor::read(istr), "a ");
+        ASSERT_THROW(Preprocessor::read(istr), std::runtime_error);
     }
 
     void define_part_of_func()
