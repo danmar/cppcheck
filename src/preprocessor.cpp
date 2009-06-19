@@ -859,6 +859,9 @@ private:
     std::string _macro;
     bool _variadic;
 
+    /** The macro has parantheses but no parameters.. "AAA()" */
+    bool _nopar;
+
 public:
     Macro(const std::string &macro)
             : _macro(macro)
@@ -871,7 +874,7 @@ public:
         if (tokens() && tokens()->isName())
             _name = tokens()->str();
 
-        _variadic = false;
+        _variadic = _nopar = false;
 
         std::string::size_type pos = macro.find_first_of(" (");
         if (pos != std::string::npos && macro[pos] == '(')
@@ -895,6 +898,9 @@ public:
 
             else if (Token::Match(tokens(), "%var% ( . . . )"))
                 _variadic = true;
+
+            else if (Token::Match(tokens(), "%var% ( )"))
+                _nopar = true;
         }
     }
 
@@ -913,6 +919,11 @@ public:
         return _variadic;
     }
 
+    bool nopar() const
+    {
+        return _nopar;
+    }
+
     const std::string &name() const
     {
         return _name;
@@ -920,7 +931,22 @@ public:
 
     bool code(const std::vector<std::string> &params2, std::string &macrocode) const
     {
-        if (_params.empty() && _variadic)
+        if (_nopar)
+        {
+            macrocode = _macro.substr(1 + _macro.find(")"));
+            if (macrocode.empty())
+                return true;
+
+            std::string::size_type pos = 0;
+            // Remove leading spaces
+            if ((pos = macrocode.find_first_not_of(" ")) > 0)
+                macrocode.erase(0, pos);
+            // Remove ending newline
+            if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
+                macrocode.erase(pos);
+        }
+
+        else if (_params.empty() && _variadic)
         {
             std::string s;
             for (unsigned int i = 0; i < params2.size(); ++i)
@@ -1152,7 +1178,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
 
             unsigned int numberOfNewlines = 0;
 
-            if (macro.variadic() || macro.params().size())
+            if (macro.variadic() || macro.nopar() || macro.params().size())
             {
                 if (code[pos2] == ' ')
                     pos2++;
@@ -1222,6 +1248,9 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                 }
             }
 
+            if (params.size() == 1 && params[0] == "")
+                params.clear();
+
             // Same number of parameters..
             if (!macro.variadic() && params.size() != macro.params().size())
                 continue;
@@ -1247,7 +1276,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             const std::string macrocode(std::string(numberOfNewlines, '\n') + tempMacro);
 
             // Insert macro code..
-            if (macro.variadic() || !macro.params().empty())
+            if (macro.variadic() || macro.nopar() || !macro.params().empty())
                 ++pos2;
 
             code.erase(pos1, pos2 - pos1);

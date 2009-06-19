@@ -106,6 +106,7 @@ private:
         TEST_CASE(macro_simple9);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
+        TEST_CASE(macro_nopar);
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(preprocessor_undef);
@@ -699,6 +700,14 @@ private:
                       "int a;\n",
                       OurPreprocessor::expandMacros(filedata));
     }
+
+    void macro_nopar()
+    {
+        const char filedata[] = "#define AAA( ) { NULL }\n"
+                                "AAA()";
+        ASSERT_EQUALS("\n{ NULL }", OurPreprocessor::expandMacros(filedata));
+    }
+
 
     void string1()
     {
