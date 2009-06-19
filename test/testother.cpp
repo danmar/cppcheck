@@ -450,6 +450,14 @@ private:
 
     void oldStylePointerCast()
     {
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (Base *) derived;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
+
+
         checkOldStylePointerCast("class B;\n"
                                  "class A\n"
                                  "{\n"

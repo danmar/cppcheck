@@ -46,6 +46,7 @@ public:
 
         if (settings->_checkCodingStyle)
         {
+            checkOther.WarningOldStylePointerCast();
             checkOther.CheckUnsignedDivision();
             checkOther.CheckCharVariable();
         }
@@ -57,7 +58,6 @@ public:
 
         if (settings->_checkCodingStyle)
         {
-            checkOther.WarningOldStylePointerCast();
             checkOther.WarningRedundantCode();
             checkOther.WarningIf();
             checkOther.CheckVariableScope();
