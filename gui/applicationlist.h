@@ -84,7 +84,7 @@ public:
     * @brief Get the amount of applications in the list
     * @return The count of applications
     */
-    int GetApplicationCount();
+    int GetApplicationCount() const;
 
     /**
     * @brief Get spesific application's name
@@ -92,7 +92,7 @@ public:
     * @param index Index of the application whose name to get
     * @return Name of the application
     */
-    QString GetApplicationName(const int index);
+    QString GetApplicationName(const int index) const;
 
     /**
     * @brief Get Application's path
@@ -100,7 +100,7 @@ public:
     * @param index of the application whose path to get
     * @return Application's path
     */
-    QString GetApplicationPath(const int index);
+    QString GetApplicationPath(const int index) const;
 
     /**
     * @brief Modify an application

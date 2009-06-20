@@ -59,12 +59,12 @@ void ApplicationList::SaveSettings(QSettings &programSettings)
 
 }
 
-int ApplicationList::GetApplicationCount()
+int ApplicationList::GetApplicationCount() const
 {
     return mApplications.size();
 }
 
-QString ApplicationList::GetApplicationName(const int index)
+QString ApplicationList::GetApplicationName(const int index) const
 {
     if (index >= 0 && index < mApplications.size())
     {
@@ -74,7 +74,7 @@ QString ApplicationList::GetApplicationName(const int index)
     return QString();
 }
 
-QString ApplicationList::GetApplicationPath(const int index)
+QString ApplicationList::GetApplicationPath(const int index) const
 {
     if (index >= 0 && index < mApplications.size())
     {
