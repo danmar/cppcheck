@@ -18,6 +18,7 @@
 
 
 #include "mainwindow.h"
+#include <QApplication>
 #include <QDebug>
 #include <QMenu>
 #include <QDirIterator>
@@ -355,6 +356,9 @@ void MainWindow::CheckDone()
         mActionClearResults.setEnabled(true);
         mActionSave.setEnabled(true);
     }
+
+    // Notify user - if the window is not active - that check is ready
+    QApplication::alert(this, 3000);
 }
 
 void MainWindow::ProgramSettings()
