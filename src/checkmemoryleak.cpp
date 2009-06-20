@@ -1820,7 +1820,7 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
         functionToken = Tokenizer::FindClassFunction(functionToken->next(), classname, "~| %var%", indent_);
     }
 
-    if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No)
+    if (_settings->_showAll && Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No)
     {
         MemoryLeak(tokVarname, (std::string(classname) + "::" + varname).c_str(), Alloc, true);
     }
