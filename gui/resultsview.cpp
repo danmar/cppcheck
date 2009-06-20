@@ -80,7 +80,7 @@ void ResultsView::Progress(int value, int max)
 
                 msg.exec();
             } //If we have errors but they aren't visible, tell user about it
-            else if (!mTree->VisibleErrors())
+            else if (!mTree->HasVisibleResults())
             {
                 QString text = tr("Errors were found, but they are configured to be hidden.\n"\
                                   "To toggle what kind of errors are shown, open view menu.");
@@ -166,4 +166,7 @@ void ResultsView::CheckingStarted()
     mProgress->setVisible(true);
 }
 
-
+bool ResultsView::HasVisibleResults() const
+{
+    return mTree->HasVisibleResults();
+}

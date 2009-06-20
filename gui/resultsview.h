@@ -89,6 +89,14 @@ public:
     * At the moment this only displays the progressbar
     */
     void CheckingStarted();
+
+    /**
+    * @brief Do we have visible results to show?
+    *
+    * @return true if there is at least one warning/error to show.
+    */
+    bool HasVisibleResults() const;
+
 signals:
 
     /**

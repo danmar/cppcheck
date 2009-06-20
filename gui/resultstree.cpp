@@ -774,7 +774,7 @@ void ResultsTree::RefreshFilePaths()
     }
 }
 
-bool ResultsTree::VisibleErrors()
+bool ResultsTree::HasVisibleResults() const
 {
     return mVisibleErrors;
 }

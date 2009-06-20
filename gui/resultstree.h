@@ -95,10 +95,10 @@ public:
     void SetCheckDirectory(const QString &dir);
 
     /**
-    * @brief Check if there are any visible errors
-    * @return true if there is at least one visible error
+    * @brief Check if there are any visible results in view.
+    * @return true if there is at least one visible warning/error.
     */
-    bool VisibleErrors();
+    bool HasVisibleResults() const;
 
 protected slots:
     /**

@@ -348,6 +348,11 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
 void MainWindow::CheckDone()
 {
     EnableCheckButtons(true);
+    if (mResults.HasVisibleResults())
+    {
+        mActionClearResults.setEnabled(true);
+        mActionSave.setEnabled(true);
+    }
 }
 
 void MainWindow::ProgramSettings()
@@ -522,6 +527,4 @@ void MainWindow::Save()
 
 void MainWindow::ResultsAdded()
 {
-    mActionClearResults.setEnabled(true);
-    mActionSave.setEnabled(true);
 }
