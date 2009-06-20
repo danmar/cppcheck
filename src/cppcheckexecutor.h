@@ -74,7 +74,7 @@ private:
 
     /**
      * Helper function to print out errors. Appends a line change.
-     * @param errmsg, string to printed to error stream
+     * @param errmsg String printed to error stream
      */
     void reportErr(const std::string &errmsg);
 

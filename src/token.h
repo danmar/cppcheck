@@ -169,7 +169,7 @@ public:
     /**
      * Replace token replaceThis with tokens between start and end,
      * including start and end. The replaceThis token is deleted.
-     * @param replaceThis, this token will be deleted.
+     * @param replaceThis This token will be deleted.
      * @param start This will be in the place of replaceThis
      * @param end This is also in the place of replaceThis
      */

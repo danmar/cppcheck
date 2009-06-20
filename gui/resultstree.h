@@ -67,7 +67,7 @@ public:
     * Refreshes the tree.
     *
     * @param type Type of error to show/hide
-    * @param Should specified errors be shown (true) or hidden (false)
+    * @param show Should specified errors be shown (true) or hidden (false)
     */
     void ShowResults(ShowTypes type, bool show);
 
@@ -164,7 +164,6 @@ protected:
     * @brief Convert a severity string to a icon filename
     *
     * @param severity Severity string
-    * @param Icon filename
     */
     QString SeverityToIcon(const QString &severity);
 
@@ -180,7 +179,7 @@ protected:
     * @brief Helper function to copy filename/full path to the clipboard
     *
     * @param target Error tree item to open
-    * @param fullpath Are we copying full path or only filename?
+    * @param fullPath Are we copying full path or only filename?
     */
     void CopyPath(QStandardItem *target, bool fullPath);
 
@@ -200,7 +199,7 @@ protected:
     * @param severity Error severity
     * @param message Error message
     * @param hide Should this be hidden (true) or shown (false)
-    * @param addicon Should a default backtrace item icon be added
+    * @param icon Should a default backtrace item icon be added
     * @return newly created QStandardItem *
     */
     QStandardItem *AddBacktraceFiles(QStandardItem *parent,

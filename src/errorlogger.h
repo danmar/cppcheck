@@ -79,7 +79,7 @@ public:
      * Information about progress is directed here.
      * Override this to receive the progress messages.
      *
-     * @param outmsg, E.g. "Checking main.cpp..."
+     * @param outmsg Message to show e.g. "Checking main.cpp..."
      */
     virtual void reportOut(const std::string &outmsg) = 0;
 
