@@ -36,7 +36,7 @@ class ThreadHandler : public QObject
 {
     Q_OBJECT
 public:
-    ThreadHandler();
+    ThreadHandler(QObject *parent = 0);
     virtual ~ThreadHandler();
 
     /**

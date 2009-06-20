@@ -20,7 +20,9 @@
 #include "threadhandler.h"
 #include <QDebug>
 
-ThreadHandler::ThreadHandler() : mRunningThreadCount(0)
+ThreadHandler::ThreadHandler(QObject *parent) :
+        QObject(parent),
+        mRunningThreadCount(0)
 {
     SetThreadCount(1);
 }

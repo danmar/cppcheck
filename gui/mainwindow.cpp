@@ -27,6 +27,7 @@
 #include <QKeySequence>
 #include <QFileInfo>
 #include "aboutdialog.h"
+#include "threadhandler.h"
 #include "fileviewdialog.h"
 #include "../src/filelister.h"
 #include "../src/cppcheckexecutor.h"
@@ -57,6 +58,7 @@ MainWindow::MainWindow() :
 {
     CreateMenus();
     CreateToolbar();
+    mThread = new ThreadHandler(this);
 
     setCentralWidget(&mResults);
 
@@ -78,14 +80,14 @@ MainWindow::MainWindow() :
 
     connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
-    connect(&mActionStop, SIGNAL(triggered()), &mThread, SLOT(Stop()));
+    connect(&mActionStop, SIGNAL(triggered()), mThread, SLOT(Stop()));
     connect(&mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
 
     connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
     connect(&mActionShowLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
     connect(&mActionShowAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
 
-    connect(&mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
+    connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     connect(&mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
 
     mActionCheckDirectory.setIcon(QIcon(":icon.png"));
@@ -102,7 +104,7 @@ MainWindow::MainWindow() :
     mActionAbout.setShortcut(QKeySequence(Qt::Key_F1));
 
     LoadSettings();
-    mThread.Initialize(&mResults);
+    mThread->Initialize(&mResults);
     setWindowTitle(tr("Cppcheck"));
 
     EnableCheckButtons(true);
@@ -248,7 +250,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         }
 
         mResults.Clear();
-        mThread.ClearFiles();
+        mThread->ClearFiles();
 
         if (fileNames.isEmpty())
         {
@@ -263,13 +265,13 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 
         mResults.CheckingStarted();
 
-        mThread.SetFiles(RemoveUnacceptedFiles(fileNames));
+        mThread->SetFiles(RemoveUnacceptedFiles(fileNames));
         QFileInfo inf(fileNames[0]);
         QString absDirectory = inf.absoluteDir().path();
         mSettings.setValue(tr("Check path"), absDirectory);
         EnableCheckButtons(false);
         mResults.SetCheckDirectory(absDirectory);
-        mThread.Check(GetCppcheckSettings(), false);
+        mThread->Check(GetCppcheckSettings(), false);
     }
 }
 
@@ -365,7 +367,7 @@ void MainWindow::ReCheck()
 {
     ClearResults();
     EnableCheckButtons(false);
-    mThread.Check(GetCppcheckSettings(), true);
+    mThread->Check(GetCppcheckSettings(), true);
 }
 
 void MainWindow::ClearResults()
@@ -422,7 +424,7 @@ void MainWindow::UncheckAll()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     // Check that we aren't checking files
-    if (!mThread.IsChecking())
+    if (!mThread->IsChecking())
         event->accept();
     else
     {

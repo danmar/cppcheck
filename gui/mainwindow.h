@@ -21,14 +21,14 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "resultsview.h"
 #include <QSettings>
 #include <QAction>
 #include <QFileDialog>
 
-
-#include "threadhandler.h"
+#include "resultsview.h"
 #include "settingsdialog.h"
+
+class ThreadHandler;
 
 /**
 * @brief Main window for cppcheck-gui
@@ -359,7 +359,7 @@ protected:
     * @brief Thread to check files
     *
     */
-    ThreadHandler mThread;
+    ThreadHandler *mThread;
 
     /**
     * @brief List of user defined applications to open errors with
