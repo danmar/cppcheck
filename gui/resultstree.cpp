@@ -778,3 +778,8 @@ bool ResultsTree::HasVisibleResults() const
 {
     return mVisibleErrors;
 }
+
+bool ResultsTree::HasResults() const
+{
+    return mModel.rowCount() > 0;
+}

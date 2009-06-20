@@ -170,3 +170,8 @@ bool ResultsView::HasVisibleResults() const
 {
     return mTree->HasVisibleResults();
 }
+
+bool ResultsView::HasResults() const
+{
+    return mTree->HasResults();
+}

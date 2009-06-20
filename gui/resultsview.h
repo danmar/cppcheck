@@ -97,6 +97,13 @@ public:
     */
     bool HasVisibleResults() const;
 
+    /**
+    * @brief Do we have results from check?
+    *
+    * @return true if there is at least one warning/error, hidden or visible.
+    */
+    bool HasResults() const;
+
 signals:
 
     /**
