@@ -441,11 +441,6 @@ void CheckClass::privateFunctions()
     {
         const std::string &classname = tok1->next()->str();
 
-        // The class implementation must be available..
-        const std::string classconstructor(classname + " :: " + classname);
-        if (tok1->fileIndex() > 0 && !Token::findmatch(_tokenizer->tokens(), classconstructor.c_str()))
-            continue;
-
         // Get private functions..
         std::list<const Token *> FuncList;
         FuncList.clear();

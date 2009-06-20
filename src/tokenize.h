@@ -42,7 +42,19 @@ public:
 
     /**
      * Tokenize code
-     * @param code input stream for code
+     * @param code input stream for code, e.g.
+     * #file "p.h"
+     * class Foo
+     * {
+     * private:
+     * void Bar();
+     * };
+     *
+     * #endfile
+     * void Foo::Bar()
+     * {
+     * }
+     *
      * @param FileName The filename
      * @return false if Source code contains syntax errors
      */
@@ -50,7 +62,7 @@ public:
 
     /**
      * Create tokens from code.
-     * @param code input stream for code
+     * @param code input stream for code, same as what tokenize()
      */
     void createTokens(std::istream &code);
 

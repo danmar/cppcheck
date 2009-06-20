@@ -82,6 +82,57 @@ private:
               "{ }\n");
 
         ASSERT_EQUALS("[test.cpp:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+
+        check("#file \"p.h\"\n"
+              "class Fred\n"
+              "{\n"
+              "private:\n"
+              "    unsigned int f();\n"
+              "public:\n"
+              "    Fred();\n"
+              "};\n"
+              "\n"
+              "#endfile\n"
+              "Fred::Fred()\n"
+              "{ }\n"
+              "\n"
+              "unsigned int Fred::f()\n"
+              "{ }\n");
+
+        ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+
+        check("#file \"p.h\"\n"
+              "class Fred\n"
+              "{\n"
+              "private:\n"
+              "void f();\n"
+              "};\n"
+              "\n"
+              "\n"
+              "#endfile\n"
+              "\n"
+              "void Fred::f()\n"
+              "{\n"
+              "}\n"
+              "\n");
+        ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+
+        // Don't warn about include files which implementation we don't see
+        check("#file \"p.h\"\n"
+              "class Fred\n"
+              "{\n"
+              "private:\n"
+              "void f();\n"
+              "void g() {}\n"
+              "};\n"
+              "\n"
+              "#endfile\n"
+              "\n"
+              "int main()\n"
+              "{\n"
+              "}\n"
+              "\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
