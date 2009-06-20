@@ -752,10 +752,26 @@ void CheckOther::CheckCharVariable()
                     break;
                 }
 
-                std::string tempFirst = "%var% [&|] " + tok->str();
-                std::string tempSecond = tok->str() + " [&|]";
-                if (Token::Match(tok2, tempFirst.c_str()) || Token::Match(tok2, tempSecond.c_str()))
+                if (Token::Match(tok2, "[;{}] %var% = %any% [&|] %any% ;"))
                 {
+                    // is the char variable used in the calculation?
+                    if (tok2->tokAt(3)->varId() != tok->varId() && tok2->tokAt(5)->varId() != tok->varId())
+                        continue;
+
+                    // it's ok with a bitwise and where the other operand is 0xff or less..
+                    if (std::string(tok2->strAt(4)) == "&")
+                    {
+                        if (tok2->tokAt(3)->isNumber() && MathLib::isGreater("0x100", tok2->strAt(3)))
+                            continue;
+                        if (tok2->tokAt(5)->isNumber() && MathLib::isGreater("0x100", tok2->strAt(5)))
+                            continue;
+                    }
+
+                    // is the result stored in a short|int|long?
+                    if (!Token::findmatch(_tokenizer->tokens(), "short|int|long %varid%", tok2->next()->varId()))
+                        continue;
+
+                    // This is an error..
                     charBitOpError(tok2);
                     break;
                 }

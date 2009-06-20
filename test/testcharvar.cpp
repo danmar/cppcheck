@@ -39,6 +39,8 @@ private:
         TEST_CASE(bitop1);
         TEST_CASE(bitop2);
         TEST_CASE(return1);
+        TEST_CASE(assignChar);
+        TEST_CASE(and03);
     }
 
     void check(const char code[])
@@ -93,6 +95,7 @@ private:
     {
         check("void foo()\n"
               "{\n"
+              "    int result = 0;\n"
               "    char ch;\n"
               "    result = a | ch;\n"
               "}\n");
@@ -118,6 +121,28 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    void assignChar()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char c;\n"
+              "    c = c & 0x123;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void and03()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char c;\n"
+              "    int i = c & 0x03;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestCharVar)
