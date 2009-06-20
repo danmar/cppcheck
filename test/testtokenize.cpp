@@ -80,6 +80,8 @@ private:
         TEST_CASE(ifAddBraces5);
         TEST_CASE(ifAddBraces6);
 
+        TEST_CASE(whileAddBraces);
+
         TEST_CASE(numeric_true_condition);
 
         TEST_CASE(simplifyKnownVariables1);
@@ -365,18 +367,11 @@ private:
                             "    if (a);\n"
                             "    else ;\n"
                             "}\n";
-
-        // tokenize..
-        OurTokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { if ( a ) { ; } else { ; } }", ostr.str());
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "if ( a ) { ; }\n"
+                      "else { ; }\n"
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void ifAddBraces2()
@@ -385,18 +380,10 @@ private:
                             "{\n"
                             "    if (a) if (b) { }\n"
                             "}\n";
-
-        // tokenize..
-        OurTokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { if ( a ) { if ( b ) { } } }", ostr.str());
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "if ( a ) { if ( b ) { } }\n"
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void ifAddBraces3()
@@ -405,18 +392,10 @@ private:
                             "{\n"
                             "    if (a) for (;;) { }\n"
                             "}\n";
-
-        // tokenize..
-        OurTokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { if ( a ) { for ( ; ; ) { } } }", ostr.str());
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "if ( a ) { for ( ; ; ) { } }\n"
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void ifAddBraces4()
@@ -429,19 +408,14 @@ private:
                             "        { }\n"
                             "    return str;\n"
                             "}\n";
-
-
-        // tokenize..
-        OurTokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" char * foo ( ) { char * str ; str = malloc ( 10 ) ; if ( somecondition ) { for ( ; ; ) { } } return str ; }", ostr.str());
+        ASSERT_EQUALS("char * foo ( )\n"
+                      "{\n"
+                      "char * str ; str = malloc ( 10 ) ;\n"
+                      "if ( somecondition ) {\n"
+                      "for ( ; ; )\n"
+                      "{ } }\n"
+                      "return str ;\n"
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void ifAddBraces5()
@@ -455,36 +429,30 @@ private:
                             "return;\n"
                             "}\n";
 
-
-        // tokenize..
-        OurTokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        ASSERT_EQUALS(true, tokenizer.simplifyIfAddBraces());
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { for ( int i = 0 ; i < 2 ; i ++ ) { if ( true ) { return ; } } return ; }", ostr.str());
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "for ( int i = 0 ; i < 2 ; i ++ ) {\n"
+                      "{\n"
+                      "return ; } }\n\n"
+                      "return ;\n"
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void ifAddBraces6()
     {
         const char code[] = "if()";
-
-        // tokenize..
-        OurTokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        ASSERT_EQUALS(false, tokenizer.simplifyIfAddBraces());
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" if ( )", ostr.str());
+        ASSERT_EQUALS("if ( )", tokenizeAndStringify(code, true));
     }
+
+    void whileAddBraces()
+    {
+        {
+            const char code[] = ";while(a);";
+            ASSERT_EQUALS("; while ( a ) { ; }", tokenizeAndStringify(code, true));
+        }
+    }
+
+
 
     void simplifyKnownVariables1()
     {
