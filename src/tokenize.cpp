@@ -2282,11 +2282,17 @@ void Tokenizer::unsignedint()
 bool Tokenizer::simplifyIfAssign()
 {
     bool ret = false;
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok->next(), "if ( (| %var% =") ||
-            Token::Match(tok->next(), "if ( ! ( %var% ="))
+        if (Token::Match(tok->next(), "if|while ( (| %var% =") ||
+            Token::Match(tok->next(), "if|while ( ! ( %var% ="))
         {
+            ret = true;
+
+            // simplifying a "while" condition ?
+            const bool iswhile(tok->next()->str() == "while");
+
             // delete the "if"
             tok->deleteNext();
 
@@ -2321,7 +2327,7 @@ bool Tokenizer::simplifyIfAssign()
                 }
             }
 
-            // Insert "; if ( .."
+            // Insert "; if|while ( .."
             if (tok2)
             {
                 tok2 = tok2->previous();
@@ -2330,9 +2336,37 @@ bool Tokenizer::simplifyIfAssign()
                     tok2->insertToken("(");
                 if (isNot)
                     tok2->next()->insertToken("!");
-                tok2->insertToken("if");
+                tok2->insertToken(iswhile ? "while" : "if");
                 tok2->insertToken(";");
-                ret = true;
+
+                // If it's a while loop.. insert the assignment in the loop
+                if (iswhile)
+                {
+                    indentlevel = 0;
+                    Token *tok3 = tok2;
+                    for (tok3 = tok2; tok3; tok3 = tok3->next())
+                    {
+                        if (tok3->str() == "{")
+                            ++indentlevel;
+                        else if (tok3->str() == "}")
+                        {
+                            if (indentlevel <= 1)
+                                break;
+                            --indentlevel;
+                        }
+                    }
+
+                    if (tok3 && indentlevel == 1)
+                    {
+                        tok3 = tok3->previous();
+                        for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous())
+                        {
+                            tok3->insertToken(tok2->str().c_str());
+                            tok3->next()->fileIndex(tok2->fileIndex());
+                            tok3->next()->linenr(tok2->linenr());
+                        }
+                    }
+                }
             }
         }
     }

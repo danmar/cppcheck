@@ -100,6 +100,7 @@ private:
 
         // Assignment in condition..
         TEST_CASE(ifassign1);
+        TEST_CASE(whileAssign);
 
         // "if(0==x)" => "if(!x)"
         TEST_CASE(ifnot);
@@ -935,6 +936,14 @@ private:
         ASSERT_EQUALS("; a = b ; if ( a ) ;", simplifyIfAssign(";if(a=b);"));
         ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) ;", simplifyIfAssign(";if((a=b()));"));
         ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) ;", simplifyIfAssign(";if(!(a=b()));"));
+    }
+
+
+    void whileAssign()
+    {
+        ASSERT_EQUALS("; a = b ; while ( a ) { b = 0 ; a = b ; }", simplifyIfAssign(";while(a=b) { b = 0; }"));
+        //ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) ;", simplifyIfAssign(";if((a=b()));"));
+        //ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) ;", simplifyIfAssign(";if(!(a=b()));"));
     }
 
 

@@ -169,6 +169,7 @@ private:
         TEST_CASE(forwhile8);       // Bug 2429936
         TEST_CASE(forwhile9);
         TEST_CASE(forwhile10);
+        TEST_CASE(forwhile11);
 
         TEST_CASE(dowhile1);
 
@@ -1026,6 +1027,18 @@ private:
         ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: a\n", errout.str());
     }
 
+
+    void forwhile11()
+    {
+        check("int main()\n"
+              "{\n"
+              "    FILE *stream=NULL;\n"
+              "    while((stream = fopen(name,\"r\")) == NULL)\n"
+              "    { }\n"
+              "    if(stream!=NULL) fclose(stream);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
 

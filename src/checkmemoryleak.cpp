@@ -992,6 +992,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
     bool done = false;
     while (! done)
     {
+        //tok->printOut("simplifycode loop..");
         done = true;
 
         for (Token *tok2 = tok; tok2; tok2 = tok2 ? tok2->next() : NULL)
@@ -1255,13 +1256,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::Match(tok2->next(), "loop !var ;"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(4));
-                done = false;
-            }
-
-            // Replace "loop !var alloc ;" with " alloc ;"
-            if (Token::Match(tok2->next(), "loop !var alloc ;"))
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
 
