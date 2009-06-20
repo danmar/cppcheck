@@ -241,6 +241,8 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
 
     if (selected.count() > 0)
     {
+        ClearResults();
+
         QStringList fileNames;
         QString selection;
 
