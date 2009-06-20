@@ -273,6 +273,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         QString absDirectory = inf.absoluteDir().path();
         mSettings.setValue(tr("Check path"), absDirectory);
         EnableCheckButtons(false);
+        mActionSettings.setEnabled(false);
         mResults.SetCheckDirectory(absDirectory);
         mThread->Check(GetCppcheckSettings(), false);
     }
@@ -347,10 +348,10 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
     return result;
 }
 
-
 void MainWindow::CheckDone()
 {
     EnableCheckButtons(true);
+    mActionSettings.setEnabled(true);
     if (mResults.HasResults())
     {
         mActionClearResults.setEnabled(true);
