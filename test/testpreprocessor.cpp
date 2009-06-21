@@ -93,6 +93,7 @@ private:
         TEST_CASE(multiline4);
 
         TEST_CASE(if_defined);      // "#if defined(AAA)" => "#ifdef AAA"
+        TEST_CASE(if_not_defined);  // "#if !defined(AAA)" => "#ifndef AAA"
 
         // Macros..
         TEST_CASE(macro_simple1);
@@ -591,13 +592,14 @@ private:
     {
         const char filedata[] = "#if defined(AAA)\n"
                                 "#endif\n";
+        ASSERT_EQUALS("#ifdef AAA\n#endif\n", OurPreprocessor::replaceIfDefined(filedata));
+    }
 
-
-        // Expected result..
-        std::string expected("#ifdef AAA\n#endif\n");
-
-        // Compare result..
-        ASSERT_EQUALS(expected, OurPreprocessor::replaceIfDefined(filedata));
+    void if_not_defined()
+    {
+        const char filedata[] = "#if !defined(AAA)\n"
+                                "#endif\n";
+        ASSERT_EQUALS("#ifndef AAA\n#endif\n", OurPreprocessor::replaceIfDefined(filedata));
     }
 
 
