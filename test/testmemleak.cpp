@@ -1960,8 +1960,8 @@ private:
               "    a();\n"
               "    if (b) return;\n"
               "    delete [] p;\n"
-              "}\n", true);
-        ASSERT_EQUALS("[test.cpp:5]: (all) Memory leak: p\n", errout.str());
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
 
