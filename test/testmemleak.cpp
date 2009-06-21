@@ -274,6 +274,11 @@ private:
         TEST_CASE(fcloseall_function);
         TEST_CASE(file_functions);
 
+        TEST_CASE(open_function);
+        TEST_CASE(creat_function);
+        TEST_CASE(close_function);
+        TEST_CASE(fd_functions);
+
         TEST_CASE(opendir_function);
         TEST_CASE(fdopendir_function);
         TEST_CASE(closedir_function);
@@ -2175,6 +2180,96 @@ private:
               "    fcloseall();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void open_function()
+    {
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = open(path, O_RDONLY);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fd\n", errout.str());
+
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = open(path, O_RDONLY);\n"
+              "    if (fd == -1)\n"
+              "       return;\n"
+              "    close(fd);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = open(path, O_RDONLY);\n"
+              "    if (fd < 0)\n"
+              "       return;\n"
+              "    close(fd);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void creat_function()
+    {
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = creat(path, S_IRWXU);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Resource leak: fd\n", errout.str());
+    }
+
+    void close_function()
+    {
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = open(path, O_RDONLY);\n"
+              "    close(fd);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = creat(path, S_IRWXU);\n"
+              "    close(fd);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = creat(path, S_IRWXU);\n"
+              "    if (close(fd) < 0) {\n"
+              "        perror(\"close\");\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void fd_functions()
+    {
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = open(path, O_RDONLY);\n"
+              "    read(fd, buf, count);\n"
+              "    readv(fd, iov, iovcnt);\n"
+              "    readahead(fd, offset, count);\n"
+              "    pread(fd, buf, count, offset);\n"
+              "    write(fd, buf, count);\n"
+              "    writev(fd, iov, iovcnt);\n"
+              "    pwrite(fd, buf, count, offset);\n"
+              "    ioctl(fd, request);\n"
+              "    posix_fallocate(fd, offset, len);\n"
+              "    posix_fadvise(fd, offset, len, advise);\n"
+              "    fsync(fd);\n"
+              "    fdatasync(fd);\n"
+              "    sync_file_range(fd, offset, nbytes, flags);\n"
+              "    lseek(fd, offset, whence);\n"
+              "    fcntl(fd, cmd);\n"
+              "    flock(fd, op);\n"
+              "    lockf(fd, cmd, len);\n"
+              "    ftruncate(fd, len);\n"
+              "    fstat(fd, buf);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:23]: (error) Resource leak: fd\n", errout.str());
     }
 
     void opendir_function()

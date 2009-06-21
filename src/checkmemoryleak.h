@@ -47,7 +47,7 @@ public:
     CheckMemoryLeak() { }
 
     /** What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
-    enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Pipe, Dir, Many };
+    enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Fd, Pipe, Dir, Many };
 
     void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
     void MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[]);
