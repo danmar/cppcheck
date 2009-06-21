@@ -1372,13 +1372,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
-			// Delete "callfunc ;" that is followed by "use|if|callfunc"
-			// If the function doesn't throw exception or exit the application, then the "callfunc" is not needed
-			if (Token::Match(tok2, "callfunc ; use|if|callfunc"))
-			{
-				tok2->deleteThis();
-				done = false;
-			}
+            // Delete "callfunc ;" that is followed by "use|if|callfunc"
+            // If the function doesn't throw exception or exit the application, then the "callfunc" is not needed
+            if (Token::Match(tok2, "callfunc ; use|if|callfunc"))
+            {
+                tok2->deleteThis();
+                done = false;
+            }
 
             // Delete second case in "case ; case ;"
             while (Token::simpleMatch(tok2, "case ; case ;"))
