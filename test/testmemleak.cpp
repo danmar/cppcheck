@@ -254,6 +254,7 @@ private:
         TEST_CASE(unknownFunction1);
         TEST_CASE(unknownFunction2);
         TEST_CASE(unknownFunction3);
+        TEST_CASE(unknownFunction4);
 
         // VCL..
         TEST_CASE(vcl1);
@@ -1949,6 +1950,18 @@ private:
               "    ThrowException();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void unknownFunction4()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    int *p = new int[100];\n"
+              "    a();\n"
+              "    if (b) return;\n"
+              "    delete [] p;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:5]: (all) Memory leak: p\n", errout.str());
     }
 
 

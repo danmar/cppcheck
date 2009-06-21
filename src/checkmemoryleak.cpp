@@ -988,6 +988,22 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
         tok2 = tokEnd;
     }
 
+    // If "--all" is given, remove all "callfunc"..
+    if (_settings->_showAll)
+    {
+        Token *tok2 = tok;
+        while (tok2)
+        {
+            if (tok2->str() == "callfunc")
+            {
+                tok2->deleteThis();
+                all = true;
+            }
+            else
+                tok2 = tok2->next();
+        }
+    }
+
     // reduce the code..
     bool done = false;
     while (! done)
