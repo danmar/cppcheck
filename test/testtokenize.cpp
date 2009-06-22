@@ -79,6 +79,7 @@ private:
         TEST_CASE(ifAddBraces4);
         TEST_CASE(ifAddBraces5);
         TEST_CASE(ifAddBraces6);
+        TEST_CASE(ifAddBraces7);
 
         TEST_CASE(whileAddBraces);
 
@@ -442,6 +443,22 @@ private:
     {
         const char code[] = "if()";
         ASSERT_EQUALS("if ( )", tokenizeAndStringify(code, true));
+    }
+
+    void ifAddBraces7()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "int a;\n"
+                            "if( a )\n"
+                            "  ({a=4;}),({a=5;});\n"
+                            "}\n";
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "int a ;\n"
+                      "if ( a ) {\n"
+                      "( { a = 4 ; } ) , ( { a = 5 ; } ) ; }\n"
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void whileAddBraces()

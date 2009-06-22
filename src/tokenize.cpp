@@ -1727,7 +1727,7 @@ bool Tokenizer::simplifyIfAddBraces()
             else if (tempToken->str() == "}")
             {
                 --indentlevel;
-                if (indentlevel == 0)
+                if (indentlevel == 0 && parlevel == 0)
                     break;
             }
 
