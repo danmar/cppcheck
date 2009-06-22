@@ -39,9 +39,13 @@
 		<Unit filename="gui/checkthread.cpp" />
 		<Unit filename="gui/checkthread.h" />
 		<Unit filename="gui/common.h" />
+		<Unit filename="gui/fileviewdialog.cpp" />
+		<Unit filename="gui/fileviewdialog.h" />
 		<Unit filename="gui/main.cpp" />
 		<Unit filename="gui/mainwindow.cpp" />
 		<Unit filename="gui/mainwindow.h" />
+		<Unit filename="gui/projectfile.cpp" />
+		<Unit filename="gui/projectfile.h" />
 		<Unit filename="gui/qrc_gui.cpp" />
 		<Unit filename="gui/resultstree.cpp" />
 		<Unit filename="gui/resultstree.h" />
