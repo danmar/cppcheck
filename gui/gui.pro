@@ -4,6 +4,7 @@
 
 TEMPLATE = app
 TARGET = 
+QT += xml
 DEPENDPATH += .
 INCLUDEPATH += .
 MOC_DIR = temp
@@ -27,6 +28,7 @@ HEADERS += 	mainwindow.h \
 		aboutdialog.h \
 		common.h \
 		fileviewdialog.h \
+		projectfile.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
@@ -62,6 +64,7 @@ SOURCES += 	main.cpp \
 		applicationdialog.cpp \
 		aboutdialog.cpp \
 		fileviewdialog.cpp \
+		projectfile.cpp \
 		../src/checkautovariables.cpp \
 		../src/checkdangerousfunctions.cpp \
 		../src/checkmemoryleak.cpp \

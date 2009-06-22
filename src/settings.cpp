@@ -55,6 +55,10 @@ void Settings::autoDealloc(std::istream &istr)
     }
 }
 
+void Settings::addAutoAllocClass(const std::string &name)
+{
+    _autoDealloc.push_back(name);
+}
 
 bool Settings::isAutoDealloc(const char classname[]) const
 {

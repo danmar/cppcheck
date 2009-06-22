@@ -67,6 +67,9 @@ public:
     /** Fill list of automaticly deallocated classes */
     void autoDealloc(std::istream &istr);
 
+    /** Add class to list of automatically deallocated classes */
+    void addAutoAllocClass(const std::string &name);
+
     /** is a class automaticly deallocated? */
     bool isAutoDealloc(const char classname[]) const;
 };

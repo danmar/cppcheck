@@ -30,6 +30,7 @@
 #include "aboutdialog.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
+#include "projectfile.h"
 #include "../src/filelister.h"
 #include "../src/cppcheckexecutor.h"
 
@@ -230,6 +231,8 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
                    mSettings.value(tr("Check path"), "").toString());
+        if (selected.isEmpty())
+            mCurrentDirectory.clear();
     }
     else if (mode == QFileDialog::DirectoryOnly)
     {
@@ -237,7 +240,10 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
                       tr("Select directory to check"),
                       mSettings.value(tr("Check path"), "").toString());
         if (!dir.isEmpty())
+        {
+            mCurrentDirectory = dir;
             selected.append(dir);
+        }
     }
 
     if (selected.count() > 0)
@@ -275,7 +281,9 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         EnableCheckButtons(false);
         mActionSettings.setEnabled(false);
         mResults.SetCheckDirectory(absDirectory);
-        mThread->Check(GetCppcheckSettings(), false);
+
+        Settings checkSettings = GetCppcheckSettings();
+        mThread->Check(checkSettings, false);
     }
 }
 
@@ -291,7 +299,30 @@ void MainWindow::CheckDirectory()
 
 Settings MainWindow::GetCppcheckSettings()
 {
+    ProjectFile pfile;
     Settings result;
+
+    if (!mCurrentDirectory.isEmpty())
+    {
+        // Format project filename (directory name + .cppcheck) and load
+        // the project file if it is found.
+        QStringList parts = mCurrentDirectory.split("/");
+        QString projfile = parts[parts.count() - 1] + ".cppcheck";
+        bool projectRead = false;
+        if (QFile::exists(projfile))
+            projectRead = pfile.Read(mCurrentDirectory + "/" + projfile);
+
+        if (projectRead)
+        {
+            QStringList classes = pfile.GetDeAllocatedClasses();
+            QString classname;
+            foreach(classname, classes)
+            {
+                result.addAutoAllocClass(classname.toStdString());
+            }
+        }
+    }
+
     result._debug = false;
     result._showAll = true;
     result._checkCodingStyle = true;

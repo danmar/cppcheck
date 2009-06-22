@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+
+<!-- cppcheck project file -->
+
+<project version="1">
+    <autodealloc>
+        <class name="AboutDialog"/>
+        <class name="FileViewDialog"/>
+        <class name="ThreadHandler"/>
+    </autodealloc>
+</project>

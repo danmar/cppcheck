@@ -197,7 +197,7 @@ protected:
     QStringList GetFilesRecursively(const QString &path);
 
     /**
-    * @brief Get our default cppcheck settings
+    * @brief Get our default cppcheck settings and read project file.
     *
     * @return Default cppcheck settings
     */
@@ -368,6 +368,11 @@ protected:
     ApplicationList mApplications;
 
 private:
+
+    /**
+    * @brief Current checked directory.
+    */
+    QString mCurrentDirectory;
 };
 
 #endif // MAINWINDOW_H
