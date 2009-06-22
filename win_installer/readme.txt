@@ -42,6 +42,7 @@ also. When building QT make sure you build release targets!
 Copy following files to same RuntimesFolder than VS runtime files:
 - QtCore4.dll
 - QtGui4.dll
+- QtXml4.dll
 
 Creating the installer executable:
 #1 Open the ISTool and load cppcheck.iss

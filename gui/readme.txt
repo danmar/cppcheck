@@ -24,6 +24,7 @@ Linux:
   names depend on distribution, but e.g. for Ubuntu the needed packages are:
   * libqt4-core
   * libqt4-gui
+  * libqt4-xml
   * libqt4-dev
   * qt4-dev-tools
   * qt4-qmake

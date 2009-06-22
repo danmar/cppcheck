@@ -102,6 +102,7 @@ Source: {#RuntimesFolder}\msvcr90.dll; DestDir: {app}; Components: Core
 ; QT runtimes
 Source: {#RuntimesFolder}\QtCore4.dll; DestDir: {app}; Components: QTGui
 Source: {#RuntimesFolder}\QtGui4.dll; DestDir: {app}; Components: QTGui
+Source: {#RuntimesFolder}\QtXml4.dll; DestDir: {app}; Components: QTGui
 
 [Icons]
 ; As cppcheck is a program run from command prompt, make icons to open
