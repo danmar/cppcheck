@@ -117,6 +117,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::GetAllocationType(const Token *tok2)
     if (Token::Match(tok2, "fopen|tmpfile ("))
         return File;
 
+    if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp ("))
+        return Fd;
+
     if (Token::simpleMatch(tok2, "popen ("))
         return Pipe;
 
@@ -188,6 +191,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::GetDeallocationType(const Token *tok
         Token::simpleMatch(tok, "fcloseall ( )"))
         return File;
 
+    if (Token::simpleMatch(tok, std::string("close ( " + names + " )").c_str()))
+        return Fd;
+
     if (Token::simpleMatch(tok, std::string("pclose ( " + names + " )").c_str()))
         return Pipe;
 
@@ -205,6 +211,7 @@ void CheckMemoryLeak::MemoryLeak(const Token *tok, const char varname[], AllocTy
 {
     if (alloctype == CheckMemoryLeak::File ||
         alloctype == CheckMemoryLeak::Pipe ||
+        alloctype == CheckMemoryLeak::Fd   ||
         alloctype == CheckMemoryLeak::Dir)
         resourceLeakError(tok, varname);
     else if (all)
@@ -398,6 +405,12 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     if (Token::Match(tok, "fgets|fgetc|fputs|fputc|feof|ferror|clearerr|printf|fprintf") ||
         Token::Match(tok, "fread|fwrite|fflush|fseek|fseeko|ftell|ftello|fsetpos|fgetpos") ||
         Token::Match(tok, "setvbuf|setbuf|setbuffer|setlinebuf|rewind"))
+        return 0;
+
+    // I/O functions that are not allocating nor deallocating memory..
+    if (Token::Match(tok, "read|readv|pread|readahead|write|writev|pwrite|lseek") ||
+        Token::Match(tok, "ioctl|fcntl|flock|lockf|ftruncate|fsync|fdatasync") ||
+        Token::Match(tok, "fstat|sync_file_range|posix_fallocate|posix_fadvise"))
         return 0;
 
     // Functions to work with directories that are not allocating nor
@@ -695,6 +708,12 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 while (tok->str() != ")")
                     tok = tok->next();
             }
+            else if (Token::simpleMatch(tok, std::string("if ( " + varnameStr + " == -1 )").c_str()) ||
+                     Token::simpleMatch(tok, std::string("if ( " + varnameStr + " < 0 )").c_str()))
+            {
+                // FIXME: ensure then this variable has int type and uses as file descriptor
+                addtoken("if(!var)");
+            }
             else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varnames, true))
             {
                 addtoken("if(!var)");
@@ -714,7 +733,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         if (parlevel <= 0)
                             break;
                     }
-                    if (Token::Match(tok2, std::string("fclose|closedir ( " + varnameStr + " )").c_str()))
+                    if (Token::Match(tok2, std::string("close|fclose|closedir ( " + varnameStr + " )").c_str()))
                     {
                         addtoken("dealloc");
                         addtoken(";");
@@ -986,6 +1005,22 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
 
         Token::eraseTokens(tok2, tokEnd);
         tok2 = tokEnd;
+    }
+
+    // If "--all" is given, remove all "callfunc"..
+    if (_settings->_showAll)
+    {
+        Token *tok2 = tok;
+        while (tok2)
+        {
+            if (tok2->str() == "callfunc")
+            {
+                tok2->deleteThis();
+                all = true;
+            }
+            else
+                tok2 = tok2->next();
+        }
     }
 
     // reduce the code..
@@ -1337,6 +1372,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
+            // Delete "callfunc ;" that is followed by "use|if|callfunc"
+            // If the function doesn't throw exception or exit the application, then the "callfunc" is not needed
+            if (Token::Match(tok2, "callfunc ; use|if|callfunc"))
+            {
+                tok2->deleteThis();
+                done = false;
+            }
+
             // Delete second case in "case ; case ;"
             while (Token::simpleMatch(tok2, "case ; case ;"))
             {
@@ -1619,6 +1662,11 @@ void CheckMemoryLeakInFunction::check()
             {
                 const int varname_tok = (tok->tokAt(4)->str() != "const" ? 4 : 5);
                 checkScope(tok->next(), tok->strAt(varname_tok), classmember, sz);
+            }
+
+            else if (Token::Match(tok, "[{};] int %var% [;=]"))
+            {
+                checkScope(tok->next(), tok->strAt(2), classmember, sz);
             }
         }
     }
