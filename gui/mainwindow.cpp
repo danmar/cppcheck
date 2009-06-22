@@ -107,7 +107,7 @@ MainWindow::MainWindow() :
 
     LoadSettings();
     mThread->Initialize(&mResults);
-    setWindowTitle(tr("Cppcheck"));
+    FormatAndSetTitle();
 
     EnableCheckButtons(true);
 
@@ -233,6 +233,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
                    mSettings.value(tr("Check path"), "").toString());
         if (selected.isEmpty())
             mCurrentDirectory.clear();
+        FormatAndSetTitle();
     }
     else if (mode == QFileDialog::DirectoryOnly)
     {
@@ -243,6 +244,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         {
             mCurrentDirectory = dir;
             selected.append(dir);
+            FormatAndSetTitle(dir);
         }
     }
 
@@ -565,4 +567,14 @@ void MainWindow::Save()
 
 void MainWindow::ResultsAdded()
 {
+}
+
+void MainWindow::FormatAndSetTitle(const QString &text)
+{
+    QString title;
+    if (text.isEmpty())
+        title = tr("Cppcheck");
+    else
+        title = QString(tr("Cppcheck - %1")).arg(text);
+    setWindowTitle(title);
 }

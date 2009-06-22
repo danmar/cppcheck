@@ -224,6 +224,12 @@ protected:
     void SaveSettings();
 
     /**
+    * @brief Format main window title.
+    * @param text Text added to end of the title.
+    */
+    void FormatAndSetTitle(const QString &text = QString());
+
+    /**
     * @brief Program settings
     *
     */
