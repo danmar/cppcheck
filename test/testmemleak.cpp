@@ -255,6 +255,7 @@ private:
         TEST_CASE(unknownFunction2);
         TEST_CASE(unknownFunction3);
         TEST_CASE(unknownFunction4);
+        TEST_CASE(unknownFunction5);
 
         // VCL..
         TEST_CASE(vcl1);
@@ -1969,6 +1970,23 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 
+    void unknownFunction5()
+    {
+        check("static void foo()\n"
+              "{\n"
+              "    char *p = NULL;\n"
+              "\n"
+              "    if( a )\n"
+              "        p = malloc(100);\n"
+              "\n"
+              "    if( a )\n"
+              "    {\n"
+              "        FREENULL(p);\n"
+              "        FREENULL();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     void checkvcl(const char code[], const char _autoDealloc[])
