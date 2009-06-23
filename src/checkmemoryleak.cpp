@@ -486,6 +486,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             if (Token::Match(tok, pattern.c_str()))
             {
                 const Token *ftok = _tokenizer->GetFunctionTokenByName(funcname.c_str());
+                if (!ftok)
+                    return "use";
 
                 // how many parameters does the function want?
                 if (numpar != countParameters(ftok))
