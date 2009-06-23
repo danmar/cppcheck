@@ -56,6 +56,8 @@ bool ProjectFile::Read(const QString &filename)
         case QXmlStreamReader::StartElement:
             if (xmlReader.name() == ProjectElementName)
                 insideProject = true;
+
+            // Find allocelement from inside project element
             if (insideProject && xmlReader.name() == AllocElementName)
                 ReadAutoAllocClasses(xmlReader);
             break;
@@ -63,6 +65,18 @@ bool ProjectFile::Read(const QString &filename)
         case QXmlStreamReader::EndElement:
             if (xmlReader.name() == ProjectElementName)
                 insideProject = false;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
             break;
         }
     }
@@ -86,6 +100,8 @@ void ProjectFile::ReadAutoAllocClasses(QXmlStreamReader &reader)
         switch (type)
         {
         case QXmlStreamReader::StartElement:
+
+            // Read class-elements
             if (reader.name().toString() == ClassElementName)
             {
                 QXmlStreamAttributes attribs = reader.attributes();
@@ -99,8 +115,19 @@ void ProjectFile::ReadAutoAllocClasses(QXmlStreamReader &reader)
             if (reader.name().toString() == AllocElementName)
                 allRead = true;
             break;
-        }
 
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
     }
     while (!allRead);
 }
