@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef _XML_REPORT_H_
-#define _XML_REPORT_H_
+#ifndef XML_REPORT_H
+#define XML_REPORT_H
 
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QFile>
 #include <QXmlStreamWriter>
-#include "Report.h"
+#include "report.h"
 
 /**
 * @brief XML file report.
@@ -67,4 +67,4 @@ private:
     QXmlStreamWriter mXmlWriter;
 };
 
-#endif // _XML_REPORT_H_
+#endif // XML_REPORT_H

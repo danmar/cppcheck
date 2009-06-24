@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef _PROJECT_FILE_H_
-#define _PROJECT_FILE_H_
+#ifndef PROJECT_FILE_H
+#define PROJECT_FILE_H
 
 #include <QObject>
 #include <QString>
@@ -65,4 +65,4 @@ private:
     QStringList mDeAllocatedClasses;
 };
 
-#endif  // _PROJECT_FILE_H_
+#endif  // PROJECT_FILE_H

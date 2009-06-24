@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef _FILEVIEW_DIALOG_H_
-#define _FILEVIEW_DIALOG_H_
+#ifndef FILEVIEW_DIALOG_H
+#define FILEVIEW_DIALOG_H
 
 #include <QDialog>
 #include <QString>
@@ -55,4 +55,4 @@ protected:
     QString FormatTitle(const QString &filename);
 };
 
-#endif // _FILEVIEW_DIALOG_H_
+#endif // FILEVIEW_DIALOG_H

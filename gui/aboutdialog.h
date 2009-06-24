@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef _ABOUT_DIALOG_H_
-#define _ABOUT_DIALOG_H_
+#ifndef ABOUT_DIALOG_H
+#define ABOUT_DIALOG_H
 
 #include <QDialog>
 #include <QString>
@@ -38,4 +38,4 @@ private:
     QString mVersion;
 };
 
-#endif // _ABOUT_DIALOG_H_
+#endif // ABOUT_DIALOG_H

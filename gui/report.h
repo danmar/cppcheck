@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef _REPORT_H_
-#define _REPORT_H_
+#ifndef REPORT_H
+#define REPORT_H
 
 #include <QObject>
 #include <QString>
@@ -81,4 +81,4 @@ private:
     QFile mFile;
 };
 
-#endif // _REPORT_H_
+#endif // REPORT_H

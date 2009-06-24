@@ -16,15 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef _TXT_REPORT_H_
-#define _TXT_REPORT_H_
+#ifndef TXT_REPORT_H
+#define TXT_REPORT_H
 
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QFile>
 #include <QTextStream>
-#include "Report.h"
+#include "report.h"
 
 /**
 * @brief Text file report.
@@ -67,4 +67,4 @@ private:
     QTextStream mTxtWriter;
 };
 
-#endif // _TXT_REPORT_H_
+#endif // TXT_REPORT_H

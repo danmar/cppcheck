@@ -47,6 +47,8 @@
 		<Unit filename="gui/projectfile.cpp" />
 		<Unit filename="gui/projectfile.h" />
 		<Unit filename="gui/qrc_gui.cpp" />
+		<Unit filename="gui/report.cpp" />
+		<Unit filename="gui/report.h" />
 		<Unit filename="gui/resultstree.cpp" />
 		<Unit filename="gui/resultstree.h" />
 		<Unit filename="gui/resultsview.cpp" />
@@ -58,6 +60,10 @@
 		<Unit filename="gui/threadhandler.h" />
 		<Unit filename="gui/threadresult.cpp" />
 		<Unit filename="gui/threadresult.h" />
+		<Unit filename="gui/txtreport.cpp" />
+		<Unit filename="gui/txtreport.h" />
+		<Unit filename="gui/xmlreport.cpp" />
+		<Unit filename="gui/xmlreport.h" />
 		<Unit filename="src/check.h" />
 		<Unit filename="src/checkautovariables.cpp" />
 		<Unit filename="src/checkautovariables.h" />
