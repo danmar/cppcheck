@@ -29,6 +29,9 @@ HEADERS += 	mainwindow.h \
 		common.h \
 		fileviewdialog.h \
 		projectfile.h \
+		report.h \
+		txtreport.h \
+		xmlreport.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
@@ -65,6 +68,9 @@ SOURCES += 	main.cpp \
 		aboutdialog.cpp \
 		fileviewdialog.cpp \
 		projectfile.cpp \
+		report.cpp \
+		txtreport.cpp \
+		xmlreport.cpp \
 		../src/checkautovariables.cpp \
 		../src/checkdangerousfunctions.cpp \
 		../src/checkmemoryleak.cpp \

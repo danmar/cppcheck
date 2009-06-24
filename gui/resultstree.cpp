@@ -16,8 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-
-#include "resultstree.h"
 #include <QApplication>
 #include <QDebug>
 #include <QMenu>
@@ -27,6 +25,8 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QClipboard>
+#include "resultstree.h"
+#include "xmlreport.h"
 
 ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
         mSettings(settings),
@@ -533,26 +533,20 @@ QString ResultsTree::SeverityToIcon(const QString &severity)
     return "";
 }
 
-void ResultsTree::SaveResults(QTextStream &out, bool xml)
+void ResultsTree::SaveResults(Report *report)
 {
-    if (xml)
-    {
-        out << "<?xml version=\"1.0\"?>" << endl << "<results>" << endl;
-    }
+    report->WriteHeader();
 
     for (int i = 0;i < mModel.rowCount();i++)
     {
         QStandardItem *item = mModel.item(i, 0);
-        SaveErrors(out, item, xml);
+        SaveErrors(report, item);
     }
 
-    if (xml)
-    {
-        out << "</results>" << endl;
-    }
+    report->WriteFooter();
 }
 
-void ResultsTree::SaveErrors(QTextStream &out, QStandardItem *item, bool xml)
+void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 {
     if (!item)
     {
@@ -592,47 +586,14 @@ void ResultsTree::SaveErrors(QTextStream &out, QStandardItem *item, bool xml)
             continue;
         }
 
+        for (int i = 0; i < files.count(); i++)
+            files[i] = StripPath(files[i], true);
 
+        QStringList linesStr;
+        for (int i = 0; i < lines.count(); i++)
+            linesStr << lines[i].toString();
 
-        if (xml)
-        {
-            /*
-            Error example from the core program in xml
-            <error file="gui/test.cpp" line="14" id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"/>
-            The callstack seems to be ignored here aswell, instead last item of the stack is used
-            */
-            line = QString("<error file=\"%1\" line=\"%2\" id=\"%3\" severity=\"%4\" msg=\"%5\"/>").
-                   arg(StripPath(files[files.size()-1], true)). //filename
-                   arg(lines[lines.size()-1].toInt()). //line
-                   arg(id). //ID
-                   arg(severity). //severity
-                   arg(message); //Message
-
-        }
-        else
-        {
-            /*
-            Error example from the core program in text
-            [gui/test.cpp:23] -> [gui/test.cpp:14]: (error) Mismatching allocation and deallocation: k
-            */
-            for (int i = 0;i < lines.size();i++)
-            {
-                line += QString("[%1:%2]").arg(StripPath(files[i], true)).arg(lines[i].toInt());
-                if (i < lines.size() - 1 && lines.size() > 0)
-                {
-                    line += " -> ";
-                }
-
-                if (i == lines.size() - 1)
-                {
-                    line += ": ";
-                }
-            }
-
-            line += QString("(%1) %2").arg(severity).arg(message);
-        }
-
-        out << line << endl;
+        report->WriteError(files, linesStr,	id, severity, message);
     }
 }
 

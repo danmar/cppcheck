@@ -29,6 +29,8 @@
 #include "applicationlist.h"
 #include <QTextStream>
 
+class Report;
+
 /**
 * @brief Cppcheck's results are shown in this tree
 *
@@ -75,7 +77,7 @@ public:
     * @brief Save results to a text stream
     *
     */
-    void SaveResults(QTextStream &out, bool xml);
+    void SaveResults(Report *report);
 
     /**
     * @brief Update tree settings
@@ -162,9 +164,8 @@ protected:
     * @brief Save all errors under spesified item
     *
     * @param item Item whose errors to save
-    * @param xml Should errors be saved as xml (true) or as text (false)
     */
-    void SaveErrors(QTextStream &out, QStandardItem *item, bool xml);
+    void SaveErrors(Report *report, QStandardItem *item);
 
     /**
     * @brief Convert a severity string to a icon filename

@@ -16,12 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-
-#include "resultsview.h"
 #include <QDebug>
 #include <QVBoxLayout>
 #include <QFile>
 #include <QMessageBox>
+#include "resultsview.h"
+#include "txtreport.h"
+#include "xmlreport.h"
 
 ResultsView::ResultsView(QSettings &settings, ApplicationList &list) :
         mErrorsFound(false),
@@ -136,16 +137,31 @@ void ResultsView::Save(const QString &filename, bool xml)
         msgBox.exec();
     }
 
-    QFile file(filename);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    if (xml)
     {
-        return;
+        XmlReport report(filename);
+        if (report.Create())
+            mTree->SaveResults(&report);
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Failed to save the report.");
+            msgBox.exec();
+        }
     }
-
-    QTextStream out(&file);
-    mTree->SaveResults(out, xml);
+    else
+    {
+        TxtReport report(filename);
+        if (report.Create())
+            mTree->SaveResults(&report);
+        else
+        {
+            QMessageBox msgBox;
+            msgBox.setText("Failed to save the report.");
+            msgBox.exec();
+        }
+    }
 }
-
 
 void ResultsView::UpdateSettings(bool showFullPath,
                                  bool saveFullPath,
