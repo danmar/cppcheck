@@ -31,7 +31,7 @@
 class Preprocessor
 {
 public:
-    Preprocessor();
+    Preprocessor(bool debug = false);
 
     /**
      * Extract the code for each configuration
@@ -105,6 +105,9 @@ protected:
     static int getHeaderFileName(std::string &str);
 private:
 
+    /** Show debug information when bailing out */
+    const bool _debug;
+
     /**
      * Remove space that has new line character on left or right side of it.
      *
@@ -120,7 +123,7 @@ private:
 
     static std::string getdef(std::string line, bool def);
 
-    static bool match_cfg_def(std::string cfg, const std::string &def);
+    static bool match_cfg_def(std::string cfg, std::string def);
 
     /**
      * Search includes from code and append code from the included

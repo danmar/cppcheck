@@ -86,6 +86,8 @@ private:
         TEST_CASE(elif);
 
         TEST_CASE(if_cond1);
+        TEST_CASE(if_cond2);
+        TEST_CASE(if_cond3);
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -531,6 +533,53 @@ private:
         ASSERT_EQUALS("\nA\n\n\n\n", actual["LIBVER>100"]);
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
+
+    void if_cond2()
+    {
+        const char filedata[] = "#ifdef A\n"
+                                "a\n"
+                                "#endif\n"
+                                "#if defined(A) && defined(B)\n"
+                                "ab\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\na\n\n\n\n\n", actual["A"]);
+        ASSERT_EQUALS("\na\n\n\nab\n\n", actual["A;B"]);
+    }
+
+    void if_cond3()
+    {
+        const char filedata[] = "#ifdef A\n"
+                                "a\n"
+                                "#if defined(B) && defined(C)\n"
+                                "abc\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\na\n\n\n\n\n", actual["A"]);
+        ASSERT_EQUALS("\na\n\nabc\n\n\n", actual["A;B;C"]);
+    }
+
+
+
 
 
     void multiline1()

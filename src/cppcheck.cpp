@@ -331,7 +331,7 @@ unsigned int CppCheck::check()
 
         try
         {
-            Preprocessor preprocessor;
+            Preprocessor preprocessor(_settings._debug);
             std::list<std::string> configurations;
             std::string filedata = "";
 

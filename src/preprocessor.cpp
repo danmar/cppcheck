@@ -32,6 +32,11 @@
 #include <cstring>
 #include <vector>
 
+Preprocessor::Preprocessor(bool debug) : _debug(debug)
+{
+
+}
+
 void Preprocessor::writeError(const std::string &fileName, const std::string &code, size_t endPos, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText)
 {
     if (!errorLogger)
@@ -216,11 +221,6 @@ void Preprocessor::writeError(const std::string &fileName, const std::string &co
                                   "error",
                                   errorText,
                                   errorType));
-}
-
-Preprocessor::Preprocessor()
-{
-
 }
 
 static char readChar(std::istream &istr)
@@ -621,13 +621,102 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
             deflist.pop_back();
     }
 
+    // convert configurations: "defined(A) && defined(B)" => "A;B"
+    for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it)
+    {
+        std::string s(*it);
+
+        if (s.find("&&") != std::string::npos)
+        {
+            Tokenizer tokenizer;
+            std::istringstream istr(s.c_str());
+            tokenizer.tokenize(istr, "");
+
+            s = "";
+            const Token *tok = tokenizer.tokens();
+            while (tok)
+            {
+                if (Token::Match(tok, "defined ( %var% )"))
+                {
+                    s = s + tok->strAt(2);
+                    tok = tok->tokAt(4);
+                    if (tok && tok->str() == "&&")
+                    {
+                        s += ";";
+                        tok = tok->next();
+                    }
+                }
+                else if (Token::Match(tok, "%var% ;"))
+                {
+                    s += tok->str() + ";";
+                    tok = tok->tokAt(2);
+                }
+                else
+                {
+                    s = "";
+                    break;
+                }
+            }
+
+            if (!s.empty())
+                *it = s;
+        }
+    }
+
+    // cleanup unhandled configurations..
+    for (std::list<std::string>::iterator it = ret.begin(); it != ret.end();)
+    {
+        const std::string &s(*it);
+        if (s.find("&&") != std::string::npos || s.find("||") != std::string::npos)
+        {
+            // unhandled ifdef configuration..
+            if (_debug)
+                std::cout << "unhandled configuration: " << s << std::endl;
+
+            ret.erase(it++);
+        }
+        else
+            ++it;
+    }
+
     return ret;
 }
 
 
 
-bool Preprocessor::match_cfg_def(std::string cfg, const std::string &def)
+bool Preprocessor::match_cfg_def(std::string cfg, std::string def)
 {
+    //std::cout << "cfg: \"" << cfg << "\"  ";
+    //std::cout << "def: \"" << def << "\"";
+
+    for (std::string::size_type pos = def.find("defined("); pos != std::string::npos; pos = def.find("defined(", pos + 1))
+    {
+        // The character before "defined" must not be '_' or alphanumeric
+        unsigned char chPrev = (pos > 0) ? def[pos-1] : ' ';
+        if (chPrev == '_' || std::isalnum(chPrev))
+            continue;
+
+        // Extract the parameter..
+        std::string::size_type pos2 = def.find(")", pos);
+        if (pos2 == std::string::npos)
+            continue;
+
+        std::string::size_type pos1 = pos + 8;
+        const std::string par(def.substr(pos1, pos2 - pos1));
+        // TODO: better checking if parameter is defined
+        const bool isdefined(cfg.find(par) != std::string::npos);
+
+        def.erase(pos, pos2 + 1 - pos);
+        def.insert(pos, isdefined ? "1" : "0");
+    }
+
+    while (def.find("1&&") != std::string::npos)
+    {
+        def.erase(def.find("1&&"), 3);
+    }
+
+    //std::cout << " => \"" << def << "\"" << std::endl;
+
     if (def == "0")
         return false;
 
