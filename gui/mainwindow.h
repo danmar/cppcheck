@@ -63,25 +63,25 @@ public slots:
 
     /**
     * @brief Show errors with type "all"
-    * @param checked Should errors be shown (truw) or hidden (false)
+    * @param checked Should errors be shown (true) or hidden (false)
     */
     void ShowAll(bool checked);
 
     /**
     * @brief Show errors with type "security"
-    * @param checked Should errors be shown (truw) or hidden (false)
+    * @param checked Should errors be shown (true) or hidden (false)
     */
     void ShowSecurity(bool checked);
 
     /**
     * @brief Show errors with type "style"
-    * @param checked Should errors be shown (truw) or hidden (false)
+    * @param checked Should errors be shown (true) or hidden (false)
     */
     void ShowStyle(bool checked);
 
     /**
     * @brief Show errors with type "error"
-    * @param checked Should errors be shown (truw) or hidden (false)
+    * @param checked Should errors be shown (true) or hidden (false)
     */
     void ShowErrors(bool checked);
 
