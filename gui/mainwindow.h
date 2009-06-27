@@ -80,12 +80,6 @@ public slots:
     void ShowStyle(bool checked);
 
     /**
-    * @brief Show errors with type "unused"
-    * @param checked Should errors be shown (truw) or hidden (false)
-    */
-    void ShowUnused(bool checked);
-
-    /**
     * @brief Show errors with type "error"
     * @param checked Should errors be shown (truw) or hidden (false)
     */
@@ -288,12 +282,6 @@ protected:
     *
     */
     QAction mActionShowStyle;
-
-    /**
-    * @brief Action to show errors with type "unused"
-    *
-    */
-    QAction mActionShowUnused;
 
     /**
     * @brief Action to show errors with type "error"

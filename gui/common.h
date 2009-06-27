@@ -28,7 +28,6 @@ typedef enum
     SHOW_ALL = 0,
     SHOW_STYLE,
     SHOW_SECURITY,
-    SHOW_UNUSED,
     SHOW_ERRORS,
     SHOW_NONE
 }

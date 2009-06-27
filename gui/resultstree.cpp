@@ -613,10 +613,6 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
         return "security";
         break;
 
-    case SHOW_UNUSED:
-        return "unused";
-        break;
-
     case SHOW_ERRORS:
         return "error";
         break;

@@ -45,7 +45,6 @@ MainWindow::MainWindow() :
         mActionShowAll(tr("Show possible false positives"), this),
         mActionShowSecurity(tr("Show &security errors"), this),
         mActionShowStyle(tr("Show s&tyle errors"), this),
-        mActionShowUnused(tr("Show errors on &unused functions"), this),
         mActionShowErrors(tr("Show &common errors"), this),
         mActionShowCheckAll(tr("Show all"), this),
         mActionShowUncheckAll(tr("Hide all"), this),
@@ -73,7 +72,6 @@ MainWindow::MainWindow() :
     connect(&mActionShowAll, SIGNAL(toggled(bool)), this, SLOT(ShowAll(bool)));
     connect(&mActionShowSecurity, SIGNAL(toggled(bool)), this, SLOT(ShowSecurity(bool)));
     connect(&mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
-    connect(&mActionShowUnused, SIGNAL(toggled(bool)), this, SLOT(ShowUnused(bool)));
     connect(&mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
     connect(&mActionShowCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
     connect(&mActionShowUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
@@ -138,7 +136,6 @@ void MainWindow::CreateMenus()
     menuview->addAction(&mActionShowAll);
     menuview->addAction(&mActionShowSecurity);
     menuview->addAction(&mActionShowStyle);
-    menuview->addAction(&mActionShowUnused);
     menuview->addAction(&mActionShowErrors);
     menuview->addSeparator();
     menuview->addAction(&mActionShowCheckAll);
@@ -150,7 +147,6 @@ void MainWindow::CreateMenus()
     mActionShowAll.setCheckable(true);
     mActionShowSecurity.setCheckable(true);
     mActionShowStyle.setCheckable(true);
-    mActionShowUnused.setCheckable(true);
     mActionShowErrors.setCheckable(true);
 
     // Program-menu
@@ -194,14 +190,12 @@ void MainWindow::LoadSettings()
     mActionShowAll.setChecked(mSettings.value(tr("Show all"), true).toBool());
     mActionShowSecurity.setChecked(mSettings.value(tr("Show security"), true).toBool());
     mActionShowStyle.setChecked(mSettings.value(tr("Show style"), true).toBool());
-    mActionShowUnused.setChecked(mSettings.value(tr("Show unused"), true).toBool());
     mActionShowErrors.setChecked(mSettings.value(tr("Show errors"), true).toBool());
 
     mResults.ShowResults(SHOW_ALL, mActionShowAll.isChecked());
     mResults.ShowResults(SHOW_ERRORS, mActionShowErrors.isChecked());
     mResults.ShowResults(SHOW_SECURITY, mActionShowSecurity.isChecked());
     mResults.ShowResults(SHOW_STYLE, mActionShowStyle.isChecked());
-    mResults.ShowResults(SHOW_UNUSED, mActionShowUnused.isChecked());
     mApplications.LoadSettings(mSettings);
 }
 
@@ -214,7 +208,6 @@ void MainWindow::SaveSettings()
     mSettings.setValue(tr("Show all"), mActionShowAll.isChecked());
     mSettings.setValue(tr("Show security"), mActionShowSecurity.isChecked());
     mSettings.setValue(tr("Show style"), mActionShowStyle.isChecked());
-    mSettings.setValue(tr("Show unused"), mActionShowUnused.isChecked());
     mSettings.setValue(tr("Show errors"), mActionShowErrors.isChecked());
     mApplications.SaveSettings(mSettings);
 }
@@ -446,11 +439,6 @@ void MainWindow::ShowStyle(bool checked)
     mResults.ShowResults(SHOW_STYLE, checked);
 }
 
-void MainWindow::ShowUnused(bool checked)
-{
-    mResults.ShowResults(SHOW_UNUSED, checked);
-}
-
 void MainWindow::ShowErrors(bool checked)
 {
     mResults.ShowResults(SHOW_ERRORS, checked);
@@ -499,9 +487,6 @@ void MainWindow::ToggleAllChecked(bool checked)
 
     mActionShowStyle.setChecked(checked);
     ShowStyle(checked);
-
-    mActionShowUnused.setChecked(checked);
-    ShowUnused(checked);
 
     mActionShowErrors.setChecked(checked);
     ShowErrors(checked);
