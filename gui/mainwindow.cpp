@@ -332,7 +332,7 @@ Settings MainWindow::GetCppcheckSettings()
     result._verbose = true;
     result._force = mSettings.value(tr("Check force"), 1).toBool();
     result._xml = false;
-    result._unusedFunctions = true;
+    result._unusedFunctions = false;
     result._security = true;
     result._jobs = mSettings.value(tr("Check threads"), 1).toInt();
 
