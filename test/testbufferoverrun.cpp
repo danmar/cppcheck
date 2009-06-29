@@ -82,6 +82,7 @@ private:
         TEST_CASE(array_index_10);
         TEST_CASE(array_index_11);
         TEST_CASE(array_index_12);
+        TEST_CASE(array_index_13);
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -417,7 +418,19 @@ private:
         ASSERT_EQUALS("[test.cpp:10]: (all) Array index out of bounds\n", errout.str());
     }
 
-
+    void array_index_13()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char buf[10];\n"
+              "    for (int i = 0; i < 100; i++)\n"
+              "    {\n"
+              "        if (i < 10)\n"
+              "            int x = buf[i];\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void buffer_overrun_1()
     {
