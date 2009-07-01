@@ -188,13 +188,14 @@ QCheckBox* SettingsDialog::AddCheckbox(QVBoxLayout *layout,
 
 void SettingsDialog::LoadSettings()
 {
-    resize(mSettings.value(tr("Check dialog width"), 800).toInt(), mSettings.value(tr("Check dialog height"), 600).toInt());
+    resize(mSettings.value("Check dialog width", 800).toInt(),
+           mSettings.value("Check dialog height", 600).toInt());
 }
 
 void SettingsDialog::SaveSettings()
 {
-    mSettings.setValue(tr("Check dialog width"), size().width());
-    mSettings.setValue(tr("Check dialog height"), size().height());
+    mSettings.setValue("Check dialog width", size().width());
+    mSettings.setValue("Check dialog height", size().height());
 }
 
 void SettingsDialog::SaveCheckboxValues()
@@ -205,12 +206,12 @@ void SettingsDialog::SaveCheckboxValues()
         jobs = 1;
     }
 
-    mSettings.setValue(tr("Check threads"), jobs);
-    SaveCheckboxValue(mForce, tr("Check force"));
-    SaveCheckboxValue(mSaveAllErrors, tr("Save all errors"));
-    SaveCheckboxValue(mSaveFullPath, tr("Save full path"));
-    SaveCheckboxValue(mShowFullPath, tr("Show full path"));
-    SaveCheckboxValue(mShowNoErrorsMessage, tr("Show no errors message"));
+    mSettings.setValue("Check threads", jobs);
+    SaveCheckboxValue(mForce, "Check force");
+    SaveCheckboxValue(mSaveAllErrors, "Save all errors");
+    SaveCheckboxValue(mSaveFullPath, "Save full path");
+    SaveCheckboxValue(mShowFullPath, "Show full path");
+    SaveCheckboxValue(mShowNoErrorsMessage, "Show no errors message");
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)

@@ -32,8 +32,8 @@ ApplicationList::~ApplicationList()
 void ApplicationList::LoadSettings(QSettings &programSettings)
 {
 
-    QStringList names = programSettings.value(tr("Application names"), QStringList()).toStringList();
-    QStringList paths = programSettings.value(tr("Application paths"), QStringList()).toStringList();
+    QStringList names = programSettings.value("Application names", QStringList()).toStringList();
+    QStringList paths = programSettings.value("Application paths", QStringList()).toStringList();
     if (names.size() == paths.size())
     {
         for (int i = 0; i < names.size(); i++)
@@ -54,8 +54,8 @@ void ApplicationList::SaveSettings(QSettings &programSettings)
         paths << GetApplicationPath(i);
     }
 
-    programSettings.setValue(tr("Application names"), names);
-    programSettings.setValue(tr("Application paths"), paths);
+    programSettings.setValue("Application names", names);
+    programSettings.setValue("Application paths", paths);
 
 }
 

@@ -35,7 +35,7 @@
 #include "../src/cppcheckexecutor.h"
 
 MainWindow::MainWindow() :
-        mSettings(tr("Cppcheck"), tr("Cppcheck-GUI")),
+        mSettings("Cppcheck", "Cppcheck-GUI"),
         mActionExit(tr("E&xit"), this),
         mActionCheckFiles(tr("&Check files(s)"), this),
         mActionClearResults(tr("Clear &results"), this),
@@ -184,20 +184,20 @@ void MainWindow::CreateToolbar()
 
 void MainWindow::LoadSettings()
 {
-    if (mSettings.value(tr("Window maximized"), false).toBool())
+    if (mSettings.value("Window maximized", false).toBool())
     {
         showMaximized();
     }
     else
     {
-        resize(mSettings.value(tr("Window width"), 800).toInt(),
-               mSettings.value(tr("Window height"), 600).toInt());
+        resize(mSettings.value("Window width", 800).toInt(),
+               mSettings.value("Window height", 600).toInt());
     }
 
-    mActionShowAll.setChecked(mSettings.value(tr("Show all"), true).toBool());
-    mActionShowSecurity.setChecked(mSettings.value(tr("Show security"), true).toBool());
-    mActionShowStyle.setChecked(mSettings.value(tr("Show style"), true).toBool());
-    mActionShowErrors.setChecked(mSettings.value(tr("Show errors"), true).toBool());
+    mActionShowAll.setChecked(mSettings.value("Show all", true).toBool());
+    mActionShowSecurity.setChecked(mSettings.value("Show security", true).toBool());
+    mActionShowStyle.setChecked(mSettings.value("Show style", true).toBool());
+    mActionShowErrors.setChecked(mSettings.value("Show errors", true).toBool());
 
     mResults.ShowResults(SHOW_ALL, mActionShowAll.isChecked());
     mResults.ShowResults(SHOW_ERRORS, mActionShowErrors.isChecked());
@@ -211,14 +211,14 @@ void MainWindow::LoadSettings()
 
 void MainWindow::SaveSettings()
 {
-    mSettings.setValue(tr("Window width"), size().width());
-    mSettings.setValue(tr("Window height"), size().height());
-    mSettings.setValue(tr("Window maximized"), isMaximized());
+    mSettings.setValue("Window width", size().width());
+    mSettings.setValue("Window height", size().height());
+    mSettings.setValue("Window maximized", isMaximized());
 
-    mSettings.setValue(tr("Show all"), mActionShowAll.isChecked());
-    mSettings.setValue(tr("Show security"), mActionShowSecurity.isChecked());
-    mSettings.setValue(tr("Show style"), mActionShowStyle.isChecked());
-    mSettings.setValue(tr("Show errors"), mActionShowErrors.isChecked());
+    mSettings.setValue("Show all", mActionShowAll.isChecked());
+    mSettings.setValue("Show security", mActionShowSecurity.isChecked());
+    mSettings.setValue("Show style", mActionShowStyle.isChecked());
+    mSettings.setValue("Show errors", mActionShowErrors.isChecked());
 
     mSettings.setValue("Toolbars/ShowStandard", mActionViewStandardToolbar.isChecked());
 
@@ -236,7 +236,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
     {
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
-                   mSettings.value(tr("Check path"), "").toString());
+                   mSettings.value("Check path", "").toString());
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         FormatAndSetTitle();
@@ -245,7 +245,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
     {
         QString dir = QFileDialog::getExistingDirectory(this,
                       tr("Select directory to check"),
-                      mSettings.value(tr("Check path"), "").toString());
+                      mSettings.value("Check path", "").toString());
         if (!dir.isEmpty())
         {
             mCurrentDirectory = dir;
@@ -285,7 +285,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         mThread->SetFiles(RemoveUnacceptedFiles(fileNames));
         QFileInfo inf(fileNames[0]);
         QString absDirectory = inf.absoluteDir().path();
-        mSettings.setValue(tr("Check path"), absDirectory);
+        mSettings.setValue("Check path", absDirectory);
         EnableCheckButtons(false);
         mActionSettings.setEnabled(false);
         mResults.SetCheckDirectory(absDirectory);
@@ -336,11 +336,11 @@ Settings MainWindow::GetCppcheckSettings()
     result._checkCodingStyle = true;
     result._errorsOnly = false;
     result._verbose = true;
-    result._force = mSettings.value(tr("Check force"), 1).toBool();
+    result._force = mSettings.value("Check force", 1).toBool();
     result._xml = false;
     result._unusedFunctions = false;
     result._security = true;
-    result._jobs = mSettings.value(tr("Check threads"), 1).toInt();
+    result._jobs = mSettings.value("Check threads", 1).toInt();
 
     if (result._jobs <= 0)
     {

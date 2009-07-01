@@ -158,11 +158,11 @@ void ThreadHandler::Initialize(ResultsView *view)
 
 void ThreadHandler::LoadSettings(QSettings &settings)
 {
-    SetThreadCount(settings.value(tr("Check threads"), 1).toInt());
+    SetThreadCount(settings.value("Check threads", 1).toInt());
 }
 
 void ThreadHandler::SaveSettings(QSettings &settings)
 {
-    settings.setValue(tr("Check threads"), mThreads.size());
+    settings.setValue("Check threads", mThreads.size());
 }
 

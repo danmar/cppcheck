@@ -211,9 +211,9 @@ void ResultsTree::LoadSettings()
         setColumnWidth(i, mSettings.value(temp, 800 / mModel.columnCount()).toInt());
     }
 
-    mSaveFullPath = mSettings.value(tr("Save full path"), false).toBool();
-    mSaveAllErrors = mSettings.value(tr("Save all errors"), false).toBool();
-    mShowFullPath = mSettings.value(tr("Show full path"), false).toBool();
+    mSaveFullPath = mSettings.value("Save full path", false).toBool();
+    mSaveAllErrors = mSettings.value("Save all errors", false).toBool();
+    mShowFullPath = mSettings.value("Show full path", false).toBool();
 }
 
 void ResultsTree::SaveSettings()
