@@ -24,6 +24,7 @@
 #include <QSettings>
 #include <QAction>
 #include <QFileDialog>
+#include <QToolBar>
 
 #include "resultsview.h"
 #include "settingsdialog.h"
@@ -144,6 +145,17 @@ protected slots:
     *
     */
     void ResultsAdded();
+
+    /**
+    * @brief Slot for showing/hiding standard toolbar
+    */
+    void ViewStandardToolbar(bool view);
+
+    /**
+    * @brief Slot for updating View-menu before it is shown.
+    */
+    void AboutToShowViewMenu();
+
 protected:
 
     /**
@@ -266,6 +278,11 @@ protected:
     QAction mActionSettings;
 
     /**
+    * @brief Menu action to show/hide standard toolbar
+    */
+    QAction mActionViewStandardToolbar;
+
+    /**
     * @brief Action to show errors with type "all"
     *
     */
@@ -367,6 +384,11 @@ private:
     * @brief Current checked directory.
     */
     QString mCurrentDirectory;
+
+    /**
+    * @brief Standard toolbar (currently only one).
+    */
+    QToolBar *mStandardToolbar;
 };
 
 #endif // MAINWINDOW_H

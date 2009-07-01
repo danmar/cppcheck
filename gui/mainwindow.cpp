@@ -42,6 +42,7 @@ MainWindow::MainWindow() :
         mActionReCheck(tr("Recheck files"), this),
         mActionCheckDirectory(tr("Check &directory"), this),
         mActionSettings(tr("&Settings"), this),
+        mActionViewStandardToolbar(tr("Toolbar"), this),
         mActionShowAll(tr("Show possible false positives"), this),
         mActionShowSecurity(tr("Show &security errors"), this),
         mActionShowStyle(tr("Show s&tyle errors"), this),
@@ -69,6 +70,7 @@ MainWindow::MainWindow() :
     connect(&mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
     connect(&mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
 
+    connect(&mActionViewStandardToolbar, SIGNAL(toggled(bool)), this, SLOT(ViewStandardToolbar(bool)));
     connect(&mActionShowAll, SIGNAL(toggled(bool)), this, SLOT(ShowAll(bool)));
     connect(&mActionShowSecurity, SIGNAL(toggled(bool)), this, SLOT(ShowSecurity(bool)));
     connect(&mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
@@ -133,6 +135,8 @@ void MainWindow::CreateMenus()
 
     // View-menu
     QMenu *menuview = menuBar()->addMenu(tr("&View"));
+    menuview->addAction(&mActionViewStandardToolbar);
+    menuview->addSeparator();
     menuview->addAction(&mActionShowAll);
     menuview->addAction(&mActionShowSecurity);
     menuview->addAction(&mActionShowStyle);
@@ -144,10 +148,13 @@ void MainWindow::CreateMenus()
     menuview->addAction(&mActionShowCollapseAll);
     menuview->addAction(&mActionShowExpandAll);
 
+    mActionViewStandardToolbar.setCheckable(true);
     mActionShowAll.setCheckable(true);
     mActionShowSecurity.setCheckable(true);
     mActionShowStyle.setCheckable(true);
     mActionShowErrors.setCheckable(true);
+
+    connect(menuview, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
 
     // Program-menu
     QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
@@ -163,16 +170,16 @@ void MainWindow::CreateMenus()
 
 void MainWindow::CreateToolbar()
 {
-    QToolBar *toolbar = addToolBar("Toolbar");
-    toolbar->setIconSize(QSize(22, 22));
+    mStandardToolbar = addToolBar("Standard");
+    mStandardToolbar->setIconSize(QSize(22, 22));
 
-    toolbar->addAction(&mActionCheckDirectory);
-    toolbar->addAction(&mActionSave);
-    toolbar->addAction(&mActionReCheck);
-    toolbar->addAction(&mActionStop);
-    toolbar->addAction(&mActionClearResults);
-    toolbar->addAction(&mActionSettings);
-    toolbar->addAction(&mActionAbout);
+    mStandardToolbar->addAction(&mActionCheckDirectory);
+    mStandardToolbar->addAction(&mActionSave);
+    mStandardToolbar->addAction(&mActionReCheck);
+    mStandardToolbar->addAction(&mActionStop);
+    mStandardToolbar->addAction(&mActionClearResults);
+    mStandardToolbar->addAction(&mActionSettings);
+    mStandardToolbar->addAction(&mActionAbout);
 }
 
 void MainWindow::LoadSettings()
@@ -554,6 +561,14 @@ void MainWindow::ResultsAdded()
 {
 }
 
+void MainWindow::ViewStandardToolbar(bool view)
+{
+    if (view)
+        mStandardToolbar->show();
+    else
+        mStandardToolbar->hide();
+}
+
 void MainWindow::FormatAndSetTitle(const QString &text)
 {
     QString title;
@@ -562,4 +577,12 @@ void MainWindow::FormatAndSetTitle(const QString &text)
     else
         title = QString(tr("Cppcheck - %1")).arg(text);
     setWindowTitle(title);
+}
+
+void MainWindow::AboutToShowViewMenu()
+{
+    if (mStandardToolbar->isVisible())
+        mActionViewStandardToolbar.setChecked(true);
+    else
+        mActionViewStandardToolbar.setChecked(false);
 }
