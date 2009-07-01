@@ -36,7 +36,7 @@ void ApplicationList::LoadSettings(QSettings &programSettings)
     QStringList paths = programSettings.value(tr("Application paths"), QStringList()).toStringList();
     if (names.size() == paths.size())
     {
-        for (int i = 0;i < names.size();i++)
+        for (int i = 0; i < names.size(); i++)
         {
             AddApplicationType(names[i], paths[i]);
         }
@@ -48,7 +48,7 @@ void ApplicationList::SaveSettings(QSettings &programSettings)
     QStringList names;
     QStringList paths;
 
-    for (int i = 0;i < GetApplicationCount();i++)
+    for (int i = 0; i < GetApplicationCount(); i++)
     {
         names << GetApplicationName(i);
         paths << GetApplicationPath(i);
@@ -128,7 +128,7 @@ void ApplicationList::MoveFirst(const int index)
 void ApplicationList::Copy(ApplicationList &list)
 {
     Clear();
-    for (int i = 0;i < list.GetApplicationCount();i++)
+    for (int i = 0; i < list.GetApplicationCount(); i++)
     {
         AddApplicationType(list.GetApplicationName(i), list.GetApplicationPath(i));
     }

@@ -62,7 +62,7 @@ public:
         *
         */
         QString Path;
-    }ApplicationType;
+    } ApplicationType;
 
     ApplicationList();
     virtual ~ApplicationList();

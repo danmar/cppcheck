@@ -67,7 +67,7 @@ void ThreadHandler::Check(Settings settings, bool recheck)
         mRunningThreadCount = mResults.GetFileCount();
     }
 
-    for (int i = 0;i < mRunningThreadCount;i++)
+    for (int i = 0; i < mRunningThreadCount; i++)
     {
         mThreads[i]->Check(settings);
     }
@@ -90,7 +90,7 @@ void ThreadHandler::SetThreadCount(const int count)
     //Remove unused old threads
     RemoveThreads();
     //Create new threads
-    for (int i = mThreads.size();i < count;i++)
+    for (int i = mThreads.size(); i < count; i++)
     {
         mThreads << new CheckThread(mResults);
         connect(mThreads.last(), SIGNAL(Done()),
@@ -104,7 +104,7 @@ void ThreadHandler::SetThreadCount(const int count)
 
 void ThreadHandler::RemoveThreads()
 {
-    for (int i = 0;i < mThreads.size();i++)
+    for (int i = 0; i < mThreads.size(); i++)
     {
         mThreads[i]->terminate();
         disconnect(mThreads.last(), SIGNAL(Done()),
@@ -129,7 +129,7 @@ void ThreadHandler::ThreadDone()
 
 void ThreadHandler::Stop()
 {
-    for (int i = 0;i < mThreads.size();i++)
+    for (int i = 0; i < mThreads.size(); i++)
     {
         mThreads[i]->stop();
     }

@@ -108,7 +108,7 @@ void ResultsTree::AddErrorItem(const QString &file,
     item->setData(QVariant(data));
 
     //Add backtrace files as children
-    for (int i = 1;i < files.size() && i < lines.size();i++)
+    for (int i = 1; i < files.size() && i < lines.size(); i++)
     {
         AddBacktraceFiles(item,
                           StripPath(files[i], false),
@@ -204,7 +204,7 @@ void ResultsTree::Clear()
 
 void ResultsTree::LoadSettings()
 {
-    for (int i = 0;i < mModel.columnCount();i++)
+    for (int i = 0; i < mModel.columnCount(); i++)
     {
         //mFileTree.columnWidth(i);
         QString temp = QString(tr("Result column %1 width")).arg(i);
@@ -218,7 +218,7 @@ void ResultsTree::LoadSettings()
 
 void ResultsTree::SaveSettings()
 {
-    for (int i = 0;i < mModel.columnCount();i++)
+    for (int i = 0; i < mModel.columnCount(); i++)
     {
         QString temp = QString(tr("Result column %1 width")).arg(i);
         mSettings.setValue(temp, columnWidth(i));
@@ -241,7 +241,7 @@ void ResultsTree::RefreshTree()
     //Get the amount of files in the tree
     int filecount = mModel.rowCount();
 
-    for (int i = 0;i < filecount;i++)
+    for (int i = 0; i < filecount; i++)
     {
         //Get file i
         QStandardItem *file = mModel.item(i, 0);
@@ -256,7 +256,7 @@ void ResultsTree::RefreshTree()
         //By default it shouldn't be visible
         bool show = false;
 
-        for (int j = 0;j < errorcount;j++)
+        for (int j = 0; j < errorcount; j++)
         {
             //Get the error itself
             QStandardItem *child = file->child(j, 0);
@@ -346,7 +346,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         if (mContextItem && mApplications.GetApplicationCount() > 0 && mContextItem->parent())
         {
             //Go through all applications and add them to the context menu
-            for (int i = 0;i < mApplications.GetApplicationCount();i++)
+            for (int i = 0; i < mApplications.GetApplicationCount(); i++)
             {
                 //Create an action for the application
                 QAction *start = new QAction(mApplications.GetApplicationName(i), &menu);
@@ -393,7 +393,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         if (mContextItem && mApplications.GetApplicationCount() > 0 && mContextItem->parent())
         {
             //Disconnect all signals
-            for (int i = 0;i < actions.size();i++)
+            for (int i = 0; i < actions.size(); i++)
             {
 
                 disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
@@ -537,7 +537,7 @@ void ResultsTree::SaveResults(Report *report)
 {
     report->WriteHeader();
 
-    for (int i = 0;i < mModel.rowCount();i++)
+    for (int i = 0; i < mModel.rowCount(); i++)
     {
         QStandardItem *item = mModel.item(i, 0);
         SaveErrors(report, item);
@@ -555,7 +555,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 
     //qDebug() << item->text() << "has" << item->rowCount() << "errors";
 
-    for (int i = 0;i < item->rowCount();i++)
+    for (int i = 0; i < item->rowCount(); i++)
     {
         QStandardItem *error = item->child(i, 0);
 
@@ -666,7 +666,7 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
     bool updated = false;
 
     //Loop through all errors within this file
-    for (int i = 0;i < item->rowCount();i++)
+    for (int i = 0; i < item->rowCount(); i++)
     {
         //Get error i
         QStandardItem *error = item->child(i, 0);
@@ -697,7 +697,7 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
         if (error->rowCount() <= files.size() - 1)
         {
             //Loop through all files within the error
-            for (int j = 0;j < error->rowCount();j++)
+            for (int j = 0; j < error->rowCount(); j++)
             {
                 //Get file
                 QStandardItem *file = error->child(j, 0);
@@ -725,7 +725,7 @@ void ResultsTree::RefreshFilePaths()
     qDebug("Refreshing file paths");
 
     //Go through all file items (these are parent items that contain the errors)
-    for (int i = 0;i < mModel.rowCount();i++)
+    for (int i = 0; i < mModel.rowCount(); i++)
     {
         RefreshFilePaths(mModel.item(i, 0));
     }
