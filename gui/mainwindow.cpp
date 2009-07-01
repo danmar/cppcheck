@@ -203,6 +203,9 @@ void MainWindow::LoadSettings()
     mResults.ShowResults(SHOW_ERRORS, mActionShowErrors.isChecked());
     mResults.ShowResults(SHOW_SECURITY, mActionShowSecurity.isChecked());
     mResults.ShowResults(SHOW_STYLE, mActionShowStyle.isChecked());
+
+    mStandardToolbar->setVisible(mSettings.value("Toolbars/ShowStandard", true).toBool());
+
     mApplications.LoadSettings(mSettings);
 }
 
@@ -216,6 +219,9 @@ void MainWindow::SaveSettings()
     mSettings.setValue(tr("Show security"), mActionShowSecurity.isChecked());
     mSettings.setValue(tr("Show style"), mActionShowStyle.isChecked());
     mSettings.setValue(tr("Show errors"), mActionShowErrors.isChecked());
+
+    mSettings.setValue("Toolbars/ShowStandard", mActionViewStandardToolbar.isChecked());
+
     mApplications.SaveSettings(mSettings);
 }
 
