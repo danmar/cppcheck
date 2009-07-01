@@ -249,6 +249,12 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                         break;
                 }
 
+                if (tok2->str() == "if")
+                {
+                    // Bailout
+                    break;
+                }
+
                 if (Token::Match(tok2, pattern.str().c_str()))
                 {
                     bufferOverrun(tok2);
