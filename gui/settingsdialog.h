@@ -41,7 +41,9 @@ class SettingsDialog : public QDialog
 {
     Q_OBJECT
 public:
-    SettingsDialog(QSettings &programSettings, ApplicationList &list, QWidget *parent = 0);
+    SettingsDialog(QSettings *programSettings,
+                   ApplicationList *list,
+                   QWidget *parent = 0);
     virtual ~SettingsDialog();
 
     /**
@@ -216,20 +218,20 @@ protected:
     * @brief Settings
     *
     */
-    QSettings &mSettings;
+    QSettings *mSettings;
 
     /**
     * @brief List of applications user has specified
     *
     */
-    ApplicationList &mApplications;
+    ApplicationList *mApplications;
 
     /**
     * @brief Temporary list of applications
     * This will be copied to actual list of applications (mApplications)
     * when user clicks ok.
     */
-    ApplicationList mTempApplications;
+    ApplicationList *mTempApplications;
 private:
 };
 

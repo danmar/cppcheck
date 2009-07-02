@@ -24,24 +24,24 @@
 #include "txtreport.h"
 #include "xmlreport.h"
 
-ResultsView::ResultsView(QSettings &settings, ApplicationList &list) :
+ResultsView::ResultsView(QWidget * parent) :
+        QWidget(parent),
         mErrorsFound(false),
         mShowNoErrorsMessage(true)
 {
-    QVBoxLayout *layout = new QVBoxLayout();
-    setLayout(layout);
-
-    mProgress = new QProgressBar();
-    layout->addWidget(mProgress);
-    mProgress->setMinimum(0);
-    mProgress->setVisible(false);
-
-    mTree = new ResultsTree(settings, list);
-    layout->addWidget(mTree);
-
-    mShowNoErrorsMessage = settings.value(tr("Show no errors message"), true).toBool();
-
+    mUI.setupUi(this);
 }
+
+void ResultsView::Initialize(QSettings *settings, ApplicationList *list)
+{
+
+    mUI.mProgress->setMinimum(0);
+    mUI.mProgress->setVisible(false);
+    mShowNoErrorsMessage = settings->value(SETTINGS_SHOW_NO_ERRORS, true).toBool();
+
+    mUI.mTree->Initialize(settings, list);
+}
+
 
 ResultsView::~ResultsView()
 {
@@ -51,23 +51,23 @@ ResultsView::~ResultsView()
 
 void ResultsView::Clear()
 {
-    mTree->Clear();
+    mUI.mTree->Clear();
     mErrorsFound = false;
 
     //Clear the progressbar
-    mProgress->setMaximum(100);
-    mProgress->setValue(0);
+    mUI.mProgress->setMaximum(100);
+    mUI.mProgress->setValue(0);
 }
 
 
 
 void ResultsView::Progress(int value, int max)
 {
-    mProgress->setMaximum(max);
-    mProgress->setValue(value);
+    mUI.mProgress->setMaximum(max);
+    mUI.mProgress->setValue(value);
     if (value >= max)
     {
-        mProgress->setVisible(false);
+        mUI.mProgress->setVisible(false);
         //Should we inform user of non visible/not found errors?
         if (mShowNoErrorsMessage)
         {   //Tell user that we found no errors
@@ -81,7 +81,7 @@ void ResultsView::Progress(int value, int max)
 
                 msg.exec();
             } //If we have errors but they aren't visible, tell user about it
-            else if (!mTree->HasVisibleResults())
+            else if (!mUI.mTree->HasVisibleResults())
             {
                 QString text = tr("Errors were found, but they are configured to be hidden.\n"\
                                   "To toggle what kind of errors are shown, open view menu.");
@@ -97,7 +97,7 @@ void ResultsView::Progress(int value, int max)
     }
     else
     {
-        mProgress->setVisible(true);
+        mUI.mProgress->setVisible(true);
     }
 }
 
@@ -109,23 +109,23 @@ void ResultsView::Error(const QString &file,
                         const QString &id)
 {
     mErrorsFound = true;
-    mTree->AddErrorItem(file, severity, message, files, lines, id);
+    mUI.mTree->AddErrorItem(file, severity, message, files, lines, id);
     emit GotResults();
 }
 
 void ResultsView::ShowResults(ShowTypes type, bool show)
 {
-    mTree->ShowResults(type, show);
+    mUI.mTree->ShowResults(type, show);
 }
 
 void ResultsView::CollapseAllResults()
 {
-    mTree->collapseAll();
+    mUI.mTree->collapseAll();
 }
 
 void ResultsView::ExpandAllResults()
 {
-    mTree->expandAll();
+    mUI.mTree->expandAll();
 }
 
 void ResultsView::Save(const QString &filename, bool xml)
@@ -141,7 +141,7 @@ void ResultsView::Save(const QString &filename, bool xml)
     {
         XmlReport report(filename);
         if (report.Create())
-            mTree->SaveResults(&report);
+            mUI.mTree->SaveResults(&report);
         else
         {
             QMessageBox msgBox;
@@ -153,7 +153,7 @@ void ResultsView::Save(const QString &filename, bool xml)
     {
         TxtReport report(filename);
         if (report.Create())
-            mTree->SaveResults(&report);
+            mUI.mTree->SaveResults(&report);
         else
         {
             QMessageBox msgBox;
@@ -168,26 +168,32 @@ void ResultsView::UpdateSettings(bool showFullPath,
                                  bool saveAllErrors,
                                  bool showNoErrorsMessage)
 {
-    mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors);
+    mUI.mTree->UpdateSettings(showFullPath, saveFullPath, saveAllErrors);
     mShowNoErrorsMessage = showNoErrorsMessage;
 }
 
 void ResultsView::SetCheckDirectory(const QString &dir)
 {
-    mTree->SetCheckDirectory(dir);
+    mUI.mTree->SetCheckDirectory(dir);
 }
 
 void ResultsView::CheckingStarted()
 {
-    mProgress->setVisible(true);
+    mUI.mProgress->setVisible(true);
 }
 
 bool ResultsView::HasVisibleResults() const
 {
-    return mTree->HasVisibleResults();
+    return mUI.mTree->HasVisibleResults();
 }
 
 bool ResultsView::HasResults() const
 {
-    return mTree->HasResults();
+    return mUI.mTree->HasResults();
 }
+
+void ResultsView::SaveSettings()
+{
+    mUI.mTree->SaveSettings();
+}
+

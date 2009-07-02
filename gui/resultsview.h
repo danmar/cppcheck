@@ -26,7 +26,7 @@
 #include "../src/errorlogger.h"
 #include "resultstree.h"
 #include "common.h"
-
+#include "ui_resultsview.h"
 
 /**
 * @brief Widget to show cppcheck progressbar and result
@@ -37,7 +37,8 @@ class ResultsView : public QWidget
     Q_OBJECT
 public:
 
-    ResultsView(QSettings &settings, ApplicationList &list);
+    ResultsView(QWidget * parent = 0);
+    void Initialize(QSettings *settings, ApplicationList *list);
     virtual ~ResultsView();
 
     /**
@@ -104,6 +105,11 @@ public:
     */
     bool HasResults() const;
 
+    /**
+    * @brief Save View's settings
+    *
+    */
+    void SaveSettings();
 signals:
 
     /**
@@ -151,18 +157,6 @@ public slots:
 
 protected:
     /**
-    * @brief Tree to show cppcheck's results
-    *
-    */
-    ResultsTree *mTree;
-
-    /**
-    * @brief Progressbar to show cppcheck's progress
-    *
-    */
-    QProgressBar *mProgress;
-
-    /**
     * @brief Have any errors been found
     */
     bool mErrorsFound;
@@ -171,6 +165,8 @@ protected:
     * @brief Should we show a "No errors found dialog" everytime no errors were found?
     */
     bool mShowNoErrorsMessage;
+
+    Ui::ResultsView mUI;
 
 private:
 };

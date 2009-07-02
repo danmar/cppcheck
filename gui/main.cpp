@@ -19,6 +19,7 @@
 
 #include <QApplication>
 #include <QTextCodec>
+#include <QTranslator>
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
@@ -29,6 +30,8 @@ int main(int argc, char *argv[])
     // Set codecs so that UTF-8 strings in sources are handled correctly.
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
     QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+
+
 
     MainWindow window;
     window.show();

@@ -33,4 +33,30 @@ typedef enum
 }
 ShowTypes;
 
+/**
+* QSetting value names
+*/
+#define SETTINGS_WINDOW_MAXIMIZED       "Window maximized"
+#define SETTINGS_WINDOW_WIDTH           "Window width"
+#define SETTINGS_WINDOW_HEIGHT          "Window height"
+#define SETTINGS_SHOW_ALL               "Show all"
+#define SETTINGS_SHOW_SECURITY          "Show security"
+#define SETTINGS_SHOW_STYLE             "Show style"
+#define SETTINGS_SHOW_ERRORS            "Show errors"
+#define SETTINGS_CHECK_PATH             "Check path"
+#define SETTINGS_CHECK_FORCE            "Check force"
+#define SETTINGS_CHECK_THREADS          "Check threads"
+#define SETTINGS_SHOW_FULL_PATH         "Show full path"
+#define SETTINGS_SHOW_NO_ERRORS         "Show no errors message"
+#define SETTINGS_SAVE_ALL_ERRORS        "Save all errors"
+#define SETTINGS_SAVE_FULL_PATH         "Save full path"
+#define SETTINGS_CHECK_DIALOG_WIDTH     "Check dialog width"
+#define SETTINGS_CHECK_DIALOG_HEIGHT    "Check dialog height"
+#define SETTINGS_APPLICATION_NAMES      "Application names"
+#define SETTINGS_APPLICATION_PATHS      "Application paths"
+#define SETTINGS_RESULT_COLUMN_WIDTH    "Result column %1 width"
+#define SETTINGS_LANGUAGE               "Application language"
+#define SETTINGS_TOOLBARS_SHOW          "Toolbars/ShowStandard"
+
+
 #endif

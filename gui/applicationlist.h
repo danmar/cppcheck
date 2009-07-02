@@ -43,6 +43,7 @@
 */
 class ApplicationList : public QObject
 {
+    Q_OBJECT
 public:
 
     /**
@@ -64,7 +65,7 @@ public:
         QString Path;
     } ApplicationType;
 
-    ApplicationList();
+    ApplicationList(QObject *parent = 0);
     virtual ~ApplicationList();
 
     /**
@@ -72,13 +73,13 @@ public:
     *
     * @param programSettings QSettings to load application list from
     */
-    void LoadSettings(QSettings &programSettings);
+    void LoadSettings(QSettings *programSettings);
 
     /**
     * @brief Save all applications
     * @param programSettings QSettings to save applications to
     */
-    void SaveSettings(QSettings &programSettings);
+    void SaveSettings(QSettings *programSettings);
 
     /**
     * @brief Get the amount of applications in the list
@@ -143,7 +144,7 @@ public:
     * list given as a parameter.
     * @param list Copying source
     */
-    void Copy(ApplicationList &list);
+    void Copy(ApplicationList *list);
 protected:
 
     /**

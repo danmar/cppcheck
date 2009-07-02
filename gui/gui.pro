@@ -11,6 +11,14 @@ MOC_DIR = temp
 OBJECTS_DIR = temp
 CONFIG += warn_on debug
 RESOURCES = gui.qrc
+FORMS = main.ui \
+	resultsview.ui
+	
+TRANSLATIONS =  cppcheck_fi.ts \
+		cppcheck_en.ts \
+		cppcheck_se.ts \
+		cppcheck_de.ts \
+		cppcheck_ru.ts 
 
 # Windows-specific options
 CONFIG += embed_manifest_exe
@@ -32,6 +40,7 @@ HEADERS += 	mainwindow.h \
 		report.h \
 		txtreport.h \
 		xmlreport.h \
+		translationhandler.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
@@ -71,6 +80,7 @@ SOURCES += 	main.cpp \
 		report.cpp \
 		txtreport.cpp \
 		xmlreport.cpp \
+		translationhandler.cpp \
 		../src/checkautovariables.cpp \
 		../src/checkdangerousfunctions.cpp \
 		../src/checkmemoryleak.cpp \

@@ -18,8 +18,10 @@
 
 #include "applicationlist.h"
 #include <QStringList>
+#include "common.h"
 
-ApplicationList::ApplicationList()
+ApplicationList::ApplicationList(QObject *parent) :
+        QObject(parent)
 {
     //ctor
 }
@@ -29,11 +31,12 @@ ApplicationList::~ApplicationList()
     Clear();
 }
 
-void ApplicationList::LoadSettings(QSettings &programSettings)
+void ApplicationList::LoadSettings(QSettings *programSettings)
 {
 
-    QStringList names = programSettings.value("Application names", QStringList()).toStringList();
-    QStringList paths = programSettings.value("Application paths", QStringList()).toStringList();
+    QStringList names = programSettings->value(SETTINGS_APPLICATION_NAMES, QStringList()).toStringList();
+    QStringList paths = programSettings->value(SETTINGS_APPLICATION_PATHS, QStringList()).toStringList();
+
     if (names.size() == paths.size())
     {
         for (int i = 0; i < names.size(); i++)
@@ -43,7 +46,7 @@ void ApplicationList::LoadSettings(QSettings &programSettings)
     }
 }
 
-void ApplicationList::SaveSettings(QSettings &programSettings)
+void ApplicationList::SaveSettings(QSettings *programSettings)
 {
     QStringList names;
     QStringList paths;
@@ -54,8 +57,8 @@ void ApplicationList::SaveSettings(QSettings &programSettings)
         paths << GetApplicationPath(i);
     }
 
-    programSettings.setValue("Application names", names);
-    programSettings.setValue("Application paths", paths);
+    programSettings->setValue(SETTINGS_APPLICATION_NAMES, names);
+    programSettings->setValue(SETTINGS_APPLICATION_PATHS, paths);
 
 }
 
@@ -125,12 +128,17 @@ void ApplicationList::MoveFirst(const int index)
 }
 
 
-void ApplicationList::Copy(ApplicationList &list)
+void ApplicationList::Copy(ApplicationList *list)
 {
-    Clear();
-    for (int i = 0; i < list.GetApplicationCount(); i++)
+    if (!list)
     {
-        AddApplicationType(list.GetApplicationName(i), list.GetApplicationPath(i));
+        return;
+    }
+
+    Clear();
+    for (int i = 0;i < list->GetApplicationCount();i++)
+    {
+        AddApplicationType(list->GetApplicationName(i), list->GetApplicationPath(i));
     }
 }
 

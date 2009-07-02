@@ -39,8 +39,9 @@ class ResultsTree : public QTreeView
 {
     Q_OBJECT
 public:
-    ResultsTree(QSettings &settings, ApplicationList &list);
+    ResultsTree(QWidget * parent = 0);
     virtual ~ResultsTree();
+    void Initialize(QSettings *settings, ApplicationList *list);
 
     /**
     * @brief Add a new item to the tree
@@ -108,6 +109,17 @@ public:
     */
     bool HasResults() const;
 
+    /**
+    * @brief Save all settings
+    * Colum widths
+    */
+    void SaveSettings();
+
+    /**
+    * @brief Change all visible texts language
+    *
+    */
+    void LanguageChanged();
 protected slots:
     /**
     * @brief Slot to quickstart an error with default application
@@ -253,11 +265,6 @@ protected:
     */
     void LoadSettings();
 
-    /**
-    * @brief Save all settings
-    * Colum widths
-    */
-    void SaveSettings();
 
     /**
     * @brief Create a new QStandardItem
@@ -302,7 +309,7 @@ protected:
     * @brief Program settings
     *
     */
-    QSettings &mSettings;
+    QSettings *mSettings;
 
     /**
     * @brief List of bools to determine which of ShowTypes to display on the tree
@@ -315,7 +322,7 @@ protected:
     * @brief List of applications to open errors with
     *
     */
-    ApplicationList &mApplications;
+    ApplicationList *mApplications;
 
     /**
     * @brief Right clicked item (used by context menu slots)

@@ -22,13 +22,16 @@
 
 #include <QMainWindow>
 #include <QSettings>
-#include <QAction>
 #include <QFileDialog>
+#include <QSignalMapper>
+#include <QActionGroup>
 #include <QToolBar>
 
 #include "resultsview.h"
 #include "settingsdialog.h"
+#include "translationhandler.h"
 
+#include "ui_main.h"
 class ThreadHandler;
 
 /**
@@ -43,6 +46,8 @@ public:
     virtual ~MainWindow();
 
 public slots:
+
+
 
     /**
     * @brief Slot for check files menu item
@@ -146,27 +151,32 @@ protected slots:
     */
     void ResultsAdded();
 
+
+    /**
+    * @brief Slot for changing the program's language
+    *
+    */
+    void MapLanguage(QAction *);
+
     /**
     * @brief Slot for showing/hiding standard toolbar
     */
-    void ViewStandardToolbar(bool view);
+    void ToggleToolbar();
 
-    /**
-    * @brief Slot for updating View-menu before it is shown.
-    */
-    void AboutToShowViewMenu();
 
 protected:
 
     /**
-    * @brief Create main window menus.
+    * @brief Create menu items to change language
+    *
     */
-    void CreateMenus();
+    void CreateLanguageMenuItems();
 
     /**
-    * @brief Create main window toolbar.
+    * @brief Set current language
+    * @param index Index of the language to set
     */
-    void CreateToolbar();
+    void SetLanguage(const int index);
 
     /**
     * @brief Event coming when application is about to close.
@@ -239,132 +249,16 @@ protected:
     * @brief Program settings
     *
     */
-    QSettings mSettings;
+    QSettings *mSettings;
 
-    /**
-    * @brief Menu action to exit program
-    *
-    */
-    QAction mActionExit;
 
-    /**
-    * @brief Menu action to check files
-    *
-    */
-    QAction mActionCheckFiles;
 
-    /**
-    * @brief Menu action to clear results
-    *
-    */
-    QAction mActionClearResults;
-
-    /**
-    * @brief Menu action to re check
-    *
-    */
-    QAction mActionReCheck;
-
-    /**
-    * @brief Menu action to check a directory
-    *
-    */
-    QAction mActionCheckDirectory;
-
-    /**
-    * @brief Menu action to open settings dialog
-    *
-    */
-    QAction mActionSettings;
-
-    /**
-    * @brief Menu action to show/hide standard toolbar
-    */
-    QAction mActionViewStandardToolbar;
-
-    /**
-    * @brief Action to show errors with type "all"
-    *
-    */
-    QAction mActionShowAll;
-
-    /**
-    * @brief Action to show errors with type "security"
-    *
-    */
-    QAction mActionShowSecurity;
-
-    /**
-    * @brief Action to show errors with type "style"
-    *
-    */
-    QAction mActionShowStyle;
-
-    /**
-    * @brief Action to show errors with type "error"
-    *
-    */
-    QAction mActionShowErrors;
-
-    /**
-    * @brief Action to check all "show error" menu items
-    *
-    */
-    QAction mActionShowCheckAll;
-
-    /**
-    * @brief Action to uncheck all "show error" menu items
-    *
-    */
-    QAction mActionShowUncheckAll;
-
-    /**
-    * @brief Action to collapse all items in the result tree.
-    *
-    */
-    QAction mActionShowCollapseAll;
-
-    /**
-    * @brief Action to expand all items in the result tree.
-    *
-    */
-    QAction mActionShowExpandAll;
-
-    /**
-    * @brief Action to show about dialog
-    *
-    */
-    QAction mActionAbout;
-
-    /**
-    * @brief Action to show license text
-    *
-    */
-    QAction mActionShowLicense;
-
-    /**
-    * @brief Action to show authors list
-    *
-    */
-    QAction mActionShowAuthors;
-
-    /**
-    * @brief Action stop checking files
-    *
-    */
-    QAction mActionStop;
-
-    /**
-    * @brief Action save found errors to a file
-    *
-    */
-    QAction mActionSave;
 
     /**
     * @brief Results for checking
     *
     */
-    ResultsView mResults;
+//    ResultsView mResults;
 
     /**
     * @brief Thread to check files
@@ -376,19 +270,31 @@ protected:
     * @brief List of user defined applications to open errors with
     *
     */
-    ApplicationList mApplications;
+    ApplicationList *mApplications;
 
-private:
+    /**
+    * @brief Class to handle translation changes
+    *
+    */
+    TranslationHandler *mTranslation;
+
+    /**
+    * @brief Class holding all UI components
+    *
+    */
+    Ui::MainWindow mUI;
+
+    /**
+    * @brief Group holding all supported languages
+    *
+    */
+    QActionGroup *mLanguages;
 
     /**
     * @brief Current checked directory.
     */
     QString mCurrentDirectory;
 
-    /**
-    * @brief Standard toolbar (currently only one).
-    */
-    QToolBar *mStandardToolbar;
 };
 
 #endif // MAINWINDOW_H

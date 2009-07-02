@@ -35,84 +35,62 @@
 #include "../src/cppcheckexecutor.h"
 
 MainWindow::MainWindow() :
-        mSettings("Cppcheck", "Cppcheck-GUI"),
-        mActionExit(tr("E&xit"), this),
-        mActionCheckFiles(tr("&Check files(s)"), this),
-        mActionClearResults(tr("Clear &results"), this),
-        mActionReCheck(tr("Recheck files"), this),
-        mActionCheckDirectory(tr("Check &directory"), this),
-        mActionSettings(tr("&Settings"), this),
-        mActionViewStandardToolbar(tr("Toolbar"), this),
-        mActionShowAll(tr("Show possible false positives"), this),
-        mActionShowSecurity(tr("Show &security errors"), this),
-        mActionShowStyle(tr("Show s&tyle errors"), this),
-        mActionShowErrors(tr("Show &common errors"), this),
-        mActionShowCheckAll(tr("Show all"), this),
-        mActionShowUncheckAll(tr("Hide all"), this),
-        mActionShowCollapseAll(tr("Collapse all"), this),
-        mActionShowExpandAll(tr("Expand all"), this),
-        mActionAbout(tr("About"), this),
-        mActionShowLicense(tr("License..."), this),
-        mActionShowAuthors(tr("Authors..."), this),
-        mActionStop(tr("Stop checking"), this),
-        mActionSave(tr("Save results to a file"), this),
-        mResults(mSettings, mApplications)
+        mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
+        mApplications(new ApplicationList(this)),
+        mTranslation(new TranslationHandler(this)),
+        mLanguages(new QActionGroup(this))
 {
-    CreateMenus();
-    CreateToolbar();
+    mUI.setupUi(this);
+    mUI.mResults->Initialize(mSettings, mApplications);
+
+
     mThread = new ThreadHandler(this);
 
-    setCentralWidget(&mResults);
 
-    connect(&mActionExit, SIGNAL(triggered()), this, SLOT(close()));
-    connect(&mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
-    connect(&mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
-    connect(&mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
-    connect(&mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
 
-    connect(&mActionViewStandardToolbar, SIGNAL(toggled(bool)), this, SLOT(ViewStandardToolbar(bool)));
-    connect(&mActionShowAll, SIGNAL(toggled(bool)), this, SLOT(ShowAll(bool)));
-    connect(&mActionShowSecurity, SIGNAL(toggled(bool)), this, SLOT(ShowSecurity(bool)));
-    connect(&mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
-    connect(&mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
-    connect(&mActionShowCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
-    connect(&mActionShowUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
-    connect(&mActionShowCollapseAll, SIGNAL(triggered()), &mResults, SLOT(CollapseAllResults()));
-    connect(&mActionShowExpandAll, SIGNAL(triggered()), &mResults, SLOT(ExpandAllResults()));
+    connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
+    connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
+    connect(mUI.mActionCheckDirectory, SIGNAL(triggered()), this, SLOT(CheckDirectory()));
+    connect(mUI.mActionSettings, SIGNAL(triggered()), this, SLOT(ProgramSettings()));
+    connect(mUI.mActionClearResults, SIGNAL(triggered()), this, SLOT(ClearResults()));
 
-    connect(&mActionReCheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
+    connect(mUI.mActionShowAll, SIGNAL(toggled(bool)), this, SLOT(ShowAll(bool)));
+    connect(mUI.mActionShowSecurity, SIGNAL(toggled(bool)), this, SLOT(ShowSecurity(bool)));
+    connect(mUI.mActionShowStyle, SIGNAL(toggled(bool)), this, SLOT(ShowStyle(bool)));
+    connect(mUI.mActionShowErrors, SIGNAL(toggled(bool)), this, SLOT(ShowErrors(bool)));
+    connect(mUI.mActionCheckAll, SIGNAL(triggered()), this, SLOT(CheckAll()));
+    connect(mUI.mActionUncheckAll, SIGNAL(triggered()), this, SLOT(UncheckAll()));
+    connect(mUI.mActionCollapseAll, SIGNAL(triggered()), mUI.mResults, SLOT(CollapseAllResults()));
+    connect(mUI.mActionExpandAll, SIGNAL(triggered()), mUI.mResults, SLOT(ExpandAllResults()));
 
-    connect(&mActionStop, SIGNAL(triggered()), mThread, SLOT(Stop()));
-    connect(&mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
+    connect(mUI.mActionRecheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
-    connect(&mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
-    connect(&mActionShowLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
-    connect(&mActionShowAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
+    connect(mUI.mActionStop, SIGNAL(triggered()), mThread, SLOT(Stop()));
+    connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
+
+    connect(mUI.mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
+    connect(mUI.mActionLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
+    connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
 
     connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
-    connect(&mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
+    connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
 
-    mActionCheckDirectory.setIcon(QIcon(":icon.png"));
-    mActionReCheck.setIcon(QIcon(":images/view-refresh.png"));
-    mActionSettings.setIcon(QIcon(":images/preferences-system.png"));
-    mActionAbout.setIcon(QIcon(":images/help-browser.png"));
-    mActionStop.setIcon(QIcon(":images/process-stop.png"));
-    mActionSave.setIcon(QIcon(":images/media-floppy.png"));
-    mActionClearResults.setIcon(QIcon(":images/edit-clear.png"));
 
-    mActionReCheck.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_R));
-    mActionCheckDirectory.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-    mActionSave.setShortcut(QKeySequence(Qt::CTRL + Qt::Key_S));
-    mActionAbout.setShortcut(QKeySequence(Qt::Key_F1));
+
 
     LoadSettings();
-    mThread->Initialize(&mResults);
+
+    mThread->Initialize(mUI.mResults);
     FormatAndSetTitle();
 
     EnableCheckButtons(true);
 
-    mActionClearResults.setEnabled(false);
-    mActionSave.setEnabled(false);
+    mUI.mActionClearResults->setEnabled(false);
+    mUI.mActionSave->setEnabled(false);
+
+
+    CreateLanguageMenuItems();
+
 }
 
 MainWindow::~MainWindow()
@@ -120,109 +98,98 @@ MainWindow::~MainWindow()
     SaveSettings();
 }
 
-void MainWindow::CreateMenus()
+void MainWindow::CreateLanguageMenuItems()
 {
-    // File-menu
-    QMenu *menu = menuBar()->addMenu(tr("&File"));
-    menu->addAction(&mActionCheckFiles);
-    menu->addAction(&mActionCheckDirectory);
-    menu->addAction(&mActionReCheck);
-    menu->addAction(&mActionStop);
-    menu->addAction(&mActionClearResults);
-    menu->addAction(&mActionSave);
-    menu->addSeparator();
-    menu->addAction(&mActionExit);
 
-    // View-menu
-    QMenu *menuview = menuBar()->addMenu(tr("&View"));
-    menuview->addAction(&mActionViewStandardToolbar);
-    menuview->addSeparator();
-    menuview->addAction(&mActionShowAll);
-    menuview->addAction(&mActionShowSecurity);
-    menuview->addAction(&mActionShowStyle);
-    menuview->addAction(&mActionShowErrors);
-    menuview->addSeparator();
-    menuview->addAction(&mActionShowCheckAll);
-    menuview->addAction(&mActionShowUncheckAll);
-    menuview->addSeparator();
-    menuview->addAction(&mActionShowCollapseAll);
-    menuview->addAction(&mActionShowExpandAll);
 
-    mActionViewStandardToolbar.setCheckable(true);
-    mActionShowAll.setCheckable(true);
-    mActionShowSecurity.setCheckable(true);
-    mActionShowStyle.setCheckable(true);
-    mActionShowErrors.setCheckable(true);
 
-    connect(menuview, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
 
-    // Program-menu
-    QMenu *menuprogram = menuBar()->addMenu(tr("&Program"));
-    menuprogram->addAction(&mActionSettings);
+    QStringList languages = mTranslation->GetNames();
 
-    // Help-menu
-    QMenu *menuHelp = menuBar()->addMenu(tr("&Help"));
-    menuHelp->addAction(&mActionShowLicense);
-    menuHelp->addAction(&mActionShowAuthors);
-    menuHelp->addSeparator();
-    menuHelp->addAction(&mActionAbout);
+    for (int i = 0;i < languages.size();i++)
+    {
+        //Create an action for each language
+        //Language name is pre translated
+        QAction *temp = new QAction(languages[i], this);
+
+        temp->setCheckable(true);
+
+        //Add the action to menu
+        mUI.menu_Language->addAction(temp);
+
+        //Add action to the group
+        mLanguages->addAction(temp);
+
+        //Check it if it's the value stored to settings
+        if (i == mSettings->value(SETTINGS_LANGUAGE, 0).toInt())
+        {
+            temp->setChecked(true);
+        }
+        else
+        {
+            temp->setChecked(false);
+        }
+    }
+
+    connect(mLanguages, SIGNAL(triggered(QAction *)),
+            this, SLOT(MapLanguage(QAction *)));
 }
 
-void MainWindow::CreateToolbar()
-{
-    mStandardToolbar = addToolBar("Standard");
-    mStandardToolbar->setIconSize(QSize(22, 22));
 
-    mStandardToolbar->addAction(&mActionCheckDirectory);
-    mStandardToolbar->addAction(&mActionSave);
-    mStandardToolbar->addAction(&mActionReCheck);
-    mStandardToolbar->addAction(&mActionStop);
-    mStandardToolbar->addAction(&mActionClearResults);
-    mStandardToolbar->addAction(&mActionSettings);
-    mStandardToolbar->addAction(&mActionAbout);
-}
 
 void MainWindow::LoadSettings()
 {
-    if (mSettings.value("Window maximized", false).toBool())
+
+    if (mSettings->value(SETTINGS_WINDOW_MAXIMIZED, false).toBool())
     {
         showMaximized();
     }
     else
     {
-        resize(mSettings.value("Window width", 800).toInt(),
-               mSettings.value("Window height", 600).toInt());
+        resize(mSettings->value(SETTINGS_WINDOW_WIDTH, 800).toInt(),
+               mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    mActionShowAll.setChecked(mSettings.value("Show all", true).toBool());
-    mActionShowSecurity.setChecked(mSettings.value("Show security", true).toBool());
-    mActionShowStyle.setChecked(mSettings.value("Show style", true).toBool());
-    mActionShowErrors.setChecked(mSettings.value("Show errors", true).toBool());
 
-    mResults.ShowResults(SHOW_ALL, mActionShowAll.isChecked());
-    mResults.ShowResults(SHOW_ERRORS, mActionShowErrors.isChecked());
-    mResults.ShowResults(SHOW_SECURITY, mActionShowSecurity.isChecked());
-    mResults.ShowResults(SHOW_STYLE, mActionShowStyle.isChecked());
+    mUI.mActionShowAll->setChecked(mSettings->value(SETTINGS_SHOW_ALL, true).toBool());
+    mUI.mActionShowSecurity->setChecked(mSettings->value(SETTINGS_SHOW_SECURITY, true).toBool());
+    mUI.mActionShowStyle->setChecked(mSettings->value(SETTINGS_SHOW_STYLE, true).toBool());
+    mUI.mActionShowErrors->setChecked(mSettings->value(SETTINGS_SHOW_ERRORS, true).toBool());
 
-    mStandardToolbar->setVisible(mSettings.value("Toolbars/ShowStandard", true).toBool());
 
-    mApplications.LoadSettings(mSettings);
+    mUI.mResults->ShowResults(SHOW_ALL, mUI.mActionShowAll->isChecked());
+    mUI.mResults->ShowResults(SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
+    mUI.mResults->ShowResults(SHOW_SECURITY, mUI.mActionShowSecurity->isChecked());
+    mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
+
+    mUI.mActionToolbar->setChecked(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
+    mUI.toolBar->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
+
+
+    mApplications->LoadSettings(mSettings);
+
+    QString error = "";
+
+    SetLanguage(mSettings->value(SETTINGS_LANGUAGE, 0).toInt());
 }
 
 void MainWindow::SaveSettings()
 {
-    mSettings.setValue("Window width", size().width());
-    mSettings.setValue("Window height", size().height());
-    mSettings.setValue("Window maximized", isMaximized());
+    mSettings->setValue(SETTINGS_WINDOW_WIDTH, size().width());
+    mSettings->setValue(SETTINGS_WINDOW_HEIGHT, size().height());
+    mSettings->setValue(SETTINGS_WINDOW_MAXIMIZED, isMaximized());
 
-    mSettings.setValue("Show all", mActionShowAll.isChecked());
-    mSettings.setValue("Show security", mActionShowSecurity.isChecked());
-    mSettings.setValue("Show style", mActionShowStyle.isChecked());
-    mSettings.setValue("Show errors", mActionShowErrors.isChecked());
 
-    mSettings.setValue("Toolbars/ShowStandard", mActionViewStandardToolbar.isChecked());
+    mSettings->setValue(SETTINGS_SHOW_ALL, mUI.mActionShowAll->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_SECURITY, mUI.mActionShowSecurity->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
+    mSettings->setValue(SETTINGS_TOOLBARS_SHOW, mUI.mActionToolbar->isChecked());
 
-    mApplications.SaveSettings(mSettings);
+    mApplications->SaveSettings(mSettings);
+
+    mSettings->setValue(SETTINGS_LANGUAGE, mTranslation->GetCurrentLanguage());
+    mUI.mResults->SaveSettings();
 }
 
 void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
@@ -236,7 +203,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
     {
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
-                   mSettings.value("Check path", "").toString());
+                   mSettings->value(SETTINGS_CHECK_PATH, "").toString());
         if (selected.isEmpty())
             mCurrentDirectory.clear();
         FormatAndSetTitle();
@@ -245,7 +212,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
     {
         QString dir = QFileDialog::getExistingDirectory(this,
                       tr("Select directory to check"),
-                      mSettings.value("Check path", "").toString());
+                      mSettings->value(SETTINGS_CHECK_PATH, "").toString());
         if (!dir.isEmpty())
         {
             mCurrentDirectory = dir;
@@ -266,7 +233,7 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
             fileNames << RemoveUnacceptedFiles(GetFilesRecursively(selection));
         }
 
-        mResults.Clear();
+        mUI.mResults->Clear();
         mThread->ClearFiles();
 
         if (fileNames.isEmpty())
@@ -280,15 +247,16 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
             return;
         }
 
-        mResults.CheckingStarted();
+        mUI.mResults->CheckingStarted();
 
         mThread->SetFiles(RemoveUnacceptedFiles(fileNames));
         QFileInfo inf(fileNames[0]);
         QString absDirectory = inf.absoluteDir().path();
-        mSettings.setValue("Check path", absDirectory);
+        mSettings->setValue(SETTINGS_CHECK_PATH, absDirectory);
         EnableCheckButtons(false);
-        mActionSettings.setEnabled(false);
-        mResults.SetCheckDirectory(absDirectory);
+        mUI.mActionSettings->setEnabled(false);
+
+        mUI.mResults->SetCheckDirectory(absDirectory);
 
         Settings checkSettings = GetCppcheckSettings();
         mThread->Check(checkSettings, false);
@@ -336,11 +304,11 @@ Settings MainWindow::GetCppcheckSettings()
     result._checkCodingStyle = true;
     result._errorsOnly = false;
     result._verbose = true;
-    result._force = mSettings.value("Check force", 1).toBool();
+    result._force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
     result._xml = false;
     result._unusedFunctions = false;
     result._security = true;
-    result._jobs = mSettings.value("Check threads", 1).toInt();
+    result._jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
 
     if (result._jobs <= 0)
     {
@@ -390,11 +358,11 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
 void MainWindow::CheckDone()
 {
     EnableCheckButtons(true);
-    mActionSettings.setEnabled(true);
-    if (mResults.HasResults())
+    mUI.mActionSettings->setEnabled(true);
+    if (mUI.mResults->HasResults())
     {
-        mActionClearResults.setEnabled(true);
-        mActionSave.setEnabled(true);
+        mUI.mActionClearResults->setEnabled(true);
+        mUI.mActionSave->setEnabled(true);
     }
 
     // Notify user - if the window is not active - that check is ready
@@ -407,10 +375,10 @@ void MainWindow::ProgramSettings()
     if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveCheckboxValues();
-        mResults.UpdateSettings(dialog.ShowFullPath(),
-                                dialog.SaveFullPath(),
-                                dialog.SaveAllErrors(),
-                                dialog.ShowNoErrorsMessage());
+        mUI.mResults->UpdateSettings(dialog.ShowFullPath(),
+                                     dialog.SaveFullPath(),
+                                     dialog.SaveAllErrors(),
+                                     dialog.ShowNoErrorsMessage());
     }
 }
 
@@ -423,38 +391,38 @@ void MainWindow::ReCheck()
 
 void MainWindow::ClearResults()
 {
-    mResults.Clear();
-    mActionClearResults.setEnabled(false);
-    mActionSave.setEnabled(false);
+    mUI.mResults->Clear();
+    mUI.mActionClearResults->setEnabled(false);
+    mUI.mActionSave->setEnabled(false);
 }
 
 void MainWindow::EnableCheckButtons(bool enable)
 {
-    mActionStop.setEnabled(!enable);
-    mActionCheckFiles.setEnabled(enable);
-    mActionReCheck.setEnabled(enable);
-    mActionCheckDirectory.setEnabled(enable);
+    mUI.mActionStop->setEnabled(!enable);
+    mUI.mActionCheckFiles->setEnabled(enable);
+    mUI.mActionRecheck->setEnabled(enable);
+    mUI.mActionCheckDirectory->setEnabled(enable);
 }
 
 
 void MainWindow::ShowAll(bool checked)
 {
-    mResults.ShowResults(SHOW_ALL, checked);
+    mUI.mResults->ShowResults(SHOW_ALL, checked);
 }
 
 void MainWindow::ShowSecurity(bool checked)
 {
-    mResults.ShowResults(SHOW_SECURITY, checked);
+    mUI.mResults->ShowResults(SHOW_SECURITY, checked);
 }
 
 void MainWindow::ShowStyle(bool checked)
 {
-    mResults.ShowResults(SHOW_STYLE, checked);
+    mUI.mResults->ShowResults(SHOW_STYLE, checked);
 }
 
 void MainWindow::ShowErrors(bool checked)
 {
-    mResults.ShowResults(SHOW_ERRORS, checked);
+    mUI.mResults->ShowResults(SHOW_ERRORS, checked);
 }
 
 void MainWindow::CheckAll()
@@ -492,16 +460,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::ToggleAllChecked(bool checked)
 {
-    mActionShowAll.setChecked(checked);
+    mUI.mActionShowAll->setChecked(checked);
     ShowAll(checked);
 
-    mActionShowSecurity.setChecked(checked);
+    mUI.mActionShowSecurity->setChecked(checked);
     ShowSecurity(checked);
 
-    mActionShowStyle.setChecked(checked);
+    mUI.mActionShowStyle->setChecked(checked);
     ShowStyle(checked);
 
-    mActionShowErrors.setChecked(checked);
+    mUI.mActionShowErrors->setChecked(checked);
     ShowErrors(checked);
 }
 
@@ -559,7 +527,7 @@ void MainWindow::Save()
             selectedFile += ".txt";
         }
 
-        mResults.Save(selectedFile, xml);
+        mUI.mResults->Save(selectedFile, xml);
     }
 }
 
@@ -567,12 +535,9 @@ void MainWindow::ResultsAdded()
 {
 }
 
-void MainWindow::ViewStandardToolbar(bool view)
+void MainWindow::ToggleToolbar()
 {
-    if (view)
-        mStandardToolbar->show();
-    else
-        mStandardToolbar->hide();
+    mUI.toolBar->setVisible(mUI.mActionToolbar->isChecked());
 }
 
 void MainWindow::FormatAndSetTitle(const QString &text)
@@ -585,10 +550,42 @@ void MainWindow::FormatAndSetTitle(const QString &text)
     setWindowTitle(title);
 }
 
-void MainWindow::AboutToShowViewMenu()
+
+void MainWindow::SetLanguage(int index)
 {
-    if (mStandardToolbar->isVisible())
-        mActionViewStandardToolbar.setChecked(true);
+    if (mTranslation->GetCurrentLanguage() == index)
+    {
+        return;
+    }
+
+    QString error;
+    if (!mTranslation->SetLanguage(index, error))
+    {
+        QMessageBox msg(QMessageBox::Warning,
+                        tr("Cppcheck"),
+                        QString(tr("Failed to change language:\n\n%1")).arg(error),
+                        QMessageBox::Ok,
+                        this);
+
+        msg.exec();
+    }
     else
-        mActionViewStandardToolbar.setChecked(false);
+    {
+        mUI.retranslateUi(this);
+    }
 }
+
+
+void MainWindow::MapLanguage(QAction *action)
+{
+    //Find the action that has the language that user clicked
+    QList<QAction *> actions = mLanguages->actions();
+    for (int i = 0;i < actions.size();i++)
+    {
+        if (actions[i] == action)
+        {
+            SetLanguage(i);
+        }
+    }
+}
+

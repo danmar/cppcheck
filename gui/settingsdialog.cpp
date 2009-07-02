@@ -24,14 +24,17 @@
 #include <QDebug>
 #include <QTabWidget>
 #include "applicationdialog.h"
+#include "common.h"
 
-SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list,
+SettingsDialog::SettingsDialog(QSettings *programSettings,
+                               ApplicationList *list,
                                QWidget *parent) :
         QDialog(parent),
         mSettings(programSettings),
-        mApplications(list)
+        mApplications(list),
+        mTempApplications(new ApplicationList(this))
 {
-    mTempApplications.Copy(list);
+    mTempApplications->Copy(list);
     //Create a layout for the settings dialog
     QVBoxLayout *dialoglayout = new QVBoxLayout();
 
@@ -69,7 +72,7 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
 
     //Number of jobs
     QHBoxLayout *jobsLayout = new QHBoxLayout();
-    mJobs = new QLineEdit(programSettings.value(tr("Check threads"), 1).toString());
+    mJobs = new QLineEdit(programSettings->value(SETTINGS_CHECK_THREADS, 1).toString());
     mJobs->setValidator(new QIntValidator(1, 9999, this));
 
     jobsLayout->addWidget(new QLabel(tr("Number of threads: ")));
@@ -80,17 +83,17 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     //Force
     mForce = AddCheckbox(layout,
                          tr("Check all #ifdef configurations"),
-                         tr("Check force"),
+                         SETTINGS_CHECK_FORCE,
                          false);
 
     mShowFullPath = AddCheckbox(layout,
                                 tr("Show full path of files"),
-                                tr("Show full path"),
+                                SETTINGS_SHOW_FULL_PATH,
                                 false);
 
     mShowNoErrorsMessage = AddCheckbox(layout,
                                        tr("Show \"No errors found\" message when no errors found"),
-                                       tr("Show no errors message"),
+                                       SETTINGS_SHOW_NO_ERRORS,
                                        true);
 
     layout->addStretch();
@@ -138,12 +141,12 @@ SettingsDialog::SettingsDialog(QSettings &programSettings, ApplicationList &list
     QVBoxLayout *reportlayout = new QVBoxLayout();
     mSaveAllErrors = AddCheckbox(reportlayout,
                                  tr("Save all errors when creating report"),
-                                 tr("Save all errors"),
+                                 SETTINGS_SAVE_ALL_ERRORS,
                                  false);
 
     mSaveFullPath = AddCheckbox(reportlayout,
                                 tr("Save full path to files in reports"),
-                                tr("Save full path"),
+                                SETTINGS_SAVE_FULL_PATH,
                                 false);
     reportlayout->addStretch();
     report->setLayout(reportlayout);
@@ -181,21 +184,21 @@ QCheckBox* SettingsDialog::AddCheckbox(QVBoxLayout *layout,
                                        bool value)
 {
     QCheckBox *result = new QCheckBox(label);
-    result->setCheckState(BoolToCheckState(mSettings.value(settings, value).toBool()));
+    result->setCheckState(BoolToCheckState(mSettings->value(settings, value).toBool()));
     layout->addWidget(result);
     return result;
 }
 
 void SettingsDialog::LoadSettings()
 {
-    resize(mSettings.value("Check dialog width", 800).toInt(),
-           mSettings.value("Check dialog height", 600).toInt());
+    resize(mSettings->value(SETTINGS_CHECK_DIALOG_WIDTH, 800).toInt(),
+           mSettings->value(SETTINGS_CHECK_DIALOG_HEIGHT, 600).toInt());
 }
 
 void SettingsDialog::SaveSettings()
 {
-    mSettings.setValue("Check dialog width", size().width());
-    mSettings.setValue("Check dialog height", size().height());
+    mSettings->setValue(SETTINGS_CHECK_DIALOG_WIDTH, size().width());
+    mSettings->setValue(SETTINGS_CHECK_DIALOG_HEIGHT, size().height());
 }
 
 void SettingsDialog::SaveCheckboxValues()
@@ -206,17 +209,17 @@ void SettingsDialog::SaveCheckboxValues()
         jobs = 1;
     }
 
-    mSettings.setValue("Check threads", jobs);
-    SaveCheckboxValue(mForce, "Check force");
-    SaveCheckboxValue(mSaveAllErrors, "Save all errors");
-    SaveCheckboxValue(mSaveFullPath, "Save full path");
-    SaveCheckboxValue(mShowFullPath, "Show full path");
-    SaveCheckboxValue(mShowNoErrorsMessage, "Show no errors message");
+    mSettings->setValue(SETTINGS_CHECK_THREADS, jobs);
+    SaveCheckboxValue(mForce, SETTINGS_CHECK_FORCE);
+    SaveCheckboxValue(mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
+    SaveCheckboxValue(mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
+    SaveCheckboxValue(mShowFullPath, SETTINGS_SHOW_FULL_PATH);
+    SaveCheckboxValue(mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
 {
-    mSettings.setValue(name, CheckStateToBool(box->checkState()));
+    mSettings->setValue(name, CheckStateToBool(box->checkState()));
 }
 
 void SettingsDialog::AddApplication()
@@ -225,7 +228,7 @@ void SettingsDialog::AddApplication()
 
     if (dialog.exec() == QDialog::Accepted)
     {
-        mTempApplications.AddApplicationType(dialog.GetName(), dialog.GetPath());
+        mTempApplications->AddApplicationType(dialog.GetName(), dialog.GetPath());
         mListWidget->addItem(dialog.GetName());
     }
 }
@@ -238,7 +241,7 @@ void SettingsDialog::DeleteApplication()
 
     foreach(item, selected)
     {
-        mTempApplications.RemoveApplication(mListWidget->row(item));
+        mTempApplications->RemoveApplication(mListWidget->row(item));
         mListWidget->clear();
         PopulateListWidget();
     }
@@ -252,13 +255,13 @@ void SettingsDialog::ModifyApplication()
     {
         int row = mListWidget->row(item);
 
-        ApplicationDialog dialog(mTempApplications.GetApplicationName(row),
-                                 mTempApplications.GetApplicationPath(row),
+        ApplicationDialog dialog(mTempApplications->GetApplicationName(row),
+                                 mTempApplications->GetApplicationPath(row),
                                  tr("Modify an application"));
 
         if (dialog.exec() == QDialog::Accepted)
         {
-            mTempApplications.SetApplicationType(row, dialog.GetName(), dialog.GetPath());
+            mTempApplications->SetApplicationType(row, dialog.GetName(), dialog.GetPath());
             item->setText(dialog.GetName());
         }
     }
@@ -270,7 +273,7 @@ void SettingsDialog::DefaultApplication()
     if (selected.size() > 0)
     {
         int index = mListWidget->row(selected[0]);
-        mTempApplications.MoveFirst(index);
+        mTempApplications->MoveFirst(index);
         mListWidget->clear();
         PopulateListWidget();
     }
@@ -278,13 +281,13 @@ void SettingsDialog::DefaultApplication()
 
 void SettingsDialog::PopulateListWidget()
 {
-    for (int i = 0; i < mTempApplications.GetApplicationCount(); i++)
+    for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
     {
-        mListWidget->addItem(mTempApplications.GetApplicationName(i));
+        mListWidget->addItem(mTempApplications->GetApplicationName(i));
     }
 
     // If list contains items select first item
-    if (mTempApplications.GetApplicationCount())
+    if (mTempApplications->GetApplicationCount())
     {
         mListWidget->setCurrentRow(0);
     }
@@ -292,7 +295,7 @@ void SettingsDialog::PopulateListWidget()
 
 void SettingsDialog::Ok()
 {
-    mApplications.Copy(mTempApplications);
+    mApplications->Copy(mTempApplications);
     accept();
 }
 

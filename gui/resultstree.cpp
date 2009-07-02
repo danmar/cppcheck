@@ -28,9 +28,8 @@
 #include "resultstree.h"
 #include "xmlreport.h"
 
-ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
-        mSettings(settings),
-        mApplications(list),
+ResultsTree::ResultsTree(QWidget * parent) :
+        QTreeView(parent),
         mContextItem(0),
         mCheckPath(""),
         mVisibleErrors(false)
@@ -41,15 +40,22 @@ ResultsTree::ResultsTree(QSettings &settings, ApplicationList &list) :
     mModel.setHorizontalHeaderLabels(labels);
     setExpandsOnDoubleClick(false);
     setSortingEnabled(true);
-    LoadSettings();
+
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
             this, SLOT(QuickStartApplication(const QModelIndex &)));
 }
 
 ResultsTree::~ResultsTree()
 {
-    SaveSettings();
 }
+
+void ResultsTree::Initialize(QSettings *settings, ApplicationList *list)
+{
+    mSettings = settings;
+    mApplications = list;
+    LoadSettings();
+}
+
 
 QStandardItem *ResultsTree::CreateItem(const QString &name)
 {
@@ -207,21 +213,21 @@ void ResultsTree::LoadSettings()
     for (int i = 0; i < mModel.columnCount(); i++)
     {
         //mFileTree.columnWidth(i);
-        QString temp = QString(tr("Result column %1 width")).arg(i);
-        setColumnWidth(i, mSettings.value(temp, 800 / mModel.columnCount()).toInt());
+        QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
+        setColumnWidth(i, mSettings->value(temp, 800 / mModel.columnCount()).toInt());
     }
 
-    mSaveFullPath = mSettings.value("Save full path", false).toBool();
-    mSaveAllErrors = mSettings.value("Save all errors", false).toBool();
-    mShowFullPath = mSettings.value("Show full path", false).toBool();
+    mSaveFullPath = mSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool();
+    mSaveAllErrors = mSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool();
+    mShowFullPath = mSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool();
 }
 
 void ResultsTree::SaveSettings()
 {
     for (int i = 0; i < mModel.columnCount(); i++)
     {
-        QString temp = QString(tr("Result column %1 width")).arg(i);
-        mSettings.setValue(temp, columnWidth(i));
+        QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
+        mSettings->setValue(temp, columnWidth(i));
     }
 }
 
@@ -343,13 +349,13 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         //member variables
         QSignalMapper *signalMapper = new QSignalMapper(this);
 
-        if (mContextItem && mApplications.GetApplicationCount() > 0 && mContextItem->parent())
+        if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent())
         {
             //Go through all applications and add them to the context menu
-            for (int i = 0; i < mApplications.GetApplicationCount(); i++)
+            for (int i = 0;i < mApplications->GetApplicationCount();i++)
             {
                 //Create an action for the application
-                QAction *start = new QAction(mApplications.GetApplicationName(i), &menu);
+                QAction *start = new QAction(mApplications->GetApplicationName(i), &menu);
 
                 //Add it to our list so we can disconnect later on
                 actions << start;
@@ -371,7 +377,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         // Add menuitems to copy full path/filename to clipboard
         if (mContextItem)
         {
-            if (mApplications.GetApplicationCount() > 0)
+            if (mApplications->GetApplicationCount() > 0)
             {
                 menu.addSeparator();
             }
@@ -390,7 +396,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         //Start the menu
         menu.exec(e->globalPos());
 
-        if (mContextItem && mApplications.GetApplicationCount() > 0 && mContextItem->parent())
+        if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent())
         {
             //Disconnect all signals
             for (int i = 0; i < actions.size(); i++)
@@ -411,7 +417,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 void ResultsTree::StartApplication(QStandardItem *target, int application)
 {
     //If there are now application's specified, tell the user about it
-    if (mApplications.GetApplicationCount() == 0)
+    if (mApplications->GetApplicationCount() == 0)
     {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
@@ -422,11 +428,11 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         return;
     }
 
-    if (target && application >= 0 && application < mApplications.GetApplicationCount() && target->parent())
+    if (target && application >= 0 && application < mApplications->GetApplicationCount() && target->parent())
     {
         QVariantMap data = target->data().toMap();
 
-        QString program = mApplications.GetApplicationPath(application);
+        QString program = mApplications->GetApplicationPath(application);
 
         //TODO Check which line was actually right clicked, now defaults to 0
         unsigned int index = 0;
@@ -459,9 +465,8 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         bool success = QProcess::startDetached(program);
         if (!success)
         {
-            QString app = mApplications.GetApplicationName(application);
-            QString text = tr("Could not start ") + app + "\n\n";
-            text += tr("Please check the application path and parameters are correct.");
+            QString app = mApplications->GetApplicationName(application);
+            QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(app);
 
             QMessageBox msgbox(this);
             msgbox.setWindowTitle("Cppcheck");
@@ -740,3 +745,12 @@ bool ResultsTree::HasResults() const
 {
     return mModel.rowCount() > 0;
 }
+
+void ResultsTree::LanguageChanged()
+{
+    QStringList labels;
+    labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
+    mModel.setHorizontalHeaderLabels(labels);
+
+}
+
