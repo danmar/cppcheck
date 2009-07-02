@@ -18,6 +18,11 @@ Compiling
   The Makefile works under Linux.
   To make it work under Windows with DJGPP, change "g++" to "gxx".
 
+  To compile the GUI one needs Qt development libraries and issue the following commands:
+  cd gui
+  qmake
+  lrelease gui.pro
+  make
 
 Usage
 
