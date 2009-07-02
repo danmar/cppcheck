@@ -33,6 +33,7 @@ public:
     const QStringList GetFiles();
     bool SetLanguage(const int index, QString &error);
     int GetCurrentLanguage() const;
+    int SuggestLanguage() const;
 protected:
     int mCurrentLanguage;
     QStringList mNames;

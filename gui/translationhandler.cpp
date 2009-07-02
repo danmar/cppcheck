@@ -27,11 +27,11 @@ TranslationHandler::TranslationHandler(QObject *parent) :
         mTranslator(new QTranslator(this))
 {
     //Add our default languages
-    mNames  << QObject::tr("English")
-    << QObject::tr("Finnish")
-    << QObject::tr("Swedish")
-    << QObject::tr("German")
-    << QObject::tr("Russian");
+    mNames  << "English"
+    << "Finnish"
+    << "Swedish"
+    << "German"
+    << "Russian";
 
     mFiles  << "cppcheck_en"
     << "cppcheck_fi"
@@ -109,3 +109,30 @@ int TranslationHandler::GetCurrentLanguage() const
     return mCurrentLanguage;
 }
 
+int TranslationHandler::SuggestLanguage() const
+{
+    /*
+    Get language from system locale's name
+    QLocale::languageToString would return the languages full name and we
+    only want two-letter ISO 639 language code so we'll get it from
+    locale's name.
+    */
+    QString language = QLocale::system().name().left(2);
+    //qDebug()<<"Your language is"<<language;
+
+    //catenate that to the default language filename
+    QString file = QString("cppcheck_%1").arg(language);
+    //qDebug()<<"Language file could be"<<file;
+
+
+    //And see if we can find it from our list of language files
+    int index = mFiles.indexOf(file);
+
+    //If nothing found, return english
+    if (index < 0)
+    {
+        return 0;
+    }
+
+    return index;
+}

@@ -167,11 +167,14 @@ void MainWindow::LoadSettings()
 
     QString error = "";
 
-    SetLanguage(mSettings->value(SETTINGS_LANGUAGE, 0).toInt());
+    SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toInt());
 }
 
 void MainWindow::SaveSettings()
 {
+    //Force toolbar checkbox value to be updated
+    AboutToShowViewMenu();
+
     mSettings->setValue(SETTINGS_WINDOW_WIDTH, size().width());
     mSettings->setValue(SETTINGS_WINDOW_HEIGHT, size().height());
     mSettings->setValue(SETTINGS_WINDOW_MAXIMIZED, isMaximized());
