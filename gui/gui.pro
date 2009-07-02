@@ -12,7 +12,9 @@ OBJECTS_DIR = temp
 CONFIG += warn_on debug
 RESOURCES = gui.qrc
 FORMS = main.ui \
-	resultsview.ui
+	resultsview.ui \
+	application.ui \
+	settings.ui
 	
 TRANSLATIONS =  cppcheck_fi.ts \
 		cppcheck_en.ts \

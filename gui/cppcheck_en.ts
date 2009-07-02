@@ -32,6 +32,12 @@
 <context>
     <name>ApplicationDialog</name>
     <message>
+        <location filename="application.ui" line="14"/>
+        <source>Add an application</source>
+        <translation>Add a new application</translation>
+    </message>
+    <message>
+        <location filename="application.ui" line="20"/>
         <location filename="applicationdialog.cpp" line="40"/>
         <source>Here you can add applications that can open error files.
 Specify a name for the application and the application to execute.
@@ -57,16 +63,19 @@ Example opening a file with Kate and make Kate scroll to the correct line:
 kate -l(line) (file)</translation>
     </message>
     <message>
+        <location filename="application.ui" line="39"/>
         <location filename="applicationdialog.cpp" line="53"/>
         <source>Application&apos;s name</source>
         <translation>Application&apos;s name</translation>
     </message>
     <message>
+        <location filename="application.ui" line="46"/>
         <location filename="applicationdialog.cpp" line="55"/>
         <source>Application to execute</source>
         <translation>Application to execute</translation>
     </message>
     <message>
+        <location filename="application.ui" line="59"/>
         <location filename="applicationdialog.cpp" line="57"/>
         <source>Browse</source>
         <translation>Browse</translation>
@@ -496,6 +505,79 @@ To toggle what kind of errors are shown, open view menu.</translation>
         <location filename="resultsview.ui" line="26"/>
         <source>Results</source>
         <translation>Results</translation>
+    </message>
+</context>
+<context>
+    <name>Settings</name>
+    <message>
+        <location filename="settings.ui" line="14"/>
+        <source>Settings</source>
+        <translation>Settings</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="24"/>
+        <source>General</source>
+        <translation>General</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="34"/>
+        <source>Number of threads: </source>
+        <translation>Number of threads: </translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="46"/>
+        <source>Check all #ifdef configurations</source>
+        <translation>Check all #ifdef configurations</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="53"/>
+        <source>Show full path of files</source>
+        <translation>Show full path of files</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="60"/>
+        <source>Show &quot;No errors found&quot; message when no errors found</source>
+        <translation>Show &quot;No errors found&quot; message when no errors found</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="83"/>
+        <source>Applications</source>
+        <translation>Applications</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="92"/>
+        <source>Add application</source>
+        <translation>Add application</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="99"/>
+        <source>Delete application</source>
+        <translation>Delete application</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="106"/>
+        <source>Modify application</source>
+        <translation>Modify application</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="113"/>
+        <source>Set as default application</source>
+        <translation>Set as default application</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="121"/>
+        <source>Reports</source>
+        <translation>Reports</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="127"/>
+        <source>Save all errors when creating report</source>
+        <translation>Save all errors when creating report</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="134"/>
+        <source>Save full path to files in reports</source>
+        <translation>Save full path to files in reports</translation>
     </message>
 </context>
 <context>

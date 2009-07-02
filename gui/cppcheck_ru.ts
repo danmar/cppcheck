@@ -32,6 +32,12 @@
 <context>
     <name>ApplicationDialog</name>
     <message>
+        <location filename="application.ui" line="14"/>
+        <source>Add an application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="application.ui" line="20"/>
         <location filename="applicationdialog.cpp" line="40"/>
         <source>Here you can add applications that can open error files.
 Specify a name for the application and the application to execute.
@@ -47,16 +53,19 @@ kate -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="application.ui" line="39"/>
         <location filename="applicationdialog.cpp" line="53"/>
         <source>Application&apos;s name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="application.ui" line="46"/>
         <location filename="applicationdialog.cpp" line="55"/>
         <source>Application to execute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="application.ui" line="59"/>
         <location filename="applicationdialog.cpp" line="57"/>
         <source>Browse</source>
         <translation type="unfinished"></translation>
@@ -478,6 +487,79 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="resultsview.ui" line="26"/>
         <source>Results</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Settings</name>
+    <message>
+        <location filename="settings.ui" line="14"/>
+        <source>Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="24"/>
+        <source>General</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="34"/>
+        <source>Number of threads: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="46"/>
+        <source>Check all #ifdef configurations</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="53"/>
+        <source>Show full path of files</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="60"/>
+        <source>Show &quot;No errors found&quot; message when no errors found</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="83"/>
+        <source>Applications</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="92"/>
+        <source>Add application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="99"/>
+        <source>Delete application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="106"/>
+        <source>Modify application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="113"/>
+        <source>Set as default application</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="121"/>
+        <source>Reports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="127"/>
+        <source>Save all errors when creating report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="134"/>
+        <source>Save full path to files in reports</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

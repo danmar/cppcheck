@@ -32,6 +32,12 @@
 <context>
     <name>ApplicationDialog</name>
     <message>
+        <location filename="application.ui" line="14"/>
+        <source>Add an application</source>
+        <translation>Lisää uusi ohjelma</translation>
+    </message>
+    <message>
+        <location filename="application.ui" line="20"/>
         <location filename="applicationdialog.cpp" line="40"/>
         <source>Here you can add applications that can open error files.
 Specify a name for the application and the application to execute.
@@ -59,16 +65,19 @@ kate -l(line) (file)
 </translation>
     </message>
     <message>
+        <location filename="application.ui" line="39"/>
         <location filename="applicationdialog.cpp" line="53"/>
         <source>Application&apos;s name</source>
         <translation>Ohjelman nimi</translation>
     </message>
     <message>
+        <location filename="application.ui" line="46"/>
         <location filename="applicationdialog.cpp" line="55"/>
         <source>Application to execute</source>
         <translation>Suoritettava ohjelma</translation>
     </message>
     <message>
+        <location filename="application.ui" line="59"/>
         <location filename="applicationdialog.cpp" line="57"/>
         <source>Browse</source>
         <translation>Selaa</translation>
@@ -496,6 +505,79 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
         <location filename="resultsview.ui" line="26"/>
         <source>Results</source>
         <translation>Tulokset</translation>
+    </message>
+</context>
+<context>
+    <name>Settings</name>
+    <message>
+        <location filename="settings.ui" line="14"/>
+        <source>Settings</source>
+        <translation>Asetukset</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="24"/>
+        <source>General</source>
+        <translation>Yleiset</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="34"/>
+        <source>Number of threads: </source>
+        <translation>Säikeiden lukumäärä: </translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="46"/>
+        <source>Check all #ifdef configurations</source>
+        <translation>Tarkista kaikki #ifdef kombinaatiot</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="53"/>
+        <source>Show full path of files</source>
+        <translation>Näytä tiedostojen täysi polku</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="60"/>
+        <source>Show &quot;No errors found&quot; message when no errors found</source>
+        <translation>Näytä &quot;virheitä ei löytynyt&quot;-viesti jos virheitä ei löydy</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="83"/>
+        <source>Applications</source>
+        <translation>Ohjelmat</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="92"/>
+        <source>Add application</source>
+        <translation>Lisää ohjelma</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="99"/>
+        <source>Delete application</source>
+        <translation>Poista ohjelma</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="106"/>
+        <source>Modify application</source>
+        <translation>Muokkaa ohjelmaa</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="113"/>
+        <source>Set as default application</source>
+        <translation>Aseta oletusohjelmaksi</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="121"/>
+        <source>Reports</source>
+        <translation>Raportit</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="127"/>
+        <source>Save all errors when creating report</source>
+        <translation>Tallenna kaikki virheet raporttia luodessa</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="134"/>
+        <source>Save full path to files in reports</source>
+        <translation>Tallenna tiedostojen koko polku raportteihin</translation>
     </message>
 </context>
 <context>
