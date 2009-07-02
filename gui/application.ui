@@ -63,7 +63,7 @@ kate -l(line) (file)</string>
     </layout>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QDialogButtonBox" name="mButtons">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -77,7 +77,7 @@ kate -l(line) (file)</string>
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>mButtons</sender>
    <signal>accepted()</signal>
    <receiver>ApplicationDialog</receiver>
    <slot>accept()</slot>
@@ -93,7 +93,7 @@ kate -l(line) (file)</string>
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>mButtons</sender>
    <signal>rejected()</signal>
    <receiver>ApplicationDialog</receiver>
    <slot>reject()</slot>

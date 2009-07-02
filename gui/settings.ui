@@ -17,7 +17,7 @@
    <item>
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -36,26 +36,26 @@
             </widget>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit"/>
+            <widget class="QLineEdit" name="mJobs"/>
            </item>
           </layout>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox">
+          <widget class="QCheckBox" name="mForce">
            <property name="text">
             <string>Check all #ifdef configurations</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_2">
+          <widget class="QCheckBox" name="mShowFullPath">
            <property name="text">
             <string>Show full path of files</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QCheckBox" name="checkBox_3">
+          <widget class="QCheckBox" name="mShowNoErrorsMessage">
            <property name="text">
             <string>Show &quot;No errors found&quot; message when no errors found</string>
            </property>
@@ -122,14 +122,14 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <item>
-        <widget class="QCheckBox" name="checkBox_4">
+        <widget class="QCheckBox" name="mSaveAllErrors">
          <property name="text">
           <string>Save all errors when creating report</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="checkBox_5">
+        <widget class="QCheckBox" name="mSaveFullPath">
          <property name="text">
           <string>Save full path to files in reports</string>
          </property>
@@ -153,7 +153,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QDialogButtonBox" name="mButtons">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
@@ -167,7 +167,7 @@
  <resources/>
  <connections>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>mButtons</sender>
    <signal>accepted()</signal>
    <receiver>Settings</receiver>
    <slot>accept()</slot>
@@ -183,7 +183,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonBox</sender>
+   <sender>mButtons</sender>
    <signal>rejected()</signal>
    <receiver>Settings</receiver>
    <slot>reject()</slot>

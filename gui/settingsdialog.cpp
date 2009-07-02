@@ -34,124 +34,39 @@ SettingsDialog::SettingsDialog(QSettings *programSettings,
         mApplications(list),
         mTempApplications(new ApplicationList(this))
 {
+    mUI.setupUi(this);
     mTempApplications->Copy(list);
-    //Create a layout for the settings dialog
-    QVBoxLayout *dialoglayout = new QVBoxLayout();
 
-    //Create a tabwidget and add it to dialogs layout
-    QTabWidget *tabs = new QTabWidget();
-    dialoglayout->addWidget(tabs);
+    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(Ok()));
+    connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
 
-    //Add ok and cancel buttons
-    QPushButton *cancel = new QPushButton(tr("Cancel"));
-    QPushButton *ok = new QPushButton(tr("Ok"));
+    mUI.mJobs->setText(programSettings->value(SETTINGS_CHECK_THREADS, 1).toString());
+    mUI.mForce->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_CHECK_FORCE, false).toBool()));
+    mUI.mShowFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
+    mUI.mShowNoErrorsMessage->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
 
-    //Add a layout for ok/cancel buttons
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
 
-    buttonLayout->addStretch();
-    buttonLayout->addWidget(ok);
-    buttonLayout->addWidget(cancel);
-    //Add button layout to the main dialog layout
-    dialoglayout->addLayout(buttonLayout);
-
-    //Connect OK buttons
-    connect(ok, SIGNAL(clicked()),
-            this, SLOT(Ok()));
-    connect(cancel, SIGNAL(clicked()),
-            this, SLOT(reject()));
-
-    //Begin adding tabs and tab content
-
-    //General tab
-    QWidget *general = new QWidget();
-    tabs->addTab(general, tr("General"));
-
-    //layout for general tab
-    QVBoxLayout *layout = new QVBoxLayout();
-
-    //Number of jobs
-    QHBoxLayout *jobsLayout = new QHBoxLayout();
-    mJobs = new QLineEdit(programSettings->value(SETTINGS_CHECK_THREADS, 1).toString());
-    mJobs->setValidator(new QIntValidator(1, 9999, this));
-
-    jobsLayout->addWidget(new QLabel(tr("Number of threads: ")));
-    jobsLayout->addWidget(mJobs);
-
-    layout->addLayout(jobsLayout);
-
-    //Force
-    mForce = AddCheckbox(layout,
-                         tr("Check all #ifdef configurations"),
-                         SETTINGS_CHECK_FORCE,
-                         false);
-
-    mShowFullPath = AddCheckbox(layout,
-                                tr("Show full path of files"),
-                                SETTINGS_SHOW_FULL_PATH,
-                                false);
-
-    mShowNoErrorsMessage = AddCheckbox(layout,
-                                       tr("Show \"No errors found\" message when no errors found"),
-                                       SETTINGS_SHOW_NO_ERRORS,
-                                       true);
-
-    layout->addStretch();
-    general->setLayout(layout);
-
-    //Add tab for setting user startable applications
-    QWidget *applications = new QWidget();
-    tabs->addTab(applications, tr("Applications"));
-
-    QVBoxLayout *appslayout = new QVBoxLayout();
-    mListWidget = new QListWidget();
-    appslayout->addWidget(mListWidget);
-    applications->setLayout(appslayout);
-
-    QPushButton *add = new QPushButton(tr("Add application"));
-    appslayout->addWidget(add);
-    connect(add, SIGNAL(clicked()),
+    connect(mUI.mButtonAdd, SIGNAL(clicked()),
             this, SLOT(AddApplication()));
 
-    QPushButton *del = new QPushButton(tr("Delete application"));
-    appslayout->addWidget(del);
-    connect(del, SIGNAL(clicked()),
+    connect(mUI.mButtonDelete, SIGNAL(clicked()),
             this, SLOT(DeleteApplication()));
 
-    QPushButton *modify = new QPushButton(tr("Modify application"));
-    appslayout->addWidget(modify);
-    connect(modify, SIGNAL(clicked()),
+    connect(mUI.mButtonModify, SIGNAL(clicked()),
             this, SLOT(ModifyApplication()));
 
-    QPushButton *def = new QPushButton(tr("Set as default application"));
-    appslayout->addWidget(def);
-    connect(def, SIGNAL(clicked()),
+    connect(mUI.mButtonDefault, SIGNAL(clicked()),
             this, SLOT(DefaultApplication()));
 
-    connect(mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
+    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
             this, SLOT(ModifyApplication()));
 
-    mListWidget->setSortingEnabled(false);
+    mUI.mListWidget->setSortingEnabled(false);
     PopulateListWidget();
 
-    //report tab
-    QWidget *report = new QWidget();
-    tabs->addTab(report, tr("Reports"));
+    mUI.mSaveAllErrors->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
+    mUI.mSaveFullPath->setCheckState(BoolToCheckState(programSettings->value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
 
-    QVBoxLayout *reportlayout = new QVBoxLayout();
-    mSaveAllErrors = AddCheckbox(reportlayout,
-                                 tr("Save all errors when creating report"),
-                                 SETTINGS_SAVE_ALL_ERRORS,
-                                 false);
-
-    mSaveFullPath = AddCheckbox(reportlayout,
-                                tr("Save full path to files in reports"),
-                                SETTINGS_SAVE_FULL_PATH,
-                                false);
-    reportlayout->addStretch();
-    report->setLayout(reportlayout);
-    setLayout(dialoglayout);
-    setWindowTitle(tr("Settings"));
     LoadSettings();
 }
 
@@ -178,16 +93,6 @@ bool SettingsDialog::CheckStateToBool(Qt::CheckState state)
     return false;
 }
 
-QCheckBox* SettingsDialog::AddCheckbox(QVBoxLayout *layout,
-                                       const QString &label,
-                                       const QString &settings,
-                                       bool value)
-{
-    QCheckBox *result = new QCheckBox(label);
-    result->setCheckState(BoolToCheckState(mSettings->value(settings, value).toBool()));
-    layout->addWidget(result);
-    return result;
-}
 
 void SettingsDialog::LoadSettings()
 {
@@ -203,18 +108,18 @@ void SettingsDialog::SaveSettings()
 
 void SettingsDialog::SaveCheckboxValues()
 {
-    int jobs = mJobs->text().toInt();
+    int jobs = mUI.mJobs->text().toInt();
     if (jobs <= 0)
     {
         jobs = 1;
     }
 
     mSettings->setValue(SETTINGS_CHECK_THREADS, jobs);
-    SaveCheckboxValue(mForce, SETTINGS_CHECK_FORCE);
-    SaveCheckboxValue(mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
-    SaveCheckboxValue(mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
-    SaveCheckboxValue(mShowFullPath, SETTINGS_SHOW_FULL_PATH);
-    SaveCheckboxValue(mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
+    SaveCheckboxValue(mUI.mForce, SETTINGS_CHECK_FORCE);
+    SaveCheckboxValue(mUI.mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
+    SaveCheckboxValue(mUI.mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
+    SaveCheckboxValue(mUI.mShowFullPath, SETTINGS_SHOW_FULL_PATH);
+    SaveCheckboxValue(mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
 }
 
 void SettingsDialog::SaveCheckboxValue(QCheckBox *box, const QString &name)
@@ -229,31 +134,31 @@ void SettingsDialog::AddApplication()
     if (dialog.exec() == QDialog::Accepted)
     {
         mTempApplications->AddApplicationType(dialog.GetName(), dialog.GetPath());
-        mListWidget->addItem(dialog.GetName());
+        mUI.mListWidget->addItem(dialog.GetName());
     }
 }
 
 void SettingsDialog::DeleteApplication()
 {
 
-    QList<QListWidgetItem *> selected = mListWidget->selectedItems();
+    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     QListWidgetItem *item = 0;
 
     foreach(item, selected)
     {
-        mTempApplications->RemoveApplication(mListWidget->row(item));
-        mListWidget->clear();
+        mTempApplications->RemoveApplication(mUI.mListWidget->row(item));
+        mUI.mListWidget->clear();
         PopulateListWidget();
     }
 }
 
 void SettingsDialog::ModifyApplication()
 {
-    QList<QListWidgetItem *> selected = mListWidget->selectedItems();
+    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     QListWidgetItem *item = 0;
     foreach(item, selected)
     {
-        int row = mListWidget->row(item);
+        int row = mUI.mListWidget->row(item);
 
         ApplicationDialog dialog(mTempApplications->GetApplicationName(row),
                                  mTempApplications->GetApplicationPath(row),
@@ -269,12 +174,12 @@ void SettingsDialog::ModifyApplication()
 
 void SettingsDialog::DefaultApplication()
 {
-    QList<QListWidgetItem *> selected = mListWidget->selectedItems();
+    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
     if (selected.size() > 0)
     {
-        int index = mListWidget->row(selected[0]);
+        int index = mUI.mListWidget->row(selected[0]);
         mTempApplications->MoveFirst(index);
-        mListWidget->clear();
+        mUI.mListWidget->clear();
         PopulateListWidget();
     }
 }
@@ -283,13 +188,13 @@ void SettingsDialog::PopulateListWidget()
 {
     for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
     {
-        mListWidget->addItem(mTempApplications->GetApplicationName(i));
+        mUI.mListWidget->addItem(mTempApplications->GetApplicationName(i));
     }
 
     // If list contains items select first item
     if (mTempApplications->GetApplicationCount())
     {
-        mListWidget->setCurrentRow(0);
+        mUI.mListWidget->setCurrentRow(0);
     }
 }
 
@@ -301,22 +206,22 @@ void SettingsDialog::Ok()
 
 bool SettingsDialog::ShowFullPath()
 {
-    return CheckStateToBool(mShowFullPath->checkState());
+    return CheckStateToBool(mUI.mShowFullPath->checkState());
 }
 
 bool SettingsDialog::SaveFullPath()
 {
-    return CheckStateToBool(mSaveFullPath->checkState());
+    return CheckStateToBool(mUI.mSaveFullPath->checkState());
 }
 
 bool SettingsDialog::SaveAllErrors()
 {
-    return CheckStateToBool(mSaveAllErrors->checkState());
+    return CheckStateToBool(mUI.mSaveAllErrors->checkState());
 }
 
 bool SettingsDialog::ShowNoErrorsMessage()
 {
-    return CheckStateToBool(mShowNoErrorsMessage->checkState());
+    return CheckStateToBool(mUI.mShowNoErrorsMessage->checkState());
 }
 
 

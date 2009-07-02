@@ -31,6 +31,7 @@
 
 #include <QListWidget>
 #include <QKeyEvent>
+#include "ui_settings.h"
 
 
 /**
@@ -141,18 +142,6 @@ protected:
     */
     void SaveCheckboxValue(QCheckBox *box, const QString &name);
 
-    /**
-        * @brief Add a new checkbox to layout
-        *
-        * @param layout layout to add to
-        * @param label label for the checkbox
-        * @param settings QSettings name for default value
-        * @return newly created QCheckBox
-        */
-    QCheckBox* AddCheckbox(QVBoxLayout *layout,
-                           const QString &label,
-                           const QString &settings,
-                           bool value);
 
     /**
     * @brief Convert bool to Qt::CheckState
@@ -169,49 +158,6 @@ protected:
     * @return converted value
     */
     bool CheckStateToBool(Qt::CheckState state);
-
-    /**
-        * @brief How many threads should cppcheck have
-        *
-        */
-    QLineEdit *mJobs;
-
-
-    /**
-    * @brief Cppcheck setting
-    *
-    */
-    QCheckBox *mForce;
-
-    /**
-    * @brief Save all errors
-    *
-    */
-    QCheckBox *mSaveAllErrors;
-
-    /**
-    * @brief Save full path of the file in error reports
-    *
-    */
-    QCheckBox *mSaveFullPath;
-
-    /**
-    * @brief Show full path of file in results view
-    *
-    */
-    QCheckBox *mShowFullPath;
-
-    /**
-    * @brief Show a message dialog when no errors are found (false)
-    *
-    */
-    QCheckBox *mShowNoErrorsMessage;
-
-    /**
-    * @brief List of all applications that can be started when right clicking
-    * an error
-    */
-    QListWidget *mListWidget;
 
 
     /**
@@ -232,6 +178,12 @@ protected:
     * when user clicks ok.
     */
     ApplicationList *mTempApplications;
+
+    /**
+    * @brief Dialog from UI designer
+    *
+    */
+    Ui::Settings mUI;
 private:
 };
 

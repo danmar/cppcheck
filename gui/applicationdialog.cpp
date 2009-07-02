@@ -32,47 +32,13 @@ ApplicationDialog::ApplicationDialog(const QString &name,
                                      QWidget *parent) :
         QDialog(parent)
 {
-    QVBoxLayout *layout = new QVBoxLayout();
-    mName = new QLineEdit(name);
-    mName->setMaxLength(100); // Should be plenty for app name
-    mPath = new QLineEdit(QDir::toNativeSeparators(path));
+    mUI.setupUi(this);
 
-    QString guide = tr("Here you can add applications that can open error files.\n" \
-                       "Specify a name for the application and the application to execute.\n\n" \
-                       "The following texts are replaced with appriproate values when application is executed:\n" \
-                       "(file) - Filename containing the error\n" \
-                       "(line) - Line number containing the error\n" \
-                       "(message) - Error message\n" \
-                       "(severity) - Error severity\n" \
-                       "\n" \
-                       "Example opening a file with Kate and make Kate scroll to the correct line:\n" \
-                       "kate -l(line) (file)");
-
-    layout->addWidget(new QLabel(guide));
-
-    layout->addWidget(new QLabel(tr("Application's name")));
-    layout->addWidget(mName);
-    layout->addWidget(new QLabel(tr("Application to execute")));
-    layout->addWidget(mPath);
-    QPushButton *browse = new QPushButton(tr("Browse"));
-    connect(browse, SIGNAL(clicked()), this, SLOT(Browse()));
-    layout->addWidget(browse);
-
-    QPushButton *cancel = new QPushButton(tr("Cancel"));
-    QPushButton *ok = new QPushButton(tr("Ok"));
-
-    //Add a layout for ok/cancel buttons
-    QHBoxLayout *buttonLayout = new QHBoxLayout();
-    buttonLayout->addWidget(ok);
-    buttonLayout->addWidget(cancel);
-    layout->addLayout(buttonLayout);
-
-    //Connect OK buttons
-    connect(ok, SIGNAL(clicked()),
-            this, SLOT(Ok()));
-    connect(cancel, SIGNAL(clicked()),
-            this, SLOT(reject()));
-    setLayout(layout);
+    connect(mUI.mButtonBrowse, SIGNAL(clicked()), this, SLOT(Browse()));
+    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(mUI.mButtons, SIGNAL(rejected()), this, SLOT(reject()));
+    mUI.mPath->setText(path);
+    mUI.mName->setText(name);
     setWindowTitle(title);
 }
 
@@ -108,24 +74,24 @@ void ApplicationDialog::Browse()
         }
 #endif // Q_WS_WIN
 
-        mPath->setText(path);
+        mUI.mPath->setText(path);
     }
 }
 
 QString ApplicationDialog::GetName()
 {
-    return mName->text();
+    return mUI.mName->text();
 }
 
 
 QString ApplicationDialog::GetPath()
 {
-    return mPath->text();
+    return mUI.mPath->text();
 }
 
 void ApplicationDialog::Ok()
 {
-    if (mName->text().isEmpty() || mPath->text().isEmpty())
+    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty())
     {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
@@ -139,7 +105,7 @@ void ApplicationDialog::Ok()
     else
     {
         // Convert possible native (Windows) path to internal presentation format
-        mPath->setText(QDir::fromNativeSeparators(mPath->text()));
+        mUI.mPath->setText(QDir::fromNativeSeparators(mUI.mPath->text()));
         accept();
     }
 }

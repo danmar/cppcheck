@@ -21,6 +21,7 @@
 
 #include <QDialog>
 #include <QLineEdit>
+#include "ui_application.h"
 
 /**
 * @brief Dialog to edit a startable application.
@@ -70,18 +71,12 @@ protected slots:
     */
     void Browse();
 protected:
-    /**
-    * @brief Editbox for the application's name
-    * This is just a name to display the application. This has nothing to do
-    * with executing the application.
-    */
-    QLineEdit *mName;
 
     /**
-    * @brief Editbox for the application's path
-    * This also contains all parameters user wants to specify.
+    * @brief UI from the Qt designer
+    *
     */
-    QLineEdit *mPath;
+    Ui::ApplicationDialog mUI;
 private:
 };
 

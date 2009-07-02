@@ -580,7 +580,7 @@ void MainWindow::SetLanguage(int index)
 
         if (languages.size() <= actions.size())
         {
-            for (int i=0;i<languages.size();i++)
+            for (int i = 0;i < languages.size();i++)
             {
                 actions[i]->setText(tr(languages[i].toLatin1()));
             }
