@@ -119,7 +119,7 @@ public:
     * @brief Change all visible texts language
     *
     */
-    void LanguageChanged();
+    void Translate();
 protected slots:
     /**
     * @brief Slot to quickstart an error with default application

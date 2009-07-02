@@ -110,6 +110,12 @@ public:
     *
     */
     void SaveSettings();
+
+    /**
+    * @brief Translate this view
+    *
+    */
+    void Translate();
 signals:
 
     /**

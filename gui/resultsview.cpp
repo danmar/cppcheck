@@ -197,3 +197,8 @@ void ResultsView::SaveSettings()
     mUI.mTree->SaveSettings();
 }
 
+void ResultsView::Translate()
+{
+    mUI.mTree->Translate();
+}
+

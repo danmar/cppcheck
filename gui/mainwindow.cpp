@@ -70,8 +70,9 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
     connect(mUI.mActionLicense, SIGNAL(triggered()), this, SLOT(ShowLicense()));
-    connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
+    connect(mUI.mActionToolbar, SIGNAL(toggled(bool)), this, SLOT(ToggleToolbar()));
 
+    connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
     connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
 
@@ -572,6 +573,7 @@ void MainWindow::SetLanguage(int index)
     else
     {
         mUI.retranslateUi(this);
+        mUI.mResults->Translate();
     }
 }
 

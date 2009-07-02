@@ -746,7 +746,7 @@ bool ResultsTree::HasResults() const
     return mModel.rowCount() > 0;
 }
 
-void ResultsTree::LanguageChanged()
+void ResultsTree::Translate()
 {
     QStringList labels;
     labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
