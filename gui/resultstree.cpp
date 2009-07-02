@@ -354,7 +354,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent())
         {
             //Go through all applications and add them to the context menu
-            for (int i = 0;i < mApplications->GetApplicationCount();i++)
+            for (int i = 0; i < mApplications->GetApplicationCount(); i++)
             {
                 //Create an action for the application
                 QAction *start = new QAction(mApplications->GetApplicationName(i), &menu);

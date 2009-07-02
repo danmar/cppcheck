@@ -107,7 +107,7 @@ void MainWindow::CreateLanguageMenuItems()
 
     QStringList languages = mTranslation->GetNames();
 
-    for (int i = 0;i < languages.size();i++)
+    for (int i = 0; i < languages.size(); i++)
     {
         //Create an action for each language
         //Language name is pre translated
@@ -580,7 +580,7 @@ void MainWindow::SetLanguage(int index)
 
         if (languages.size() <= actions.size())
         {
-            for (int i=0;i<languages.size();i++)
+            for (int i = 0; i < languages.size(); i++)
             {
                 actions[i]->setText(tr(languages[i].toLatin1()));
             }
@@ -593,7 +593,7 @@ void MainWindow::MapLanguage(QAction *action)
 {
     //Find the action that has the language that user clicked
     QList<QAction *> actions = mLanguages->actions();
-    for (int i = 0;i < actions.size();i++)
+    for (int i = 0; i < actions.size(); i++)
     {
         if (actions[i] == action)
         {
