@@ -24,7 +24,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="aboutdialog.cpp" line="49"/>
+        <location filename="aboutdialog.cpp" line="50"/>
+        <source>Visit Cppcheck homepage at %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="aboutdialog.cpp" line="54"/>
         <source>Close</source>
         <translation type="unfinished"></translation>
     </message>

@@ -46,12 +46,18 @@ AboutDialog::AboutDialog(const QString &version, QWidget *parent)
     QLabel *gpl = new QLabel(tr("This program is licensed under the terms " \
                                 "of the GNU General Public License version 3"));
     gpl->setWordWrap(true);
+    QString url = "<a href=\"http://cppcheck.wiki.sourceforge.net/\">http://cppcheck.wiki.sourceforge.net/</a>";
+    QString homepageText = QString(tr("Visit Cppcheck homepage at %1")).arg(url);
+    QLabel *homepage = new QLabel(homepageText);
+    homepage->setOpenExternalLinks(true);
+    homepage->setWordWrap(true);
     QPushButton *quit = new QPushButton(tr("Close"));
 
     mainLayout->addWidget(name);
     mainLayout->addWidget(ver);
     mainLayout->addWidget(copy);
     mainLayout->addWidget(gpl);
+    mainLayout->addWidget(homepage);
     mainLayout->addStretch();
 
     mainLayout->addLayout(btnLayout);

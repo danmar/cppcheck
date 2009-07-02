@@ -136,7 +136,7 @@ void ApplicationList::Copy(ApplicationList *list)
     }
 
     Clear();
-    for (int i = 0;i < list->GetApplicationCount();i++)
+    for (int i = 0; i < list->GetApplicationCount(); i++)
     {
         AddApplicationType(list->GetApplicationName(i), list->GetApplicationPath(i));
     }
