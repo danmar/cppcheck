@@ -15,6 +15,7 @@ FORMS = main.ui \
 	resultsview.ui \
 	application.ui \
 	settings.ui \
+	file.ui	\
 	about.ui
 	
 TRANSLATIONS =  cppcheck_fi.ts \

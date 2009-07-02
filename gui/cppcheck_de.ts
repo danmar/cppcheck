@@ -96,23 +96,18 @@ kate -l(line) (file)</source>
 <context>
     <name>FileViewDialog</name>
     <message>
-        <location filename="fileviewdialog.cpp" line="37"/>
-        <source>Close</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="fileviewdialog.cpp" line="57"/>
+        <location filename="fileviewdialog.cpp" line="47"/>
         <source>Could not find the file: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="fileviewdialog.cpp" line="61"/>
-        <location filename="fileviewdialog.cpp" line="76"/>
+        <location filename="fileviewdialog.cpp" line="51"/>
+        <location filename="fileviewdialog.cpp" line="66"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="fileviewdialog.cpp" line="72"/>
+        <location filename="fileviewdialog.cpp" line="62"/>
         <source>Could not read the file: %1</source>
         <translation type="unfinished"></translation>
     </message>
@@ -308,6 +303,16 @@ kate -l(line) (file)</source>
         <source>Cannot exit while checking.
 
 Stop the checking before exiting.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="492"/>
+        <source>License</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="499"/>
+        <source>Authors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

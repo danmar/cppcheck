@@ -26,27 +26,17 @@
 #include <QMessageBox>
 #include "fileviewdialog.h"
 
-FileViewDialog::FileViewDialog(const QString &file, QWidget *parent)
+FileViewDialog::FileViewDialog(const QString &file,
+    const QString &title,
+    QWidget *parent)
         : QDialog(parent)
 {
-    QString title = FormatTitle(file);
+    mUI.setupUi(this);
+
+
     setWindowTitle(title);
-
-    QVBoxLayout *mainLayout = new QVBoxLayout();
-    QHBoxLayout *btnLayout = new QHBoxLayout();
-    QPushButton *quit = new QPushButton(tr("Close"));
-    QTextEdit *edit = new QTextEdit();
-    edit->setReadOnly(true);
-
-    mainLayout->addWidget(edit);
-    mainLayout->addLayout(btnLayout);
-    btnLayout->addStretch();
-    btnLayout->addWidget(quit);
-    setLayout(mainLayout);
-
-    connect(quit, SIGNAL(clicked()), this, SLOT(close()));
-
-    LoadTextFile(file, edit);
+    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    LoadTextFile(file, mUI.mText);
 }
 
 void FileViewDialog::LoadTextFile(const QString &filename, QTextEdit *edit)
@@ -85,14 +75,4 @@ void FileViewDialog::LoadTextFile(const QString &filename, QTextEdit *edit)
 
     QString filestringdata(filedata);
     edit->setPlainText(filestringdata);
-}
-
-QString FileViewDialog::FormatTitle(const QString &filename)
-{
-    QString title(filename);
-    if (title.startsWith(":"))
-    {
-        title.remove(0, 1);
-    }
-    return title;
 }

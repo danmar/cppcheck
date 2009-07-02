@@ -21,9 +21,8 @@
 
 #include <QDialog>
 #include <QString>
+#include "ui_file.h"
 
-class QWidget;
-class QTextEdit;
 
 /**
 * @brief File view -dialog.
@@ -35,7 +34,10 @@ class FileViewDialog : public QDialog
 {
     Q_OBJECT
 public:
-    FileViewDialog(const QString &file, QWidget *parent = 0);
+    FileViewDialog(const QString &file,
+    const QString &title,
+    QWidget *parent = 0);
+
 
 protected:
 
@@ -53,6 +55,8 @@ protected:
     * @param filename File to load.
     */
     QString FormatTitle(const QString &filename);
+
+    Ui::Fileview mUI;
 };
 
 #endif // FILEVIEW_DIALOG_H

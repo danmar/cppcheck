@@ -489,14 +489,14 @@ void MainWindow::About()
 
 void MainWindow::ShowLicense()
 {
-    FileViewDialog *dlg = new FileViewDialog(":COPYING", this);
-    dlg->resize(550, 400);
+    FileViewDialog *dlg = new FileViewDialog(":COPYING",tr("License"), this);
+    dlg->resize(570, 400);
     dlg->exec();
 }
 
 void MainWindow::ShowAuthors()
 {
-    FileViewDialog *dlg = new FileViewDialog(":AUTHORS", this);
+    FileViewDialog *dlg = new FileViewDialog(":AUTHORS",tr("Authors"), this);
     dlg->resize(350, 400);
     dlg->exec();
 }
