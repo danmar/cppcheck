@@ -248,6 +248,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             pathnames.push_back(argv[i]);
     }
 
+    if (_settings._unusedFunctions && _settings._jobs > 1)
+    {
+        return "cppcheck: error: --unused-functions can't be used with -j option.\n";
+    }
+
     if (pathnames.size() > 0)
     {
         // Execute RecursiveAddFiles() to each given file parameter
