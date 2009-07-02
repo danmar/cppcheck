@@ -31,6 +31,9 @@
     <height>22</height>
    </size>
   </property>
+  <property name="documentMode">
+   <bool>false</bool>
+  </property>
   <widget class="QWidget" name="mCentral">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -128,7 +131,6 @@
    <addaction name="menu_Language"/>
    <addaction name="menu_Help"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
     <string>toolBar</string>
