@@ -38,7 +38,6 @@
     </message>
     <message>
         <location filename="application.ui" line="20"/>
-        <location filename="applicationdialog.cpp" line="40"/>
         <source>Here you can add applications that can open error files.
 Specify a name for the application and the application to execute.
 
@@ -64,49 +63,36 @@ kate -l(line) (file)</translation>
     </message>
     <message>
         <location filename="application.ui" line="39"/>
-        <location filename="applicationdialog.cpp" line="53"/>
         <source>Application&apos;s name</source>
         <translation>Application&apos;s name</translation>
     </message>
     <message>
         <location filename="application.ui" line="46"/>
-        <location filename="applicationdialog.cpp" line="55"/>
         <source>Application to execute</source>
         <translation>Application to execute</translation>
     </message>
     <message>
         <location filename="application.ui" line="59"/>
-        <location filename="applicationdialog.cpp" line="57"/>
         <source>Browse</source>
         <translation>Browse</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="61"/>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <location filename="applicationdialog.cpp" line="62"/>
-        <source>Ok</source>
-        <translation>Ok</translation>
-    </message>
-    <message>
-        <location filename="applicationdialog.cpp" line="91"/>
+        <location filename="applicationdialog.cpp" line="57"/>
         <source>Executable files (*.exe);;All files(*.*)</source>
         <translation>Executable files (*.exe);;All files(*.*)</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="94"/>
+        <location filename="applicationdialog.cpp" line="60"/>
         <source>Select viewer application</source>
         <translation>Select viewer application</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="131"/>
+        <location filename="applicationdialog.cpp" line="97"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="132"/>
+        <location filename="applicationdialog.cpp" line="98"/>
         <source>You must specify a name and a path for the application!</source>
         <translation>You must specify a name and a path for the application!</translation>
     </message>
@@ -583,92 +569,12 @@ To toggle what kind of errors are shown, open view menu.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="settingsdialog.cpp" line="46"/>
-        <source>Cancel</source>
-        <translation>Cancel</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="47"/>
-        <source>Ok</source>
-        <translation>Ok</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="68"/>
-        <source>General</source>
-        <translation>General</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="78"/>
-        <source>Number of threads: </source>
-        <translation>Number of threads: </translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="85"/>
-        <source>Check all #ifdef configurations</source>
-        <translation>Check all #ifdef configurations</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="90"/>
-        <source>Show full path of files</source>
-        <translation>Show full path of files</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="95"/>
-        <source>Show &quot;No errors found&quot; message when no errors found</source>
-        <translation>Show &quot;No errors found&quot; message when no errors found</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="104"/>
-        <source>Applications</source>
-        <translation>Applications</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="111"/>
-        <source>Add application</source>
-        <translation>Add application</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="116"/>
-        <source>Delete application</source>
-        <translation>Delete application</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="121"/>
-        <source>Modify application</source>
-        <translation>Modify application</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="126"/>
-        <source>Set as default application</source>
-        <translation>Set as default application</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="139"/>
-        <source>Reports</source>
-        <translation>Reports</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="143"/>
-        <source>Save all errors when creating report</source>
-        <translation>Save all errors when creating report</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="148"/>
-        <source>Save full path to files in reports</source>
-        <translation>Save full path to files in reports</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="154"/>
-        <source>Settings</source>
-        <translation>Settings</translation>
-    </message>
-    <message>
-        <location filename="settingsdialog.cpp" line="227"/>
+        <location filename="settingsdialog.cpp" line="132"/>
         <source>Add a new application</source>
         <translation>Add a new application</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="260"/>
+        <location filename="settingsdialog.cpp" line="165"/>
         <source>Modify an application</source>
         <translation>Modify an application</translation>
     </message>
