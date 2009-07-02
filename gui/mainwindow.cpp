@@ -78,7 +78,7 @@ MainWindow::MainWindow() :
 
 
 
-
+    CreateLanguageMenuItems();
     LoadSettings();
 
     mThread->Initialize(mUI.mResults);
@@ -90,7 +90,7 @@ MainWindow::MainWindow() :
     mUI.mActionSave->setEnabled(false);
 
 
-    CreateLanguageMenuItems();
+
 
 }
 
@@ -572,8 +572,19 @@ void MainWindow::SetLanguage(int index)
     }
     else
     {
+        //Translate everything that is visible here
         mUI.retranslateUi(this);
         mUI.mResults->Translate();
+        QStringList languages = mTranslation->GetNames();
+        QList<QAction *> actions = mLanguages->actions();
+
+        if (languages.size() <= actions.size())
+        {
+            for (int i=0;i<languages.size();i++)
+            {
+                actions[i]->setText(tr(languages[i].toLatin1()));
+            }
+        }
     }
 }
 

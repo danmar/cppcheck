@@ -82,7 +82,7 @@ void ResultsTree::AddErrorItem(const QString &file,
 
     if (realfile.isEmpty())
     {
-        realfile = "Undefined file";
+        realfile = tr("Undefined file");
     }
 
     bool hide = !mShowTypes[SeverityToShowType(severity)];
@@ -149,9 +149,11 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 
     QList<QStandardItem*> list;
     list << CreateItem(file);
-    list << CreateItem(severity);
+    list << CreateItem(tr(severity.toLatin1()));
     list << CreateItem(QString("%1").arg(line));
-    list << CreateItem(message);
+    //TODO message has parameter names so we'll need changes to the core
+    //cppcheck so we can get proper translations
+    list << CreateItem(tr(message.toLatin1()));
 
     QModelIndex index = QModelIndex();
 
@@ -607,19 +609,19 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
     switch (type)
     {
     case SHOW_ALL:
-        return "all";
+        return tr("all");
         break;
 
     case SHOW_STYLE:
-        return "style";
+        return tr("style");
         break;
 
     case SHOW_SECURITY:
-        return "security";
+        return tr("security");
         break;
 
     case SHOW_ERRORS:
-        return "error";
+        return tr("error");
         break;
 
     case SHOW_NONE:
@@ -751,6 +753,6 @@ void ResultsTree::Translate()
     QStringList labels;
     labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
     mModel.setHorizontalHeaderLabels(labels);
-
+    //TODO go through all the errors in the tree and translate severity and message
 }
 
