@@ -98,13 +98,17 @@ signals:
     *
     */
     void Done();
-protected slots:
+
+public slots:
 
     /**
     * @brief Slot to stop all threads
     *
     */
     void Stop();
+protected slots:
+
+
 
     /**
     * @brief Slot that a single thread is done

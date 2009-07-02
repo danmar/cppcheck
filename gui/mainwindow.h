@@ -168,6 +168,12 @@ protected slots:
     */
     void AboutToShowViewMenu();
 
+    /**
+    * @brief Slot when stop checking button is pressed
+    *
+    */
+    void StopChecking();
+
 protected:
 
     /**

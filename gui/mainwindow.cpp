@@ -65,7 +65,7 @@ MainWindow::MainWindow() :
 
     connect(mUI.mActionRecheck, SIGNAL(triggered()), this, SLOT(ReCheck()));
 
-    connect(mUI.mActionStop, SIGNAL(triggered()), mThread, SLOT(Stop()));
+    connect(mUI.mActionStop, SIGNAL(triggered()), this, SLOT(StopChecking()));
     connect(mUI.mActionSave, SIGNAL(triggered()), this, SLOT(Save()));
 
     connect(mUI.mActionAbout, SIGNAL(triggered()), this, SLOT(About()));
@@ -362,6 +362,8 @@ void MainWindow::CheckDone()
         mUI.mActionSave->setEnabled(true);
     }
 
+
+
     // Notify user - if the window is not active - that check is ready
     QApplication::alert(this, 3000);
 }
@@ -485,14 +487,14 @@ void MainWindow::About()
 
 void MainWindow::ShowLicense()
 {
-    FileViewDialog *dlg = new FileViewDialog(":COPYING",tr("License"), this);
+    FileViewDialog *dlg = new FileViewDialog(":COPYING", tr("License"), this);
     dlg->resize(570, 400);
     dlg->exec();
 }
 
 void MainWindow::ShowAuthors()
 {
-    FileViewDialog *dlg = new FileViewDialog(":AUTHORS",tr("Authors"), this);
+    FileViewDialog *dlg = new FileViewDialog(":AUTHORS", tr("Authors"), this);
     dlg->resize(350, 400);
     dlg->exec();
 }
@@ -601,4 +603,10 @@ void MainWindow::MapLanguage(QAction *action)
 void MainWindow::AboutToShowViewMenu()
 {
     mUI.mActionToolbar->setChecked(mUI.mToolBar->isVisible());
+}
+
+void MainWindow::StopChecking()
+{
+    mThread->Stop();
+    mUI.mResults->DisableProgressbar();
 }

@@ -98,6 +98,7 @@ void ResultsView::Progress(int value, int max)
     else
     {
         mUI.mProgress->setVisible(true);
+        mUI.mProgress->setEnabled(true);
     }
 }
 
@@ -202,3 +203,7 @@ void ResultsView::Translate()
     mUI.mTree->Translate();
 }
 
+void ResultsView::DisableProgressbar()
+{
+    mUI.mProgress->setEnabled(false);
+}

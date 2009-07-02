@@ -116,6 +116,8 @@ public:
     *
     */
     void Translate();
+
+    void DisableProgressbar();
 signals:
 
     /**

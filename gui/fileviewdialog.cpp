@@ -27,8 +27,8 @@
 #include "fileviewdialog.h"
 
 FileViewDialog::FileViewDialog(const QString &file,
-    const QString &title,
-    QWidget *parent)
+                               const QString &title,
+                               QWidget *parent)
         : QDialog(parent)
 {
     mUI.setupUi(this);
