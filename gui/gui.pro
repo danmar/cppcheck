@@ -14,7 +14,8 @@ RESOURCES = gui.qrc
 FORMS = main.ui \
 	resultsview.ui \
 	application.ui \
-	settings.ui
+	settings.ui \
+	about.ui
 	
 TRANSLATIONS =  cppcheck_fi.ts \
 		cppcheck_en.ts \

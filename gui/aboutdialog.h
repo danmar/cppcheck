@@ -22,7 +22,8 @@
 #include <QDialog>
 #include <QString>
 
-class QWidget;
+#include "ui_about.h"
+
 
 /**
 * @brief About dialog
@@ -35,7 +36,7 @@ public:
     AboutDialog(const QString &version, QWidget *parent = 0);
 
 private:
-    QString mVersion;
+    Ui::About mUI;
 };
 
 #endif // ABOUT_DIALOG_H

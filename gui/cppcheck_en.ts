@@ -2,36 +2,38 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="en_US">
 <context>
-    <name>AboutDialog</name>
+    <name>About</name>
     <message>
-        <location filename="aboutdialog.cpp" line="29"/>
-        <source>About cppcheck</source>
+        <location filename="about.ui" line="14"/>
+        <source>About Cppcheck</source>
         <translation>About Cppcheck</translation>
     </message>
     <message>
-        <location filename="aboutdialog.cpp" line="42"/>
-        <source>Cppcheck - A tool for static C/C++ code analysis.</source>
-        <translation>Cppcheck - A tool for static C/C++ code analysis.</translation>
-    </message>
-    <message>
-        <location filename="aboutdialog.cpp" line="43"/>
+        <location filename="about.ui" line="51"/>
         <source>Version %1</source>
         <translation>Version %1</translation>
     </message>
     <message>
-        <location filename="aboutdialog.cpp" line="46"/>
-        <source>This program is licensed under the terms of the GNU General Public License version 3</source>
-        <translation>This program is licensed under the terms of the GNU General Public License version 3</translation>
+        <location filename="about.ui" line="58"/>
+        <source>Cppcheck - A tool for static C/C++ code analysis.</source>
+        <translation>Cppcheck - A tool for static C/C++ code analysis.</translation>
     </message>
     <message>
-        <location filename="aboutdialog.cpp" line="50"/>
+        <location filename="about.ui" line="65"/>
+        <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
+        <translation>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</translation>
+    </message>
+    <message>
+        <location filename="about.ui" line="72"/>
+        <source>This program is licensed under the terms
+of the GNU General Public License version 3</source>
+        <translation>This program is licensed under the terms
+of the GNU General Public License version 3</translation>
+    </message>
+    <message>
+        <location filename="about.ui" line="83"/>
         <source>Visit Cppcheck homepage at %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="aboutdialog.cpp" line="54"/>
-        <source>Close</source>
-        <translation>Close</translation>
+        <translation>Visit Cppcheck homepage at %1</translation>
     </message>
 </context>
 <context>
