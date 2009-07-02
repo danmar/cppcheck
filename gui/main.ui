@@ -63,7 +63,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar">
+  <widget class="QMenuBar" name="mMenuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -72,14 +72,14 @@
      <height>24</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File">
+   <widget class="QMenu" name="mMenuFile">
     <property name="title">
      <string>&amp;File</string>
     </property>
     <addaction name="mActionSave"/>
     <addaction name="mActionQuit"/>
    </widget>
-   <widget class="QMenu" name="menu_View">
+   <widget class="QMenu" name="mMenuView">
     <property name="title">
      <string>&amp;View</string>
     </property>
@@ -95,12 +95,12 @@
     <addaction name="separator"/>
     <addaction name="mActionToolbar"/>
    </widget>
-   <widget class="QMenu" name="menu_Language">
+   <widget class="QMenu" name="mMenuLanguage">
     <property name="title">
      <string>&amp;Language</string>
     </property>
    </widget>
-   <widget class="QMenu" name="menu_Help">
+   <widget class="QMenu" name="mMenuHelp">
     <property name="title">
      <string>&amp;Help</string>
     </property>
@@ -108,7 +108,7 @@
     <addaction name="mActionAuthors"/>
     <addaction name="mActionAbout"/>
    </widget>
-   <widget class="QMenu" name="menu_Check">
+   <widget class="QMenu" name="mMenuCheck">
     <property name="title">
      <string>&amp;Check</string>
     </property>
@@ -117,23 +117,23 @@
     <addaction name="mActionRecheck"/>
     <addaction name="mActionStop"/>
    </widget>
-   <widget class="QMenu" name="menu_Edit">
+   <widget class="QMenu" name="mMenuEdit">
     <property name="title">
      <string>&amp;Edit</string>
     </property>
     <addaction name="mActionClearResults"/>
     <addaction name="mActionSettings"/>
    </widget>
-   <addaction name="menu_File"/>
-   <addaction name="menu_Edit"/>
-   <addaction name="menu_View"/>
-   <addaction name="menu_Check"/>
-   <addaction name="menu_Language"/>
-   <addaction name="menu_Help"/>
+   <addaction name="mMenuFile"/>
+   <addaction name="mMenuEdit"/>
+   <addaction name="mMenuView"/>
+   <addaction name="mMenuCheck"/>
+   <addaction name="mMenuLanguage"/>
+   <addaction name="mMenuHelp"/>
   </widget>
-  <widget class="QToolBar" name="toolBar">
+  <widget class="QToolBar" name="mToolBar">
    <property name="windowTitle">
-    <string>toolBar</string>
+    <string>Standard</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>

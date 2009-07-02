@@ -75,7 +75,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionAuthors, SIGNAL(triggered()), this, SLOT(ShowAuthors()));
     connect(mThread, SIGNAL(Done()), this, SLOT(CheckDone()));
     connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
-
+    connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
 
 
     CreateLanguageMenuItems();
@@ -101,10 +101,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::CreateLanguageMenuItems()
 {
-
-
-
-
     QStringList languages = mTranslation->GetNames();
 
     for (int i = 0; i < languages.size(); i++)
@@ -116,7 +112,7 @@ void MainWindow::CreateLanguageMenuItems()
         temp->setCheckable(true);
 
         //Add the action to menu
-        mUI.menu_Language->addAction(temp);
+        mUI.mMenuLanguage->addAction(temp);
 
         //Add action to the group
         mLanguages->addAction(temp);
@@ -164,7 +160,7 @@ void MainWindow::LoadSettings()
     mUI.mResults->ShowResults(SHOW_STYLE, mUI.mActionShowStyle->isChecked());
 
     mUI.mActionToolbar->setChecked(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
-    mUI.toolBar->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
+    mUI.mToolBar->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
 
 
     mApplications->LoadSettings(mSettings);
@@ -538,7 +534,7 @@ void MainWindow::ResultsAdded()
 
 void MainWindow::ToggleToolbar()
 {
-    mUI.toolBar->setVisible(mUI.mActionToolbar->isChecked());
+    mUI.mToolBar->setVisible(mUI.mActionToolbar->isChecked());
 }
 
 void MainWindow::FormatAndSetTitle(const QString &text)
@@ -602,3 +598,7 @@ void MainWindow::MapLanguage(QAction *action)
     }
 }
 
+void MainWindow::AboutToShowViewMenu()
+{
+    mUI.mActionToolbar->setChecked(mUI.mToolBar->isVisible());
+}

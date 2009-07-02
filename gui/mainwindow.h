@@ -163,6 +163,10 @@ protected slots:
     */
     void ToggleToolbar();
 
+    /**
+    * @brief Slot for updating View-menu before it is shown.
+    */
+    void AboutToShowViewMenu();
 
 protected:
 
