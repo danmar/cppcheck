@@ -159,7 +159,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             if (path[path.length()-1] != '/' && path[path.length()-1] != '\\')
                 path += '/';
 
-            _includePaths.push_back(path);
+            _settings._includePaths.push_back(path);
         }
 
 // Include paths
@@ -344,13 +344,13 @@ unsigned int CppCheck::check()
             {
                 // File content was given as a string
                 std::istringstream iss(_fileContents[ _filenames[c] ]);
-                preprocessor.preprocess(iss, filedata, configurations, fname, _includePaths);
+                preprocessor.preprocess(iss, filedata, configurations, fname, _settings._includePaths);
             }
             else
             {
                 // Only file name was given, read the content from file
                 std::ifstream fin(fname.c_str());
-                preprocessor.preprocess(fin, filedata, configurations, fname, _includePaths);
+                preprocessor.preprocess(fin, filedata, configurations, fname, _settings._includePaths);
             }
 
             int checkCount = 0;

@@ -64,6 +64,10 @@ public:
         Default value is 0. */
     int _exitCode;
 
+    /** List of include paths, e.g. "my/includes/" which should be used
+        for finding include files inside source files. */
+    std::list<std::string> _includePaths;
+
     /** Fill list of automaticly deallocated classes */
     void autoDealloc(std::istream &istr);
 

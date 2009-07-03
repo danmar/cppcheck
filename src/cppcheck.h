@@ -141,10 +141,6 @@ private:
     /** Current configuration */
     std::string     cfg;
 
-    /** List of include paths, e.g. "my/includes/" which should be used
-        for finding include files inside source files. */
-    std::list<std::string> _includePaths;
-
     std::list<std::string> _xmllist;
 };
 
