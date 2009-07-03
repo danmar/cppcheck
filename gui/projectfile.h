@@ -49,8 +49,24 @@ public:
     */
     QStringList GetDeAllocatedClasses() const;
 
+    /**
+    * @brief Get list of include directories.
+    * @return list of directories.
+    */
+    QStringList GetIncludeDirs() const;
+
 protected:
+    /**
+    * @brief Read list of automatically deallocated classes from XML.
+    * @param reader XML stream reader.
+    */
     void ReadAutoAllocClasses(QXmlStreamReader &reader);
+
+    /**
+    * @brief Read list of include directories from XML.
+    * @param reader XML stream reader.
+    */
+    void ReadIncludeDirs(QXmlStreamReader &reader);
 
 private:
 
@@ -63,6 +79,11 @@ private:
     * @brief List of automatically deallocated classes.
     */
     QStringList mDeAllocatedClasses;
+
+    /**
+    * @brief List of include directories used to search include files.
+    */
+    QStringList mIncludeDirs;
 };
 
 #endif  // PROJECT_FILE_H

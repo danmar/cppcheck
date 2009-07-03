@@ -293,6 +293,13 @@ Settings MainWindow::GetCppcheckSettings()
             {
                 result.addAutoAllocClass(classname.toStdString());
             }
+
+            QStringList dirs = pfile.GetIncludeDirs();
+            QString dir;
+            foreach(dir, dirs)
+            {
+                result._includePaths.push_back(dir.toStdString());
+            }
         }
     }
 
