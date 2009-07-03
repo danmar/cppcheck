@@ -192,6 +192,18 @@ private:
                        "};\n");
 
         ASSERT_EQUALS("[test.cpp:10]: (style) Member variable not initialized in the constructor 'Fred::_code'\n", errout.str());
+
+
+        checkUninitVar("class A{};\n"
+                       "\n"
+                       "class B : public A\n"
+                       "{\n"
+                       "public:\n"
+                       "  B() {}\n"
+                       "private:\n"
+                       "  float f;\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Member variable not initialized in the constructor 'B::f'\n", errout.str());
     }
 
     void uninitVarEnum()

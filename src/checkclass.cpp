@@ -262,7 +262,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
 
 void CheckClass::constructors()
 {
-    const char pattern_class[] = "class %var% {";
+    const char pattern_class[] = "class %var% [{:]";
 
     // Locate class
     const Token *tok1 = Token::findmatch(_tokenizer->tokens(), pattern_class);
