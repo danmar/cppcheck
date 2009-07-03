@@ -18,7 +18,7 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - Työkalu C/C++ koodin staattiseen analysointiin.</translation>
     </message>
-    <message>
+    <message utf8="true">
         <location filename="about.ui" line="65"/>
         <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
         <translation>Copyright (C) 2007-2009 Daniel Marjamäki ja cppcheck tiimi.</translation>
@@ -132,9 +132,9 @@ kate -l(line) (file)
     <message>
         <location filename="main.ui" line="26"/>
         <location filename="mainwindow.cpp" line="239"/>
-        <location filename="mainwindow.cpp" line="446"/>
-        <location filename="mainwindow.cpp" line="544"/>
-        <location filename="mainwindow.cpp" line="562"/>
+        <location filename="mainwindow.cpp" line="448"/>
+        <location filename="mainwindow.cpp" line="546"/>
+        <location filename="mainwindow.cpp" line="564"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -314,7 +314,7 @@ kate -l(line) (file)
         <translation>Tarkistettavaksi sopivia tiedostoja ei löytynyt!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="442"/>
+        <location filename="mainwindow.cpp" line="444"/>
         <source>Cannot exit while checking.
 
 Stop the checking before exiting.</source>
@@ -323,37 +323,37 @@ Stop the checking before exiting.</source>
 Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="488"/>
+        <location filename="mainwindow.cpp" line="490"/>
         <source>License</source>
         <translation>Lisenssi</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="495"/>
+        <location filename="mainwindow.cpp" line="497"/>
         <source>Authors</source>
         <translation>Tekijät</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="503"/>
+        <location filename="mainwindow.cpp" line="505"/>
         <source>XML files (*.xml);;Text files (*.txt)</source>
         <translation>XML-tiedostot (*.xml);;Tekstitiedostot (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="505"/>
+        <location filename="mainwindow.cpp" line="507"/>
         <source>Save the report file</source>
         <translation>Tallenna raportti</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="513"/>
+        <location filename="mainwindow.cpp" line="515"/>
         <source>XML files (*.xml)</source>
         <translation>XML-tiedostot (*xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="546"/>
+        <location filename="mainwindow.cpp" line="548"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="563"/>
+        <location filename="mainwindow.cpp" line="565"/>
         <source>Failed to change language:
 
 %1</source>
@@ -363,37 +363,37 @@ Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="12"/>
         <source>English</source>
-        <translation>Englanti</translation>
+        <translation type="obsolete">Englanti</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="13"/>
         <source>Finnish</source>
-        <translation>Suomi</translation>
+        <translation type="obsolete">Suomi</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="14"/>
         <source>Swedish</source>
-        <translation>Ruotsi</translation>
+        <translation type="obsolete">Ruotsi</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="15"/>
         <source>German</source>
-        <translation>Saksa</translation>
+        <translation type="obsolete">Saksa</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="16"/>
         <source>Russian</source>
-        <translation>Venäjä</translation>
+        <translation type="obsolete">Venäjä</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="69"/>
+        <location filename="translationhandler.cpp" line="88"/>
         <source>Incorrect language specified!</source>
         <translation>Virheellinen kieli valittu!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="77"/>
+        <location filename="translationhandler.cpp" line="95"/>
+        <source>Language file %1 not found!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="103"/>
         <source>Failed to load language from file %1</source>
         <translation>Kielen lataaminen tiedostosta %1 epäonnistui</translation>
     </message>
