@@ -451,8 +451,9 @@ Stop the checking before exiting.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="426"/>
-        <source>You can open this error by specifying applications in program&apos;s settings.</source>
-        <translation>You can open this error by specifying applications in program&apos;s settings.</translation>
+        <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
+        <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
+        <translation type="unfinished">You can open this error by specifying applications in program&apos;s settings.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="471"/>

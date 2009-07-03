@@ -451,8 +451,9 @@ Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="426"/>
-        <source>You can open this error by specifying applications in program&apos;s settings.</source>
-        <translation>Voit asetuksista määritellä muita ohjelmia joilla avata tämän virheen sisältävän tiedoston.</translation>
+        <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
+        <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
+        <translation type="unfinished">Voit asetuksista määritellä muita ohjelmia joilla avata tämän virheen sisältävän tiedoston.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="471"/>

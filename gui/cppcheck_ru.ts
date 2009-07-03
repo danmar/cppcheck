@@ -416,7 +416,8 @@ Stop the checking before exiting.</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="426"/>
-        <source>You can open this error by specifying applications in program&apos;s settings.</source>
+        <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
+        <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
