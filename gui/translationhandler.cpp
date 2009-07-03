@@ -92,7 +92,8 @@ bool TranslationHandler::SetLanguage(const int index, QString &error)
     // Check translation file exists before trying to load it
     if (!QFile::exists(mFiles[index]))
     {
-        error = QObject::tr("Language file %1 not found!");
+        QString filename(mFiles[index]);
+        error = QObject::tr("Language file %1.qm not found!");
         error = error.arg(mFiles[index]);
         return false;
     }

@@ -339,9 +339,14 @@ Stop the checking before exiting.</source>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="565"/>
-        <source>Failed to change language:
+        <source>Failed to change the language:
 
-%1</source>
+%1
+
+</source>
+        <oldsource>Failed to change language:
+
+%1</oldsource>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -353,12 +358,12 @@ Stop the checking before exiting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="95"/>
-        <source>Language file %1 not found!</source>
+        <location filename="translationhandler.cpp" line="96"/>
+        <source>Language file %1.qm not found!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="103"/>
+        <location filename="translationhandler.cpp" line="104"/>
         <source>Failed to load language from file %1</source>
         <translation type="unfinished"></translation>
     </message>
