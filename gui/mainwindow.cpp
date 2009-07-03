@@ -162,10 +162,7 @@ void MainWindow::LoadSettings()
     mUI.mActionToolbar->setChecked(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
     mUI.mToolBar->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
 
-
     mApplications->LoadSettings(mSettings);
-
-    QString error = "";
 
     SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toInt());
 }
