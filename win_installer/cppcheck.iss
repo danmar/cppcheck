@@ -90,8 +90,8 @@ Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Fla
 Type: files; Name: {app}\COPYING
 
 [Files]
+; Core / command line
 Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion; Components: Core
-Source: ..\gui\Release\gui.exe; DestDir: {app}; Flags: ignoreversion; Components: QTGui
 Source: ..\COPYING; DestDir: {app}; DestName: COPYING.txt; Flags: ignoreversion; Components: Core
 Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion; Components: Core
 Source: ..\AUTHORS; DestDir: {app}; DestName: AUTHORS.txt; Flags: ignoreversion; Components: Core
@@ -99,6 +99,14 @@ Source: ..\AUTHORS; DestDir: {app}; DestName: AUTHORS.txt; Flags: ignoreversion;
 Source: {#RuntimesFolder}\Microsoft.VC90.CRT.manifest; DestDir: {app}; Components: Core
 Source: {#RuntimesFolder}\msvcp90.dll; DestDir: {app}; Components: Core
 Source: {#RuntimesFolder}\msvcr90.dll; DestDir: {app}; Components: Core
+; GUI executable
+Source: ..\gui\Release\gui.exe; DestDir: {app}; Flags: ignoreversion; Components: QTGui
+; GUI translations
+Source: ..\gui\cppcheck_de.qm; DestDir: {app}; Components: QTGui
+Source: ..\gui\cppcheck_en.qm; DestDir: {app}; Components: QTGui
+Source: ..\gui\cppcheck_fi.qm; DestDir: {app}; Components: QTGui
+Source: ..\gui\cppcheck_ru.qm; DestDir: {app}; Components: QTGui
+Source: ..\gui\cppcheck_se.qm; DestDir: {app}; Components: QTGui
 ; QT runtimes
 Source: {#RuntimesFolder}\QtCore4.dll; DestDir: {app}; Components: QTGui
 Source: {#RuntimesFolder}\QtGui4.dll; DestDir: {app}; Components: QTGui

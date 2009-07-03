@@ -17,11 +17,16 @@ Files the installer needs:
 /COPYING
 /readme.txt
 /AUTHORS
-/gui/release/gui.exe
 /Release/cppcheck.exe
 /win_installer/icon.bmp
 /win_installer/LargeLogo.bmp
 /win_installer/
+/gui/release/gui.exe
+/gui/cppcheck_de.qm
+/gui/cppcheck_en.qm
+/gui/cppcheck_fi.qm
+/gui/cppcheck_ru.qm
+/gui/cppcheck_se.qm
 
 NOTE: Remember to convert COPYING and AUTHORS to Windows EOL format! Otherwise
 Windows Notepad (default viewer) can't show then properly.
