@@ -547,7 +547,8 @@ void ResultsTree::SaveResults(Report *report)
     for (int i = 0; i < mModel.rowCount(); i++)
     {
         QStandardItem *item = mModel.item(i, 0);
-        SaveErrors(report, item);
+        if (!isRowHidden(i, item->index()))
+            SaveErrors(report, item);
     }
 
     report->WriteFooter();
@@ -600,7 +601,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         for (int i = 0; i < lines.count(); i++)
             linesStr << lines[i].toString();
 
-        report->WriteError(files, linesStr,	id, severity, message);
+        report->WriteError(files, linesStr, id, severity, message);
     }
 }
 
