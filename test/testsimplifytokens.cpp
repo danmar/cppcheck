@@ -109,6 +109,7 @@ private:
         // Simplify "not" to "!" (#345)
         TEST_CASE(not1);
         TEST_CASE(comma_keyword);
+        TEST_CASE(remove_comma);
     }
 
     std::string tok(const char code[])
@@ -1022,6 +1023,30 @@ private:
         }
     }
 
+    void remove_comma()
+    {
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  int a,b;\n"
+                                "  if( a )\n"
+                                "  a=0,\n"
+                                "  b=0;\n"
+                                "}\n";
+            TODO_ASSERT_EQUALS(" void f ( ) { int a ; int b ; if ( a ) { a = 0 ; b = 0 ; } }", sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  A a,b;\n"
+                                "  if( a.f )\n"
+                                "  a.f=b.f,\n"
+                                "  a.g=b.g;\n"
+                                "}\n";
+            TODO_ASSERT_EQUALS(" void f ( ) { A a ; A b ; if ( a . f ) { a . f = b . f ; a . g = b . g ; } }", sizeof_(code));
+        }
+    }
 };
 
 REGISTER_TEST(TestSimplifyTokens)
