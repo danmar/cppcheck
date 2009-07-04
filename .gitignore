@@ -25,5 +25,6 @@ gui/gui.sln
 gui/gui.vcproj
 gui/gui
 gui/qrc_gui.cpp
+gui/*.qm
 # Doxygen output folder
 doxyoutput/
