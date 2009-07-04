@@ -28,11 +28,11 @@ TranslationHandler::TranslationHandler(QObject *parent) :
         mTranslator(new QTranslator(this))
 {
     //Add our default languages
-    mNames  << "English"
-    << "Finnish"
-    << "Swedish"
-    << "German"
-    << "Russian";
+    mNames  << QT_TRANSLATE_NOOP("MainWindow","English")
+    << QT_TRANSLATE_NOOP("MainWindow","Finnish")
+    << QT_TRANSLATE_NOOP("MainWindow","Swedish")
+    << QT_TRANSLATE_NOOP("MainWindow","German")
+    << QT_TRANSLATE_NOOP("MainWindow","Russian");
 
     mFiles  << "cppcheck_en"
     << "cppcheck_fi"
@@ -92,8 +92,18 @@ bool TranslationHandler::SetLanguage(const int index, QString &error)
     //Load the new language
     if (!mTranslator->load(mFiles[index]))
     {
-        error = QObject::tr("Failed to load language from file %1");
-        error = error.arg(mFiles[index]);
+        //If it failed, lets check if the default file exists
+        if (!QFile::exists(mFiles[index]+".qm"))
+        {
+            error = QObject::tr("Language file %1 not found!");
+            error = error.arg(mFiles[index]+".qm");
+            return false;
+        }
+
+        //If file exists, there's something wrong with it
+        error = QObject::tr("Failed to load translation for language %1 from file %2");
+        error = error.arg(mNames[index]);
+        error = error.arg(mFiles[index]+".qm");
         return false;
     }
 
