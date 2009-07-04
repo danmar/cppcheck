@@ -96,7 +96,6 @@ MainWindow::MainWindow() :
 
 MainWindow::~MainWindow()
 {
-    SaveSettings();
 }
 
 void MainWindow::CreateLanguageMenuItems()
@@ -184,7 +183,7 @@ void MainWindow::SaveSettings()
     mSettings->setValue(SETTINGS_SHOW_SECURITY, mUI.mActionShowSecurity->isChecked());
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
     mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
-    mSettings->setValue(SETTINGS_TOOLBARS_SHOW, mUI.mActionToolbar->isChecked());
+    mSettings->setValue(SETTINGS_TOOLBARS_SHOW, mUI.mToolBar->isVisible());
 
     mApplications->SaveSettings(mSettings);
 
@@ -440,8 +439,10 @@ void MainWindow::UncheckAll()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     // Check that we aren't checking files
-    if (!mThread->IsChecking())
+    if (!mThread->IsChecking()) {
+        SaveSettings();
         event->accept();
+    }
     else
     {
         QString text(tr("Cannot exit while checking.\n\n" \
