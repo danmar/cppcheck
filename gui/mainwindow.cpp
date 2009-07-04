@@ -443,7 +443,8 @@ void MainWindow::UncheckAll()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     // Check that we aren't checking files
-    if (!mThread->IsChecking()) {
+    if (!mThread->IsChecking())
+    {
         SaveSettings();
         event->accept();
     }
