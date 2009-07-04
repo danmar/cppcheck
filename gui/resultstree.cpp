@@ -421,9 +421,9 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
     //If there are now application's specified, tell the user about it
     if (mApplications->GetApplicationCount() == 0)
     {
-        QMessageBox msg(QMessageBox::Warning,
+        QMessageBox msg(QMessageBox::Information,
                         tr("Cppcheck"),
-                        tr("You can open this error by specifying applications in program's settings."),
+                        tr("Configure the text file viewer program in Cppcheck preferences/Applications."),
                         QMessageBox::Ok,
                         this);
         msg.exec();

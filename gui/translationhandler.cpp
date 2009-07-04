@@ -19,6 +19,7 @@
 #include "translationhandler.h"
 
 #include <QApplication>
+#include <QFile>
 #include <QDebug>
 
 TranslationHandler::TranslationHandler(QObject *parent) :
@@ -47,7 +48,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     }
     else
     {
-        qDebug() << "Failed to load english translation!";
+        qDebug() << "Failed to load English translation!";
         delete english;
     }
 }
@@ -88,6 +89,14 @@ bool TranslationHandler::SetLanguage(const int index, QString &error)
         return false;
     }
 
+    // Check translation file exists before trying to load it
+    if (!QFile::exists(mFiles[index]))
+    {
+        QString filename(mFiles[index]);
+        error = QObject::tr("Language file %1.qm not found!");
+        error = error.arg(mFiles[index]);
+        return false;
+    }
 
     //Load the new language
     if (!mTranslator->load(mFiles[index]))

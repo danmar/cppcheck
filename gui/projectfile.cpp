@@ -26,6 +26,9 @@ static const char ProjectElementName[] = "project";
 static const char AllocElementName[] = "autodealloc";
 static const char ClassElementName[] = "class";
 static const char ClassNameAttrib[] = "name";
+static const char IncludDirElementName[] = "includedir";
+static const char DirElementName[] = "dir";
+static const char DirNameAttrib[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
         QObject(parent)
@@ -60,6 +63,9 @@ bool ProjectFile::Read(const QString &filename)
             // Find allocelement from inside project element
             if (insideProject && xmlReader.name() == AllocElementName)
                 ReadAutoAllocClasses(xmlReader);
+
+            if (insideProject && xmlReader.name() == IncludDirElementName)
+                ReadIncludeDirs(xmlReader);
             break;
 
         case QXmlStreamReader::EndElement:
@@ -90,6 +96,11 @@ QStringList ProjectFile::GetDeAllocatedClasses() const
     return mDeAllocatedClasses;
 }
 
+QStringList ProjectFile::GetIncludeDirs() const
+{
+    return mIncludeDirs;
+}
+
 void ProjectFile::ReadAutoAllocClasses(QXmlStreamReader &reader)
 {
     QXmlStreamReader::TokenType type;
@@ -113,6 +124,48 @@ void ProjectFile::ReadAutoAllocClasses(QXmlStreamReader &reader)
 
         case QXmlStreamReader::EndElement:
             if (reader.name().toString() == AllocElementName)
+                allRead = true;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    }
+    while (!allRead);
+}
+
+void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    bool allRead = false;
+    do
+    {
+        type = reader.readNext();
+        switch (type)
+        {
+        case QXmlStreamReader::StartElement:
+
+            // Read dir-elements
+            if (reader.name().toString() == DirElementName)
+            {
+                QXmlStreamAttributes attribs = reader.attributes();
+                QString name = attribs.value("", DirNameAttrib).toString();
+                if (!name.isEmpty())
+                    mIncludeDirs << name;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() == IncludDirElementName)
                 allRead = true;
             break;
 

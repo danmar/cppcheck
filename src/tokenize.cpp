@@ -2656,6 +2656,17 @@ bool Tokenizer::simplifyRedundantParanthesis()
             ret = true;
         }
 
+        if (Token::Match(tok->previous(), "( ( %var% )") && tok->next()->varId() != 0)
+        {
+            // We have "( var )", remove the paranthesis
+            tok = tok->previous();
+            tok->deleteNext();
+            tok = tok->next();
+            tok->deleteNext();
+            ret = true;
+            continue;
+        }
+
         if (Token::Match(tok, "( ( %bool% )") ||
             Token::Match(tok, "( ( %num% )"))
         {

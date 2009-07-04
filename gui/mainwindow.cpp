@@ -161,10 +161,7 @@ void MainWindow::LoadSettings()
     mUI.mActionToolbar->setChecked(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
     mUI.mToolBar->setVisible(mSettings->value(SETTINGS_TOOLBARS_SHOW, true).toBool());
 
-
     mApplications->LoadSettings(mSettings);
-
-    QString error = "";
 
     SetLanguage(mSettings->value(SETTINGS_LANGUAGE, mTranslation->SuggestLanguage()).toInt());
 }
@@ -294,6 +291,13 @@ Settings MainWindow::GetCppcheckSettings()
             foreach(classname, classes)
             {
                 result.addAutoAllocClass(classname.toStdString());
+            }
+
+            QStringList dirs = pfile.GetIncludeDirs();
+            QString dir;
+            foreach(dir, dirs)
+            {
+                result._includePaths.push_back(dir.toStdString());
             }
         }
     }
@@ -564,9 +568,9 @@ void MainWindow::SetLanguage(int index)
     QString error;
     if (!mTranslation->SetLanguage(index, error))
     {
-        QMessageBox msg(QMessageBox::Warning,
+        QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
-                        QString(tr("Failed to change language:\n\n%1")).arg(error),
+                        QString(tr("Failed to change the language:\n\n%1\n\n")).arg(error),
                         QMessageBox::Ok,
                         this);
 
@@ -582,7 +586,7 @@ void MainWindow::SetLanguage(int index)
 
         if (languages.size() <= actions.size())
         {
-            for (int i = 0;i < languages.size();i++)
+            for (int i = 0; i < languages.size(); i++)
             {
                 actions[i]->setText(tr(languages[i].toLatin1()));
             }
