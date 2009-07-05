@@ -1033,7 +1033,7 @@ private:
                                 "  a=0,\n"
                                 "  b=0;\n"
                                 "}\n";
-            TODO_ASSERT_EQUALS(" void f ( ) { int a ; int b ; if ( a ) { a = 0 ; b = 0 ; } }", sizeof_(code));
+            ASSERT_EQUALS(" void f ( ) { int a ; int b ; if ( a ) { a = 0 ; b = 0 ; } }", sizeof_(code));
         }
 
         {
@@ -1044,7 +1044,7 @@ private:
                                 "  a.f=b.f,\n"
                                 "  a.g=b.g;\n"
                                 "}\n";
-            TODO_ASSERT_EQUALS(" void f ( ) { A a ; A b ; if ( a . f ) { a . f = b . f ; a . g = b . g ; } }", sizeof_(code));
+            ASSERT_EQUALS(" void f ( ) { A a ; A b ; if ( a . f ) { a . f = b . f ; a . g = b . g ; } }", sizeof_(code));
         }
     }
 };

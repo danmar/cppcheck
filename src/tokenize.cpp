@@ -1494,7 +1494,7 @@ void Tokenizer::simplifyTokenList()
         modified |= simplifyQuestionMark();
     }
 
-    simplifyCommaNearKeyWords();
+    simplifyComma();
     createLinks();
     if (_settings._debug)
     {
@@ -3012,7 +3012,7 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 
 }
 
-bool Tokenizer::simplifyCommaNearKeyWords()
+bool Tokenizer::simplifyComma()
 {
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -3028,14 +3028,34 @@ bool Tokenizer::simplifyCommaNearKeyWords()
             tok->str(";");
             ret = true;
         }
-        else if (tok->previous() &&
-                 Token::Match(tok->previous()->previous(), "delete") &&
-                 tok->next()->varId() != 0)
+
+        if (tok->previous() && tok->previous()->previous())
         {
-            // Handle "delete a, b;"
-            tok->str(";");
-            tok->insertToken("delete");
-            ret = true;
+            if (Token::Match(tok->previous()->previous(), "delete") &&
+                tok->next()->varId() != 0)
+            {
+                // Handle "delete a, b;"
+                tok->str(";");
+                tok->insertToken("delete");
+                ret = true;
+            }
+            else
+            {
+                for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous())
+                {
+                    if (tok2->str() == "=")
+                    {
+                        // Handle "a = 0, b = 0;"
+                        tok->str(";");
+                        ret = true;
+                        break;
+                    }
+                    else if (Token::Match(tok2, "[;,{}()]"))
+                    {
+                        break;
+                    }
+                }
+            }
         }
     }
 

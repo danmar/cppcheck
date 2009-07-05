@@ -153,12 +153,13 @@ public:
     bool simplifyNot();
 
     /**
-     * Simplify comma near keywords into a semicolon
+     * Simplify comma into a semicolon when possible
      * Example: "delete a, delete b" => "delete a; delete b;"
+     * Example: "a = 0, b = 0;" => "a = 0; b = 0;"
      * @return true if something is modified
      *         false if nothing is done.
      */
-    bool simplifyCommaNearKeyWords();
+    bool simplifyComma();
 
 protected:
 
