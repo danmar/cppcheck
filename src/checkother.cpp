@@ -40,7 +40,7 @@ CheckOther instance;
 
 
 
-void CheckOther::WarningOldStylePointerCast()
+void CheckOther::warningOldStylePointerCast()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -67,7 +67,7 @@ void CheckOther::WarningOldStylePointerCast()
 // Redundant code..
 //---------------------------------------------------------------------------
 
-void CheckOther::WarningRedundantCode()
+void CheckOther::warningRedundantCode()
 {
 
     // if (p) delete p
@@ -188,7 +188,7 @@ void CheckOther::redundantCondition2()
 // if (condition) ....
 //---------------------------------------------------------------------------
 
-void CheckOther::WarningIf()
+void CheckOther::warningIf()
 {
     if (ErrorLogger::ifNoAction(*_settings))
     {
@@ -306,7 +306,7 @@ void CheckOther::WarningIf()
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
 
-void CheckOther::InvalidFunctionUsage()
+void CheckOther::invalidFunctionUsage()
 {
     // strtol and strtoul..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -389,7 +389,7 @@ void CheckOther::InvalidFunctionUsage()
 // Check for unsigned divisions
 //---------------------------------------------------------------------------
 
-void CheckOther::CheckUnsignedDivision()
+void CheckOther::checkUnsignedDivision()
 {
     // Check for "ivar / uvar" and "uvar / ivar"
     std::map<std::string, char> varsign;
@@ -457,7 +457,7 @@ void CheckOther::CheckUnsignedDivision()
 // Check scope of variables..
 //---------------------------------------------------------------------------
 
-void CheckOther::CheckVariableScope()
+void CheckOther::checkVariableScope()
 {
     // Walk through all tokens..
     bool func = false;
@@ -530,7 +530,7 @@ void CheckOther::CheckVariableScope()
             // Variable declaration?
             if (Token::Match(tok1, "%type% %var% [;=]"))
             {
-                CheckVariableScope_LookupVar(tok1, tok1->strAt(1));
+                lookupVar(tok1, tok1->strAt(1));
             }
         }
     }
@@ -538,7 +538,7 @@ void CheckOther::CheckVariableScope()
 }
 //---------------------------------------------------------------------------
 
-void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varname[])
+void CheckOther::lookupVar(const Token *tok1, const char varname[])
 {
     const Token *tok = tok1;
 
@@ -619,7 +619,7 @@ void CheckOther::CheckVariableScope_LookupVar(const Token *tok1, const char varn
 // Check for constant function parameters
 //---------------------------------------------------------------------------
 
-void CheckOther::CheckConstantFunctionParameter()
+void CheckOther::checkConstantFunctionParameter()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -646,7 +646,7 @@ void CheckOther::CheckConstantFunctionParameter()
 // Check that all struct members are used
 //---------------------------------------------------------------------------
 
-void CheckOther::CheckStructMemberUsage()
+void CheckOther::checkStructMemberUsage()
 {
     const char *structname = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -716,7 +716,7 @@ void CheckOther::CheckStructMemberUsage()
 // Check usage of char variables..
 //---------------------------------------------------------------------------
 
-void CheckOther::CheckCharVariable()
+void CheckOther::checkCharVariable()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -790,7 +790,7 @@ void CheckOther::CheckCharVariable()
 // Incomplete statement..
 //---------------------------------------------------------------------------
 
-void CheckOther::CheckIncompleteStatement()
+void CheckOther::checkIncompleteStatement()
 {
     int parlevel = 0;
 
@@ -951,7 +951,7 @@ void CheckOther::nullPointer()
 
 
 
-void CheckOther::CheckZeroDivision()
+void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {

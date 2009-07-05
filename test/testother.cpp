@@ -78,8 +78,8 @@ private:
         // Check for redundant code..
         Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.WarningRedundantCode();
-        checkOther.CheckZeroDivision();
+        checkOther.warningRedundantCode();
+        checkOther.checkZeroDivision();
     }
 
 
@@ -197,7 +197,7 @@ private:
         // Check for redundant code..
         Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.InvalidFunctionUsage();
+        checkOther.invalidFunctionUsage();
     }
 
     void sprintf1()
@@ -317,7 +317,7 @@ private:
         Settings settings;
         settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.CheckVariableScope();
+        checkOther.checkVariableScope();
     }
 
     void varScope1()
@@ -445,7 +445,7 @@ private:
         Settings settings;
         settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.WarningOldStylePointerCast();
+        checkOther.warningOldStylePointerCast();
     }
 
     void oldStylePointerCast()

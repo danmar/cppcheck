@@ -33,7 +33,7 @@ class Tokenizer
 {
 private:
     // Deallocate lists..
-    void DeallocateTokens();
+    void deallocateTokens();
 
 public:
     Tokenizer();
@@ -81,14 +81,14 @@ public:
     std::string fileLine(const Token *tok) const;
 
     // Return size.
-    int SizeOfType(const char type[]) const;
+    int sizeOfType(const char type[]) const;
 
     void initTokens();
 
     const std::vector<std::string> *getFiles() const;
 
     void fillFunctionList();
-    const Token *GetFunctionTokenByName(const char funcname[]) const;
+    const Token *getFunctionTokenByName(const char funcname[]) const;
     const Token *tokens() const;
 
     std::string file(const Token *tok) const;
@@ -101,7 +101,7 @@ public:
      * @param indentlevel Just an integer that you initialize to 0 before the first call.
      * @return First matching token or NULL.
      */
-    static const Token *FindClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel);
+    static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel);
 
 
     /**
@@ -253,7 +253,7 @@ private:
      */
     void simplifyTemplates();
 
-    void InsertTokens(Token *dest, Token *src, unsigned int n);
+    void insertTokens(Token *dest, Token *src, unsigned int n);
 
     /**
      * Setup links for tokens so that one can call Token::link().

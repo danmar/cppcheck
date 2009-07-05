@@ -51,7 +51,7 @@ Tokenizer::Tokenizer(const Settings &settings, ErrorLogger *errorLogger)
 
 Tokenizer::~Tokenizer()
 {
-    DeallocateTokens();
+    deallocateTokens();
 }
 
 //---------------------------------------------------------------------------
@@ -118,7 +118,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 
 
 
-int Tokenizer::SizeOfType(const char type[]) const
+int Tokenizer::sizeOfType(const char type[]) const
 {
     if (!type)
         return 0;
@@ -135,7 +135,7 @@ int Tokenizer::SizeOfType(const char type[]) const
 // InsertTokens - Copy and insert tokens
 //---------------------------------------------------------------------------
 
-void Tokenizer::InsertTokens(Token *dest, Token *src, unsigned int n)
+void Tokenizer::insertTokens(Token *dest, Token *src, unsigned int n)
 {
     while (n > 0)
     {
@@ -222,7 +222,7 @@ void Tokenizer::createTokens(std::istream &code)
                 fileIndexes.push_back(FileIndex);
                 for (unsigned int i = 0; i < _files.size(); i++)
                 {
-                    if (FileLister::SameFileName(_files[i].c_str(), line.c_str()))
+                    if (FileLister::sameFileName(_files[i].c_str(), line.c_str()))
                     {
                         // Use this index
                         foundOurfile = true;
@@ -1269,7 +1269,7 @@ void Tokenizer::simplifyTokenList()
         if (Token::Match(tok, "sizeof ( * )"))
         {
             std::ostringstream str;
-            str << SizeOfType(tok->strAt(2));
+            str << sizeOfType(tok->strAt(2));
             tok->str(str.str());
 
             for (int i = 0; i < 3; i++)
@@ -1287,7 +1287,7 @@ void Tokenizer::simplifyTokenList()
         else if (Token::Match(tok, "sizeof ( %type% )"))
         {
             const char *type = tok->strAt(2);
-            int size = SizeOfType(type);
+            int size = sizeOfType(type);
             if (size > 0)
             {
                 std::ostringstream str;
@@ -1312,7 +1312,7 @@ void Tokenizer::simplifyTokenList()
                 const Token *decltok = Token::findmatch(_tokens, "%type% %varid% [", varid);
                 if (decltok)
                 {
-                    sz = SizeOfType(decltok->strAt(0));
+                    sz = sizeOfType(decltok->strAt(0));
                 }
             }
 
@@ -1336,7 +1336,7 @@ void Tokenizer::simplifyTokenList()
 
         const int type_tok = ((tok->next()->str() == "*") ? 1 : 0);
 
-        int size = SizeOfType(tok->tokAt(type_tok)->str().c_str());
+        int size = sizeOfType(tok->tokAt(type_tok)->str().c_str());
         if (size <= 0)
             continue;
 
@@ -2205,7 +2205,7 @@ bool Tokenizer::simplifyVarDecl()
             if (tok2->str() == ",")
             {
                 tok2->str(";");
-                InsertTokens(tok2, type0, typelen);
+                insertTokens(tok2, type0, typelen);
             }
 
             else
@@ -2233,14 +2233,14 @@ bool Tokenizer::simplifyVarDecl()
                         Token *VarTok = type0->tokAt(typelen);
                         while (Token::Match(VarTok, "*|const"))
                             VarTok = VarTok->next();
-                        InsertTokens(eq, VarTok, 2);
+                        insertTokens(eq, VarTok, 2);
                         eq->str(";");
 
                         // "= x, "   =>   "= x; type "
                         if (tok2->str() == ",")
                         {
                             tok2->str(";");
-                            InsertTokens(tok2, type0, typelen);
+                            insertTokens(tok2, type0, typelen);
                         }
                         break;
                     }
@@ -2754,7 +2754,7 @@ bool Tokenizer::simplifyCalculations()
 
 //---------------------------------------------------------------------------
 
-const Token *Tokenizer::GetFunctionTokenByName(const char funcname[]) const
+const Token *Tokenizer::getFunctionTokenByName(const char funcname[]) const
 {
     for (unsigned int i = 0; i < _functionList.size(); ++i)
     {
@@ -2852,7 +2852,7 @@ void Tokenizer::fillFunctionList()
 //---------------------------------------------------------------------------
 
 // Deallocate lists..
-void Tokenizer::DeallocateTokens()
+void Tokenizer::deallocateTokens()
 {
     deleteTokens(_tokens);
     _tokens = 0;
@@ -2901,7 +2901,7 @@ std::string Tokenizer::file(const Token *tok) const
 
 //---------------------------------------------------------------------------
 
-const Token * Tokenizer::FindClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel)
+const Token * Tokenizer::findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel)
 {
     if (indentlevel < 0 || tok == NULL)
         return NULL;

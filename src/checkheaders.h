@@ -30,8 +30,8 @@ class CheckHeaders
 public:
     CheckHeaders(const Tokenizer *tokenizer, ErrorLogger *errorLogger);
     ~CheckHeaders();
-    void WarningHeaderWithImplementation();
-    void WarningIncludeHeader();
+    void warningHeaderWithImplementation();
+    void warningIncludeHeader();
 
 private:
     const Tokenizer *_tokenizer;

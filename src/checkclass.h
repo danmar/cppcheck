@@ -90,12 +90,12 @@ private:
         struct VAR *next;
     };
 
-    void ClassChecking_VarList_Initialize(const Token *tok1, const Token *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack);
-    void InitVar(struct VAR *varlist, const char varname[]);
-    struct VAR *ClassChecking_GetVarList(const Token *tok1, bool withClasses);
+    void initializeVarList(const Token *tok1, const Token *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack);
+    void initVar(struct VAR *varlist, const char varname[]);
+    struct VAR *getVarList(const Token *tok1, bool withClasses);
 
     // Check constructors for a specified class
-    void CheckConstructors(const Token *tok1, const char funcname[]);
+    void checkConstructors(const Token *tok1, const char funcname[]);
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname);

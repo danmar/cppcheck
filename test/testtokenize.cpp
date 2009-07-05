@@ -17,7 +17,7 @@
  */
 
 
-// The preprocessor that c++check uses is a bit special. Instead of generating
+// The preprocessor that Cppcheck uses is a bit special. Instead of generating
 // the code for a known configuration, it generates the code for each configuration.
 
 
@@ -2060,9 +2060,9 @@ private:
         int i;
 
         i = 0;
-        const Token *tok = Tokenizer::FindClassFunction(tokenizer.tokens(), "Fred", "%var%", i);
+        const Token *tok = Tokenizer::findClassFunction(tokenizer.tokens(), "Fred", "%var%", i);
         ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
-        tok = Tokenizer::FindClassFunction(tok->next(), "Fred", "%var%", i);
+        tok = Tokenizer::findClassFunction(tok->next(), "Fred", "%var%", i);
         ASSERT_EQUALS(0, tok ? 1 : 0);
     }
 

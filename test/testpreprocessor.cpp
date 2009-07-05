@@ -17,7 +17,7 @@
  */
 
 
-// The preprocessor that c++check uses is a bit special. Instead of generating
+// The preprocessor that Cppcheck uses is a bit special. Instead of generating
 // the code for a known configuration, it generates the code for each configuration.
 
 

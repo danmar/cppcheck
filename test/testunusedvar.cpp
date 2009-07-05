@@ -48,7 +48,7 @@ private:
         // Check for unused variables..
         Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.CheckStructMemberUsage();
+        checkOther.checkStructMemberUsage();
     }
 
     void run()

@@ -47,7 +47,7 @@ CheckHeaders::~CheckHeaders()
 
 }
 
-void CheckHeaders::WarningHeaderWithImplementation()
+void CheckHeaders::warningHeaderWithImplementation()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -86,7 +86,7 @@ void CheckHeaders::WarningHeaderWithImplementation()
 // HEADERS - Unneeded include
 //---------------------------------------------------------------------------
 
-void CheckHeaders::WarningIncludeHeader()
+void CheckHeaders::warningIncludeHeader()
 {
     // Including..
     for (const Token *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next())
@@ -99,7 +99,7 @@ void CheckHeaders::WarningIncludeHeader()
         const char *includefile = includetok->strAt(1);
         while (hfile < _tokenizer->getFiles()->size())
         {
-            if (FileLister::SameFileName(_tokenizer->getFiles()->at(hfile).c_str(), includefile))
+            if (FileLister::sameFileName(_tokenizer->getFiles()->at(hfile).c_str(), includefile))
                 break;
             ++hfile;
         }

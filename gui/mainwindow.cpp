@@ -349,7 +349,7 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
     QString str;
     foreach(str, list)
     {
-        if (FileLister::AcceptFile(str.toStdString()))
+        if (FileLister::acceptFile(str.toStdString()))
         {
             result << str;
         }

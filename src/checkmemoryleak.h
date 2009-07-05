@@ -49,11 +49,10 @@ public:
     /** What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
     enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Fd, Pipe, Dir, Many };
 
-    void MemoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
-    void MismatchError(const Token *Tok1, const std::list<const Token *> &callstack, const char varname[]);
-    AllocType GetDeallocationType(const Token *tok, const char *varnames[]);
-    AllocType GetAllocationType(const Token *tok2) const;
-    AllocType GetReallocationType(const Token *tok2);
+    void memoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
+    AllocType getDeallocationType(const Token *tok, const char *varnames[]);
+    AllocType getAllocationType(const Token *tok2) const;
+    AllocType getReallocationType(const Token *tok2);
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
 
     void memleakError(const Token *tok, const std::string &varname);
@@ -108,7 +107,7 @@ private:
 
 private:
 
-    bool MatchFunctionsThatReturnArg(const Token *tok, const std::string &varname);
+    bool matchFunctionsThatReturnArg(const Token *tok, const std::string &varname);
 
     /**
      * Check if there is a "!var" match inside a condition

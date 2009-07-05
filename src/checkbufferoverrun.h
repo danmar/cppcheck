@@ -55,13 +55,13 @@ public:
 private:
 
     /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
-    void CheckBufferOverrun_StructVariable();
+    void checkStructVariable();
 
-    /** Check for buffer overruns - locate global variables and local function variables and check them with the .._CheckScope function */
-    void CheckBufferOverrun_GlobalAndLocalVariable();
+    /** Check for buffer overruns - locate global variables and local function variables and check them with the checkScope function */
+    void checkGlobalAndLocalVariable();
 
     /** Check for buffer overruns - this is the function that performs the actual checking */
-    void CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
+    void checkScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid);
 
     /** callstack - used during intra-function checking */
     std::list<const Token *> _callStack;

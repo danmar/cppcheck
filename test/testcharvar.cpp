@@ -57,7 +57,7 @@ private:
         // Check char variable usage..
         Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.CheckCharVariable();
+        checkOther.checkCharVariable();
     }
 
     void array_index()

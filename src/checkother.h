@@ -46,9 +46,9 @@ public:
 
         if (settings->_checkCodingStyle)
         {
-            checkOther.WarningOldStylePointerCast();
-            checkOther.CheckUnsignedDivision();
-            checkOther.CheckCharVariable();
+            checkOther.warningOldStylePointerCast();
+            checkOther.checkUnsignedDivision();
+            checkOther.checkCharVariable();
         }
     }
 
@@ -58,49 +58,49 @@ public:
 
         if (settings->_checkCodingStyle)
         {
-            checkOther.WarningRedundantCode();
-            checkOther.WarningIf();
-            checkOther.CheckVariableScope();
-            checkOther.CheckConstantFunctionParameter();
-            checkOther.CheckStructMemberUsage();
-            checkOther.CheckIncompleteStatement();
+            checkOther.warningRedundantCode();
+            checkOther.warningIf();
+            checkOther.checkVariableScope();
+            checkOther.checkConstantFunctionParameter();
+            checkOther.checkStructMemberUsage();
+            checkOther.checkIncompleteStatement();
         }
 
         checkOther.strPlusChar();
-        checkOther.InvalidFunctionUsage();
+        checkOther.invalidFunctionUsage();
         checkOther.nullPointer();
-        checkOther.CheckZeroDivision();
+        checkOther.checkZeroDivision();
     }
 
     // Casting
-    void WarningOldStylePointerCast();
+    void warningOldStylePointerCast();
 
     // Redundant code
-    void WarningRedundantCode();
+    void warningRedundantCode();
 
     // Warning upon: if (condition);
-    void WarningIf();
+    void warningIf();
 
     // Invalid function usage..
-    void InvalidFunctionUsage();
+    void invalidFunctionUsage();
 
     // Check for unsigned division that might create bad results
-    void CheckUnsignedDivision();
+    void checkUnsignedDivision();
 
     // Check scope of variables
-    void CheckVariableScope();
+    void checkVariableScope();
 
     // Check for constant function parameter
-    void CheckConstantFunctionParameter();
+    void checkConstantFunctionParameter();
 
     // Check that all struct members are used
-    void CheckStructMemberUsage();
+    void checkStructMemberUsage();
 
     // Using char variable as array index / as operand in bit operation
-    void CheckCharVariable();
+    void checkCharVariable();
 
     // Incomplete statement. A statement that only contains a constant or variable
-    void CheckIncompleteStatement();
+    void checkIncompleteStatement();
 
     /** str plus char */
     void strPlusChar();
@@ -109,10 +109,10 @@ public:
     void nullPointer();
 
     /** Check zero division*/
-    void CheckZeroDivision();
+    void checkZeroDivision();
 
 protected:
-    void CheckVariableScope_LookupVar(const Token *tok1, const char varname[]);
+    void lookupVar(const Token *tok1, const char varname[]);
 
     // Redundant condition
     // if (haystack.find(needle) != haystack.end())

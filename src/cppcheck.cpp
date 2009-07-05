@@ -51,7 +51,7 @@ void CppCheck::settings(const Settings &settings)
 
 void CppCheck::addFile(const std::string &path)
 {
-    FileLister::RecursiveAddFiles(_filenames, path.c_str(), true);
+    FileLister::recursiveAddFiles(_filenames, path.c_str(), true);
 }
 
 void CppCheck::addFile(const std::string &path, const std::string &content)
@@ -255,10 +255,10 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 
     if (pathnames.size() > 0)
     {
-        // Execute RecursiveAddFiles() to each given file parameter
+        // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
         for (iter = pathnames.begin(); iter != pathnames.end(); iter++)
-            FileLister::RecursiveAddFiles(_filenames, iter->c_str(), true);
+            FileLister::recursiveAddFiles(_filenames, iter->c_str(), true);
     }
 
     if (argc <= 1 || showHelp)

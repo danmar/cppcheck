@@ -27,8 +27,8 @@
 #ifndef __GNUC__
 #ifndef  __BORLANDC__
 #ifndef _MSC_VER
-#error "C++Check must be compiled by either GCC/BORLAND/MSC to work fully.\n"
-#error "Please report that you couldn't compile c++check through the web page:\n"
+#error "Cppcheck must be compiled by either GCC/BORLAND/MSC to work fully.\n"
+#error "Please report that you couldn't compile cppcheck through the web page:\n"
 #error "      https://sourceforge.net/projects/cppcheck/"
 #endif
 #endif
@@ -38,10 +38,10 @@
 class FileLister
 {
 public:
-    static void RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive);
+    static void recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive);
     static std::string simplifyPath(const char *originalPath);
-    static bool SameFileName(const char fname1[], const char fname2[]);
-    static bool AcceptFile(const std::string &filename);
+    static bool sameFileName(const char fname1[], const char fname2[]);
+    static bool acceptFile(const std::string &filename);
 private:
 
 };

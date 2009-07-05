@@ -41,7 +41,7 @@ CheckClass instance;
 
 //---------------------------------------------------------------------------
 
-struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1, bool withClasses)
+struct CheckClass::VAR *CheckClass::getVarList(const Token *tok1, bool withClasses)
 {
     // Get variable list..
     struct VAR *varlist = NULL;
@@ -136,7 +136,7 @@ struct CheckClass::VAR *CheckClass::ClassChecking_GetVarList(const Token *tok1, 
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::InitVar(struct VAR *varlist, const char varname[])
+void CheckClass::initVar(struct VAR *varlist, const char varname[])
 {
     for (struct VAR *var = varlist; var; var = var->next)
     {
@@ -149,7 +149,7 @@ void CheckClass::InitVar(struct VAR *varlist, const char varname[])
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack)
+void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack)
 {
     bool Assign = false;
     unsigned int indentlevel = 0;
@@ -165,7 +165,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
         {
             if (Assign && Token::Match(ftok, "%var% ("))
             {
-                InitVar(varlist, ftok->str().c_str());
+                initVar(varlist, ftok->str().c_str());
             }
 
             Assign |= (ftok->str() == ":");
@@ -191,7 +191,7 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
         // Variable getting value from stream?
         if (Token::Match(ftok, ">> %var%"))
         {
-            InitVar(varlist, ftok->next()->str().c_str());
+            initVar(varlist, ftok->next()->str().c_str());
         }
 
         // Before a new statement there is "[{};)=]" or "else"
@@ -232,21 +232,21 @@ void CheckClass::ClassChecking_VarList_Initialize(const Token *tok1, const Token
             {
                 callstack.push_back(ftok->str());
                 int i = 0;
-                const Token *ftok2 = Tokenizer::FindClassFunction(tok1, classname, ftok->str().c_str(), i);
-                ClassChecking_VarList_Initialize(tok1, ftok2, varlist, classname, callstack);
+                const Token *ftok2 = Tokenizer::findClassFunction(tok1, classname, ftok->str().c_str(), i);
+                initializeVarList(tok1, ftok2, varlist, classname, callstack);
             }
         }
 
         // Assignment of member variable?
         else if (Token::Match(ftok, "%var% ="))
         {
-            InitVar(varlist, ftok->str().c_str());
+            initVar(varlist, ftok->str().c_str());
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (Token::Match(ftok, "%var% . clear|Clear ("))
         {
-            InitVar(varlist, ftok->str().c_str());
+            initVar(varlist, ftok->str().c_str());
         }
     }
 }
@@ -331,7 +331,7 @@ void CheckClass::constructors()
             if (ErrorLogger::noConstructor(*_settings))
             {
                 // If the class has member variables there should be an constructor
-                struct VAR *varlist = ClassChecking_GetVarList(tok1, false);
+                struct VAR *varlist = getVarList(tok1, false);
                 if (varlist)
                 {
                     noConstructorError(tok1, classNameToken->str());
@@ -350,27 +350,27 @@ void CheckClass::constructors()
         }
 
         // Check constructors
-        CheckConstructors(tok1, className[0]);
+        checkConstructors(tok1, className[0]);
 
         // Check assignment operators
-        CheckConstructors(tok1, "operator =");
+        checkConstructors(tok1, "operator =");
 
         tok1 = Token::findmatch(tok1->next(), pattern_class);
     }
 }
 
-void CheckClass::CheckConstructors(const Token *tok1, const char funcname[])
+void CheckClass::checkConstructors(const Token *tok1, const char funcname[])
 {
     const char * const className = tok1->strAt(1);
 
     // Check that all member variables are initialized..
     bool withClasses = bool(_settings->_showAll && std::string(funcname) == "operator =");
-    struct VAR *varlist = ClassChecking_GetVarList(tok1, withClasses);
+    struct VAR *varlist = getVarList(tok1, withClasses);
 
     int indentlevel = 0;
-    const Token *constructor_token = Tokenizer::FindClassFunction(tok1, className, funcname, indentlevel);
+    const Token *constructor_token = Tokenizer::findClassFunction(tok1, className, funcname, indentlevel);
     std::list<std::string> callstack;
-    ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className, callstack);
+    initializeVarList(tok1, constructor_token, varlist, className, callstack);
     while (constructor_token)
     {
         // Check if any variables are uninitialized
@@ -415,9 +415,9 @@ void CheckClass::CheckConstructors(const Token *tok1, const char funcname[])
         for (struct VAR *var = varlist; var; var = var->next)
             var->init = false;
 
-        constructor_token = Tokenizer::FindClassFunction(constructor_token->next(), className, funcname, indentlevel);
+        constructor_token = Tokenizer::findClassFunction(constructor_token->next(), className, funcname, indentlevel);
         callstack.clear();
-        ClassChecking_VarList_Initialize(tok1, constructor_token, varlist, className, callstack);
+        initializeVarList(tok1, constructor_token, varlist, className, callstack);
     }
 
     // Delete the varlist..

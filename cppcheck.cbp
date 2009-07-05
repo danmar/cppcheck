@@ -60,6 +60,8 @@
 		<Unit filename="gui/threadhandler.h" />
 		<Unit filename="gui/threadresult.cpp" />
 		<Unit filename="gui/threadresult.h" />
+		<Unit filename="gui/translationhandler.cpp" />
+		<Unit filename="gui/translationhandler.h" />
 		<Unit filename="gui/txtreport.cpp" />
 		<Unit filename="gui/txtreport.h" />
 		<Unit filename="gui/xmlreport.cpp" />

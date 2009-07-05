@@ -88,7 +88,7 @@ std::string FileLister::simplifyPath(const char *originalPath)
 
 
 
-bool FileLister::AcceptFile(const std::string &filename)
+bool FileLister::acceptFile(const std::string &filename)
 {
     std::string::size_type dotLocation = filename.find_last_of('.');
     if (dotLocation == std::string::npos)
@@ -115,7 +115,7 @@ bool FileLister::AcceptFile(const std::string &filename)
 
 #if defined(__GNUC__) && !defined(__MINGW32__)
 // gcc / cygwin..
-void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
+void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
     std::ostringstream oss;
     oss << path;
@@ -135,13 +135,13 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
             // File
 
             // If recursive is not used, accept all files given by user
-            if (!recursive || FileLister::AcceptFile(filename))
+            if (!recursive || FileLister::acceptFile(filename))
                 filenames.push_back(filename);
         }
         else if (recursive)
         {
             // Directory
-            FileLister::RecursiveAddFiles(filenames, filename, recursive);
+            FileLister::recursiveAddFiles(filenames, filename, recursive);
         }
     }
     globfree(&glob_results);
@@ -209,7 +209,7 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
 
 #endif // defined(QT_CORE_LIB)
 
-void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
+void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
     // oss is the search string passed into FindFirst and FindNext.
     // bdir is the base directory which is used to form pathnames.
@@ -273,13 +273,13 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
             // File
 
             // If recursive is not used, accept all files given by user
-            if (!recursive || FileLister::AcceptFile(ansiFfd))
+            if (!recursive || FileLister::acceptFile(ansiFfd))
                 filenames.push_back(fname.str());
         }
         else if (recursive)
         {
             // Directory
-            FileLister::RecursiveAddFiles(filenames, fname.str().c_str(), recursive);
+            FileLister::recursiveAddFiles(filenames, fname.str().c_str(), recursive);
         }
 #if defined(QT_CORE_LIB)
         delete [] ansiFfd;
@@ -298,7 +298,7 @@ void FileLister::RecursiveAddFiles(std::vector<std::string> &filenames, const st
 
 //---------------------------------------------------------------------------
 
-bool FileLister::SameFileName(const char fname1[], const char fname2[])
+bool FileLister::sameFileName(const char fname1[], const char fname2[])
 {
 #ifdef __linux__
     return bool(strcmp(fname1, fname2) == 0);

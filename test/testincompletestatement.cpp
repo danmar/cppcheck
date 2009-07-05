@@ -52,7 +52,7 @@ private:
 
         // Check for unused variables..
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.CheckIncompleteStatement();
+        checkOther.checkIncompleteStatement();
     }
 
     void run()

@@ -52,7 +52,7 @@ private:
 
         // Check for unsigned divisions..
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.CheckUnsignedDivision();
+        checkOther.checkUnsignedDivision();
     }
 
     void run()

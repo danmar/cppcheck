@@ -82,7 +82,7 @@ void CheckBufferOverrunClass::sizeArgumentAsChar(const Token *tok)
 // Check array usage..
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid)
+void CheckBufferOverrunClass::checkScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid)
 {
     unsigned int varc = 0;
 
@@ -390,7 +390,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
                 continue;
 
             // Find function..
-            const Token *ftok = _tokenizer->GetFunctionTokenByName(tok->str().c_str());
+            const Token *ftok = _tokenizer->getFunctionTokenByName(tok->str().c_str());
             if (!ftok)
                 continue;
 
@@ -422,7 +422,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 
                     // Check variable usage in the function..
                     _callStack.push_back(tok);
-                    CheckBufferOverrun_CheckScope(ftok, parname, size, total_size, 0);
+                    checkScope(ftok, parname, size, total_size, 0);
                     _callStack.pop_back();
 
                     // break out..
@@ -440,7 +440,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_CheckScope(const Token *tok, co
 // Checking local variables in a scope
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
+void CheckBufferOverrunClass::checkGlobalAndLocalVariable()
 {
     int indentlevel = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -493,13 +493,13 @@ void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
             continue;
         }
 
-        int total_size = size * ((*type == '*') ? 4 : _tokenizer->SizeOfType(type));
+        int total_size = size * ((*type == '*') ? 4 : _tokenizer->sizeOfType(type));
         if (total_size == 0)
             continue;
 
         // The callstack is empty
         _callStack.clear();
-        CheckBufferOverrun_CheckScope(tok->tokAt(nextTok), varname, size, total_size, varid);
+        checkScope(tok->tokAt(nextTok), varname, size, total_size, varid);
     }
 }
 //---------------------------------------------------------------------------
@@ -509,7 +509,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_GlobalAndLocalVariable()
 // Checking member variables of structs..
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
+void CheckBufferOverrunClass::checkStructVariable()
 {
     const char declstruct[] = "struct|class %var% {";
     for (const Token *tok = Token::findmatch(_tokenizer->tokens(), declstruct);
@@ -538,7 +538,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
             const char *varname[3] = {0, 0, 0};
             varname[1] = tok2->strAt(ivar);
             int arrsize = std::atoi(tok2->strAt(ivar + 2));
-            int total_size = arrsize * _tokenizer->SizeOfType(tok2->strAt(1));
+            int total_size = arrsize * _tokenizer->sizeOfType(tok2->strAt(1));
             if (total_size == 0)
                 continue;
 
@@ -558,7 +558,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
                         if (Token::simpleMatch(tok4, ") {"))
                         {
                             const char *names[2] = {varname[1], 0};
-                            CheckBufferOverrun_CheckScope(tok4->tokAt(2), names, arrsize, total_size, 0);
+                            checkScope(tok4->tokAt(2), names, arrsize, total_size, 0);
                             break;
                         }
                     }
@@ -615,7 +615,7 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
                     continue;
 
                 // Check variable usage..
-                CheckBufferOverrun_CheckScope(CheckTok, varname, arrsize, total_size, 0);
+                checkScope(CheckTok, varname, arrsize, total_size, 0);
             }
         }
     }
@@ -624,8 +624,8 @@ void CheckBufferOverrunClass::CheckBufferOverrun_StructVariable()
 
 void CheckBufferOverrunClass::bufferOverrun()
 {
-    CheckBufferOverrun_GlobalAndLocalVariable();
-    CheckBufferOverrun_StructVariable();
+    checkGlobalAndLocalVariable();
+    checkStructVariable();
 }
 //---------------------------------------------------------------------------
 
