@@ -78,9 +78,6 @@ public:
     static void deleteTokens(Token *tok);
     static const char *getParameterName(const Token *ftok, int par);
 
-    static bool SameFileName(const char fname1[], const char fname2[]);
-
-
     std::string fileLine(const Token *tok) const;
 
     // Return size.

@@ -2681,6 +2681,7 @@ private:
 
     void free_member_in_sub_func()
     {
+        // Member function
         check("class Tokenizer\n"
               "{\n"
               "public:\n"
@@ -2706,6 +2707,33 @@ private:
               "void Tokenizer::deleteTokens(int *tok)\n"
               "{\n"
               "    delete tok;\n"
+              "}\n", true);
+        TODO_ASSERT_EQUALS("", errout.str());
+
+        // Global function
+        check("void deleteTokens(int *tok)\n"
+              "{\n"
+              "    delete tok;\n"
+              "}\n"
+              "class Tokenizer\n"
+              "{\n"
+              "public:\n"
+              "    Tokenizer();\n"
+              "    ~Tokenizer();\n"
+              "\n"
+              "private:\n"
+              "    int *_tokens;\n"
+              "};\n"
+              "\n"
+              "Tokenizer::Tokenizer()\n"
+              "{\n"
+              "     _tokens = new int;\n"
+              "}\n"
+              "\n"
+              "Tokenizer::~Tokenizer()\n"
+              "{\n"
+              "    deleteTokens(_tokens);\n"
+              "    _tokens = 0;\n"
               "}\n", true);
         TODO_ASSERT_EQUALS("", errout.str());
     }
