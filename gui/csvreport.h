@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2009 Daniel Marjam√§ki and Cppcheck team.
+ * Copyright (C) 2007-2009 Daniel Marjam‰ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,30 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
-#ifndef REPORT_H
-#define REPORT_H
+#ifndef CSV_REPORT_H
+#define CSV_REPORT_H
 
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QFile>
+#include <QTextStream>
+#include "report.h"
 
 /**
-* @brief A base class for reports.
+* @brief CSV text file report.
+* This report exports results as CSV (comma separated values). CSV files are
+* easy to import to many other programs.
+* @todo This class should be inherited from TxtReport?
 */
-class Report : public QObject
+class CsvReport : public Report
 {
 public:
-
-    enum Type
-    {
-        TXT,
-        XML,
-        CSV,
-    };
-
-    Report(const QString &filename, QObject * parent = 0);
-    virtual ~Report();
+    CsvReport(const QString &filename, QObject * parent = 0);
+    ~CsvReport();
 
     /**
     * @brief Create the report (file).
@@ -48,45 +45,28 @@ public:
     virtual bool Create();
 
     /**
-    * @brief Close the report (file).
-    */
-    virtual void Close();
-
-    /**
     * @brief Write report header.
     */
-    virtual void WriteHeader() = 0;
+    virtual void WriteHeader();
 
     /**
     * @brief Write report footer.
     */
-    virtual void WriteFooter() = 0;
+    virtual void WriteFooter();
 
     /**
     * @brief Write error to report.
     */
     virtual void WriteError(const QStringList &files, const QStringList &lines,
                             const QString &id, const QString &severity,
-                            const QString &msg) = 0;
-
-protected:
-
-    /**
-    * @brief Get the file object where the report is written to.
-    */
-    QFile* GetFile();
+                            const QString &msg);
 
 private:
 
     /**
-    * @brief Filename of the report.
+    * @brief Text stream writer for writing the report in text format.
     */
-    QString mFilename;
-
-    /**
-    * @brief Fileobject for the report file.
-    */
-    QFile mFile;
+    QTextStream mTxtWriter;
 };
 
-#endif // REPORT_H
+#endif // CSV_REPORT_H

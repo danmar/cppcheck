@@ -31,6 +31,7 @@
 #include "threadhandler.h"
 #include "fileviewdialog.h"
 #include "projectfile.h"
+#include "report.h"
 #include "../src/filelister.h"
 #include "../src/cppcheckexecutor.h"
 
@@ -511,7 +512,7 @@ void MainWindow::ShowAuthors()
 void MainWindow::Save()
 {
     QString selectedFilter;
-    QString filter(tr("XML files (*.xml);;Text files (*.txt)"));
+    QString filter(tr("XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)"));
     QString selectedFile = QFileDialog::getSaveFileName(this,
                            tr("Save the report file"),
                            QString(),
@@ -520,22 +521,27 @@ void MainWindow::Save()
 
     if (!selectedFile.isEmpty())
     {
-        //Check if xml file type was selected
-        bool xml = selectedFilter == tr("XML files (*.xml)");
-
-        //Force xml extension to the file
-        if (xml && !selectedFile.endsWith(".xml", Qt::CaseInsensitive))
+        Report::Type type;
+        if (selectedFilter == tr("XML files (*.xml)"))
         {
-            selectedFile += ".xml";
+            type = Report::XML;
+            if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
+                selectedFile += ".xml";
+        }
+        else if (selectedFilter == tr("Text files (*.txt)"))
+        {
+            type = Report::TXT;
+            if (!selectedFile.endsWith(".txt", Qt::CaseInsensitive))
+                selectedFile += ".txt";
+        }
+        else
+        {
+            type = Report::CSV;
+            if (!selectedFile.endsWith(".csv", Qt::CaseInsensitive))
+                selectedFile += ".csv";
         }
 
-        //Force .txt extension
-        if (!xml && !selectedFile.endsWith(".txt", Qt::CaseInsensitive))
-        {
-            selectedFile += ".txt";
-        }
-
-        mUI.mResults->Save(selectedFile, xml);
+        mUI.mResults->Save(selectedFile, type);
     }
 }
 

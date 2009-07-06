@@ -26,6 +26,7 @@
 #include "../src/errorlogger.h"
 #include "resultstree.h"
 #include "common.h"
+#include "report.h"
 #include "ui_resultsview.h"
 
 /**
@@ -60,9 +61,9 @@ public:
     * @brief Save results to a file
     *
     * @param filename Filename to save results to
-    * @param xml should results be saved as xml (true) or txt (false)
+    * @param type Type of the report.
     */
-    void Save(const QString &filename, bool xml);
+    void Save(const QString &filename, Report::Type type);
 
     /**
     * @brief Update tree settings

@@ -18,7 +18,7 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - A tool for static C/C++ code analysis.</translation>
     </message>
-    <message>
+    <message utf8="true">
         <location filename="about.ui" line="65"/>
         <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
         <translation>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</translation>
@@ -129,10 +129,10 @@ kate -l(line) (file)</translation>
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="238"/>
-        <location filename="mainwindow.cpp" line="456"/>
-        <location filename="mainwindow.cpp" line="554"/>
-        <location filename="mainwindow.cpp" line="572"/>
+        <location filename="mainwindow.cpp" line="239"/>
+        <location filename="mainwindow.cpp" line="458"/>
+        <location filename="mainwindow.cpp" line="561"/>
+        <location filename="mainwindow.cpp" line="579"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -297,22 +297,22 @@ kate -l(line) (file)</translation>
         <translation>&amp;Help</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="201"/>
+        <location filename="mainwindow.cpp" line="202"/>
         <source>Select files to check</source>
         <translation>Select files to check</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="210"/>
+        <location filename="mainwindow.cpp" line="211"/>
         <source>Select directory to check</source>
         <translation>Select directory to check</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="239"/>
+        <location filename="mainwindow.cpp" line="240"/>
         <source>No suitable files found to check!</source>
         <translation>No suitable files found to check!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="452"/>
+        <location filename="mainwindow.cpp" line="454"/>
         <source>Cannot exit while checking.
 
 Stop the checking before exiting.</source>
@@ -321,37 +321,46 @@ Stop the checking before exiting.</source>
 Stop the checking before exiting.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="498"/>
+        <location filename="mainwindow.cpp" line="500"/>
         <source>License</source>
         <translation>License</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="505"/>
+        <location filename="mainwindow.cpp" line="507"/>
         <source>Authors</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="513"/>
-        <source>XML files (*.xml);;Text files (*.txt)</source>
-        <translation>XML files (*.xml);;Text files (*.txt)</translation>
+        <location filename="mainwindow.cpp" line="515"/>
+        <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="515"/>
+        <source>XML files (*.xml);;Text files (*.txt)</source>
+        <translation type="obsolete">XML files (*.xml);;Text files (*.txt)</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="517"/>
         <source>Save the report file</source>
         <translation>Save the report file</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="523"/>
+        <location filename="mainwindow.cpp" line="525"/>
         <source>XML files (*.xml)</source>
         <translation>XML files (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="556"/>
+        <location filename="mainwindow.cpp" line="531"/>
+        <source>Text files (*.txt)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="563"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="573"/>
+        <location filename="mainwindow.cpp" line="580"/>
         <source>Failed to change the language:
 
 %1
@@ -414,25 +423,25 @@ Stop the checking before exiting.</translation>
     <name>ResultsTree</name>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="754"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="754"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>Severity</source>
         <translation>Severity</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="754"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>Line</source>
         <translation>Line</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="754"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>Message</source>
         <translation>Message</translation>
     </message>
@@ -472,22 +481,22 @@ Please check the application path and parameters are correct.</source>
 Please check the application path and parameters are correct.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="612"/>
+        <location filename="resultstree.cpp" line="613"/>
         <source>all</source>
         <translation>All</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="616"/>
+        <location filename="resultstree.cpp" line="617"/>
         <source>style</source>
         <translation>Style</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="620"/>
+        <location filename="resultstree.cpp" line="621"/>
         <source>security</source>
         <translation>Security</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="624"/>
+        <location filename="resultstree.cpp" line="625"/>
         <source>error</source>
         <translation>Error</translation>
     </message>
@@ -495,18 +504,18 @@ Please check the application path and parameters are correct.</translation>
 <context>
     <name>ResultsView</name>
     <message>
-        <location filename="resultsview.cpp" line="77"/>
-        <location filename="resultsview.cpp" line="89"/>
+        <location filename="resultsview.cpp" line="79"/>
+        <location filename="resultsview.cpp" line="91"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="78"/>
+        <location filename="resultsview.cpp" line="80"/>
         <source>No errors found.</source>
         <translation>No errors found.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="86"/>
+        <location filename="resultsview.cpp" line="88"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Errors were found, but they are configured to be hidden.

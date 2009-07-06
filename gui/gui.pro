@@ -45,6 +45,7 @@ HEADERS += 	mainwindow.h \
 		txtreport.h \
 		xmlreport.h \
 		translationhandler.h \
+		csvreport.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
@@ -85,6 +86,7 @@ SOURCES += 	main.cpp \
 		txtreport.cpp \
 		xmlreport.cpp \
 		translationhandler.cpp \
+		csvreport.cpp \
 		../src/checkautovariables.cpp \
 		../src/checkdangerousfunctions.cpp \
 		../src/checkmemoryleak.cpp \

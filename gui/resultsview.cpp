@@ -21,8 +21,10 @@
 #include <QFile>
 #include <QMessageBox>
 #include "resultsview.h"
+#include "report.h"
 #include "txtreport.h"
 #include "xmlreport.h"
+#include "csvreport.h"
 
 ResultsView::ResultsView(QWidget * parent) :
         QWidget(parent),
@@ -129,7 +131,7 @@ void ResultsView::ExpandAllResults()
     mUI.mTree->expandAll();
 }
 
-void ResultsView::Save(const QString &filename, bool xml)
+void ResultsView::Save(const QString &filename, Report::Type type)
 {
     if (!mErrorsFound)
     {
@@ -138,11 +140,25 @@ void ResultsView::Save(const QString &filename, bool xml)
         msgBox.exec();
     }
 
-    if (xml)
+    Report *report = NULL;
+
+    switch (type)
     {
-        XmlReport report(filename);
-        if (report.Create())
-            mUI.mTree->SaveResults(&report);
+    case Report::CSV:
+        report = new CsvReport(filename, this);
+        break;
+    case Report::TXT:
+        report = new TxtReport(filename, this);
+        break;
+    case Report::XML:
+        report = new XmlReport(filename, this);
+        break;
+    }
+
+    if (report)
+    {
+        if (report->Create())
+            mUI.mTree->SaveResults(report);
         else
         {
             QMessageBox msgBox;
@@ -152,15 +168,9 @@ void ResultsView::Save(const QString &filename, bool xml)
     }
     else
     {
-        TxtReport report(filename);
-        if (report.Create())
-            mUI.mTree->SaveResults(&report);
-        else
-        {
-            QMessageBox msgBox;
-            msgBox.setText("Failed to save the report.");
-            msgBox.exec();
-        }
+        QMessageBox msgBox;
+        msgBox.setText("Failed to save the report.");
+        msgBox.exec();
     }
 }
 
