@@ -149,6 +149,7 @@ private:
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
         TEST_CASE(vardecl4);
+        TEST_CASE(vardecl5);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
 
@@ -939,7 +940,7 @@ private:
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
-                                   "1: static int i@1 ; i@1 = 1 ;\n"
+                                   "1: static int i@1 = 1 ;\n"
                                    "2: void f ( )\n"
                                    "3: {\n"
                                    "4: int i@2 ; i@2 = 2 ;\n"
@@ -2110,6 +2111,14 @@ private:
         const char code4[] = "const void * const p = NULL;";
         const char res4[]  = "const void * const p ; p = NULL ;";
         ASSERT_EQUALS(res4, tokenizeAndStringify(code4));
+    }
+
+    void vardecl5()
+    {
+        // don't simplify declarations of static variables
+        // "static int i = 0;" is not the same as "static int i; i = 0;"
+        const char code[] = "static int i = 0 ;";
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
     void volatile_variables()

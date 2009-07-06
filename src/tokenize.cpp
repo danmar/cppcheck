@@ -2133,7 +2133,7 @@ bool Tokenizer::simplifyVarDecl()
         Token *type0 = tok;
         if (!Token::Match(type0, "%type%"))
             continue;
-        if (Token::Match(type0, "else|return"))
+        if (Token::Match(type0, "else|return|static"))
             continue;
 
         bool isconst = false;
