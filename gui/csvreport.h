@@ -36,7 +36,7 @@ class CsvReport : public Report
 {
 public:
     CsvReport(const QString &filename, QObject * parent = 0);
-    ~CsvReport();
+    virtual ~CsvReport();
 
     /**
     * @brief Create the report (file).

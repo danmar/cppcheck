@@ -35,7 +35,7 @@ class XmlReport : public Report
 {
 public:
     XmlReport(const QString &filename, QObject * parent = 0);
-    ~XmlReport();
+    virtual ~XmlReport();
 
     /**
     * @brief Create the report (file).

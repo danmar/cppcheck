@@ -34,7 +34,7 @@ class TxtReport : public Report
 {
 public:
     TxtReport(const QString &filename, QObject * parent = 0);
-    ~TxtReport();
+    virtual ~TxtReport();
 
     /**
     * @brief Create the report (file).
