@@ -129,6 +129,7 @@ private:
         TEST_CASE(simple9);     // Bug 2435468 - member function "free"
         TEST_CASE(simple10);    // fclose in a if condition
         TEST_CASE(simple11);
+        TEST_CASE(simple12);
         TEST_CASE(new_nothrow);
 
         TEST_CASE(staticvar);
@@ -433,6 +434,17 @@ private:
               "    free(s);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simple12()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *s;\n"
+              "    foo(s);\n"
+              "    s = malloc(100);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s\n", errout.str());
     }
 
 
