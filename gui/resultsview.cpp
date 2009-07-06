@@ -137,6 +137,7 @@ void ResultsView::Save(const QString &filename, Report::Type type)
     {
         QMessageBox msgBox;
         msgBox.setText("No errors found, nothing to save.");
+        msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
     }
 
@@ -163,6 +164,7 @@ void ResultsView::Save(const QString &filename, Report::Type type)
         {
             QMessageBox msgBox;
             msgBox.setText("Failed to save the report.");
+            msgBox.setIcon(QMessageBox::Critical);
             msgBox.exec();
         }
     }
@@ -170,6 +172,7 @@ void ResultsView::Save(const QString &filename, Report::Type type)
     {
         QMessageBox msgBox;
         msgBox.setText("Failed to save the report.");
+        msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
     }
 }
