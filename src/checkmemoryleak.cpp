@@ -1654,6 +1654,13 @@ void CheckMemoryLeakInFunction::check()
             if (sz < 1)
                 sz = 1;
 
+            if (!Token::Match(tok, "[{};] %type%"))
+                continue;
+
+            // Don't check static variables
+            if (tok->next()->str() == "static")
+                continue;
+
             if (Token::Match(tok, "[{};] %type% * const| %var% [;=]"))
             {
                 const int varname_tok = (tok->tokAt(3)->str() != "const" ? 3 : 4);

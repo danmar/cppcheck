@@ -131,6 +131,8 @@ private:
         TEST_CASE(simple11);
         TEST_CASE(new_nothrow);
 
+        TEST_CASE(staticvar);
+
         TEST_CASE(alloc_alloc_1);
 
         TEST_CASE(use1);
@@ -477,6 +479,21 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Mismatching allocation and deallocation: p\n", errout.str());
     }
+
+
+    void staticvar()
+    {
+        check("int f()\n"
+              "{\n"
+              "    static char *s = 0;\n"
+              "    free(s);\n"
+              "    s = malloc(100);\n"
+              "    return 123;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
 
     void alloc_alloc_1()
     {
