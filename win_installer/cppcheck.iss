@@ -79,7 +79,7 @@ Name: custom; Description: Custom installation; Flags: iscustom
 ; - QTGui contains QT libraries and QT-based GUI
 [Components]
 Name: Core; Description: Core files (command line executable); Types: full custom compact; Flags: fixed
-Name: QTGui; Description: QT-based GUI [Experimental]; Types: full
+Name: QTGui; Description: QT-based GUI [Beta]; Types: full
 
 [Tasks]
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
