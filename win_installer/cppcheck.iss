@@ -83,6 +83,7 @@ Name: QTGui; Description: GUI [Beta]; Types: full
 
 [Tasks]
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
+Name: guidesktopicon; Description: Create a desktop icon for GUI; GroupDescription: {cm:AdditionalIcons}; Flags: unchecked
 Name: modifypath; Description: &Add {#MyAppName} folder to your system path; Flags: unchecked
 
 [InstallDelete]
@@ -119,8 +120,9 @@ Name: {group}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}; Componen
 Name: {group}\{#QTGuiName}; Filename: {app}\{#QTGuiExe}; WorkingDir: {app}; Components: QTGui
 Name: {group}\{cm:ProgramOnTheWeb,{#MyAppName}}; Filename: {#MyAppURL}; Components: Core
 Name: {group}\{cm:UninstallProgram,{#MyAppName}}; Filename: {uninstallexe}; Components: Core
-; Desktop icon
+; Desktop icons
 Name: {commondesktop}\{#MyAppName}; Filename: {sys}\cmd.exe; WorkingDir: {app}; Tasks: desktopicon; Components: Core
+Name: {commondesktop}\{#QTGuiName}; Filename: {app}\{#QTGuiExe}; WorkingDir: {app}; Tasks: guidesktopicon; Components: QTGui
 ; Doc icons
 Name: {group}\Authors; Filename: {app}\AUTHORS.txt; IconFileName: {win}\NOTEPAD.EXE; Components: Core
 Name: {group}\Copying; Filename: {app}\COPYING.txt; IconFileName: {win}\NOTEPAD.EXE; Components: Core
