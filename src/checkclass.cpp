@@ -463,13 +463,15 @@ void CheckClass::privateFunctions()
                     break;
                 --indent_level;
             }
+            else if (indent_level != 1)
+                continue;
             else if (tok->str() == "private:")
                 priv = true;
             else if (tok->str() == "public:")
                 priv = false;
             else if (tok->str() == "protected:")
                 priv = false;
-            else if (priv && indent_level == 1)
+            else if (priv)
             {
                 if (Token::Match(tok, "typedef %type% ("))
                     tok = tok->tokAt(2);

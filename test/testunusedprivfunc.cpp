@@ -43,6 +43,8 @@ private:
         TEST_CASE(func_pointer);
 
         TEST_CASE(ctor);
+
+        TEST_CASE(classInClass);
     }
 
 
@@ -234,6 +236,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+
+    void classInClass()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "\n"
+              "    class B\n"
+              "    {\n"
+              "    private:\n"
+              "    };\n"
+              "\n"
+              "    static void f()\n"
+              "    { }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 };
 
