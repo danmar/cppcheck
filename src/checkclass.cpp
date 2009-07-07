@@ -544,13 +544,13 @@ void CheckClass::privateFunctions()
                     else if (Token::Match(tok2, "%var% ("))
                     {
                         // Remove function from FuncList
-                        for (std::list<const Token *>::iterator it = FuncList.begin(); it != FuncList.end(); ++it)
+                        std::list<const Token *>::iterator it = FuncList.begin();
+                        while (it != FuncList.end())
                         {
                             if (tok2->str() == (*it)->str())
-                            {
-                                FuncList.remove(*it);
-                                break;
-                            }
+                                FuncList.erase(it++);
+                            else
+                                it++;
                         }
                     }
                 }

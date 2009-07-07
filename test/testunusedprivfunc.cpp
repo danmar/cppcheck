@@ -45,6 +45,7 @@ private:
         TEST_CASE(ctor);
 
         TEST_CASE(classInClass);
+        TEST_CASE(sameFunctionNames);
     }
 
 
@@ -254,6 +255,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+
+    void sameFunctionNames()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    void a()\n"
+              "    {\n"
+              "        f(1);\n"
+              "    }\n"
+              "\n"
+              "private:\n"
+              "    void f() { }\n"
+              "    void f(int) { }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestUnusedPrivateFunction)
