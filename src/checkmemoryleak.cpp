@@ -1569,6 +1569,12 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const char varname
         memoryLeak(last, varname, alloctype, all);
     }
 
+    else if ((result = Token::findmatch(tok, "alloc ; }")) != NULL)
+    {
+        if (result->tokAt(3) == NULL)
+            memoryLeak(result->tokAt(2), varname, alloctype, all);
+    }
+
     // detect cases that "simplifycode" don't handle well..
     else if (_settings->_debug)
     {

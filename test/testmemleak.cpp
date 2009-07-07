@@ -444,7 +444,7 @@ private:
               "    foo(s);\n"
               "    s = malloc(100);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s\n", errout.str());
     }
 
 
