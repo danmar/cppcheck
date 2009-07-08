@@ -63,7 +63,7 @@ public:
         static std::string getXMLHeader();
         static std::string getXMLFooter();
 
-        std::string toText() const;
+        //std::string toText() const;
         std::string serialize() const;
         bool deserialize(const std::string &data);
         std::list<FileLocation> _callStack;
@@ -72,8 +72,16 @@ public:
         std::string _id;
     };
 
-    ErrorLogger() { }
+    ErrorLogger() : _outputFormat("[file:line]") { }
     virtual ~ErrorLogger() { }
+
+    /** Change the output format */
+    void outputFormat(const std::string &of)
+    {
+        _outputFormat = of;
+    }
+
+    std::string toText(const ErrorMessage &msg) const;
 
     /**
      * Information about progress is directed here.
@@ -334,10 +342,12 @@ public:
     }
 
 
-    static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
+    std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack) const;
 
 private:
     void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id);
     void _writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id);
+
+    std::string _outputFormat;
 };
 #endif

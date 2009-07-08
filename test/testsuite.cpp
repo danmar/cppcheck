@@ -179,5 +179,5 @@ void TestFixture::reportOut(const std::string & /*outmsg*/)
 
 void TestFixture::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    errout << msg.toText() << std::endl;
+    errout << toText(msg) << std::endl;
 }

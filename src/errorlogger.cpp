@@ -158,14 +158,14 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     return xml.str();
 }
 
-std::string ErrorLogger::ErrorMessage::toText() const
+std::string ErrorLogger::toText(const ErrorLogger::ErrorMessage &msg) const
 {
     std::ostringstream text;
-    if (!_callStack.empty())
-        text << callStackToString(_callStack) << ": ";
-    if (!_severity.empty())
-        text << "(" << _severity << ") ";
-    text << _msg;
+    if (!msg._callStack.empty())
+        text << callStackToString(msg._callStack) << ": ";
+    if (!msg._severity.empty())
+        text << "(" << msg._severity << ") ";
+    text << msg._msg;
     return text.str();
 }
 
@@ -191,13 +191,30 @@ void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const To
 }
 
 
+static void replace(std::string &s, const std::string &s1, const std::string &s2)
+{
+    std::string::size_type pos = s.find(s1);
+    if (pos == std::string::npos)
+        return;
+    s.erase(pos, s1.length());
+    s.insert(pos, s2);
+}
 
 
-std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
+std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack) const
 {
     std::ostringstream ostr;
     for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok)
-        ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).getfile() << ":" << (*tok).line << "]";
+    {
+        if (tok != callStack.begin())
+            ostr << " -> ";
+        std::string s = _outputFormat;
+        replace(s, "file", (*tok).getfile());
+        std::ostringstream line;
+        line << (*tok).line;
+        replace(s, "line", line.str());
+        ostr << s;
+    }
     return ostr.str();
 }
 

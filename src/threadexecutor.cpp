@@ -30,7 +30,7 @@
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
-        : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
+        : ErrorLogger(errorLogger), _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
 
 }
@@ -84,7 +84,7 @@ bool ThreadExecutor::handleRead(unsigned int &result)
         msg.deserialize(buf);
 
         // Alert only about unique errors
-        std::string errmsg = msg.toText();
+        std::string errmsg = toText(msg);
         if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end())
         {
             _errorList.push_back(errmsg);

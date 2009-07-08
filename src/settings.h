@@ -50,6 +50,9 @@ public:
     /** write xml results */
     bool _xml;
 
+    /** output formatting */
+    std::string _outputFormat;
+
     /** Checking if there are unused functions */
     bool _unusedFunctions;
 
