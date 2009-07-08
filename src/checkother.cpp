@@ -990,7 +990,7 @@ void CheckOther::ifNoActionError(const Token *tok)
 
 void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, "error", "sprintfOverlappingData", "Overlapping data buffer " + varname);
+    reportError(tok, "error", "sprintfOverlappingData", "Overlapping data buffer " + varname + "\nWhen using sprintf the same buffer must not be used both for output and input. The behaviour is undefined when that happens.\nFor example: 'sprintf(str,\"<%s>\",str);'");
 }
 
 void CheckOther::udivError(const Token *tok)

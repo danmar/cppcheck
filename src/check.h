@@ -84,13 +84,21 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg)
+    void reportError(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, std::string msg)
     {
         // No errorLogger => just report the message to stdout
         if (_errorLogger == NULL)
         {
             std::cout << "(" << severity << ") " << msg << std::endl;
             return;
+        }
+
+        // If the verbose flag hasn't been given, don't show verbose information
+        if (!_settings || !_settings->_verbose)
+        {
+            std::string::size_type pos = msg.find("\n");
+            if (pos != std::string::npos)
+                msg.erase(pos);
         }
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
