@@ -761,11 +761,7 @@ private:
                                 "      ABC<int>::type v;\n"
                                 "      v.push_back(4);\n"
                                 "    }\n"
-                                "};\n"
-                                "\n"
-                                "int main() {\n"
-                                "    return 0;\n"
-                                "}";
+                                "};\n";
 
             const std::string expected(" template < typename T > class ABC "
                                        "{"
@@ -775,8 +771,7 @@ private:
                                        "std :: vector < int > v ;"
                                        " v . push_back ( 4 ) ;"
                                        " } "
-                                       "} ; "
-                                       "int main ( ) { return 0 ; }");
+                                       "} ;");
 
             TODO_ASSERT_EQUALS(expected, sizeof_(code));
         }
