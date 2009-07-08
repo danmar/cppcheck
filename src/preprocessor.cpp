@@ -956,7 +956,8 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
     }
 }
 
-class Macro
+/** @brief Class that the preprocessor uses when it expands macros. This class represents a preprocessor macro */
+class PreprocessorMacro
 {
 private:
     Tokenizer tokenizer;
@@ -969,7 +970,7 @@ private:
     bool _nopar;
 
 public:
-    Macro(const std::string &macro)
+    PreprocessorMacro(const std::string &macro)
             : _macro(macro)
     {
         // Tokenize the macro to make it easier to handle
@@ -1183,7 +1184,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
         }
 
         // Extract the whole macro into a separate variable "macro" and then erase it from "code"
-        const Macro macro(code.substr(defpos + 8, endpos - defpos - 7));
+        const PreprocessorMacro macro(code.substr(defpos + 8, endpos - defpos - 7));
         code.erase(defpos, endpos - defpos);
 
         // No macro name => continue

@@ -24,6 +24,7 @@
 
 #include "check.h"
 
+/** @brief Experimental class for detecting input validation problems */
 class CheckSecurity : public Check
 {
 public:

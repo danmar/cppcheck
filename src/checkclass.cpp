@@ -41,10 +41,10 @@ CheckClass instance;
 
 //---------------------------------------------------------------------------
 
-struct CheckClass::VAR *CheckClass::getVarList(const Token *tok1, bool withClasses)
+CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
 {
     // Get variable list..
-    struct VAR *varlist = NULL;
+    Var *varlist = NULL;
     unsigned int indentlevel = 0;
     for (const Token *tok = tok1; tok; tok = tok->next())
     {
@@ -127,7 +127,7 @@ struct CheckClass::VAR *CheckClass::getVarList(const Token *tok1, bool withClass
         // If the varname was set in one of the two if-block above, create a entry for this variable..
         if (varname)
         {
-            struct VAR *var = new VAR(varname, false, varlist);
+            Var *var = new Var(varname, false, varlist);
             varlist   = var;
         }
     }
@@ -136,9 +136,9 @@ struct CheckClass::VAR *CheckClass::getVarList(const Token *tok1, bool withClass
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::initVar(struct VAR *varlist, const char varname[])
+void CheckClass::initVar(Var *varlist, const char varname[])
 {
-    for (struct VAR *var = varlist; var; var = var->next)
+    for (Var *var = varlist; var; var = var->next)
     {
         if (strcmp(var->name, varname) == 0)
         {
@@ -149,7 +149,7 @@ void CheckClass::initVar(struct VAR *varlist, const char varname[])
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack)
+void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack)
 {
     bool Assign = false;
     unsigned int indentlevel = 0;
@@ -201,7 +201,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, struct 
         // Using the operator= function to initialize all variables..
         if (Token::simpleMatch(ftok->next(), "* this = "))
         {
-            for (struct VAR *var = varlist; var; var = var->next)
+            for (Var *var = varlist; var; var = var->next)
                 var->init = true;
             break;
         }
@@ -219,7 +219,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, struct 
         // Clearing all variables..
         if (Token::simpleMatch(ftok, "memset ( this ,"))
         {
-            for (struct VAR *var = varlist; var; var = var->next)
+            for (Var *var = varlist; var; var = var->next)
                 var->init = true;
             break;
         }
@@ -331,7 +331,7 @@ void CheckClass::constructors()
             if (ErrorLogger::noConstructor(*_settings))
             {
                 // If the class has member variables there should be an constructor
-                struct VAR *varlist = getVarList(tok1, false);
+                Var *varlist = getVarList(tok1, false);
                 if (varlist)
                 {
                     noConstructorError(tok1, classNameToken->str());
@@ -339,7 +339,7 @@ void CheckClass::constructors()
                 // Delete the varlist..
                 while (varlist)
                 {
-                    struct VAR *nextvar = varlist->next;
+                    Var *nextvar = varlist->next;
                     delete varlist;
                     varlist = nextvar;
                 }
@@ -365,7 +365,7 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[])
 
     // Check that all member variables are initialized..
     bool withClasses = bool(_settings->_showAll && std::string(funcname) == "operator =");
-    struct VAR *varlist = getVarList(tok1, withClasses);
+    Var *varlist = getVarList(tok1, withClasses);
 
     int indentlevel = 0;
     const Token *constructor_token = Tokenizer::findClassFunction(tok1, className, funcname, indentlevel);
@@ -374,7 +374,7 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[])
     while (constructor_token)
     {
         // Check if any variables are uninitialized
-        for (struct VAR *var = varlist; var; var = var->next)
+        for (Var *var = varlist; var; var = var->next)
         {
             if (var->init)
                 continue;
@@ -412,7 +412,7 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[])
                 uninitVarError(constructor_token, className, var->name);
         }
 
-        for (struct VAR *var = varlist; var; var = var->next)
+        for (Var *var = varlist; var; var = var->next)
             var->init = false;
 
         constructor_token = Tokenizer::findClassFunction(constructor_token->next(), className, funcname, indentlevel);
@@ -423,7 +423,7 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[])
     // Delete the varlist..
     while (varlist)
     {
-        struct VAR *nextvar = varlist->next;
+        Var *nextvar = varlist->next;
         delete varlist;
         varlist = nextvar;
     }

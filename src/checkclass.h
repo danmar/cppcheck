@@ -76,9 +76,10 @@ public:
     void virtualDestructor();
 
 private:
-    struct VAR
+    class Var
     {
-        VAR(const char *name = 0, bool init = false, struct VAR *next = 0)
+    public:
+        Var(const char *name = 0, bool init = false, Var *next = 0)
         {
             this->name = name;
             this->init = init;
@@ -87,12 +88,12 @@ private:
 
         const char *name;
         bool        init;
-        struct VAR *next;
+        Var *next;
     };
 
-    void initializeVarList(const Token *tok1, const Token *ftok, struct VAR *varlist, const char classname[], std::list<std::string> &callstack);
-    void initVar(struct VAR *varlist, const char varname[]);
-    struct VAR *getVarList(const Token *tok1, bool withClasses);
+    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack);
+    void initVar(Var *varlist, const char varname[]);
+    Var *getVarList(const Token *tok1, bool withClasses);
 
     // Check constructors for a specified class
     void checkConstructors(const Token *tok1, const char funcname[]);

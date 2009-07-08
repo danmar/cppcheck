@@ -27,7 +27,7 @@
 #include <list>
 #include "errorlogger.h"
 
-
+/** @brief The cppcheck preprocessor. It has special functionality for extracting the various ifdef configurations that exist in a source file. */
 class Preprocessor
 {
 public:

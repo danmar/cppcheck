@@ -26,6 +26,7 @@
 
 class Token;
 
+/** @brief %Check STL usage */
 class CheckStl : public Check
 {
 public:

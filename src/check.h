@@ -26,6 +26,10 @@
 #include <list>
 #include <iostream>
 
+/**
+ * @brief Interface class that cppcheck uses to communicate with the checks.
+ * All checking classes must inherit from this class
+ */
 class Check
 {
 public:
@@ -114,8 +118,8 @@ protected:
     }
 
 private:
-    // compare the names of Check classes
-    bool operator<(const Check *other)
+    /** compare the names of Check classes */
+    bool operator<(const Check *other) const
     {
         return (name() < other->name());
     }
