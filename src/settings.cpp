@@ -33,7 +33,6 @@ Settings::Settings()
     _security = false;
     _jobs = 1;
     _exitCode = 0;
-    _outputFormat = "[file:line]";
 }
 
 Settings::~Settings()

@@ -101,7 +101,7 @@ private:
         loc.file = "ab/cd/../ef.h";
         errmsg._callStack.push_back(loc);
         ASSERT_EQUALS("<error file=\"ab/ef.h\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errmsg.toXML());
-        //ASSERT_EQUALS("[ab/ef.h:0]: ", errorLogger.toText(errmsg));
+        ASSERT_EQUALS("[ab/ef.h:0]: ", errmsg.toText());
     }
 
 };

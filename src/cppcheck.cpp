@@ -35,7 +35,6 @@
 //---------------------------------------------------------------------------
 
 CppCheck::CppCheck(ErrorLogger &errorLogger)
-        : ErrorLogger(errorLogger)
 {
     _errorLogger = &errorLogger;
 }
@@ -196,12 +195,6 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             }
         }
 
-        // Use visual studio compliant output format
-        else if (strcmp(argv[i], "--output-format=VS") == 0)
-        {
-            _settings._outputFormat = "file(line)";
-        }
-
         // auto deallocated classes..
         else if (strcmp(argv[i], "--auto-dealloc") == 0)
         {
@@ -301,7 +294,6 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "                         several paths. First given path is checked first. If\n"
         "                         paths are relative to source files, this is not needed\n"
         "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
-        "    --output-format=VS   Use Visual Studio compliant output format.\n"
         "    -q, --quiet          Only print error messages\n"
         "    -s, --style          Check coding style\n"
         "    --unused-functions   Check if there are unused functions\n"
@@ -332,7 +324,6 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 
 unsigned int CppCheck::check()
 {
-    _errorLogger->outputFormat(_settings._outputFormat);
     _checkUnusedFunctions.setErrorLogger(this);
     std::sort(_filenames.begin(), _filenames.end());
     for (unsigned int c = 0; c < _filenames.size(); c++)
@@ -464,7 +455,7 @@ Settings CppCheck::settings() const
 
 void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    std::string errmsg = toText(msg);
+    std::string errmsg = msg.toText();
 
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
