@@ -62,7 +62,7 @@ void CheckBufferOverrunClass::bufferOverrun(const Token *tok)
 
 void CheckBufferOverrunClass::strncatUsage(const Token *tok)
 {
-    reportError(tok, "all", "strncatUsage", "Dangerous usage of strncat, possible buffer overrun");
+    reportError(tok, "all", "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
 }
 
 void CheckBufferOverrunClass::outOfBounds(const Token *tok, const std::string &what)
@@ -290,7 +290,7 @@ void CheckBufferOverrunClass::checkScope(const Token *tok, const char *varname[]
         if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
             int n = atoi(tok->strAt(6));
-            if (n == size)
+            if (n >= (size - 1))
                 strncatUsage(tok);
         }
 
