@@ -16,6 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
+
+/** @mainpage
+ * Overview \n
+ * The source code is first tokenized and then checked. \n
+ * \n
+ * Writing checks \n
+ * The checks are written in C++. Below is a simple example of a check
+ * that detect division with zero:
+ * \code
+void CheckOther::checkZeroDivision()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "/ 0"))
+            reportError(tok, "error", "zerodiv", "Division by zero");
+    }
+}
+ \endcode
+ */
+
+
+
 #include "cppcheckexecutor.h"
 
 /**
