@@ -57,12 +57,18 @@
          <property name="text">
           <string>Cppcheck - A tool for static C/C++ code analysis.</string>
          </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item>
         <widget class="QLabel" name="mCopyright">
          <property name="text">
           <string>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</string>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
