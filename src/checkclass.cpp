@@ -439,6 +439,12 @@ void CheckClass::privateFunctions()
     // Locate some class
     for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), "class %var% {"); tok1; tok1 = Token::findmatch(tok1->next(), "class %var% {"))
     {
+        // If the class implementation is incomplete there may be false positives about unused private functions.
+        // Therefore I only check classes that are declared in the source file.
+        // Todo: check classes that are declared in header file too. make sure the whole implementation is seen.
+        if (tok1->fileIndex() != 0)
+            continue;
+
         const std::string &classname = tok1->next()->str();
 
         // Get private functions..

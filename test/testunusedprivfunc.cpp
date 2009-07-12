@@ -46,6 +46,7 @@ private:
 
         TEST_CASE(classInClass);
         TEST_CASE(sameFunctionNames);
+        TEST_CASE(incompleteImplementation);
     }
 
 
@@ -102,7 +103,7 @@ private:
               "unsigned int Fred::f()\n"
               "{ }\n");
 
-        ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+        TODO_ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
 
         check("#file \"p.h\"\n"
               "class Fred\n"
@@ -118,7 +119,7 @@ private:
               "{\n"
               "}\n"
               "\n");
-        ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
+        TODO_ASSERT_EQUALS("[p.h:4]: (style) Unused private function 'Fred::f'\n", errout.str());
 
         // Don't warn about include files which implementation we don't see
         check("#file \"p.h\"\n"
@@ -270,6 +271,25 @@ private:
               "    void f() { }\n"
               "    void f(int) { }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void incompleteImplementation()
+    {
+        // The implementation for "A::a" is missing - so don't check if
+        // "A::b" is used or not
+        check("#file \"test.h\"\n"
+              "class A\n"
+              "{\n"
+              "public:\n"
+              "    A()\n"
+              "    void a();\n"
+              "private:\n"
+              "    void b();\n"
+              "};\n"
+              "#endfile\n"
+              "A::A() { }\n"
+              "void A::b() { }\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
