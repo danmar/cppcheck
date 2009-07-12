@@ -9,29 +9,29 @@
         <translation>Tietoa ohjelmasta Cppcheck</translation>
     </message>
     <message>
-        <location filename="about.ui" line="51"/>
+        <location filename="about.ui" line="64"/>
         <source>Version %1</source>
         <translation>Versio %1</translation>
     </message>
     <message>
-        <location filename="about.ui" line="58"/>
+        <location filename="about.ui" line="71"/>
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - Työkalu C/C++ koodin staattiseen analysointiin.</translation>
     </message>
     <message utf8="true">
-        <location filename="about.ui" line="65"/>
+        <location filename="about.ui" line="81"/>
         <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
         <translation>Copyright (C) 2007-2009 Daniel Marjamäki ja cppcheck tiimi.</translation>
     </message>
     <message>
-        <location filename="about.ui" line="72"/>
+        <location filename="about.ui" line="91"/>
         <source>This program is licensed under the terms
 of the GNU General Public License version 3</source>
         <translation>Tämä ohjelma on lisensoitu GNU General 
 Public lisenssin version 3 alaisuuteen</translation>
     </message>
     <message>
-        <location filename="about.ui" line="83"/>
+        <location filename="about.ui" line="102"/>
         <source>Visit Cppcheck homepage at %1</source>
         <translation>Cppcheckin kotisivu löytyy osoitteesta %1</translation>
     </message>
