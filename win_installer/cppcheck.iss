@@ -19,7 +19,7 @@
 
 
 #define MyAppName "cppcheck"
-#define AppVersion "1.33"
+#define AppVersion "1.34"
 #define MyAppURL "http://cppcheck.wiki.sourceforge.net/"
 #define MyAppExeName "cppcheck.exe"
 #define QTGuiExe "gui.exe"
