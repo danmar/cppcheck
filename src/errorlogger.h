@@ -328,12 +328,6 @@ public:
     }
 
 
-    static bool unvalidatedInput(const Settings &s)
-    {
-        return s._security;
-    }
-
-
     static std::string callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack);
 
 private:

@@ -49,7 +49,6 @@ HEADERS += 	mainwindow.h \
 		../src/checkautovariables.h \
 		../src/checkdangerousfunctions.h \
 		../src/checkheaders.h \
-		../src/checksecurity.h \
 		../src/cppcheck.h \
 		../src/mathlib.h \
 		../src/settings.h \
@@ -102,7 +101,6 @@ SOURCES += 	main.cpp \
 		../src/token.cpp \
 		../src/checkclass.cpp \
 		../src/checkheaders.cpp \
-		../src/checksecurity.cpp \
 		../src/cppcheckexecutor.cpp \
 		../src/checkunusedfunctions.cpp \
 		../src/settings.cpp \

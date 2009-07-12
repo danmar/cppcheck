@@ -30,7 +30,6 @@ Settings::Settings()
     _force = false;
     _xml = false;
     _unusedFunctions = false;
-    _security = false;
     _jobs = 1;
     _exitCode = 0;
 }

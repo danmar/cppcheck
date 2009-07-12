@@ -53,9 +53,6 @@ public:
     /** Checking if there are unused functions */
     bool _unusedFunctions;
 
-    /** Security checks */
-    bool _security;
-
     /** How many processes/threads should do checking at the same
         time. Default is 1. */
     unsigned int _jobs;
