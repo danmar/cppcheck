@@ -12,7 +12,6 @@ OBJECTS =     src/checkautovariables.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
               src/checkother.o \
-              src/checksecurity.o \
               src/checkstl.o \
               src/checkunusedfunctions.o \
               src/cppcheck.o \
@@ -43,7 +42,6 @@ TESTOBJ =     test/testautovariables.o \
               test/testpreprocessor.o \
               test/testredundantif.o \
               test/testrunner.o \
-              test/testsecurity.o \
               test/testsimplifytokens.o \
               test/teststl.o \
               test/testsuite.o \
@@ -59,7 +57,6 @@ TESTOBJ =     test/testautovariables.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
               src/checkother.o \
-              src/checksecurity.o \
               src/checkstl.o \
               src/checkunusedfunctions.o \
               src/cppcheck.o \
@@ -87,10 +84,7 @@ testrunner:	$(TESTOBJ)
 test:	all
 	./testrunner
 
-tools:	tools/errmsg	tools/dmake
-
-tools/errmsg:	tools/errmsg.cpp
-	$(CXX) $(CXXFLAGS) -o tools/errmsg tools/errmsg.cpp $(LDFLAGS)
+tools:	tools/dmake
 
 tools/dmake:	tools/dmake.cpp	src/filelister.cpp	src/filelister.h
 	$(CXX) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp src/filelister.cpp $(LDFLAGS)
@@ -125,9 +119,6 @@ src/checkmemoryleak.o: src/checkmemoryleak.cpp src/checkmemoryleak.h src/check.h
 
 src/checkother.o: src/checkother.cpp src/checkother.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/mathlib.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkother.o src/checkother.cpp
-
-src/checksecurity.o: src/checksecurity.cpp src/checksecurity.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
-	$(CXX) $(CXXFLAGS) -c -o src/checksecurity.o src/checksecurity.cpp
 
 src/checkstl.o: src/checkstl.cpp src/checkstl.h src/check.h src/tokenize.h src/settings.h src/errorlogger.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkstl.o src/checkstl.cpp
@@ -215,9 +206,6 @@ test/testredundantif.o: test/testredundantif.cpp src/tokenize.h src/settings.h s
 
 test/testrunner.o: test/testrunner.cpp test/testsuite.h src/errorlogger.h src/settings.h
 	$(CXX) $(CXXFLAGS) -c -o test/testrunner.o test/testrunner.cpp
-
-test/testsecurity.o: test/testsecurity.cpp src/tokenize.h src/settings.h src/errorlogger.h src/token.h src/checksecurity.h src/check.h test/testsuite.h
-	$(CXX) $(CXXFLAGS) -c -o test/testsecurity.o test/testsecurity.cpp
 
 test/testsimplifytokens.o: test/testsimplifytokens.cpp test/testsuite.h src/errorlogger.h src/settings.h src/tokenize.h src/token.h
 	$(CXX) $(CXXFLAGS) -c -o test/testsimplifytokens.o test/testsimplifytokens.cpp

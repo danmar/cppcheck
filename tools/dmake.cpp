@@ -105,9 +105,7 @@ int main()
     fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
-    fout << "tools:\ttools/errmsg\ttools/dmake\n\n";
-    fout << "tools/errmsg:\ttools/errmsg.cpp\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o tools/errmsg tools/errmsg.cpp $(LDFLAGS)\n\n";
+    fout << "tools:\ttools/dmake\n\n";
     fout << "tools/dmake:\ttools/dmake.cpp\tsrc/filelister.cpp\tsrc/filelister.h\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp src/filelister.cpp $(LDFLAGS)\n\n";
     fout << "clean:\n";
