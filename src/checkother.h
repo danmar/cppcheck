@@ -174,7 +174,7 @@ private:
                " * C-style pointer cast in cpp file\n"
                " * redundant if\n"
                " * bad usage of the function 'strtol'\n"
-               " * bad usage of the function 'sprintf' (overlapping data)\n"
+               " * [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
                " * division with zero\n"
                " * [[CheckUnsignedDivision|unsigned division]]\n"
                " * unused struct member\n"
