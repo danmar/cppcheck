@@ -28,10 +28,10 @@
 // Register this check class (by creating a static instance of it)
 namespace
 {
-CheckDangerousFunctionsClass instance;
+CheckDangerousFunctions instance;
 }
 
-void CheckDangerousFunctionsClass::dangerousFunctions()
+void CheckDangerousFunctions::dangerousFunctions()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -52,17 +52,17 @@ void CheckDangerousFunctionsClass::dangerousFunctions()
 //---------------------------------------------------------------------------
 
 
-void CheckDangerousFunctionsClass::dangerousFunctionmktemp(const Token *tok)
+void CheckDangerousFunctions::dangerousFunctionmktemp(const Token *tok)
 {
     reportError(tok, Severity::style, "dangerousFunctionmktemp", "Found 'mktemp'. You should use 'mkstemp' instead");
 }
 
-void CheckDangerousFunctionsClass::dangerousFunctiongets(const Token *tok)
+void CheckDangerousFunctions::dangerousFunctiongets(const Token *tok)
 {
     reportError(tok, Severity::style, "dangerousFunctiongets", "Found 'gets'. You should use 'fgets' instead");
 }
 
-void CheckDangerousFunctionsClass::dangerousFunctionscanf(const Token *tok)
+void CheckDangerousFunctions::dangerousFunctionscanf(const Token *tok)
 {
     reportError(tok, Severity::style, "dangerousFunctionscanf", "Found 'scanf'. You should use 'fgets' instead");
 }

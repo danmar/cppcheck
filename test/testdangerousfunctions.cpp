@@ -55,7 +55,7 @@ private:
         // Check for dangerous functions..
         Settings settings;
         settings._showAll = true;
-        CheckDangerousFunctionsClass checkDangerousFunctions(&tokenizer, &settings, this);
+        CheckDangerousFunctions checkDangerousFunctions(&tokenizer, &settings, this);
         checkDangerousFunctions.dangerousFunctions();
     }
 

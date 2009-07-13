@@ -55,7 +55,7 @@ private:
         // Check for buffer overruns..
         Settings settings;
         settings._showAll = true;
-        CheckBufferOverrunClass checkBufferOverrun(&tokenizer, &settings, this);
+        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
     }
 
