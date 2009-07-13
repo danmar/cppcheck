@@ -774,42 +774,42 @@ void CheckClass::virtualDestructor()
 
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname)
 {
-    reportError(tok, "style", "noConstructor", "The class '" + classname + "' has no constructor");
+    reportError(tok, Severity::style, "noConstructor", "The class '" + classname + "' has no constructor");
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, "style", "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
+    reportError(tok, Severity::style, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, "all style", "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
+    reportError(tok, Severity::possibleStyle, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
 }
 
 void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
-    reportError(tok, "style", "unusedPrivateFunction", "Unused private function '" + classname + "::" + funcname + "'");
+    reportError(tok, Severity::style, "unusedPrivateFunction", "Unused private function '" + classname + "::" + funcname + "'");
 }
 
 void CheckClass::memsetClassError(const Token *tok, const std::string &memfunc)
 {
-    reportError(tok, "error", "memsetClass", "Using '" + memfunc + "' on class");
+    reportError(tok, Severity::error, "memsetClass", "Using '" + memfunc + "' on class");
 }
 
 void CheckClass::memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname)
 {
-    reportError(tok, "error", "memsetStruct", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'");
+    reportError(tok, Severity::error, "memsetStruct", "Using '" + memfunc + "' on struct that contains a 'std::" + classname + "'");
 }
 
 void CheckClass::operatorEqReturnError(const Token *tok)
 {
-    reportError(tok, "style", "operatorEq", "'operator=' should return something");
+    reportError(tok, Severity::style, "operatorEq", "'operator=' should return something");
 }
 
 void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived)
 {
-    reportError(tok, "error", "virtualDestructor", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor");
+    reportError(tok, Severity::error, "virtualDestructor", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor");
 }
 
 

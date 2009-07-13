@@ -52,27 +52,27 @@ void CheckBufferOverrunClass::arrayIndexOutOfBounds(const Token *tok)
 
 void CheckBufferOverrunClass::arrayIndexOutOfBounds()
 {
-    reportError(_callStack, "all", "arrayIndexOutOfBounds", "Array index out of bounds");
+    reportError(_callStack, Severity::possibleError, "arrayIndexOutOfBounds", "Array index out of bounds");
 }
 
 void CheckBufferOverrunClass::bufferOverrun(const Token *tok)
 {
-    reportError(tok, "all", "bufferOverrun", "Buffer overrun");
+    reportError(tok, Severity::possibleError, "bufferOverrun", "Buffer overrun");
 }
 
 void CheckBufferOverrunClass::strncatUsage(const Token *tok)
 {
-    reportError(tok, "all", "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
+    reportError(tok, Severity::possibleError, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
 }
 
 void CheckBufferOverrunClass::outOfBounds(const Token *tok, const std::string &what)
 {
-    reportError(tok, "error", "outOfBounds", what + " is out of bounds");
+    reportError(tok, Severity::error, "outOfBounds", what + " is out of bounds");
 }
 
 void CheckBufferOverrunClass::sizeArgumentAsChar(const Token *tok)
 {
-    reportError(tok, "all", "sizeArgumentAsChar", "The size argument is given as a char constant");
+    reportError(tok, Severity::possibleError, "sizeArgumentAsChar", "The size argument is given as a char constant");
 }
 
 //---------------------------------------------------------------------------

@@ -965,90 +965,90 @@ void CheckOther::checkZeroDivision()
 
 void CheckOther::cstyleCastError(const Token *tok)
 {
-    reportError(tok, "style", "cstyleCast", "C-style pointer casting");
+    reportError(tok, Severity::style, "cstyleCast", "C-style pointer casting");
 }
 
 void CheckOther::redundantIfDelete0Error(const Token *tok)
 {
-    reportError(tok, "style", "redundantIfDelete0", "Redundant condition. It is safe to deallocate a NULL pointer");
+    reportError(tok, Severity::style, "redundantIfDelete0", "Redundant condition. It is safe to deallocate a NULL pointer");
 }
 
 void CheckOther::redundantIfRemoveError(const Token *tok)
 {
-    reportError(tok, "style", "redundantIfRemove", "Redundant condition. The remove function in the STL will not do anything if element doesn't exist");
+    reportError(tok, Severity::style, "redundantIfRemove", "Redundant condition. The remove function in the STL will not do anything if element doesn't exist");
 }
 
 void CheckOther::dangerousUsageStrtolError(const Token *tok)
 {
-    reportError(tok, "error", "dangerousUsageStrtol", "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36");
+    reportError(tok, Severity::error, "dangerousUsageStrtol", "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36");
 }
 
 void CheckOther::ifNoActionError(const Token *tok)
 {
-    reportError(tok, "style", "ifNoAction", "Found redundant if condition - 'if (condition);'");
+    reportError(tok, Severity::style, "ifNoAction", "Found redundant if condition - 'if (condition);'");
 }
 
 void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, "error", "sprintfOverlappingData", "Overlapping data buffer " + varname + "\nWhen using sprintf the same buffer must not be used both for output and input. The behaviour is undefined when that happens.\nFor example: 'sprintf(str,\"<%s>\",str);'");
+    reportError(tok, Severity::error, "sprintfOverlappingData", "Overlapping data buffer " + varname + "\nWhen using sprintf the same buffer must not be used both for output and input. The behaviour is undefined when that happens.\nFor example: 'sprintf(str,\"<%s>\",str);'");
 }
 
 void CheckOther::udivError(const Token *tok)
 {
-    reportError(tok, "error", "udivError", "Unsigned division. The result will be wrong.");
+    reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
 }
 
 void CheckOther::udivWarning(const Token *tok)
 {
-    reportError(tok, "all style", "udivWarning", "Warning: Division with signed and unsigned operators");
+    reportError(tok, Severity::possibleStyle, "udivWarning", "Warning: Division with signed and unsigned operators");
 }
 
 void CheckOther::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname)
 {
-    reportError(tok, "style", "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used");
+    reportError(tok, Severity::style, "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used");
 }
 
 void CheckOther::passedByValueError(const Token *tok, const std::string &parname)
 {
-    reportError(tok, "style", "passedByValue", "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.");
+    reportError(tok, Severity::style, "passedByValue", "Function parameter '" + parname + "' is passed by value. It could be passed by reference instead.");
 }
 
 void CheckOther::constStatementError(const Token *tok, const std::string &type)
 {
-    reportError(tok, "style", "constStatement", "Redundant code: Found a statement that begins with " + type + " constant");
+    reportError(tok, Severity::style, "constStatement", "Redundant code: Found a statement that begins with " + type + " constant");
 }
 
 void CheckOther::charArrayIndexError(const Token *tok)
 {
-    reportError(tok, "style", "charArrayIndex", "Warning - using char variable as array index");
+    reportError(tok, Severity::style, "charArrayIndex", "Warning - using char variable as array index");
 }
 
 void CheckOther::charBitOpError(const Token *tok)
 {
-    reportError(tok, "style", "charBitOp", "Warning - using char variable in bit operation");
+    reportError(tok, Severity::style, "charBitOp", "Warning - using char variable in bit operation");
 }
 
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, "style", "variableScope", "The scope of the variable " + varname + " can be limited");
+    reportError(tok, Severity::style, "variableScope", "The scope of the variable " + varname + " can be limited");
 }
 
 void CheckOther::conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse)
 {
-    reportError(tok, "style", "conditionAlwaysTrueFalse", "Condition is always " + truefalse);
+    reportError(tok, Severity::style, "conditionAlwaysTrueFalse", "Condition is always " + truefalse);
 }
 
 void CheckOther::strPlusChar(const Token *tok)
 {
-    reportError(tok, "error", "strPlusChar", "Unusual pointer arithmetic");
+    reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic");
 }
 
 void CheckOther::nullPointerError(const Token *tok)
 {
-    reportError(tok, "error", "nullPointer", "Possible null pointer dereference");
+    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference");
 }
 
 void CheckOther::zerodivError(const Token *tok)
 {
-    reportError(tok, "error", "zerodiv", "Division by zero");
+    reportError(tok, Severity::error, "zerodiv", "Division by zero");
 }

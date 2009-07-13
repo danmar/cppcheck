@@ -334,4 +334,28 @@ private:
     void _writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id);
     void _writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id);
 };
+
+/** enum class for severity */
+class Severity
+{
+public:
+    enum e { error, style, possibleError, possibleStyle };
+    static std::string stringify(e severity)
+    {
+        switch (severity)
+        {
+            case error:
+                return "error";
+            case style:
+                return "style";
+            case possibleError:
+                return "possible error";
+            case possibleStyle:
+                return "possible style";
+        };
+        return "???";
+    }
+};
+
+
 #endif

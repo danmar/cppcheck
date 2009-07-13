@@ -31,13 +31,13 @@ CheckStl instance;
 // Error message for bad iterator usage..
 void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
 {
-    reportError(tok, "error", "iterators", "Same iterator is used with both " + container1 + " and " + container2);
+    reportError(tok, Severity::error, "iterators", "Same iterator is used with both " + container1 + " and " + container2);
 }
 
 // Error message used when dereferencing an iterator that has been erased..
 void CheckStl::dereferenceErasedError(const Token *tok, const std::string &itername)
 {
-    reportError(tok, "error", "eraseDereference", "Dereferenced iterator '" + itername + "' has been erased");
+    reportError(tok, Severity::error, "eraseDereference", "Dereferenced iterator '" + itername + "' has been erased");
 }
 
 void CheckStl::iterators()
@@ -131,7 +131,7 @@ void CheckStl::stlOutOfBounds()
 // Error message for bad iterator usage..
 void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var)
 {
-    reportError(tok, "error", "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds");
+    reportError(tok, Severity::error, "stlOutOfBounds", "When " + num + "==" + var + ".size(), " + var + "[" + num + "] is out of bounds");
 }
 
 
@@ -210,7 +210,7 @@ void CheckStl::eraseCheckLoop(const Token *it)
 // Error message for bad iterator usage..
 void CheckStl::eraseError(const Token *tok)
 {
-    reportError(tok, "error", "erase", "Dangerous usage of erase\nAfter erase has been used the iterator may be invalid so dereferencing it or comparing it with other iterator is invalid.");
+    reportError(tok, Severity::error, "erase", "Dangerous usage of erase\nAfter erase has been used the iterator may be invalid so dereferencing it or comparing it with other iterator is invalid.");
 }
 
 
@@ -317,14 +317,14 @@ void CheckStl::pushback()
 // Error message for bad iterator usage..
 void CheckStl::pushbackError(const Token *tok, const std::string &iterator_name)
 {
-    reportError(tok, "error", "pushback", "After push_back or push_front, the iterator '" + iterator_name + "' may be invalid");
+    reportError(tok, Severity::error, "pushback", "After push_back or push_front, the iterator '" + iterator_name + "' may be invalid");
 }
 
 
 // Error message for bad iterator usage..
 void CheckStl::invalidPointerError(const Token *tok, const std::string &pointer_name)
 {
-    reportError(tok, "error", "pushback", "Invalid pointer '" + pointer_name + "' after push_back / push_front");
+    reportError(tok, Severity::error, "pushback", "Invalid pointer '" + pointer_name + "' after push_back / push_front");
 }
 
 
@@ -374,5 +374,5 @@ void CheckStl::stlBoundries()
 // Error message for bad boundry usage..
 void CheckStl::stlBoundriesError(const Token *tok)
 {
-    reportError(tok, "error", "stlBoundries", "STL range check should be using != and not < since the order of the pointers isn't guaranteed");
+    reportError(tok, Severity::error, "stlBoundries", "STL range check should be using != and not < since the order of the pointers isn't guaranteed");
 }
