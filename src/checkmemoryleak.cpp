@@ -222,41 +222,67 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const char varname[], AllocTy
 //---------------------------------------------------------------------------
 
 
+ErrorLogger::ErrorMessage CheckMemoryLeak::errmsg(const Token *tok, Severity::e severity, const std::string &id, const std::string &msg) const
+{
+    ErrorLogger::ErrorMessage::FileLocation loc;
+    loc.line = tok->linenr();
+    loc.file = tokenizer->file(tok);
 
+    std::list<ErrorLogger::ErrorMessage::FileLocation> callstack;
+    callstack.push_back(loc);
+
+    return ErrorLogger::ErrorMessage(callstack, Severity::stringify(severity), msg, id);
+}
+
+ErrorLogger::ErrorMessage CheckMemoryLeak::errmsg(const std::list<const Token *> &callstack, Severity::e severity, const std::string &id, const std::string &msg) const
+{
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locations;
+
+    for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = (*it)->linenr();
+        loc.file = tokenizer->file(*it);
+
+        locations.push_back(loc);
+    }
+
+    return ErrorLogger::ErrorMessage(locations, Severity::stringify(severity), msg, id);
+}
 
 void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname)
 {
-    error(tok, Severity::error, "memleak", "Memory leak: " + varname);
+    errorLogger->reportErr(errmsg(tok, Severity::error, "memleak", "Memory leak: " + varname));
 }
 
 void CheckMemoryLeak::memleakallError(const Token *tok, const std::string &varname)
 {
-    error(tok, Severity::possibleError, "memleakall", "Memory leak: " + varname);
+    errorLogger->reportErr(errmsg(tok, Severity::possibleError, "memleakall", "Memory leak: " + varname));
 }
 
 void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname)
 {
-    error(tok, Severity::error, "resourceLeak", "Resource leak: " + varname);
+    errorLogger->reportErr(errmsg(tok, Severity::error, "resourceLeak", "Resource leak: " + varname));
 }
 
 void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname)
 {
-    error(tok, Severity::error, "deallocDealloc", "Deallocating a deallocated pointer: " + varname);
+    errorLogger->reportErr(errmsg(tok, Severity::error, "deallocDealloc", "Deallocating a deallocated pointer: " + varname));
 }
 
 void CheckMemoryLeak::deallocuseError(const Token *tok, const std::string &varname)
 {
-    error(tok, Severity::error, "deallocuse", "Using '" + varname + "' after it is deallocated / released");
+    errorLogger->reportErr(errmsg(tok, Severity::error, "deallocuse", "Using '" + varname + "' after it is deallocated / released"));
 }
 
 void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz)
 {
-    error(tok, Severity::error, "mismatchSize", "The given size " + sz + " is mismatching");
+    errorLogger->reportErr(errmsg(tok, Severity::error, "mismatchSize", "The given size " + sz + " is mismatching"));
 }
 
 void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname)
 {
-    error(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
+    errorLogger->reportErr(errmsg(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname));
 }
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok) const
