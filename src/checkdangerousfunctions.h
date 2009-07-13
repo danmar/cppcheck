@@ -24,24 +24,24 @@
 
 #include "check.h"
 
-class CheckDangerousFunctionsClass : public Check
+class CheckDangerousFunctions : public Check
 {
 public:
-    /** This constructor is used when registering the CheckClass */
-    CheckDangerousFunctionsClass() : Check()
+    /** This constructor is used when registering the CheckDangerousFunctions */
+    CheckDangerousFunctions() : Check()
     { }
 
     /** This constructor is used when running checks.. */
-    CheckDangerousFunctionsClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    CheckDangerousFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
-        CheckDangerousFunctionsClass checkDangerousFunctionsClass(tokenizer, settings, errorLogger);
+        CheckDangerousFunctions checkDangerousFunctions(tokenizer, settings, errorLogger);
         if (settings->_checkCodingStyle)
         {
-            checkDangerousFunctionsClass.dangerousFunctions();
+            checkDangerousFunctions.dangerousFunctions();
         }
     }
 

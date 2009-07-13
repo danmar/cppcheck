@@ -38,39 +38,39 @@
 // Register this check class (by creating a static instance of it)
 namespace
 {
-CheckBufferOverrunClass instance;
+CheckBufferOverrun instance;
 }
 
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::arrayIndexOutOfBounds(const Token *tok)
+void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok)
 {
     _callStack.push_back(tok);
     arrayIndexOutOfBounds();
     _callStack.pop_back();
 }
 
-void CheckBufferOverrunClass::arrayIndexOutOfBounds()
+void CheckBufferOverrun::arrayIndexOutOfBounds()
 {
     reportError(_callStack, Severity::possibleError, "arrayIndexOutOfBounds", "Array index out of bounds");
 }
 
-void CheckBufferOverrunClass::bufferOverrun(const Token *tok)
+void CheckBufferOverrun::bufferOverrun(const Token *tok)
 {
     reportError(tok, Severity::possibleError, "bufferOverrun", "Buffer overrun");
 }
 
-void CheckBufferOverrunClass::strncatUsage(const Token *tok)
+void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
     reportError(tok, Severity::possibleError, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
 }
 
-void CheckBufferOverrunClass::outOfBounds(const Token *tok, const std::string &what)
+void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
 {
     reportError(tok, Severity::error, "outOfBounds", what + " is out of bounds");
 }
 
-void CheckBufferOverrunClass::sizeArgumentAsChar(const Token *tok)
+void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
 {
     reportError(tok, Severity::possibleError, "sizeArgumentAsChar", "The size argument is given as a char constant");
 }
@@ -82,7 +82,7 @@ void CheckBufferOverrunClass::sizeArgumentAsChar(const Token *tok)
 // Check array usage..
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::checkScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid)
+void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid)
 {
     unsigned int varc = 0;
 
@@ -440,7 +440,7 @@ void CheckBufferOverrunClass::checkScope(const Token *tok, const char *varname[]
 // Checking local variables in a scope
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::checkGlobalAndLocalVariable()
+void CheckBufferOverrun::checkGlobalAndLocalVariable()
 {
     int indentlevel = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -509,7 +509,7 @@ void CheckBufferOverrunClass::checkGlobalAndLocalVariable()
 // Checking member variables of structs..
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::checkStructVariable()
+void CheckBufferOverrun::checkStructVariable()
 {
     const char declstruct[] = "struct|class %var% {";
     for (const Token *tok = Token::findmatch(_tokenizer->tokens(), declstruct);
@@ -622,7 +622,7 @@ void CheckBufferOverrunClass::checkStructVariable()
 }
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrunClass::bufferOverrun()
+void CheckBufferOverrun::bufferOverrun()
 {
     checkGlobalAndLocalVariable();
     checkStructVariable();
