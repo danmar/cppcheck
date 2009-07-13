@@ -52,7 +52,7 @@ private:
 
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e)
-     : tokenizer(t), errorLogger(e)
+            : tokenizer(t), errorLogger(e)
     {
 
     }
@@ -172,7 +172,7 @@ private:
 class CheckMemoryLeakInClass : public Check, private CheckMemoryLeak
 {
 public:
-    CheckMemoryLeakInClass() : Check(), CheckMemoryLeak(0,0)
+    CheckMemoryLeakInClass() : Check(), CheckMemoryLeak(0, 0)
     { }
 
     CheckMemoryLeakInClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -218,7 +218,7 @@ private:
 class CheckMemoryLeakStructMember : public Check, private CheckMemoryLeak
 {
 public:
-    CheckMemoryLeakStructMember() : Check(), CheckMemoryLeak(0,0)
+    CheckMemoryLeakStructMember() : Check(), CheckMemoryLeak(0, 0)
     { }
 
     CheckMemoryLeakStructMember(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)

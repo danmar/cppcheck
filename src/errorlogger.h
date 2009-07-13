@@ -344,14 +344,14 @@ public:
     {
         switch (severity)
         {
-            case error:
-                return "error";
-            case style:
-                return "style";
-            case possibleError:
-                return "possible error";
-            case possibleStyle:
-                return "possible style";
+        case error:
+            return "error";
+        case style:
+            return "style";
+        case possibleError:
+            return "possible error";
+        case possibleStyle:
+            return "possible style";
         };
         return "???";
     }
