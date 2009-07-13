@@ -154,11 +154,13 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const st
 
 #if (defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__))
 
-// Windows QT build is Unicode build. And cppcheck is ANSI build. So we must
-// convert data given to WinAPI functions from ANSI to Unicode. Likewise we
-// must convert data we get from WinAPI from Unicode to ANSI.
+// Here is the catch: cppcheck core is Ansi code (using char type).
+// When compiling Unicode targets WinAPI automatically uses *W Unicode versions
+// of called functions. So we must convert data given to WinAPI functions from
+// ANSI to Unicode. Likewise we must convert data we get from WinAPI from
+// Unicode to ANSI.
 
-#if defined(QT_CORE_LIB)
+#if defined(UNICODE)
 
 static bool TransformUcs2ToAnsi(LPCWSTR psUcs, LPSTR psAnsi, int nAnsi)
 {
@@ -192,7 +194,7 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
     return hFind;
 }
 
-#else // defined(QT_CORE_LIB)
+#else // defined(UNICODE)
 
 static BOOL MyIsDirectory(std::string path)
 {
@@ -207,7 +209,7 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
     return hFind;
 }
 
-#endif // defined(QT_CORE_LIB)
+#endif // defined(UNICODE)
 
 void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
@@ -258,12 +260,12 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const st
         if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
             continue;
 
-#if defined(QT_CORE_LIB)
+#if defined(UNICODE)
         char * ansiFfd = new char[wcslen(ffd.cFileName) + 1];
         TransformUcs2ToAnsi(ffd.cFileName, ansiFfd, wcslen(ffd.cFileName) + 1);
-#else // defined(QT_CORE_LIB)
+#else // defined(UNICODE)
         char * ansiFfd = &ffd.cFileName[0];
-#endif // defined(QT_CORE_LIB)
+#endif // defined(UNICODE)
 
         std::ostringstream fname;
         fname << bdir.str().c_str() << ansiFfd;
@@ -281,9 +283,9 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const st
             // Directory
             FileLister::recursiveAddFiles(filenames, fname.str().c_str(), recursive);
         }
-#if defined(QT_CORE_LIB)
+#if defined(UNICODE)
         delete [] ansiFfd;
-#endif // defined(QT_CORE_LIB)
+#endif // defined(UNICODE)
     }
     while (FindNextFile(hFind, &ffd) != FALSE);
 
