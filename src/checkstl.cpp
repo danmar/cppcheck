@@ -276,7 +276,7 @@ void CheckStl::pushback()
                 std::string vectorname;
                 int indent = 0;
                 bool invalidIterator = false;
-                for (const Token *tok2 = tok;indent >= 0 && tok2; tok2 = tok2->next())
+                for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
                 {
                     if (tok2->str() == "{" || tok2->str() == "(")
                         ++indent;

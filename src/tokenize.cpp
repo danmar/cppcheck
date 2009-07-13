@@ -2915,7 +2915,7 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const char classnam
     std::ostringstream externalPattern;
     externalPattern << classname << " :: " << funcname << " (";
 
-    for (;tok; tok = tok->next())
+    for (; tok; tok = tok->next())
     {
         if (indentlevel == 0 && Token::Match(tok, classPattern.str().c_str()))
         {

@@ -47,7 +47,7 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
     std::string right_var = right->str();
     std::list<std::string>::iterator it_fp;
 
-    for (it_fp = fp_list.begin();it_fp != fp_list.end();++it_fp)
+    for (it_fp = fp_list.begin(); it_fp != fp_list.end(); ++it_fp)
     {
         std::string vname = (*it_fp);
 
@@ -64,7 +64,7 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
         return false;
 
     std::list<std::string>::iterator id_vd;
-    for (id_vd = vd_list.begin();id_vd != vd_list.end();++id_vd)
+    for (id_vd = vd_list.begin(); id_vd != vd_list.end(); ++id_vd)
     {
         std::string vname = (*id_vd);
         //The left argument is a variable declaration
@@ -82,7 +82,7 @@ bool CheckAutoVariables::isAutoVar(const Token* t)
 {
     std::list<std::string>::iterator id_vd;
     std::string v = t->str();
-    for (id_vd = vd_list.begin();id_vd != vd_list.end();++id_vd)
+    for (id_vd = vd_list.begin(); id_vd != vd_list.end(); ++id_vd)
     {
         std::string vname = (*id_vd);
         if (vname == v)
@@ -94,7 +94,7 @@ void print(const Token *tok, int num)
 {
     const Token *t = tok;
     std::cout << tok->linenr() << " PRINT ";
-    for (int i = 0;i < num;i++)
+    for (int i = 0; i < num; i++)
     {
         std::cout << " [" << t->str() << "] ";
         t = t->next();

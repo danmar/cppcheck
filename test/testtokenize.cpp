@@ -191,7 +191,7 @@ private:
             {
                 if (tok->linenr() != tok->next()->linenr())
                 {
-                    for (unsigned int i = tok->linenr();i < tok->next()->linenr();++i)
+                    for (unsigned int i = tok->linenr(); i < tok->next()->linenr(); ++i)
                         ostr << "\n";
                 }
                 else
