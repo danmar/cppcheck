@@ -201,10 +201,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checksecurity.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\checkstl.h"
 				>
 			</File>
@@ -213,19 +209,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkvalidate.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\cppcheck.h"
 				>
 			</File>
 			<File
 				RelativePath=".\src\errorlogger.h"
-				>
-			</File>
-			<File
-				RelativePath=".\src\errormessage.h"
 				>
 			</File>
 			<File
@@ -294,10 +282,6 @@
 			</File>
 			<File
 				RelativePath=".\src\CheckOther.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\checksecurity.cpp"
 				>
 			</File>
 			<File
@@ -394,10 +378,6 @@
 			</File>
 			<File
 				RelativePath=".\test\testrunner.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\test\testsecurity.cpp"
 				>
 			</File>
 			<File

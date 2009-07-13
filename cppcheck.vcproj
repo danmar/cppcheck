@@ -200,10 +200,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\checksecurity.h"
-				>
-			</File>
-			<File
 				RelativePath=".\src\checkstl.h"
 				>
 			</File>
@@ -301,10 +297,6 @@
 			</File>
 			<File
 				RelativePath=".\src\checkother.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\src\checksecurity.cpp"
 				>
 			</File>
 			<File
