@@ -69,7 +69,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -84,7 +84,6 @@
      <string>&amp;View</string>
     </property>
     <addaction name="mActionShowAll"/>
-    <addaction name="mActionShowSecurity"/>
     <addaction name="mActionShowStyle"/>
     <addaction name="mActionShowErrors"/>
     <addaction name="mActionCheckAll"/>

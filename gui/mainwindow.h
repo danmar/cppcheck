@@ -74,12 +74,6 @@ public slots:
     void ShowAll(bool checked);
 
     /**
-    * @brief Show errors with type "security"
-    * @param checked Should errors be shown (true) or hidden (false)
-    */
-    void ShowSecurity(bool checked);
-
-    /**
     * @brief Show errors with type "style"
     * @param checked Should errors be shown (true) or hidden (false)
     */

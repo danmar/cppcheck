@@ -27,7 +27,6 @@ typedef enum
 {
     SHOW_ALL = 0,
     SHOW_STYLE,
-    SHOW_SECURITY,
     SHOW_ERRORS,
     SHOW_NONE
 }
@@ -40,7 +39,6 @@ ShowTypes;
 #define SETTINGS_WINDOW_WIDTH           "Window width"
 #define SETTINGS_WINDOW_HEIGHT          "Window height"
 #define SETTINGS_SHOW_ALL               "Show all"
-#define SETTINGS_SHOW_SECURITY          "Show security"
 #define SETTINGS_SHOW_STYLE             "Show style"
 #define SETTINGS_SHOW_ERRORS            "Show errors"
 #define SETTINGS_CHECK_PATH             "Check path"
