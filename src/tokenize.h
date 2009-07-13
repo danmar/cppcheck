@@ -25,9 +25,10 @@
 #include <string>
 #include <map>
 #include <vector>
-#include "settings.h"
-#include "errorlogger.h"
-#include "token.h"
+
+class Token;
+class ErrorLogger;
+class Settings;
 
 class Tokenizer
 {
@@ -37,7 +38,7 @@ private:
 
 public:
     Tokenizer();
-    Tokenizer(const Settings &settings, ErrorLogger *errorLogger);
+    Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
     ~Tokenizer();
 
     /**
@@ -265,12 +266,11 @@ private:
 
     void syntaxError(const Token *tok, char c);
 
-    Token *_tokensBack;
+    Token *_tokens, *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
     std::vector<std::string> _files;
-    Token *_tokens;
-    Settings _settings;
-    ErrorLogger *_errorLogger;
+    const Settings * const _settings;
+    ErrorLogger * const _errorLogger;
 };
 
 //---------------------------------------------------------------------------

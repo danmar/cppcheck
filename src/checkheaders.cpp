@@ -21,6 +21,7 @@
 #include "checkheaders.h"
 #include "tokenize.h"
 #include "filelister.h"
+#include "token.h"
 
 #include <algorithm>
 #include <list>

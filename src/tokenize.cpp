@@ -19,8 +19,11 @@
 
 //---------------------------------------------------------------------------
 #include "tokenize.h"
+#include "token.h"
 #include "filelister.h"
 #include "mathlib.h"
+#include "settings.h"
+#include "errorlogger.h"
 
 #include <locale>
 #include <fstream>
@@ -35,18 +38,17 @@
 //---------------------------------------------------------------------------
 
 Tokenizer::Tokenizer()
+ : _settings(0), _errorLogger(0)
 {
     _tokens = 0;
     _tokensBack = 0;
-    _errorLogger = 0;
 }
 
-Tokenizer::Tokenizer(const Settings &settings, ErrorLogger *errorLogger)
+Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
+ : _settings(settings), _errorLogger(errorLogger)
 {
     _tokens = 0;
     _tokensBack = 0;
-    _settings = settings;
-    _errorLogger = errorLogger;
 }
 
 Tokenizer::~Tokenizer()
@@ -1496,7 +1498,7 @@ void Tokenizer::simplifyTokenList()
 
     simplifyComma();
     createLinks();
-    if (_settings._debug)
+    if (_settings && _settings->_debug)
     {
         _tokens->printOut();
     }
@@ -2988,7 +2990,7 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const char classnam
 
 void Tokenizer::syntaxError(const Token *tok, char c)
 {
-    if (_settings._debug)
+    if (_settings && _settings->_debug)
     {
         _tokens->printOut();
     }

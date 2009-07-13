@@ -411,7 +411,7 @@ unsigned int CppCheck::check()
 
 void CppCheck::checkFile(const std::string &code, const char FileName[])
 {
-    Tokenizer _tokenizer(_settings, this);
+    Tokenizer _tokenizer(&_settings, this);
 
     // Tokenize the file
     {

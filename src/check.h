@@ -19,6 +19,7 @@
 #ifndef checkH
 #define checkH
 
+#include "token.h"
 #include "tokenize.h"
 #include "settings.h"
 #include "errorlogger.h"

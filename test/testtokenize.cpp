@@ -24,6 +24,7 @@
 #include <cstring>
 #include "testsuite.h"
 #include "../src/tokenize.h"
+#include "../src/token.h"
 
 extern std::ostringstream errout;
 class TestTokenizer : public TestFixture
@@ -2134,12 +2135,10 @@ private:
 
     void syntax_error()
     {
-
-        Settings s;
         {
             errout.str("");
             const char code[] = "void f() {}";
-            Tokenizer tokenizer(s, this);
+            Tokenizer tokenizer(0, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(true, tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("", errout.str());
@@ -2148,7 +2147,7 @@ private:
         {
             errout.str("");
             const char code[] = "void f() {{}";
-            Tokenizer tokenizer(s, this);
+            Tokenizer tokenizer(0, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("[test.cpp:1]: (error) Invalid number of character ({). Can't process file.\n", errout.str());
@@ -2157,7 +2156,7 @@ private:
         {
             errout.str("");
             const char code[] = "void f()) {}";
-            Tokenizer tokenizer(s, this);
+            Tokenizer tokenizer(0, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("[test.cpp:1]: (error) Invalid number of character ((). Can't process file.\n", errout.str());
@@ -2166,7 +2165,7 @@ private:
         {
             errout.str("");
             const char code[] = "namespace extract{\nB(weighted_moment)\n}\nusing extract::weighted_moment;\n";
-            Tokenizer tokenizer(s, this);
+            Tokenizer tokenizer(0, this);
             std::istringstream istr(code);
             ASSERT_EQUALS(true, tokenizer.tokenize(istr, "test.cpp"));
             tokenizer.simplifyTokenList();
