@@ -43,8 +43,19 @@ class Token;
 
 class CheckMemoryLeak
 {
+private:
+    const Tokenizer * const tokenizer;
+    ErrorLogger * const errorLogger;
+
+    ErrorLogger::ErrorMessage errmsg(const Token *tok, Severity::e severity, const std::string &id, const std::string &msg) const;
+    ErrorLogger::ErrorMessage errmsg(const std::list<const Token *> &callstack, Severity::e severity, const std::string &id, const std::string &msg) const;
+
 public:
-    CheckMemoryLeak() { }
+    CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e)
+     : tokenizer(t), errorLogger(e)
+    {
+
+    }
 
     /** What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
     enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Fd, Pipe, Dir, Many };
@@ -64,10 +75,6 @@ public:
     void mismatchSizeError(const Token *tok, const std::string &sz);
     void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname);
 
-    // error message
-    virtual void error(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg) = 0;
-    virtual void error(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, const std::string &msg) = 0;
-
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Token *tok) const;
 };
@@ -84,14 +91,14 @@ public:
  * 4. finally, check if the simplified token list contain any leaks.
  */
 
-class CheckMemoryLeakInFunction : public CheckMemoryLeak, public Check
+class CheckMemoryLeakInFunction : public Check, private CheckMemoryLeak
 {
 public:
-    CheckMemoryLeakInFunction() : Check()
+    CheckMemoryLeakInFunction() : Check(), CheckMemoryLeak(0, 0)
     { }
 
     CheckMemoryLeakInFunction(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger)
+            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -141,16 +148,6 @@ private:
 
     void checkScope(const Token *Tok1, const char varname[], bool classmember, unsigned int sz);
 
-    void error(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
-    {
-        reportError(tok, severity, id, msg);
-    }
-
-    void error(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, const std::string &msg)
-    {
-        reportError(callstack, severity, id, msg);
-    }
-
     void getErrorMessages()
     { }
 
@@ -172,14 +169,14 @@ private:
  * variables that are allocated in the constructor should be deallocated in the destructor
  */
 
-class CheckMemoryLeakInClass : public CheckMemoryLeak, public Check
+class CheckMemoryLeakInClass : public Check, private CheckMemoryLeak
 {
 public:
-    CheckMemoryLeakInClass() : Check()
+    CheckMemoryLeakInClass() : Check(), CheckMemoryLeak(0,0)
     { }
 
     CheckMemoryLeakInClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger)
+            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -196,16 +193,6 @@ private:
 private:
     void parseClass(const Token *tok1, std::vector<const char *> &classname);
     void variable(const char classname[], const Token *tokVarname);
-
-    void error(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
-    {
-        reportError(tok, severity, id, msg);
-    }
-
-    void error(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, const std::string &msg)
-    {
-        reportError(callstack, severity, id, msg);
-    }
 
     void getErrorMessages()
     { }
@@ -228,14 +215,14 @@ private:
  * variables that are allocated in the constructor should be deallocated in the destructor
  */
 
-class CheckMemoryLeakStructMember : public CheckMemoryLeak, public Check
+class CheckMemoryLeakStructMember : public Check, private CheckMemoryLeak
 {
 public:
-    CheckMemoryLeakStructMember() : Check()
+    CheckMemoryLeakStructMember() : Check(), CheckMemoryLeak(0,0)
     { }
 
     CheckMemoryLeakStructMember(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger)
+            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
