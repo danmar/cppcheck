@@ -65,8 +65,8 @@ public:
     void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname);
 
     // error message
-    virtual void error(const Token *tok, const std::string &severity, const std::string &id, const std::string &msg) = 0;
-    virtual void error(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg) = 0;
+    virtual void error(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg) = 0;
+    virtual void error(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, const std::string &msg) = 0;
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Token *tok) const;
@@ -141,12 +141,12 @@ private:
 
     void checkScope(const Token *Tok1, const char varname[], bool classmember, unsigned int sz);
 
-    void error(const Token *tok, const std::string &severity, const std::string &id, const std::string &msg)
+    void error(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         reportError(tok, severity, id, msg);
     }
 
-    void error(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg)
+    void error(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         reportError(callstack, severity, id, msg);
     }
@@ -197,12 +197,12 @@ private:
     void parseClass(const Token *tok1, std::vector<const char *> &classname);
     void variable(const char classname[], const Token *tokVarname);
 
-    void error(const Token *tok, const std::string &severity, const std::string &id, const std::string &msg)
+    void error(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         reportError(tok, severity, id, msg);
     }
 
-    void error(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg)
+    void error(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         reportError(callstack, severity, id, msg);
     }
@@ -251,12 +251,12 @@ public:
 
 private:
 
-    void error(const Token *tok, const std::string &severity, const std::string &id, const std::string &msg)
+    void error(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         reportError(tok, severity, id, msg);
     }
 
-    void error(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, const std::string &msg)
+    void error(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         reportError(callstack, severity, id, msg);
     }

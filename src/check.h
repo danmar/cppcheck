@@ -80,7 +80,7 @@ protected:
     ErrorLogger * const _errorLogger;
 
     /** report an error */
-    void reportError(const Token *tok, const std::string &severity, const std::string &id, const std::string &msg)
+    void reportError(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         std::list<const Token *> callstack;
         callstack.push_back(tok);
@@ -88,12 +88,12 @@ protected:
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, const std::string &severity, const std::string &id, std::string msg)
+    void reportError(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, std::string msg)
     {
         // No errorLogger => just report the message to stdout
         if (_errorLogger == NULL)
         {
-            std::cout << "(" << severity << ") " << msg << std::endl;
+            std::cout << "(" << Severity::stringify(severity) << ") " << msg << std::endl;
             return;
         }
 
@@ -114,7 +114,7 @@ protected:
             locationList.push_back(loc);
         }
 
-        _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList, severity, msg, id));
+        _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList, Severity::stringify(severity), msg, id));
     }
 
 private:

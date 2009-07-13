@@ -195,7 +195,7 @@ void CheckAutoVariables::autoVariables()
         {
             if (errorAv(tok->tokAt(1), tok->tokAt(4)))
                 reportError(tok,
-                            "error",
+                            Severity::error,
                             "autoVariables",
                             "Wrong assignement of an auto-variable to an effective parameter of a function");
         }
@@ -203,7 +203,7 @@ void CheckAutoVariables::autoVariables()
         {
             if (errorAv(tok->tokAt(1), tok->tokAt(7)))
                 reportError(tok,
-                            "error",
+                            Severity::error,
                             "autoVariables",
                             "Wrong assignement of an auto-variable to an effective parameter of a function");
         }
@@ -211,7 +211,7 @@ void CheckAutoVariables::autoVariables()
         {
             if (isAutoVar(tok->tokAt(2)))
                 reportError(tok,
-                            "error",
+                            Severity::error,
                             "autoVariables",
                             "Return of the address of an auto-variable");
         }
@@ -285,7 +285,7 @@ void CheckAutoVariables::returnPointerToLocalArray()
 
 void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
 {
-    reportError(tok, "error", "returnLocalVariable", "Returning pointer to local array variable");
+    reportError(tok, Severity::error, "returnLocalVariable", "Returning pointer to local array variable");
 }
 
 

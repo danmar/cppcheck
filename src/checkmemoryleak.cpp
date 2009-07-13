@@ -226,37 +226,37 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const char varname[], AllocTy
 
 void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname)
 {
-    error(tok, "error", "memleak", "Memory leak: " + varname);
+    error(tok, Severity::error, "memleak", "Memory leak: " + varname);
 }
 
 void CheckMemoryLeak::memleakallError(const Token *tok, const std::string &varname)
 {
-    error(tok, "all", "memleakall", "Memory leak: " + varname);
+    error(tok, Severity::possibleError, "memleakall", "Memory leak: " + varname);
 }
 
 void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname)
 {
-    error(tok, "error", "resourceLeak", "Resource leak: " + varname);
+    error(tok, Severity::error, "resourceLeak", "Resource leak: " + varname);
 }
 
 void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname)
 {
-    error(tok, "error", "deallocDealloc", "Deallocating a deallocated pointer: " + varname);
+    error(tok, Severity::error, "deallocDealloc", "Deallocating a deallocated pointer: " + varname);
 }
 
 void CheckMemoryLeak::deallocuseError(const Token *tok, const std::string &varname)
 {
-    error(tok, "error", "deallocuse", "Using '" + varname + "' after it is deallocated / released");
+    error(tok, Severity::error, "deallocuse", "Using '" + varname + "' after it is deallocated / released");
 }
 
 void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz)
 {
-    error(tok, "error", "mismatchSize", "The given size " + sz + " is mismatching");
+    error(tok, Severity::error, "mismatchSize", "The given size " + sz + " is mismatching");
 }
 
 void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname)
 {
-    error(callstack, "error", "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
+    error(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
 }
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok) const

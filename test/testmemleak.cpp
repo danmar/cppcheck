@@ -607,7 +607,7 @@ private:
               "        return;\n"
               "    }\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:9]: (all) Memory leak: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (possible error) Memory leak: str\n", errout.str());
     }
 
 
@@ -1128,7 +1128,7 @@ private:
         check(code.c_str(), false);
         ASSERT_EQUALS("", errout.str());
         check(code.c_str(), true);
-        ASSERT_EQUALS("[test.cpp:12]: (all) Memory leak: str\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (possible error) Memory leak: str\n", errout.str());
     }
 
     void switch3()
@@ -1923,7 +1923,7 @@ private:
               "{\n"
               "    Fred *f = new Fred;\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: f\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: f\n", errout.str());
     }
 
 
@@ -2519,7 +2519,7 @@ private:
               "    delete [] str2;\n"
               "}\n", true);
 
-        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: Fred::str1\n", errout.str());
     }
 
 
@@ -2691,7 +2691,7 @@ private:
               "    int * p;\n"
               "    A() { p = new int; }\n"
               "};\n", true);
-        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
     }
 
     void class11()
@@ -2704,7 +2704,7 @@ private:
               "};\n"
               "A::A() : p(new int[10])\n"
               "{ }", true);
-        ASSERT_EQUALS("[test.cpp:4]: (all) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
     }
 
 
