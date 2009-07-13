@@ -21,6 +21,16 @@
 
 #include <string>
 
+/**
+ * @brief The token list that the Tokenizer generates is a linked-list of this class.
+ *
+ * Tokens are stored as strings. The "if", "while", etc are stored in plain text.
+ * The reason the Token class is needed (instead of using the string class) is that some extra functionality is also needed for tokens:
+ *  - location of the token is stored (linenr, fileIndex)
+ *  - functions for classifying the token (isName, isNumber, isBoolean, isStandardType)
+ *
+ * The Token class also has other functions for management of token list, matching tokens, etc.
+ */
 class Token
 {
 public:
@@ -125,7 +135,6 @@ public:
      *        -1 if needle was not found
      */
     static int multiCompare(const char *haystack, const char *needle);
-
 
     unsigned int linenr() const;
     void linenr(unsigned int linenr);

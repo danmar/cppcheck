@@ -17,14 +17,17 @@
  */
 
 
-/** @mainpage
- * Overview \n
- * The source code is first tokenized and then checked. \n
- * \n
- * Writing checks \n
+/**
+ *
+ * @mainpage Cppcheck
+ *
+ * @section overview_sec Overview
+ * The source code is first tokenized and then checked.
+ *
+ * @section writing_checks_sec Writing checks
  * The checks are written in C++. Below is a simple example of a check
  * that detect division with zero:
- * \code
+ * @code
 void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -33,9 +36,9 @@ void CheckOther::checkZeroDivision()
             reportError(tok, "error", "zerodiv", "Division by zero");
     }
 }
- \endcode
+ @endcode
+ *
  */
-
 
 
 #include "cppcheckexecutor.h"
