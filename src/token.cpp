@@ -271,7 +271,6 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             ++p;
 
         // Extract token from pattern..
-        // TODO: Refactor this so there can't be buffer overflows
         char str[500];
         char *s = str;
         while (*p && *p != ' ')

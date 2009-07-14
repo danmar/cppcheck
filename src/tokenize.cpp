@@ -1247,8 +1247,8 @@ void Tokenizer::simplifyTokenList()
                     }
                     else if (Token::simpleMatch(tempToken->next(), "["))
                     {
-                        // TODO: We need to find closing ], then check for
-                        // dots and arrows "var[some[0]]->other"
+                        /** @todo We need to find closing ], then check for
+                         * dots and arrows "var[some[0]]->other" */
 
                         // But for now, just bail out
                         break;
@@ -2823,7 +2823,7 @@ void Tokenizer::fillFunctionList()
     }
 
     // If the _functionList functions with duplicate names, remove them
-    // TODO this will need some better handling
+    /** @todo handle when functions with the same name */
     for (unsigned int func1 = 0; func1 < _functionList.size();)
     {
         bool hasDuplicates = false;

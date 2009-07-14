@@ -532,7 +532,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                     func_ = func_->next();
 
                 const char *ret = 0;
-                // TODO : "goto" isn't handled well
+                /** @todo handle "goto" */
                 if (Token::findmatch(func_, "dealloc"))
                     ret = "dealloc";
                 else if (Token::findmatch(func_, "use"))
@@ -1119,7 +1119,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     done = false;
                 }
 
-                // TODO Make this more generic. Delete "if ; else use ; use"
                 else if (Token::Match(tok2, "; if ; else assign|use ; assign|use") ||
                          Token::Match(tok2, "; if assign|use ; else ; assign|use"))
                 {
@@ -1274,7 +1273,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             }
 
             // Reduce "do { alloc ; } " => "alloc ;"
-            // TODO: If the loop can be executed twice reduce to "loop alloc ;" instead
+            /** @todo If the loop "do { alloc ; }" can be executed twice, reduce it to "loop alloc ;" */
             if (Token::simpleMatch(tok2->next(), "do { alloc ; }"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
@@ -1552,7 +1551,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const char varname
         return;
     }
 
-    // TODO : handle "goto"
+    /** @todo handle "goto" */
     if (Token::findmatch(tok, "goto"))
     {
         Tokenizer::deleteTokens(tok);

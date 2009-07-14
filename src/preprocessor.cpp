@@ -75,10 +75,12 @@ void Preprocessor::writeError(const std::string &fileName, const std::string &co
         // UTF / extended ASCII => The output from the preprocessor should only be standard ASCII
         if (ch < 0)
         {
-            // TODO: Remove characters that are redundant
-
-            // TODO: Convert characters that are needed to standard ASCII
-
+            /**
+             * @todo handle utf better:
+             * - remove characters that are redundant
+             * - convert needed characters to standard ASCII
+             */
+ 
             // Not sure how to handle this character. Bailing out.
             if (ch < 0)
                 continue;
@@ -703,7 +705,7 @@ bool Preprocessor::match_cfg_def(std::string cfg, std::string def)
 
         std::string::size_type pos1 = pos + 8;
         const std::string par(def.substr(pos1, pos2 - pos1));
-        // TODO: better checking if parameter is defined
+        /** @todo better checking if parameter is defined */
         const bool isdefined(cfg.find(par) != std::string::npos);
 
         def.erase(pos, pos2 + 1 - pos);

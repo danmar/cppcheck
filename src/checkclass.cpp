@@ -273,7 +273,7 @@ void CheckClass::constructors()
         className[1] = 0;
         const Token *classNameToken = tok1->tokAt(1);
 
-        // TODO: handling of private constructors should be improved.
+        /** @todo handling of private constructors should be improved */
         bool hasPrivateConstructor = false;
         {
             int indentlevel = 0;
@@ -312,8 +312,8 @@ void CheckClass::constructors()
 
         if (hasPrivateConstructor)
         {
-            // TODO: Handle private constructors.
-            // Right now to avoid false positives I just bail out
+            /** @todo Handle private constructors. Right now to avoid
+             * false positives we just bail out */
             tok1 = Token::findmatch(tok1->next(), pattern_class);
             continue;
         }
@@ -439,9 +439,9 @@ void CheckClass::privateFunctions()
     // Locate some class
     for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), "class %var% {"); tok1; tok1 = Token::findmatch(tok1->next(), "class %var% {"))
     {
-        // If the class implementation is incomplete there may be false positives about unused private functions.
-        // Therefore I only check classes that are declared in the source file.
-        // Todo: check classes that are declared in header file too. make sure the whole implementation is seen.
+        /** @todo check that the whole class implementation is seen */
+        // until the todo above is fixed we only check classes that are
+        // declared in the source file
         if (tok1->fileIndex() != 0)
             continue;
 
@@ -456,7 +456,7 @@ void CheckClass::privateFunctions()
         {
             if (Token::Match(tok, "friend %var%"))
             {
-                // Todo: Handle friend classes
+                /** @todo Handle friend classes */
                 FuncList.clear();
                 break;
             }
@@ -588,7 +588,6 @@ void CheckClass::noMemset()
         if (!Token::Match(tok, "memset|memcpy|memmove"))
             continue;
 
-        // Todo: Handle memcpy and memmove
         const char *type = NULL;
         if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
             type = tok->strAt(8);

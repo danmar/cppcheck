@@ -233,7 +233,7 @@ public:
 
     void check()
     {
-        // TODO
+        /** @todo implement this */
     }
 
 private:
