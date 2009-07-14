@@ -478,6 +478,12 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // replace "unsigned i" with "unsigned int i"
     unsignedint();
 
+    /**
+     * @todo simplify "for"
+     * - move out start-statement "for (a;b;c);" => "{ a; for(;b;c); }"
+     * - try to change "for" loop to a "while" loop instead
+     */
+
     // Split up variable declarations.
     simplifyVarDecl();
 
