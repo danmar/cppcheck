@@ -122,7 +122,9 @@ private:
         std::string ret;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
-            ret += tok->str() + " ";
+            if (tok != tokenizer.tokens())
+                ret += " ";
+            ret += tok->str();
         }
 
         return ret;
@@ -145,68 +147,68 @@ private:
     void iftruefalse()
     {
         {
-            const char code1[] = " void f() { int a; bool use = false; if( use ) { a=0; } else {a=1;} } ";
-            const char code2[] = " void f() { int a; bool use = false; {a=1;} } ";
+            const char code1[] = " void f() { int a; bool use = false; if( use ) { a=0; } else {a=1;} }";
+            const char code2[] = " void f() { int a; bool use = false; {a=1;} }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { int a; bool use = true; if( use ) { a=0; } else {a=1;} } ";
-            const char code2[] = " void f() { int a; bool use = true; { a=0; } } ";
+            const char code1[] = " void f() { int a; bool use = true; if( use ) { a=0; } else {a=1;} }";
+            const char code2[] = " void f() { int a; bool use = true; { a=0; } }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { int a; int use = 5; if( use ) { a=0; } else {a=1;} } ";
-            const char code2[] = " void f() { int a; int use = 5; { a=0; } } ";
+            const char code1[] = " void f() { int a; int use = 5; if( use ) { a=0; } else {a=1;} }";
+            const char code2[] = " void f() { int a; int use = 5; { a=0; } }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { int a; int use = 0; if( use ) { a=0; } else {a=1;} } ";
-            const char code2[] = " void f() { int a; int use = 0; {a=1;} } ";
+            const char code1[] = " void f() { int a; int use = 0; if( use ) { a=0; } else {a=1;} }";
+            const char code2[] = " void f() { int a; int use = 0; {a=1;} }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else a=1; int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = false; { a=1; } int c=1; } ";
+            const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else a=1; int c=1; }";
+            const char code2[] = " void f() { int a; bool use = false; { a=1; } int c=1; }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else a=1; int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = true; { a=0; } int c=1; } ";
+            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else a=1; int c=1; }";
+            const char code2[] = " void f() { int a; bool use = true; { a=0; } int c=1; }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else if( bb ) a=1; int c=1; } ";
-            const char code2[] = " void f ( ) { int a ; bool use ; use = false ; { if ( bb ) { a = 1 ; } } int c ; c = 1 ; } ";
+            const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else if( bb ) a=1; int c=1; }";
+            const char code2[] = " void f ( ) { int a ; bool use ; use = false ; { if ( bb ) { a = 1 ; } } int c ; c = 1 ; }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = true; { a=0;} int c=1; } ";
+            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; int c=1; }";
+            const char code2[] = " void f() { int a; bool use = true; { a=0;} int c=1; }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; } ";
-            const char code2[] = " void f() { int a; bool use = true; { a=0; }int c=1; } ";
+            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; }";
+            const char code2[] = " void f() { int a; bool use = true; { a=0; }int c=1; }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { if( aa ) { a=0; } else if( true ) a=1; else { a=2; } } ";
-            const char code2[] = " void f ( ) { if ( aa ) { a = 0 ; } else { { a = 1 ; } } } ";
+            const char code1[] = " void f() { if( aa ) { a=0; } else if( true ) a=1; else { a=2; } }";
+            const char code2[] = " void f ( ) { if ( aa ) { a = 0 ; } else { { a = 1 ; } } }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
 
         {
-            const char code1[] = " void f() { if( aa ) { a=0; } else if( false ) a=1; else { a=2; } } ";
-            const char code2[] = " void f ( ) { if ( aa ) { a = 0 ; } else { { a = 2 ; } } } ";
+            const char code1[] = " void f() { if( aa ) { a=0; } else if( false ) a=1; else { a=2; } }";
+            const char code2[] = " void f ( ) { if ( aa ) { a = 0 ; } else { { a = 2 ; } } }";
             ASSERT_EQUALS(tok(code2), tok(code1));
         }
     }
@@ -263,56 +265,56 @@ private:
                                   "++a;\n"
                                   "--a;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a ) { a ++ ; a -- ; ++ a ; -- a ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a ) { a ++ ; a -- ; ++ a ; -- a ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a )\n"
                                   "{\n"
                                   "a=a+a;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a ) { a = a + a ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a ) { a = a + a ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a+++b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a ++ + b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a ++ + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a---b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a -- - b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a -- - b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a--+b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a -- + b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a -- + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a++-b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a ++ - b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a ++ - b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a+--b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + -- b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + -- b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a-++b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - ++ b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - ++ b ; }", tok(code1));
         }
     }
 
@@ -323,49 +325,49 @@ private:
                                   "{\n"
                                   "a=a + + b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a + + + b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a + - b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a - + b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a - - b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a - + - b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
                                   "{\n"
                                   "a=a - - - b;\n"
                                   "}\n";
-            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; } ", tok(code1));
+            ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; }", tok(code1));
         }
     }
 
@@ -373,33 +375,33 @@ private:
     void parantheses1()
     {
         const char code1[] = "<= (10+100);";
-        ASSERT_EQUALS("<= 110 ; ", tok(code1));
+        ASSERT_EQUALS("<= 110 ;", tok(code1));
     }
 
     void paranthesesVar()
     {
         // remove parantheses..
-        ASSERT_EQUALS("= p ; ", tok("= (p);"));
-        ASSERT_EQUALS("if ( a < p ) { } ", tok("if(a<(p)){}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } } ", tok("void f(){int p; if((p)==-1){}}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( -1 == p ) { } } ", tok("void f(){int p; if(-1==(p)){}}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } } ", tok("void f(){int p; if((p)){}}"));
+        ASSERT_EQUALS("= p ;", tok("= (p);"));
+        ASSERT_EQUALS("if ( a < p ) { }", tok("if(a<(p)){}"));
+        ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if((p)==-1){}}"));
+        ASSERT_EQUALS("void f ( ) { int p ; if ( -1 == p ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
+        ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } }", tok("void f(){int p; if((p)){}}"));
 
         // keep parantheses..
-        ASSERT_EQUALS("= a ; ", tok("= (char)a;"));
-        ASSERT_EQUALS("cast < char * > ( p ) ", tok("cast<char *>(p)"));
+        ASSERT_EQUALS("= a ;", tok("= (char)a;"));
+        ASSERT_EQUALS("cast < char * > ( p )", tok("cast<char *>(p)"));
     }
 
     void declareVar()
     {
-        const char code[] = "void f ( ) { char str [ 100 ] = \"100\" ; } ";
+        const char code[] = "void f ( ) { char str [ 100 ] = \"100\" ; }";
         ASSERT_EQUALS(code, tok(code));
     }
 
     void declareArray()
     {
-        const char code[] = "void f ( ) { char str [ ] = \"100\" ; } ";
-        const char expected[] = "void f ( ) { char * str ; str = \"100\" ; } ";
+        const char code[] = "void f ( ) { char str [ ] = \"100\" ; }";
+        const char expected[] = "void f ( ) { char * str ; str = \"100\" ; }";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -414,7 +416,7 @@ private:
                                 "        a = 10;\n"
                                 "    a++;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } a ++ ; } ", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } a ++ ; }", tok(code));
         }
 
         {
@@ -426,7 +428,7 @@ private:
                                 "        a = 10;\n"
                                 "    ++a;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } ++ a ; } ", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } ++ a ; }", tok(code));
         }
     }
 
@@ -439,7 +441,7 @@ private:
                             "    if (c>0) { c++; }\n"
                             "    c++;\n"
                             "}\n";
-        ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; } ", tok(code));
+        ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; }", tok(code));
     }
 
 
@@ -452,7 +454,7 @@ private:
                             "    if (c>0) { ++c; }\n"
                             "    ++c;\n"
                             "}\n";
-        ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; } ", tok(code));
+        ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; }", tok(code));
     }
 
 
