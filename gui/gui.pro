@@ -7,6 +7,7 @@ TARGET =
 QT += xml
 DEPENDPATH += .
 INCLUDEPATH += .
+RCC_DIR = temp
 MOC_DIR = temp
 OBJECTS_DIR = temp
 CONFIG += warn_on debug
