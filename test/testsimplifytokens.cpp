@@ -111,6 +111,9 @@ private:
         TEST_CASE(not1);
         TEST_CASE(comma_keyword);
         TEST_CASE(remove_comma);
+
+        // Simplify "?:"
+        TEST_CASE(conditionOperator);
     }
 
     std::string tok(const char code[])
@@ -1044,6 +1047,12 @@ private:
                                 "}\n";
             ASSERT_EQUALS(" void f ( ) { A a ; A b ; if ( a . f ) { a . f = b . f ; a . g = b . g ; } }", sizeof_(code));
         }
+    }
+
+    void conditionOperator()
+    {
+        const char code[] = "; x = a ? b : c;";
+        ASSERT_EQUALS("; if ( a ) { x = b ; } else { x = c ; }", tok(code));
     }
 };
 

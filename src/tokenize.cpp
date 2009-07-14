@@ -484,6 +484,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // Handle templates..
     simplifyTemplates();
 
+    // Simplify the operator "?:"
+    simplifyConditionOperator();
+
     // change array to pointer..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -1750,6 +1753,47 @@ bool Tokenizer::simplifyIfAddBraces()
         }
     }
 
+    return ret;
+}
+
+bool Tokenizer::simplifyConditionOperator()
+{
+    bool ret = false;
+    int parlevel = 0;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            ++parlevel;
+        else if (tok->str() == ")")
+            --parlevel;
+        else if (parlevel == 0 && Token::Match(tok, "; %var% = %var% ? %var% : %var% ;"))
+        {
+            const std::string var(tok->strAt(1));
+            const std::string condition(tok->strAt(3));
+            const std::string value1(tok->strAt(5));
+            const std::string value2(tok->strAt(7));
+
+            Token::eraseTokens(tok, tok->tokAt(8));
+
+            std::string str("if ( " + condition + " ) " + var + " = " + value1 + " ; else " + var + " = " + value2);
+            std::string::size_type pos1 = 0;
+            while (pos1 != std::string::npos)
+            {
+                std::string::size_type pos2 = str.find(" ", pos1);
+                if (pos2 == std::string::npos)
+                {
+                    tok->insertToken(str.substr(pos1).c_str());
+                    pos1 = pos2;
+                }
+                else
+                {
+                    tok->insertToken(str.substr(pos1, pos2-pos1).c_str());
+                    pos1 = pos2 + 1;
+                }
+                tok = tok->next();
+            }
+        }
+    }
     return ret;
 }
 

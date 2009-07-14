@@ -200,6 +200,13 @@ private:
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
 
+    /**
+     * Simplify the operator "?:"
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
+    bool simplifyConditionOperator();
+
     /** Simplify conditions
      * @return true if something is modified
      *         false if nothing is done.
