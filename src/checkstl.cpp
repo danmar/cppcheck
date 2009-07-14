@@ -288,6 +288,37 @@ void CheckStl::pushback()
                             --indent;
                     }
 
+                    // Using push_back or push_front inside a loop..
+                    if (Token::Match(tok2, "for ( %varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++ %varid% ) {", iteratorid))
+                    {
+                        const unsigned int vectorid(tok2->tokAt(4)->varId());
+                        const Token *pushback = 0;
+                        int indent3 = 0;
+                        for (const Token *tok3 = tok2->tokAt(22); tok3; tok3 = tok3->next())
+                        {
+                            if (tok3->str() == "{")
+                                ++indent3;
+                            else if (tok3->str() == "}")
+                            {
+                                if (indent3 == 0)
+                                    break;
+                                --indent3;
+                            }
+                            else if (tok3->str() == "break")
+                            {
+                                pushback = 0;
+                                break;
+                            }
+                            else if (Token::Match(tok3, "%varid% . push_front|push_back (", vectorid))
+                            {
+                                pushback = tok3;
+                            }
+                        }
+
+                        if (pushback)
+                            pushbackError(pushback, tok2->strAt(2));
+                    }
+
                     // Assigning iterator..
                     if (Token::Match(tok2, "%varid% = %var% . begin ( )", iteratorid))
                     {

@@ -323,7 +323,7 @@ private:
               "        foo.push_back(123);\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
     }
 
     void pushback4()
