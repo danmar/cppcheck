@@ -38,14 +38,14 @@
 //---------------------------------------------------------------------------
 
 Tokenizer::Tokenizer()
- : _settings(0), _errorLogger(0)
+        : _settings(0), _errorLogger(0)
 {
     _tokens = 0;
     _tokensBack = 0;
 }
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
- : _settings(settings), _errorLogger(errorLogger)
+        : _settings(settings), _errorLogger(errorLogger)
 {
     _tokens = 0;
     _tokensBack = 0;
@@ -1793,7 +1793,7 @@ bool Tokenizer::simplifyConditionOperator()
                 }
                 else
                 {
-                    tok->insertToken(str.substr(pos1, pos2-pos1).c_str());
+                    tok->insertToken(str.substr(pos1, pos2 - pos1).c_str());
                     pos1 = pos2 + 1;
                 }
                 tok = tok->next();

@@ -205,8 +205,16 @@ protected:
     * directory to check. Use native dialogs instead of QT:s own dialogs.
     *
     * @param mode Dialog open mode (files or directories)
+    * @return QStringList of files or directories that were selected to check
     */
-    void DoCheckFiles(QFileDialog::FileMode mode);
+    QStringList SelectFilesToCheck(QFileDialog::FileMode mode);
+
+    /**
+    * @brief Check all files specified in parameter files
+    *
+    * @param files List of files and/or directories to check
+    */
+    void DoCheckFiles(const QStringList &files);
 
     /**
     * @brief Get all files recursively from given path

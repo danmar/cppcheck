@@ -91,7 +91,13 @@ MainWindow::MainWindow() :
 
 
 
-
+    QStringList args = QCoreApplication::arguments();
+    //Remove the application itself
+    args.removeFirst();
+    if (!args.isEmpty())
+    {
+        DoCheckFiles(args);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -185,7 +191,53 @@ void MainWindow::SaveSettings()
     mUI.mResults->SaveSettings();
 }
 
-void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
+void MainWindow::DoCheckFiles(const QStringList &files)
+{
+    if (files.isEmpty())
+    {
+        return;
+    }
+    ClearResults();
+
+    QStringList fileNames;
+    QString selection;
+
+    foreach(selection, files)
+    {
+        fileNames << RemoveUnacceptedFiles(GetFilesRecursively(selection));
+    }
+
+    mUI.mResults->Clear();
+    mThread->ClearFiles();
+
+    if (fileNames.isEmpty())
+    {
+        QMessageBox msg(QMessageBox::Warning,
+                        tr("Cppcheck"),
+                        tr("No suitable files found to check!"),
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
+        return;
+    }
+
+    mUI.mResults->CheckingStarted();
+
+    mThread->SetFiles(RemoveUnacceptedFiles(fileNames));
+    QFileInfo inf(fileNames[0]);
+    QString absDirectory = inf.absoluteDir().path();
+    mSettings->setValue(SETTINGS_CHECK_PATH, absDirectory);
+    EnableCheckButtons(false);
+    mUI.mActionSettings->setEnabled(false);
+
+    mUI.mResults->SetCheckDirectory(absDirectory);
+
+    Settings checkSettings = GetCppcheckSettings();
+    mThread->Check(checkSettings, false);
+}
+
+
+QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
 {
     QStringList selected;
 
@@ -214,56 +266,17 @@ void MainWindow::DoCheckFiles(QFileDialog::FileMode mode)
         }
     }
 
-    if (selected.count() > 0)
-    {
-        ClearResults();
-
-        QStringList fileNames;
-        QString selection;
-
-        foreach(selection, selected)
-        {
-            fileNames << RemoveUnacceptedFiles(GetFilesRecursively(selection));
-        }
-
-        mUI.mResults->Clear();
-        mThread->ClearFiles();
-
-        if (fileNames.isEmpty())
-        {
-            QMessageBox msg(QMessageBox::Warning,
-                            tr("Cppcheck"),
-                            tr("No suitable files found to check!"),
-                            QMessageBox::Ok,
-                            this);
-            msg.exec();
-            return;
-        }
-
-        mUI.mResults->CheckingStarted();
-
-        mThread->SetFiles(RemoveUnacceptedFiles(fileNames));
-        QFileInfo inf(fileNames[0]);
-        QString absDirectory = inf.absoluteDir().path();
-        mSettings->setValue(SETTINGS_CHECK_PATH, absDirectory);
-        EnableCheckButtons(false);
-        mUI.mActionSettings->setEnabled(false);
-
-        mUI.mResults->SetCheckDirectory(absDirectory);
-
-        Settings checkSettings = GetCppcheckSettings();
-        mThread->Check(checkSettings, false);
-    }
+    return selected;
 }
 
 void MainWindow::CheckFiles()
 {
-    DoCheckFiles(QFileDialog::ExistingFiles);
+    DoCheckFiles(SelectFilesToCheck(QFileDialog::ExistingFiles));
 }
 
 void MainWindow::CheckDirectory()
 {
-    DoCheckFiles(QFileDialog::DirectoryOnly);
+    DoCheckFiles(SelectFilesToCheck(QFileDialog::DirectoryOnly));
 }
 
 Settings MainWindow::GetCppcheckSettings()

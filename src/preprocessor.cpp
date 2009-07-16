@@ -80,7 +80,7 @@ void Preprocessor::writeError(const std::string &fileName, const std::string &co
              * - remove characters that are redundant
              * - convert needed characters to standard ASCII
              */
- 
+
             // Not sure how to handle this character. Bailing out.
             if (ch < 0)
                 continue;
