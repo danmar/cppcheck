@@ -20,24 +20,65 @@
 /**
  *
  * @mainpage Cppcheck
+ * @version 1.34
  *
  * @section overview_sec Overview
- * The source code is first tokenized and then checked.
+ * Cppcheck is a simple tool for static analysis of C/C++ code.
  *
- * @section writing_checks_sec Writing checks
- * The checks are written in C++. Below is a simple example of a check
- * that detect division with zero:
+ * The method used is to first tokenize the source code and then analyse the token list.
+ * In the token list, the tokens are stored in plain text.
+ *
+ * The checks are written in C++. The checks are addons that can be easily added/removed.
+ *
+ * @section writing_checks_sec Writing a check
+ * Below is a simple example of a check that detect division with zero:
  * @code
 void CheckOther::checkZeroDivision()
 {
+    // Iterate through all tokens in the token list
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "/ 0"))
-            reportError(tok, "error", "zerodiv", "Division by zero");
+            reportError(tok, Severity::error, "zerodiv", "Division by zero");
     }
 }
  @endcode
  *
+ * The function Token::Match is often used in the checks. Through it
+ * you can match tokens against patterns.
+ *
+ * 
+ * @section checkclass_sec Creating a new check class from scratch
+ * %Check classes inherit from the Check class. The Check class specifies the interface that you must use.
+ * To integrate a check class into cppcheck all you need to do is:
+ * - Add your source file(s) so they are compiled into the executable.
+ * - Create an instance of the class (the Check::Check() constructor registers the class as an addon that Cppcheck then can use).
+ *
+ * 
+ * @section embedding_sec Embedding Cppcheck
+ * Cppcheck is designed to be easily embeddable into other programs.
+ *
+ * The "src/main.cpp" and "src/cppcheckexecutor.*" files illustrate how cppcheck
+ * can be embedded into an application.
+ *
+ * 
+ * @section detailed_overview_sec Detailed overview
+ * This happens when you execute cppcheck from the command line:
+ * -# CppCheckExecutor::check this function executes the Cppcheck 
+ * -# CppCheck::parseFromArgs parse command line arguments
+ *   - The Settings class is used to maintain settings
+ *   - Use FileLister and command line arguments to get files to check
+ * -# ThreadExecutor create more instances of CppCheck if needed
+ * -# CppCheck::check is called for each file. It checks a single file
+ * -# Preprocess the file (through Preprocessor)
+ *   - Comments are removed
+ *   - Macros are expanded
+ * -# Tokenize the file (see Tokenizer)
+ * -# Run the runChecks of all check classes.
+ * -# Simplify the tokenlist (Tokenizer::simplifyTokenList)
+ * -# Run the runSimplifiedChecks of all check classes
+ *
+ * When errors are found, they are reported back to the CppCheckExecutor through the ErrorLogger interface
  */
 
 
