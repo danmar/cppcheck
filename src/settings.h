@@ -23,6 +23,10 @@
 #include <string>
 #include <istream>
 
+/// @addtogroup Core
+/// @{
+
+
 /**
  * This is just a container for general settings so that we don't need
  * to pass individual values to functions or constructors now or in the
@@ -74,5 +78,7 @@ public:
     /** is a class automaticly deallocated? */
     bool isAutoDealloc(const char classname[]) const;
 };
+
+/// @}
 
 #endif // SETTINGS_H

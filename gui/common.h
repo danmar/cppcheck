@@ -19,6 +19,10 @@
 #ifndef COMMON_H
 #define COMMON_H
 
+/// @addtogroup GUI
+/// @{
+
+
 /**
 * @brief List of error types to show
 *
@@ -56,5 +60,5 @@ ShowTypes;
 #define SETTINGS_LANGUAGE               "Application language"
 #define SETTINGS_TOOLBARS_SHOW          "Toolbars/ShowStandard"
 
-
+/// @}
 #endif

@@ -34,6 +34,11 @@
 #include "ui_main.h"
 class ThreadHandler;
 
+
+/// @addtogroup GUI
+/// @{
+
+
 /**
 * @brief Main window for cppcheck-gui
 *
@@ -308,5 +313,5 @@ protected:
     QString mCurrentDirectory;
 
 };
-
+/// @}
 #endif // MAINWINDOW_H

@@ -23,6 +23,9 @@
 #include <QLineEdit>
 #include "ui_application.h"
 
+/// @addtogroup GUI
+/// @{
+
 /**
 * @brief Dialog to edit a startable application.
 * User can open errors with user specified applications. This is a dialog
@@ -79,5 +82,5 @@ protected:
     Ui::ApplicationDialog mUI;
 private:
 };
-
+/// @}
 #endif // APPLICATIONDIALOG_H

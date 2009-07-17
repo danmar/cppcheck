@@ -27,6 +27,9 @@
 #include <list>
 #include <iostream>
 
+/// @addtogroup Core
+/// @{
+
 /**
  * @brief Interface class that cppcheck uses to communicate with the checks.
  * All checking classes must inherit from this class
@@ -52,7 +55,7 @@ public:
         instances().remove(this);
     }
 
-    /** get instances of this */
+    /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
     static std::list<Check *> &instances()
     {
         static std::list<Check *> _instances;
@@ -69,10 +72,10 @@ public:
     /** get error messages */
     virtual void getErrorMessages() = 0;
 
-    /** class name */
+    /** class name, used to generate documentation */
     virtual std::string name() const = 0;
 
-    /** get information about this class */
+    /** get information about this class, used to generate documentation */
     virtual std::string classInfo() const = 0;
 
 protected:
@@ -119,7 +122,7 @@ protected:
     }
 
 private:
-    /** compare the names of Check classes */
+    /** compare the names of Check classes, used when sorting the Check descendants */
     bool operator<(const Check *other) const
     {
         return (name() < other->name());
@@ -127,7 +130,7 @@ private:
 
 };
 
-
+/// @}
 
 #endif
 

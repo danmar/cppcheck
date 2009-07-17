@@ -27,6 +27,9 @@
 
 class Token;
 
+/// @addtogroup Checks
+/// @{
+
 class CheckOther : public Check
 {
 public:
@@ -186,7 +189,7 @@ private:
                " * [[IncompleteStatement|Incomplete statement]]\n";
     }
 };
-
+/// @}
 //---------------------------------------------------------------------------
 #endif
 

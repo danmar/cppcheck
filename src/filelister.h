@@ -22,6 +22,10 @@
 #include <vector>
 #include <string>
 
+/// @addtogroup Core
+/// @{
+
+
 // Check that the compiler are supported
 // This program should be compiled with either GCC/BORLAND/MSC to work..
 #ifndef __GNUC__
@@ -45,5 +49,7 @@ public:
 private:
 
 };
+
+/// @}
 
 #endif // #ifndef FILELISTER_H

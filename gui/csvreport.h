@@ -26,6 +26,10 @@
 #include <QTextStream>
 #include "report.h"
 
+/// @addtogroup GUI
+/// @{
+
+
 /**
 * @brief CSV text file report.
 * This report exports results as CSV (comma separated values). CSV files are
@@ -68,5 +72,5 @@ private:
     */
     QTextStream mTxtWriter;
 };
-
+/// @}
 #endif // CSV_REPORT_H

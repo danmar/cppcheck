@@ -24,6 +24,8 @@
 
 #include "ui_about.h"
 
+/// @addtogroup GUI
+/// @{
 
 /**
 * @brief About dialog
@@ -38,5 +40,5 @@ public:
 private:
     Ui::About mUI;
 };
-
+/// @}
 #endif // ABOUT_DIALOG_H

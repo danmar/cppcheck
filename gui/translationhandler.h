@@ -23,6 +23,10 @@
 #include <QTranslator>
 #include <QObject>
 
+/// @addtogroup GUI
+/// @{
+
+
 class TranslationHandler : QObject
 {
     Q_OBJECT
@@ -41,5 +45,5 @@ protected:
     QTranslator *mTranslator;
 private:
 };
-
+/// @}
 #endif // TRANSLATIONHANDLER_H

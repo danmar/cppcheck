@@ -26,6 +26,10 @@
 
 class Token;
 
+/// @addtogroup Checks
+/// @{
+
+
 /** @brief %Check STL usage */
 class CheckStl : public Check
 {
@@ -123,7 +127,7 @@ private:
                " * for vectors: using iterator/pointer after push_back has been used\n";
     }
 };
-
+/// @}
 //---------------------------------------------------------------------------
 #endif
 

@@ -22,6 +22,9 @@
 #include <QObject>
 #include <QSettings>
 
+/// @addtogroup GUI
+/// @{
+
 
 /**
 * @brief List of applications user has specified to open errors with
@@ -159,5 +162,5 @@ protected:
     QList<ApplicationType> mApplications;
 private:
 };
-
+/// @}
 #endif // APPLICATIONLIST_H

@@ -26,6 +26,9 @@
 class Token;
 class Tokenizer;
 
+/// @addtogroup Core
+/// @{
+
 /**
  * This is an interface, which the class responsible of error logging
  * should implement.
@@ -357,5 +360,7 @@ public:
     }
 };
 
+
+/// @}
 
 #endif

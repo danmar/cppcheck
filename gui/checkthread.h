@@ -25,6 +25,9 @@
 #include "../src/settings.h"
 #include "threadresult.h"
 
+/// @addtogroup GUI
+/// @{
+
 /**
 * @brief Thread to run cppcheck
 *
@@ -91,5 +94,5 @@ protected:
     CppCheck mCppcheck;
 private:
 };
-
+/// @}
 #endif // CHECKTHREAD_H

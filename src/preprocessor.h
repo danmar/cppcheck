@@ -27,6 +27,9 @@
 #include <list>
 #include "errorlogger.h"
 
+/// @addtogroup Core
+/// @{
+
 /** @brief The cppcheck preprocessor. It has special functionality for extracting the various ifdef configurations that exist in a source file. */
 class Preprocessor
 {
@@ -140,6 +143,8 @@ private:
     static void handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths);
 
 };
+
+/// @}
 
 //---------------------------------------------------------------------------
 #endif

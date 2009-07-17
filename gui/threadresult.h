@@ -26,6 +26,9 @@
 #include <QVariant>
 #include "../src/errorlogger.h"
 
+/// @addtogroup GUI
+/// @{
+
 /**
 * @brief Threads use this class to obtain new files to process and to publish results
 *
@@ -125,5 +128,5 @@ protected:
     int mProgress;
 private:
 };
-
+/// @}
 #endif // THREADRESULT_H

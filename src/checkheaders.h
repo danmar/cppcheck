@@ -25,6 +25,10 @@
 #include "tokenize.h"
 #include "errorlogger.h"
 
+/// @addtogroup Checks
+/// @{
+
+
 class CheckHeaders
 {
 public:
@@ -42,7 +46,7 @@ private:
         return "Headers";
     }
 };
-
+/// @}
 //---------------------------------------------------------------------------
 #endif
 

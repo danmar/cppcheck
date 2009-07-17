@@ -24,6 +24,9 @@
 #include <QStringList>
 #include <QFile>
 
+/// @addtogroup GUI
+/// @{
+
 /**
 * @brief A base class for reports.
 */
@@ -88,5 +91,5 @@ private:
     */
     QFile mFile;
 };
-
+/// @}
 #endif // REPORT_H

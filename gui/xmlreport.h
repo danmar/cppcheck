@@ -26,6 +26,10 @@
 #include <QXmlStreamWriter>
 #include "report.h"
 
+/// @addtogroup GUI
+/// @{
+
+
 /**
 * @brief XML file report.
 * This report outputs XML-formatted report. The XML format must match command
@@ -66,5 +70,5 @@ private:
     */
     QXmlStreamWriter mXmlWriter;
 };
-
+/// @}
 #endif // XML_REPORT_H

@@ -28,6 +28,10 @@
 #include "checkthread.h"
 #include "resultsview.h"
 
+/// @addtogroup GUI
+/// @{
+
+
 /**
 * @brief This class handles creating threadresult and starting threads
 *
@@ -147,5 +151,5 @@ protected:
     int mRunningThreadCount;
 private:
 };
-
+/// @}
 #endif // THREADHANDLER_H

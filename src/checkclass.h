@@ -26,6 +26,10 @@
 
 class Token;
 
+/// @addtogroup Checks
+/// @{
+
+
 class CheckClass : public Check
 {
 public:
@@ -137,6 +141,7 @@ private:
                " * Are there unused private functions\n";
     }
 };
+/// @}
 //---------------------------------------------------------------------------
 #endif
 

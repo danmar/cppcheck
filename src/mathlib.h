@@ -22,6 +22,10 @@
 
 #include "token.h"
 
+/// @addtogroup Core
+/// @{
+
+
 class MathLib
 {
 public:
@@ -43,5 +47,7 @@ public:
     static std::string abs(const std::string & tok);
     static bool isGreater(const std::string & first, const std::string & second);
 };
+
+/// @}
 
 #endif

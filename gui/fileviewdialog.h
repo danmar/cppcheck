@@ -23,6 +23,9 @@
 #include <QString>
 #include "ui_file.h"
 
+/// @addtogroup GUI
+/// @{
+
 
 /**
 * @brief File view -dialog.
@@ -58,5 +61,5 @@ protected:
 
     Ui::Fileview mUI;
 };
-
+/// @}
 #endif // FILEVIEW_DIALOG_H

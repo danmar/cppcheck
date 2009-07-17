@@ -30,6 +30,10 @@ class ErrorLogger;
 class Token;
 class Tokenizer;
 
+/// @addtogroup Checks
+/// @{
+
+
 class CheckBufferOverrun : public Check
 {
 public:
@@ -93,7 +97,7 @@ private:
         return "out of bounds checking";
     }
 };
-
+/// @}
 //---------------------------------------------------------------------------
 #endif
 

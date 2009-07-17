@@ -25,6 +25,9 @@
 #include "tokenize.h"
 #include "errorlogger.h"
 
+/// @addtogroup Checks
+/// @{
+
 class CheckUnusedFunctions
 {
 public:
@@ -63,7 +66,7 @@ private:
 
     std::map<std::string, FunctionUsage> _functions;
 };
-
+/// @}
 //---------------------------------------------------------------------------
 #endif
 

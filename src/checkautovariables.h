@@ -26,6 +26,10 @@
 #include "token.h"
 #include <list>
 
+/// @addtogroup Checks
+/// @{
+
+
 class CheckAutoVariables : public Check
 {
 public:
@@ -84,7 +88,7 @@ private:
                " * assigning address of an variable to an effective parameter of a function\n";
     }
 };
-
+/// @}
 //---------------------------------------------------------------------------
 #endif
 

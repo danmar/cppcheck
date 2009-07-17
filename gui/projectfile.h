@@ -24,6 +24,10 @@
 #include <QStringList>
 #include <QXmlStreamReader>
 
+/// @addtogroup GUI
+/// @{
+
+
 /**
 * @brief A class that reads and writes (TODO) project files.
 * The project files contain project-specific settings for checking. For
@@ -85,5 +89,5 @@ private:
     */
     QStringList mIncludeDirs;
 };
-
+/// @}
 #endif  // PROJECT_FILE_H

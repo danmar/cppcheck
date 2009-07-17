@@ -28,6 +28,9 @@
 #include "errorlogger.h"
 #include "checkunusedfunctions.h"
 
+/// @addtogroup Core
+/// @{
+
 /**
  * This is the base class which will use other classes to do
  * static code analysis for C and C++ code to find possible
@@ -143,5 +146,7 @@ private:
 
     std::list<std::string> _xmllist;
 };
+
+/// @}
 
 #endif // CPPCHECK_H

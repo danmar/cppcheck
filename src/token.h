@@ -21,6 +21,9 @@
 
 #include <string>
 
+/// @addtogroup Core
+/// @{
+
 /**
  * @brief The token list that the Tokenizer generates is a linked-list of this class.
  *
@@ -225,5 +228,7 @@ private:
     unsigned int _fileIndex;
     unsigned int _linenr;
 };
+
+/// @}
 
 #endif // TokenH

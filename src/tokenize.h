@@ -30,10 +30,14 @@ class Token;
 class ErrorLogger;
 class Settings;
 
+/// @addtogroup Core
+/// @{
+
+/** @brief The main purpose is to tokenize the source code. It also has functions that simplify the token list */
 class Tokenizer
 {
 private:
-    // Deallocate lists..
+    /** Deallocate lists.. */
     void deallocateTokens();
 
 public:
@@ -279,6 +283,8 @@ private:
     const Settings * const _settings;
     ErrorLogger * const _errorLogger;
 };
+
+/// @}
 
 //---------------------------------------------------------------------------
 #endif

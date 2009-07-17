@@ -33,6 +33,8 @@
 #include <QKeyEvent>
 #include "ui_settings.h"
 
+/// @addtogroup GUI
+/// @{
 
 /**
 * @brief Settings dialog
@@ -186,5 +188,5 @@ protected:
     Ui::Settings mUI;
 private:
 };
-
+/// @}
 #endif // SETTINGSDIALOG_H

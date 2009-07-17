@@ -26,6 +26,10 @@
 #include <QTextStream>
 #include "report.h"
 
+/// @addtogroup GUI
+/// @{
+
+
 /**
 * @brief Text file report.
 * This report mimics the output of the command line cppcheck.
@@ -66,5 +70,5 @@ private:
     */
     QTextStream mTxtWriter;
 };
-
+/// @}
 #endif // TXT_REPORT_H

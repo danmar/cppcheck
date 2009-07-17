@@ -24,6 +24,9 @@
 
 #include "check.h"
 
+/// @addtogroup Checks
+/// @{
+
 class CheckDangerousFunctions : public Check
 {
 public:
@@ -75,7 +78,7 @@ private:
                " * scanf\n";
     }
 };
-
+/// @}
 //---------------------------------------------------------------------------
 #endif
 

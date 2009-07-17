@@ -31,6 +31,10 @@
 
 class Report;
 
+/// @addtogroup GUI
+/// @{
+
+
 /**
 * @brief Cppcheck's results are shown in this tree
 *
@@ -362,5 +366,5 @@ protected:
 
 private:
 };
-
+/// @}
 #endif // RESULTSTREE_H

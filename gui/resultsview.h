@@ -29,6 +29,9 @@
 #include "report.h"
 #include "ui_resultsview.h"
 
+/// @addtogroup GUI
+/// @{
+
 /**
 * @brief Widget to show cppcheck progressbar and result
 *
@@ -179,5 +182,5 @@ protected:
 
 private:
 };
-
+/// @}
 #endif // RESULTSVIEW_H
