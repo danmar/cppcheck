@@ -204,6 +204,19 @@ private:
                        "  float f;\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Member variable not initialized in the constructor 'B::f'\n", errout.str());
+
+        checkUninitVar("class C\n"
+                       "{\n"
+                       "    FILE *fp;\n"
+                       "\n"
+                       "public:\n"
+                       "    C(FILE *fp);\n"
+                       "};\n"
+                       "\n"
+                       "C::C(FILE *fp) {\n"
+                       "    C::fp = fp;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarEnum()

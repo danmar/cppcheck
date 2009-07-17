@@ -381,7 +381,7 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[])
 
             // Is it a static member variable?
             std::ostringstream pattern;
-            pattern << className << "::" << var->name << "=";
+            pattern << className << " :: " << var->name << " =";
             if (Token::findmatch(_tokenizer->tokens(), pattern.str().c_str()))
                 continue;
 
