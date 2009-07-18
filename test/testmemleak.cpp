@@ -277,6 +277,7 @@ private:
         TEST_CASE(tmpfile_function);
         TEST_CASE(fcloseall_function);
         TEST_CASE(file_functions);
+        TEST_CASE(getc_function);
 
         TEST_CASE(open_function);
         TEST_CASE(creat_function);
@@ -2401,6 +2402,29 @@ private:
               "fprintf(in, \"text\\n\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:22]: (error) Resource leak: f\n", errout.str());
+    }
+
+    void getc_function() {
+        {
+            check("void f()\n"
+                  "{"
+                  "    int c;\n"
+                  "    FILE *fin1a = fopen (\"FILE.txt\", \"r\");\n"
+                  "    while ( (c = getc (fin1a)) != EOF)\n"
+                  "    { }\n"
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: fin1a\n", errout.str());
+        }
+
+        {
+            check("void f()\n"
+                  "{\n"
+                  "    int c;\n"
+                  "    FILE *fin1b = fopen(\"FILE.txt\", \"r\");\n"
+                  "    c = getc(fin1b);\n"
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:6]: (error) Resource leak: fin1b\n", errout.str());
+        }
     }
 
     void pointer_to_pointer()
