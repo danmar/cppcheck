@@ -317,13 +317,15 @@ private:
     {
         check("void f()\n"
               "{\n"
-              "    std::vector<int>::const_iterator it = foo.begin();\n"
+              "    std::vector<int> foo;\n"
+              "    foo.push_back(10);\n"
+              "    std::vector<int>::iterator it;\n"
               "    for (it = foo.begin(); it != foo.end(); ++it)\n"
               "    {\n"
               "        foo.push_back(123);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
     }
 
     void pushback4()
