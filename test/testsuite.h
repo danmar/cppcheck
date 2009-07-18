@@ -29,6 +29,7 @@ class TestFixture : public ErrorLogger
 private:
     static std::ostringstream errmsg;
     static unsigned int countTests;
+    static size_t fails_counter;
 
 protected:
     std::string classname;
@@ -52,7 +53,7 @@ public:
     virtual ~TestFixture() { }
 
     static void printTests();
-    static void runTests(const char cmd[]);
+    static size_t runTests(const char cmd[]);
 };
 
 

@@ -64,6 +64,8 @@ public:
 std::ostringstream TestFixture::errmsg;
 unsigned int       TestFixture::countTests;
 
+size_t TestFixture::fails_counter = 0;
+
 TestFixture::TestFixture(const std::string &_name) : classname(_name)
 {
     TestRegistry::theInstance().addTest(this);
@@ -105,6 +107,8 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
 {
     if (expected != actual)
     {
+        ++fails_counter;
+
         errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
         << "Expected:" << std::endl
         << writestr(expected) << std::endl
@@ -124,6 +128,8 @@ void TestFixture::assertEquals(const char *filename, int linenr, unsigned int ex
 
 void TestFixture::assertThrowFail(const char *filename, int linenr)
 {
+    ++fails_counter;
+
     errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
     << "The expected exception was not thrown" << std::endl;
 }
@@ -144,7 +150,7 @@ void TestFixture::run(const std::string &str)
     run();
 }
 
-void TestFixture::runTests(const char cmd[])
+size_t TestFixture::runTests(const char cmd[])
 {
     std::string classname(cmd ? cmd : "");
     std::string testname("");
@@ -170,6 +176,8 @@ void TestFixture::runTests(const char cmd[])
     std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << "\n";
 
     std::cerr << errmsg.str();
+
+    return fails_counter;
 }
 
 void TestFixture::reportOut(const std::string & /*outmsg*/)
