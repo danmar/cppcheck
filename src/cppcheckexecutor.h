@@ -55,13 +55,11 @@ public:
      */
     int check(int argc, const char* const argv[]);
 
-
-
     /**
      * Information about progress is directed here. This should be
      * called by the CppCheck class only.
      *
-     * @param outmsg, E.g. "Checking main.cpp..."
+     * @param outmsg Progress message e.g. "Checking main.cpp..."
      */
     virtual void reportOut(const std::string &outmsg);
 

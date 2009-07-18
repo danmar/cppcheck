@@ -48,6 +48,7 @@ public:
     /**
      * Tokenize code
      * @param code input stream for code, e.g.
+     * \code
      * #file "p.h"
      * class Foo
      * {
@@ -59,6 +60,7 @@ public:
      * void Foo::Bar()
      * {
      * }
+     * \endcode
      *
      * @param FileName The filename
      * @return false if Source code contains syntax errors
