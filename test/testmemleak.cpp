@@ -2316,8 +2316,9 @@ private:
               "    lockf(fd, cmd, len);\n"
               "    ftruncate(fd, len);\n"
               "    fstat(fd, buf);\n"
+              "    fchmod(fd, mode);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:23]: (error) Resource leak: fd\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:24]: (error) Resource leak: fd\n", errout.str());
     }
 
     void opendir_function()

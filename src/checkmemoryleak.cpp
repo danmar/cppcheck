@@ -435,7 +435,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
     // I/O functions that are not allocating nor deallocating memory..
     if (Token::Match(tok, "read|readv|pread|readahead|write|writev|pwrite|lseek") ||
-        Token::Match(tok, "ioctl|fcntl|flock|lockf|ftruncate|fsync|fdatasync") ||
+        Token::Match(tok, "ioctl|fchmod|fcntl|flock|lockf|ftruncate|fsync|fdatasync") ||
         Token::Match(tok, "fstat|sync_file_range|posix_fallocate|posix_fadvise"))
         return 0;
 
