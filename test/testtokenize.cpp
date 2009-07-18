@@ -116,6 +116,7 @@ private:
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
+        TEST_CASE(varid_reference_to_containers);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -1340,6 +1341,34 @@ private:
             ASSERT_EQUALS(expected, actual);
         }
 
+    }
+
+    void varid_reference_to_containers()
+    {
+        const std::string code("void f()\n"
+                               "{\n"
+                                "    std::vector<int> b;\n"
+                                "    std::vector<int> &a = b;\n"
+                                "    std::vector<int> *c = &b;\n"
+                                "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void f ( )\n"
+                                   "2: {\n"
+                                   "3: std :: vector < int > b@1 ;\n"
+                                   "4: std :: vector < int > & a@2 = b@1 ;\n"
+                                   "5: std :: vector < int > * c@3 = & b@1 ;\n"
+                                   "6: }\n");
+
+        ASSERT_EQUALS(expected, actual);
     }
 
     void varidclass1()

@@ -760,7 +760,7 @@ void Tokenizer::setVarId()
 
             if (Token::Match(tok2, "> %var%"))
                 tok = tok2;
-            else if (Token::Match(tok2, "> :: %var%"))
+            else if (Token::Match(tok2, "> ::|*|& %var%"))
                 tok = tok2->next();
             else
                 continue;       // Not code that I understand / not a variable declaration
