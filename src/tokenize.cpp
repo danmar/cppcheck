@@ -2434,24 +2434,37 @@ bool Tokenizer::simplifyIfNot()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-
-        if (Token::simpleMatch(tok, "0 == (") ||
-            Token::Match(tok, "0 == %var%"))
+        if (tok->str() == "(" || tok->str() == "||" || tok->str() == "&&")
         {
-            tok->deleteNext();
-            tok->str("!");
-            ret = true;
+            tok = tok->next();
+            if (Token::simpleMatch(tok, "0 == (") ||
+                Token::Match(tok, "0 == %var%"))
+            {
+                tok->deleteNext();
+                tok->str("!");
+                ret = true;
+            }
+
+            else if (Token::Match(tok, "%var% == 0"))
+            {
+                tok->deleteNext();
+                tok->next()->str(tok->str());
+                tok->str("!");
+                ret = true;
+            }
+
+            else if (Token::Match(tok, "%var% . %var% == 0"))
+            {
+                tok = tok->previous();
+                tok->insertToken("!");
+                tok = tok->tokAt(4);
+                tok->deleteNext();
+                tok->deleteNext();
+                ret = true;
+            }
         }
 
-        if (Token::Match(tok, "%var% == 0"))
-        {
-            tok->deleteNext();
-            tok->next()->str(tok->str());
-            tok->str("!");
-            ret = true;
-        }
-
-        if (tok->link() && Token::simpleMatch(tok, ") == 0"))
+        else if (tok->link() && Token::simpleMatch(tok, ") == 0"))
         {
             tok->deleteNext();
             tok->deleteNext();
