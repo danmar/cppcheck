@@ -16,10 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/
  */
 
+#include <cstdlib>
 #include "testsuite.h"
 
 int main(int argc, const char *argv[])
 {
-    return TestFixture::runTests((argc == 2) ? argv[1] : NULL);
+    size_t ret = TestFixture::runTests((argc == 2) ? argv[1] : NULL);
+
+    return (ret == 0 ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
