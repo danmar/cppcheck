@@ -94,28 +94,35 @@ void CheckOther::warningRedundantCode()
          *
          **/
 
-        if (Token::simpleMatch(tok2, "0 !=")) {
+        if (Token::simpleMatch(tok2, "0 !="))
+        {
             tok2 = tok2->tokAt(2);
         }
 
         if (Token::simpleMatch(tok2, "this .") ||
-            Token::Match(tok2, "%var% ::")) {
+            Token::Match(tok2, "%var% ::"))
+        {
             tok2 = tok2->tokAt(2);
         }
 
-        if (Token::Match(tok2, "%var%")) {
+        if (Token::Match(tok2, "%var%"))
+        {
             varname = tok2->strAt(0);
             tok2 = tok2->next();
         }
 
-        if (Token::simpleMatch(tok2, "!= 0")) {
+        if (Token::simpleMatch(tok2, "!= 0"))
+        {
             tok2 = tok2->tokAt(2);
         }
 
-        if (tok2->str() == ")") {
+        if (tok2->str() == ")")
+        {
             tok2 = tok2->next();
 
-        } else {
+        }
+        else
+        {
             varname = NULL;
         }
 
@@ -147,45 +154,60 @@ void CheckOther::warningRedundantCode()
          *
          **/
 
-        if (Token::Match(tok2, "free|kfree (")) {
+        if (Token::Match(tok2, "free|kfree ("))
+        {
             tok2 = tok2->tokAt(2);
             funcHasBracket = true;
 
-        } else if (tok2->str() == "delete") {
+        }
+        else if (tok2->str() == "delete")
+        {
 
             tok2 = tok2->next();
 
-            if (Token::simpleMatch(tok2, "[ ]")) {
+            if (Token::simpleMatch(tok2, "[ ]"))
+            {
                 tok2 = tok2->tokAt(2);
             }
         }
 
         if (Token::simpleMatch(tok2, "this .") ||
-            Token::Match(tok2, "%var% ::")) {
+            Token::Match(tok2, "%var% ::"))
+        {
             tok2 = tok2->tokAt(2);
         }
 
-        if (Token::Match(tok2, "%var%") && (strcmp(tok2->strAt(0), varname) == 0)) {
+        if (Token::Match(tok2, "%var%") && (strcmp(tok2->strAt(0), varname) == 0))
+        {
             tok2 = tok2->next();
             err = true;
         }
 
-        if (funcHasBracket) {
-            if (tok2->str() != ")") {
+        if (funcHasBracket)
+        {
+            if (tok2->str() != ")")
+            {
                 err = false;
-            } else {
+            }
+            else
+            {
                 tok2 = tok2->next();
             }
         }
 
-        if (tok2->str() != ";") {
+        if (tok2->str() != ";")
+        {
             err = false;
-        } else {
+        }
+        else
+        {
             tok2 = tok2->next();
         }
 
-        if (ifHasBracket) {
-            if (tok2->str() != "}") {
+        if (ifHasBracket)
+        {
+            if (tok2->str() != "}")
+            {
                 err = false;
             }
         }

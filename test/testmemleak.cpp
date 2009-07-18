@@ -2405,7 +2405,8 @@ private:
         ASSERT_EQUALS("[test.cpp:22]: (error) Resource leak: f\n", errout.str());
     }
 
-    void getc_function() {
+    void getc_function()
+    {
         {
             check("void f()\n"
                   "{"

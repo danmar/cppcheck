@@ -1347,10 +1347,10 @@ private:
     {
         const std::string code("void f()\n"
                                "{\n"
-                                "    std::vector<int> b;\n"
-                                "    std::vector<int> &a = b;\n"
-                                "    std::vector<int> *c = &b;\n"
-                                "}\n");
+                               "    std::vector<int> b;\n"
+                               "    std::vector<int> &a = b;\n"
+                               "    std::vector<int> *c = &b;\n"
+                               "}\n");
 
         // tokenize..
         Tokenizer tokenizer;
