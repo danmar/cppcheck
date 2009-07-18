@@ -9,7 +9,7 @@ You need QT4 libraries installed in your system. Packages/files to install
 depends on your operating system:
 - Windows download QT4 from http://www.qtsoftware.com
 - Linux install QT4 using your package manager, look for packages having QT4
-  in their name, e.g. for Ubuntu install libqt4-core and libqt4-gui
+  in their name, e.g. for Ubuntu install libqt4-core, libqt4-gui and libqt4-xml
 
 Compiling
 ---------
@@ -31,8 +31,8 @@ Linux:
 
 After you have needed libraries and tools installed, open command
 prompt/console, go to gui directory and run command:
-- qmake (in Linux and in Windows if build with MinGW/gcc)
-- qmake -tp vc (In Windows if build with Visual Studio)
+- qmake (in Linux and in Windows if build with MinGW/gcc or nmake)
+- qmake -tp vc (to generate Visual Studio project file)
 
 These commands generate makefiles to actually build the software. After that
 the actual building is done in IDE or command line as usual. Note that you
