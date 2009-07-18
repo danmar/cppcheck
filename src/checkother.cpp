@@ -73,65 +73,120 @@ void CheckOther::warningRedundantCode()
     // if (p) delete p
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (tok->str() != "if")
+        if (! Token::simpleMatch(tok, "if ("))
             continue;
 
-        const char *varname1 = NULL;
-        const Token *tok2 = NULL;
+        const char *varname = NULL;
+        const Token *tok2 = tok->tokAt(2);
 
-        if (Token::Match(tok, "if ( %var% )"))
-        {
-            varname1 = tok->strAt(2);
-            tok2 = tok->tokAt(4);
-        }
-        else if (Token::Match(tok, "if ( %var% != 0 )"))
-        {
-            varname1 = tok->strAt(2);
-            tok2 = tok->tokAt(6);
+        /*
+         * Possible if-constructions:
+         *
+         *   if (0 != var)
+         *   if (0 != this->var)
+         *   if (0 != Foo::var)
+         *   if (var)
+         *   if (this->var)
+         *   if (Foo::var)
+         *   if (var != 0)
+         *   if (this->var != 0)
+         *   if (Foo::var != 0)
+         *
+         **/
+
+        if (Token::simpleMatch(tok2, "0 !=")) {
+            tok2 = tok2->tokAt(2);
         }
 
-        if (varname1 == NULL || tok2 == NULL)
+        if (Token::simpleMatch(tok2, "this .") ||
+            Token::Match(tok2, "%var% ::")) {
+            tok2 = tok2->tokAt(2);
+        }
+
+        if (Token::Match(tok2, "%var%")) {
+            varname = tok2->strAt(0);
+            tok2 = tok2->next();
+        }
+
+        if (Token::simpleMatch(tok2, "!= 0")) {
+            tok2 = tok2->tokAt(2);
+        }
+
+        if (tok2->str() == ")") {
+            tok2 = tok2->next();
+
+        } else {
+            varname = NULL;
+        }
+
+        if (varname == NULL)
             continue;
 
-        bool err = false;
+        bool ifHasBracket = false;
         if (tok2->str() == "{")
         {
             tok2 = tok2->next();
+            ifHasBracket = true;
+        }
 
-            if (Token::Match(tok2, "delete %var% ; }"))
-            {
-                err = (strcmp(tok2->strAt(1), varname1) == 0);
-            }
-            else if (Token::Match(tok2, "delete [ ] %var% ; }"))
-            {
-                err = (strcmp(tok2->strAt(3), varname1) == 0);
-            }
-            else if (Token::Match(tok2, "free ( %var% ) ; }"))
-            {
-                err = (strcmp(tok2->strAt(2), varname1) == 0);
-            }
-            else if (Token::Match(tok2, "kfree ( %var% ) ; }"))
-            {
-                err = (strcmp(tok2->strAt(2), varname1) == 0);
+        bool err = false;
+        bool funcHasBracket = false;
+
+        /*
+         * Possible constructions:
+         *
+         * - delete %var%
+         * - delete [] %var%
+         * - free ( %var )
+         * - kfree ( %var% )
+         *
+         * Where %var% may be:
+         * - just variable name (var)
+         * - class member (this->var)
+         * - static member (Class::var)
+         *
+         **/
+
+        if (Token::Match(tok2, "free|kfree (")) {
+            tok2 = tok2->tokAt(2);
+            funcHasBracket = true;
+
+        } else if (tok2->str() == "delete") {
+
+            tok2 = tok2->next();
+
+            if (Token::simpleMatch(tok2, "[ ]")) {
+                tok2 = tok2->tokAt(2);
             }
         }
-        else
-        {
-            if (Token::Match(tok2, "delete %var% ;"))
-            {
-                err = (strcmp(tok2->strAt(1), varname1) == 0);
+
+        if (Token::simpleMatch(tok2, "this .") ||
+            Token::Match(tok2, "%var% ::")) {
+            tok2 = tok2->tokAt(2);
+        }
+
+        if (Token::Match(tok2, "%var%") && (strcmp(tok2->strAt(0), varname) == 0)) {
+            tok2 = tok2->next();
+            err = true;
+        }
+
+        if (funcHasBracket) {
+            if (tok2->str() != ")") {
+                err = false;
+            } else {
+                tok2 = tok2->next();
             }
-            else if (Token::Match(tok2, "delete [ ] %var% ;"))
-            {
-                err = (strcmp(tok2->strAt(3), varname1) == 0);
-            }
-            else if (Token::Match(tok2, "free ( %var% ) ;"))
-            {
-                err = (strcmp(tok2->strAt(2), varname1) == 0);
-            }
-            else if (Token::Match(tok2, "kfree ( %var% ) ;"))
-            {
-                err = (strcmp(tok2->strAt(2), varname1) == 0);
+        }
+
+        if (tok2->str() != ";") {
+            err = false;
+        } else {
+            tok2 = tok2->next();
+        }
+
+        if (ifHasBracket) {
+            if (tok2->str() != "}") {
+                err = false;
             }
         }
 
