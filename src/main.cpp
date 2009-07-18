@@ -47,24 +47,24 @@ void CheckOther::checkZeroDivision()
  * The function Token::Match is often used in the checks. Through it
  * you can match tokens against patterns.
  *
- * 
+ *
  * @section checkclass_sec Creating a new check class from scratch
  * %Check classes inherit from the Check class. The Check class specifies the interface that you must use.
  * To integrate a check class into cppcheck all you need to do is:
  * - Add your source file(s) so they are compiled into the executable.
  * - Create an instance of the class (the Check::Check() constructor registers the class as an addon that Cppcheck then can use).
  *
- * 
+ *
  * @section embedding_sec Embedding Cppcheck
  * Cppcheck is designed to be easily embeddable into other programs.
  *
  * The "src/main.cpp" and "src/cppcheckexecutor.*" files illustrate how cppcheck
  * can be embedded into an application.
  *
- * 
+ *
  * @section detailed_overview_sec Detailed overview
  * This happens when you execute cppcheck from the command line:
- * -# CppCheckExecutor::check this function executes the Cppcheck 
+ * -# CppCheckExecutor::check this function executes the Cppcheck
  * -# CppCheck::parseFromArgs parse command line arguments
  *   - The Settings class is used to maintain settings
  *   - Use FileLister and command line arguments to get files to check
