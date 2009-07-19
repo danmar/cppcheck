@@ -85,9 +85,22 @@ public:
     enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Fd, Pipe, Dir, Many };
 
     void memoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
+
+    /**
+     * Get type of deallocation at given position
+     */
     AllocType getDeallocationType(const Token *tok, const char *varnames[]);
+
+    /**
+     * Get type of allocation at given position
+     */
     AllocType getAllocationType(const Token *tok2) const;
+
+    /**
+     * Get type of reallocation at given position
+     */
     AllocType getReallocationType(const Token *tok2);
+
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
 
     void memleakError(const Token *tok, const std::string &varname);
@@ -295,10 +308,7 @@ public:
         checkMemoryLeak.check();
     }
 
-    void check()
-    {
-        /** @todo implement this */
-    }
+    void check();
 
 private:
 

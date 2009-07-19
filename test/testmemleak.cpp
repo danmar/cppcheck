@@ -2828,17 +2828,130 @@ private:
 
     void run()
     {
-        TEST_CASE(test1);
+        // testing that errors are detected
+        TEST_CASE(err);
+
+        // handle / bail out when "goto" is found
+        TEST_CASE(goto_);
+
+        // Don't report errors if the struct is returned
+        TEST_CASE(ret);
+
+        // assignments
+        TEST_CASE(assign);
+
+        // Failed allocation
+        TEST_CASE(failedAllocation);
     }
 
-    void test1()
+    void err()
     {
         check("static void foo()\n"
               "{\n"
-              "    struct ABC abc;\n"
-              "    abc.a = malloc(10);\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    free(abc);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: abc.a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: abc.a\n", errout.str());
+
+        check("static void foo()\n"
+              "{\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: abc.a\n", errout.str());
+
+        check("static ABC * foo()\n"
+              "{\n"
+              "    ABC *abc = malloc(sizeof(ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    abc->b = malloc(10);\n"
+              "    if (abc->b == 0)\n"
+              "    {\n"
+              "        return 0;\n"
+              "    }\n"
+              "    return abc;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: abc.a\n", errout.str());
+    }
+
+    void goto_()
+    {
+        check("static void foo()\n"
+              "{\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    if (abc->a)\n"
+              "    { goto out; }\n"
+              "    free(abc);\n"
+              "    return;\n"
+              "out:\n"
+              "    free(abc->a);\n"
+              "    free(abc);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ret()
+    {
+        check("static ABC * foo()\n"
+              "{\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    return abc;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("static void foo(struct ABC *abc)\n"
+              "{\n"
+              "    abc->a = malloc(10);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign()
+    {
+        check("static void foo()\n"
+              "{\n"
+              "    struct ABC *abc = abc1;\n"
+              "    abc->a = malloc(10);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("static void foo()\n"
+              "{\n"
+              "    struct ABC *abc;\n"
+              "    abc1 = abc = malloc(sizeof(ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
+        check("static void foo()\n"
+              "{\n"
+              " struct msn_entry *ptr;\n"
+              " ptr = malloc(sizeof(struct msn_entry));\n"
+              " ptr->msn = malloc(100);\n"
+              " back = ptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+    }
+
+    void failedAllocation()
+    {
+        check("static struct ABC * foo()\n"
+              "{\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    if (!abc->a)\n"
+              "    {\n"
+              "        free(abc);\n"
+              "        return 0;\n"
+              "    }\n"
+              "    return abc;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

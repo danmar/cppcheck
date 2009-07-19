@@ -33,6 +33,7 @@ namespace
 {
 CheckMemoryLeakInFunction instance1;
 CheckMemoryLeakInClass instance2;
+CheckMemoryLeakStructMember instance3;
 }
 
 //---------------------------------------------------------------------------
@@ -1921,7 +1922,138 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
 
 
 
+void CheckMemoryLeakStructMember::check()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // Locate struct variables..
+        if (Token::Match(tok, "struct|;|{|} %type% * %var% [=;]"))
+        {
+            const Token *vartok = tok->tokAt(3);
+            if (vartok->varId() == 0)
+                continue;
 
+            // Check that struct is allocated..
+            {
+                const unsigned int varid(vartok->varId());
+                bool alloc = false;
+                unsigned int indentlevel2 = 0;
+                for (const Token *tok2 = vartok; tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "{")
+                        ++indentlevel2;
+                    else if (tok2->str() == "}")
+                    {
+                        if (indentlevel2 == 0)
+                            break;
+                        --indentlevel2;
+                    }
+                    else if (Token::Match(tok2, "= %varid% [;=]", varid))
+                    {
+                        alloc = false;
+                        break;
+                    }
+                    else if (Token::Match(tok2, "%varid% = malloc|kmalloc (", varid))
+                    {
+                        alloc = true;
+                    }
+                }
+                if (!alloc)
+                    continue;
+            }
+
+            // Check struct..
+            unsigned int indentlevel2 = 0;
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                    ++indentlevel2;
+
+                else if (tok2->str() == "}")
+                {
+                    if (indentlevel2 == 0)
+                        break;
+                    --indentlevel2;
+                }
+
+                // Struct member is allocated => check if it is also properly deallocated..
+                else if (Token::Match(tok2, "%varid% . %var% = malloc|strdup|kmalloc (", vartok->varId()))
+                {
+                    const unsigned int structid(vartok->varId());
+                    const unsigned int structmemberid(tok2->tokAt(2)->varId());
+
+                    // This struct member is allocated.. check that it is deallocated
+                    unsigned int indentlevel3 = indentlevel2;
+                    for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
+                    {
+                        if (tok3->str() == "{")
+                            ++indentlevel3;
+
+                        else if (tok3->str() == "}")
+                        {
+                            if (indentlevel3 == 0)
+                            {
+                                memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc, false);
+                                break;
+                            }
+                            --indentlevel3;
+                        }
+
+                        // Deallocating the struct member..
+                        else if (Token::Match(tok3, "free|kfree ( %var% . %varid% )", structmemberid))
+                            break;
+
+                        // Deallocating the struct..
+                        else if (Token::Match(tok3, "free|kfree ( %varid% )", structid))
+                        {
+                            memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc, false);
+                            break;
+                        }
+
+                        // failed allocation => skip code..
+                        else if (Token::Match(tok3, "if ( ! %var% . %varid% )", structmemberid))
+                        {
+                            // Goto the ")"
+                            while (tok3->str() != ")")
+                                tok3 = tok3->next();
+
+                            // Skip block..
+                            unsigned int indentlevel = 0;
+                            while (tok3)
+                            {
+                                if (tok3->str() == "{")
+                                    ++indentlevel;
+
+                                else if (tok3->str() == "}")
+                                {
+                                    if (indentlevel <= 1)
+                                        break;
+                                    --indentlevel;
+                                }
+                                tok3 = tok3->next();
+                            }
+                        }
+
+                        // Returning from function..
+                        else if (tok3->str() == "return")
+                        {
+                            // Returning from function without deallocating struct member?
+                            if (!Token::Match(tok3, "return %varid% ;", structid))
+                            {
+                                memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc, false);
+                            }
+                            break;
+                        }
+
+                        // goto isn't handled well.. bail out even though there might be leaks
+                        else if (tok3->str() == "goto")
+                            break;
+                    }
+                }
+            }
+        }
+    }
+}
 
 
 
