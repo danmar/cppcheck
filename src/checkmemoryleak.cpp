@@ -1964,7 +1964,7 @@ void CheckMemoryLeakStructMember::check()
 
             // Check struct..
             unsigned int indentlevel2 = 0;
-            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            for (const Token *tok2 = vartok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "{")
                     ++indentlevel2;
@@ -2001,7 +2001,29 @@ void CheckMemoryLeakStructMember::check()
 
                         // Deallocating the struct member..
                         else if (Token::Match(tok3, "free|kfree ( %var% . %varid% )", structmemberid))
-                            break;
+                        {
+                            // If the deallocation happens at the base level, don't check this member anymore
+                            if (indentlevel3 == 0)
+                                break;
+
+                            // deallocating and then returning from function in a conditional block =>
+                            // skip ahead out of the block
+                            bool ret = false;
+                            while (tok3)
+                            {
+                                // debug info
+                                const std::string tok3str_(tok3->str());
+                                if (tok3->str() == "return")
+                                    ret = true;
+                                else if (tok3->str() == "{" || tok3->str() == "}")
+                                    break;
+                                tok3 = tok3->next();
+                            }
+                            if (!ret || !tok3 || tok3->str() != "}")
+                                break;
+                            --indentlevel3;
+                            continue;
+                        }
 
                         // Deallocating the struct..
                         else if (Token::Match(tok3, "free|kfree ( %varid% )", structid))

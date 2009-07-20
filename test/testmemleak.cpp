@@ -2873,6 +2873,18 @@ private:
               "    return abc;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: abc.a\n", errout.str());
+
+        check("static void foo(int a)\n"
+              "{\n"
+              "    ABC *abc = malloc(sizeof(ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    if (a == 1)\n"
+              "    {\n"
+              "        free(abc->a);\n"
+              "        return;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Memory leak: abc.a\n", errout.str());
     }
 
     void goto_()
