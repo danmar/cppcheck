@@ -1077,10 +1077,12 @@ public:
             if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
                 macrocode.erase(pos);
             // Replace "__VA_ARGS__" with parameters
-            while ((pos = macrocode.find("__VA_ARGS__")) != std::string::npos)
+            pos = 0;
+            while ((pos = macrocode.find("__VA_ARGS__", pos)) != std::string::npos)
             {
                 macrocode.erase(pos, 11);
                 macrocode.insert(pos, s);
+                pos += s.length();
             }
         }
 
