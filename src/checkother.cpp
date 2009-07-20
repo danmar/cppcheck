@@ -1031,6 +1031,9 @@ void CheckOther::nullPointer()
         if (Token::Match(tok1, "%var% . %var%"))
         {
             const unsigned int varid1(tok1->varId());
+            if (varid1 == 0)
+                continue;
+
             unsigned int indentlevel2 = 0;
             for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
             {
