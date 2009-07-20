@@ -67,7 +67,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         std::string temp;
         for (unsigned int i = 0; i < len && iss.good(); ++i)
         {
-            char c = iss.get();
+            char c = static_cast<char>(iss.get());
             temp.append(1, c);
         }
 
@@ -94,7 +94,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
         std::string temp;
         for (unsigned int i = 0; i < len && iss.good(); ++i)
         {
-            char c = iss.get();
+            char c = static_cast<char>(iss.get());
             temp.append(1, c);
         }
 
