@@ -1028,8 +1028,12 @@ void CheckOther::nullPointer()
     // Dereferencing a pointer and then checking if it's NULL..
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
-        if (Token::Match(tok1, "%var% . %var%"))
+        if (Token::Match(tok1, "[{};] %var% = %var% . %var%"))
         {
+            if (std::string(tok1->strAt(1)) == tok1->strAt(3))
+                continue;
+
+            tok1 = tok1->tokAt(3);
             const unsigned int varid1(tok1->varId());
             if (varid1 == 0)
                 continue;
@@ -1039,12 +1043,14 @@ void CheckOther::nullPointer()
             {
                 if (tok2->str() == "{")
                     ++indentlevel2;
+
                 else if (tok2->str() == "}")
                 {
                     if (indentlevel2 == 0)
                         break;
                     --indentlevel2;
                 }
+
                 else if (tok2->str() == "if")
                 {
                     if (Token::Match(tok2, "if ( !| %varid% )", varid1))

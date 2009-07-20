@@ -60,6 +60,7 @@ private:
         TEST_CASE(nullpointer2);
         TEST_CASE(nullpointer3);
         TEST_CASE(nullpointer4);
+        TEST_CASE(nullpointer5);
 
         TEST_CASE(oldStylePointerCast);
     }
@@ -466,6 +467,27 @@ private:
                          "        ;\n"
                          "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
+    }
+
+    void nullpointer5()
+    {
+        // ok dereferencing in a condition
+        checkNullPointer("void foo(struct ABC *abc)\n"
+                         "{\n"
+                         "    if (abc && abc->a);\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // ok to use a linked list..
+        checkNullPointer("void foo(struct ABC *abc)\n"
+                         "{\n"
+                         "    abc = abc->next;\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[])
