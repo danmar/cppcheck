@@ -488,6 +488,16 @@ private:
                          "        ;\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // reassign struct..
+        checkNullPointer("void foo(struct ABC *abc)\n"
+                         "{\n"
+                         "    a = abc->a;\n"
+                         "    abc = abc->next;\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[])

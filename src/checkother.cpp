@@ -1051,6 +1051,9 @@ void CheckOther::nullPointer()
                     --indentlevel2;
                 }
 
+                else if (Token::Match(tok2, "%varid% =", varid1))
+                    break;
+
                 else if (tok2->str() == "if")
                 {
                     if (Token::Match(tok2, "if ( !| %varid% )", varid1))
