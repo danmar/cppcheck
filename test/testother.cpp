@@ -58,6 +58,8 @@ private:
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
+        TEST_CASE(nullpointer3);
+        TEST_CASE(nullpointer4);
 
         TEST_CASE(oldStylePointerCast);
     }
@@ -442,6 +444,28 @@ private:
                          "    fred.hello();\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer3()
+    {
+        checkNullPointer("void foo(struct ABC *abc)\n"
+                         "{\n"
+                         "    int *a = abc->a;\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
+    }
+
+    void nullpointer4()
+    {
+        checkNullPointer("void foo(struct ABC *abc)\n"
+                         "{\n"
+                         "    int *a = abc->a;\n"
+                         "    if (abc)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[])

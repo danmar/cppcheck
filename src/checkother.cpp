@@ -1024,6 +1024,32 @@ void CheckOther::nullPointer()
             tok2 = tok2->next();
         }
     }
+
+    // Dereferencing a pointer and then checking if it's NULL..
+    for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
+    {
+        if (Token::Match(tok1, "%var% . %var%"))
+        {
+            const unsigned int varid1(tok1->varId());
+            unsigned int indentlevel2 = 0;
+            for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                    ++indentlevel2;
+                else if (tok2->str() == "}")
+                {
+                    if (indentlevel2 == 0)
+                        break;
+                    --indentlevel2;
+                }
+                else if (tok2->str() == "if")
+                {
+                    if (Token::Match(tok2, "if ( !| %varid% )", varid1))
+                        nullPointerError(tok1);
+                }
+            }
+        }
+    }
 }
 
 
