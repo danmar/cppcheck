@@ -273,7 +273,7 @@ void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &v
 
 void CheckMemoryLeak::deallocuseError(const Token *tok, const std::string &varname)
 {
-    errorLogger->reportErr(errmsg(tok, Severity::error, "deallocuse", "Using '" + varname + "' after it is deallocated / released"));
+    errorLogger->reportErr(errmsg(tok, Severity::error, "deallocuse", "Dereferencing '" + varname + "' after it is deallocated / released"));
 }
 
 void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz)
@@ -1515,7 +1515,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const char varname
         while (Token::Match(tok2, "[;{}] ;"))
             Token::eraseTokens(tok2, tok2->tokAt(2));
     }
-    if ((result = Token::findmatch(tok, "[;{}] dealloc [;{}] use|use_ ;")) != NULL)
+    if ((result = Token::findmatch(tok, "[;{}] dealloc ; use_ ;")) != NULL)
     {
         deallocuseError(result->tokAt(3), varname);
     }

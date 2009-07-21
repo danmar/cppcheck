@@ -232,16 +232,10 @@ private:
         TEST_CASE(cast2);
         TEST_CASE(cast3);
 
-
-        TEST_CASE(structmember1);
-
-        TEST_CASE(dealloc_use_1);       // Deallocate and then use memory
-        TEST_CASE(dealloc_use_2);       // Deallocate and then use memory. No error if "use" is &var
-        TEST_CASE(dealloc_use_3);       // Deallocate and then use memory. No error
-        TEST_CASE(dealloc_use_4);
-        TEST_CASE(dealloc_use_5);
-        TEST_CASE(dealloc_use_6);
-        TEST_CASE(dealloc_use_7);
+        // Using deallocated memory:
+        // * It is ok to take the address to deallocated memory
+        // * It is not ok to dereference a pointer to deallocated memory
+        TEST_CASE(dealloc_use);
 
         // free a free'd pointer
         TEST_CASE(freefree1);
@@ -1771,34 +1765,26 @@ private:
 
 
 
-    void structmember1()
+    void dealloc_use()
     {
-        check("void f()\n"
-              "{\n"
-              "    struct ABC *abc = new ABC;\n"
-              "    abc->a = new char[100];\n"
-              "    delete abc;\n"
-              "}\n");
-
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: abc.a\n", errout.str());
-    }
-
-
-
-
-    void dealloc_use_1()
-    {
+        // It is ok to take the address..
         check("void f()\n"
               "{\n"
               "    char *s = new char[100];\n"
               "    delete [] s;\n"
               "    p = s;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Using 's' after it is deallocated / released\n", errout.str());
-    }
+        ASSERT_EQUALS("", errout.str());
 
-    void dealloc_use_2()
-    {
+        check("void f()\n"
+              "{\n"
+              "    char *s = new char[100];\n"
+              "    delete [] s;\n"
+              "    foo(s);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // The pointer to the pointer is valid..
         check("void f()\n"
               "{\n"
               "    char *str;\n"
@@ -1806,10 +1792,7 @@ private:
               "    foo(&str);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
 
-    void dealloc_use_3()
-    {
         check("void foo()\n"
               "{\n"
               "    char *str = 0;\n"
@@ -1818,50 +1801,31 @@ private:
               "    f2(str);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
 
-    void dealloc_use_4()
-    {
-        check("static void ReadDir(DIR *d)\n"
+        // Dereferencing the freed pointer is not ok..
+        check("void foo()\n"
               "{\n"
-              "    DIR *subdir = OpenDir();\n"
-              "    ReadDir( subdir );\n"
-              "    closedir(subdir);\n"
+              "    char *str = malloc(10);\n"
+              "    free(str);\n"
+              "    char c = *str;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
 
-    void dealloc_use_5()
-    {
         check("void foo()\n"
               "{\n"
               "    char *str = malloc(10);\n"
               "    free(str);\n"
               "    char c = str[10];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Using 'str' after it is deallocated / released\n", errout.str());
-    }
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
 
-    void dealloc_use_6()
-    {
         check("void foo()\n"
               "{\n"
-              "    char *str = 0;\n"
+              "    char *str = malloc(10);\n"
               "    free(str);\n"
-              "    printf(\"free %x\", str);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void dealloc_use_7()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    char *str = new char[10];\n"
-              "    delete [] str;\n"
               "    str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Using 'str' after it is deallocated / released\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dereferencing 'str' after it is deallocated / released\n", errout.str());
     }
 
 
