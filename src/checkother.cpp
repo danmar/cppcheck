@@ -1028,7 +1028,11 @@ void CheckOther::nullPointer()
             tok2 = tok2->next();
         }
     }
+}
 
+
+void CheckOther::invalidPointer()
+{
     // Dereferencing a pointer and then checking if it's NULL..
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
@@ -1037,10 +1041,15 @@ void CheckOther::nullPointer()
             if (std::string(tok1->strAt(1)) == tok1->strAt(3))
                 continue;
 
+            const unsigned int varid1(tok1->next()->varId());
+
             tok1 = tok1->tokAt(3);
-            const unsigned int varid1(tok1->varId());
-            if (varid1 == 0)
+            const unsigned int varid2(tok1->varId());
+            if (varid1 == 0 || varid2 == 0)
                 continue;
+
+            // token where the variable is dereferenced..
+            const Token * dereferenced = 0;
 
             unsigned int indentlevel2 = 0;
             for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
@@ -1055,13 +1064,26 @@ void CheckOther::nullPointer()
                     --indentlevel2;
                 }
 
-                else if (Token::Match(tok2, "%varid% =", varid1))
+                else if (Token::Match(tok2, "* %varid%", varid1))
+                    dereferenced = tok2;
+
+                // Reassignment of the struct
+                else if (tok2->varId() == varid1)
+                {
+                    if (Token::Match(tok2->next(), "="))
+                        break;
+                    if (Token::Match(tok2->tokAt(-2), "[,(] &"))
+                        break;
+                }
+
+                // return at base level => stop checking
+                else if (indentlevel2 == 0 && tok2->str() == "return")
                     break;
 
-                else if (tok2->str() == "if")
+                else if (dereferenced && tok2->str() == "if")
                 {
-                    if (Token::Match(tok2, "if ( !| %varid% )", varid1))
-                        nullPointerError(tok1);
+                    if (Token::Match(tok2, "if ( !| %varid% )", varid2))
+                        invalidPointerError(dereferenced);
                 }
             }
         }
@@ -1165,6 +1187,11 @@ void CheckOther::strPlusChar(const Token *tok)
 void CheckOther::nullPointerError(const Token *tok)
 {
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference");
+}
+
+void CheckOther::invalidPointerError(const Token *tok)
+{
+    reportError(tok, Severity::error, "invalidPointer", "Possible invalid pointer dereference");
 }
 
 void CheckOther::zerodivError(const Token *tok)

@@ -72,6 +72,7 @@ public:
         checkOther.strPlusChar();
         checkOther.invalidFunctionUsage();
         checkOther.nullPointer();
+        checkOther.invalidPointer();
         checkOther.checkZeroDivision();
     }
 
@@ -111,6 +112,9 @@ public:
     /** possible null pointer dereference */
     void nullPointer();
 
+    /** possible invalid pointer dereference */
+    void invalidPointer();
+
     /** Check zero division*/
     void checkZeroDivision();
 
@@ -141,6 +145,7 @@ private:
     void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
     void strPlusChar(const Token *tok);
     void nullPointerError(const Token *tok);
+    void invalidPointerError(const Token *tok);
     void zerodivError(const Token *tok);
 
     void getErrorMessages()
@@ -163,6 +168,7 @@ private:
         conditionAlwaysTrueFalse(0, "true/false");
         strPlusChar(0);
         nullPointerError(0);
+        invalidPointerError(0);
         zerodivError(0);
     }
 
@@ -186,6 +192,7 @@ private:
                " * condition that is always true/false\n"
                " * unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
                " * dereferencing a null pointer\n"
+               " * dereferencing an invalid pointer\n"
                " * [[IncompleteStatement|Incomplete statement]]\n";
     }
 };
