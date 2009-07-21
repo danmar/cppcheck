@@ -58,8 +58,7 @@ private:
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
-
-        TEST_CASE(invalidpointer);
+        TEST_CASE(nullpointer3);    // dereferencing struct and then checking if it's null
 
         TEST_CASE(oldStylePointerCast);
     }
@@ -446,40 +445,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-
-    void checkInvalidPointer(const char code[])
-    {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // Clear the error buffer..
-        errout.str("");
-
-        // Check for redundant code..
-        Settings settings;
-        settings._checkCodingStyle = true;
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.invalidPointer();
-    }
-
-    void invalidpointer()
+    // Dereferencing a struct and then checking if it is null
+    void nullpointer3()
     {
         // errors..
-        checkInvalidPointer("void foo(struct ABC *abc)\n"
+        checkNullPointer("void foo(struct ABC *abc)\n"
                             "{\n"
                             "    int *a = abc->a;\n"
-                            "    *a;\n"
                             "    if (!abc)\n"
                             "        ;\n"
                             "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible invalid pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
 
         // ok dereferencing in a condition
-        checkInvalidPointer("void foo(struct ABC *abc)\n"
+        checkNullPointer("void foo(struct ABC *abc)\n"
                             "{\n"
                             "    if (abc && abc->a);\n"
                             "    if (!abc)\n"
@@ -488,7 +467,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // ok to use a linked list..
-        checkInvalidPointer("void foo(struct ABC *abc)\n"
+        checkNullPointer("void foo(struct ABC *abc)\n"
                             "{\n"
                             "    abc = abc->next;\n"
                             "    if (!abc)\n"
@@ -497,20 +476,18 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // reassign struct..
-        checkInvalidPointer("void foo(struct ABC *abc)\n"
+        checkNullPointer("void foo(struct ABC *abc)\n"
                             "{\n"
                             "    a = abc->a;\n"
-                            "    *a;\n"
                             "    abc = abc->next;\n"
                             "    if (!abc)\n"
                             "        ;\n"
                             "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkInvalidPointer("void foo(struct ABC *abc)\n"
+        checkNullPointer("void foo(struct ABC *abc)\n"
                             "{\n"
                             "    a = abc->a;\n"
-                            "    *a;\n"
                             "    f(&abc);\n"
                             "    if (!abc)\n"
                             "        ;\n"
@@ -518,12 +495,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // goto..
-        checkInvalidPointer("void foo(struct ABC *abc)\n"
+        checkNullPointer("void foo(struct ABC *abc)\n"
                             "{\n"
                             "    if (!abc)\n"
                             "        goto out;"
                             "    a = abc->a;\n"
-                            "    *a;\n"
                             "    return;\n"
                             "out:\n"
                             "    if (!abc)\n"
