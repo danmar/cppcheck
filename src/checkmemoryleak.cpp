@@ -945,9 +945,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }
 
         // Callback..
-        bool matchFirst;
-        if ((matchFirst = Token::Match(tok, "( %var%")) ||
-            Token::Match(tok, "( * %var%"))
+        bool matchFirst = Token::Match(tok, "( %var%");
+        if (matchFirst || Token::Match(tok, "( * %var%"))
         {
             int tokIdx = matchFirst ? 2 : 3;
 

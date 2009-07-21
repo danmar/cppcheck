@@ -45,14 +45,18 @@ void CheckOther::warningOldStylePointerCast()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Old style pointer casting..
-        if (!Token::Match(tok, "( %type% * ) %var%"))
+        if (!Token::Match(tok, "( const| %type% * ) %var%"))
             continue;
 
-        if (Token::simpleMatch(tok->tokAt(4), "const"))
+        int addToIndex = 0;
+        if (Token::simpleMatch(tok->tokAt(1), "const"))
+            addToIndex = 1;
+
+        if (Token::simpleMatch(tok->tokAt(4 + addToIndex), "const"))
             continue;
 
         // Is "type" a class?
-        const std::string pattern("class " + tok->next()->str());
+        const std::string pattern("class " + tok->tokAt(1 + addToIndex)->str());
         if (!Token::findmatch(_tokenizer->tokens(), pattern.c_str()))
             continue;
 

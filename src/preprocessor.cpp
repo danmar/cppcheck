@@ -286,7 +286,7 @@ std::string Preprocessor::read(std::istream &istr)
         if (ch == '\\')
         {
             char chNext = 0;
-            while (true)
+            for (;;)
             {
                 chNext = (char)istr.peek();
                 if (chNext != '\n' && chNext != '\r' && (chNext > 0) &&

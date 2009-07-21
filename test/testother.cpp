@@ -527,11 +527,24 @@ private:
                                  "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
 
+        checkOldStylePointerCast("class Base;\n"
+                                 "void foo()\n"
+                                 "{\n"
+                                 "    Base * b = (const Base *) derived;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
 
         checkOldStylePointerCast("class B;\n"
                                  "class A\n"
                                  "{\n"
                                  "  virtual void abc(B *) const = 0;\n"
+                                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOldStylePointerCast("class B;\n"
+                                 "class A\n"
+                                 "{\n"
+                                 "  virtual void abc(const B *) const = 0;\n"
                                  "}\n");
         ASSERT_EQUALS("", errout.str());
     }
