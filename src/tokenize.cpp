@@ -1942,7 +1942,25 @@ bool Tokenizer::simplifyQuestionMark()
             tok->previous()->str() == "0")
         {
             // Use code after semicolon, remove code before it.
-            const Token *end = Token::findmatch(tok, ":");
+            const Token *end = 0;
+            unsigned int parlevel = 0;
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel == 0)
+                        break;
+                    --parlevel;
+                }
+                else if (parlevel == 0 && tok2->str() == ":")
+                {
+                    end = tok2;
+                    break;
+                }
+            }
+
             if (!end || !end->next())
                 continue;
 

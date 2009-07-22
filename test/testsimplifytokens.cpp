@@ -96,6 +96,7 @@ private:
         TEST_CASE(template9);
         TEST_CASE(template10);
         TEST_CASE(template11);
+        TEST_CASE(template12);
 
         TEST_CASE(namespaces);
 
@@ -889,6 +890,30 @@ private:
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
+    void template12()
+    {
+        const char code[] = "template <int x, int y, int z>\n"
+                            "class A : public B<x, y, (x - y) ? ((y < z) ? 1 : -1) : 0>\n"
+                            "{ };\n"
+                            "\n"
+                            "void f()\n"
+                            "{\n"
+                            "    A<12,12,11> a;\n"
+                            "}\n";
+
+        // The expected result..
+        const std::string expected(" template < int x , int y , int z >"
+                                   " class A : public B < x , y , ( x - y ) ? ( ( y < z ) ? 1 : - 1 ) : 0 >"
+                                   " { } ;"
+                                   " void f ( )"
+                                   " {"
+                                   " A<12,12,11> a ;"
+                                   " }"
+                                   " class A<12,12,11> : public B < 12 , 12 , 0 >"
+                                   " { }");
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
 
 
 
@@ -1053,8 +1078,20 @@ private:
 
     void conditionOperator()
     {
-        const char code[] = "; x = a ? b : c;";
-        ASSERT_EQUALS("; if ( a ) { x = b ; } else { x = c ; }", tok(code));
+        {
+            const char code[] = "; x = a ? b : c;";
+            ASSERT_EQUALS("; if ( a ) { x = b ; } else { x = c ; }", tok(code));
+        }
+
+        {
+            const char code[] = "(0?(false?1:2):3)";
+            ASSERT_EQUALS("( 3 )", tok(code));
+        }
+
+        {
+            const char code[] = "(1?(false?1:2):3)";
+            TODO_ASSERT_EQUALS("( 2 )", tok(code));
+        }
     }
 };
 
