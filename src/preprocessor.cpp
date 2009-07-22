@@ -31,6 +31,7 @@
 #include <cctype>
 #include <cstring>
 #include <vector>
+#include <set>
 
 Preprocessor::Preprocessor(bool debug) : _debug(debug)
 {
@@ -566,6 +567,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
 
     std::list<std::string> deflist;
 
+    // constants defined through "#define" in the code..
+    std::set<std::string> defines;
+
     // How deep into included files are we currently parsing?
     // 0=>Source file, 1=>Included by source file, 2=>included by header that was included by source file, etc
     int filelevel = 0;
@@ -585,6 +589,11 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
             if (filelevel > 0)
                 --filelevel;
             continue;
+        }
+
+        else if (line.substr(0, 8) == "#define " && line.find_first_of("( ", 8) == std::string::npos)
+        {
+            defines.insert(line.substr(8));
         }
 
         if (filelevel > 0)
@@ -612,15 +621,65 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
                 ret.push_back(def);
         }
 
-        if (line.find("#else") == 0 && ! deflist.empty())
+        else if (line.find("#else") == 0 && ! deflist.empty())
         {
             std::string def((deflist.back() == "1") ? "0" : "1");
             deflist.pop_back();
             deflist.push_back(def);
         }
 
-        if (line.find("#endif") == 0 && ! deflist.empty())
+        else if (line.find("#endif") == 0 && ! deflist.empty())
             deflist.pop_back();
+    }
+
+    // Remove defined constants from ifdef configurations..
+    for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it)
+    {
+        std::string s(*it);
+        for (std::set<std::string>::const_iterator it2 = defines.begin(); it2 != defines.end(); ++it2)
+        {
+            std::string::size_type pos = 0;
+            while ((pos = s.find(*it2, pos)) != std::string::npos)
+            {
+                std::string::size_type pos1 = pos;
+                ++pos;
+                if (pos1 > 0 && s[pos1-1] != ';')
+                    continue;
+                std::string::size_type pos2 = pos1 + it2->length();
+                if (pos2 < s.length() && s[pos2] != ';')
+                    continue;
+                --pos;
+                s.erase(pos, it2->length());
+            }
+        }
+        if (s.length() != it->length())
+        {
+            while (s.length() > 0 && s[0] == ';')
+                s.erase(0, 1);
+
+            while (s.length() > 0 && s[s.length()-1] == ';')
+                s.erase(s.length() - 1);
+
+            std::string::size_type pos = 0;
+            while ((pos = s.find(";;", pos)) != std::string::npos)
+                s.erase(pos, 1);
+
+            *it = s;
+        }
+    }
+
+    // Remove duplicates from the ret list..
+    for (std::list<std::string>::iterator it1 = ret.begin(); it1 != ret.end(); ++it1)
+    {
+        std::list<std::string>::iterator it2 = it1;
+        ++it2;
+        while (it2 != ret.end())
+        {
+            if (*it1 == *it2)
+                ret.erase(it2++);
+            else
+                ++it2;
+        }
     }
 
     // convert configurations: "defined(A) && defined(B)" => "A;B"
@@ -757,7 +816,14 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
         std::string def = getdef(line, true);
         std::string ndef = getdef(line, false);
 
-        if (line.find("#elif ") == 0)
+        if (line.substr(0, 8) == "#define " && line.find_first_of(" (", 8) == std::string::npos)
+        {
+            if (!cfg.empty())
+                cfg += ";";
+            cfg += line.substr(8);
+        }
+
+        else if (line.find("#elif ") == 0)
         {
             if (matched_ifdef.back())
             {

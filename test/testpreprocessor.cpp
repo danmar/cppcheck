@@ -141,6 +141,9 @@ private:
         TEST_CASE(newline_in_macro);
         TEST_CASE(includes);
         TEST_CASE(ifdef_ifdefined);
+
+        // define and then ifdef
+        TEST_CASE(define_ifdef);
     }
 
 
@@ -1227,6 +1230,26 @@ private:
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nA\n\n\nA\n\n", actual["ABC"]);
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+    void define_ifdef()
+    {
+        const char filedata[] = "#define ABC\n"
+                                "#ifndef ABC\n"
+                                "A\n"
+                                "#else\n"
+                                "B\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS("\n\n\n\nB\n\n", actual[""]);
+        ASSERT_EQUALS(1, actual.size());
     }
 };
 
