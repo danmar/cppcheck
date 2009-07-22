@@ -450,61 +450,61 @@ private:
     {
         // errors..
         checkNullPointer("void foo(struct ABC *abc)\n"
-                            "{\n"
-                            "    int *a = abc->a;\n"
-                            "    if (!abc)\n"
-                            "        ;\n"
-                            "}\n");
+                         "{\n"
+                         "    int *a = abc->a;\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
 
         // ok dereferencing in a condition
         checkNullPointer("void foo(struct ABC *abc)\n"
-                            "{\n"
-                            "    if (abc && abc->a);\n"
-                            "    if (!abc)\n"
-                            "        ;\n"
-                            "}\n");
+                         "{\n"
+                         "    if (abc && abc->a);\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // ok to use a linked list..
         checkNullPointer("void foo(struct ABC *abc)\n"
-                            "{\n"
-                            "    abc = abc->next;\n"
-                            "    if (!abc)\n"
-                            "        ;\n"
-                            "}\n");
+                         "{\n"
+                         "    abc = abc->next;\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // reassign struct..
         checkNullPointer("void foo(struct ABC *abc)\n"
-                            "{\n"
-                            "    a = abc->a;\n"
-                            "    abc = abc->next;\n"
-                            "    if (!abc)\n"
-                            "        ;\n"
-                            "}\n");
+                         "{\n"
+                         "    a = abc->a;\n"
+                         "    abc = abc->next;\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
         checkNullPointer("void foo(struct ABC *abc)\n"
-                            "{\n"
-                            "    a = abc->a;\n"
-                            "    f(&abc);\n"
-                            "    if (!abc)\n"
-                            "        ;\n"
-                            "}\n");
+                         "{\n"
+                         "    a = abc->a;\n"
+                         "    f(&abc);\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // goto..
         checkNullPointer("void foo(struct ABC *abc)\n"
-                            "{\n"
-                            "    if (!abc)\n"
-                            "        goto out;"
-                            "    a = abc->a;\n"
-                            "    return;\n"
-                            "out:\n"
-                            "    if (!abc)\n"
-                            "        ;\n"
-                            "}\n");
+                         "{\n"
+                         "    if (!abc)\n"
+                         "        goto out;"
+                         "    a = abc->a;\n"
+                         "    return;\n"
+                         "out:\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
