@@ -2806,6 +2806,9 @@ private:
 
         // Failed allocation
         TEST_CASE(failedAllocation);
+
+        // Deallocating in a function
+        TEST_CASE(function);
     }
 
     void err()
@@ -2926,6 +2929,18 @@ private:
               "        return 0;\n"
               "    }\n"
               "    return abc;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void function()
+    {
+        // Not found function => assume that the function may deallocate
+        check("static void foo()\n"
+              "{\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    func(abc);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

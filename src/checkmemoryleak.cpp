@@ -25,6 +25,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <set>
 
 //---------------------------------------------------------------------------
 
@@ -1923,6 +1924,13 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
 
 void CheckMemoryLeakStructMember::check()
 {
+    // This should be in the CheckMemoryLeak base class
+    std::set<std::string> ignoredFunctions;
+    ignoredFunctions.insert("if");
+    ignoredFunctions.insert("for");
+    ignoredFunctions.insert("while");
+    ignoredFunctions.insert("malloc");
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Locate struct variables..
@@ -2069,6 +2077,40 @@ void CheckMemoryLeakStructMember::check()
                         // goto isn't handled well.. bail out even though there might be leaks
                         else if (tok3->str() == "goto")
                             break;
+
+                        // using struct in a function call..
+                        else if (Token::Match(tok3, "%var% ("))
+                        {
+                            // Calling non-function / function that doesn't deallocate?
+                            if (ignoredFunctions.find(tok3->str()) != ignoredFunctions.end())
+                                continue;
+
+                            // Check if the struct is used..
+                            bool deallocated = false;
+                            unsigned int parlevel = 0;
+                            for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
+                            {
+                                if (tok4->str() == "(")
+                                    ++parlevel;
+
+                                else if (tok4->str() == ")")
+                                {
+                                    if (parlevel <= 1)
+                                        break;
+                                    --parlevel;
+                                }
+
+                                if (Token::Match(tok4, "[(,] %varid% [,)]", structid))
+                                {
+                                    /** @todo check if the function deallocates the memory */
+                                    deallocated = true;
+                                    break;
+                                }
+                            }
+
+                            if (deallocated)
+                                break;
+                        }
                     }
                 }
             }
