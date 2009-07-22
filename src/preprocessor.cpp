@@ -519,6 +519,31 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
 
+    // Replace "defined A" with "defined(A)"
+    {
+        std::istringstream istr(processedFile.c_str());
+        std::ostringstream ostr;
+        std::string line;
+        while (std::getline(istr, line))
+        {
+            if (line.substr(0, 4) == "#if " || line.substr(0, 6) == "#elif ")
+            {
+                std::string::size_type pos = 0;
+                while ((pos = line.find(" defined ")) != std::string::npos)
+                {
+                    line[pos+8] = '(';
+                    pos = line.find_first_of(" |&", pos + 8);
+                    if (pos == std::string::npos)
+                        line += ")";
+                    else
+                        line.insert(pos, ")");
+                }
+            }
+            ostr << line << "\n";
+        }
+        processedFile = ostr.str();
+    }
+
     handleIncludes(processedFile, filename, includePaths);
 
     processedFile = replaceIfDefined(processedFile);
@@ -770,6 +795,9 @@ bool Preprocessor::match_cfg_def(std::string cfg, std::string def)
         def.erase(pos, pos2 + 1 - pos);
         def.insert(pos, isdefined ? "1" : "0");
     }
+
+    if (def.find("1||") != std::string::npos || def.find("||1") != std::string::npos)
+        return true;
 
     while (def.find("1&&") != std::string::npos)
     {
