@@ -1976,7 +1976,7 @@ bool Tokenizer::simplifyQuestionMark()
         }
         else
         {
-            // Use code before semicolon
+            /** @todo simplify "(true ? x : y)" to "(x)" */
         }
     }
 
