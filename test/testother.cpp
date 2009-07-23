@@ -508,6 +508,18 @@ private:
                          "        ;\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // while..
+        checkNullPointer("void freeAbc(struct ABC *abc)\n"
+                         "{\n"
+                         "    while (abc)\n"
+                         "    {\n"
+                         "        struct ABC *next = abc->next;\n"
+                         "        if (abc) delete abc;\n"
+                         "        abc = next;\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Dereferencing a pointer and then checking if it is null

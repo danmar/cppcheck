@@ -1042,6 +1042,21 @@ void CheckOther::nullPointer()
             if (varid1 == 0)
                 continue;
 
+            // Checking if the struct pointer is non-null before the assignment..
+            {
+                const Token *tok2 = _tokenizer->tokens();
+                while (tok2)
+                {
+                    if (tok2 == tok1)
+                        break;
+                    if (Token::Match(tok2, "if|while ( !| %varid% )", varid1))
+                        break;
+                    tok2 = tok2->next();
+                }
+                if (tok2 != tok1)
+                    continue;
+            }
+
             unsigned int indentlevel2 = 0;
             for (const Token *tok2 = tok1->tokAt(3); tok2; tok2 = tok2->next())
             {
