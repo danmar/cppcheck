@@ -1090,9 +1090,13 @@ void CheckOther::nullPointer()
             {
                 if (tok1->varId() == varid)
                 {
-                    if (tok1->previous() && tok1->previous()->str() == "*")
+                    if (tok1->previous() && tok1->previous()->str() == "*" && !Token::simpleMatch(tok1->tokAt(-2), "*"))
                     {
                         nullPointerError(tok1);
+                        break;
+                    }
+                    else if (tok1->previous() && tok1->previous()->str() == "&")
+                    {
                         break;
                     }
                     else if (tok1->next() && tok1->next()->str() == "=")

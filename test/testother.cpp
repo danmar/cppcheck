@@ -523,6 +523,23 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
 
         // no error
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "    int *p;\n"
+                         "    f(&p);\n"
+                         "    if (!p)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "    int **p = f();\n"
+                         "    if (!p)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkNullPointer("void foo(int *p)\n"
                          "{\n"
                          "    if (x)\n"
