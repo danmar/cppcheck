@@ -1090,7 +1090,19 @@ private:
 
         {
             const char code[] = "(1?(false?1:2):3)";
-            TODO_ASSERT_EQUALS("( 2 )", tok(code));
+            ASSERT_EQUALS("( 2 )", tok(code));
+        }
+
+        {
+            const char code[] = "( true ? a ( ) : b ( ) )";
+            ASSERT_EQUALS(code, tok(code));
+            TODO_ASSERT_EQUALS("( a ( ) )", tok(code));
+        }
+
+        {
+            const char code[] = "( true ? abc . a : abc . b )";
+            ASSERT_EQUALS(code, tok(code));
+            TODO_ASSERT_EQUALS("( abc . a )", tok(code));
         }
     }
 };

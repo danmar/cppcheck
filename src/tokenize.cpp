@@ -1938,13 +1938,11 @@ bool Tokenizer::simplifyQuestionMark()
             !Token::Match(tok->previous(), "%num%"))
             continue;
 
-        if (tok->previous()->str() == "false" ||
-            tok->previous()->str() == "0")
+        // Find the ":" token..
+        Token *semicolon = 0;
         {
-            // Use code after semicolon, remove code before it.
-            const Token *end = 0;
             unsigned int parlevel = 0;
-            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "(")
                     ++parlevel;
@@ -1956,17 +1954,21 @@ bool Tokenizer::simplifyQuestionMark()
                 }
                 else if (parlevel == 0 && tok2->str() == ":")
                 {
-                    end = tok2;
+                    semicolon = tok2;
                     break;
                 }
             }
+        }
+        if (!semicolon || !semicolon->next())
+            continue;
 
-            if (!end || !end->next())
-                continue;
-
-            end = end->next();
+        if (tok->previous()->str() == "false" ||
+            tok->previous()->str() == "0")
+        {
+            // Use code after semicolon, remove code before it.
+            semicolon = semicolon->next();
             tok = tok->tokAt(-2);
-            while (tok->next() != end)
+            while (tok->next() != semicolon)
             {
                 tok->deleteNext();
             }
@@ -1974,9 +1976,18 @@ bool Tokenizer::simplifyQuestionMark()
             tok = tok->next();
             ret = true;
         }
-        else
+
+        // The condition is true. Delete the operator after the ":"..
+        else if (Token::Match(semicolon, ": %num%") || Token::Match(semicolon, ": %var% [);]"))
         {
-            /** @todo simplify "(true ? x : y)" to "(x)" */
+            // delete the condition token and the "?"
+            tok = tok->tokAt(-2);
+            tok->deleteNext();
+            tok->deleteNext();
+
+            // delete the ":" token and the token after it..
+            semicolon->deleteThis();
+            semicolon->deleteThis();
         }
     }
 
