@@ -2839,6 +2839,9 @@ private:
 
         // Deallocating in a function
         TEST_CASE(function);
+
+        // Handle if-else
+        TEST_CASE(ifelse);
     }
 
     void err()
@@ -2973,6 +2976,26 @@ private:
               "    func(abc);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse()
+    {
+        check("static void foo()\n"
+              "{\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    if (x)"
+              "    {\n"
+              "        abc->a = malloc(10);\n"
+              "    }\n"
+              "    else\n"
+              "    {\n"
+              "        free(abc);\n"
+              "        return;\n"
+              "    }\n"
+              "    free(abc->a);\n"
+              "    free(abc);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 };
 
