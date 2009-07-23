@@ -1029,7 +1029,7 @@ void CheckOther::nullPointer()
         }
     }
 
-    // Dereferencing a pointer and then checking if it's NULL..
+    // Dereferencing a struct pointer and then checking if it's NULL..
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
         if (Token::Match(tok1, "[{};] %var% = %var% . %var%"))
@@ -1073,6 +1073,37 @@ void CheckOther::nullPointer()
                     nullPointerError(tok1);
                     break;
                 }
+            }
+        }
+    }
+
+    // Dereferencing a pointer and then checking if it's NULL..
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() == "if" && Token::Match(tok->previous(), "; if ( ! %var% )"))
+        {
+            const unsigned int varid(tok->tokAt(3)->varId());
+            if (varid == 0)
+                continue;
+
+            for (const Token *tok1 = tok->previous(); tok1; tok1 = tok1->previous())
+            {
+                if (tok1->varId() == varid)
+                {
+                    if (tok1->previous() && tok1->previous()->str() == "*")
+                    {
+                        nullPointerError(tok1);
+                        break;
+                    }
+                    else if (tok1->next() && tok1->next()->str() == "=")
+                    {
+                        break;
+                    }
+                }
+
+                else if (tok1->str() == "{" ||
+                         tok1->str() == "}")
+                    break;
             }
         }
     }

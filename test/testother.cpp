@@ -59,6 +59,7 @@ private:
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
         TEST_CASE(nullpointer3);    // dereferencing struct and then checking if it's null
+        TEST_CASE(nullpointer4);
 
         TEST_CASE(oldStylePointerCast);
     }
@@ -410,6 +411,7 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
         tokenizer.setVarId();
 
         // Clear the error buffer..
@@ -507,6 +509,34 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    // Dereferencing a pointer and then checking if it is null
+    void nullpointer4()
+    {
+        // errors..
+        checkNullPointer("void foo(int *p)\n"
+                         "{\n"
+                         "    *p = 0;\n"
+                         "    if (!p)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
+
+        // no error
+        checkNullPointer("void foo(int *p)\n"
+                         "{\n"
+                         "    if (x)\n"
+                         "        p = 0;\n"
+                         "    else\n"
+                         "        *p = 0;\n"
+                         "    if (!p)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+
 
     void checkOldStylePointerCast(const char code[])
     {
