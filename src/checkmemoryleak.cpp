@@ -895,7 +895,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
         // exit..
         if (Token::Match(tok->previous(), "[{};] exit ( %any% ) ;"))
+        {
             addtoken("exit");
+            tok = tok->tokAt(3);
+        }
 
         // Assignment..
         if (Token::Match(tok, std::string("[)=] " + varnameStr + " [+;)]").c_str()) ||
@@ -1004,36 +1007,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             trylevel = indentlevel;
         else if (trylevel == -1 && tok2->str() == "throw")
             tok2->str("return");
-    }
-
-
-    // simplify "exit".. remove everything in its execution path
-    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-    {
-        if (tok2->str() != "exit")
-            continue;
-
-        // Found an "exit".. try to remove everything before it
-        Token *tokEnd = tok2->next();
-        int indentlevel = 0;
-        while (tok2->previous())
-        {
-            tok2 = tok2->previous();
-            if (tok2->str() == "}")
-            {
-                indentlevel--;
-            }
-            else if (tok2->str() == "{")
-            {
-                if (indentlevel == 0)
-                    break;
-
-                indentlevel++;
-            }
-        }
-
-        Token::eraseTokens(tok2, tokEnd);
-        tok2 = tokEnd;
     }
 
     // If "--all" is given, remove all "callfunc"..
@@ -1257,6 +1230,27 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
+            // Reduce "alloc|dealloc|use ; exit ;" => "; exit ;"
+            if (Token::Match(tok2, "alloc|dealloc|use ; exit ;"))
+            {
+                tok2->deleteThis();
+                done = false;
+            }
+
+            // Reduce "alloc|dealloc|use ; if(var) exit ;"
+            if (Token::Match(tok2, "alloc|dealloc|use ; if(var) exit ;"))
+            {
+                tok2->deleteThis();
+                done = false;
+            }
+
+            // Remove "if exit ;"
+            if (Token::simpleMatch(tok2, "if exit ;"))
+            {
+                tok2->deleteThis();
+                tok2->deleteThis();
+                done = false;
+            }
 
             // Replace "dealloc use ;" with "dealloc ;"
             if (Token::simpleMatch(tok2, "dealloc use ;"))
@@ -1485,6 +1479,8 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             }
         }
     }
+
+
 }
 
 
