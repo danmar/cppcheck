@@ -99,7 +99,7 @@ private:
     void eraseError(const Token *tok);
     void pushbackError(const Token *tok, const std::string &iterator_name);
     void invalidPointerError(const Token *tok, const std::string &pointer_name);
-    void stlBoundriesError(const Token *tok);
+    void stlBoundriesError(const Token *tok, const std::string &container_name);
 
     void getErrorMessages()
     {
@@ -110,7 +110,7 @@ private:
         eraseError(0);
         pushbackError(0, "iterator");
         invalidPointerError(0, "pointer");
-        stlBoundriesError(0);
+        stlBoundriesError(0, "container");
     }
 
     std::string name() const

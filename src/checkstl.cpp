@@ -20,6 +20,9 @@
 #include "tokenize.h"
 #include "token.h"
 
+// All STL Containers
+#define STL_CONTAINER_LIST "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set"
+
 
 // Register this check class (by creating a static instance of it)
 namespace
@@ -366,8 +369,10 @@ void CheckStl::stlBoundries()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring iterator..
-        if (Token::simpleMatch(tok, "list <"))
+        const std::string checkStr = (std::string(STL_CONTAINER_LIST) + " <");
+        if (Token::Match( tok, checkStr.c_str() ))
         {
+            const std::string container_name( tok->strAt(0) );
             while (tok && tok->str() != ">")
                 tok = tok->next();
             if (!tok)
@@ -393,7 +398,7 @@ void CheckStl::stlBoundries()
                     }
                     else if (tok2->varId() == iteratorid && tok2->next() && tok2->next()->str() == "<")
                     {
-                        stlBoundriesError(tok2);
+                        stlBoundriesError(tok2, container_name);
                         break;
                     }
                 }
@@ -403,7 +408,7 @@ void CheckStl::stlBoundries()
 }
 
 // Error message for bad boundry usage..
-void CheckStl::stlBoundriesError(const Token *tok)
+void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_name)
 {
-    reportError(tok, Severity::error, "stlBoundries", "STL range check should be using != and not < since the order of the pointers isn't guaranteed");
+    reportError(tok, Severity::error, "stlBoundries", container_name + " range check should use != and not < since the order of the pointers isn't guaranteed");
 }

@@ -1141,6 +1141,36 @@ void CheckOther::checkZeroDivision()
 
 
 
+void CheckOther::postIncrement()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (!Token::simpleMatch(tok, "for ("))
+            continue;
+
+        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (Token::Match(tok2, "; %var% ++|-- )"))
+            {
+                // Take a look at the variable declaration
+                const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->tokAt(1)->varId());
+                const std::string classDef = std::string("class ") + std::string(decltok->previous()->strAt(0));
+
+                // Is the variable an iterator?
+                if (decltok && Token::Match(decltok->previous(), "iterator|const_iterator"))
+                    postIncrementError(tok2, tok2->strAt(1), (std::string("++") == tok2->strAt(2)));
+                // Is the variable a class?
+                else if (Token::findmatch( _tokenizer->tokens(), classDef.c_str() ))
+                    postIncrementError(tok2, tok2->strAt(1), (std::string("++") == tok2->strAt(2)));
+
+                break;
+            }
+        }
+    }
+}
+
+
+
 
 void CheckOther::cstyleCastError(const Token *tok)
 {
@@ -1230,4 +1260,10 @@ void CheckOther::nullPointerError(const Token *tok)
 void CheckOther::zerodivError(const Token *tok)
 {
     reportError(tok, Severity::error, "zerodiv", "Division by zero");
+}
+
+void CheckOther::postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement)
+{
+    std::string type = ( isIncrement ? "Incrementing" : "Decrementing" );
+    reportError(tok, Severity::possibleStyle, "postIncrementDecrement", ("Pre-" + type + " variable '" + var_name + "' is preferred to Post-" + type) );
 }

@@ -375,22 +375,26 @@ private:
 
     void stlBoundries1()
     {
-        check("void f()\n"
-              "{\n"
-              "    std::list<int>::iterator it;\n"
-              "    for (it = ab.begin(); it < ab.end(); ++it)\n"
-              "        ;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) STL range check should be using != and not < since the order of the pointers isn't guaranteed\n", errout.str());
+        const int STL_CONTAINER_LIST = 10;
+        const std::string stlCont[STL_CONTAINER_LIST] =
+    	    {"vector", "deque", "list", "set", "multiset", "map",
+             "multimap", "hash_map", "hash_multimap", "hash_set"};
 
-        check("void f()\n"
-              "{\n"
-              "    std::vector<int>::iterator it;\n"
-              "    for (it = ab.begin(); it < ab.end(); ++it)\n"
-              "        ;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
+        for(int i = 0; i < STL_CONTAINER_LIST; ++i)
+        {
+            const std::string checkStr( "void f()\n"
+                  "{\n"
+		  "    std::" + stlCont[i] + "<int>::iterator it;\n"
+		  "    for (it = ab.begin(); it < ab.end(); ++it)\n"
+		  "        ;\n"
+		  "}\n" );
+
+            check( checkStr.c_str() );
+
+            ASSERT_EQUALS("[test.cpp:4]: (error) " + stlCont[i]  + " range check should use != and not < since the order of the pointers isn't guaranteed\n", errout.str());
+        }
     }
+
 
 };
 

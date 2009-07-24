@@ -67,6 +67,7 @@ public:
             checkOther.checkConstantFunctionParameter();
             checkOther.checkStructMemberUsage();
             checkOther.checkIncompleteStatement();
+            checkOther.postIncrement();
         }
 
         checkOther.strPlusChar();
@@ -114,6 +115,9 @@ public:
     /** Check zero division*/
     void checkZeroDivision();
 
+    /** Check for post increment/decrement in for loop*/
+    void postIncrement();
+
 protected:
     void lookupVar(const Token *tok1, const char varname[]);
 
@@ -142,6 +146,7 @@ private:
     void strPlusChar(const Token *tok);
     void nullPointerError(const Token *tok);
     void zerodivError(const Token *tok);
+    void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
 
     void getErrorMessages()
     {
@@ -164,6 +169,7 @@ private:
         strPlusChar(0);
         nullPointerError(0);
         zerodivError(0);
+        postIncrementError(0, "varname", true);
     }
 
     std::string name() const
