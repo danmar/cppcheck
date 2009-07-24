@@ -2029,7 +2029,7 @@ void CheckMemoryLeakStructMember::check()
                         }
 
                         // Deallocating the struct..
-                        else if (Token::Match(tok3, "free|kfree ( %varid% )", structid))
+                        else if (indentlevel2 == 0 && Token::Match(tok3, "free|kfree ( %varid% )", structid))
                         {
                             memoryLeak(tok3, (vartok->str() + "." + tok2->strAt(2)).c_str(), Malloc, false);
                             break;
