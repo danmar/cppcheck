@@ -1505,6 +1505,38 @@ void Tokenizer::simplifyTokenList()
         modified |= simplifyQuestionMark();
     }
 
+    // Remove redundant parantheses in return..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (Token::simpleMatch(tok, "return ("))
+        {
+            unsigned int parlevel = 0;
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                    {
+                        if (Token::simpleMatch(tok2, ") ;"))
+                        {
+                            tok->deleteNext();
+                            tok2->deleteThis();
+                        }
+                        else
+                        {
+                            tok = tok->next();
+                        }
+                        break;
+                    }
+                    --parlevel;
+                }
+            }
+        }
+    }
+
     simplifyComma();
     createLinks();
     if (_settings && _settings->_debug)

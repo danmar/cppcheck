@@ -861,19 +861,18 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 addtoken("use");
             }
 
-            else if (Token::simpleMatch(tok->next(), "("))
+            else if (Token::Match(tok, ("return strcpy|strncpy|memcpy ( " + varnameStr).c_str()))
             {
-                int parlevel = 1;
-                for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+                addtoken("use");
+                tok = tok->tokAt(2);
+            }
+
+            else
+            {
+                for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
                 {
-                    if (tok2->str() == "(")
-                        ++parlevel;
-                    else if (tok2->str() == ")")
-                    {
-                        if (parlevel <= 1)
-                            break;
-                        --parlevel;
-                    }
+                    if (tok2->str() == ";")
+                        break;
 
                     if (tok2->str() == varname)
                     {
@@ -881,11 +880,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         break;
                     }
                 }
-            }
-            else if (Token::Match(tok, ("return strcpy|strncpy|memcpy ( " + varnameStr).c_str()))
-            {
-                addtoken("use");
-                tok = tok->tokAt(2);
             }
         }
 

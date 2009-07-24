@@ -390,10 +390,12 @@ private:
         ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if((p)==-1){}}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( -1 == p ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } }", tok("void f(){int p; if((p)){}}"));
+        ASSERT_EQUALS("return p ;", tok("return (p);"));
 
         // keep parantheses..
         ASSERT_EQUALS("= a ;", tok("= (char)a;"));
         ASSERT_EQUALS("cast < char * > ( p )", tok("cast<char *>(p)"));
+        ASSERT_EQUALS("return ( a + b ) * c ;", tok("return (a+b)*c;"));
     }
 
     void declareVar()
