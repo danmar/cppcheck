@@ -639,43 +639,43 @@ private:
 
     void postIncrementDecrementStl()
     {
-      checkpostIncrementDecrement("void f1()\n"
-            "{\n"
-            "    std::list<int>::iterator it;\n"
-            "    for (it = ab.begin(); it != ab.end(); it++)\n"
-            "        ;\n"
-            "}\n");
-      ASSERT_EQUALS("[test.cpp:4]: (possible style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n", errout.str());
+        checkpostIncrementDecrement("void f1()\n"
+                                    "{\n"
+                                    "    std::list<int>::iterator it;\n"
+                                    "    for (it = ab.begin(); it != ab.end(); it++)\n"
+                                    "        ;\n"
+                                    "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n", errout.str());
 
-      checkpostIncrementDecrement("void f2()\n"
-            "{\n"
-            "    std::list<int>::iterator it;\n"
-            "    for (it = ab.end(); it != ab.begin(); it--)\n"
-            "        ;\n"
-            "}\n");
-      ASSERT_EQUALS("[test.cpp:4]: (possible style) Pre-Decrementing variable 'it' is preferred to Post-Decrementing\n", errout.str());
+        checkpostIncrementDecrement("void f2()\n"
+                                    "{\n"
+                                    "    std::list<int>::iterator it;\n"
+                                    "    for (it = ab.end(); it != ab.begin(); it--)\n"
+                                    "        ;\n"
+                                    "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Pre-Decrementing variable 'it' is preferred to Post-Decrementing\n", errout.str());
     }
 
-   void postIncrementDecrementClass()
-   {
-      checkpostIncrementDecrement("class TestClass;\n"
-            "void f1()\n"
-            "{\n"
-            "    TestClass tClass;\n"
-            "    for (tClass = TestClass.begin(); tClass != TestClass.end(); tClass++)\n"
-            "        ;\n"
-            "}\n");
-      ASSERT_EQUALS("[test.cpp:5]: (possible style) Pre-Incrementing variable 'tClass' is preferred to Post-Incrementing\n", errout.str());
+    void postIncrementDecrementClass()
+    {
+        checkpostIncrementDecrement("class TestClass;\n"
+                                    "void f1()\n"
+                                    "{\n"
+                                    "    TestClass tClass;\n"
+                                    "    for (tClass = TestClass.begin(); tClass != TestClass.end(); tClass++)\n"
+                                    "        ;\n"
+                                    "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (possible style) Pre-Incrementing variable 'tClass' is preferred to Post-Incrementing\n", errout.str());
 
-      checkpostIncrementDecrement("class TestClass;\n"
-            "void f1()\n"
-            "{\n"
-            "    TestClass tClass;\n"
-            "    for (tClass = TestClass.end(); tClass != TestClass.begin(); tClass--)\n"
-            "        ;\n"
-            "}\n");
-      ASSERT_EQUALS("[test.cpp:5]: (possible style) Pre-Decrementing variable 'tClass' is preferred to Post-Decrementing\n", errout.str());
-   }
+        checkpostIncrementDecrement("class TestClass;\n"
+                                    "void f1()\n"
+                                    "{\n"
+                                    "    TestClass tClass;\n"
+                                    "    for (tClass = TestClass.end(); tClass != TestClass.begin(); tClass--)\n"
+                                    "        ;\n"
+                                    "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (possible style) Pre-Decrementing variable 'tClass' is preferred to Post-Decrementing\n", errout.str());
+    }
 
 };
 

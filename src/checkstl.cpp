@@ -370,9 +370,9 @@ void CheckStl::stlBoundries()
     {
         // Declaring iterator..
         const std::string checkStr = (std::string(STL_CONTAINER_LIST) + " <");
-        if (Token::Match( tok, checkStr.c_str() ))
+        if (Token::Match(tok, checkStr.c_str()))
         {
-            const std::string container_name( tok->strAt(0) );
+            const std::string container_name(tok->strAt(0));
             while (tok && tok->str() != ">")
                 tok = tok->next();
             if (!tok)

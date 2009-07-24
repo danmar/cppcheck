@@ -377,19 +377,20 @@ private:
     {
         const int STL_CONTAINER_LIST = 10;
         const std::string stlCont[STL_CONTAINER_LIST] =
-    	    {"vector", "deque", "list", "set", "multiset", "map",
-             "multimap", "hash_map", "hash_multimap", "hash_set"};
+            {"vector", "deque", "list", "set", "multiset", "map",
+             "multimap", "hash_map", "hash_multimap", "hash_set"
+            };
 
-        for(int i = 0; i < STL_CONTAINER_LIST; ++i)
+        for (int i = 0; i < STL_CONTAINER_LIST; ++i)
         {
-            const std::string checkStr( "void f()\n"
-                  "{\n"
-		  "    std::" + stlCont[i] + "<int>::iterator it;\n"
-		  "    for (it = ab.begin(); it < ab.end(); ++it)\n"
-		  "        ;\n"
-		  "}\n" );
+            const std::string checkStr("void f()\n"
+                                       "{\n"
+                                       "    std::" + stlCont[i] + "<int>::iterator it;\n"
+                                       "    for (it = ab.begin(); it < ab.end(); ++it)\n"
+                                       "        ;\n"
+                                       "}\n");
 
-            check( checkStr.c_str() );
+            check(checkStr.c_str());
 
             ASSERT_EQUALS("[test.cpp:4]: (error) " + stlCont[i]  + " range check should use != and not < since the order of the pointers isn't guaranteed\n", errout.str());
         }
