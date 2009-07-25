@@ -1128,11 +1128,11 @@ void CheckOther::postIncrement()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (!Token::simpleMatch(tok, "for ("))
-            continue;
-
-        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+        if (Token::simpleMatch(tok, "for ("))
         {
+            const Token *tok2 = tok->next()->link();
+            if (tok2)
+                tok2 = tok2->tokAt(-3);
             if (Token::Match(tok2, "; %var% ++|-- )"))
             {
                 // Take a look at the variable declaration
