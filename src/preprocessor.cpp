@@ -770,8 +770,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
         if (s.find("&&") != std::string::npos || s.find("||") != std::string::npos)
         {
             // unhandled ifdef configuration..
-            if (_settings && _settings->_debug)
-                std::cout << "unhandled configuration: " << s << std::endl;
+            if (_errorLogger && _settings && _settings->_debug)
+                _errorLogger->reportOut("unhandled configuration: " + s);
 
             ret.erase(it++);
         }
@@ -878,7 +878,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
                 cfg += line.substr(8);
             else
                 cfg += line.substr(8, pos - 8) + "=" + line.substr(pos + 1);
-            std::cout << cfg << std::endl;
+            // std::cout << cfg << std::endl;
         }
 
         else if (line.find("#elif ") == 0)
