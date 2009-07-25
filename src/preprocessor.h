@@ -126,8 +126,16 @@ private:
 
     static std::string getdef(std::string line, bool def);
 
+public:
+    /**
+     * Evaluate condition 'numerically'
+     * @param cfg configuration
+     * @param def condition
+     * @return result when evaluating the condition
+     */
     static bool match_cfg_def(std::string cfg, std::string def);
 
+private:
     /**
      * Search includes from code and append code from the included
      * file

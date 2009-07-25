@@ -86,6 +86,9 @@ private:
 
         TEST_CASE(elif);
 
+        // Test the Preprocessor::match_cfg_def
+        TEST_CASE(match_cfg_def);
+
         TEST_CASE(if_cond1);
         TEST_CASE(if_cond2);
         TEST_CASE(if_cond3);
@@ -517,6 +520,14 @@ private:
     }
 
 
+
+    void match_cfg_def()
+    {
+        TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def("A=1", "A==1"));
+        TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def("A=1", "A<2"));
+        ASSERT_EQUALS(false, Preprocessor::match_cfg_def("A=1", "A==2"));
+        ASSERT_EQUALS(false, Preprocessor::match_cfg_def("A=1", "A<1"));
+    }
 
 
     void if_cond1()
