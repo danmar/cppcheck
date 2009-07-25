@@ -351,17 +351,10 @@ private:
                             "    if (5==5);\n"
                             "}\n";
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        tokenizer.simplifyTokenList();
-
-        std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { { ; } }", ostr.str());
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "{ ; }\n"
+                      "}", tokenizeAndStringify(code, true));
     }
 
     void ifAddBraces1()
