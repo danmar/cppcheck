@@ -92,8 +92,7 @@ void CheckOther::warningRedundantCode()
          *
          **/
 
-        if (Token::simpleMatch(tok2, "this .") ||
-            Token::Match(tok2, "%var% ::"))
+        if (Token::Match(tok2, "%var% .|::"))
         {
             tok2 = tok2->tokAt(2);
         }
