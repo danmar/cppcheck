@@ -2575,7 +2575,8 @@ bool Tokenizer::simplifyIfNotNull()
             deleteFrom = tok;
         }
 
-        if (deleteFrom) {
+        if (deleteFrom)
+        {
             deleteFrom->deleteNext();
             deleteFrom->deleteNext();
             ret = true;
