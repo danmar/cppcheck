@@ -336,7 +336,7 @@ unsigned int CppCheck::check()
 
         try
         {
-            Preprocessor preprocessor(_settings._debug);
+            Preprocessor preprocessor(&_settings, this);
             std::list<std::string> configurations;
             std::string filedata = "";
 
@@ -473,10 +473,9 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
     _errout << errmsg2 << std::endl;
 }
 
-void CppCheck::reportOut(const std::string & /*outmsg*/)
+void CppCheck::reportOut(const std::string &outmsg)
 {
-    // This is currently never called. It is here just to comply with
-    // the interface.
+    _errorLogger->reportOut(outmsg);
 }
 
 const std::vector<std::string> &CppCheck::filenames() const

@@ -33,7 +33,7 @@
 #include <vector>
 #include <set>
 
-Preprocessor::Preprocessor(bool debug) : _debug(debug)
+Preprocessor::Preprocessor(const Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
 {
 
 }
@@ -434,13 +434,13 @@ std::string Preprocessor::removeComments(const std::string &str)
     return code.str();
 }
 
-void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths, ErrorLogger *errorLogger)
+void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths)
 {
     std::list<std::string> configs;
     std::string data;
     preprocess(istr, data, configs, filename, includePaths);
     for (std::list<std::string>::const_iterator it = configs.begin(); it != configs.end(); ++it)
-        result[ *it ] = Preprocessor::getcode(data, *it, filename, errorLogger);
+        result[ *it ] = Preprocessor::getcode(data, *it, filename, _errorLogger);
 }
 
 std::string Preprocessor::removeSpaceNearNL(const std::string &str)
@@ -770,7 +770,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
         if (s.find("&&") != std::string::npos || s.find("||") != std::string::npos)
         {
             // unhandled ifdef configuration..
-            if (_debug)
+            if (_settings && _settings->_debug)
                 std::cout << "unhandled configuration: " << s << std::endl;
 
             ret.erase(it++);
@@ -1078,6 +1078,13 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             path = filename;
             path.erase(1 + path.find_last_of("\\/"));
             paths.push_back(path);
+        }
+        else
+        {
+            if (_errorLogger && _settings && _settings->_verbose)
+            {
+                _errorLogger->reportOut("Include file: \"" + paths.back() + filename + "\" not found.");
+            }
         }
     }
 }

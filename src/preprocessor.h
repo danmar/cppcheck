@@ -26,6 +26,7 @@
 #include <string>
 #include <list>
 #include "errorlogger.h"
+#include "settings.h"
 
 /// @addtogroup Core
 /// @{
@@ -34,7 +35,7 @@
 class Preprocessor
 {
 public:
-    Preprocessor(bool debug = false);
+    Preprocessor(const Settings *settings = 0, ErrorLogger *errorLogger = 0);
 
     /**
      * Extract the code for each configuration
@@ -47,7 +48,7 @@ public:
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
      */
-    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths = std::list<std::string>(), ErrorLogger *errorLogger = 0);
+    void preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths = std::list<std::string>());
 
     /**
      * Extract the code for each configuration. Use this with getcode() to get the
@@ -108,9 +109,6 @@ protected:
     static int getHeaderFileName(std::string &str);
 private:
 
-    /** Show debug information when bailing out */
-    const bool _debug;
-
     /**
      * Remove space that has new line character on left or right side of it.
      *
@@ -148,8 +146,10 @@ private:
      * a last include path if include file was not found from earlier paths.
      * @return modified source code
      */
-    static void handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths);
+    void handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths);
 
+    const Settings *_settings;
+    ErrorLogger *_errorLogger;
 };
 
 /// @}

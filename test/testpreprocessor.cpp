@@ -1197,8 +1197,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual, "file.c", std::list<std::string>(), this);
+        Preprocessor preprocessor(0, this);
+        preprocessor.preprocess(istr, actual, "file.c", std::list<std::string>());
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
@@ -1218,8 +1218,8 @@ private:
         // Preprocess => actual result..
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual, "file.c", std::list<std::string>(), this);
+        Preprocessor preprocessor(0, this);
+        preprocessor.preprocess(istr, actual, "file.c", std::list<std::string>());
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
