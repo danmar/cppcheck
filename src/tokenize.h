@@ -149,6 +149,14 @@ public:
     bool simplifyIfNot();
 
     /**
+     * simplify if-not NULL..
+     * Example: "if(0!=x);" => "if(x);"
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
+    bool simplifyIfNotNull();
+
+    /**
      * simplify the "not" keyword to "!"
      * Example: "if (not p)" => "if (!p)"
      * @return true if something is modified

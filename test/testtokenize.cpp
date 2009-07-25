@@ -85,6 +85,7 @@ private:
         TEST_CASE(whileAddBraces);
 
         TEST_CASE(numeric_true_condition);
+        TEST_CASE(pointers_condition);
 
         TEST_CASE(simplifyKnownVariables1);
         TEST_CASE(simplifyKnownVariables2);
@@ -354,6 +355,69 @@ private:
         ASSERT_EQUALS("void f ( )\n"
                       "{\n"
                       "{ ; }\n"
+                      "}", tokenizeAndStringify(code, true));
+    }
+
+    void pointers_condition()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    if (p != NULL);\n"
+                            "    if (NULL != p);\n"
+                            "    if (this->p != NULL);\n"
+                            "    if (NULL != this->p);\n"
+                            "    if (Foo::p != NULL);\n"
+                            "    if (NULL != Foo::p);\n"
+                            "    while (p != NULL);\n"
+                            "    while (NULL != p);\n"
+                            "    while (this->p != NULL);\n"
+                            "    while (NULL != this->p);\n"
+                            "    while (Foo::p != NULL);\n"
+                            "    while (NULL != Foo::p);\n"
+                            "    if (p == NULL);\n"
+                            "    if (NULL == p);\n"
+                            "    if (this->p == NULL);\n"
+                            "    if (NULL == this->p);\n"
+                            "    if (Foo::p == NULL);\n"
+                            "    if (NULL == Foo::p);\n"
+                            "    while (p == NULL);\n"
+                            "    while (NULL == p);\n"
+                            "    while (this->p == NULL);\n"
+                            "    while (NULL == this->p);\n"
+                            "    while (Foo::p == NULL);\n"
+                            "    while (NULL == Foo::p);\n"
+                            "    if (p1 != NULL || p2 == NULL) { ; }\n"
+                            "    if (p1 != NULL && p2 == NULL) { ; }\n"
+                            "}\n";
+
+        ASSERT_EQUALS("void f ( )\n"
+                      "{\n"
+                      "if ( p ) { ; }\n"
+                      "if ( p ) { ; }\n"
+                      "if ( this . p ) { ; }\n"
+                      "if ( this . p ) { ; }\n"
+                      "if ( Foo :: p ) { ; }\n"
+                      "if ( Foo :: p ) { ; }\n"
+                      "while ( p ) { ; }\n"
+                      "while ( p ) { ; }\n"
+                      "while ( this . p ) { ; }\n"
+                      "while ( this . p ) { ; }\n"
+                      "while ( Foo :: p ) { ; }\n"
+                      "while ( Foo :: p ) { ; }\n"
+                      "if ( ! p ) { ; }\n"
+                      "if ( ! p ) { ; }\n"
+                      "if ( ! this . p ) { ; }\n"
+                      "if ( ! this . p ) { ; }\n"
+                      "if ( ! Foo :: p ) { ; }\n"
+                      "if ( ! Foo :: p ) { ; }\n"
+                      "while ( ! p ) { ; }\n"
+                      "while ( ! p ) { ; }\n"
+                      "while ( ! this . p ) { ; }\n"
+                      "while ( ! this . p ) { ; }\n"
+                      "while ( ! Foo :: p ) { ; }\n"
+                      "while ( ! Foo :: p ) { ; }\n"
+                      "if ( p1 || ! p2 ) { ; }\n"
+                      "if ( p1 && ! p2 ) { ; }\n"
                       "}", tokenizeAndStringify(code, true));
     }
 

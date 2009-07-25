@@ -728,9 +728,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // if else switch
         if (tok->str() == "if")
         {
-            if (Token::simpleMatch(tok, std::string("if ( " + varnameStr + " )").c_str()) ||
-                Token::simpleMatch(tok, std::string("if ( " + varnameStr + " != 0 )").c_str()) ||
-                Token::simpleMatch(tok, std::string("if ( 0 != " + varnameStr + " )").c_str()))
+            if (Token::simpleMatch(tok, std::string("if ( " + varnameStr + " )").c_str()))
             {
                 addtoken("if(var)");
 

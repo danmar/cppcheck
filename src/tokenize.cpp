@@ -1478,6 +1478,7 @@ void Tokenizer::simplifyTokenList()
 
     elseif();
     simplifyIfNot();
+    simplifyIfNotNull();
     simplifyNot();
     simplifyIfAssign();
 
@@ -2514,7 +2515,7 @@ bool Tokenizer::simplifyIfNot()
                 ret = true;
             }
 
-            else if (Token::Match(tok, "%var% . %var% == 0"))
+            else if (Token::Match(tok, "%var% .|:: %var% == 0"))
             {
                 tok = tok->previous();
                 tok->insertToken("!");
@@ -2533,6 +2534,53 @@ bool Tokenizer::simplifyIfNot()
             tok->link()->str("!");
             ret = true;
         }
+    }
+    return ret;
+}
+
+
+bool Tokenizer::simplifyIfNotNull()
+{
+    // Make sure we have working links
+    createLinks();
+    bool ret = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        Token *deleteFrom = NULL;
+
+        if (tok->str() == "(" || tok->str() == "||" || tok->str() == "&&")
+        {
+            tok = tok->next();
+
+            if (Token::simpleMatch(tok, "0 != (") ||
+                Token::Match(tok, "0 != %var%"))
+            {
+                deleteFrom = tok->previous();
+            }
+
+            else if (Token::Match(tok, "%var% != 0"))
+            {
+                deleteFrom = tok;
+            }
+
+            else if (Token::Match(tok, "%var% .|:: %var% != 0"))
+            {
+                tok = tok->tokAt(2);
+                deleteFrom = tok;
+            }
+        }
+
+        else if (tok->link() && Token::simpleMatch(tok, ") != 0"))
+        {
+            deleteFrom = tok;
+        }
+
+        if (deleteFrom) {
+            deleteFrom->deleteNext();
+            deleteFrom->deleteNext();
+            ret = true;
+        }
+
     }
     return ret;
 }

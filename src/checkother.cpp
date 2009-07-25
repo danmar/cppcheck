@@ -86,22 +86,11 @@ void CheckOther::warningRedundantCode()
         /*
          * Possible if-constructions:
          *
-         *   if (0 != var)
-         *   if (0 != this->var)
-         *   if (0 != Foo::var)
          *   if (var)
          *   if (this->var)
          *   if (Foo::var)
-         *   if (var != 0)
-         *   if (this->var != 0)
-         *   if (Foo::var != 0)
          *
          **/
-
-        if (Token::simpleMatch(tok2, "0 !="))
-        {
-            tok2 = tok2->tokAt(2);
-        }
 
         if (Token::simpleMatch(tok2, "this .") ||
             Token::Match(tok2, "%var% ::"))
@@ -113,11 +102,6 @@ void CheckOther::warningRedundantCode()
         {
             varname = tok2->strAt(0);
             tok2 = tok2->next();
-        }
-
-        if (Token::simpleMatch(tok2, "!= 0"))
-        {
-            tok2 = tok2->tokAt(2);
         }
 
         if (tok2->str() == ")")
