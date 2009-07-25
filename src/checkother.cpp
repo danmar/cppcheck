@@ -1084,7 +1084,11 @@ void CheckOther::nullPointer()
             if (varid == 0)
                 continue;
 
-            for (const Token *tok1 = tok->previous(); tok1; tok1 = tok1->previous())
+            const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
+            if (!Token::Match(decltok->tokAt(-3), "[;,(] %var% *"))
+                continue;
+
+            for (const Token *tok1 = tok->previous(); tok1 && tok1 != decltok; tok1 = tok1->previous())
             {
                 if (tok1->varId() == varid)
                 {

@@ -565,6 +565,14 @@ private:
                          "        ;\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("void foo(int x)\n"
+                         "{\n"
+                         "    int a = 2 * x;"
+                         "    if (x == 0)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
