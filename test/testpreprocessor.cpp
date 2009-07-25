@@ -1253,22 +1253,58 @@ private:
 
     void define_ifdef()
     {
-        const char filedata[] = "#define ABC\n"
-                                "#ifndef ABC\n"
-                                "A\n"
-                                "#else\n"
-                                "B\n"
-                                "#endif\n";
+        {
+            const char filedata[] = "#define ABC\n"
+                                    "#ifndef ABC\n"
+                                    "A\n"
+                                    "#else\n"
+                                    "B\n"
+                                    "#endif\n";
 
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual, "file.c");
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
 
-        // Compare results..
-        ASSERT_EQUALS("\n\n\n\nB\n\n", actual[""]);
-        ASSERT_EQUALS(1, actual.size());
+            // Compare results..
+            ASSERT_EQUALS("\n\n\n\nB\n\n", actual[""]);
+            ASSERT_EQUALS(1, actual.size());
+        }
+
+        {
+            const char filedata[] = "#define A 1\n"
+                                    "#ifdef A\n"
+                                    "A\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS("\n\n1\n\n", actual[""]);
+            ASSERT_EQUALS(1, actual.size());
+        }
+
+        {
+            const char filedata[] = "#define A 1\n"
+                                    "#if A==1\n"
+                                    "A\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            TODO_ASSERT_EQUALS("\n\n1\n\n", actual[""]);
+            TODO_ASSERT_EQUALS(1, actual.size());
+        }
     }
 };
 

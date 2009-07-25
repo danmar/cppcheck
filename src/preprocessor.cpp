@@ -616,9 +616,16 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
             continue;
         }
 
-        else if (line.substr(0, 8) == "#define " && line.find_first_of("( ", 8) == std::string::npos)
+        else if (line.substr(0, 8) == "#define " && line.find("(", 8) == std::string::npos)
         {
-            defines.insert(line.substr(8));
+            if (line.find(" ", 8) == std::string::npos)
+                defines.insert(line.substr(8));
+            else
+            {
+                std::string s = line.substr(8);
+                s[s.find(" ")] = '=';
+                defines.insert(s);
+            }
         }
 
         if (filelevel > 0)
@@ -660,36 +667,43 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
     // Remove defined constants from ifdef configurations..
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it)
     {
-        std::string s(*it);
+        std::string cfg(*it);
         for (std::set<std::string>::const_iterator it2 = defines.begin(); it2 != defines.end(); ++it2)
         {
             std::string::size_type pos = 0;
-            while ((pos = s.find(*it2, pos)) != std::string::npos)
+
+            // Get name of define
+            std::string defineName(*it2);
+            if (defineName.find("=") != std::string::npos)
+                defineName.erase(defineName.find("="));
+
+            // Remove ifdef configurations that match the defineName
+            while ((pos = cfg.find(defineName, pos)) != std::string::npos)
             {
                 std::string::size_type pos1 = pos;
                 ++pos;
-                if (pos1 > 0 && s[pos1-1] != ';')
+                if (pos1 > 0 && cfg[pos1-1] != ';')
                     continue;
-                std::string::size_type pos2 = pos1 + it2->length();
-                if (pos2 < s.length() && s[pos2] != ';')
+                std::string::size_type pos2 = pos1 + defineName.length();
+                if (pos2 < cfg.length() && cfg[pos2] != ';')
                     continue;
                 --pos;
-                s.erase(pos, it2->length());
+                cfg.erase(pos, defineName.length());
             }
         }
-        if (s.length() != it->length())
+        if (cfg.length() != it->length())
         {
-            while (s.length() > 0 && s[0] == ';')
-                s.erase(0, 1);
+            while (cfg.length() > 0 && cfg[0] == ';')
+                cfg.erase(0, 1);
 
-            while (s.length() > 0 && s[s.length()-1] == ';')
-                s.erase(s.length() - 1);
+            while (cfg.length() > 0 && cfg[cfg.length()-1] == ';')
+                cfg.erase(cfg.length() - 1);
 
             std::string::size_type pos = 0;
-            while ((pos = s.find(";;", pos)) != std::string::npos)
-                s.erase(pos, 1);
+            while ((pos = cfg.find(";;", pos)) != std::string::npos)
+                cfg.erase(pos, 1);
 
-            *it = s;
+            *it = cfg;
         }
     }
 
@@ -815,6 +829,17 @@ bool Preprocessor::match_cfg_def(std::string cfg, std::string def)
     if (cfg.empty())
         return false;
 
+    // remove the define values
+    while (cfg.find("=") != std::string::npos)
+    {
+        std::string::size_type pos1 = cfg.find("=");
+        std::string::size_type pos2 = cfg.find(";", pos1);
+        if (pos2 == std::string::npos)
+            cfg.erase(pos1);
+        else
+            cfg.erase(pos1, pos2 - pos1);
+    }
+
     while (! cfg.empty())
     {
         if (cfg.find(";") == std::string::npos)
@@ -844,11 +869,16 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
         std::string def = getdef(line, true);
         std::string ndef = getdef(line, false);
 
-        if (line.substr(0, 8) == "#define " && line.find_first_of(" (", 8) == std::string::npos)
+        if (line.substr(0, 8) == "#define " && line.find("(", 8) == std::string::npos)
         {
             if (!cfg.empty())
                 cfg += ";";
-            cfg += line.substr(8);
+            std::string::size_type pos = line.find(" ", 8);
+            if (pos == std::string::npos)
+                cfg += line.substr(8);
+            else
+                cfg += line.substr(8, pos - 8) + "=" + line.substr(pos + 1);
+            std::cout << cfg << std::endl;
         }
 
         else if (line.find("#elif ") == 0)
