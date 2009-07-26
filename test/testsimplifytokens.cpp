@@ -1072,6 +1072,15 @@ private:
                           " return 10 ; "
                           "}", sizeof_(code));
         }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int *a = new int[10];\n"
+                                "    delete [] a, a = 0;\n"
+                                "}\n";
+            TODO_ASSERT_EQUALS(" void foo ( ) { int * a ; a = new int [ 10 ] ; delete [ ] a ; a = 0 ; }", sizeof_(code));
+        }
     }
 
     void remove_comma()
