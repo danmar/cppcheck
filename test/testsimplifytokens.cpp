@@ -1051,6 +1051,27 @@ private:
                                 "}\n";
             ASSERT_EQUALS(" void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", sizeof_(code));
         }
+
+        {
+            const char code[] = "int f()\n"
+                                "{\n"
+                                "    if (something)\n"
+                                "        return a(2, c(3, 4)), b(3), 10;\n"
+                                "    return a(), b(0, 0, 0), 10;\n"
+                                "}\n";
+            ASSERT_EQUALS(" int f ( )"
+                          " {"
+                          " if ( something )"
+                          " {"
+                              " a ( 2 , c ( 3 , 4 ) ) ;"
+                              " b ( 3 ) ;"
+                              " return 10 ;"
+                          " }"
+                          " a ( ) ;"
+                          " b ( 0 , 0 , 0 ) ;"
+                          " return 10 ; "
+                          "}", sizeof_(code));
+        }
     }
 
     void remove_comma()
