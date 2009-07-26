@@ -313,7 +313,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 if (tok2->str()[0] == '\"')
                 {
                     len -= 2;
-                    const char *str = tok->str().c_str();
+                    const char *str = tok2->str().c_str();
                     while (*str)
                     {
                         if (*str == '\\')
@@ -323,7 +323,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     }
                 }
             }
-            if (len > (int)size)
+            if (len >= (int)size)
             {
                 bufferOverrun(tok);
             }

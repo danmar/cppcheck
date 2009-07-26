@@ -502,6 +502,14 @@ private:
               "    sprintf(str, \"%s\", \"abc\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char * c = new char[10];\n"
+              "    sprintf(c, \"%s\", \"/usr/LongLongLongLongUserName/bin/LongLongApplicationName\");\n"
+              "    delete [] c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
     }
 
     void snprintf1()
