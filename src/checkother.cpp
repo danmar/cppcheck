@@ -1139,6 +1139,9 @@ void CheckOther::postIncrement()
                 tok2 = tok2->tokAt(-3);
             if (Token::Match(tok2, "; %var% ++|-- )"))
             {
+                if (tok2->next()->varId() == 0)
+                    continue;
+
                 // Take a look at the variable declaration
                 const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->tokAt(1)->varId());
                 const std::string classDef = std::string("class ") + std::string(decltok->previous()->strAt(0));
