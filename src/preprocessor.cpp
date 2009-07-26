@@ -1081,9 +1081,9 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
         }
         else
         {
-            if (_errorLogger && _settings && _settings->_verbose)
+            if (headerType == 1 && _errorLogger && _settings && _settings->_verbose)
             {
-                _errorLogger->reportOut("Include file: \"" + paths.back() + filename + "\" not found.");
+                _errorLogger->reportOut("Include file: \"" + filename + "\" not found.");
             }
         }
     }
