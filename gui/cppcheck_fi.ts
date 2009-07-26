@@ -131,20 +131,20 @@ kate -l(line) (file)
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="239"/>
-        <location filename="mainwindow.cpp" line="458"/>
+        <location filename="mainwindow.cpp" line="216"/>
+        <location filename="mainwindow.cpp" line="461"/>
         <location filename="mainwindow.cpp" line="561"/>
         <location filename="mainwindow.cpp" line="579"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="main.ui" line="136"/>
+        <location filename="main.ui" line="135"/>
         <source>Standard</source>
         <translation>Vakio</translation>
     </message>
     <message>
-        <location filename="main.ui" line="255"/>
+        <location filename="main.ui" line="254"/>
         <source>Show possible false positives</source>
         <translation>Näytä epävarmat virheet</translation>
     </message>
@@ -159,162 +159,162 @@ kate -l(line) (file)
         <translation>&amp;Näytä</translation>
     </message>
     <message>
-        <location filename="main.ui" line="113"/>
+        <location filename="main.ui" line="112"/>
         <source>&amp;Check</source>
         <translation>&amp;Tarkista</translation>
     </message>
     <message>
-        <location filename="main.ui" line="122"/>
+        <location filename="main.ui" line="121"/>
         <source>&amp;Edit</source>
         <translation>&amp;Muokkaa</translation>
     </message>
     <message>
-        <location filename="main.ui" line="154"/>
+        <location filename="main.ui" line="153"/>
         <source>&amp;License...</source>
         <translation>&amp;Lisenssi...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="159"/>
+        <location filename="main.ui" line="158"/>
         <source>A&amp;uthors...</source>
         <translation>&amp;Tekijät...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="168"/>
+        <location filename="main.ui" line="167"/>
         <source>&amp;About...</source>
         <translation>&amp;Tietoa ohjelmasta Cppcheck...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="173"/>
+        <location filename="main.ui" line="172"/>
         <source>&amp;Files...</source>
         <translation>&amp;Tiedostot...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="176"/>
+        <location filename="main.ui" line="175"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="185"/>
+        <location filename="main.ui" line="184"/>
         <source>&amp;Directory...</source>
         <translation>&amp;Hakemisto...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="188"/>
+        <location filename="main.ui" line="187"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="197"/>
+        <location filename="main.ui" line="196"/>
         <source>&amp;Recheck files</source>
         <translation>Tarkista tiedostot &amp;uudelleen</translation>
     </message>
     <message>
-        <location filename="main.ui" line="200"/>
+        <location filename="main.ui" line="199"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="209"/>
+        <location filename="main.ui" line="208"/>
         <source>&amp;Stop</source>
         <translation>&amp;Pysäytä</translation>
     </message>
     <message>
-        <location filename="main.ui" line="212"/>
+        <location filename="main.ui" line="211"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="221"/>
+        <location filename="main.ui" line="220"/>
         <source>&amp;Save results to file...</source>
         <translation>&amp;Tallenna tulokset tiedostoon...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="224"/>
+        <location filename="main.ui" line="223"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="229"/>
+        <location filename="main.ui" line="228"/>
         <source>&amp;Quit</source>
         <translation>&amp;Lopeta</translation>
     </message>
     <message>
-        <location filename="main.ui" line="238"/>
+        <location filename="main.ui" line="237"/>
         <source>&amp;Clear results</source>
         <translation>&amp;Tyhjennä tulokset</translation>
     </message>
     <message>
-        <location filename="main.ui" line="247"/>
+        <location filename="main.ui" line="246"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Asetukset</translation>
     </message>
     <message>
-        <location filename="main.ui" line="263"/>
+        <location filename="main.ui" line="262"/>
         <source>Show security errors</source>
         <translation>Näytä tietoturvavirheet</translation>
     </message>
     <message>
-        <location filename="main.ui" line="271"/>
+        <location filename="main.ui" line="270"/>
         <source>Show style errors</source>
         <translation>Näytä tyylivirheet</translation>
     </message>
     <message>
-        <location filename="main.ui" line="279"/>
+        <location filename="main.ui" line="278"/>
         <source>Show common errors</source>
         <translation>Näytä yleiset virheet</translation>
     </message>
     <message>
-        <location filename="main.ui" line="284"/>
+        <location filename="main.ui" line="283"/>
         <source>&amp;Check all</source>
         <translation>&amp;Valitse kaikki</translation>
     </message>
     <message>
-        <location filename="main.ui" line="289"/>
+        <location filename="main.ui" line="288"/>
         <source>&amp;Uncheck all</source>
         <translation>&amp;Poista kaikista valinta</translation>
     </message>
     <message>
-        <location filename="main.ui" line="294"/>
+        <location filename="main.ui" line="293"/>
         <source>Collapse &amp;all</source>
         <translation>&amp;Pienennä kaikki</translation>
     </message>
     <message>
-        <location filename="main.ui" line="299"/>
+        <location filename="main.ui" line="298"/>
         <source>&amp;Expand all</source>
         <translation>&amp;Laajenna kaikki</translation>
     </message>
     <message>
-        <location filename="main.ui" line="307"/>
+        <location filename="main.ui" line="306"/>
         <source>&amp;Toolbar</source>
         <translation>&amp;Työkalupalkki</translation>
     </message>
     <message>
-        <location filename="main.ui" line="100"/>
+        <location filename="main.ui" line="99"/>
         <source>&amp;Language</source>
         <translation>&amp;Kieli</translation>
     </message>
     <message>
-        <location filename="main.ui" line="105"/>
+        <location filename="main.ui" line="104"/>
         <source>&amp;Help</source>
         <translation>&amp;Ohje</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="202"/>
+        <location filename="mainwindow.cpp" line="250"/>
         <source>Select files to check</source>
         <translation>Valitse tarkistettavat tiedostot</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="211"/>
+        <location filename="mainwindow.cpp" line="259"/>
         <source>Select directory to check</source>
         <translation>Valitse tarkistettava hakemisto</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="240"/>
+        <location filename="mainwindow.cpp" line="217"/>
         <source>No suitable files found to check!</source>
         <translation>Tarkistettavaksi sopivia tiedostoja ei löytynyt!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="454"/>
+        <location filename="mainwindow.cpp" line="457"/>
         <source>Cannot exit while checking.
 
 Stop the checking before exiting.</source>
@@ -427,25 +427,25 @@ Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
     <name>ResultsTree</name>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="749"/>
         <source>File</source>
         <translation>Tiedosto</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="749"/>
         <source>Severity</source>
         <translation>Tyyppi</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="749"/>
         <source>Line</source>
         <translation>Rivi</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="749"/>
         <source>Message</source>
         <translation>Virhe</translation>
     </message>
@@ -455,28 +455,28 @@ Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
         <translation>Määrittelemätön tiedosto</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="388"/>
+        <location filename="resultstree.cpp" line="386"/>
         <source>Copy filename</source>
         <translation>Kopioi tiedostonimi</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="389"/>
+        <location filename="resultstree.cpp" line="387"/>
         <source>Copy full path</source>
         <translation>Kopioi tiedoston koko polku</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="425"/>
+        <location filename="resultstree.cpp" line="423"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="426"/>
+        <location filename="resultstree.cpp" line="424"/>
         <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
         <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
         <translation>Voit asetuksista määritellä muita ohjelmia joilla avata tämän virheen sisältävän tiedoston.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="471"/>
+        <location filename="resultstree.cpp" line="469"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -485,22 +485,21 @@ Please check the application path and parameters are correct.</source>
 Tarkista että ohjelman polku ja parametrit ovat oikeat.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="613"/>
+        <location filename="resultstree.cpp" line="611"/>
         <source>all</source>
         <translation>Epävarmat</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="617"/>
+        <location filename="resultstree.cpp" line="615"/>
         <source>style</source>
         <translation>Tyyli</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="621"/>
         <source>security</source>
-        <translation>Tietoturva</translation>
+        <translation type="obsolete">Tietoturva</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="625"/>
+        <location filename="resultstree.cpp" line="619"/>
         <source>error</source>
         <translation>Yleinen</translation>
     </message>
