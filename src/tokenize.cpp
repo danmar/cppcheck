@@ -3238,11 +3238,15 @@ bool Tokenizer::simplifyComma()
         Token *endAt = NULL;        // first ";" token after "; return"
 
         // find "; return" pattern before comma
-        for (Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
-            if (Token::Match(tok2, "[;{}]")) {
+        for (Token *tok2 = tok; tok2; tok2 = tok2->previous())
+        {
+            if (Token::Match(tok2, "[;{}]"))
+            {
                 break;
 
-            } else if (tok2->str() == "return" && Token::Match(tok2->previous(), "[;{}]")) {
+            }
+            else if (tok2->str() == "return" && Token::Match(tok2->previous(), "[;{}]"))
+            {
                 inReturn = true;
                 startFrom = tok2->next();
                 break;
@@ -3250,44 +3254,61 @@ bool Tokenizer::simplifyComma()
         }
 
         // find token where return ends and also count commas
-        if (inReturn) {
+        if (inReturn)
+        {
             size_t commaCounter = 0;
             size_t indentlevel = 0;
 
-            for (Token *tok2 = startFrom; tok2; tok2 = tok2->next()) {
-                if (tok2->str() == ";") {
+            for (Token *tok2 = startFrom; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == ";")
+                {
                     endAt = tok2;
                     break;
 
-                } else if (tok2->str() == "(") {
+                }
+                else if (tok2->str() == "(")
+                {
                     ++indentlevel;
 
-                } else if (tok2->str() == ")") {
+                }
+                else if (tok2->str() == ")")
+                {
                     --indentlevel;
 
-                } else if (tok2->str() == "," && indentlevel == 0) {
+                }
+                else if (tok2->str() == "," && indentlevel == 0)
+                {
                     ++commaCounter;
                 }
             }
 
-            if (commaCounter) {
+            if (commaCounter)
+            {
                 indentlevel = 0;
 
                 // change tokens:
                 // "; return a ( ) , b ( ) , c ;"
                 // to
                 // "; return a ( ) ; b ( ) ; c ;"
-                for (Token *tok2 = startFrom; tok2 != endAt; tok2 = tok2->next()) {
-                    if (tok2->str() == "(") {
+                for (Token *tok2 = startFrom; tok2 != endAt; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "(")
+                    {
                         ++indentlevel;
 
-                    } else if (tok2->str() == ")") {
+                    }
+                    else if (tok2->str() == ")")
+                    {
                         --indentlevel;
 
-                    } else if (tok2->str() == "," && indentlevel == 0) {
+                    }
+                    else if (tok2->str() == "," && indentlevel == 0)
+                    {
                         tok2->str(";");
                         --commaCounter;
-                        if (commaCounter == 0) {
+                        if (commaCounter == 0)
+                        {
                             tok2->insertToken("return");
                         }
                     }
