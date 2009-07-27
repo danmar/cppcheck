@@ -3225,6 +3225,14 @@ bool Tokenizer::simplifyComma()
                         ret = true;
                         break;
                     }
+                    else if (Token::Match(tok2, "delete %var%") ||
+                             Token::Match(tok2, "delete [ ] %var%"))
+                    {
+                        // Handle "delete a, a = 0;"
+                        tok->str(";");
+                        ret = true;
+                        break;
+                    }
                     else if (Token::Match(tok2, "[;,{}()]"))
                     {
                         break;
