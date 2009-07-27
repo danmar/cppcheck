@@ -78,6 +78,7 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
     return true;
 
 }
+
 bool CheckAutoVariables::isAutoVar(const Token* t)
 {
     std::list<std::string>::iterator id_vd;
@@ -90,6 +91,7 @@ bool CheckAutoVariables::isAutoVar(const Token* t)
     }
     return false;
 }
+
 void print(const Token *tok, int num)
 {
     const Token *t = tok;
@@ -101,6 +103,7 @@ void print(const Token *tok, int num)
     }
     std::cout << std::endl;
 }
+
 bool isTypeName(const Token *tok)
 {
     bool ret = false;
@@ -110,6 +113,7 @@ bool isTypeName(const Token *tok)
         ret |= (_str == type[i]);
     return !ret;
 }
+
 bool isExternOrStatic(const Token *tok)
 {
     bool res = false;
@@ -125,6 +129,7 @@ bool isExternOrStatic(const Token *tok)
     return res;
 
 }
+
 void CheckAutoVariables::addVD(const Token* tok)
 {
     std::string var_name(tok->str());
@@ -132,6 +137,7 @@ void CheckAutoVariables::addVD(const Token* tok)
     //std::cout << "VD " << tok->linenr() << " " << var_name << std::endl;
     vd_list.push_back(var_name);
 }
+
 void CheckAutoVariables::autoVariables()
 {
     bool begin_function = false;

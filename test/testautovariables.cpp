@@ -87,6 +87,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
     }
+
     void testautovararray()
     {
         check("void func1(int* arr[2])\n"
@@ -95,6 +96,7 @@ private:
               "arr[0]=&num;}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n", errout.str());
     }
+
     void testautovarreturn()
     {
         check("int* func1()\n"
