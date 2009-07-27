@@ -62,8 +62,8 @@ private:
     void run()
     {
         TEST_CASE(testautovar);
-        TEST_CASE(testautovararray);
-        TEST_CASE(testautovarreturn);
+        TEST_CASE(testautovar_array);
+        TEST_CASE(testautovar_return);
         TEST_CASE(testautovar_extern);
 
         TEST_CASE(returnLocalVariable1);
@@ -88,7 +88,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testautovararray()
+    void testautovar_array()
     {
         check("void func1(int* arr[2])\n"
               "{\n"
@@ -97,7 +97,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n", errout.str());
     }
 
-    void testautovarreturn()
+    void testautovar_return()
     {
         check("int* func1()\n"
               "{\n"
