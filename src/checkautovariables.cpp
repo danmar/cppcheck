@@ -43,13 +43,13 @@ static CheckAutoVariables instance;
 
 bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 {
-    std::string left_var = left->str();
-    std::string right_var = right->str();
+    const std::string left_var(left->str());
+    const std::string right_var(right->str());
     std::list<std::string>::iterator it_fp;
 
     for (it_fp = fp_list.begin(); it_fp != fp_list.end(); ++it_fp)
     {
-        std::string vname = (*it_fp);
+        std::string vname(*it_fp);
 
         //The left argument is a formal parameter
         if (vname == left_var)
@@ -66,7 +66,7 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
     std::list<std::string>::iterator id_vd;
     for (id_vd = vd_list.begin(); id_vd != vd_list.end(); ++id_vd)
     {
-        std::string vname = (*id_vd);
+        std::string vname(*id_vd);
         //The left argument is a variable declaration
         if (vname == right_var)
             break;
@@ -81,10 +81,10 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 bool CheckAutoVariables::isAutoVar(const Token* t)
 {
     std::list<std::string>::iterator id_vd;
-    std::string v = t->str();
+    std::string v(t->str());
     for (id_vd = vd_list.begin(); id_vd != vd_list.end(); ++id_vd)
     {
-        std::string vname = (*id_vd);
+        std::string vname(*id_vd);
         if (vname == v)
             return true;
     }
@@ -104,7 +104,7 @@ void print(const Token *tok, int num)
 bool isTypeName(const Token *tok)
 {
     bool ret = false;
-    std::string _str = tok->str();
+    std::string _str(tok->str());
     static const char * const type[] = {"case", "return", "delete", 0};
     for (int i = 0; type[i]; i++)
         ret |= (_str == type[i]);
@@ -127,8 +127,8 @@ bool isStatic(const Token *tok)
 }
 void CheckAutoVariables::addVD(const Token* tok)
 {
-    std::string var_name;
-    var_name = tok->str();
+    std::string var_name(tok->str());
+
     //std::cout << "VD " << tok->linenr() << " " << var_name << std::endl;
     vd_list.push_back(var_name);
 }
@@ -151,16 +151,12 @@ void CheckAutoVariables::autoVariables()
         }
         else if (begin_function && begin_function_decl && Token::Match(tok, "%type% * * %var%"))
         {
-            std::string var_name;
-
-            var_name = tok->tokAt(3)->str();
+            std::string var_name(tok->tokAt(3)->str());
             fp_list.push_back(var_name);
         }
         else if (begin_function && begin_function_decl && Token::Match(tok, "%type% * %var% ["))
         {
-            std::string var_name;
-
-            var_name = tok->tokAt(2)->str();
+            std::string var_name(tok->tokAt(2)->str());
             fp_list.push_back(var_name);
         }
         else if (begin_function && Token::simpleMatch(tok, "("))
