@@ -141,9 +141,7 @@ void CheckAutoVariables::autoVariables()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
 
-        if (Token::Match(tok, "%type% %var% (") ||
-            Token::Match(tok, "%type% * %var% (") ||
-            Token::Match(tok, "%type% :: %var% ("))
+        if (Token::Match(tok, "%type% *|::| %var% ("))
         {
             begin_function = true;
             fp_list.clear();
