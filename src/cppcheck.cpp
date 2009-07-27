@@ -110,6 +110,12 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--unused-functions") == 0)
             _settings._unusedFunctions = true;
 
+#ifdef __GNUC__
+        // show timing information..
+        else if (strcmp(argv[i], "--showtime") == 0)
+            _settings._showtime = true;
+#endif
+
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
@@ -367,7 +373,17 @@ unsigned int CppCheck::check()
                 }
 
                 cfg = *it;
+#ifdef __GNUC__
+                clock_t c1 = clock();
+                const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, _errorLogger);
+                if (_settings._showtime)
+                {
+                    clock_t c2 = clock();
+                    std::cout << "Preprocessor::getcode: " << ((c2 - c1) / 1000) << std::endl;
+                }
+#else
                 std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, _errorLogger);
+#endif
 
                 // If only errors are printed, print filename after the check
                 if (_settings._errorsOnly == false && it != configurations.begin())
@@ -434,7 +450,17 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         (*it)->runChecks(&_tokenizer, &_settings, this);
     }
 
+#ifdef __GNUC__
+    {
+        clock_t c1 = clock();
+        _tokenizer.simplifyTokenList();
+        clock_t c2 = clock();
+        if (_settings._showtime)
+            std::cout << "Tokenizer::simplifyTokenList: " << ((c2 - c1) / 1000) << std::endl;
+    }
+#else
     _tokenizer.simplifyTokenList();
+#endif
 
     if (_settings._unusedFunctions)
         _checkUnusedFunctions.parseTokens(_tokenizer);
@@ -442,7 +468,15 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // call all "runSimplifiedChecks" in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
     {
+#ifdef __GNUC__
+        clock_t c1 = clock();
         (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
+        clock_t c2 = clock();
+        if (_settings._showtime)
+            std::cout << (*it)->name() << "::runSimplifiedChecks: " << ((c2 - c1) / 1000) << std::endl;
+#else
+        (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
+#endif
     }
 }
 

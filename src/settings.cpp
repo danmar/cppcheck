@@ -32,6 +32,9 @@ Settings::Settings()
     _unusedFunctions = false;
     _jobs = 1;
     _exitCode = 0;
+#ifdef __GNUC__
+    _showtime = false;
+#endif
 }
 
 Settings::~Settings()

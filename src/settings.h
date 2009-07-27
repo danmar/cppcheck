@@ -65,6 +65,11 @@ public:
         Default value is 0. */
     int _exitCode;
 
+#ifdef __GNUC__
+    /** show timing information */
+    bool _showtime;
+#endif
+
     /** List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. */
     std::list<std::string> _includePaths;
