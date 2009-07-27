@@ -110,15 +110,15 @@ bool isTypeName(const Token *tok)
         ret |= (_str == type[i]);
     return !ret;
 }
-bool isStatic(const Token *tok)
+bool isExternOrStatic(const Token *tok)
 {
     bool res = false;
 
-    if (tok->tokAt(-1)->str() == "static")
+    if (Token::Match(tok->tokAt(-1), "extern|static"))
         res = true;
-    else if (tok->tokAt(-2)->str() == "static")
+    else if (Token::Match(tok->tokAt(-2), "extern|static"))
         res = true;
-    else if (tok->tokAt(-3)->str() == "static")
+    else if (Token::Match(tok->tokAt(-3), "extern|static"))
         res = true;
 
     //std::cout << __PRETTY_FUNCTION__ << " " << tok->str() << " " << res << std::endl;
@@ -169,17 +169,17 @@ void CheckAutoVariables::autoVariables()
         {
             bindent--;
         }
-        else if (bindent > 0 && Token::Match(tok, "%type% :: %any%") && !isStatic(tok)) //Inside a function
+        else if (bindent > 0 && Token::Match(tok, "%type% :: %any%") && !isExternOrStatic(tok)) //Inside a function
         {
             addVD(tok->tokAt(2));
         }
-        else if (bindent > 0 && Token::Match(tok, "%var% %var% ;") && !isStatic(tok)) //Inside a function
+        else if (bindent > 0 && Token::Match(tok, "%var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
         {
             if (!isTypeName(tok))
                 continue;
             addVD(tok->tokAt(1));
         }
-        else if (bindent > 0 && Token::Match(tok, "const %var% %var% ;") && !isStatic(tok)) //Inside a function
+        else if (bindent > 0 && Token::Match(tok, "const %var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
         {
             if (!isTypeName(tok->tokAt(1)))
                 continue;

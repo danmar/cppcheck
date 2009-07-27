@@ -64,6 +64,7 @@ private:
         TEST_CASE(testautovar);
         TEST_CASE(testautovararray);
         TEST_CASE(testautovarreturn);
+        TEST_CASE(testautovar_extern);
 
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
@@ -101,6 +102,16 @@ private:
               "    int num=2;"
               "return &num;}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Return of the address of an auto-variable\n", errout.str());
+    }
+
+    void testautovar_extern()
+    {
+        check("struct foo *f()\n"
+              "{\n"
+              "    extern struct foo f;\n"
+              "    return &f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
