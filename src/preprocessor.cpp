@@ -1281,7 +1281,7 @@ public:
                             }
                         }
                     }
-                    if (_variadic && Token::simpleMatch(tok, ",") && tok->next() && Token::simpleMatch(tok->next(), "##"))
+                    if (_variadic && tok->str() == "," && tok->next() && tok->next()->str() == "##")
                     {
                         optcomma = true;
                         continue;

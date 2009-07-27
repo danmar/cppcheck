@@ -450,7 +450,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
         {
             while (tok->next())
             {
-                bool last = Token::simpleMatch(tok->next(), "}");
+                bool last(tok->next()->str() == "}");
 
                 // Unlink and delete tok->next()
                 tok->deleteNext();
@@ -745,7 +745,7 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "else|return|typedef|delete"))
             continue;
 
-        if (Token::simpleMatch(tok, "const"))
+        if (tok->str() == "const")
             tok = tok->next();
 
         if (Token::simpleMatch(tok, "std ::"))
@@ -1236,7 +1236,7 @@ void Tokenizer::simplifyTokenList()
             {
                 if (Token::Match(tempToken, "%var%"))
                 {
-                    if (Token::simpleMatch(tempToken->next(), "."))
+                    if (tempToken->next()->str() == ".")
                     {
                         // We are checking a class or struct, search next varname
                         tempToken = tempToken->tokAt(1);
@@ -1254,7 +1254,7 @@ void Tokenizer::simplifyTokenList()
                         // nothing after this
                         tempToken = tempToken->tokAt(2);
                     }
-                    else if (Token::simpleMatch(tempToken->next(), "["))
+                    else if (tempToken->next()->str() == "[")
                     {
                         /** @todo We need to find closing ], then check for
                          * dots and arrows "var[some[0]]->other" */
@@ -1468,7 +1468,7 @@ void Tokenizer::simplifyTokenList()
     {
         if (Token::Match(tok->next(), "( %type% * ) 0") || Token::Match(tok->next(), "( %type% %type% * ) 0"))
         {
-            while (!Token::simpleMatch(tok->next(), "0"))
+            while (tok->next()->str() != "0")
                 tok->deleteNext();
         }
     }
@@ -1581,7 +1581,7 @@ bool Tokenizer::removeReduntantConditions()
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (!Token::simpleMatch(tok, "if"))
+        if (tok->str() != "if")
             continue;
 
         if (!Token::Match(tok->tokAt(1), "( %bool% ) {"))
@@ -1602,7 +1602,7 @@ bool Tokenizer::removeReduntantConditions()
         // Handle if with else
         if (elseTag && elseTag->str() == "else")
         {
-            if (Token::simpleMatch(elseTag->next(), "if"))
+            if (elseTag->next()->str() ==  "if")
             {
                 // Handle "else if"
                 if (boolValue == false)
@@ -1625,11 +1625,11 @@ bool Tokenizer::removeReduntantConditions()
 
                         lastTagInIf = Tokenizer::findClosing(lastTagInIf, "{", "}");
                         lastTagInIf = lastTagInIf->next();
-                        if (!Token::simpleMatch(lastTagInIf, "else"))
+                        if (lastTagInIf->str() != "else")
                             break;
 
                         lastTagInIf = lastTagInIf->next();
-                        if (Token::simpleMatch(lastTagInIf, "if"))
+                        if (lastTagInIf->str() == "if")
                             lastTagInIf = lastTagInIf->next();
                     }
 
@@ -1652,7 +1652,7 @@ bool Tokenizer::removeReduntantConditions()
                 }
                 else
                 {
-                    if (Token::simpleMatch(elseTag->tokAt(1), "{"))
+                    if (elseTag->tokAt(1)->str() == "{")
                     {
                         // Convert "if( true ) {aaa;} else {bbb;}" => "{aaa;}"
                         const Token *end = Tokenizer::findClosing(elseTag->tokAt(1), "{", "}");
@@ -2076,9 +2076,9 @@ bool Tokenizer::simplifyCasts()
                 while (tok2->next() && parlevel >= 0)
                 {
                     tok2 = tok2->next();
-                    if (Token::simpleMatch(tok2->next(), "("))
+                    if (tok2->next()->str() == "(")
                         ++parlevel;
-                    else if (Token::simpleMatch(tok2->next(), ")"))
+                    else if (tok2->next()->str() == ")")
                         --parlevel;
                 }
                 if (tok2->next())
@@ -2412,7 +2412,7 @@ bool Tokenizer::simplifyIfAssign()
 
             // Remember if there is a "!" or not. And delete it if there are.
             bool isNot = false;
-            if (Token::simpleMatch(tok->tokAt(2), "!"))
+            if (tok->tokAt(2)->str() == "!")
             {
                 isNot = true;
                 tok->next()->deleteNext();
@@ -2674,13 +2674,13 @@ bool Tokenizer::simplifyKnownVariables()
 
                         continue;
                     }
-                    else if (tok3->str() == "{" && Token::simpleMatch(tok3->previous(), ")"))
+                    else if (tok3->str() == "{" && tok3->previous()->str() == ")")
                     {
                         // There is a possible loop after the assignment. Try to skip it.
                         bailOutFromLoop = tok3->link();
                         continue;
                     }
-                    else if (tok3->str() == "}" && Token::simpleMatch(tok3->link()->previous(), ")"))
+                    else if (tok3->str() == "}" && tok3->link()->previous()->str() == ")")
                     {
                         // Assignment was in the middle of possible loop, bail out.
                         break;
@@ -2768,7 +2768,7 @@ bool Tokenizer::elseif()
 
             if (indent == 0 && Token::Match(tok2, "}|;"))
             {
-                if (!Token::simpleMatch(tok2->next(), "else"))
+                if (tok2->next()->str() != "else")
                 {
                     tok->insertToken("{");
                     tok2->insertToken("}");

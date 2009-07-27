@@ -57,7 +57,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
             continue;
 
         // If this is a template function, skip it
-        if (Token::simpleMatch(tok->previous(), ">"))
+        if (tok->previous() && tok->previous()->str() == ">")
             continue;
 
         const Token *funcname = 0;
@@ -72,7 +72,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         // Check that ") {" is found..
         for (const Token *tok2 = funcname; tok2; tok2 = tok2->next())
         {
-            if (Token::simpleMatch(tok2, ")"))
+            if (tok2->str() == ")")
             {
                 if (! Token::simpleMatch(tok2, ") {") && ! Token::simpleMatch(tok2, ") const {"))
                     funcname = NULL;

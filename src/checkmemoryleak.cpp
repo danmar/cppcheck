@@ -146,7 +146,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     if (! tok2)
         return No;
 
-    if (Token::simpleMatch(tok2, "realloc"))
+    if (tok2->str() == "realloc")
         return Malloc;
 
     // GTK memory reallocation..
@@ -1062,7 +1062,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
-            else if (Token::simpleMatch(tok2->next(), "if"))
+            else if (tok2->next() && tok2->next()->str() == "if")
             {
                 // Delete empty if that is not followed by an else
                 if (Token::Match(tok2->next(), "if ; !!else"))
@@ -1427,11 +1427,11 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     else if (_tok->str() == "loop")
                         break;
 
-                    else if (incase && Token::simpleMatch(_tok, "case"))
+                    else if (incase && _tok->str() == "case")
                         break;
 
-                    incase |= Token::simpleMatch(_tok, "case");
-                    incase &= !Token::simpleMatch(_tok, "break");
+                    incase |= (_tok->str() == "case");
+                    incase &= (_tok->str() != "break");
                 }
 
                 if (!incase && valid)
@@ -1443,7 +1443,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     bool first = true;
                     while (Token::Match(tok2, "case|default"))
                     {
-                        bool def = Token::simpleMatch(tok2, "default");
+                        bool def(tok2->str() == "default");
                         tok2->str(first ? "if" : "}");
                         if (first)
                         {

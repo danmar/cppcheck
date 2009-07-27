@@ -251,9 +251,9 @@ void CheckStl::pushback()
                 // Using invalid pointer..
                 if (invalidPointer && tok2->varId() == pointerId)
                 {
-                    if (Token::simpleMatch(tok2->previous(), "*"))
+                    if (tok2->previous()->str() == "*")
                         invalidPointerError(tok2, tok2->str());
-                    else if (Token::simpleMatch(tok2->next(), "."))
+                    else if (tok2->next()->str() == ".")
                         invalidPointerError(tok2, tok2->str());
                     break;
                 }

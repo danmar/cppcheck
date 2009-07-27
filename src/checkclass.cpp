@@ -321,7 +321,7 @@ void CheckClass::constructors()
         // Are there a class constructor?
         std::string tempPattern = "%any% " + classNameToken->str() + " (";
         const Token *constructor_token = Token::findmatch(tok1, tempPattern.c_str());
-        while (Token::simpleMatch(constructor_token, "~"))
+        while (constructor_token && constructor_token->str() == "~")
             constructor_token = Token::findmatch(constructor_token->next(), tempPattern.c_str());
 
         // There are no constructor.
@@ -687,7 +687,7 @@ void CheckClass::virtualDestructor()
         derived = derived->tokAt(3);
         while (Token::Match(derived, "%var%"))
         {
-            bool isPublic = Token::simpleMatch(derived, "public");
+            bool isPublic(derived->str() == "public");
 
             // What kind of inheritance is it.. public|protected|private
             if (Token::Match(derived, "public|protected|private"))
@@ -700,7 +700,7 @@ void CheckClass::virtualDestructor()
 
             // Update derived so it's ready for the next loop.
             derived = derived->next();
-            if (Token::simpleMatch(derived, ","))
+            if (derived->str() == ",")
                 derived = derived->next();
 
             // If not public inheritance, skip checking of this base class..
@@ -709,7 +709,7 @@ void CheckClass::virtualDestructor()
 
             // Find the destructor declaration for the base class.
             const Token *base = Token::findmatch(_tokenizer->tokens(), (std::string("%any% ~ ") + baseName[0] + " (").c_str());
-            while (Token::simpleMatch(base, "::"))
+            while (base && base->str() == "::")
                 base = Token::findmatch(base->next(), (std::string("%any% ~ ") + baseName[0] + " (").c_str());
 
             const Token *reverseTok = base;

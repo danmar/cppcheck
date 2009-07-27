@@ -114,11 +114,11 @@ bool isStatic(const Token *tok)
 {
     bool res = false;
 
-    if (Token::simpleMatch(tok->tokAt(-1), "static "))
+    if (tok->tokAt(-1)->str() == "static")
         res = true;
-    else if (Token::simpleMatch(tok->tokAt(-2), "static"))
+    else if (tok->tokAt(-2)->str() == "static")
         res = true;
-    else if (Token::simpleMatch(tok->tokAt(-3), "static"))
+    else if (tok->tokAt(-3)->str() == "static")
         res = true;
 
     //std::cout << __PRETTY_FUNCTION__ << " " << tok->str() << " " << res << std::endl;
@@ -157,15 +157,15 @@ void CheckAutoVariables::autoVariables()
             std::string var_name(tok->tokAt(2)->str());
             fp_list.push_back(var_name);
         }
-        else if (begin_function && Token::simpleMatch(tok, "("))
+        else if (begin_function && tok->str() == "(")
             begin_function_decl = true;
-        else if (begin_function && Token::simpleMatch(tok, ")"))
+        else if (begin_function && tok->str() == ")")
         {
             begin_function_decl = false;
         }
-        else if (begin_function && Token::simpleMatch(tok, "{"))
+        else if (begin_function && tok->str() == "{")
             bindent++;
-        else if (begin_function && Token::simpleMatch(tok, "}"))
+        else if (begin_function && tok->str() == "}")
         {
             bindent--;
         }

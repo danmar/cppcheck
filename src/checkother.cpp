@@ -49,10 +49,10 @@ void CheckOther::warningOldStylePointerCast()
             continue;
 
         int addToIndex = 0;
-        if (Token::simpleMatch(tok->tokAt(1), "const"))
+        if (tok->tokAt(1)->str() == "const")
             addToIndex = 1;
 
-        if (Token::simpleMatch(tok->tokAt(4 + addToIndex), "const"))
+        if (tok->tokAt(4 + addToIndex)->str() == "const")
             continue;
 
         // Is "type" a class?
@@ -223,7 +223,7 @@ void CheckOther::redundantCondition2()
     const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern);
     while (tok)
     {
-        bool b = Token::simpleMatch(tok->tokAt(15), "{");
+        bool b(tok->tokAt(15)->str() == "{");
 
         // Get tokens for the fields %var% and %any%
         const Token *var1 = tok->tokAt(2);
@@ -383,11 +383,11 @@ void CheckOther::invalidFunctionUsage()
         int param = 1;
         for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
         {
-            if (Token::simpleMatch(tok2, "("))
+            if (tok2->str() == "(")
                 ++parlevel;
-            else if (Token::simpleMatch(tok2, ")"))
+            else if (tok2->str() == ")")
                 --parlevel;
-            else if (parlevel == 1 && Token::simpleMatch(tok2, ","))
+            else if (parlevel == 1 && tok2->str() == ",")
             {
                 ++param;
                 if (param == 3)
@@ -607,7 +607,7 @@ void CheckOther::lookupVar(const Token *tok1, const char varname[])
     const Token *tok = tok1;
 
     // Skip the variable declaration..
-    while (tok && !Token::simpleMatch(tok, ";"))
+    while (tok && tok->str() != ";")
         tok = tok->next();
 
     // Check if the variable is used in this indentlevel..
@@ -873,7 +873,7 @@ void CheckOther::checkIncompleteStatement()
             /* We are in an assignment, so it's not a statement.
              * Skip until ";" */
 
-            while (!Token::simpleMatch(tok, ";"))
+            while (tok->str() != ";")
             {
                 int level = 0;
                 do
@@ -1092,7 +1092,7 @@ void CheckOther::nullPointer()
             {
                 if (tok1->varId() == varid)
                 {
-                    if (tok1->previous() && tok1->previous()->str() == "*" && !Token::simpleMatch(tok1->tokAt(-2), "*"))
+                    if (tok1->previous() && tok1->previous()->str() == "*" && tok1->tokAt(-2)->str() != "*")
                     {
                         nullPointerError(tok1);
                         break;
