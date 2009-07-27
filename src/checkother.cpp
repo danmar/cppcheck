@@ -158,8 +158,7 @@ void CheckOther::warningRedundantCode()
             }
         }
 
-        if (Token::simpleMatch(tok2, "this .") ||
-            Token::Match(tok2, "%var% ::"))
+        if (Token::Match(tok2, "%var% ::|."))
         {
             tok2 = tok2->tokAt(2);
         }
@@ -1056,7 +1055,7 @@ void CheckOther::nullPointer()
                 // Reassignment of the struct
                 else if (tok2->varId() == varid1)
                 {
-                    if (Token::Match(tok2->next(), "="))
+                    if (tok2->next()->str() == "=")
                         break;
                     if (Token::Match(tok2->tokAt(-2), "[,(] &"))
                         break;

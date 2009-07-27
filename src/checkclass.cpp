@@ -713,7 +713,7 @@ void CheckClass::virtualDestructor()
                 base = Token::findmatch(base->next(), (std::string("%any% ~ ") + baseName[0] + " (").c_str());
 
             const Token *reverseTok = base;
-            while (Token::Match(base, "%var%") && !Token::Match(base, "virtual"))
+            while (Token::Match(base, "%var%") && base->str() != "virtual")
                 base = base->previous();
 
             // Check that there is a destructor..

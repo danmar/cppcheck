@@ -946,8 +946,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         {
             int tokIdx = matchFirst ? 2 : 3;
 
-            while (Token::simpleMatch(tok->tokAt(tokIdx), ".") &&
-                   Token::Match(tok->tokAt(tokIdx + 1), "%var%"))
+            while (Token::Match(tok->tokAt(tokIdx), ". %var%"))
                 tokIdx += 2;
 
             if (Token::simpleMatch(tok->tokAt(tokIdx), ") ("))
