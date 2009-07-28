@@ -2309,6 +2309,61 @@ bool Tokenizer::simplifyVarDecl()
             tok2 = tok2->tokAt(6);    // The ',' token
         }
 
+        else if (Token::Match(tok2, "std :: %type% <") || Token::Match(tok2, "%type% <"))
+        {
+            //
+            // Deal with templates and standart types
+            //
+            if (Token::simpleMatch(tok2, "std ::"))
+            {
+                typelen += 1;
+                tok2 = tok2->tokAt(2);
+            }
+
+            typelen += 2;
+            tok2 = tok2->tokAt(2);
+            size_t indentlevel = 1;
+
+            for (Token *tok3 = tok2; tok3; tok3 = tok3->next())
+            {
+                ++typelen;
+
+                if (tok3->str() == "<")
+                {
+                    ++indentlevel;
+                }
+                else if (tok3->str() == ">")
+                {
+                    --indentlevel;
+                    if (indentlevel == 0)
+                    {
+                        tok2 = tok3->next();
+                        break;
+                    }
+                }
+            }
+
+            if (Token::Match(tok2, ":: %type%"))
+            {
+                typelen += 2;
+                tok2 = tok2->tokAt(2);
+            }
+
+            if (tok2->str() == "*" || tok2->str() == "&")
+            {
+                tok2 = tok2->next();
+            }
+
+            if (Token::Match(tok2, "%var% ,"))
+            {
+                tok2 = tok2->next();    // The ',' token
+            }
+            else
+            {
+                tok2 = NULL;
+                typelen = 0;
+            }
+        }
         else
         {
             tok2 = NULL;

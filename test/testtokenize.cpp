@@ -153,6 +153,7 @@ private:
         TEST_CASE(vardecl3);
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
+        TEST_CASE(vardecl_stl);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
 
@@ -2200,6 +2201,23 @@ private:
         const char code4[] = "const void * const p = NULL;";
         const char res4[]  = "const void * const p ; p = NULL ;";
         ASSERT_EQUALS(res4, tokenizeAndStringify(code4));
+    }
+
+    void vardecl_stl()
+    {
+        // ticket #520
+
+        const char code1[] = "std::vector<std::string>a, b;";
+        const char res1[]  = "std :: vector < std :: string > a ; std :: vector < std :: string > b ;";
+        ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
+
+        const char code2[] = "std::vector<std::string>::const_iterator it, cit;";
+        const char res2[]  = "std :: vector < std :: string > :: const_iterator it ; std :: vector < std :: string > :: const_iterator cit ;";
+        ASSERT_EQUALS(res2, tokenizeAndStringify(code2));
+
+        const char code3[] = "std::vector<std::pair<std::string, std::string > > *c, d;";
+        const char res3[]  = "std :: vector < std :: pair < std :: string , std :: string > > * c ; std :: vector < std :: pair < std :: string , std :: string > > d ;";
+        ASSERT_EQUALS(res3, tokenizeAndStringify(code3));
     }
 
     void vardecl5()
