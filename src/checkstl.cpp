@@ -47,34 +47,34 @@ void CheckStl::iterators()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "%var% = %var% . begin ( ) ;|+"))
-        {
-            const unsigned int iteratorId(tok->varId());
-            const unsigned int containerId(tok->tokAt(2)->varId());
-            if (iteratorId == 0 || containerId == 0)
-                continue;
+        if (!Token::Match(tok, "%var% = %var% . begin ( ) ;|+"))
+            continue;
 
-            bool validIterator = true;
-            for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+        const unsigned int iteratorId(tok->varId());
+        const unsigned int containerId(tok->tokAt(2)->varId());
+        if (iteratorId == 0 || containerId == 0)
+            continue;
+
+        bool validIterator = true;
+        for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "}")
+                break;
+            if (tok2->varId() == iteratorId)
             {
-                if (tok2->str() == "}")
-                    break;
-                if (tok2->varId() == iteratorId)
-                {
-                    if (Token::Match(tok2->next(), "!= %var% . end ( )") && tok2->tokAt(2)->varId() != containerId)
-                        iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
-                }
-                else if (Token::Match(tok2, "%var% . insert|erase ( %varid%", iteratorId))
-                {
-                    if (tok2->varId() != containerId)
-                        iteratorsError(tok2, tok->strAt(2), tok2->str());
-                    else if (tok2->strAt(2) == std::string("erase"))
-                        validIterator = false;
-                }
-                else if (!validIterator && tok2->Match(tok2, "* %varid%", iteratorId))
-                {
-                    dereferenceErasedError(tok2, tok2->strAt(1));
-                }
+                if (Token::Match(tok2->next(), "!= %var% . end ( )") && tok2->tokAt(2)->varId() != containerId)
+                    iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
+            }
+            else if (Token::Match(tok2, "%var% . insert|erase ( %varid%", iteratorId))
+            {
+                if (tok2->varId() != containerId)
+                    iteratorsError(tok2, tok->strAt(2), tok2->str());
+                else if (tok2->strAt(2) == std::string("erase"))
+                    validIterator = false;
+            }
+            else if (!validIterator && tok2->Match(tok2, "* %varid%", iteratorId))
+            {
+                dereferenceErasedError(tok2, tok2->strAt(1));
             }
         }
     }
