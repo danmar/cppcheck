@@ -1088,6 +1088,14 @@ private:
                                 "}\n";
             ASSERT_EQUALS(" void foo ( ) { delete a ; a = 0 ; }", sizeof_(code));
         }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    for(int a,b; a < 10; a = a + 1, b = b + 1);\n"
+                                "}\n";
+            ASSERT_EQUALS(" void f ( ) { for ( int a , b ; a < 10 ; a = a + 1 , b = b + 1 ) { ; } }", sizeof_(code));
+        }
     }
 
     void remove_comma()

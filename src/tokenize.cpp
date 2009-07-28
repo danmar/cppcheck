@@ -3190,8 +3190,28 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 bool Tokenizer::simplifyComma()
 {
     bool ret = false;
+    bool insideLoop = false;
+    size_t indentlevel = 0;
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        if (tok->str() == "(")
+        {
+            ++indentlevel;
+        }
+        else if (tok->str() == ")")
+        {
+            --indentlevel;
+            if (indentlevel == 0)
+            {
+                insideLoop = false;
+            }
+        }
+        else if (tok->str() == "for")
+        {
+            insideLoop = true;
+        }
+
         if (tok->str() != ",")
             continue;
 
@@ -3218,7 +3238,7 @@ bool Tokenizer::simplifyComma()
             {
                 for (Token *tok2 = tok->previous(); tok2; tok2 = tok2->previous())
                 {
-                    if (tok2->str() == "=")
+                    if (tok2->str() == "=" && !insideLoop)
                     {
                         // Handle "a = 0, b = 0;"
                         tok->str(";");
