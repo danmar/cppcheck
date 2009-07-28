@@ -59,6 +59,7 @@ private:
         TEST_CASE(invalidcode);
 
         TEST_CASE(stlBoundries1);
+        TEST_CASE(stlBoundries2);
     }
 
     void check(const char code[])
@@ -396,6 +397,20 @@ private:
         }
     }
 
+    void stlBoundries2()
+    {
+        const std::string checkStr("void f()\n"
+                                   "{\n"
+                                   "    std::vector<std::string> files;\n"
+                                   "    std::vector<std::string>::const_iterator it;\n"
+                                   "    for (it = files.begin(); it < files.end(); it++) { }\n"
+                                   "    for (it = files.begin(); it < files.end(); it++) { };\n"
+                                   "}\n");
+
+        check(checkStr.c_str());
+
+        ASSERT_EQUALS("[test.cpp:5]: (error) vector range check should use != and not < since the order of the pointers isn't guaranteed\n[test.cpp:6]: (error) vector range check should use != and not < since the order of the pointers isn't guaranteed\n", errout.str());
+    }
 
 };
 

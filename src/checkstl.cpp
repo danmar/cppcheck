@@ -399,7 +399,6 @@ void CheckStl::stlBoundries()
                     else if (Token::Match(tok2, "%varid% <", iteratorid))
                     {
                         stlBoundriesError(tok2, container_name);
-                        break;
                     }
                 }
             }
