@@ -396,7 +396,7 @@ void CheckStl::stlBoundries()
                             break;
                         --indentlevel;
                     }
-                    else if (tok2->varId() == iteratorid && tok2->next() && tok2->next()->str() == "<")
+                    else if (Token::Match(tok2, "%varid% <", iteratorid))
                     {
                         stlBoundriesError(tok2, container_name);
                         break;
