@@ -1005,6 +1005,8 @@ private:
         ASSERT_EQUALS("if ( b ( ) && ! a )", simplifyIfNot("if( b() && 0 == a )"));
         ASSERT_EQUALS("if ( ! ( a = b ) )", simplifyIfNot("if((a=b)==0)"));
         ASSERT_EQUALS("if ( ! x . y )", simplifyIfNot("if(x.y==0)"));
+        ASSERT_EQUALS("if ( ( ! x ) )", simplifyIfNot("if((x==0))"));
+        ASSERT_EQUALS("if ( ( ! x ) && ! y )", simplifyIfNot("if((x==0) && y==0)"));
     }
 
 

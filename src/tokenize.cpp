@@ -2558,6 +2558,12 @@ bool Tokenizer::simplifyIfNot()
         if (tok->str() == "(" || tok->str() == "||" || tok->str() == "&&")
         {
             tok = tok->next();
+            while (tok && tok->str() == "(")
+                tok = tok->next();
+
+            if (!tok)
+                break;
+
             if (Token::simpleMatch(tok, "0 == (") ||
                 Token::Match(tok, "0 == %var%"))
             {
