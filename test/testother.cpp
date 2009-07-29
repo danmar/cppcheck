@@ -512,7 +512,7 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // while..
+        // loops..
         checkNullPointer("void freeAbc(struct ABC *abc)\n"
                          "{\n"
                          "    while (abc)\n"
@@ -521,6 +521,19 @@ private:
                          "        if (abc) delete abc;\n"
                          "        abc = next;\n"
                          "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("void foo(struct ABC *abc)\n"
+                         "{\n"
+                         "    int a = abc->a;"
+                         "    do\n"
+                         "    {\n"
+                         "        if (abc)\n"
+                         "            abc = abc->next;\n"
+                         "        --a;\n"
+                         "    }\n"
+                         "    while (a > 0)\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
     }

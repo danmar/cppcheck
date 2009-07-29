@@ -1061,6 +1061,11 @@ void CheckOther::nullPointer()
                         break;
                 }
 
+                // Loop..
+                /** @todo don't bail out if the variable is not used in the loop */
+                else if (tok2->str() == "do")
+                    break;
+
                 // return at base level => stop checking
                 else if (indentlevel2 == 0 && tok2->str() == "return")
                     break;
