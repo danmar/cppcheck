@@ -2976,6 +2976,14 @@ private:
               "    func(abc);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("static void foo()\n"
+              "{\n"
+              "    struct ABC *abc = malloc(sizeof(struct ABC));\n"
+              "    abclist.push_back(abc);\n"
+              "    abc->a = malloc(10);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ifelse()

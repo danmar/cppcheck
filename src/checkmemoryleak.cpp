@@ -1923,7 +1923,7 @@ void CheckMemoryLeakStructMember::check()
         // Locate struct variables..
         if (Token::Match(tok, "struct|;|{|} %type% * %var% [=;]"))
         {
-            const Token *vartok = tok->tokAt(3);
+            const Token * const vartok = tok->tokAt(3);
             if (vartok->varId() == 0)
                 continue;
 
@@ -1969,6 +1969,11 @@ void CheckMemoryLeakStructMember::check()
                         break;
                     --indentlevel2;
                 }
+
+                // Unknown usage of struct
+                /** @todo Check how the struct is used. Only bail out if necessary */
+                else if (Token::Match(tok2, "[(,] %varid% [,)]", vartok->varId()))
+                    break;
 
                 // Struct member is allocated => check if it is also properly deallocated..
                 else if (Token::Match(tok2, "%varid% . %var% = malloc|strdup|kmalloc (", vartok->varId()))
