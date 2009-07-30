@@ -60,10 +60,10 @@ void CheckStl::iterators()
         {
             if (tok2->str() == "}")
                 break;
-            if (tok2->varId() == iteratorId)
+
+            if (Token::Match(tok2, "%varid% != %var% . end ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId)
             {
-                if (Token::Match(tok2->next(), "!= %var% . end ( )") && tok2->tokAt(2)->varId() != containerId)
-                    iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
+                iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
             }
             else if (Token::Match(tok2, "%var% . insert|erase ( %varid%", iteratorId))
             {
