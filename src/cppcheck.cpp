@@ -32,6 +32,10 @@
 #include <map>
 #include <stdexcept>
 
+#ifdef __GNUC__
+#include <ctime> // clock_t
+#endif
+
 //---------------------------------------------------------------------------
 
 CppCheck::CppCheck(ErrorLogger &errorLogger)
