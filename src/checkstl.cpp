@@ -56,7 +56,7 @@ void CheckStl::iterators()
             continue;
 
         bool validIterator = true;
-        for (const Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
+        for (const Token *tok2 = tok->tokAt(7); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "}")
                 break;
@@ -64,6 +64,7 @@ void CheckStl::iterators()
             if (Token::Match(tok2, "%varid% != %var% . end ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId)
             {
                 iteratorsError(tok2, tok->strAt(2), tok2->strAt(2));
+                tok2 = tok2->tokAt(7);
             }
             else if (Token::Match(tok2, "%var% . insert|erase ( %varid%", iteratorId))
             {
@@ -71,10 +72,13 @@ void CheckStl::iterators()
                     iteratorsError(tok2, tok->strAt(2), tok2->str());
                 else if (tok2->strAt(2) == std::string("erase"))
                     validIterator = false;
+
+                tok2 = tok2->tokAt(5);
             }
             else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId))
             {
                 dereferenceErasedError(tok2, tok2->strAt(1));
+                tok2 = tok2->tokAt(2);
             }
         }
     }
