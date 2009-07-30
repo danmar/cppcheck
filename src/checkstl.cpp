@@ -80,6 +80,11 @@ void CheckStl::iterators()
                 dereferenceErasedError(tok2, tok2->strAt(1));
                 tok2 = tok2->tokAt(2);
             }
+            else if (!validIterator && Token::Match(tok2, "%varid% . %var%", iteratorId))
+            {
+                dereferenceErasedError(tok2, tok2->strAt(0));
+                tok2 = tok2->tokAt(3);
+            }
         }
     }
 }

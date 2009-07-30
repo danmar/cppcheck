@@ -39,6 +39,7 @@ private:
         TEST_CASE(iterator3);
 
         TEST_CASE(dereference);
+        TEST_CASE(dereference_member);
 
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
@@ -133,6 +134,18 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
     }
 
+    void dereference_member()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::map<int, int> ints;"
+              "    std::map<int, int>::iterator iter;\n"
+              "    iter = ints.begin();\n"
+              "    ints.erase(iter);\n"
+              "    std::cout << iter->first << std::endl;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
+    }
 
 
     void STLSize()
