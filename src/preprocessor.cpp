@@ -784,10 +784,13 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
 
 
 
-bool Preprocessor::match_cfg_def(std::string cfg, std::string def)
+bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def)
 {
     //std::cout << "cfg: \"" << cfg << "\"  ";
     //std::cout << "def: \"" << def << "\"";
+
+    if (cfg.find(def) != cfg.end())
+        return true;
 
     for (std::string::size_type pos = def.find("defined("); pos != std::string::npos; pos = def.find("defined(", pos + 1))
     {
@@ -803,8 +806,7 @@ bool Preprocessor::match_cfg_def(std::string cfg, std::string def)
 
         std::string::size_type pos1 = pos + 8;
         const std::string par(def.substr(pos1, pos2 - pos1));
-        /** @todo better checking if parameter is defined */
-        const bool isdefined(cfg.find(par) != std::string::npos);
+        const bool isdefined(cfg.find(par) != cfg.end());
 
         def.erase(pos, pos2 + 1 - pos);
         def.insert(pos, isdefined ? "1" : "0");
@@ -826,29 +828,31 @@ bool Preprocessor::match_cfg_def(std::string cfg, std::string def)
     if (def == "1")
         return true;
 
-    if (cfg.empty())
-        return false;
+    /*
+        if (cfg.empty())
+            return false;
 
-    // remove the define values
-    while (cfg.find("=") != std::string::npos)
-    {
-        std::string::size_type pos1 = cfg.find("=");
-        std::string::size_type pos2 = cfg.find(";", pos1);
-        if (pos2 == std::string::npos)
-            cfg.erase(pos1);
-        else
-            cfg.erase(pos1, pos2 - pos1);
-    }
+        // remove the define values
+        while (cfg.find("=") != std::string::npos)
+        {
+            std::string::size_type pos1 = cfg.find("=");
+            std::string::size_type pos2 = cfg.find(";", pos1);
+            if (pos2 == std::string::npos)
+                cfg.erase(pos1);
+            else
+                cfg.erase(pos1, pos2 - pos1);
+        }
 
-    while (! cfg.empty())
-    {
-        if (cfg.find(";") == std::string::npos)
-            return bool(cfg == def);
-        std::string _cfg = cfg.substr(0, cfg.find(";"));
-        if (_cfg == def)
-            return true;
-        cfg.erase(0, cfg.find(";") + 1);
-    }
+        while (! cfg.empty())
+        {
+            if (cfg.find(";") == std::string::npos)
+                return bool(cfg == def);
+            std::string _cfg = cfg.substr(0, cfg.find(";"));
+            if (_cfg == def)
+                return true;
+            cfg.erase(0, cfg.find(";") + 1);
+        }
+    */
 
     return false;
 }
@@ -862,6 +866,40 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     std::list<bool> matching_ifdef;
     std::list<bool> matched_ifdef;
 
+    // Create a map for the cfg for faster access to defines
+    std::map<std::string, std::string> cfgmap;
+    {
+        std::string::size_type pos = 0;
+        while (true)
+        {
+            std::string::size_type pos2 = cfg.find_first_of(";=", pos);
+            if (pos2 == std::string::npos)
+            {
+                cfgmap[cfg.substr(pos)] = "";
+                break;
+            }
+            if (cfg[pos2] == ';')
+            {
+                cfgmap[cfg.substr(pos, pos2-pos)] = "";
+            }
+            else
+            {
+                std::string::size_type pos3 = pos2;
+                pos2 = cfg.find(";", pos2);
+                if (pos2 == std::string::npos)
+                {
+                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1);
+                    break;
+                }
+                else
+                {
+                    cfgmap[cfg.substr(pos, pos3-pos)] = cfg.substr(pos3 + 1, pos2 - pos3 - 1);
+                }
+            }
+            pos = pos2 + 1;
+        }
+    }
+
     std::istringstream istr(filedata);
     std::string line;
     while (getline(istr, line))
@@ -871,14 +909,11 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
 
         if (line.substr(0, 8) == "#define " && line.find("(", 8) == std::string::npos)
         {
-            if (!cfg.empty())
-                cfg += ";";
             std::string::size_type pos = line.find(" ", 8);
             if (pos == std::string::npos)
-                cfg += line.substr(8);
+                cfgmap[line.substr(8)] = "";
             else
-                cfg += line.substr(8, pos - 8) + "=" + line.substr(pos + 1);
-            // std::cout << cfg << std::endl;
+                cfgmap[line.substr(8, pos - 8)] = line.substr(pos + 1);
         }
 
         else if (line.find("#elif ") == 0)
@@ -889,7 +924,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             }
             else
             {
-                if (match_cfg_def(cfg, def))
+                if (match_cfg_def(cfgmap, def))
                 {
                     matching_ifdef.back() = true;
                     matched_ifdef.back() = true;
@@ -899,13 +934,13 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
 
         else if (! def.empty())
         {
-            matching_ifdef.push_back(match_cfg_def(cfg, def));
+            matching_ifdef.push_back(match_cfg_def(cfgmap, def));
             matched_ifdef.push_back(matching_ifdef.back());
         }
 
         else if (! ndef.empty())
         {
-            matching_ifdef.push_back(! match_cfg_def(cfg, ndef));
+            matching_ifdef.push_back(! match_cfg_def(cfgmap, ndef));
             matched_ifdef.push_back(matching_ifdef.back());
         }
 

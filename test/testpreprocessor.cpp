@@ -523,17 +523,28 @@ private:
 
     void match_cfg_def()
     {
-        TODO_ASSERT_EQUALS(false, Preprocessor::match_cfg_def("ABC", "defined(A)"));
-        TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def("ABC", "!defined(A)"));
+        {
+            std::map<std::string, std::string> cfg;
+            cfg["ABC"] = "";
 
-        ASSERT_EQUALS(false, Preprocessor::match_cfg_def("A", "!defined(A)&&!defined(B)"));
-        TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def("C", "!defined(A)&&!defined(B)"));
+            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "defined(A)"));
+            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "!defined(A)"));
 
-        TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def("A=1", "A==1"));
-        TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def("A=1", "A<2"));
-        ASSERT_EQUALS(false, Preprocessor::match_cfg_def("A=1", "A==2"));
-        ASSERT_EQUALS(false, Preprocessor::match_cfg_def("A=1", "A<1"));
-        TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def("A=2;B=1;C", "A>=1&&B<=A"));
+            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "!defined(ABC)&&!defined(DEF)"));
+            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "!defined(A)&&!defined(B)"));
+        }
+
+        {
+            std::map<std::string, std::string> cfg;
+            cfg["A"] = "1";
+            cfg["B"] = "2";
+
+            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A==1"));
+            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A<2"));
+            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A==2"));
+            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A<1"));
+            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
+        }
     }
 
 

@@ -131,7 +131,7 @@ public:
      * @param def condition
      * @return result when evaluating the condition
      */
-    static bool match_cfg_def(std::string cfg, std::string def);
+    static bool match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def);
 
 private:
     /**
