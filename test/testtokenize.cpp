@@ -1274,7 +1274,8 @@ private:
     {
         const std::string code("list<int> ints;\n"
                                "list<int>::iterator it;\n"
-                               "std::vector<std::string> dirs;\n");
+                               "std::vector<std::string> dirs;\n"
+                               "std::map<int, int> coords;\n");
 
         // tokenize..
         Tokenizer tokenizer;
@@ -1287,7 +1288,8 @@ private:
         const std::string expected("\n\n##file 0\n"
                                    "1: list < int > ints@1 ;\n"
                                    "2: list < int > :: iterator it@2 ;\n"
-                                   "3: std :: vector < std :: string > dirs@3 ;\n");
+                                   "3: std :: vector < std :: string > dirs@3 ;\n"
+                                   "4: std :: map < int , int > coords@4 ;\n");
 
         ASSERT_EQUALS(expected, actual);
     }

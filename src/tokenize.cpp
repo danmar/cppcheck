@@ -759,7 +759,7 @@ void Tokenizer::setVarId()
             if (Token::simpleMatch(tok2, "std ::"))
                 tok2 = tok2->tokAt(2);
 
-            while (tok2 && (tok2->isName() || tok2->str() == "*"))
+            while (tok2 && (tok2->isName() || tok2->str() == "*" || tok2->str() == ","))
                 tok2 = tok2->next();
 
             if (Token::Match(tok2, "> %var%"))
