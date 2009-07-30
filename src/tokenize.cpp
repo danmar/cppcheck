@@ -748,7 +748,7 @@ void Tokenizer::setVarId()
         if (tok->str() == "const")
             tok = tok->next();
 
-        if (Token::simpleMatch(tok, "std ::"))
+        while (Token::Match(tok, "%var% ::"))
             tok = tok->tokAt(2);
 
         // Skip template arguments..
@@ -756,7 +756,7 @@ void Tokenizer::setVarId()
         {
             Token *tok2 = tok->tokAt(2);
 
-            if (Token::simpleMatch(tok2, "std ::"))
+            while (Token::Match(tok2, "%var% ::"))
                 tok2 = tok2->tokAt(2);
 
             while (tok2 && (tok2->isName() || tok2->str() == "*" || tok2->str() == ","))

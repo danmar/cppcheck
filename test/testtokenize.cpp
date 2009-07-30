@@ -1275,7 +1275,10 @@ private:
         const std::string code("list<int> ints;\n"
                                "list<int>::iterator it;\n"
                                "std::vector<std::string> dirs;\n"
-                               "std::map<int, int> coords;\n");
+                               "std::map<int, int> coords;\n"
+                               "std::tr1::unordered_map<int, int> xy;\n"
+                               "std::list<boost::wave::token_id> tokens;\n"
+                               );
 
         // tokenize..
         Tokenizer tokenizer;
@@ -1289,7 +1292,10 @@ private:
                                    "1: list < int > ints@1 ;\n"
                                    "2: list < int > :: iterator it@2 ;\n"
                                    "3: std :: vector < std :: string > dirs@3 ;\n"
-                                   "4: std :: map < int , int > coords@4 ;\n");
+                                   "4: std :: map < int , int > coords@4 ;\n"
+                                   "5: std :: tr1 :: unordered_map < int , int > xy@5 ;\n"
+                                   "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
+                                   );
 
         ASSERT_EQUALS(expected, actual);
     }
