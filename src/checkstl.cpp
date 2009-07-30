@@ -72,7 +72,7 @@ void CheckStl::iterators()
                 else if (tok2->strAt(2) == std::string("erase"))
                     validIterator = false;
             }
-            else if (!validIterator && tok2->Match(tok2, "* %varid%", iteratorId))
+            else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId))
             {
                 dereferenceErasedError(tok2, tok2->strAt(1));
             }
