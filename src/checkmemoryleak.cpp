@@ -1647,6 +1647,15 @@ void CheckMemoryLeakInFunction::check()
         else if (tok->str() == "}")
             --indentlevel;
 
+        // Skip these weird blocks... "( { ... } )"
+        else if (Token::simpleMatch(tok, "( {"))
+        {
+            tok = tok->link();
+            if (!tok)
+                break;
+            continue;
+        }
+
         // In function..
         if (indentlevel == 0)
         {

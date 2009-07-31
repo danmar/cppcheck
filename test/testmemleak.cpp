@@ -287,6 +287,9 @@ private:
 
         TEST_CASE(pointer_to_pointer);
         TEST_CASE(dealloc_and_alloc_in_func);
+
+        // Unknown syntax
+        TEST_CASE(unknownSyntax1);
     }
 
 
@@ -2449,6 +2452,25 @@ private:
               "  a[0] = 1;\n"
               "  delete [] a;\n"
               "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void unknownSyntax1()
+    {
+        // I don't know what this syntax means so cppcheck should bail out
+        check("void foo()\n"
+              "{\n"
+              "    void *sym = ( {\n"
+              "                 void *__ptr = malloc(100);\n"
+              "                 if(!__ptr && 100 != 0)\n"
+              "                 {\n"
+              "                     exit(1);\n"
+              "                 }\n"
+              "                 __ptr;\n"
+              "                } );\n"
+              "    free(sym);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
