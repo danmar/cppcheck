@@ -1278,7 +1278,7 @@ private:
                                "std::map<int, int> coords;\n"
                                "std::tr1::unordered_map<int, int> xy;\n"
                                "std::list<boost::wave::token_id> tokens;\n"
-                               );
+                              );
 
         // tokenize..
         Tokenizer tokenizer;
@@ -1295,7 +1295,7 @@ private:
                                    "4: std :: map < int , int > coords@4 ;\n"
                                    "5: std :: tr1 :: unordered_map < int , int > xy@5 ;\n"
                                    "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
-                                   );
+                                  );
 
         ASSERT_EQUALS(expected, actual);
     }
