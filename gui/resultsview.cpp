@@ -167,6 +167,8 @@ void ResultsView::Save(const QString &filename, Report::Type type)
             msgBox.setIcon(QMessageBox::Critical);
             msgBox.exec();
         }
+        delete report;
+        report = NULL;
     }
     else
     {
