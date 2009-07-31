@@ -20,7 +20,8 @@
     </message>
     <message utf8="true">
         <location filename="about.ui" line="81"/>
-        <source>Copyright (C) 2007-2009 Daniel Marjam??ki and cppcheck team.</source>
+        <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
+        <oldsource>Copyright (C) 2007-2009 Daniel Marjam??ki and cppcheck team.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -466,7 +467,7 @@ Please check the application path and parameters are correct.</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="611"/>
-        <source>all</source>
+        <source>possible error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

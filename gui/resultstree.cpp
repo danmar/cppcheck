@@ -183,7 +183,7 @@ ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
 
 ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
 {
-    if (severity == "all")
+    if (severity == "possible error")
         return SHOW_ALL;
     if (severity == "error")
         return SHOW_ERRORS;
@@ -528,7 +528,7 @@ void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
 
 QString ResultsTree::SeverityToIcon(const QString &severity)
 {
-    if (severity == "all")
+    if (severity == "possible error")
         return ":images/dialog-warning.png";
     if (severity == "error")
         return ":images/dialog-error.png";
@@ -608,7 +608,7 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
     switch (type)
     {
     case SHOW_ALL:
-        return tr("all");
+        return tr("possible error");
         break;
 
     case SHOW_STYLE:

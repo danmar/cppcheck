@@ -459,7 +459,7 @@ Please check the application path and parameters are correct.</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="611"/>
-        <source>all</source>
+        <source>possible error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

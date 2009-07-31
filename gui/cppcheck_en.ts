@@ -482,8 +482,12 @@ Please check the application path and parameters are correct.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="611"/>
+        <source>possible error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>all</source>
-        <translation>All</translation>
+        <translation type="obsolete">All</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="615"/>

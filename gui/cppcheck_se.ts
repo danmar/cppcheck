@@ -479,8 +479,12 @@ Kontrollera att sökvägen och parametrarna är korrekta.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="611"/>
+        <source>possible error</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>all</source>
-        <translation>allt</translation>
+        <translation type="obsolete">allt</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="615"/>
