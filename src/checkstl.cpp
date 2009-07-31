@@ -304,6 +304,9 @@ void CheckStl::pushback()
                     if (Token::Match(tok2, "for ( %varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++ %varid% ) {", iteratorid))
                     {
                         const unsigned int vectorid(tok2->tokAt(4)->varId());
+                        if (vectorid == 0)
+                            continue;
+
                         const Token *pushback = 0;
                         int indent3 = 0;
                         for (const Token *tok3 = tok2->tokAt(22); tok3; tok3 = tok3->next())

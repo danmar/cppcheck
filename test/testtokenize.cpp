@@ -1278,6 +1278,8 @@ private:
                                "std::map<int, int> coords;\n"
                                "std::tr1::unordered_map<int, int> xy;\n"
                                "std::list<boost::wave::token_id> tokens;\n"
+                               "static std::vector<CvsProcess*> ex1;\n"
+                               "extern std::vector<CvsProcess*> ex2;\n"
                               );
 
         // tokenize..
@@ -1295,6 +1297,8 @@ private:
                                    "4: std :: map < int , int > coords@4 ;\n"
                                    "5: std :: tr1 :: unordered_map < int , int > xy@5 ;\n"
                                    "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
+                                   "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
+                                   "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
                                   );
 
         ASSERT_EQUALS(expected, actual);
