@@ -2644,6 +2644,7 @@ bool Tokenizer::simplifyIfNotNull()
         {
             deleteFrom->deleteNext();
             deleteFrom->deleteNext();
+            tok = deleteFrom;
             ret = true;
         }
 
