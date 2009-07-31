@@ -445,10 +445,7 @@ private:
                          "            tok = tok->next();\n"
                          "    }\n"
                          "}\n");
-        // Actual result:
-        ASSERT_EQUALS("", errout.str());
-        // Expected (todo) result:
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
     }
 
     void nullpointer2()

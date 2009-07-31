@@ -1011,6 +1011,75 @@ void CheckOther::nullPointer()
         }
     }
 
+    // looping through items in a linked list in a inner loop..
+    for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
+    {
+        // search for a "for" token..
+        if (!Token::simpleMatch(tok1, "for ("))
+            continue;
+
+        if (!Token::simpleMatch(tok1->next()->link(), ") {"))
+            continue;
+
+        // is there any dereferencing occuring in the for statement..
+        unsigned int parlevel2 = 1;
+        for (const Token *tok2 = tok1->tokAt(2); tok2; tok2 = tok2->next())
+        {
+            // Parantheses..
+            if (tok2->str() == "(")
+                ++parlevel2;
+            else if (tok2->str() == ")")
+            {
+                if (parlevel2 <= 1)
+                    break;
+                --parlevel2;
+            }
+
+            // Dereferencing a variable inside the "for" parantheses..
+            else if (Token::Match(tok2, "%var% . %var%"))
+            {
+                const unsigned int varid(tok2->varId());
+                if (varid == 0)
+                    continue;
+
+                // Check usage of dereferenced variable in the loop..
+                unsigned int indentlevel3 = 0;
+                for (const Token *tok3 = tok1->next()->link(); tok3; tok3 = tok3->next())
+                {
+                    if (tok3->str() == "{")
+                        ++indentlevel3;
+                    else if (tok3->str() == "}")
+                    {
+                        if (indentlevel3 <= 1)
+                            break;
+                        --indentlevel3;
+                    }
+                    else if (Token::Match(tok3, "while ( %varid% &&|)", varid))
+                    {
+                        // Make sure there is a "break" to prevent segmentation faults..
+                        unsigned int indentlevel4 = indentlevel3;
+                        for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
+                        {
+                            if (tok4->str() == "{")
+                                ++indentlevel4;
+                            else if (tok4->str() == "}")
+                            {
+                                if (indentlevel4 <= 1)
+                                {
+                                    nullPointerError(tok1);
+                                    break;
+                                }
+                                --indentlevel4;
+                            }
+                            else if (tok4->str() == "break")
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Dereferencing a struct pointer and then checking if it's NULL..
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
