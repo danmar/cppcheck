@@ -501,6 +501,17 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="resultsview.cpp" line="139"/>
+        <source>No errors found, nothing to save.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultsview.cpp" line="166"/>
+        <location filename="resultsview.cpp" line="176"/>
+        <source>Failed to save the report.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="resultsview.ui" line="26"/>
         <source>Results</source>
         <translation type="unfinished"></translation>
