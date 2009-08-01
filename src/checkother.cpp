@@ -1042,6 +1042,9 @@ void CheckOther::nullPointer()
                 if (varid == 0)
                     continue;
 
+                if (Token::Match(tok2->tokAt(-2), "%varid% ?", varid))
+                    continue;
+
                 // Check usage of dereferenced variable in the loop..
                 unsigned int indentlevel3 = 0;
                 for (const Token *tok3 = tok1->next()->link(); tok3; tok3 = tok3->next())

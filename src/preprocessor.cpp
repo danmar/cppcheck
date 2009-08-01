@@ -1516,7 +1516,11 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                     }
                     else if (code[pos2] == ' ')
                     {
-
+                        // Add space only if it is needed
+                        if (par.size() && std::isalnum(par[par.length()-1]))
+                        {
+                            par += ' ';
+                        }
                     }
                     else if (parlevel >= 1)
                     {
