@@ -1300,6 +1300,7 @@ private:
                                "std::list<boost::wave::token_id> tokens;\n"
                                "static std::vector<CvsProcess*> ex1;\n"
                                "extern std::vector<CvsProcess*> ex2;\n"
+                               "std::map<int, 1> m;\n"
                               );
 
         // tokenize..
@@ -1319,6 +1320,7 @@ private:
                                    "6: std :: list < boost :: wave :: token_id > tokens@6 ;\n"
                                    "7: static std :: vector < CvsProcess * > ex1@7 ;\n"
                                    "8: extern std :: vector < CvsProcess * > ex2@8 ;\n"
+                                   "9: std :: map < int , 1 > m@9 ;\n"
                                   );
 
         ASSERT_EQUALS(expected, actual);
