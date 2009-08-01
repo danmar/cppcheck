@@ -1400,6 +1400,12 @@ void Tokenizer::simplifyTokenList()
         if (Token::Match(tok, "const %type% %var% = %num% ;"))
         {
             unsigned int varId = tok->tokAt(2)->varId();
+            if (varId == 0)
+            {
+                tok = tok->tokAt(5);
+                continue;
+            }
+
             const char *num = tok->strAt(4);
             int indent = 1;
             for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())

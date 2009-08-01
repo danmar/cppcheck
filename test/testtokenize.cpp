@@ -98,6 +98,7 @@ private:
         TEST_CASE(simplifyKnownVariables9);
         TEST_CASE(simplifyKnownVariables10);
         TEST_CASE(simplifyKnownVariables11);
+        TEST_CASE(simplifyKnownVariables12);
 
         TEST_CASE(match1);
 
@@ -862,6 +863,25 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(" const int foo = 0 ; int main ( ) { int foo ; foo = 0 ; }", ostr.str());
+    }
+
+    void simplifyKnownVariables12()
+    {
+        const char code[] = "ENTER_NAMESPACE(project_namespace)\n"
+                            "const double pi = 3.14;\n"
+                            "int main(){}\n";
+        // tokenize..
+        OurTokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(" ENTER_NAMESPACE ( project_namespace ) const double pi = 3.14 ; int main ( ) { }", ostr.str());
     }
 
     void match1()
