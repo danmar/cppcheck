@@ -513,7 +513,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <name>Settings</name>
     <message>
         <location filename="settings.ui" line="14"/>
-        <source>Settings</source>
+        <source>Preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

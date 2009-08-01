@@ -336,10 +336,6 @@ Stop the checking before exiting.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>XML files (*.xml);;Text files (*.txt)</source>
-        <translation type="obsolete">XML files (*.xml);;Text files (*.txt)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="517"/>
         <source>Save the report file</source>
         <translation>Save the report file</translation>
@@ -486,17 +482,9 @@ Please check the application path and parameters are correct.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>all</source>
-        <translation type="obsolete">All</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="615"/>
         <source>style</source>
         <translation>Style</translation>
-    </message>
-    <message>
-        <source>security</source>
-        <translation type="obsolete">Security</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="619"/>
@@ -545,8 +533,8 @@ To toggle what kind of errors are shown, open view menu.</translation>
     <name>Settings</name>
     <message>
         <location filename="settings.ui" line="14"/>
-        <source>Settings</source>
-        <translation>Settings</translation>
+        <source>Preferences</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>

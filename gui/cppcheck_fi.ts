@@ -338,10 +338,6 @@ Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>XML files (*.xml);;Text files (*.txt)</source>
-        <translation type="obsolete">XML-tiedostot (*.xml);;Tekstitiedostot (*.txt)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="517"/>
         <source>Save the report file</source>
         <translation>Tallenna raportti</translation>
@@ -490,17 +486,9 @@ Tarkista että ohjelman polku ja parametrit ovat oikeat.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>all</source>
-        <translation type="obsolete">Epävarmat</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="615"/>
         <source>style</source>
         <translation>Tyyli</translation>
-    </message>
-    <message>
-        <source>security</source>
-        <translation type="obsolete">Tietoturva</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="619"/>
@@ -549,8 +537,8 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     <name>Settings</name>
     <message>
         <location filename="settings.ui" line="14"/>
-        <source>Settings</source>
-        <translation>Asetukset</translation>
+        <source>Preferences</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>

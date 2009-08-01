@@ -483,17 +483,9 @@ Kontrollera att sökvägen och parametrarna är korrekta.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>all</source>
-        <translation type="obsolete">allt</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="615"/>
         <source>style</source>
         <translation>stil</translation>
-    </message>
-    <message>
-        <source>security</source>
-        <translation type="obsolete">säkerhet</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="619"/>
@@ -542,8 +534,8 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
     <name>Settings</name>
     <message>
         <location filename="settings.ui" line="14"/>
-        <source>Settings</source>
-        <translation>Inställningar</translation>
+        <source>Preferences</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>
