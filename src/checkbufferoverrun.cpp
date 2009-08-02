@@ -149,6 +149,22 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     arrayIndexOutOfBounds(tok->next());
                 }
             }
+            else if (Token::Match(tok, "%varid% [ %var% + %num% ]", varid))
+            {
+                const char *num = tok->strAt(4);
+                if (std::strtol(num, NULL, 10) >= size)
+                {
+                    arrayIndexOutOfBounds(tok->next());
+                }
+            }
+            else if (Token::Match(tok, "%varid% [ %num% + %var% ]", varid))
+            {
+                const char *num = tok->strAt(2);
+                if (std::strtol(num, NULL, 10) >= size)
+                {
+                    arrayIndexOutOfBounds(tok->next());
+                }
+            }
         }
         else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), std::string(varnames + " [ %num% ]").c_str()))
         {
