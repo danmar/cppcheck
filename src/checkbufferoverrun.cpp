@@ -293,7 +293,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     break;
                 }
 
-                else if (counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty())
+                else if (varid > 0 && counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty())
                 {
                     int min_index = 0;
                     int max_index = 0;
