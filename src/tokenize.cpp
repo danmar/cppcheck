@@ -2946,21 +2946,7 @@ bool Tokenizer::simplifyCalculations()
             if (Token::simpleMatch(tok->next(), "/ 0"))
                 continue;
 
-            switch (*(tok->strAt(1)))
-            {
-            case '+':
-                tok->str(MathLib::add(tok->str(), tok->strAt(2)));
-                break;
-            case '-':
-                tok->str(MathLib::subtract(tok->str(), tok->strAt(2)));
-                break;
-            case '*':
-                tok->str(MathLib::multiply(tok->str(), tok->strAt(2)));
-                break;
-            case '/':
-                tok->str(MathLib::divide(tok->str(), tok->strAt(2)));
-                break;
-            }
+            tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), *(tok->strAt(1))));
 
             tok->deleteNext();
             tok->deleteNext();

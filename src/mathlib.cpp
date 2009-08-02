@@ -101,6 +101,39 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
     return toString<double>(toDoubleNumber(first) * toDoubleNumber(second));
 }
 
+std::string MathLib::calculate(const std::string &first, const std::string &second, char action)
+{
+    std::string result("0");
+
+    switch (action)
+    {
+        case '+':
+            result = MathLib::add(first, second);
+            break;
+
+        case '-':
+            result = MathLib::subtract(first, second);
+            break;
+
+        case '*':
+            result = MathLib::multiply(first, second);
+            break;
+
+        case '/':
+            result = MathLib::divide(first, second);
+            break;
+
+        default:
+            std::cout << "##### If you see this, there is a bug: "
+                      << "MathLib::calculate() was called with unknown action '"
+                      << action
+                      << "' #####"
+                      << std::endl;
+            break;
+    }
+
+    return result;
+}
 
 std::string MathLib::sin(const std::string &tok)
 {
