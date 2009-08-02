@@ -115,6 +115,9 @@ private:
 
         // Simplify "?:"
         TEST_CASE(conditionOperator);
+
+        // Simplify calculations
+        TEST_CASE(calculations);
     }
 
     std::string tok(const char code[])
@@ -1155,6 +1158,35 @@ private:
             TODO_ASSERT_EQUALS("( abc . a )", tok(code));
         }
     }
+
+    void calculations()
+    {
+        {
+            const char code[] = "a[i+8+2]";
+            ASSERT_EQUALS("a [ i + 10 ]", tok(code));
+        }
+        {
+            const char code[] = "a[8+2+i]";
+            ASSERT_EQUALS("a [ 10 + i ]", tok(code));
+        }
+        {
+            const char code[] = "a[i + 2 * (2 * 4)]";
+            ASSERT_EQUALS("a [ i + 16 ]", tok(code));
+        }
+        {
+            const char code[] = "a[i + 100 - 90]";
+            ASSERT_EQUALS("a [ i + 10 ]", tok(code));
+        }
+        {
+            const char code[] = "a[1+1+1+1+1+1+1+1+1+1-2+5-3]";
+            ASSERT_EQUALS("a [ 10 ]", tok(code));
+        }
+        {
+            const char code[] = "a[10+10-10-10]";
+            ASSERT_EQUALS("a [ 0 ]", tok(code));
+        }
+    }
+
 };
 
 REGISTER_TEST(TestSimplifyTokens)

@@ -2938,7 +2938,7 @@ bool Tokenizer::simplifyCalculations()
         }
 
         // (1-2)
-        if (Token::Match(tok, "[[,(=<>] %num% [+-*/] %num% [],);=<>]"))
+        if (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*]"))
         {
             tok = tok->next();
 
@@ -2964,6 +2964,14 @@ bool Tokenizer::simplifyCalculations()
 
             tok->deleteNext();
             tok->deleteNext();
+
+            // evaluate "2 + 2 - 2 - 2"
+            // as (((2 + 2) - 2) - 2) = 0
+            // instead of ((2 + 2) - (2 - 2)) = 4
+            if (Token::Match(tok->next(), "[+-*/]")) {
+                tok = tok->tokAt(-2);
+                continue;
+            }
 
             ret = true;
         }
