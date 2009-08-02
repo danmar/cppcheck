@@ -189,6 +189,8 @@ ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
         return SHOW_ERRORS;
     if (severity == "style")
         return SHOW_STYLE;
+    if (severity == "possible style")
+        return SHOW_ALL_STYLE;
 
     return SHOW_NONE;
 }
@@ -532,7 +534,7 @@ QString ResultsTree::SeverityToIcon(const QString &severity)
         return ":images/dialog-warning.png";
     if (severity == "error")
         return ":images/dialog-error.png";
-    if (severity == "style")
+    if (severity == "style" || severity == "possible style")
         return ":images/dialog-information.png";
 
     return "";
@@ -613,6 +615,10 @@ QString ResultsTree::ShowTypeToString(ShowTypes type)
 
     case SHOW_STYLE:
         return tr("style");
+        break;
+
+    case SHOW_ALL_STYLE:
+        return tr("possible style");
         break;
 
     case SHOW_ERRORS:
