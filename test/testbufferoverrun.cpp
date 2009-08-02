@@ -249,20 +249,22 @@ private:
             check("void f()\n"
                   "{\n"
                   "    int val[50];\n"
+                  "    int i;\n"
                   "    for (i = 0; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:5]: (possible error) Buffer overrun\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
         }
 
         {
             check("void f()\n"
                   "{\n"
                   "    int val[50];\n"
+                  "    int i;\n"
                   "    for (i = 1; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:5]: (possible error) Buffer overrun\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
         }
 
 
@@ -270,10 +272,11 @@ private:
             check("void f(int a)\n"
                   "{\n"
                   "    int val[50];\n"
+                  "    int i;\n"
                   "    for (i = a; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:5]: (possible error) Buffer overrun\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
         }
     }
 
