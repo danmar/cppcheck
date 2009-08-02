@@ -262,6 +262,7 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
         {
             mCurrentDirectory = dir;
             selected.append(dir);
+            dir = QDir::toNativeSeparators(dir);
             FormatAndSetTitle(dir);
         }
     }
