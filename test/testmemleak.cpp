@@ -1677,7 +1677,7 @@ private:
               "  free(new_buf);\n"
               "}\n", true);
 
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void assign()

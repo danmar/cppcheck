@@ -629,6 +629,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     addtoken("realloc");
                     addtoken(";");
                     realloc = true;
+                    tok = tok->tokAt(2);
+                    continue;
                 }
             }
 
@@ -936,7 +938,24 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             {
                 const char *str = call_func(tok, callstack, varnames, alloctype, dealloctype, all, sz);
                 if (str)
+                {
                     addtoken(str);
+                }
+                else
+                {
+                    if (getReallocationType(tok) != No &&
+                        Token::simpleMatch(tok->tokAt(2), varnameStr.c_str())
+                       )
+                    {
+                        addtoken("if");
+                        addtoken("{");
+                        addtoken("dealloc");
+                        addtoken(";");
+                        addtoken("}");
+                        tok = tok->tokAt(2);
+                        continue;
+                    }
+                }
             }
         }
 
@@ -1495,7 +1514,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const char varname
     const Token *result;
 
     Token *tok = getcode(Tok1, callstack, varname, alloctype, dealloctype, classmember, all, sz);
-    //tok->printOut( "getcode result" );
+    //tok->printOut((std::string("Checkmemoryleak: getcode result for: ") + varname).c_str());
 
     // Simplify the code and check if freed memory is used..
     for (Token *tok2 = tok; tok2; tok2 = tok2->next())
