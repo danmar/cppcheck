@@ -356,13 +356,13 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     {
         if (Token::Match(tok, "[(+-*/=,] - %num%") && tok->strAt(2)[0] != '-')
         {
-            tok->next()->str((std::string("-") + tok->strAt(2)).c_str());
+            tok->next()->str(std::string("-") + tok->strAt(2));
             tok->next()->deleteNext();
         }
 
         if (Token::Match(tok, "return - %num%") && tok->strAt(2)[0] != '-')
         {
-            tok->next()->str((std::string("-") + tok->strAt(2)).c_str());
+            tok->next()->str(std::string("-") + tok->strAt(2));
             tok->next()->deleteNext();
         }
     }
@@ -714,7 +714,7 @@ void Tokenizer::simplifyTemplates()
             {
                 if (Token::simpleMatch(tok4, s.c_str()))
                 {
-                    tok4->str(name2.c_str());
+                    tok4->str(name2);
                     while (tok4->next()->str() != ">")
                         tok4->deleteNext();
                     tok4->deleteNext();
@@ -1080,7 +1080,7 @@ void Tokenizer::simplifyTokenList()
         while (tok->str() == "L" && tok->next() && tok->next()->str()[0] == '"')
         {
             // Combine 'L "string"'
-            tok->str(tok->next()->str().c_str());
+            tok->str(tok->next()->str());
             tok->deleteNext();
         }
     }
@@ -2766,7 +2766,7 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3, "(|!|==|!=|<|<=|>|>= %varid% )|==|!=|<|<=|>|>=", varid))
                     {
                         tok3 = tok3->next();
-                        tok3->str(value.c_str());
+                        tok3->str(value);
                         ret = true;
                     }
 
@@ -2774,7 +2774,7 @@ bool Tokenizer::simplifyKnownVariables()
                     if (Token::Match(tok3, "[=+-*/[] %varid% [+-*/;]]", varid))
                     {
                         tok3 = tok3->next();
-                        tok3->str(value.c_str());
+                        tok3->str(value);
                         ret = true;
                     }
 
@@ -2789,18 +2789,18 @@ bool Tokenizer::simplifyKnownVariables()
                         else
                         {
                             tok3 = tok3->next();
-                            tok3->str(value.c_str());
+                            tok3->str(value);
                             tok3->deleteNext();
                         }
                         incdec(value, op);
-                        tok2->tokAt(2)->str(value.c_str());
+                        tok2->tokAt(2)->str(value);
                         ret = true;
                     }
 
                     if (Token::Match(tok3->next(), "++|-- %varid%", varid))
                     {
                         incdec(value, tok3->strAt(1));
-                        tok2->tokAt(2)->str(value.c_str());
+                        tok2->tokAt(2)->str(value);
                         if (Token::Match(tok3, "[;{}] %any% %any% ;"))
                         {
                             tok3->deleteNext();
@@ -2809,7 +2809,7 @@ bool Tokenizer::simplifyKnownVariables()
                         else
                         {
                             tok3->deleteNext();
-                            tok3->next()->str(value.c_str());
+                            tok3->next()->str(value);
                         }
                         tok3 = tok3->next();
                         ret = true;
@@ -2949,16 +2949,16 @@ bool Tokenizer::simplifyCalculations()
             switch (*(tok->strAt(1)))
             {
             case '+':
-                tok->str(MathLib::add(tok->str(), tok->strAt(2)).c_str());
+                tok->str(MathLib::add(tok->str(), tok->strAt(2)));
                 break;
             case '-':
-                tok->str(MathLib::subtract(tok->str(), tok->strAt(2)).c_str());
+                tok->str(MathLib::subtract(tok->str(), tok->strAt(2)));
                 break;
             case '*':
-                tok->str(MathLib::multiply(tok->str(), tok->strAt(2)).c_str());
+                tok->str(MathLib::multiply(tok->str(), tok->strAt(2)));
                 break;
             case '/':
-                tok->str(MathLib::divide(tok->str(), tok->strAt(2)).c_str());
+                tok->str(MathLib::divide(tok->str(), tok->strAt(2)));
                 break;
             }
 
