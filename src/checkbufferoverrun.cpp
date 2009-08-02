@@ -255,6 +255,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
 
             // Get index variable and stopsize.
             const char *strindex = tok2->str().c_str();
+            bool condition_out_of_bounds = true;
+            int value = ((tok2->strAt(1)[1] == '=') ? 1 : 0) + std::atoi(tok2->strAt(2));
+            if (value <= size)
+                condition_out_of_bounds = false;;
 
             // Goto the end of the for loop..
             while (tok2 && tok2->str() != ")")
@@ -287,7 +291,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     break;
                 }
 
-                if (Token::Match(tok2, pattern.str().c_str()))
+                if (Token::Match(tok2, pattern.str().c_str()) && condition_out_of_bounds)
                 {
                     bufferOverrun(tok2);
                     break;
