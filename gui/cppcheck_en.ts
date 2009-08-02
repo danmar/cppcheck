@@ -129,20 +129,20 @@ kate -l(line) (file)</translation>
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="216"/>
-        <location filename="mainwindow.cpp" line="461"/>
-        <location filename="mainwindow.cpp" line="561"/>
-        <location filename="mainwindow.cpp" line="579"/>
+        <location filename="mainwindow.cpp" line="220"/>
+        <location filename="mainwindow.cpp" line="471"/>
+        <location filename="mainwindow.cpp" line="574"/>
+        <location filename="mainwindow.cpp" line="592"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="main.ui" line="135"/>
+        <location filename="main.ui" line="136"/>
         <source>Standard</source>
         <translation>Standard</translation>
     </message>
     <message>
-        <location filename="main.ui" line="254"/>
+        <location filename="main.ui" line="255"/>
         <source>Show possible false positives</source>
         <translation>Show possible false positives</translation>
     </message>
@@ -157,162 +157,167 @@ kate -l(line) (file)</translation>
         <translation>&amp;View</translation>
     </message>
     <message>
-        <location filename="main.ui" line="112"/>
+        <location filename="main.ui" line="113"/>
         <source>&amp;Check</source>
         <translation>&amp;Check</translation>
     </message>
     <message>
-        <location filename="main.ui" line="121"/>
+        <location filename="main.ui" line="122"/>
         <source>&amp;Edit</source>
         <translation>&amp;Edit</translation>
     </message>
     <message>
-        <location filename="main.ui" line="153"/>
+        <location filename="main.ui" line="154"/>
         <source>&amp;License...</source>
         <translation>&amp;License...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="158"/>
+        <location filename="main.ui" line="159"/>
         <source>A&amp;uthors...</source>
         <translation>A&amp;uthors...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="167"/>
+        <location filename="main.ui" line="168"/>
         <source>&amp;About...</source>
         <translation>&amp;About...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="172"/>
+        <location filename="main.ui" line="173"/>
         <source>&amp;Files...</source>
         <translation>&amp;Files...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="175"/>
+        <location filename="main.ui" line="176"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="184"/>
+        <location filename="main.ui" line="185"/>
         <source>&amp;Directory...</source>
         <translation>&amp;Directory...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="187"/>
+        <location filename="main.ui" line="188"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="196"/>
+        <location filename="main.ui" line="197"/>
         <source>&amp;Recheck files</source>
         <translation>&amp;Recheck files</translation>
     </message>
     <message>
-        <location filename="main.ui" line="199"/>
+        <location filename="main.ui" line="200"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="208"/>
+        <location filename="main.ui" line="209"/>
         <source>&amp;Stop</source>
         <translation>&amp;Stop</translation>
     </message>
     <message>
-        <location filename="main.ui" line="211"/>
+        <location filename="main.ui" line="212"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="220"/>
+        <location filename="main.ui" line="221"/>
         <source>&amp;Save results to file...</source>
         <translation>&amp;Save results to file...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="223"/>
+        <location filename="main.ui" line="224"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="228"/>
+        <location filename="main.ui" line="229"/>
         <source>&amp;Quit</source>
         <translation>&amp;Quit</translation>
     </message>
     <message>
-        <location filename="main.ui" line="237"/>
+        <location filename="main.ui" line="238"/>
         <source>&amp;Clear results</source>
         <translation>&amp;Clear results</translation>
     </message>
     <message>
-        <location filename="main.ui" line="246"/>
+        <location filename="main.ui" line="247"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Preferences</translation>
     </message>
     <message>
-        <location filename="main.ui" line="262"/>
+        <location filename="main.ui" line="263"/>
         <source>Show security errors</source>
         <translation>Show security errors</translation>
     </message>
     <message>
-        <location filename="main.ui" line="270"/>
+        <location filename="main.ui" line="271"/>
         <source>Show style errors</source>
         <translation>Show style errors</translation>
     </message>
     <message>
-        <location filename="main.ui" line="278"/>
+        <location filename="main.ui" line="279"/>
+        <source>Show possible style errors</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="287"/>
         <source>Show common errors</source>
         <translation>Show common errors</translation>
     </message>
     <message>
-        <location filename="main.ui" line="283"/>
+        <location filename="main.ui" line="292"/>
         <source>&amp;Check all</source>
         <translation>&amp;Check all</translation>
     </message>
     <message>
-        <location filename="main.ui" line="288"/>
+        <location filename="main.ui" line="297"/>
         <source>&amp;Uncheck all</source>
         <translation>&amp;Uncheck all</translation>
     </message>
     <message>
-        <location filename="main.ui" line="293"/>
+        <location filename="main.ui" line="302"/>
         <source>Collapse &amp;all</source>
         <translation>Collapse &amp;all</translation>
     </message>
     <message>
-        <location filename="main.ui" line="298"/>
+        <location filename="main.ui" line="307"/>
         <source>&amp;Expand all</source>
         <translation>&amp;Expand all</translation>
     </message>
     <message>
-        <location filename="main.ui" line="306"/>
+        <location filename="main.ui" line="315"/>
         <source>&amp;Toolbar</source>
         <translation>&amp;Toolbar</translation>
     </message>
     <message>
-        <location filename="main.ui" line="99"/>
+        <location filename="main.ui" line="100"/>
         <source>&amp;Language</source>
         <translation>&amp;Language</translation>
     </message>
     <message>
-        <location filename="main.ui" line="104"/>
+        <location filename="main.ui" line="105"/>
         <source>&amp;Help</source>
         <translation>&amp;Help</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="250"/>
+        <location filename="mainwindow.cpp" line="254"/>
         <source>Select files to check</source>
         <translation>Select files to check</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="259"/>
+        <location filename="mainwindow.cpp" line="263"/>
         <source>Select directory to check</source>
         <translation>Select directory to check</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="217"/>
+        <location filename="mainwindow.cpp" line="221"/>
         <source>No suitable files found to check!</source>
         <translation>No suitable files found to check!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="457"/>
+        <location filename="mainwindow.cpp" line="467"/>
         <source>Cannot exit while checking.
 
 Stop the checking before exiting.</source>
@@ -321,42 +326,42 @@ Stop the checking before exiting.</source>
 Stop the checking before exiting.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="500"/>
+        <location filename="mainwindow.cpp" line="513"/>
         <source>License</source>
         <translation>License</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="507"/>
+        <location filename="mainwindow.cpp" line="520"/>
         <source>Authors</source>
         <translation>Authors</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="515"/>
+        <location filename="mainwindow.cpp" line="528"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="517"/>
+        <location filename="mainwindow.cpp" line="530"/>
         <source>Save the report file</source>
         <translation>Save the report file</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="525"/>
+        <location filename="mainwindow.cpp" line="538"/>
         <source>XML files (*.xml)</source>
         <translation>XML files (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="531"/>
+        <location filename="mainwindow.cpp" line="544"/>
         <source>Text files (*.txt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="563"/>
+        <location filename="mainwindow.cpp" line="576"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="580"/>
+        <location filename="mainwindow.cpp" line="593"/>
         <source>Failed to change the language:
 
 %1
@@ -419,25 +424,25 @@ Stop the checking before exiting.</translation>
     <name>ResultsTree</name>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="749"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>File</source>
         <translation>File</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="749"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>Severity</source>
         <translation>Severity</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="749"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>Line</source>
         <translation>Line</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="749"/>
+        <location filename="resultstree.cpp" line="755"/>
         <source>Message</source>
         <translation>Message</translation>
     </message>
@@ -447,28 +452,28 @@ Stop the checking before exiting.</translation>
         <translation>Undefined file</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="386"/>
+        <location filename="resultstree.cpp" line="388"/>
         <source>Copy filename</source>
         <translation>Copy filename</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="387"/>
+        <location filename="resultstree.cpp" line="389"/>
         <source>Copy full path</source>
         <translation>Copy full path</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="423"/>
+        <location filename="resultstree.cpp" line="425"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="424"/>
+        <location filename="resultstree.cpp" line="426"/>
         <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
         <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
         <translation>You can open this error by specifying applications in program&apos;s settings.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="469"/>
+        <location filename="resultstree.cpp" line="471"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -477,17 +482,22 @@ Please check the application path and parameters are correct.</source>
 Please check the application path and parameters are correct.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="611"/>
+        <location filename="resultstree.cpp" line="613"/>
         <source>possible error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="615"/>
+        <location filename="resultstree.cpp" line="617"/>
         <source>style</source>
         <translation>Style</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="619"/>
+        <location filename="resultstree.cpp" line="621"/>
+        <source>possible style</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultstree.cpp" line="625"/>
         <source>error</source>
         <translation>Error</translation>
     </message>
