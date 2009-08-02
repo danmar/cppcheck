@@ -19,8 +19,7 @@ void f(char k)
 void possible_style()
 {
     std::list<int>::iterator it;
-    \n
-    for (it = ab.begin(); it != ab.end(); it++)\n
+    for (it = ab.begin(); it != ab.end(); it++)
         ;
 }
 
@@ -31,7 +30,7 @@ int main()
     if (a);
     b = gets();
     f(a);
-    iter_err();
+    possible_style();
 }
 
 
