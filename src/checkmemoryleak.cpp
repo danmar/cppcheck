@@ -1530,7 +1530,11 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const char varname
     }
 
     simplifycode(tok, all);
-    //tok->printOut("simplifycode result");
+
+    if (_settings->_debug)
+    {
+        tok->printOut((std::string("Checkmemoryleak: simplifycode result for: ") + varname).c_str());
+    }
 
     // If the variable is not allocated at all => no memory leak
     if (Token::findmatch(tok, "alloc") == 0)

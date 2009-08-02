@@ -223,6 +223,7 @@ private:
         TEST_CASE(realloc2);
         TEST_CASE(realloc3);
         TEST_CASE(realloc4);
+        TEST_CASE(realloc5);
 
         TEST_CASE(assign);
 
@@ -1662,6 +1663,22 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
     }
 
+    void realloc5()
+    {
+        check("void foo()\n"
+              "{\n"
+              "char *buf;\n"
+              "char *new_buf;\n"
+              "buf = calloc( 10 );\n"
+              "new_buf = realloc ( buf, 20);\n"
+              "if ( !new_buf )\n"
+              "  free(buf);\n"
+              "else\n"
+              "  free(new_buf);\n"
+              "}\n", true);
+
+        TODO_ASSERT_EQUALS("", errout.str());
+    }
 
     void assign()
     {
