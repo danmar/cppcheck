@@ -41,6 +41,7 @@ private:
         TEST_CASE(virtualDestructor4);	// Derived class doesn't have a destructor => no error
         TEST_CASE(virtualDestructor5);	// Derived class has empty destructor => no error
         TEST_CASE(virtualDestructorProtected);
+        TEST_CASE(virtualDestructorInherited);
 
         TEST_CASE(uninitVar1);
         TEST_CASE(uninitVarEnum);
@@ -155,6 +156,100 @@ private:
                                "    ~B() { int a; }\n"
                                "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void virtualDestructorInherited()
+    {
+        // class A inherits virtual destructor from class Base -> no error
+        checkVirtualDestructor("class Base\n"
+                               "{\n"
+                               "public:\n"
+                               "virtual ~Base() {}\n"
+                               "};\n"
+                               "class A : private Base\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~A() { }\n"
+                               "};\n"
+                               "\n"
+                               "class B : public A\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~B() { int a; }\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // class A inherits virtual destructor from struct Base -> no error
+        // also notice that public is not given, but destructor is public, because
+        // we are using struct instead of class
+        checkVirtualDestructor("struct Base\n"
+                               "{\n"
+                               "virtual ~Base() {}\n"
+                               "};\n"
+                               "class A : public Base\n"
+                               "{\n"
+                               "};\n"
+                               "\n"
+                               "class B : public A\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~B() { int a; }\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Unknown Base class -> it could have virtual destructor, so ignore
+        checkVirtualDestructor("class A : private Base\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~A() { }\n"
+                               "};\n"
+                               "\n"
+                               "class B : public A\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~B() { int a; }\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Virtual destructor is inherited -> no error
+        checkVirtualDestructor("class Base2\n"
+                               "{\n"
+                               "virtual ~Base2() {}\n"
+                               "};\n"
+                               "class Base : public Base2\n"
+                               "{\n"
+                               "};\n"
+                               "class A : private Base\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~A() { }\n"
+                               "};\n"
+                               "\n"
+                               "class B : public A\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~B() { int a; }\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // class A doesn't inherit virtual destructor from class Base -> error
+        checkVirtualDestructor("class Base\n"
+                               "{\n"
+                               "public:\n"
+                               "~Base() {}\n"
+                               "};\n"
+                               "class A : private Base\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~A() { }\n"
+                               "};\n"
+                               "\n"
+                               "class B : public A\n"
+                               "{\n"
+                               "public:\n"
+                               "    ~B() { int a; }\n"
+                               "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class A which is inherited by class B does not have a virtual destructor\n", errout.str());
     }
 
     void checkUninitVar(const char code[])
