@@ -35,21 +35,6 @@ public:
     TestRedundantIf() : TestFixture("TestRedundantIf")
     { }
 
-    class OurCheckOther : public CheckOther
-    {
-    public:
-        OurCheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-                : CheckOther(tokenizer, settings, errorLogger)
-        {
-
-        }
-
-        void redundantCondition2()
-        {
-            CheckOther::redundantCondition2();
-        }
-    };
-
 private:
     void check(const char code[])
     {
@@ -63,7 +48,7 @@ private:
 
         // Check for redundant condition..
         Settings settings;
-        OurCheckOther checkOther(&tokenizer, &settings, this);
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.redundantCondition2();
     }
 

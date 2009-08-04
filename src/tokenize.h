@@ -79,9 +79,6 @@ public:
     /** Simplify tokenlist */
     void simplifyTokenList();
 
-
-    // Helper functions for handling the tokens list..
-
     static void deleteTokens(Token *tok);
     static const char *getParameterName(const Token *ftok, int par);
 
@@ -89,8 +86,6 @@ public:
 
     // Return size.
     int sizeOfType(const char type[]) const;
-
-    void initTokens();
 
     const std::vector<std::string> *getFiles() const;
 
@@ -110,6 +105,7 @@ public:
      */
     static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel);
 
+private:
 
     /**
      * Simplify variable declarations
@@ -174,8 +170,6 @@ public:
      */
     bool simplifyComma();
 
-protected:
-
     /** Add braces to an if-block
      * @return true if something is modified
      *         false if nothing is done.
@@ -201,8 +195,6 @@ protected:
     bool elseif();
 
     std::vector<const Token *> _functionList;
-
-private:
 
     /**
      * Finds matching "end" for "start".

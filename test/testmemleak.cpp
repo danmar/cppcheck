@@ -18,8 +18,6 @@
 
 
 
-
-#define UNIT_TESTING
 #include "../src/tokenize.h"
 #include "../src/checkmemoryleak.h"
 #include "testsuite.h"

@@ -19,31 +19,13 @@
 
 
 #include "testsuite.h"
+#define private public
 #include "../src/tokenize.h"
+#undef private
 #include "../src/token.h"
 #include <sstream>
 
 extern std::ostringstream errout;
-
-
-// A test tokenizer where protected functions are made public
-class OpenTokenizer : public Tokenizer
-{
-public:
-    OpenTokenizer(const char code[]) : Tokenizer()
-    {
-        std::istringstream istr(code);
-        tokenize(istr, "test.cpp");
-    }
-
-    virtual ~OpenTokenizer()
-    { }
-
-    bool elseif_()
-    {
-        return elseif();
-    }
-};
 
 
 class TestSimplifyTokens : public TestFixture
@@ -471,8 +453,9 @@ private:
     {
         std::istringstream istr(code);
 
-        OpenTokenizer tokenizer(code);
-        tokenizer.elseif_();
+        Tokenizer tokenizer;
+        tokenizer.createTokens(istr);
+        tokenizer.elseif();
         return tokenizer.tokens()->stringifyList(false);
     }
 

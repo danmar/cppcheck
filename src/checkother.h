@@ -118,7 +118,6 @@ public:
     /** Check for post increment/decrement in for loop*/
     void postIncrement();
 
-protected:
     void lookupVar(const Token *tok1, const char varname[]);
 
     // Redundant condition
@@ -126,7 +125,6 @@ protected:
     //    haystack.remove(needle);
     void redundantCondition2();
 
-private:
     // Error messages..
     void cstyleCastError(const Token *tok);
     void redundantIfDelete0Error(const Token *tok);
