@@ -266,6 +266,7 @@ private:
         TEST_CASE(exit2);
         TEST_CASE(exit3);
         TEST_CASE(exit4);
+        TEST_CASE(exit5);
         TEST_CASE(stdstring);
 
         TEST_CASE(strndup_function);
@@ -2162,6 +2163,20 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void exit5()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char *p = malloc(100);\n"
+              "    if (p)\n"
+              "    {\n"
+              "        xyz();\n"
+              "        exit(0);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
