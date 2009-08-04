@@ -223,10 +223,12 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--errorlist") == 0)
         {
             // call all "getErrorMessages" in all registered Check classes
+            std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
             for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
             {
                 (*it)->getErrorMessages();
             }
+            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
             return "";
         }
 

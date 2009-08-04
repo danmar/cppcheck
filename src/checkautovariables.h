@@ -70,7 +70,6 @@ private:
 
     void getErrorMessages()
     {
-        std::cout << "===auto variables===" << "\n";
         reportError(0, Severity::error, "autoVariables", "Wrong assignement of an auto-variable to an effective parameter of a function");
         errorReturnPointerToLocalArray(0);
     }

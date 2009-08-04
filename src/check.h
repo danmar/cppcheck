@@ -87,20 +87,14 @@ protected:
     void reportError(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         std::list<const Token *> callstack;
-        callstack.push_back(tok);
+        if (tok)
+            callstack.push_back(tok);
         reportError(callstack, severity, id, msg);
     }
 
     /** report an error */
     void reportError(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, std::string msg)
     {
-        // No errorLogger => just report the message to stdout
-        if (_errorLogger == NULL)
-        {
-            std::cout << "(" << Severity::stringify(severity) << ") " << msg << std::endl;
-            return;
-        }
-
         // If the verbose flag hasn't been given, don't show verbose information
         if (!_settings || !_settings->_verbose)
         {
@@ -118,7 +112,12 @@ protected:
             locationList.push_back(loc);
         }
 
-        _errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList, Severity::stringify(severity), msg, id));
+        const ErrorLogger::ErrorMessage errmsg(locationList, Severity::stringify(severity), msg, id);
+
+        if (_errorLogger)
+            _errorLogger->reportErr(errmsg);
+        else
+            std::cout << errmsg.toXML() << std::endl;
     }
 
 private:
