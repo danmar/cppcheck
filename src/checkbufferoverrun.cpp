@@ -46,9 +46,14 @@ CheckBufferOverrun instance;
 
 void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok)
 {
-    _callStack.push_back(tok);
-    arrayIndexOutOfBounds();
-    _callStack.pop_back();
+    if (!tok)
+        arrayIndexOutOfBounds();
+    else
+    {
+        _callStack.push_back(tok);
+        arrayIndexOutOfBounds();
+        _callStack.pop_back();
+    }
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBounds()

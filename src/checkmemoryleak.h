@@ -63,7 +63,7 @@ private:
      * @param id type of message
      * @param msg text
      */
-    ErrorLogger::ErrorMessage errmsg(const Token *location, Severity::e severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const Token *location, Severity::e severity, const std::string &id, const std::string &msg) const;
 
     /**
      * Report error. Similar with the function Check::reportError
@@ -72,7 +72,7 @@ private:
      * @param id type of message
      * @param msg text
      */
-    ErrorLogger::ErrorMessage errmsg(const std::list<const Token *> &callstack, Severity::e severity, const std::string &id, const std::string &msg) const;
+    void reportErr(const std::list<const Token *> &callstack, Severity::e severity, const std::string &id, const std::string &msg) const;
 
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e)
@@ -233,7 +233,17 @@ private:
     void checkScope(const Token *Tok1, const char varname[], bool classmember, unsigned int sz);
 
     void getErrorMessages()
-    { }
+    {
+        memleakError(0, "varname");
+        memleakallError(0, "varname");
+        resourceLeakError(0, "varname");
+
+        deallocDeallocError(0, "varname");
+        deallocuseError(0, "varname");
+        mismatchSizeError(0, "sz");
+        std::list<const Token *> callstack;
+        mismatchAllocDealloc(callstack, "varname");
+    }
 
     std::string name() const
     {
