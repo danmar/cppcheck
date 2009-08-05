@@ -2320,6 +2320,13 @@ private:
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
 
+        // insert "int" after "unsigned"..
+        {
+            const char code1[] = "for (unsigned i=0; i<10; i++)";
+            const char code2[] = "for ( unsigned int i = 0 ; i < 10 ; i ++ )";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+        }
+
     }
 
 };

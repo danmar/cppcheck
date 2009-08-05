@@ -2442,10 +2442,10 @@ void Tokenizer::unsignedint()
         if (!Token::Match(tok, "unsigned %var% [;,=]"))
             continue;
 
-        // Previous token should either be a symbol or one of "{};"
+        // Previous token should either be a symbol or one of "{};("
         if (tok->previous() &&
             !tok->previous()->isName() &&
-            !Token::Match(tok->previous(), "[{};]"))
+            !Token::Match(tok->previous(), "[{};(]"))
             continue;
 
         // next token should not be a standard type?
