@@ -954,15 +954,14 @@ private:
         ASSERT_EQUALS("; a = b ; if ( a ) ;", simplifyIfAssign(";if(a=b);"));
         ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) ;", simplifyIfAssign(";if((a=b()));"));
         ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) ;", simplifyIfAssign(";if(!(a=b()));"));
-        TODO_ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) ;", simplifyIfAssign(";if(!(a->x=b()));"));
+        ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) ;", simplifyIfAssign(";if(!(a->x=b()));"));
     }
 
 
     void whileAssign()
     {
         ASSERT_EQUALS("; a = b ; while ( a ) { b = 0 ; a = b ; }", simplifyIfAssign(";while(a=b) { b = 0; }"));
-        //ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) ;", simplifyIfAssign(";if((a=b()));"));
-        //ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) ;", simplifyIfAssign(";if(!(a=b()));"));
+        ASSERT_EQUALS("; a . b = c ; while ( a . b ) { c = 0 ; a . b = c ; }", simplifyIfAssign(";while(a.b=c) { c=0; }"));
     }
 
 

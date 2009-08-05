@@ -2464,91 +2464,92 @@ bool Tokenizer::simplifyIfAssign()
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok->next(), "if|while ( (| %var% =") ||
-            Token::Match(tok->next(), "if|while ( ! ( %var% ="))
+        if (!Token::Match(tok->next(), "if|while ( !| (| %var% =") &&
+            !Token::Match(tok->next(), "if|while ( !| (| %var% . %var% ="))
+            continue;
+
+        // simplifying a "while" condition ?
+        const bool iswhile(tok->next()->str() == "while");
+
+        // delete the "if"
+        tok->deleteNext();
+
+        // The tokenlist has changed
+        ret = true;
+
+        // Remember if there is a "!" or not. And delete it if there are.
+        const bool isNot(tok->tokAt(2)->str() == "!");
+        if (isNot)
+            tok->next()->deleteNext();
+
+        // Delete paranthesis.. and remember how many there are.
+        unsigned int numpar = 0;
+        while (tok->next()->str() == "(")
         {
-            ret = true;
-
-            // simplifying a "while" condition ?
-            const bool iswhile(tok->next()->str() == "while");
-
-            // delete the "if"
+            ++numpar;
             tok->deleteNext();
+        }
 
-            // Remember if there is a "!" or not. And delete it if there are.
-            bool isNot = false;
-            if (tok->tokAt(2)->str() == "!")
+        // Skip the "%var% = ..."
+        Token *tok2;
+        unsigned int indentlevel = 0;
+        for (tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "(")
+                ++indentlevel;
+            else if (tok2->str() == ")")
             {
-                isNot = true;
-                tok->next()->deleteNext();
+                if (indentlevel <= 0)
+                    break;
+                --indentlevel;
             }
+        }
 
-            // Delete paranthesis.. and remember how many there are.
-            int numpar = 0;
-            while (tok->next()->str() == "(")
-            {
-                ++numpar;
-                tok->deleteNext();
-            }
+        // Insert "; if|while ( .."
+        tok2 = tok2->previous();
+        if (Token::simpleMatch(tok->tokAt(2), "."))
+        {
+            tok2->insertToken(tok->strAt(3));
+            tok2->insertToken(tok->strAt(2));
+        }
+        tok2->insertToken(tok->strAt(1));
+        for (unsigned int p = 0; p < numpar; ++p)
+            tok2->insertToken("(");
+        if (isNot)
+            tok2->next()->insertToken("!");
+        tok2->insertToken(iswhile ? "while" : "if");
+        tok2->insertToken(";");
 
-            // Skip the "%var% = ..."
-            Token *tok2 = tok;
-            int indentlevel = 0;
-            for (tok2 = tok; tok2; tok2 = tok2->next())
+        // If it's a while loop.. insert the assignment in the loop
+        if (iswhile)
+        {
+            indentlevel = 0;
+            Token *tok3 = tok2;
+            for (tok3 = tok2; tok3; tok3 = tok3->next())
             {
-                if (tok2->str() == "(")
+                if (tok3->str() == "{")
                     ++indentlevel;
-                else if (tok2->str() == ")")
+                else if (tok3->str() == "}")
                 {
-                    if (indentlevel <= 0)
+                    if (indentlevel <= 1)
                         break;
                     --indentlevel;
                 }
             }
 
-            // Insert "; if|while ( .."
-            if (tok2)
+            if (tok3 && indentlevel == 1)
             {
-                tok2 = tok2->previous();
-                tok2->insertToken(tok->strAt(1));
-                for (int p = 0; p < numpar; ++p)
-                    tok2->insertToken("(");
-                if (isNot)
-                    tok2->next()->insertToken("!");
-                tok2->insertToken(iswhile ? "while" : "if");
-                tok2->insertToken(";");
-
-                // If it's a while loop.. insert the assignment in the loop
-                if (iswhile)
+                tok3 = tok3->previous();
+                for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous())
                 {
-                    indentlevel = 0;
-                    Token *tok3 = tok2;
-                    for (tok3 = tok2; tok3; tok3 = tok3->next())
-                    {
-                        if (tok3->str() == "{")
-                            ++indentlevel;
-                        else if (tok3->str() == "}")
-                        {
-                            if (indentlevel <= 1)
-                                break;
-                            --indentlevel;
-                        }
-                    }
-
-                    if (tok3 && indentlevel == 1)
-                    {
-                        tok3 = tok3->previous();
-                        for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous())
-                        {
-                            tok3->insertToken(tok2->str().c_str());
-                            tok3->next()->fileIndex(tok2->fileIndex());
-                            tok3->next()->linenr(tok2->linenr());
-                        }
-                    }
+                    tok3->insertToken(tok2->str().c_str());
+                    tok3->next()->fileIndex(tok2->fileIndex());
+                    tok3->next()->linenr(tok2->linenr());
                 }
             }
         }
     }
+
     return ret;
 }
 
