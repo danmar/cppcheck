@@ -942,7 +942,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 const char *str = call_func(tok, callstack, varnames, alloctype, dealloctype, all, sz);
                 if (str)
                 {
-                    addtoken(str);
+                    if (Token::simpleMatch(tok->tokAt(-2), (varnameStr + " =").c_str()) || std::string(str) != "alloc")
+                        addtoken(str);
                 }
                 else
                 {

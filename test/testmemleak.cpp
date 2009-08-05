@@ -209,6 +209,7 @@ private:
         TEST_CASE(func15);
 
         TEST_CASE(allocfunc1);
+        TEST_CASE(allocfunc2);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1528,6 +1529,21 @@ private:
               "    char *p = a();\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
+    }
+
+    void allocfunc2()
+    {
+        check("static char *a(int size)\n"
+              "{\n"
+              "    return new char[size];\n"
+              "}\n"
+              "static void b()\n"
+              "{\n"
+              "    int len = 100;\n"
+              "    char *p = a(len);\n"
+              "    delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 
