@@ -2263,7 +2263,7 @@ bool Tokenizer::simplifyVarDecl()
         Token *tok2 = type0;
         unsigned int typelen = 1;
 
-        while (Token::Match(tok2, "%type% %type% *| %var%"))
+        while (Token::Match(tok2, "%type% %type% *| *| %var%"))
         {
             if (tok2->str() == "const")
                 isconst = true;

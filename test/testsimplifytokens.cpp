@@ -1034,6 +1034,22 @@ private:
         {
             const char code[] = "void foo()\n"
                                 "{\n"
+                                "    struct A *a, *b;\n"
+                                "}\n";
+            ASSERT_EQUALS(" void foo ( ) { struct A * a ; struct A * b ; }", sizeof_(code));
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    struct A **a, **b;\n"
+                                "}\n";
+            ASSERT_EQUALS(" void foo ( ) { struct A * * a ; struct A * * b ; }", sizeof_(code));
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
                                 "    char *a, *b;\n"
                                 "    delete a, b;\n"
                                 "}\n";
