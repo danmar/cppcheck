@@ -248,10 +248,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             else
                 continue;
 
-            /** @todo this condition should be redundant, the variable id should never be 0 for variables */
-            if (counter_varid == 0)
-                continue;
-
             if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
             {
                 max_counter_value = MathLib::toString<long>(atol(tok2->strAt(2)) - 1);

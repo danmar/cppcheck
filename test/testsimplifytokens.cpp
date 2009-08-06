@@ -1041,6 +1041,14 @@ private:
         }
 
         {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    char **a, **b, **c;\n"
+                                "}\n";
+            ASSERT_EQUALS(" void foo ( ) { char * * a ; char * * b ; char * * c ; }", sizeof_(code));
+        }
+
+        {
             const char code[] = "int f()\n"
                                 "{\n"
                                 "    if (something)\n"

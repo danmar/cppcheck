@@ -2292,6 +2292,14 @@ bool Tokenizer::simplifyVarDecl()
                 tok2 = NULL;
         }
 
+        else if (Token::Match(tok2, "%type% * * %var% ,|="))
+        {
+            if (tok2->tokAt(3)->str() != "operator")
+                tok2 = tok2->tokAt(4);    // The ',' token
+            else
+                tok2 = NULL;
+        }
+
         else if (Token::Match(tok2, "%type% * const %var% ,|="))
         {
             if (tok2->tokAt(3)->str() != "operator")
