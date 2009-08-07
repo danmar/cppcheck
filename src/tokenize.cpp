@@ -864,6 +864,20 @@ void Tokenizer::setVarId()
         }
     }
 
+    // Member functions in this source
+    std::list<Token *> allMemberFunctions;
+    {
+        const std::string funcpattern("%var% :: %var% (");
+        for (Token *tok2 = _tokens; tok2; tok2 = tok2->next())
+        {
+            // Found a class function..
+            if (Token::Match(tok2, funcpattern.c_str()))
+            {
+                allMemberFunctions.push_back(tok2);
+            }
+        }
+    }
+
     // class members..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -873,7 +887,7 @@ void Tokenizer::setVarId()
 
 
             // What member variables are there in this class?
-            std::list<const Token *> varlist;
+            std::map<std::string, unsigned int> varlist;
             {
                 unsigned int indentlevel = 0;
                 for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
@@ -890,7 +904,7 @@ void Tokenizer::setVarId()
 
                     // Found a member variable..
                     else if (indentlevel == 1 && tok2->varId() > 0)
-                        varlist.push_back(tok2);
+                        varlist[tok2->str()] = tok2->varId();
                 }
             }
 
@@ -903,8 +917,10 @@ void Tokenizer::setVarId()
             std::list<Token *> funclist;
             {
                 const std::string funcpattern(classname + " :: %var% (");
-                for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+                for (std::list<Token *>::iterator func = allMemberFunctions.begin(); func != allMemberFunctions.end(); ++func)
                 {
+                    Token *tok2 = *func;
+
                     // Found a class function..
                     if (Token::Match(tok2, funcpattern.c_str()))
                     {
@@ -925,32 +941,30 @@ void Tokenizer::setVarId()
             if (funclist.empty())
                 continue;
 
-
             // Update the variable ids..
-            for (std::list<const Token *>::const_iterator var = varlist.begin(); var != varlist.end(); ++var)
+            // Parse each function..
+            for (std::list<Token *>::iterator func = funclist.begin(); func != funclist.end(); ++func)
             {
-                const unsigned int varid((*var)->varId());
-                const std::string &varname((*var)->str());
-
-                // Parse each function..
-                for (std::list<Token *>::iterator func = funclist.begin(); func != funclist.end(); ++func)
+                unsigned int indentlevel = 0;
+                for (Token *tok2 = *func; tok2; tok2 = tok2->next())
                 {
-                    unsigned int indentlevel = 0;
-                    for (Token *tok2 = *func; tok2; tok2 = tok2->next())
+                    if (tok2->str() == "{")
+                        ++indentlevel;
+                    else if (tok2->str() == "}")
                     {
-                        if (tok2->str() == "{")
-                            ++indentlevel;
-                        else if (tok2->str() == "}")
-                        {
-                            if (indentlevel <= 1)
-                                break;
-                            --indentlevel;
-                        }
-                        else if (indentlevel > 0 && tok2->str() == varname && tok2->varId() == 0)
-                            tok2->varId(varid);
+                        if (indentlevel <= 1)
+                            break;
+                        --indentlevel;
+                    }
+                    else if (indentlevel > 0 &&
+                             tok2->varId() == 0 &&
+                             varlist.find(tok2->str()) != varlist.end())
+                    {
+                        tok2->varId(varlist[tok2->str()]);
                     }
                 }
             }
+
         }
     }
 }
