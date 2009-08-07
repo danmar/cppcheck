@@ -389,9 +389,9 @@ private:
 
     void stlBoundries1()
     {
-        const int STL_CONTAINER_LIST = 10;
+        const int STL_CONTAINER_LIST = 9;
         const std::string stlCont[STL_CONTAINER_LIST] =
-            {"vector", "deque", "list", "set", "multiset", "map",
+            {"deque", "list", "set", "multiset", "map",
              "multimap", "hash_map", "hash_multimap", "hash_set"
             };
 
@@ -422,7 +422,7 @@ private:
 
         check(checkStr.c_str());
 
-        ASSERT_EQUALS("[test.cpp:5]: (error) vector range check should use != and not < since the order of the pointers isn't guaranteed\n[test.cpp:6]: (error) vector range check should use != and not < since the order of the pointers isn't guaranteed\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 };

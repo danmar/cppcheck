@@ -20,8 +20,6 @@
 #include "tokenize.h"
 #include "token.h"
 
-// All STL Containers
-#define STL_CONTAINER_LIST "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|vector|hash_map|hash_multimap|hash_set"
 
 
 // Register this check class (by creating a static instance of it)
@@ -378,6 +376,9 @@ void CheckStl::invalidPointerError(const Token *tok, const std::string &pointer_
 
 void CheckStl::stlBoundries()
 {
+    // containers (not the vector)..
+    static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set";
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring iterator..
