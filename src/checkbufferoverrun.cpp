@@ -382,11 +382,36 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
 
 
         // sprintf..
-        if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% ,", varid))
+        if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% [,)]", varid))
         {
-            int len = 0;
+            int len = -2;
             const Token *end = tok->next()->link();
 
+            // check format string
+            const char *fmt = tok->strAt(4);
+            while (*fmt)
+            {
+                if (*fmt == '\\')
+                {
+                    ++fmt;
+                }
+                else if (*fmt == '%')
+                {
+                    // FIXME: better handling for format specifiers
+                    fmt += 2;
+                    continue;
+                }
+                ++fmt;
+                ++len;
+            }
+
+            if (len >= (int)size)
+            {
+                bufferOverrun(tok);
+            }
+
+            // check arguments
+            len = 0;
             for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
             {
                 if (tok2->str()[0] == '\"')

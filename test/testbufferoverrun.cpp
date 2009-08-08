@@ -95,6 +95,7 @@ private:
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
+        TEST_CASE(sprintf3);
 
         TEST_CASE(snprintf1);
         TEST_CASE(snprintf2);
@@ -573,7 +574,23 @@ private:
               "    sprintf(str, \"%d: %s\", getnumber(), \"abcde\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+    }
 
+    void sprintf3()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[3];\n"
+              "    sprintf(str, \"test\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char str[5];\n"
+              "    sprintf(str, \"test%s\", "");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void snprintf1()
