@@ -61,6 +61,7 @@ private:
 
         TEST_CASE(stlBoundries1);
         TEST_CASE(stlBoundries2);
+        TEST_CASE(stlBoundries3);
     }
 
     void check(const char code[])
@@ -418,6 +419,23 @@ private:
                                    "    std::vector<std::string>::const_iterator it;\n"
                                    "    for (it = files.begin(); it < files.end(); it++) { }\n"
                                    "    for (it = files.begin(); it < files.end(); it++) { };\n"
+                                   "}\n");
+
+        check(checkStr.c_str());
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void stlBoundries3()
+    {
+        const std::string checkStr("void f()\n"
+                                   "{\n"
+                                   "    set<int> files;\n"
+                                   "    set<int>::const_iterator current;\n"
+                                   "    for (current = files.begin(); current != files.end(); ++current)\n"
+                                   "    {\n"
+                                   "       assert(*current < 100)\n"
+                                   "    }\n"
                                    "}\n");
 
         check(checkStr.c_str());
