@@ -385,7 +385,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% ,", varid))
         {
             int len = 0;
-            for (const Token *tok2 = tok->tokAt(6); tok2 && tok2->str() != ")"; tok2 = tok2->next())
+            const Token *end = tok->next()->link();
+
+            for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
             {
                 if (tok2->str()[0] == '\"')
                 {
