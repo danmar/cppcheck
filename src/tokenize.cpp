@@ -2415,12 +2415,12 @@ bool Tokenizer::simplifyVarDecl()
                 int parlevel = 0;
                 while (tok2)
                 {
-                    if (strchr("{(<", tok2->str()[0]))
+                    if (Token::Match(tok2, "[{(<]"))
                     {
                         ++parlevel;
                     }
 
-                    else if (strchr("})>", tok2->str()[0]))
+                    else if (Token::Match(tok2, "[})>]"))
                     {
                         if (parlevel <= 0)
                             break;

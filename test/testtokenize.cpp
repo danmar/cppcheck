@@ -132,6 +132,7 @@ private:
         TEST_CASE(vardecl3);
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
+        TEST_CASE(vardecl6);
         TEST_CASE(vardecl_stl);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
@@ -2238,6 +2239,15 @@ private:
         // "static int i = 0;" is not the same as "static int i; i = 0;"
         const char code[] = "static int i = 0 ;";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    void vardecl6()
+    {
+        // ticket #565
+
+        const char code1[] = "int z = x >> 16;";
+        const char res1[]  = "int z ; z = x >> 16 ;";
+        ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
     }
 
     void volatile_variables()
