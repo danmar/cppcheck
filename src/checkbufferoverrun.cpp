@@ -248,13 +248,16 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             else
                 continue;
 
-            if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
+            if (counter_varid)
             {
-                max_counter_value = MathLib::toString<long>(atol(tok2->strAt(2)) - 1);
-            }
-            else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
-            {
-                max_counter_value = tok2->strAt(2);
+                if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
+                {
+                    max_counter_value = MathLib::toString<long>(atol(tok2->strAt(2)) - 1);
+                }
+                else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
+                {
+                    max_counter_value = tok2->strAt(2);
+                }
             }
 
             // Get index variable and stopsize.
