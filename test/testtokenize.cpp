@@ -97,6 +97,7 @@ private:
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
         TEST_CASE(varid_reference_to_containers);
+        TEST_CASE(varid_in_class);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -1440,6 +1441,34 @@ private:
                                    "4: std :: vector < int > & a@2 = b@1 ;\n"
                                    "5: std :: vector < int > * c@3 = & b@1 ;\n"
                                    "6: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid_in_class()
+    {
+        const std::string code("class Foo\n"
+                               "{\n"
+                               "public:\n"
+                               "    std::string name1;\n"
+                               "    std::string name2;\n"
+                               "};\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class Foo\n"
+                                   "2: {\n"
+                                   "3: public:\n"
+                                   "4: std :: string name1@1 ;\n"
+                                   "5: std :: string name2@2 ;\n"
+                                   "6: } ;\n");
 
         ASSERT_EQUALS(expected, actual);
     }
