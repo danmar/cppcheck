@@ -65,6 +65,7 @@ private:
         TEST_CASE(testautovar_array);
         TEST_CASE(testautovar_return);
         TEST_CASE(testautovar_extern);
+        TEST_CASE(testinvaliddealloc);
 
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
@@ -116,6 +117,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void testinvaliddealloc()
+    {
+        check("int* func1()\n"
+              "{\n"
+              "int a;\n"
+              "char tmp[256];\n"
+              "free (tmp);\n"
+              "return 0;");
+        ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Invalid deallocation\n"), errout.str());
+    }
 
     void returnLocalVariable1()
     {
