@@ -92,6 +92,19 @@ bool CheckAutoVariables::isAutoVar(const Token* t)
     return false;
 }
 
+bool CheckAutoVariables::isAutoVarArray(const Token* t)
+{
+    std::list<std::string>::iterator id_vd;
+    std::string v(t->str());
+    for (id_vd = vda_list.begin(); id_vd != vda_list.end(); ++id_vd)
+    {
+        std::string vname(*id_vd);
+        if (vname == v)
+            return true;
+    }
+    return false;
+}
+
 void print(const Token *tok, int num)
 {
     const Token *t = tok;
@@ -138,6 +151,13 @@ void CheckAutoVariables::addVD(const Token* tok)
     vd_list.push_back(var_name);
 }
 
+void CheckAutoVariables::addVDA(const Token* tok)
+{
+    std::string var_name(tok->str());
+
+    vda_list.push_back(var_name);
+}
+
 void CheckAutoVariables::autoVariables()
 {
     bool begin_function = false;
@@ -152,6 +172,7 @@ void CheckAutoVariables::autoVariables()
             begin_function = true;
             fp_list.clear();
             vd_list.clear();
+            vda_list.clear();
         }
         else if (begin_function && begin_function_decl && Token::Match(tok, "%type% * * %var%"))
         {
@@ -178,6 +199,11 @@ void CheckAutoVariables::autoVariables()
         else if (bindent > 0 && Token::Match(tok, "%type% :: %any%") && !isExternOrStatic(tok)) //Inside a function
         {
             addVD(tok->tokAt(2));
+        }
+	// Inside a function body
+        else if (bindent > 0 && Token::Match(tok, "%type% %var% ["))
+        {
+            addVDA(tok->tokAt(1));
         }
         else if (bindent > 0 && Token::Match(tok, "%var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
         {
@@ -215,8 +241,18 @@ void CheckAutoVariables::autoVariables()
                             "autoVariables",
                             "Return of the address of an auto-variable");
         }
+	// Invalid pointer deallocation
+        else if (bindent > 0 && Token::Match(tok, "free ( %var% ) ;"))
+	{
+		if (isAutoVarArray(tok->tokAt(2)))
+			reportError(tok,
+                            Severity::error,
+                            "autoVariables",
+                            "Invalid deallocation");
+	}
     }
     vd_list.clear();
+    vda_list.clear();
     fp_list.clear();
 }
 //---------------------------------------------------------------------------

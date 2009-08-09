@@ -58,9 +58,12 @@ public:
 private:
     std::list<std::string> fp_list;
     std::list<std::string> vd_list;
+    std::list<std::string> vda_list;
     bool errorAv(const Token* left, const Token* right);
     bool isAutoVar(const Token* t);
+    bool isAutoVarArray(const Token* t);
     void addVD(const Token* t);
+    void addVDA(const Token* t);
 
 
 
