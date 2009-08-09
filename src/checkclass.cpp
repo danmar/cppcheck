@@ -641,7 +641,18 @@ void CheckClass::operatorEq()
     const Token *tok = Token::findmatch(_tokenizer->tokens(), "void operator = (");
     if (tok)
     {
-        operatorEqReturnError(tok);
+        const Token *tok1 = tok;
+        while (tok1 && !Token::Match(tok1, "class %var%"))
+        {
+            if (tok1->str() == "public:")
+            {
+                operatorEqReturnError(tok);
+                break;
+            }
+            if (tok1->str() == "private:" || tok1->str() == "protected:")
+                break;
+            tok1 = tok1->previous();
+        }
     }
 }
 //---------------------------------------------------------------------------

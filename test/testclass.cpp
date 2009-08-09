@@ -56,6 +56,61 @@ private:
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
+
+        TEST_CASE(operatorEq1);
+
+    }
+
+    // Check the operator Equal
+    void checkOpertorEq(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.operatorEq();
+    }
+
+    void operatorEq1()
+    {
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "public:\n"
+                       "	void goo() {}"
+                       "    void operator=(const& A);\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return something\n", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "private:\n"
+                       "    void operator=(const& A);\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "    void operator=(const& A);\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEq("class A\n"
+                       "{\n"
+                       "public:\n"
+                       "    void goo() {}\n"
+                       "private:\n"
+                       "    void operator=(const& A);\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     // Check that base classes have virtual destructors
