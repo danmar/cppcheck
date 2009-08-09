@@ -200,7 +200,7 @@ void CheckAutoVariables::autoVariables()
         {
             addVD(tok->tokAt(2));
         }
-	// Inside a function body
+        // Inside a function body
         else if (bindent > 0 && Token::Match(tok, "%type% %var% ["))
         {
             addVDA(tok->tokAt(1));
@@ -241,15 +241,15 @@ void CheckAutoVariables::autoVariables()
                             "autoVariables",
                             "Return of the address of an auto-variable");
         }
-	// Invalid pointer deallocation
+        // Invalid pointer deallocation
         else if (bindent > 0 && Token::Match(tok, "free ( %var% ) ;"))
-	{
-		if (isAutoVarArray(tok->tokAt(2)))
-			reportError(tok,
+        {
+            if (isAutoVarArray(tok->tokAt(2)))
+                reportError(tok,
                             Severity::error,
                             "autoVariables",
                             "Invalid deallocation");
-	}
+        }
     }
     vd_list.clear();
     vda_list.clear();
