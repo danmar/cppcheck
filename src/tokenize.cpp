@@ -2326,12 +2326,14 @@ bool Tokenizer::simplifyVarDecl()
             }
         }
 
-        else if (Token::Match(tok2, "%type% %var% [ %num% ] ,"))
+        else if (Token::Match(tok2, "%type% %var% [ %num% ] ,") ||
+                 Token::Match(tok2, "%type% %var% [ %var% ] ,"))
         {
             tok2 = tok2->tokAt(5);    // The ',' token
         }
 
-        else if (Token::Match(tok2, "%type% * %var% [ %num% ] ,"))
+        else if (Token::Match(tok2, "%type% * %var% [ %num% ] ,") ||
+                 Token::Match(tok2, "%type% * %var% [ %var% ] ,"))
         {
             tok2 = tok2->tokAt(6);    // The ',' token
         }

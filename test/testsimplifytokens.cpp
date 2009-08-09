@@ -1108,6 +1108,15 @@ private:
                                 "}\n";
             ASSERT_EQUALS(" void f ( ) { for ( int a , b ; a < 10 ; a = a + 1 , b = b + 1 ) { ; } }", sizeof_(code));
         }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    char buf[BUFSIZ], **p;\n"
+                                "    char *ptrs[BUFSIZ], **pp;\n"
+                                "}\n";
+            ASSERT_EQUALS(" void f ( ) { char buf [ BUFSIZ ] ; char * * p ; char * ptrs [ BUFSIZ ] ; char * * pp ; }", sizeof_(code));
+        }
     }
 
     void remove_comma()
