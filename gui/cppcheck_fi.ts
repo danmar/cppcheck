@@ -18,7 +18,7 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - Työkalu C/C++ koodin staattiseen analysointiin.</translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
         <translation>Copyright (C) 2007-2009 Daniel Marjamäki ja cppcheck tiimi.</translation>
@@ -261,7 +261,7 @@ kate -l(line) (file)
     <message>
         <location filename="main.ui" line="279"/>
         <source>Show possible style errors</source>
-        <translation type="unfinished"></translation>
+        <translation>Näytä mahdolliset tyylivirheet</translation>
     </message>
     <message>
         <location filename="main.ui" line="287"/>
@@ -340,7 +340,7 @@ Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
     <message>
         <location filename="mainwindow.cpp" line="528"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation type="unfinished"></translation>
+        <translation>XML-tiedostot (*.xml);;Tekstitiedostot (*.txt);;CSV-tiedostot (*.csv)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="530"/>
@@ -355,7 +355,7 @@ Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
     <message>
         <location filename="mainwindow.cpp" line="544"/>
         <source>Text files (*.txt)</source>
-        <translation type="unfinished"></translation>
+        <translation>Tekstitiedostot (*.txt)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="576"/>
@@ -403,22 +403,27 @@ Lopeta tarkistus ennen ohjelman sammuttamista.</translation>
         <source>Russian</source>
         <translation>Venäjä</translation>
     </message>
+    <message>
+        <location filename="translationhandler.cpp" line="36"/>
+        <source>Polish</source>
+        <translation>Puola</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="88"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Incorrect language specified!</source>
         <translation>Virheellinen kieli valittu!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="98"/>
+        <location filename="translationhandler.cpp" line="100"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation>Käännöstiedostoa %1 ei löytynyt!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="104"/>
+        <location filename="translationhandler.cpp" line="106"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation>Käänöksen lataaminen kielelle %1 tiedostosta %2 epäonnistui</translation>
@@ -488,7 +493,7 @@ Tarkista että ohjelman polku ja parametrit ovat oikeat.</translation>
     <message>
         <location filename="resultstree.cpp" line="613"/>
         <source>possible error</source>
-        <translation type="unfinished"></translation>
+        <translation>mahdollinen virhe</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="617"/>
@@ -498,7 +503,7 @@ Tarkista että ohjelman polku ja parametrit ovat oikeat.</translation>
     <message>
         <location filename="resultstree.cpp" line="621"/>
         <source>possible style</source>
-        <translation type="unfinished"></translation>
+        <translation>tyylivirhe</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="625"/>
@@ -529,13 +534,13 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     <message>
         <location filename="resultsview.cpp" line="139"/>
         <source>No errors found, nothing to save.</source>
-        <translation type="unfinished"></translation>
+        <translation>Virheitä ei löytynyt, ei mitään tallennettavaa.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="166"/>
         <location filename="resultsview.cpp" line="176"/>
         <source>Failed to save the report.</source>
-        <translation type="unfinished"></translation>
+        <translation>Raportin tallentaminen epäonnistui.</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="26"/>
@@ -548,7 +553,7 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
     <message>
         <location filename="settings.ui" line="14"/>
         <source>Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>Asetukset</translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>

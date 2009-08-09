@@ -18,7 +18,7 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - A tool for static C/C++ code analysis.</translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
         <translation>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</translation>
@@ -259,7 +259,7 @@ kate -l(line) (file)</translation>
     <message>
         <location filename="main.ui" line="279"/>
         <source>Show possible style errors</source>
-        <translation type="unfinished"></translation>
+        <translation>Show possible style errors</translation>
     </message>
     <message>
         <location filename="main.ui" line="287"/>
@@ -338,7 +338,7 @@ Stop the checking before exiting.</translation>
     <message>
         <location filename="mainwindow.cpp" line="528"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation type="unfinished"></translation>
+        <translation>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="530"/>
@@ -353,7 +353,7 @@ Stop the checking before exiting.</translation>
     <message>
         <location filename="mainwindow.cpp" line="544"/>
         <source>Text files (*.txt)</source>
-        <translation type="unfinished"></translation>
+        <translation>Text files (*.txt)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="576"/>
@@ -399,22 +399,27 @@ Stop the checking before exiting.</translation>
         <source>Russian</source>
         <translation>Russian</translation>
     </message>
+    <message>
+        <location filename="translationhandler.cpp" line="36"/>
+        <source>Polish</source>
+        <translation>Polish</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="88"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Incorrect language specified!</source>
         <translation>Incorrect language specified!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="98"/>
+        <location filename="translationhandler.cpp" line="100"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation>Could not find the file: %1!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="104"/>
+        <location filename="translationhandler.cpp" line="106"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation>Failed to load translation for language %1 from file %2</translation>
@@ -484,7 +489,7 @@ Please check the application path and parameters are correct.</translation>
     <message>
         <location filename="resultstree.cpp" line="613"/>
         <source>possible error</source>
-        <translation type="unfinished"></translation>
+        <translation>possible error</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="617"/>
@@ -494,7 +499,7 @@ Please check the application path and parameters are correct.</translation>
     <message>
         <location filename="resultstree.cpp" line="621"/>
         <source>possible style</source>
-        <translation type="unfinished"></translation>
+        <translation>possible style</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="625"/>
@@ -525,13 +530,13 @@ To toggle what kind of errors are shown, open view menu.</translation>
     <message>
         <location filename="resultsview.cpp" line="139"/>
         <source>No errors found, nothing to save.</source>
-        <translation type="unfinished"></translation>
+        <translation>No errors found, nothing to save.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="166"/>
         <location filename="resultsview.cpp" line="176"/>
         <source>Failed to save the report.</source>
-        <translation type="unfinished"></translation>
+        <translation>Failed to save the report.</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="26"/>
@@ -544,7 +549,7 @@ To toggle what kind of errors are shown, open view menu.</translation>
     <message>
         <location filename="settings.ui" line="14"/>
         <source>Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>Preferences</translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>

@@ -23,6 +23,7 @@ TRANSLATIONS =  cppcheck_fi.ts \
 		cppcheck_en.ts \
 		cppcheck_se.ts \
 		cppcheck_de.ts \
+		cppcheck_pl.ts \
 		cppcheck_ru.ts 
 
 # Windows-specific options

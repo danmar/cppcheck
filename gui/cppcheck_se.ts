@@ -18,7 +18,7 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - Ett verktyg för statisk analys av C/C++ kod.</translation>
     </message>
-    <message utf8="true">
+    <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
         <translation>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</translation>
@@ -400,22 +400,27 @@ Stop the checking before exiting.</source>
         <source>Russian</source>
         <translation>Ryska</translation>
     </message>
+    <message>
+        <location filename="translationhandler.cpp" line="36"/>
+        <source>Polish</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="88"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Incorrect language specified!</source>
         <translation>valt språk är ej korrekt!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="98"/>
+        <location filename="translationhandler.cpp" line="100"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation>Språk filen %1 hittades ej!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="104"/>
+        <location filename="translationhandler.cpp" line="106"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation>Misslyckades med att ladda översättningen för %1 från filen %2</translation>

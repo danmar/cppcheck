@@ -124,16 +124,6 @@ kate -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="136"/>
-        <source>Standard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="main.ui" line="255"/>
-        <source>Show possible false positives</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="main.ui" line="77"/>
         <source>&amp;File</source>
         <translation type="unfinished"></translation>
@@ -144,6 +134,16 @@ kate -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="main.ui" line="100"/>
+        <source>&amp;Language</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="105"/>
+        <source>&amp;Help</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="main.ui" line="113"/>
         <source>&amp;Check</source>
         <translation type="unfinished"></translation>
@@ -151,6 +151,11 @@ kate -l(line) (file)</source>
     <message>
         <location filename="main.ui" line="122"/>
         <source>&amp;Edit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="136"/>
+        <source>Standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -234,6 +239,11 @@ kate -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="main.ui" line="255"/>
+        <source>Show possible false positives</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="main.ui" line="263"/>
         <source>Show security errors</source>
         <translation type="unfinished"></translation>
@@ -279,13 +289,8 @@ kate -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="100"/>
-        <source>&amp;Language</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="main.ui" line="105"/>
-        <source>&amp;Help</source>
+        <location filename="mainwindow.cpp" line="221"/>
+        <source>No suitable files found to check!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -296,11 +301,6 @@ kate -l(line) (file)</source>
     <message>
         <location filename="mainwindow.cpp" line="263"/>
         <source>Select directory to check</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="mainwindow.cpp" line="221"/>
-        <source>No suitable files found to check!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -352,19 +352,16 @@ Stop the checking before exiting.</source>
 %1
 
 </source>
-        <oldsource>Failed to change language:
-
-%1</oldsource>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="translationhandler.cpp" line="32"/>
-        <source>Finnish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="31"/>
         <source>English</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="32"/>
+        <source>Finnish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -398,13 +395,11 @@ Stop the checking before exiting.</source>
     <message>
         <location filename="translationhandler.cpp" line="100"/>
         <source>Language file %1 not found!</source>
-        <oldsource>Language file %1.qm not found!</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="106"/>
         <source>Failed to load translation for language %1 from file %2</source>
-        <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -457,7 +452,6 @@ Stop the checking before exiting.</source>
     <message>
         <location filename="resultstree.cpp" line="426"/>
         <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
-        <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
