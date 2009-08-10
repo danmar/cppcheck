@@ -19,7 +19,9 @@
 
 
 #include "../src/tokenize.h"
+#define private public
 #include "../src/checkmemoryleak.h"
+#undef private
 #include "testsuite.h"
 
 #include <sstream>
@@ -223,6 +225,7 @@ private:
         TEST_CASE(realloc3);
         TEST_CASE(realloc4);
         TEST_CASE(realloc5);
+        TEST_CASE(realloc6);
 
         TEST_CASE(assign);
 
@@ -1693,6 +1696,36 @@ private:
               "}\n", true);
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    std::string getcode(const char code[], const char varname[]) const
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // getcode..
+        CheckMemoryLeakInFunction checkMemoryLeak;
+        std::list<const Token *> callstack;
+        CheckMemoryLeak::AllocType allocType, deallocType;
+        bool all = false;
+        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varname, allocType, deallocType, false, all, 1);
+
+        // stringify..
+        std::string ret;
+        for (const Token *tok = tokens; tok; tok = tok->next())
+            ret += tok->str();
+
+        Tokenizer::deleteTokens(tokens);
+
+        return ret;
+    }
+
+    void realloc6()
+    {
+        ASSERT_EQUALS(";;realloc;;", getcode(";buf=realloc(buf,100);", "buf"));
+        ASSERT_EQUALS(";;alloc;", getcode(";buf=realloc(0,100);", "buf"));
     }
 
     void assign()

@@ -53,7 +53,7 @@ bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok) con
 }
 //---------------------------------------------------------------------------
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, const char varname[]) const
 {
     // What we may have...
     //     * var = (char *)malloc(10);
@@ -86,6 +86,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2)
         if (tok2->str() == mallocfunc[i])
             return Malloc;
     }
+
+    // Using realloc..
+    if (Token::Match(tok2, (std::string("realloc ( !!") + varname).c_str()))
+        return Malloc;
 
     // Does tok2 point on "g_malloc", "g_strdup", ..
     static const char * const gmallocfunc[] = {"g_new",
@@ -133,7 +137,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2)
 
 
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok2)
+CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok2, const char varname[])
 {
     // What we may have...
     //     * var = (char *)realloc(..;
@@ -146,7 +150,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     if (! tok2)
         return No;
 
-    if (tok2->str() == "realloc")
+    if (Token::Match(tok2, (std::string("realloc ( ") + varname).c_str()))
         return Malloc;
 
     // GTK memory reallocation..
@@ -339,7 +343,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
         if (varname.empty() && Token::Match(tok, "%var% = "))
         {
             varname = tok->str();
-            allocType = getAllocationType(tok->tokAt(2));
+            allocType = getAllocationType(tok->tokAt(2), varname.c_str());
             if (allocType == No)
                 return No;
             while (tok && tok->str() != ";")
@@ -424,6 +428,10 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     if (Token::Match(tok, "if|for|while|return|switch"))
         return 0;
 
+    // Keywords that are not function calls..
+    if (Token::Match(tok, "realloc"))
+        return 0;
+
     // String functions that are not allocating nor deallocating memory..
     if (Token::Match(tok, "strcpy|strncpy|strcat|strncat|strcmp|strncmp|strcasecmp|stricmp|sprintf|strchr|strrchr|strstr"))
         return 0;
@@ -457,7 +465,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     if (tok->str() == "delete")
         return 0;
 
-    if (getAllocationType(tok) != No || getReallocationType(tok) != No || getDeallocationType(tok, varnames) != No)
+    if (getAllocationType(tok, varnames[0]) != No || getReallocationType(tok, varnames[0]) != No || getDeallocationType(tok, varnames) != No)
         return 0;
 
     if (callstack.size() > 2)
@@ -614,7 +622,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
         if (Token::Match(tok->previous(), std::string("[(;{}] " + varnameStr + " =").c_str()))
         {
-            AllocType alloc = getAllocationType(tok->tokAt(2));
+            AllocType alloc = getAllocationType(tok->tokAt(2), varname);
             bool realloc = false;
 
             if (sz > 1 &&
@@ -626,7 +634,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             if (alloc == No)
             {
-                alloc = getReallocationType(tok->tokAt(2));
+                alloc = getReallocationType(tok->tokAt(2), varname);
                 if (alloc != No)
                 {
                     addtoken("realloc");
@@ -947,7 +955,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
                 else
                 {
-                    if (getReallocationType(tok) != No &&
+                    if (getReallocationType(tok, varname) != No &&
                         Token::simpleMatch(tok->tokAt(2), varnameStr.c_str())
                        )
                     {
@@ -1879,7 +1887,7 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                 // Allocate..
                 if (indent == 0 || Token::Match(tok, (std::string(varname) + " =").c_str()))
                 {
-                    AllocType alloc = getAllocationType(tok->tokAt((indent > 0) ? 2 : 3));
+                    AllocType alloc = getAllocationType(tok->tokAt((indent > 0) ? 2 : 3), varname);
                     if (alloc != CheckMemoryLeak::No)
                     {
                         if (Alloc != No && Alloc != alloc)

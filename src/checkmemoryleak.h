@@ -94,12 +94,12 @@ public:
     /**
      * Get type of allocation at given position
      */
-    AllocType getAllocationType(const Token *tok2) const;
+    AllocType getAllocationType(const Token *tok2, const char varname[]) const;
 
     /**
      * Get type of reallocation at given position
      */
-    AllocType getReallocationType(const Token *tok2);
+    AllocType getReallocationType(const Token *tok2, const char varname[]);
 
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
 
