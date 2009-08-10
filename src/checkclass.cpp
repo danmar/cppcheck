@@ -710,9 +710,20 @@ void CheckClass::virtualDestructor()
             baseName[1] = 0;
 
             // Update derived so it's ready for the next loop.
-            derived = derived->next();
-            if (derived->str() == ",")
+            do
+            {
+                if (derived->str() == "{")
+                    break;
+
+                if (derived->str() == ",")
+                {
+                    derived = derived->next();
+                    break;
+                }
+
                 derived = derived->next();
+            }
+            while (derived);
 
             // If not public inheritance, skip checking of this base class..
             if (! isPublic)

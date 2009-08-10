@@ -42,6 +42,7 @@ private:
         TEST_CASE(virtualDestructor5);	// Derived class has empty destructor => no error
         TEST_CASE(virtualDestructorProtected);
         TEST_CASE(virtualDestructorInherited);
+        TEST_CASE(virtualDestructorTemplate);
 
         TEST_CASE(uninitVar1);
         TEST_CASE(uninitVarEnum);
@@ -305,6 +306,28 @@ private:
                                "    ~B() { int a; }\n"
                                "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Class A which is inherited by class B does not have a virtual destructor\n", errout.str());
+    }
+
+    void virtualDestructorTemplate()
+    {
+        // Base class has protected destructor, it makes Base *p = new Derived(); fail
+        // during compilation time, so error is not possible. => no error
+        checkVirtualDestructor("template <typename T> class A\n"
+                               "{\n"
+                               " public:\n"
+                               " virtual ~A(){}\n"
+                               "};\n"
+                               "template <typename T> class AA\n"
+                               "{\n"
+                               " public:\n"
+                               " ~AA(){}\n"
+                               "};\n"
+                               "class B : public A<int>, public AA<double>\n"
+                               "{\n"
+                               " public:\n"
+                               " ~B(){int a;}\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Class AA which is inherited by class B does not have a virtual destructor\n", errout.str());
     }
 
     void checkUninitVar(const char code[])
