@@ -904,6 +904,25 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     std::string line;
     while (getline(istr, line))
     {
+        if (line == "#pragma asm")
+        {
+            ret << "\n";
+            bool found_end = false;
+            while (getline(istr, line))
+            {
+                ret << "\n";
+                if (line == "#pragma endasm")
+                {
+                    found_end = true;
+                    break;
+                }
+            }
+            if (!found_end)
+                break;
+            continue;
+        }
+
+
         std::string def = getdef(line, true);
         std::string ndef = getdef(line, false);
 
