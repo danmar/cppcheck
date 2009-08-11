@@ -124,7 +124,7 @@ private:
               "int a;\n"
               "char tmp[256];\n"
               "free (tmp);\n"
-              "return 0;");
+              "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Invalid deallocation\n"), errout.str());
     }
 

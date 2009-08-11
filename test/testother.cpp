@@ -553,7 +553,7 @@ private:
                          "            abc = abc->next;\n"
                          "        --a;\n"
                          "    }\n"
-                         "    while (a > 0)\n"
+                         "    while (a > 0);\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
     }
