@@ -435,7 +435,7 @@ private:
                          "    while (tok);\n"
                          "    tok = tok->next();\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: tok\n", errout.str());
 
         checkNullPointer("void foo()\n"
                          "{\n"
@@ -445,7 +445,7 @@ private:
                          "            tok = tok->next();\n"
                          "    }\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: tok\n", errout.str());
 
         checkNullPointer("void foo()\n"
                          "{\n"
@@ -480,7 +480,7 @@ private:
                          "    if (!abc)\n"
                          "        ;\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc\n", errout.str());
 
         // ok dereferencing in a condition
         checkNullPointer("void foo(struct ABC *abc)\n"
@@ -568,7 +568,7 @@ private:
                          "    if (!p)\n"
                          "        ;\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n", errout.str());
 
         // no error
         checkNullPointer("void foo()\n"

@@ -961,6 +961,8 @@ void CheckOther::nullPointer()
         if (varid == 0)
             continue;
 
+        const std::string varname(tok->strAt(2));
+
         // Locate the end of the while loop..
         const Token *tok2 = tok->tokAt(4);
         int indentlevel = 0;
@@ -1001,7 +1003,7 @@ void CheckOther::nullPointer()
                         Token::Match(tok3->previous(), "[({};]") ||
                         tok3->previous()->isName())
                     {
-                        nullPointerError(tok2);
+                        nullPointerError(tok2, varname);
                     }
                 }
                 break;
@@ -1045,6 +1047,8 @@ void CheckOther::nullPointer()
                 if (Token::Match(tok2->tokAt(-2), "%varid% ?", varid))
                     continue;
 
+                const std::string varname(tok2->str());
+
                 // Check usage of dereferenced variable in the loop..
                 unsigned int indentlevel3 = 0;
                 for (const Token *tok3 = tok1->next()->link(); tok3; tok3 = tok3->next())
@@ -1069,7 +1073,7 @@ void CheckOther::nullPointer()
                             {
                                 if (indentlevel4 <= 1)
                                 {
-                                    nullPointerError(tok1);
+                                    nullPointerError(tok1, varname);
                                     break;
                                 }
                                 --indentlevel4;
@@ -1095,6 +1099,8 @@ void CheckOther::nullPointer()
             const unsigned int varid1(tok1->varId());
             if (varid1 == 0)
                 continue;
+
+            const std::string varname(tok1->str());
 
             // Checking if the struct pointer is non-null before the assignment..
             {
@@ -1144,7 +1150,7 @@ void CheckOther::nullPointer()
 
                 else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
                 {
-                    nullPointerError(tok1);
+                    nullPointerError(tok1, varname);
                     break;
                 }
             }
@@ -1160,6 +1166,8 @@ void CheckOther::nullPointer()
             if (varid == 0)
                 continue;
 
+            const std::string varname(tok->strAt(3));
+
             const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
             if (!Token::Match(decltok->tokAt(-3), "[;,(] %var% *"))
                 continue;
@@ -1170,7 +1178,7 @@ void CheckOther::nullPointer()
                 {
                     if (tok1->previous() && tok1->previous()->str() == "*" && tok1->tokAt(-2)->str() != "*")
                     {
-                        nullPointerError(tok1);
+                        nullPointerError(tok1, varname);
                         break;
                     }
                     else if (tok1->previous() && tok1->previous()->str() == "&")
@@ -1318,9 +1326,9 @@ void CheckOther::strPlusChar(const Token *tok)
     reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic");
 }
 
-void CheckOther::nullPointerError(const Token *tok)
+void CheckOther::nullPointerError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference");
+    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname);
 }
 
 void CheckOther::zerodivError(const Token *tok)

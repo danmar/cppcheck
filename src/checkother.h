@@ -142,7 +142,7 @@ public:
     void variableScopeError(const Token *tok, const std::string &varname);
     void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
     void strPlusChar(const Token *tok);
-    void nullPointerError(const Token *tok);
+    void nullPointerError(const Token *tok, const std::string &varname);
     void zerodivError(const Token *tok);
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
 
@@ -156,15 +156,15 @@ public:
         sprintfOverlappingDataError(0, "varname");
         udivError(0);
         udivWarning(0);
-        unusedStructMemberError(0, "structname", "varname");
-        passedByValueError(0, "parname");
+        unusedStructMemberError(0, "structname", "variable");
+        passedByValueError(0, "parametername");
         constStatementError(0, "type");
         charArrayIndexError(0);
         charBitOpError(0);
         variableScopeError(0, "varname");
         conditionAlwaysTrueFalse(0, "true/false");
         strPlusChar(0);
-        nullPointerError(0);
+        nullPointerError(0, "pointer");
         zerodivError(0);
         postIncrementError(0, "varname", true);
     }
