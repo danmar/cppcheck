@@ -346,6 +346,32 @@ private:
         ASSERT_EQUALS("#if (AAA)\n#if (AAA)\n", actual);
     }
 
+    void test7()
+    {
+        const char filedata[] = "#ifdef ABC\n"
+                                "A\n"
+                                "#ifdef ABC\n"
+                                "B\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Make sure an error message is written..
+        ASSERT_EQUALS("", errout.str());    // no change?
+        TODO_ASSERT_EQUALS("[test.cpp:3]: this preprocessor condition is always true", errout.str());
+
+        // Compare results..
+        ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\nA\n\nB\n\n\n", actual["ABC"]);
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
 
     void includeguard()
     {
