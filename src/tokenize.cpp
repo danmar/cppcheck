@@ -725,6 +725,70 @@ void Tokenizer::simplifyTemplates()
 }
 //---------------------------------------------------------------------------
 
+void Tokenizer::updateClassList()
+{
+    const char pattern_class[] = "class %var% [{:]";
+    _classInfoList.clear();
+
+    // Locate class
+    const Token *tok1 = tokens();
+    while ((tok1 = Token::findmatch(tok1, pattern_class)))
+    {
+        const char *className;
+        className = tok1->strAt(1);
+        tok1 = tok1->next();
+
+        ClassInfo::MemberType memberType = ClassInfo::PRIVATE;
+        int indentlevel = 0;
+        for (const Token *tok = tok1; tok; tok = tok->next())
+        {
+            // Indentation
+            if (tok->str() == "{")
+            {
+                ++indentlevel;
+                continue;
+            }
+
+            else if (tok->str() == "}")
+            {
+                --indentlevel;
+                if (indentlevel <= 0)
+                    break;
+
+                continue;
+            }
+
+            // Parse class contents (indentlevel == 1)..
+            if (indentlevel == 1)
+            {
+                if (tok->str() == "private:")
+                    memberType = ClassInfo::PRIVATE;
+                else if (tok->str() == "protected:")
+                    memberType = ClassInfo::PROTECTED;
+                else if (tok->str() == "public:")
+                    memberType = ClassInfo::PUBLIC;
+
+                else if (Token::Match(tok, "typedef %type% ("))
+                    tok = tok->tokAt(2);
+
+                else if (Token::Match(tok, "[:,] %var% ("))
+                    tok = tok->tokAt(2);
+
+                else if (Token::Match(tok, "%var% ("))
+                {
+                    // member function
+                    ClassInfo::MemberFunctionInfo func;
+                    func._declaration = tok;
+                    func._name = tok->str();
+                    func._type = memberType;
+
+                    _classInfoList[className]._memberFunctions.push_back(func);
+                }
+            }
+        }
+    }
+}
+
 
 void Tokenizer::setVarId()
 {

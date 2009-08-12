@@ -87,6 +87,7 @@
 		<Unit filename="src/checkstl.h" />
 		<Unit filename="src/checkunusedfunctions.cpp" />
 		<Unit filename="src/checkunusedfunctions.h" />
+		<Unit filename="src/classinfo.h" />
 		<Unit filename="src/cppcheck.cpp" />
 		<Unit filename="src/cppcheck.h" />
 		<Unit filename="src/cppcheckexecutor.cpp" />

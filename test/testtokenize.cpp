@@ -143,6 +143,7 @@ private:
 
         // unsigned i; => unsigned int i;
         TEST_CASE(unsigned1);
+        TEST_CASE(testUpdateClassList);
     }
 
 
@@ -2385,6 +2386,38 @@ private:
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
 
+    }
+
+    void tokenizeAndUpdateClassList(const char code[])
+    {
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.updateClassList();
+    }
+
+    void testUpdateClassList()
+    {
+        const char code[] = "class A{\n"
+                            " void f() {}\n"
+                            " public:\n"
+                            " void g() {}\n"
+                            "};";
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.updateClassList();
+        ASSERT_EQUALS(2, tokenizer._classInfoList["A"]._memberFunctions.size());
+        if (tokenizer._classInfoList["A"]._memberFunctions.size() > 1)
+        {
+            ASSERT_EQUALS(std::string("f"), tokenizer._classInfoList["A"]._memberFunctions[0]._name);
+            ASSERT_EQUALS(std::string("f"), tokenizer._classInfoList["A"]._memberFunctions[0]._declaration->str());
+            ASSERT_EQUALS(ClassInfo::PRIVATE, tokenizer._classInfoList["A"]._memberFunctions[0]._type);
+            ASSERT_EQUALS(std::string("g"), tokenizer._classInfoList["A"]._memberFunctions[1]._name);
+            ASSERT_EQUALS(std::string("g"), tokenizer._classInfoList["A"]._memberFunctions[1]._declaration->str());
+            ASSERT_EQUALS(ClassInfo::PUBLIC, tokenizer._classInfoList["A"]._memberFunctions[1]._type);
+        }
     }
 
 };

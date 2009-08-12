@@ -25,6 +25,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include "classinfo.h"
 
 class Token;
 class ErrorLogger;
@@ -104,6 +105,12 @@ public:
      * @return First matching token or NULL.
      */
     static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel);
+
+    /**
+     * List of classes in currently checked source code and
+     * their member functions and member variables.
+     */
+    std::map<std::string, ClassInfo> _classInfoList;
 
 private:
 
@@ -279,6 +286,12 @@ private:
     bool createLinks();
 
     void syntaxError(const Token *tok, char c);
+
+    /**
+     * Update _classInfoList to contain class names and member
+     * functions and member variables.
+     */
+    void updateClassList();
 
     Token *_tokens, *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
