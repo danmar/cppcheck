@@ -1130,6 +1130,10 @@ void CheckOther::nullPointer()
                     --indentlevel2;
                 }
 
+                // goto destination..
+                else if (tok2->isName() && Token::simpleMatch(tok2->next(), ":"))
+                    break;
+
                 // Reassignment of the struct
                 else if (tok2->varId() == varid1)
                 {
@@ -1193,6 +1197,10 @@ void CheckOther::nullPointer()
 
                 else if (tok1->str() == "{" ||
                          tok1->str() == "}")
+                    break;
+
+                // goto destination..
+                else if (tok1->isName() && Token::simpleMatch(tok1->next(), ":"))
                     break;
             }
         }
