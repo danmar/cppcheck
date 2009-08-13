@@ -48,10 +48,6 @@ double MathLib::toDoubleNumber(const std::string &str)
     {
         return std::strtoul(str.c_str(), '\0', 16);
     }
-    if (strncmp(str.c_str(), "0", 1) == 0)
-    {
-        return std::strtoul(str.c_str(), '\0', 8);
-    }
     return std::atof(str.c_str());
 }
 
