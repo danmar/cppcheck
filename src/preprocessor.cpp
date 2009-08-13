@@ -403,7 +403,7 @@ std::string Preprocessor::removeComments(const std::string &str)
                     previous = chNext;
                 }
             }
-            while (i < str.length() && chNext != ch);
+            while (i < str.length() && chNext != ch && chNext != '\n');
         }
 
 

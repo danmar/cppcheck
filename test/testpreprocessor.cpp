@@ -136,6 +136,7 @@ private:
         TEST_CASE(pragma_asm);
         TEST_CASE(endifsemicolon);
         TEST_CASE(missing_doublequote);
+        TEST_CASE(handle_error);
 
         TEST_CASE(unicodeInCode);
         TEST_CASE(unicodeInComment);
@@ -1103,6 +1104,35 @@ private:
                       "\n"
                       "\n"
                       "}\n", actual[""]);
+    }
+
+    void handle_error()
+    {
+        {
+            const char filedata[] = "#define A \n"
+                                    "#error don't want to \\\n"
+                                    "more text\n"
+                                    "void f()\n"
+                                    "{\n"
+                                    "  char a = 'a'; // '\n"
+                                    "}\n";
+            const char expected[] = "\n"
+                                    "\n"
+                                    "\n"
+                                    "void f()\n"
+                                    "{\n"
+                                    "char a = 'a';\n"
+                                    "}\n";
+            errout.str("");
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            ASSERT_EQUALS(expected, actual[""]);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void missing_doublequote()
