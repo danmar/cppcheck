@@ -1709,6 +1709,7 @@ private:
         CheckMemoryLeakInFunction checkMemoryLeak;
         std::list<const Token *> callstack;
         CheckMemoryLeak::AllocType allocType, deallocType;
+        allocType = deallocType = CheckMemoryLeak::No;
         bool all = false;
         Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varname, allocType, deallocType, false, all, 1);
 

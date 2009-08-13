@@ -252,7 +252,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             {
                 if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
                 {
-                    max_counter_value = MathLib::toString<long>(atol(tok2->strAt(2)) - 1);
+                    max_counter_value = MathLib::toString<long>(std::atol(tok2->strAt(2)) - 1);
                 }
                 else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
                 {
@@ -318,8 +318,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                         //printf("min_index: %s %c %s\n", min_counter_value.c_str(), action, second.c_str());
                         //printf("max_index: %s %c %s\n", max_counter_value.c_str(), action, second.c_str());
 
-                        min_index = atoi(MathLib::calculate(min_counter_value, second, action).c_str());
-                        max_index = atoi(MathLib::calculate(max_counter_value, second, action).c_str());
+                        min_index = std::atoi(MathLib::calculate(min_counter_value, second, action).c_str());
+                        max_index = std::atoi(MathLib::calculate(max_counter_value, second, action).c_str());
                     }
                     else if (Token::Match(tok2, "%varid% [ %num% +|-|*|/ %var% ]", varid) &&
                              tok2->tokAt(4)->varId() == counter_varid)
@@ -330,8 +330,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                         //printf("min_index: %s %c %s\n", first.c_str(), action, min_counter_value.c_str());
                         //printf("max_index: %s %c %s\n", first.c_str(), action, max_counter_value.c_str());
 
-                        min_index = atoi(MathLib::calculate(first, min_counter_value, action).c_str());
-                        max_index = atoi(MathLib::calculate(first, max_counter_value, action).c_str());
+                        min_index = std::atoi(MathLib::calculate(first, min_counter_value, action).c_str());
+                        max_index = std::atoi(MathLib::calculate(first, max_counter_value, action).c_str());
                     }
 
                     //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);
@@ -369,7 +369,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // Dangerous usage of strncat..
         if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
-            int n = atoi(tok->strAt(6));
+            int n = std::atoi(tok->strAt(6));
             if (n >= (size - 1))
                 strncatUsage(tok);
         }
@@ -378,7 +378,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // Dangerous usage of strncpy + strncat..
         if (varid > 0 && Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% ) ; strncat ( %varid% , %any% , %num% )", varid))
         {
-            int n = atoi(tok->strAt(6)) + atoi(tok->strAt(15));
+            int n = std::atoi(tok->strAt(6)) + std::atoi(tok->strAt(15));
             if (n > size)
                 strncatUsage(tok->tokAt(9));
         }

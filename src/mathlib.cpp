@@ -33,18 +33,26 @@ long MathLib::toLongNumber(const std::string &str)
 {
     if (strncmp(str.c_str(), "0x", 2) == 0)
     {
-        return strtoul(str.c_str(), '\0', 16);
+        return std::strtoul(str.c_str(), '\0', 16);
     }
     if (strncmp(str.c_str(), "0", 1) == 0)
     {
-        return strtoul(str.c_str(), '\0', 8);
+        return std::strtoul(str.c_str(), '\0', 8);
     }
-    return atol(str.c_str());
+    return std::atol(str.c_str());
 }
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    return atof(str.c_str());
+    if (strncmp(str.c_str(), "0x", 2) == 0)
+    {
+        return std::strtoul(str.c_str(), '\0', 16);
+    }
+    if (strncmp(str.c_str(), "0", 1) == 0)
+    {
+        return std::strtoul(str.c_str(), '\0', 8);
+    }
+    return std::atof(str.c_str());
 }
 
 template <typename T>
@@ -137,24 +145,24 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
 
 std::string MathLib::sin(const std::string &tok)
 {
-    return toString<double>(::sin(toDoubleNumber(tok)));
+    return toString<double>(std::sin(toDoubleNumber(tok)));
 }
 
 
 std::string MathLib::cos(const std::string &tok)
 {
-    return toString<double>(::cos(toDoubleNumber(tok)));
+    return toString<double>(std::cos(toDoubleNumber(tok)));
 }
 
 std::string MathLib::tan(const std::string &tok)
 {
-    return toString<double>(::tan(toDoubleNumber(tok)));
+    return toString<double>(std::tan(toDoubleNumber(tok)));
 }
 
 
 std::string MathLib::abs(const std::string &tok)
 {
-    return toString<double>(::abs(toDoubleNumber(tok)));
+    return toString<double>(std::abs(toDoubleNumber(tok)));
 }
 
 bool MathLib::isGreater(const std::string &first, const std::string &second)

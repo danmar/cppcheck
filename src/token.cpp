@@ -131,7 +131,7 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
 const Token *Token::tokAt(int index) const
 {
     const Token *tok = this;
-    int num = abs(index);
+    int num = std::abs(index);
     while (num > 0 && tok)
     {
         if (index > 0)
@@ -146,7 +146,7 @@ const Token *Token::tokAt(int index) const
 Token *Token::tokAt(int index)
 {
     Token *tok = this;
-    int num = abs(index);
+    int num = std::abs(index);
     while (num > 0 && tok)
     {
         if (index > 0)
