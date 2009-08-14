@@ -30,7 +30,11 @@
 #endif
 #if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
+#ifdef __BORLANDC__
+#include <dir.h>
+#else
 #include <shlwapi.h>
+#endif
 #endif
 
 std::string FileLister::simplifyPath(const char *originalPath)
@@ -198,9 +202,16 @@ static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
 
 static BOOL MyIsDirectory(std::string path)
 {
+#ifdef __BORLANDC__
+    struct ffblk ffblk;
+    int ret = findfirst(path.c_str(), &ffblk, FA_DIREC);
+    if (ret == 0)
+        findclose(&ffblk);
+    return !ret;
+#else
     // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    BOOL res = PathIsDirectory(path.c_str());
-    return res;
+    return PathIsDirectory(path.c_str());
+#endif
 }
 
 static HANDLE MyFindFirstFile(std::string path, LPWIN32_FIND_DATA findData)
