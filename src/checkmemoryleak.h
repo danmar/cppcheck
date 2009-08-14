@@ -148,7 +148,9 @@ public:
 
     void check();
 
+#ifndef UNIT_TESTING
 private:
+#endif
 
     bool matchFunctionsThatReturnArg(const Token *tok, const std::string &varname);
 

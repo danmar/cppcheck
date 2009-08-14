@@ -112,7 +112,9 @@ public:
      */
     std::map<std::string, ClassInfo> _classInfoList;
 
+#ifndef UNIT_TESTING
 private:
+#endif
 
     /**
      * Simplify variable declarations
