@@ -779,6 +779,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
             ++it;
     }
 
+    ret.sort();
+
     return ret;
 }
 

@@ -118,7 +118,8 @@ private:
     static std::string removeSpaceNearNL(const std::string &str);
 
     /**
-     * Get all possible configurations. By looking at the ifdefs and ifndefs in filedata
+     * Get all possible configurations sorted in alphabetical order.
+     * By looking at the ifdefs and ifndefs in filedata
      */
     std::list<std::string> getcfgs(const std::string &filedata);
 
