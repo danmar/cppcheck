@@ -120,8 +120,7 @@ bool MathLib::isInt(const std::string & s)
     {
         ++n; // 0
         ++n; // x
-        while (isdigit(s[n]) || s[n] == 'A' || s[n] == 'B' || s[n] == 'C' || s[n] == 'D' || s[n] == 'E' || s[n] == 'F' ||
-               s[n] == 'a' || s[n] == 'b' || s[n] == 'c' || s[n] == 'd' || s[n] == 'e' || s[n] == 'f')
+        while (isxdigit(s[n]))
             ++n;
     }
     // check octal notation
