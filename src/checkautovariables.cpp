@@ -22,9 +22,7 @@
 
 #include "checkautovariables.h"
 
-#include <algorithm>
 #include <sstream>
-#include <list>
 #include <iostream>
 #include <string>
 
@@ -212,7 +210,7 @@ void CheckAutoVariables::returnPointerToLocalArray()
 {
     bool infunc = false;
     int indentlevel = 0;
-    std::list<unsigned int> arrayVar;
+    std::set<unsigned int> arrayVar;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Is there a function declaration for a function that returns a pointer?
@@ -250,14 +248,14 @@ void CheckAutoVariables::returnPointerToLocalArray()
             // Declaring a local array..
             if (Token::Match(tok, "[;{}] %type% %var% ["))
             {
-                arrayVar.push_back(tok->tokAt(2)->varId());
+                arrayVar.insert(tok->tokAt(2)->varId());
             }
 
             // Return pointer to local array variable..
             if (Token::Match(tok, "return %var% ;"))
             {
                 unsigned int varid = tok->next()->varId();
-                if (varid > 0 && std::find(arrayVar.begin(), arrayVar.end(), varid) != arrayVar.end())
+                if (varid > 0 && arrayVar.find(varid) != arrayVar.end())
                     errorReturnPointerToLocalArray(tok);
             }
         }
