@@ -62,30 +62,12 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
     if (it_fp == fp_list.end())
         return false;
 
-    std::list<unsigned int>::const_iterator id_vd;
-    for (id_vd = vd_list.begin(); id_vd != vd_list.end(); ++id_vd)
-    {
-        //The left argument is a variable declaration
-        if (*id_vd == right->varId())
-            break;
-    }
-    //The left argument is NOT a variable declaration
-    if (id_vd == vd_list.end())
-        return false;
-    //If I reach this point there is a wrong assignement of an auto-variable to an effective parameter of a function
-    return true;
-
+    return isAutoVar(right->varId());
 }
 
 bool CheckAutoVariables::isAutoVar(unsigned int varId)
 {
-    std::list<unsigned int>::iterator id_vd;
-    for (id_vd = vd_list.begin(); id_vd != vd_list.end(); ++id_vd)
-    {
-        if (*id_vd == varId)
-            return true;
-    }
-    return false;
+    return (vd_list.find(varId) != vd_list.end());
 }
 
 bool CheckAutoVariables::isAutoVarArray(unsigned int varId)
@@ -131,10 +113,9 @@ bool isExternOrStatic(const Token *tok)
 
 }
 
-void CheckAutoVariables::addVD(const Token* tok)
+void CheckAutoVariables::addVD(unsigned int varId)
 {
-    //std::cout << "VD " << tok->linenr() << " " << tok->str() << std::endl;
-    vd_list.push_back(tok->varId());
+    vd_list.insert(varId);
 }
 
 void CheckAutoVariables::addVDA(unsigned int varId)
@@ -182,7 +163,7 @@ void CheckAutoVariables::autoVariables()
         }
         else if (bindent > 0 && Token::Match(tok, "%type% :: %any%") && !isExternOrStatic(tok)) //Inside a function
         {
-            addVD(tok->tokAt(2));
+            addVD(tok->tokAt(2)->varId());
         }
         // Inside a function body
         else if (bindent > 0 && Token::Match(tok, "%type% %var% ["))
@@ -193,13 +174,13 @@ void CheckAutoVariables::autoVariables()
         {
             if (!isTypeName(tok))
                 continue;
-            addVD(tok->tokAt(1));
+            addVD(tok->next()->varId());
         }
         else if (bindent > 0 && Token::Match(tok, "const %var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
         {
             if (!isTypeName(tok->tokAt(1)))
                 continue;
-            addVD(tok->tokAt(2));
+            addVD(tok->tokAt(2)->varId());
         }
         else if (bindent > 0 && Token::Match(tok, "[;{}] %var% = & %var%")) //Critical assignement
         {
