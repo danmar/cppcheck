@@ -25,6 +25,7 @@
 #include "check.h"
 #include "token.h"
 #include <list>
+#include <set>
 
 /// @addtogroup Checks
 /// @{
@@ -58,12 +59,12 @@ public:
 private:
     std::list<std::string> fp_list;
     std::list<unsigned int> vd_list;
-    std::list<unsigned int> vda_list;
+    std::set<unsigned int> vda_list;
     bool errorAv(const Token* left, const Token* right);
     bool isAutoVar(unsigned int varId);
     bool isAutoVarArray(unsigned int varId);
     void addVD(const Token* t);
-    void addVDA(const Token* t);
+    void addVDA(unsigned int varId);
 
 
 

@@ -90,13 +90,7 @@ bool CheckAutoVariables::isAutoVar(unsigned int varId)
 
 bool CheckAutoVariables::isAutoVarArray(unsigned int varId)
 {
-    std::list<unsigned int>::iterator id_vd;
-    for (id_vd = vda_list.begin(); id_vd != vda_list.end(); ++id_vd)
-    {
-        if (*id_vd == varId)
-            return true;
-    }
-    return false;
+    return (vda_list.find(varId) != vda_list.end());
 }
 
 void print(const Token *tok, int num)
@@ -143,9 +137,9 @@ void CheckAutoVariables::addVD(const Token* tok)
     vd_list.push_back(tok->varId());
 }
 
-void CheckAutoVariables::addVDA(const Token* tok)
+void CheckAutoVariables::addVDA(unsigned int varId)
 {
-    vda_list.push_back(tok->varId());
+    vda_list.insert(varId);
 }
 
 void CheckAutoVariables::autoVariables()
@@ -193,7 +187,7 @@ void CheckAutoVariables::autoVariables()
         // Inside a function body
         else if (bindent > 0 && Token::Match(tok, "%type% %var% ["))
         {
-            addVDA(tok->tokAt(1));
+            addVDA(tok->next()->varId());
         }
         else if (bindent > 0 && Token::Match(tok, "%var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
         {
