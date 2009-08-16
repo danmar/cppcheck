@@ -43,6 +43,7 @@ private:
         ASSERT_EQUALS("-11.96", MathLib::multiply("-2.3", "5.2"));
         ASSERT_EQUALS("7", MathLib::divide("21.", "3"));
         ASSERT_EQUALS("1", MathLib::divide("3", "2"));
+        ASSERT_EQUALS("3000", MathLib::multiply("1E3", "3"));
     }
 
     void convert()

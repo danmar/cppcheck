@@ -371,8 +371,9 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
 
 void CheckMemoryLeakInFunction::init()
 {
-    static const char * const white_list[] = {
-          "if", "for", "while", "return", "switch", "realloc", "delete"
+    static const char * const white_list[] =
+    {
+        "if", "for", "while", "return", "switch", "realloc", "delete"
         , "strcpy", "strncpy", "strcat", "strncat", "strcmp", "strncmp"
         , "strcasecmp", "stricmp", "sprintf", "strchr", "strrchr", "strstr"
         , "memset", "memcpy", "memmove", "memchr", "fgets", "fgetc", "getc"
