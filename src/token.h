@@ -217,6 +217,28 @@ private:
     void next(Token *next);
     void previous(Token *previous);
 
+    /**
+     * Works almost like strcmp() except returns only 0 or 1 and
+     * if str has empty space ' ' character, that character is handled
+     * as if it were '\0'
+     */
+    static int firstWordEquals(const char *str, const char *word);
+
+    /**
+     * Works almost like strchr() except
+     * if str has empty space ' ' character, that character is handled
+     * as if it were '\0'
+     */
+    static const char *chrInFirstWord(const char *str, char c);
+
+    /**
+     * Works almost like strlen() except
+     * if str has empty space ' ' character, that character is handled
+     * as if it were '\0'
+     */
+    static int firstWordLen(const char *str);
+
+
     std::string _str;
     bool _isName;
     bool _isNumber;
