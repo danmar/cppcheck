@@ -126,6 +126,17 @@ private:
               "free (tmp);\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:5]: (error) Invalid deallocation\n"), errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char psz_title[10];\n"
+              "    {\n"
+              "        char *psz_title = 0;\n"
+              "        abc(0, psz_title);\n"
+              "        free(psz_title);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void returnLocalVariable1()

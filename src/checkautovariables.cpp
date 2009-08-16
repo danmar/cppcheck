@@ -92,14 +92,12 @@ bool CheckAutoVariables::isAutoVar(const Token* t)
     return false;
 }
 
-bool CheckAutoVariables::isAutoVarArray(const Token* t)
+bool CheckAutoVariables::isAutoVarArray(unsigned int varId)
 {
-    std::list<std::string>::iterator id_vd;
-    std::string v(t->str());
+    std::list<unsigned int>::iterator id_vd;
     for (id_vd = vda_list.begin(); id_vd != vda_list.end(); ++id_vd)
     {
-        std::string vname(*id_vd);
-        if (vname == v)
+        if (*id_vd == varId)
             return true;
     }
     return false;
@@ -153,9 +151,7 @@ void CheckAutoVariables::addVD(const Token* tok)
 
 void CheckAutoVariables::addVDA(const Token* tok)
 {
-    std::string var_name(tok->str());
-
-    vda_list.push_back(var_name);
+    vda_list.push_back(tok->varId());
 }
 
 void CheckAutoVariables::autoVariables()
@@ -244,7 +240,7 @@ void CheckAutoVariables::autoVariables()
         // Invalid pointer deallocation
         else if (bindent > 0 && Token::Match(tok, "free ( %var% ) ;"))
         {
-            if (isAutoVarArray(tok->tokAt(2)))
+            if (isAutoVarArray(tok->tokAt(2)->varId()))
                 reportError(tok,
                             Severity::error,
                             "autoVariables",
