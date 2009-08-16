@@ -259,7 +259,7 @@ kate -l(line) (file)</translation>
     <message>
         <location filename="main.ui" line="279"/>
         <source>Show possible style errors</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa möjliga stilvarningar</translation>
     </message>
     <message>
         <location filename="main.ui" line="287"/>
@@ -403,7 +403,7 @@ Stop the checking before exiting.</source>
     <message>
         <location filename="translationhandler.cpp" line="36"/>
         <source>Polish</source>
-        <translation type="unfinished"></translation>
+        <translation>Polska</translation>
     </message>
 </context>
 <context>
@@ -490,7 +490,7 @@ Kontrollera att sökvägen och parametrarna är korrekta.</translation>
     <message>
         <location filename="resultstree.cpp" line="613"/>
         <source>possible error</source>
-        <translation type="unfinished"></translation>
+        <translation>Möjligt fel</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="617"/>
@@ -500,7 +500,7 @@ Kontrollera att sökvägen och parametrarna är korrekta.</translation>
     <message>
         <location filename="resultstree.cpp" line="621"/>
         <source>possible style</source>
-        <translation type="unfinished"></translation>
+        <translation>Möjlig stil</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="625"/>
@@ -531,13 +531,13 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
     <message>
         <location filename="resultsview.cpp" line="139"/>
         <source>No errors found, nothing to save.</source>
-        <translation type="unfinished"></translation>
+        <translation>Inga fel hittades, ingenting att spara.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="166"/>
         <location filename="resultsview.cpp" line="176"/>
         <source>Failed to save the report.</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att spara rapporten.</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="26"/>
@@ -550,7 +550,7 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
     <message>
         <location filename="settings.ui" line="14"/>
         <source>Preferences</source>
-        <translation type="unfinished"></translation>
+        <translation>Inställningar</translation>
     </message>
     <message>
         <location filename="settings.ui" line="24"/>
