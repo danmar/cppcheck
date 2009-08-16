@@ -44,7 +44,6 @@ static CheckAutoVariables instance;
 bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 {
     const std::string left_var(left->str());
-    const std::string right_var(right->str());
     std::list<std::string>::iterator it_fp;
 
     for (it_fp = fp_list.begin(); it_fp != fp_list.end(); ++it_fp)
@@ -63,12 +62,11 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
     if (it_fp == fp_list.end())
         return false;
 
-    std::list<std::string>::iterator id_vd;
+    std::list<unsigned int>::const_iterator id_vd;
     for (id_vd = vd_list.begin(); id_vd != vd_list.end(); ++id_vd)
     {
-        std::string vname(*id_vd);
         //The left argument is a variable declaration
-        if (vname == right_var)
+        if (*id_vd == right->varId())
             break;
     }
     //The left argument is NOT a variable declaration
@@ -79,14 +77,12 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 
 }
 
-bool CheckAutoVariables::isAutoVar(const Token* t)
+bool CheckAutoVariables::isAutoVar(unsigned int varId)
 {
-    std::list<std::string>::iterator id_vd;
-    std::string v(t->str());
+    std::list<unsigned int>::iterator id_vd;
     for (id_vd = vd_list.begin(); id_vd != vd_list.end(); ++id_vd)
     {
-        std::string vname(*id_vd);
-        if (vname == v)
+        if (*id_vd == varId)
             return true;
     }
     return false;
@@ -143,10 +139,8 @@ bool isExternOrStatic(const Token *tok)
 
 void CheckAutoVariables::addVD(const Token* tok)
 {
-    std::string var_name(tok->str());
-
-    //std::cout << "VD " << tok->linenr() << " " << var_name << std::endl;
-    vd_list.push_back(var_name);
+    //std::cout << "VD " << tok->linenr() << " " << tok->str() << std::endl;
+    vd_list.push_back(tok->varId());
 }
 
 void CheckAutoVariables::addVDA(const Token* tok)
@@ -231,7 +225,7 @@ void CheckAutoVariables::autoVariables()
         }
         else if (bindent > 0 && Token::Match(tok, "return & %var% ;")) //Critical return
         {
-            if (isAutoVar(tok->tokAt(2)))
+            if (isAutoVar(tok->tokAt(2)->varId()))
                 reportError(tok,
                             Severity::error,
                             "autoVariables",

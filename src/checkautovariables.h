@@ -57,10 +57,10 @@ public:
 
 private:
     std::list<std::string> fp_list;
-    std::list<std::string> vd_list;
+    std::list<unsigned int> vd_list;
     std::list<unsigned int> vda_list;
     bool errorAv(const Token* left, const Token* right);
-    bool isAutoVar(const Token* t);
+    bool isAutoVar(unsigned int varId);
     bool isAutoVarArray(unsigned int varId);
     void addVD(const Token* t);
     void addVDA(const Token* t);
