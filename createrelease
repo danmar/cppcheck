@@ -2,12 +2,20 @@
 # A script for creating source archives from a GIT tag
 #
 # Archive files are created in user's home directory.
+#
+# Remember to update version number in:
+# - src/main.cpp
+# - src/cppcheck.cpp
+# - win_installer/cppcheck.iss
 
 # Tag to use
-tag=1.34
+tag=1.35
 
 # Name of release
 releasename=cppcheck-$tag
+
+# wget http://josefsson.org/git2cl/git2cl
+./git2cl > ChangeLog
 
 git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar.gz
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
