@@ -29,3 +29,5 @@ gui/*.qm
 gui/ui_*.h
 # Doxygen output folder
 doxyoutput/
+# qmake generated
+src/Makefile
