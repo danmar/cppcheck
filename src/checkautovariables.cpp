@@ -77,7 +77,9 @@ bool isTypeName(const Token *tok)
     std::string _str(tok->str());
     static const char * const type[] = {"case", "return", "delete", 0};
     for (int i = 0; type[i]; i++)
+    {
         ret |= (_str == type[i]);
+    }
     return !ret;
 }
 
@@ -86,11 +88,17 @@ bool isExternOrStatic(const Token *tok)
     bool res = false;
 
     if (Token::Match(tok->tokAt(-1), "extern|static"))
+    {
         res = true;
+    }
     else if (Token::Match(tok->tokAt(-2), "extern|static"))
+    {
         res = true;
+    }
     else if (Token::Match(tok->tokAt(-3), "extern|static"))
+    {
         res = true;
+    }
 
     //std::cout << __PRETTY_FUNCTION__ << " " << tok->str() << " " << res << std::endl;
     return res;
@@ -132,13 +140,17 @@ void CheckAutoVariables::autoVariables()
             fp_list.insert(tok->tokAt(2)->str());
         }
         else if (begin_function && tok->str() == "(")
+        {
             begin_function_decl = true;
+        }
         else if (begin_function && tok->str() == ")")
         {
             begin_function_decl = false;
         }
         else if (begin_function && tok->str() == "{")
+        {
             bindent++;
+        }
         else if (begin_function && tok->str() == "}")
         {
             bindent--;
@@ -155,47 +167,59 @@ void CheckAutoVariables::autoVariables()
         else if (bindent > 0 && Token::Match(tok, "%var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
         {
             if (!isTypeName(tok))
+            {
                 continue;
+            }
             addVD(tok->next()->varId());
         }
         else if (bindent > 0 && Token::Match(tok, "const %var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
         {
             if (!isTypeName(tok->tokAt(1)))
+            {
                 continue;
+            }
             addVD(tok->tokAt(2)->varId());
         }
         else if (bindent > 0 && Token::Match(tok, "[;{}] %var% = & %var%")) //Critical assignement
         {
             if (errorAv(tok->tokAt(1), tok->tokAt(4)))
+            {
                 reportError(tok,
                             Severity::error,
                             "autoVariables",
                             "Wrong assignement of an auto-variable to an effective parameter of a function");
+            }
         }
         else if (bindent > 0 && Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%")) //Critical assignement
         {
             if (errorAv(tok->tokAt(1), tok->tokAt(7)))
+            {
                 reportError(tok,
                             Severity::error,
                             "autoVariables",
                             "Wrong assignement of an auto-variable to an effective parameter of a function");
+            }
         }
         else if (bindent > 0 && Token::Match(tok, "return & %var% ;")) //Critical return
         {
             if (isAutoVar(tok->tokAt(2)->varId()))
+            {
                 reportError(tok,
                             Severity::error,
                             "autoVariables",
                             "Return of the address of an auto-variable");
+            }
         }
         // Invalid pointer deallocation
         else if (bindent > 0 && Token::Match(tok, "free ( %var% ) ;"))
         {
             if (isAutoVarArray(tok->tokAt(2)->varId()))
+            {
                 reportError(tok,
                             Severity::error,
                             "autoVariables",
                             "Invalid deallocation");
+            }
         }
     }
     vd_list.clear();
@@ -236,12 +260,16 @@ void CheckAutoVariables::returnPointerToLocalArray()
         if (infunc)
         {
             if (tok->str() == "{")
+            {
                 ++indentlevel;
+            }
             else if (tok->str() == "}")
             {
                 --indentlevel;
                 if (indentlevel <= 0)
+                {
                     infunc = false;
+                }
                 continue;
             }
 
@@ -256,7 +284,9 @@ void CheckAutoVariables::returnPointerToLocalArray()
             {
                 unsigned int varid = tok->next()->varId();
                 if (varid > 0 && arrayVar.find(varid) != arrayVar.end())
+                {
                     errorReturnPointerToLocalArray(tok);
+                }
             }
         }
 
