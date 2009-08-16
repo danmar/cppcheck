@@ -90,9 +90,18 @@ bool MathLib::isInt(const std::string & s)
     while (isspace(s[n])) ++n;
 
     // determine type
-    if (s.find("E", 0) != std::string::npos) 						   Mode = eScientific;
-    else if (s.find("0x", n, 2) != std::string::npos)  			   Mode = eHex;
-    else if (s.find("0", n, 1) != std::string::npos && isdigit(s[n+1])) Mode = eOctal;
+    if (s.find("E", 0) != std::string::npos)
+    {
+        Mode = eScientific;
+    }
+    else if (s.find("0x", n, 2) != std::string::npos)
+    {
+        Mode = eHex;
+    }
+    else if (s.find("0", n, 1) != std::string::npos && isdigit(s[n+1]))
+    {
+        Mode = eOctal;
+    }
 
     // check sign
     if (s[n] == '-' || s[n] == '+') ++n;
