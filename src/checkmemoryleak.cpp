@@ -369,6 +369,32 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
 }
 
 
+void CheckMemoryLeakInFunction::init()
+{
+    static const char * const white_list[] = {
+          "if", "for", "while", "return", "switch", "realloc", "delete"
+        , "strcpy", "strncpy", "strcat", "strncat", "strcmp", "strncmp"
+        , "strcasecmp", "stricmp", "sprintf", "strchr", "strrchr", "strstr"
+        , "memset", "memcpy", "memmove", "memchr", "fgets", "fgetc", "getc"
+        , "fputs", "fputc", "feof", "ferror", "clearerr", "printf", "fprintf"
+        , "fread", "fwrite", "fflush", "fseek", "fseeko", "ftell", "ftello"
+        , "fsetpos", "fgetpos", "setvbuf", "setbuf", "setbuffer", "setlinebuf"
+        , "rewind", "read", "readv", "pread", "readahead", "write", "writev"
+        , "pwrite", "lseek", "ioctl", "fchmod", "fcntl", "flock", "lockf"
+        , "ftruncate", "fsync", "fdatasync", "fstat", "sync_file_range"
+        , "posix_fallocate", "posix_fadvise", "readdir", "readdir_r"
+        , "rewinddir", "telldir", "seekdir", "scandir", "atoi", "atof", "atol"
+        , "strtol", "strtoul", "strtod"
+        , NULL
+    };
+
+    size_t i = 0;
+    while (white_list[i] != NULL)
+    {
+        call_func_white_list.insert(white_list[i]);
+        ++i;
+    }
+}
 
 bool CheckMemoryLeakInFunction::matchFunctionsThatReturnArg(const Token *tok, const std::string &varname)
 {
@@ -424,45 +450,7 @@ static int countParameters(const Token *tok)
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
-    // Keywords that are not function calls..
-    if (Token::Match(tok, "if|for|while|return|switch"))
-        return 0;
-
-    // Keywords that are not function calls..
-    if (Token::Match(tok, "realloc"))
-        return 0;
-
-    // String functions that are not allocating nor deallocating memory..
-    if (Token::Match(tok, "strcpy|strncpy|strcat|strncat|strcmp|strncmp|strcasecmp|stricmp|sprintf|strchr|strrchr|strstr"))
-        return 0;
-
-    // Memory functions that are not allocating nor deallocating memory..
-    if (Token::Match(tok, "memset|memcpy|memmove|memchr"))
-        return 0;
-
-    // I/O functions that are not allocating nor deallocating memory..
-    if (Token::Match(tok, "fgets|fgetc|getc|fputs|fputc|feof|ferror|clearerr|printf|fprintf") ||
-        Token::Match(tok, "fread|fwrite|fflush|fseek|fseeko|ftell|ftello|fsetpos|fgetpos") ||
-        Token::Match(tok, "setvbuf|setbuf|setbuffer|setlinebuf|rewind"))
-        return 0;
-
-    // I/O functions that are not allocating nor deallocating memory..
-    if (Token::Match(tok, "read|readv|pread|readahead|write|writev|pwrite|lseek") ||
-        Token::Match(tok, "ioctl|fchmod|fcntl|flock|lockf|ftruncate|fsync|fdatasync") ||
-        Token::Match(tok, "fstat|sync_file_range|posix_fallocate|posix_fadvise"))
-        return 0;
-
-    // Functions to work with directories that are not allocating nor
-    // deallocating memory..
-    if (Token::Match(tok, "readdir|readdir_r|rewinddir|telldir|seekdir|scandir"))
-        return 0;
-
-    // Convert functions that are not allocating nor deallocating memory..
-    if (Token::Match(tok, "atoi|atof|atol|strtol|strtoul|strtod"))
-        return 0;
-
-    // This is not an unknown function neither
-    if (tok->str() == "delete")
+    if (call_func_white_list.find(tok->str()) != call_func_white_list.end())
         return 0;
 
     if (getAllocationType(tok, varnames[0]) != No || getReallocationType(tok, varnames[0]) != No || getDeallocationType(tok, varnames) != No)
