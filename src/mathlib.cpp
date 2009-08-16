@@ -104,7 +104,7 @@ bool MathLib::isInt(const std::string & s)
         while (isdigit(s[n])) ++n;
 
         // check scientific notation
-        if (s[n] == 'E' || s[n] == 'e')
+        if (std::tolower(s[n]) == 'e')
         {
             ++n;
             // check positive exponent
@@ -133,7 +133,7 @@ bool MathLib::isInt(const std::string & s)
     {
         while (isdigit(s[n])) ++n;
         // unsigned or long
-        if (s[n] == 'u' || s[n] == 'U' || s[n] == 'l' || s[n] == 'L') ++n;
+        if (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n;
     }
     // eat up whitespace
     while (isspace(s[n]))
