@@ -171,73 +171,56 @@ void CheckAutoVariables::autoVariables()
         {
             bindent--;
         }
-        else if (bindent > 0 && Token::Match(tok, "%type% :: %any%") && !isExternOrStatic(tok)) //Inside a function
+        else if (bindent <= 0)
+        {
+            continue;
+        }
+
+        // Inside a function body
+        if (Token::Match(tok, "%type% :: %any%") && !isExternOrStatic(tok))
         {
             addVD(tok->tokAt(2)->varId());
         }
-        // Inside a function body
-        else if (bindent > 0 && Token::Match(tok, "%type% %var% ["))
+        else if (Token::Match(tok, "%type% %var% ["))
         {
             addVDA(tok->next()->varId());
         }
-        else if (bindent > 0 && Token::Match(tok, "%var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
+        else if (Token::Match(tok, "%var% %var% ;") && !isExternOrStatic(tok) && isTypeName(tok))
         {
-            if (!isTypeName(tok))
-            {
-                continue;
-            }
             addVD(tok->next()->varId());
         }
-        else if (bindent > 0 && Token::Match(tok, "const %var% %var% ;") && !isExternOrStatic(tok)) //Inside a function
+        else if (Token::Match(tok, "const %var% %var% ;") && !isExternOrStatic(tok) && isTypeName(tok->next()))
         {
-            if (!isTypeName(tok->tokAt(1)))
-            {
-                continue;
-            }
             addVD(tok->tokAt(2)->varId());
         }
-        else if (bindent > 0 && Token::Match(tok, "[;{}] %var% = & %var%")) //Critical assignement
+        //Critical assignement
+        else if (Token::Match(tok, "[;{}] %var% = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(4)))
         {
-            if (errorAv(tok->tokAt(1), tok->tokAt(4)))
-            {
-                reportError(tok,
-                            Severity::error,
-                            "autoVariables",
-                            "Wrong assignement of an auto-variable to an effective parameter of a function");
-            }
+            reportError(tok,
+                        Severity::error,
+                        "autoVariables",
+                        "Wrong assignement of an auto-variable to an effective parameter of a function");
         }
-        else if (bindent > 0 && Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%")) //Critical assignement
+        //Critical assignement
+        else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(7)))
         {
-            if (errorAv(tok->tokAt(1), tok->tokAt(7)))
-            {
-                reportError(tok,
-                            Severity::error,
-                            "autoVariables",
-                            "Wrong assignement of an auto-variable to an effective parameter of a function");
-            }
+            reportError(tok,
+                        Severity::error,
+                        "autoVariables",
+                        "Wrong assignement of an auto-variable to an effective parameter of a function");
         }
-        else if (bindent > 0 && Token::Match(tok, "return & %var% ;")) //Critical return
+        // Critical return
+        else if (Token::Match(tok, "return & %var% ;") && isAutoVar(tok->tokAt(2)->varId()))
         {
-            if (isAutoVar(tok->tokAt(2)->varId()))
-            {
-                reportError(tok,
-                            Severity::error,
-                            "autoVariables",
-                            "Return of the address of an auto-variable");
-            }
+            reportError(tok, Severity::error, "autoVariables", "Return of the address of an auto-variable");
         }
         // Invalid pointer deallocation
-        else if (bindent > 0 && Token::Match(tok, "free ( %var% ) ;"))
+        else if (Token::Match(tok, "free ( %var% ) ;") && isAutoVarArray(tok->tokAt(2)->varId()))
         {
-            if (isAutoVarArray(tok->tokAt(2)->varId()))
-            {
-                reportError(tok,
-                            Severity::error,
-                            "autoVariables",
-                            "Invalid deallocation");
-            }
+            reportError(tok, Severity::error, "autoVariables", "Invalid deallocation");
         }
     }
+
     vd_list.clear();
     vda_list.clear();
     fp_list.clear();
