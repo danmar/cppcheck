@@ -591,7 +591,19 @@ void CheckOther::checkVariableScope()
                 continue;
 
             // Variable declaration?
-            if (Token::Match(tok1, "%type% %var% [;=]"))
+            if (Token::Match(tok1, "%type% %var% ; %var% = %any% ;"))
+            {
+                // Tokenizer modify "int i = 0;" to "int i; i = 0;",
+                // so to handle this situation we just skip
+                // initialization (see ticket #272).
+                const unsigned int firstVarId = tok1->next()->varId();
+                const unsigned int secondVarId = tok1->tokAt(3)->varId();
+                if (firstVarId > 0 && firstVarId == secondVarId)
+                {
+                    lookupVar(tok1->tokAt(6), tok1->strAt(1));
+                }
+            }
+            else if (Token::Match(tok1, "%type% %var% [;=]"))
             {
                 lookupVar(tok1, tok1->strAt(1));
             }

@@ -55,6 +55,7 @@ private:
         TEST_CASE(varScope2);
         TEST_CASE(varScope3);
         TEST_CASE(varScope4);
+        TEST_CASE(varScope5);
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -405,6 +406,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void varScope5()
+    {
+        varScope("void f)\n"
+                 "{\n"
+                 "    int i = 0;\n"
+                 "    if (true) {\n"
+                 "        for ( ; i < 10; ++i) ;\n"
+                 "    }\n"
+                 "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable i can be limited\n", errout.str());
+    }
 
 
 
