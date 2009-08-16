@@ -51,11 +51,21 @@ bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 
 bool CheckAutoVariables::isAutoVar(unsigned int varId)
 {
+    if (varId == 0)
+    {
+        return false;
+    }
+
     return (vd_list.find(varId) != vd_list.end());
 }
 
 bool CheckAutoVariables::isAutoVarArray(unsigned int varId)
 {
+    if (varId == 0)
+    {
+        return false;
+    }
+
     return (vda_list.find(varId) != vda_list.end());
 }
 
@@ -107,12 +117,18 @@ bool isExternOrStatic(const Token *tok)
 
 void CheckAutoVariables::addVD(unsigned int varId)
 {
-    vd_list.insert(varId);
+    if (varId > 0)
+    {
+        vd_list.insert(varId);
+    }
 }
 
 void CheckAutoVariables::addVDA(unsigned int varId)
 {
-    vda_list.insert(varId);
+    if (varId > 0)
+    {
+        vda_list.insert(varId);
+    }
 }
 
 void CheckAutoVariables::autoVariables()
@@ -276,7 +292,11 @@ void CheckAutoVariables::returnPointerToLocalArray()
             // Declaring a local array..
             if (Token::Match(tok, "[;{}] %type% %var% ["))
             {
-                arrayVar.insert(tok->tokAt(2)->varId());
+                const unsigned int varid = tok->tokAt(2)->varId();
+                if (varid > 0)
+                {
+                    arrayVar.insert(varid);
+                }
             }
 
             // Return pointer to local array variable..
