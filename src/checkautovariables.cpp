@@ -43,24 +43,10 @@ static CheckAutoVariables instance;
 
 bool CheckAutoVariables::errorAv(const Token* left, const Token* right)
 {
-    const std::string left_var(left->str());
-    std::list<std::string>::iterator it_fp;
-
-    for (it_fp = fp_list.begin(); it_fp != fp_list.end(); ++it_fp)
+    if (fp_list.find(left->str()) == fp_list.end())
     {
-        std::string vname(*it_fp);
-
-        //The left argument is a formal parameter
-        if (vname == left_var)
-        {
-            //cout << "Beccato" << endl;
-            break;
-        }
-
-    }
-    //The left argument is NOT a formal parameter
-    if (it_fp == fp_list.end())
         return false;
+    }
 
     return isAutoVar(right->varId());
 }
@@ -141,13 +127,11 @@ void CheckAutoVariables::autoVariables()
         }
         else if (begin_function && begin_function_decl && Token::Match(tok, "%type% * * %var%"))
         {
-            std::string var_name(tok->tokAt(3)->str());
-            fp_list.push_back(var_name);
+            fp_list.insert(tok->tokAt(3)->str());
         }
         else if (begin_function && begin_function_decl && Token::Match(tok, "%type% * %var% ["))
         {
-            std::string var_name(tok->tokAt(2)->str());
-            fp_list.push_back(var_name);
+            fp_list.insert(tok->tokAt(2)->str());
         }
         else if (begin_function && tok->str() == "(")
             begin_function_decl = true;

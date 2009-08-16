@@ -24,7 +24,6 @@
 
 #include "check.h"
 #include "token.h"
-#include <list>
 #include <set>
 
 /// @addtogroup Checks
@@ -57,7 +56,7 @@ public:
     void returnPointerToLocalArray();
 
 private:
-    std::list<std::string> fp_list;
+    std::set<std::string> fp_list;
     std::set<unsigned int> vd_list;
     std::set<unsigned int> vda_list;
     bool errorAv(const Token* left, const Token* right);
