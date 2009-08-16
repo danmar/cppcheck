@@ -84,7 +84,7 @@ void print(const Token *tok, int num)
 bool isTypeName(const Token *tok)
 {
     bool ret = false;
-    std::string _str(tok->str());
+    const std::string _str(tok->str());
     static const char * const type[] = {"case", "return", "delete", 0};
     for (int i = 0; type[i]; i++)
     {
@@ -302,7 +302,7 @@ void CheckAutoVariables::returnPointerToLocalArray()
             // Return pointer to local array variable..
             if (Token::Match(tok, "return %var% ;"))
             {
-                unsigned int varid = tok->next()->varId();
+                const unsigned int varid = tok->next()->varId();
                 if (varid > 0 && arrayVar.find(varid) != arrayVar.end())
                 {
                     errorReturnPointerToLocalArray(tok);
