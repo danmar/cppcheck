@@ -67,7 +67,8 @@ HEADERS += 	mainwindow.h \
 		../src/checkother.h \
 		../src/cppcheckexecutor.h \
 		../src/filelister.h \
-		../src/token.h 
+		../src/token.h \
+		../src/classinfo.h \
 
 
 SOURCES += 	main.cpp \

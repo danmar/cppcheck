@@ -21,6 +21,7 @@ HEADERS += check.h \
            checkother.h \
            checkstl.h \
            checkunusedfunctions.h \
+           classinfo.h \
            cppcheck.h \
            cppcheckexecutor.h \
            errorlogger.h \
