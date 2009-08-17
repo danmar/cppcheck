@@ -977,24 +977,17 @@ void CheckOther::nullPointer()
 
         // Locate the end of the while loop..
         const Token *tok2 = tok->tokAt(4);
-        int indentlevel = 0;
-        while (tok2)
+        if (tok2->str() == "{")
+            tok2 = tok2->link();
+        else
         {
-            if (tok2->str() == "{")
-                ++indentlevel;
-            else if (tok2->str() == "}")
-            {
-                if (indentlevel <= 1)
-                    break;
-                --indentlevel;
-            }
-            else if (indentlevel == 0 && tok2->str() == ";")
-                break;
-            tok2 = tok2->next();
+            while (tok2 && tok2->str() != ";")
+                tok2 = tok2->next();
         }
 
         // Goto next token
-        tok2 = tok2 ? tok2->next() : 0;
+        if (tok2)
+            tok2 = tok2->next();
 
         // Check if the variable is dereferenced..
         while (tok2)

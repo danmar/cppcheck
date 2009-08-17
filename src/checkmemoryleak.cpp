@@ -62,8 +62,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
     //     * var = strndup("hello", 3);
     if (tok2 && tok2->str() == "(")
     {
-        while (tok2 && tok2->str() != ")")
-            tok2 = tok2->next();
+        tok2 = tok2->link();
         tok2 = tok2 ? tok2->next() : NULL;
     }
     if (! tok2)
@@ -143,8 +142,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     //     * var = (char *)realloc(..;
     if (tok2 && tok2->str() == "(")
     {
-        while (tok2 && tok2->str() != ")")
-            tok2 = tok2->next();
+        tok2 = tok2->link();
         tok2 = tok2 ? tok2->next() : NULL;
     }
     if (! tok2)
@@ -735,8 +733,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 addtoken("if(var)");
 
                 // Make sure the "use" will not be added
-                while (tok->str() != ")")
-                    tok = tok->next();
+                tok = tok->next()->link();
             }
             else if (Token::simpleMatch(tok, std::string("if ( " + varnameStr + " == -1 )").c_str()) ||
                      Token::simpleMatch(tok, std::string("if ( " + varnameStr + " < 0 )").c_str()))
@@ -2068,24 +2065,14 @@ void CheckMemoryLeakStructMember::check()
                         else if (Token::Match(tok3, "if ( ! %var% . %varid% )", structmemberid))
                         {
                             // Goto the ")"
-                            while (tok3->str() != ")")
-                                tok3 = tok3->next();
+                            tok3 = tok3->next()->link();
 
-                            // Skip block..
-                            unsigned int indentlevel = 0;
-                            while (tok3)
-                            {
-                                if (tok3->str() == "{")
-                                    ++indentlevel;
+                            // make sure we have ") {".. it should be
+                            if (!Token::simpleMatch(tok3, ") {"))
+                                break;
 
-                                else if (tok3->str() == "}")
-                                {
-                                    if (indentlevel <= 1)
-                                        break;
-                                    --indentlevel;
-                                }
-                                tok3 = tok3->next();
-                            }
+                            // Goto the "}"
+                            tok3 = tok3->next()->link();
                         }
 
                         // Returning from function..

@@ -267,9 +267,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             if (value <= size)
                 condition_out_of_bounds = false;;
 
-            // Goto the end of the for loop..
-            while (tok2 && tok2->str() != ")")
-                tok2 = tok2->next();
+            // Goto the end paranthesis of the for-statement: "for (x; y; z)" ..
+            tok2 = tok->next()->link();
             if (!tok2 || !tok2->tokAt(5))
                 break;
 
