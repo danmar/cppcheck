@@ -28,6 +28,7 @@
 #include <sstream>
 #include <cstdlib>
 #include <cmath>
+#include <cctype>
 
 long MathLib::toLongNumber(const std::string &str)
 {
