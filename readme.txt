@@ -18,9 +18,14 @@ Compiling
   The Makefile works under Linux.
   To make it work under Windows with DJGPP, change "g++" to "gxx".
 
+  To build cppcheck with qmake, run the commands:
+  cd src
+  qmake -config release (or '-config debug' if doing developer build)
+  make
+
   To compile the GUI one needs Qt development libraries and issue the following commands:
   cd gui
-  qmake
+  qmake -config release (or '-config debug' if doing developer build)
   lrelease gui.pro
   make
 

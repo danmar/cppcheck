@@ -7,7 +7,7 @@ TARGET = cppcheck
 DEPENDPATH += .
 INCLUDEPATH += .
 OBJECTS_DIR = temp
-CONFIG += warn_on debug
+CONFIG += warn_on
 QT -= gui core
 
 # Input

@@ -10,7 +10,7 @@ INCLUDEPATH += .
 RCC_DIR = temp
 MOC_DIR = temp
 OBJECTS_DIR = temp
-CONFIG += warn_on debug
+CONFIG += warn_on
 RESOURCES = gui.qrc
 FORMS = main.ui \
 	resultsview.ui \
