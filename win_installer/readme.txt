@@ -17,7 +17,7 @@ Files the installer needs:
 /COPYING
 /readme.txt
 /AUTHORS
-/Release/cppcheck.exe
+/src/Release/cppcheck.exe
 /win_installer/icon.bmp
 /win_installer/LargeLogo.bmp
 /win_installer/
@@ -25,6 +25,7 @@ Files the installer needs:
 /gui/cppcheck_de.qm
 /gui/cppcheck_en.qm
 /gui/cppcheck_fi.qm
+/gui/cppcheck_pl.qm
 /gui/cppcheck_ru.qm
 /gui/cppcheck_se.qm
 
@@ -39,6 +40,9 @@ Copy following files to same folder:
 and modify RuntimesFolder -macro in begin of cppcheck.iss to point to the
 folder where files are. You can find runtime files from VS installation or from
 net.
+
+NOTE: To make local installation of runtimes to work you must remove the
+publicKeyToken="blahblah" -attribute from the manifest file.
 
 QT Libraries:
 Visual Studio is used to build the GUI executable. And QT must be build with VS
