@@ -6,6 +6,7 @@
 # Remember to update version number in:
 # - src/main.cpp
 # - src/cppcheck.cpp
+# - src/cppcheck.rc
 # - win_installer/cppcheck.iss
 
 # Tag to use
