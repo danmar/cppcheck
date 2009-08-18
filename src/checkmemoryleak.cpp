@@ -148,7 +148,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     if (! tok2)
         return No;
 
-    if (Token::Match(tok2, (std::string("realloc ( ") + varname).c_str()))
+    if (! Token::Match(tok2, (std::string("%var% ( ") + varname + " [,)]").c_str()))
+        return No;
+
+    if (tok2->str() == "realloc")
         return Malloc;
 
     // GTK memory reallocation..

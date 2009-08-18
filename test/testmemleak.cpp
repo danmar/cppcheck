@@ -209,6 +209,7 @@ private:
         TEST_CASE(func13);
         TEST_CASE(func14);
         TEST_CASE(func15);
+        TEST_CASE(func16);
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -1517,6 +1518,26 @@ private:
               "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void func16()
+    {
+        check("static void a( bo_t *p_bo)\n"
+              "{\n"
+              "    p_bo->buffer = realloc( p_bo->buffer, 100 );\n"
+              "}\n"
+              "\n"
+              "static bo_t * b()\n"
+              "{\n"
+              "    bo_t *box;\n"
+              "    if( ( box = malloc( sizeof( bo_t ) ) ) )\n"
+              "    {\n"
+              "        a(box);\n"
+              "        a(box);\n"
+              "    }\n"
+              "    return box;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
