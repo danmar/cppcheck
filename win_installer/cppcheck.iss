@@ -106,6 +106,7 @@ Source: ..\gui\Release\gui.exe; DestDir: {app}; Flags: ignoreversion; Components
 Source: ..\gui\cppcheck_de.qm; DestDir: {app}; Components: QTGui
 Source: ..\gui\cppcheck_en.qm; DestDir: {app}; Components: QTGui
 Source: ..\gui\cppcheck_fi.qm; DestDir: {app}; Components: QTGui
+Source: ..\gui\cppcheck_pl.qm; DestDir: {app}; Components: QTGui
 Source: ..\gui\cppcheck_ru.qm; DestDir: {app}; Components: QTGui
 Source: ..\gui\cppcheck_se.qm; DestDir: {app}; Components: QTGui
 ; QT runtimes
