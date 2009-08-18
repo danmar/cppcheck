@@ -92,7 +92,7 @@ Type: files; Name: {app}\COPYING
 
 [Files]
 ; Core / command line
-Source: ..\Build\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion; Components: Core
+Source: ..\src\Release\cppcheck.exe; DestDir: {app}; Flags: ignoreversion; Components: Core
 Source: ..\COPYING; DestDir: {app}; DestName: COPYING.txt; Flags: ignoreversion; Components: Core
 Source: ..\readme.txt; DestDir: {app}; Flags: ignoreversion; Components: Core
 Source: ..\AUTHORS; DestDir: {app}; DestName: AUTHORS.txt; Flags: ignoreversion; Components: Core
