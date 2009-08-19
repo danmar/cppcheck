@@ -368,8 +368,7 @@ std::string Preprocessor::removeComments(const std::string &str)
                 ch = str[i];
                 if (ch == '\n')
                 {
-                    code << "\n";
-                    previous = '\n';
+                    ++newlines;
                     ++lineno;
                 }
             }

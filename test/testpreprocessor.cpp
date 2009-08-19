@@ -98,6 +98,7 @@ private:
         TEST_CASE(multiline2);
         TEST_CASE(multiline3);
         TEST_CASE(multiline4);
+        TEST_CASE(multiline5);
 
         TEST_CASE(if_defined);      // "#if defined(AAA)" => "#ifdef AAA"
         TEST_CASE(if_not_defined);  // "#if !defined(AAA)" => "#ifndef AAA"
@@ -715,6 +716,27 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n\nint a = 4; int b = 5;\n", actual[""]);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void multiline5()
+    {
+        errout.str("");
+        const char filedata[] = "#define ABC int a /*\n"
+                                "*/= 4;\n"
+                                "int main(){\n"
+                                "ABC\n"
+                                "}\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n\nint main(){\nint a = 4;\n}\n", actual[""]);
         ASSERT_EQUALS("", errout.str());
     }
 
