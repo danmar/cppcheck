@@ -85,22 +85,33 @@ public:
     /** What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
     enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Fd, Pipe, Dir, Many };
 
-    void memoryLeak(const Token *tok, const char varname[], AllocType alloctype, bool all);
+    void memoryLeak(const Token *tok, const std::string varname, AllocType alloctype, bool all);
 
     /**
      * Get type of deallocation at given position
+     * @param tok position
+     * @param varnames variable names
+     * @return type of deallocation
      */
-    AllocType getDeallocationType(const Token *tok, const char *varnames[]);
+    AllocType getDeallocationType(const Token *tok, const char *varnames[]) const;
+
+    /**
+     * Get type of deallocation at given position
+     * @param tok position
+     * @param varname variable name
+     * @return type of deallocation
+     */
+    AllocType getDeallocationType(const Token *tok, const unsigned int varid) const;
 
     /**
      * Get type of allocation at given position
      */
-    AllocType getAllocationType(const Token *tok2, const char varname[]) const;
+    AllocType getAllocationType(const Token *tok2, const unsigned int varid) const;
 
     /**
      * Get type of reallocation at given position
      */
-    AllocType getReallocationType(const Token *tok2, const char varname[]);
+    AllocType getReallocationType(const Token *tok2, const unsigned int varid) const;
 
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
 
@@ -157,16 +168,16 @@ public:
 private:
 #endif
 
-    bool matchFunctionsThatReturnArg(const Token *tok, const std::string &varname);
+    bool matchFunctionsThatReturnArg(const Token *tok, const unsigned int varid) const;
 
     /**
      * Check if there is a "!var" match inside a condition
      * @param tok      first token to match
-     * @param varnames the varname
+     * @param varname  the varname
      * @param endpar   if this is true the "!var" must be followed by ")"
      * @return true if match
      */
-    bool notvar(const Token *tok, const char *varnames[], bool endpar = false);
+    bool notvar(const Token *tok, const unsigned int varid, bool endpar = false) const;
 
     /**
      * Inspect a function call. the call_func and getcode are recursive
@@ -187,7 +198,7 @@ private:
      * - "callfunc"
      * - "&use"
      */
-    const char * call_func(const Token *tok, std::list<const Token *> callstack, const char *varnames[], AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz);
+    const char * call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz);
 
     /**
      * Extract a new tokens list that is easier to parse than the "_tokenizer->tokens()", the
@@ -221,7 +232,7 @@ private:
      * - goto : corresponds to a "goto"
      * - return : corresponds to a "return"
      */
-    Token *getcode(const Token *tok, std::list<const Token *> callstack, const char varname[], AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz);
+    Token *getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz);
 
     /**
      * Simplify code e.g. by replacing empty "{ }" with ";"
@@ -237,7 +248,7 @@ private:
      * @param classmember is the scope inside a class member function
      * @param sz size of type.. if the variable is a "int *" then sz should be "sizeof(int)"
      */
-    void checkScope(const Token *Tok1, const char varname[], bool classmember, unsigned int sz);
+    void checkScope(const Token *Tok1, const std::string varname, const unsigned int varid, bool classmember, unsigned int sz);
 
     void getErrorMessages()
     {

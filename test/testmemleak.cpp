@@ -47,6 +47,7 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
 
         return ((const CheckMemoryLeak *)0)->functionReturnType(tokenizer.tokens());
     }
@@ -1725,6 +1726,9 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        const unsigned int varid(Token::findmatch(tokenizer.tokens(), varname)->varId());
 
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak;
@@ -1732,7 +1736,7 @@ private:
         CheckMemoryLeak::AllocType allocType, deallocType;
         allocType = deallocType = CheckMemoryLeak::No;
         bool all = false;
-        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varname, allocType, deallocType, false, all, 1);
+        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varid, allocType, deallocType, false, all, 1);
 
         // stringify..
         std::string ret;
@@ -1746,8 +1750,8 @@ private:
 
     void realloc6()
     {
-        ASSERT_EQUALS(";;realloc;;", getcode(";buf=realloc(buf,100);", "buf"));
-        ASSERT_EQUALS(";;alloc;", getcode(";buf=realloc(0,100);", "buf"));
+        ASSERT_EQUALS(";;realloc;;", getcode("char *buf; buf=realloc(buf,100);", "buf"));
+        ASSERT_EQUALS(";;alloc;", getcode("char *buf; buf=realloc(0,100);", "buf"));
     }
 
     void assign()
@@ -1818,7 +1822,7 @@ private:
               "    }\n"
               "    free(p);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cast1()
