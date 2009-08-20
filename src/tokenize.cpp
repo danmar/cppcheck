@@ -2689,8 +2689,19 @@ bool Tokenizer::simplifyIfNot()
         {
             tok->deleteNext();
             tok->deleteNext();
-            tok->link()->insertToken("(");
-            tok->link()->str("!");
+            if (Token::Match(tok->link()->previous(), "%var%"))
+            {
+                // if( foo(x) == 0 )
+                tok->link()->previous()->insertToken(tok->link()->previous()->str().c_str());
+                tok->link()->previous()->previous()->str("!");
+            }
+            else
+            {
+                // if( (x) == 0 )
+                tok->link()->insertToken("(");
+                tok->link()->str("!");
+            }
+
             ret = true;
         }
     }

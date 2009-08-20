@@ -993,6 +993,7 @@ private:
         ASSERT_EQUALS("if ( ! x . y )", simplifyIfNot("if(x.y==0)"));
         ASSERT_EQUALS("if ( ( ! x ) )", simplifyIfNot("if((x==0))"));
         ASSERT_EQUALS("if ( ( ! x ) && ! y )", simplifyIfNot("if((x==0) && y==0)"));
+        ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) )", simplifyIfNot("if(!(fclose(fd) == 0))"));
     }
 
 
