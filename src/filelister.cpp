@@ -209,8 +209,8 @@ static BOOL MyIsDirectory(std::string path)
         findclose(&ffblk);
     return !ret;
 #else
-    // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    return PathIsDirectory(path.c_str());
+// See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
+return PathIsDirectory(path.c_str());
 #endif
 }
 
