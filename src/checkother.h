@@ -143,6 +143,7 @@ public:
     void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
     void strPlusChar(const Token *tok);
     void nullPointerError(const Token *tok, const std::string &varname);
+    void nullPointerError(const Token *tok, const std::string &varname, const int line);
     void zerodivError(const Token *tok);
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
 

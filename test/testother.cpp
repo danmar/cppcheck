@@ -492,7 +492,7 @@ private:
                          "    if (!abc)\n"
                          "        ;\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n", errout.str());
 
         // ok dereferencing in a condition
         checkNullPointer("void foo(struct ABC *abc)\n"

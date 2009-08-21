@@ -1159,7 +1159,7 @@ void CheckOther::nullPointer()
 
                 else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
                 {
-                    nullPointerError(tok1, varname);
+                    nullPointerError(tok1, varname, tok2->linenr());
                     break;
                 }
             }
@@ -1342,6 +1342,13 @@ void CheckOther::strPlusChar(const Token *tok)
 void CheckOther::nullPointerError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname);
+}
+
+void CheckOther::nullPointerError(const Token *tok, const std::string &varname, const int line)
+{
+    std::ostringstream ostr;
+    ostr << line;
+    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + ostr.str());
 }
 
 void CheckOther::zerodivError(const Token *tok)
