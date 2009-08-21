@@ -1346,9 +1346,7 @@ void CheckOther::nullPointerError(const Token *tok, const std::string &varname)
 
 void CheckOther::nullPointerError(const Token *tok, const std::string &varname, const int line)
 {
-    std::ostringstream ostr;
-    ostr << line;
-    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + ostr.str());
+    reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<long>(line));
 }
 
 void CheckOther::zerodivError(const Token *tok)
