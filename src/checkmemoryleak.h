@@ -145,16 +145,12 @@ class CheckMemoryLeakInFunction : private Check, private CheckMemoryLeak
 public:
     /** This constructor is used when registering this class */
     CheckMemoryLeakInFunction() : Check(), CheckMemoryLeak(0, 0)
-    {
-        init();
-    }
+    { }
 
     /** This constructor is used when running checks */
     CheckMemoryLeakInFunction(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
-    {
-        init();
-    }
+    { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
@@ -272,13 +268,6 @@ private:
     {
         return "Is there any allocated memory when a function goes out of scope";
     }
-
-    // Keywords and function names which not allocating nor deallocating memory
-    // (used by call_func())
-    std::set<std::string> call_func_white_list;
-
-    // Called in all constructors
-    void init();
 };
 
 

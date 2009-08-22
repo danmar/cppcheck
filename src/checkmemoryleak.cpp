@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <set>
@@ -35,6 +36,28 @@ namespace
 CheckMemoryLeakInFunction instance1;
 CheckMemoryLeakInClass instance2;
 CheckMemoryLeakStructMember instance3;
+}
+
+// This list needs to be alphabetically sorted so we can run bsearch on it
+static const char * const call_func_white_list[] =
+{
+    "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
+    , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
+    , "flock", "for", "fprintf", "fputc", "fputs", "fread", "fseek"
+    , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
+    , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
+    , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
+    , "printf", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
+    , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
+    , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "sprintf", "strcasecmp"
+    , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strncat", "strncmp"
+    , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
+    , "sync_file_range", "telldir", "while", "write", "writev"
+};
+
+static int call_func_white_list_compare(const void *a, const void *b)
+{
+    return strcmp((const char *)a, *(const char **)b);
 }
 
 //---------------------------------------------------------------------------
@@ -407,35 +430,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
     return No;
 }
 
-
-void CheckMemoryLeakInFunction::init()
-{
-    static const char * const white_list[] =
-    {
-        "if", "for", "while", "return", "switch", "realloc", "delete"
-        , "strcpy", "strncpy", "strcat", "strncat", "strcmp", "strncmp"
-        , "strcasecmp", "stricmp", "sprintf", "strchr", "strrchr", "strstr"
-        , "memset", "memcpy", "memmove", "memchr", "fgets", "fgetc", "getc"
-        , "fputs", "fputc", "feof", "ferror", "clearerr", "printf", "fprintf"
-        , "fread", "fwrite", "fflush", "fseek", "fseeko", "ftell", "ftello"
-        , "fsetpos", "fgetpos", "setvbuf", "setbuf", "setbuffer", "setlinebuf"
-        , "rewind", "read", "readv", "pread", "readahead", "write", "writev"
-        , "pwrite", "lseek", "ioctl", "fchmod", "fcntl", "flock", "lockf"
-        , "ftruncate", "fsync", "fdatasync", "fstat", "sync_file_range"
-        , "posix_fallocate", "posix_fadvise", "readdir", "readdir_r"
-        , "rewinddir", "telldir", "seekdir", "scandir", "atoi", "atof", "atol"
-        , "strtol", "strtoul", "strtod"
-        , NULL
-    };
-
-    size_t i = 0;
-    while (white_list[i] != NULL)
-    {
-        call_func_white_list.insert(white_list[i]);
-        ++i;
-    }
-}
-
 bool CheckMemoryLeakInFunction::matchFunctionsThatReturnArg(const Token *tok, const unsigned int varid) const
 {
     return Token::Match(tok, "; %varid% = strcat|memcpy|memmove|strcpy ( %varid% ,", varid);
@@ -480,7 +474,9 @@ static int countParameters(const Token *tok)
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
-    if (call_func_white_list.find(tok->str()) != call_func_white_list.end())
+    if (bsearch(tok->str().c_str(), call_func_white_list,
+        sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
+        sizeof(call_func_white_list[0]), call_func_white_list_compare))
         return 0;
 
     if (getAllocationType(tok, varid) != No || getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No)
