@@ -1097,8 +1097,7 @@ bool Tokenizer::createLinks()
                 return false;
             }
 
-            token->link(links.back());
-            links.back()->link(token);
+            Token::createMutualLinks(links.back(), token);
             links.pop_back();
         }
         else if (token->str() == "(")
@@ -1114,8 +1113,7 @@ bool Tokenizer::createLinks()
                 return false;
             }
 
-            token->link(links2.back());
-            links2.back()->link(token);
+            Token::createMutualLinks(links2.back(), token);
             links2.pop_back();
         }
     }
@@ -1338,8 +1336,7 @@ void Tokenizer::simplifyTokenList()
                     // Ok, we should be clean. Add ) after tempToken
                     tok->insertToken("(");
                     tempToken->insertToken(")");
-                    tok->next()->link(tempToken->next());
-                    tempToken->next()->link(tok->next());
+                    Token::createMutualLinks(tok->next(), tempToken->next());
                     break;
                 }
             }
@@ -1891,11 +1888,7 @@ bool Tokenizer::simplifyDoWhileAddBraces()
             // insert "}" before "while"
             tok2->previous()->insertToken("}");
 
-            // allow link() works
-            tok1 = tok1->next();
-            tok2 = tok2->previous();
-            tok1->link(tok2);
-            tok2->link(tok1);
+            Token::createMutualLinks(tok1->next(), tok2->previous());
 
             ret = true;
         }

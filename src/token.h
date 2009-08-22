@@ -213,6 +213,11 @@ public:
      */
     Token *link() const;
 
+    /**
+     * Links two elements against each other.
+     **/
+    static void createMutualLinks(Token *begin, Token *end);
+
 private:
     void next(Token *next);
     void previous(Token *previous);
