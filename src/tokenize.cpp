@@ -1361,9 +1361,7 @@ void Tokenizer::simplifyTokenList()
 
         if (Token::Match(tok, "sizeof ( * )"))
         {
-            std::ostringstream str;
-            str << sizeOfType(tok->strAt(2));
-            tok->str(str.str());
+            tok->str(MathLib::toString<long>(sizeOfType(tok->strAt(2))));
 
             for (int i = 0; i < 3; i++)
             {
@@ -1383,9 +1381,7 @@ void Tokenizer::simplifyTokenList()
             int size = sizeOfType(type);
             if (size > 0)
             {
-                std::ostringstream str;
-                str << size;
-                tok->str(str.str());
+                tok->str(MathLib::toString<long>(size));
                 for (int i = 0; i < 3; i++)
                 {
                     tok->deleteNext();
@@ -1411,9 +1407,7 @@ void Tokenizer::simplifyTokenList()
 
             if (sz > 0)
             {
-                std::ostringstream ostr;
-                ostr << sz;
-                tok->str(ostr.str());
+                tok->str(MathLib::toString<long>(sz));
                 while (tok->next()->str() != ")")
                     tok->deleteNext();
                 tok->deleteNext();
@@ -1460,9 +1454,7 @@ void Tokenizer::simplifyTokenList()
 
             else if (Token::Match(tok2, "sizeof ( %varid% )", varid))
             {
-                std::ostringstream str;
-                str << total_size;
-                tok2->str(str.str());
+                tok2->str(MathLib::toString<long>(total_size));
                 // Delete the other tokens..
                 for (int i = 0; i < 3; i++)
                 {
