@@ -488,21 +488,6 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
     return true;
 }
 
-bool Token::isName() const
-{
-    return _isName;
-}
-
-bool Token::isNumber() const
-{
-    return _isNumber;
-}
-
-bool Token::isBoolean() const
-{
-    return _isBoolean;
-}
-
 bool Token::isStandardType() const
 {
     bool ret = false;
@@ -522,36 +507,6 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned i
             return tok;
     }
     return 0;
-}
-
-unsigned int Token::varId() const
-{
-    return _varId;
-}
-
-void Token::varId(unsigned int id)
-{
-    _varId = id;
-}
-
-Token *Token::next() const
-{
-    return _next;
-}
-
-void Token::next(Token *next)
-{
-    _next = next;
-}
-
-Token *Token::previous() const
-{
-    return _previous;
-}
-
-void Token::previous(Token *previous)
-{
-    _previous = previous;
 }
 
 void Token::insertToken(const char str[])
@@ -579,36 +534,6 @@ void Token::eraseTokens(Token *begin, const Token *end)
     {
         begin->deleteNext();
     }
-}
-
-unsigned int Token::fileIndex() const
-{
-    return _fileIndex;
-}
-
-void Token::fileIndex(unsigned int fileIndex)
-{
-    _fileIndex = fileIndex;
-}
-
-unsigned int Token::linenr() const
-{
-    return _linenr;
-}
-
-void Token::linenr(unsigned int linenr)
-{
-    _linenr = linenr;
-}
-
-void Token::link(Token *link)
-{
-    _link = link;
-}
-
-Token *Token::link() const
-{
-    return _link;
 }
 
 void Token::createMutualLinks(Token *begin, Token *end)
