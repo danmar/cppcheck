@@ -59,6 +59,7 @@ private:
         TEST_CASE(ifAddBraces5);
         TEST_CASE(ifAddBraces6);
         TEST_CASE(ifAddBraces7);
+        TEST_CASE(ifAddBraces8);
 
         TEST_CASE(whileAddBraces);
 
@@ -503,6 +504,12 @@ private:
                       "if ( a ) {\n"
                       "( { a = 4 ; } ) , ( { a = 5 ; } ) ; }\n"
                       "}", tokenizeAndStringify(code, true));
+    }
+
+    void ifAddBraces8()
+    {
+        const char code[] = "do { ; } while(0);";
+        ASSERT_EQUALS("do { ; } while ( false ) ;", tokenizeAndStringify(code, true));
     }
 
     void whileAddBraces()

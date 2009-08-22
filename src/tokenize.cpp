@@ -1805,6 +1805,16 @@ bool Tokenizer::simplifyIfAddBraces()
     {
         if (Token::Match(tok, "if|for|while ("))
         {
+            // don't add "{}" around ";" in "do {} while();" (#609)
+            const Token *prev = tok->previous();
+            if (Token::simpleMatch(prev, "} while") &&
+                prev->link() &&
+                prev->link()->previous() &&
+                prev->link()->previous()->str() == "do")
+            {
+                continue;
+            }
+
             // Goto the ending ')'
             int parlevel = 1;
             tok = tok->next();
