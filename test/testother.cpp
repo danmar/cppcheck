@@ -408,7 +408,7 @@ private:
 
     void varScope5()
     {
-        varScope("void f)\n"
+        varScope("void f()\n"
                  "{\n"
                  "    int i = 0;\n"
                  "    if (true) {\n"
