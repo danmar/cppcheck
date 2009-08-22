@@ -62,6 +62,7 @@ private:
         TEST_CASE(ifAddBraces8);
 
         TEST_CASE(whileAddBraces);
+        TEST_CASE(doWhileAddBraces);
 
         TEST_CASE(numeric_true_condition);
         TEST_CASE(pointers_condition);
@@ -521,7 +522,13 @@ private:
         }
     }
 
+    void doWhileAddBraces()
+    {
+        const char code[] = "do ; while (0);";
+        const char result[] = "do { ; } while ( false ) ;";
 
+        ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+    }
 
     void simplifyKnownVariables1()
     {

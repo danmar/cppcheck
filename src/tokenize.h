@@ -185,6 +185,12 @@ private:
      */
     bool simplifyIfAddBraces();
 
+    /** Add braces to an do-while block
+     * @return true if something is modified
+     *         false if nothing is done.
+     */
+    bool simplifyDoWhileAddBraces();
+
     /** Simplify casts
      * @return true if something is modified
      *         false if nothing is done.

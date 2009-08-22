@@ -1561,6 +1561,7 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
+    simplifyDoWhileAddBraces();
     simplifyIfAddBraces();
     simplifyFunctionParameters();
 
@@ -1877,6 +1878,54 @@ bool Tokenizer::simplifyIfAddBraces()
         if (tempToken)
         {
             tempToken->insertToken("}");
+            ret = true;
+        }
+    }
+
+    return ret;
+}
+
+bool Tokenizer::simplifyDoWhileAddBraces()
+{
+    bool ret = false;
+
+    for (Token *tok = _tokens; tok; tok = (tok ? tok->next() : NULL))
+    {
+        if (! Token::Match(tok, "do !!{"))
+        {
+            continue;
+        }
+
+        Token *tok1 = tok;  // token with "do"
+        Token *tok2 = NULL; // token with "while"
+        Token *tok3 = tok;
+
+        // skip loop body
+        while (tok3)
+        {
+            if (tok3->str() == "while")
+            {
+                tok2 = tok3;
+                break;
+            }
+
+            tok3 = tok3->next();
+        }
+
+        if (tok2)
+        {
+            // insert "{" after "do"
+            tok1->insertToken("{");
+
+            // insert "}" before "while"
+            tok2->previous()->insertToken("}");
+
+            // allow link() works
+            tok1 = tok1->next();
+            tok2 = tok2->previous();
+            tok1->link(tok2);
+            tok2->link(tok1);
+
             ret = true;
         }
     }
