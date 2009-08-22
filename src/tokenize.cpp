@@ -1816,15 +1816,7 @@ bool Tokenizer::simplifyIfAddBraces()
             }
 
             // Goto the ending ')'
-            int parlevel = 1;
-            tok = tok->next();
-            while (parlevel >= 1 && (tok = tok->next()))
-            {
-                if (tok->str() == "(")
-                    ++parlevel;
-                else if (tok->str() == ")")
-                    --parlevel;
-            }
+            tok = tok->next()->link();
 
             // ')' should be followed by '{'
             if (!tok || Token::simpleMatch(tok, ") {"))
