@@ -1348,6 +1348,8 @@ void Tokenizer::simplifyTokenList()
                     // Ok, we should be clean. Add ) after tempToken
                     tok->insertToken("(");
                     tempToken->insertToken(")");
+                    tok->next()->link(tempToken->next());
+                    tempToken->next()->link(tok->next());
                     break;
                 }
             }
