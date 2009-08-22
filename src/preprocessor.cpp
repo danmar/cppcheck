@@ -1356,12 +1356,12 @@ public:
 std::string Preprocessor::expandMacros(std::string code, const std::string &filename, ErrorLogger *errorLogger)
 {
     // Search for macros and expand them..
-    std::string::size_type defpos = 0;
-    while ((defpos = code.find("#define ", defpos)) != std::string::npos)
+    std::string::size_type defpos = std::string::npos;
+    while ((defpos > 0) && ((defpos = code.rfind("#define ", defpos)) != std::string::npos))
     {
         if (defpos > 0 && code[defpos-1] != '\n')
         {
-            defpos += 6;
+            defpos--;
             continue;
         }
 

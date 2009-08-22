@@ -114,6 +114,7 @@ private:
         TEST_CASE(macro_simple8);
         TEST_CASE(macro_simple9);
         TEST_CASE(macro_simple10);
+        TEST_CASE(macroInMacro);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
         TEST_CASE(macro_nopar);
@@ -838,6 +839,14 @@ private:
         const char filedata[] = "#define ABC(t) t x\n"
                                 "ABC(unsigned long);";
         ASSERT_EQUALS("\nunsigned long x;", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macroInMacro()
+    {
+        const char filedata[] = "#define A(m) long n = m; n++;\n"
+                                "#define B(n) A(n)\n"
+                                "B(0)";
+        ASSERT_EQUALS("\n\nlong n=0;n++;", OurPreprocessor::expandMacros(filedata));
     }
 
     void macro_mismatch()
