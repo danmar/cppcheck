@@ -2827,6 +2827,24 @@ bool Tokenizer::simplifyKnownVariables()
                             break;
                     }
 
+                    // Stop if something like 'while (--var)' is found
+                    if (tok3->str() == "while")
+                    {
+                        const Token *endpar = tok3->next()->link();
+                        bool bailout = false;
+                        for (const Token *tok4 = tok3; tok4 != endpar; tok4 = tok4->next())
+                        {
+                            if (Token::Match(tok4, "++|-- %varid%", varid) ||
+                                Token::Match(tok4, "%varid% ++|--", varid))
+                            {
+                                bailout = true;
+                                break;
+                            }
+                        }
+                        if (bailout)
+                            break;
+                    }
+
                     if (bailOutFromLoop)
                     {
                         // This could be a loop, skip it, but only if it doesn't contain
