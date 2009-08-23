@@ -117,9 +117,9 @@ public:
      */
     static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0);
 
-    bool isName() const;
-    bool isNumber() const;
-    bool isBoolean() const;
+    bool isName() const { return _isName; }
+    bool isNumber() const { return _isNumber; }
+    bool isBoolean() const { return _isBoolean; }
     bool isStandardType() const;
 
     static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
@@ -139,13 +139,13 @@ public:
      */
     static int multiCompare(const char *haystack, const char *needle);
 
-    unsigned int linenr() const;
-    void linenr(unsigned int linenr);
+    unsigned int linenr() const { return _linenr; }
+    void linenr(unsigned int linenr) { _linenr = linenr; }
 
-    unsigned int fileIndex() const;
-    void fileIndex(unsigned int fileIndex);
+    unsigned int fileIndex() const { return _fileIndex; }
+    void fileIndex(unsigned int fileIndex) { _fileIndex = fileIndex; }
 
-    Token *next() const;
+    Token *next() const { return _next; }
 
 
     /**
@@ -164,11 +164,11 @@ public:
      */
     void insertToken(const char str[]);
 
-    Token *previous() const;
+    Token *previous() const { return _previous; }
 
 
-    unsigned int varId() const;
-    void varId(unsigned int id);
+    unsigned int varId() const { return _varId; }
+    void varId(unsigned int id) { _varId = id; }
 
     /**
      * For debugging purposes, prints token and all tokens
@@ -202,7 +202,7 @@ public:
      * @param link The token where this token should link
      * to.
      */
-    void link(Token *link);
+    void link(Token *link) { _link = link; }
 
     /**
      * Return token where this token links to.
@@ -211,7 +211,7 @@ public:
      *
      * @return The token where this token links to.
      */
-    Token *link() const;
+    Token *link() const { return _link; }
 
     /**
      * Links two elements against each other.
@@ -219,8 +219,8 @@ public:
     static void createMutualLinks(Token *begin, Token *end);
 
 private:
-    void next(Token *next);
-    void previous(Token *previous);
+    void next(Token *next) { _next = next; }
+    void previous(Token *previous) { _previous = previous; }
 
     /**
      * Works almost like strcmp() except returns only 0 or 1 and
