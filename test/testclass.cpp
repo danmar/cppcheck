@@ -48,6 +48,7 @@ private:
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
+        TEST_CASE(uninitVarArray);
         TEST_CASE(privateCtor1);        // If constructor is private..
         TEST_CASE(privateCtor2);        // If constructor is private..
         TEST_CASE(function);            // Function is not variable
@@ -389,6 +390,30 @@ private:
                        "C::C(FILE *fp) {\n"
                        "    C::fp = fp;\n"
                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarArray()
+    {
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() {}\n"
+                       "\n"
+                       "private:\n"
+                       "    char name[255];\n"
+                       "};\n");
+
+        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'John::name'\n", errout.str());
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() {John::name[0] = '\0';}\n"
+                       "\n"
+                       "private:\n"
+                       "    char name[255];\n"
+                       "};\n");
+
         ASSERT_EQUALS("", errout.str());
     }
 

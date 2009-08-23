@@ -109,6 +109,11 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
             varname = next->strAt(3);
         }
 
+        else if (Token::Match(next, "%type% %var% ["))
+        {
+            varname = next->strAt(1);
+        }
+
         // std::string..
         else if (withClasses && Token::Match(next, "std :: string %var% ;"))
         {
@@ -239,6 +244,12 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
 
         // Assignment of member variable?
         else if (Token::Match(ftok, "%var% ="))
+        {
+            initVar(varlist, ftok->str().c_str());
+        }
+
+        // Assignment of array item of member variable?
+        else if (Token::Match(ftok, "%var% [ %any% ] ="))
         {
             initVar(varlist, ftok->str().c_str());
         }
