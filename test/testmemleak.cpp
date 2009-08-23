@@ -117,18 +117,19 @@ private:
         checkMemoryLeak.check();
     }
 
+
     void run()
     {
-        TEST_CASE(simple1);
-        TEST_CASE(simple2);
-        TEST_CASE(simple3);
-        TEST_CASE(simple4);
+        // Check that getcode works correctly..
+        TEST_CASE(testgetcode);
+
+        // Todo: check that call_func works correctly..
+        // Todo: check that simplifycode works correctly..
+        // Todo: check if simplified code contains errors..
+
         TEST_CASE(simple5);
-        TEST_CASE(simple6);
         TEST_CASE(simple7);
-        TEST_CASE(simple8);
         TEST_CASE(simple9);     // Bug 2435468 - member function "free"
-        TEST_CASE(simple10);    // fclose in a if condition
         TEST_CASE(simple11);
         TEST_CASE(simple12);
         TEST_CASE(new_nothrow);
@@ -136,9 +137,6 @@ private:
         TEST_CASE(staticvar);
 
         TEST_CASE(alloc_alloc_1);
-
-        TEST_CASE(use1);
-        TEST_CASE(use2);
 
         TEST_CASE(ifelse1);
         TEST_CASE(ifelse2);
@@ -300,54 +298,86 @@ private:
 
 
 
-    void simple1()
+    std::string getcode(const char code[], const char varname[]) const
     {
-        check("void f()\n"
-              "{\n"
-              "    int *a = new int[10];\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
 
-        // ticket #346
-        check("void f()\n"
-              "{\n"
-              "    int * const a = new int[10];\n"
-              "    const int * const b = new int[10];\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n[test.cpp:5]: (error) Memory leak: b\n",
-                      errout.str());
+        const unsigned int varid(Token::findmatch(tokenizer.tokens(), varname)->varId());
+
+        // getcode..
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, 0, 0);
+        std::list<const Token *> callstack;
+        CheckMemoryLeak::AllocType allocType, deallocType;
+        allocType = deallocType = CheckMemoryLeak::No;
+        bool all = false;
+        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varid, allocType, deallocType, false, all, 1);
+
+        // stringify..
+        std::ostringstream ret;
+        for (const Token *tok = tokens; tok; tok = tok->next())
+            ret << tok->str();
+
+        Tokenizer::deleteTokens(tokens);
+
+        return ret.str();
     }
 
-    void simple2()
+    void testgetcode()
     {
-        check("Fred *NewFred()\n"
-              "{\n"
-              "    Fred *f = new Fred;\n"
-              "    return f;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
+        // alloc;
+        ASSERT_EQUALS(";;alloc;", getcode("int *a = malloc(100);", "a"));
+        ASSERT_EQUALS(";;alloc;", getcode("int *a = new int;", "a"));
+        ASSERT_EQUALS(";;alloc;", getcode("int *a = new int[10];", "a"));
+        ASSERT_EQUALS(";;alloc;", getcode("int * const a = new int[10];", "a"));
+        ASSERT_EQUALS(";;alloc;", getcode("const int * const a = new int[10];", "a"));
+
+        // alloc; return use;
+        ASSERT_EQUALS(";;alloc;returnuse;", getcode("int *a = new int[10]; return a;", "a"));
+
+        TODO_ASSERT_EQUALS(";;alloc;returnuse;", getcode("char *a = new char[100]; return (char *)a;", "a"));
+        ASSERT_EQUALS(";;alloc;returnuseuse;", getcode("char *a = new char[100]; return (char *)a;", "a"));
+
+        // alloc; return;
+        ASSERT_EQUALS(";;alloc;return;", getcode("char *s = new char[100]; return 0;", "s"));
+
+        // dealloc;
+        ASSERT_EQUALS(";;dealloc;", getcode("char *s; free(s);", "s"));
+        ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete s;", "s"));
+        ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete [] s;", "s"));
+
+        // if..
+        ASSERT_EQUALS(";;if{}", getcode("char *s; if (a) { }", "s"));
+        ASSERT_EQUALS(";;dealloc;ifv{}", getcode("FILE *f; if (fclose(f)) { }", "f"));
+        ASSERT_EQUALS(";;if(!var){}else{}", getcode("char *s; if (!s) { } else { }", "s"));
+        ASSERT_EQUALS(";;if{}", getcode("char *s; if (a && s) { }", "s"));
+        ASSERT_EQUALS(";;if(!var){}", getcode("char *s; if (a && !s) { }", "s"));
+
+        // loop..
+        ASSERT_EQUALS(";;loop{}", getcode("char *s; while (a) { }", "s"));
+        ASSERT_EQUALS(";;loopcallfunc{}", getcode("char *s; while (a()) { }", "s"));
+        ASSERT_EQUALS(";;loop{}", getcode("char *s; while (s) { }", "s"));
+        ASSERT_EQUALS(";;loop{}", getcode("char *s; for (a;b;c) { }", "s"));
+
+        // use..
+        ASSERT_EQUALS(";;use;", getcode("char *s; DeleteString(s);", "s"));
+        ASSERT_EQUALS(";;use;", getcode("char *s; s2 = s;", "s"));
+        ASSERT_EQUALS(";;use;", getcode("char *s; s2 = s + 10;", "s"));
+
+        // assign..
+        ASSERT_EQUALS(";;assign;", getcode("char *s; s = 0;", "s"));
+
+        // callfunc..
+        ASSERT_EQUALS(";;assign" "callfunc;", getcode("char *s; s = a();", "s"));
+        ASSERT_EQUALS(";;callfunc;", getcode("char *s; a();", "s"));
+
+        // exit..
+        ASSERT_EQUALS(";;exit;", getcode("char *s; exit(0);", "s"));
     }
 
-    void simple3()
-    {
-        check("static char *f()\n"
-              "{\n"
-              "    char *s = new char[100];\n"
-              "    return (char *)s;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void simple4()
-    {
-        check("static char *f()\n"
-              "{\n"
-              "    char *s = new char[100];\n"
-              "    return 0;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: s\n", errout.str());
-    }
 
 
     void simple5()
@@ -356,18 +386,6 @@ private:
               "{\n"
               "    struct *str = new strlist;\n"
               "    return &str->s;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void simple6()
-    {
-        check("static void f()\n"
-              "{\n"
-              "    char *str = strdup(\"hello\");\n"
-              "    char *str2 = (char *)str;\n"
-              "    free(str2);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -385,20 +403,6 @@ private:
     }
 
 
-    void simple8()
-    {
-        check("char * foo ()\n"
-              "{\n"
-              "    char *str = strdup(\"abc\");\n"
-              "    if (somecondition)\n"
-              "        for (i = 0; i < 2; i++)\n"
-              "        { }\n"
-              "    return str;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
     void simple9()
     {
         check("void foo()\n"
@@ -406,16 +410,6 @@ private:
               "    MyClass *c = new MyClass();\n"
               "    c->free(c);\n"
               "    delete c;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void simple10()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    FILE * f = fopen(fname, str);\n"
-              "    if ( fclose(f) != NULL );\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -523,38 +517,6 @@ private:
               "    delete [] str;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: str\n", errout.str());
-    }
-
-
-
-
-
-
-    void use1()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    char *str;\n"
-              "    if (somecondition)\n"
-              "        str = strdup(\"abc\");\n"
-              "    if (somecondition)\n"
-              "        DeleteString(str);\n"
-              "}\n");
-
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void use2()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    char *str = strdup(\"abc\");\n"
-              "    if ( abc ) { memset(str, 0, 3); }\n"
-              "    *somestr = str;\n"
-              "}\n");
-
-        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1718,34 +1680,6 @@ private:
               "}\n", true);
 
         ASSERT_EQUALS("", errout.str());
-    }
-
-    std::string getcode(const char code[], const char varname[]) const
-    {
-        // Tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        const unsigned int varid(Token::findmatch(tokenizer.tokens(), varname)->varId());
-
-        // getcode..
-        CheckMemoryLeakInFunction checkMemoryLeak;
-        std::list<const Token *> callstack;
-        CheckMemoryLeak::AllocType allocType, deallocType;
-        allocType = deallocType = CheckMemoryLeak::No;
-        bool all = false;
-        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varid, allocType, deallocType, false, all, 1);
-
-        // stringify..
-        std::string ret;
-        for (const Token *tok = tokens; tok; tok = tok->next())
-            ret += tok->str();
-
-        Tokenizer::deleteTokens(tokens);
-
-        return ret;
     }
 
     void realloc6()
