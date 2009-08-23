@@ -1137,8 +1137,6 @@ bool Tokenizer::createLinks()
 
 void Tokenizer::simplifyTokenList()
 {
-    createLinks();
-
     simplifyNamespaces();
 
     // Combine wide strings
@@ -1846,6 +1844,7 @@ bool Tokenizer::simplifyIfAddBraces()
         if (tempToken)
         {
             tempToken->insertToken("}");
+            Token::createMutualLinks(tok, tempToken->next());
             ret = true;
         }
     }
@@ -1933,6 +1932,8 @@ bool Tokenizer::simplifyConditionOperator()
                 }
                 tok = tok->next();
             }
+
+            Token::createMutualLinks(tok->tokAt(-10), tok->tokAt(-8));
         }
     }
     return ret;
@@ -2656,8 +2657,6 @@ bool Tokenizer::simplifyIfAssign()
 
 bool Tokenizer::simplifyIfNot()
 {
-    // Make sure we have working links
-    createLinks();
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2721,8 +2720,6 @@ bool Tokenizer::simplifyIfNot()
 
 bool Tokenizer::simplifyIfNotNull()
 {
-    // Make sure we have working links
-    createLinks();
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2787,7 +2784,6 @@ bool Tokenizer::simplifyNot()
 
 bool Tokenizer::simplifyKnownVariables()
 {
-    createLinks();
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2969,6 +2965,7 @@ bool Tokenizer::elseif()
                     tok->insertToken("{");
                     tok2->insertToken("}");
                     ret = true;
+                    Token::createMutualLinks(tok->next(), tok2->next());
                     break;
                 }
             }
@@ -3379,7 +3376,6 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 bool Tokenizer::simplifyComma()
 {
     bool ret = false;
-    createLinks();
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "for ("))
