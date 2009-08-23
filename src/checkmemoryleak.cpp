@@ -1511,6 +1511,56 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
 
 
 
+const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens, bool all)
+{
+    const Token *result = 0;
+
+    // No allocation at all => no leaks
+    if (Token::findmatch(tokens, "alloc") == 0)
+    {
+        return NULL;
+    }
+
+    if ((result = Token::findmatch(tokens, "loop alloc ;")) != NULL)
+    {
+        return result;
+    }
+
+    if ((result = Token::findmatch(tokens, "alloc ; if break|continue|return ;")) != NULL
+        && Token::findmatch(tokens, "dealloc ; alloc ; if continue ;") == NULL)
+    {
+        return result->tokAt(3);
+    }
+
+    if (all && (result = Token::findmatch(tokens, "alloc ; ifv break|continue|return ;")) != NULL)
+    {
+        return result->tokAt(3);
+    }
+
+    if ((result = Token::findmatch(tokens, "alloc ; alloc|assign|return callfunc| ;")) != NULL)
+    {
+        return result->tokAt(2);
+    }
+
+    if ((result = Token::findmatch(tokens, "alloc ; }")) != NULL)
+    {
+        if (result->tokAt(3) == NULL)
+            return result->tokAt(2);
+    }
+
+    // No deallocation / usage => report leak at the last token
+    if (!Token::findmatch(tokens, "dealloc|use"))
+    {
+        const Token *last = tokens;
+        while (last->next())
+            last = last->next();
+        return last;
+    }
+
+    return NULL;
+}
+
+
 
 
 
@@ -1583,46 +1633,14 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         return;
     }
 
-    if ((result = Token::findmatch(tok, "loop alloc ;")) != NULL)
+    if ((result = findleak(tok, _settings->_showAll)) != NULL)
     {
         memoryLeak(result, varname, alloctype, all);
-    }
-
-    else if ((result = Token::findmatch(tok, "alloc ; if break|continue|return ;")) != NULL
-             && Token::findmatch(tok, "dealloc ; alloc ; if continue ;") == NULL)
-    {
-        memoryLeak(result->tokAt(3), varname, alloctype, all);
-    }
-
-    else if (_settings->_showAll && (result = Token::findmatch(tok, "alloc ; ifv break|continue|return ;")) != NULL)
-    {
-        memoryLeak(result->tokAt(3), varname, alloctype, all);
-    }
-
-    else if ((result = Token::findmatch(tok, "alloc ; alloc|assign|return callfunc| ;")) != NULL)
-    {
-        memoryLeak(result->tokAt(2), varname, alloctype, all);
     }
 
     else if ((result = Token::findmatch(tok, "dealloc ; dealloc ;")) != NULL)
     {
         deallocDeallocError(result->tokAt(2), varname);
-    }
-
-    else if (! Token::findmatch(tok, "dealloc") &&
-             ! Token::findmatch(tok, "use") &&
-             ! Token::findmatch(tok, "return use ;"))
-    {
-        const Token *last = tok;
-        while (last->next())
-            last = last->next();
-        memoryLeak(last, varname, alloctype, all);
-    }
-
-    else if ((result = Token::findmatch(tok, "alloc ; }")) != NULL)
-    {
-        if (result->tokAt(3) == NULL)
-            memoryLeak(result->tokAt(2), varname, alloctype, all);
     }
 
     // detect cases that "simplifycode" don't handle well..

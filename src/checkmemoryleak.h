@@ -237,6 +237,8 @@ private:
      */
     void simplifycode(Token *tok, bool &all);
 
+    static const Token *findleak(const Token *tokens, bool all);
+
     /**
      * Checking the variable varname
      * @param Tok1 start token

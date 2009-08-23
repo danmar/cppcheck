@@ -18,8 +18,8 @@
 
 
 
-#include "../src/tokenize.h"
 #define private public
+#include "../src/tokenize.h"
 #include "../src/checkmemoryleak.h"
 #undef private
 #include "testsuite.h"
@@ -125,7 +125,9 @@ private:
 
         // Todo: check that call_func works correctly..
         // Todo: check that simplifycode works correctly..
-        // Todo: check if simplified code contains errors..
+
+        // Check that errors are found..
+        TEST_CASE(findleak);
 
         TEST_CASE(simple5);
         TEST_CASE(simple7);
@@ -138,8 +140,6 @@ private:
 
         TEST_CASE(alloc_alloc_1);
 
-        TEST_CASE(ifelse1);
-        TEST_CASE(ifelse2);
         TEST_CASE(ifelse3);
         TEST_CASE(ifelse4);
         TEST_CASE(ifelse5);
@@ -378,6 +378,70 @@ private:
         ASSERT_EQUALS(";;exit;", getcode("char *s; exit(0);", "s"));
     }
 
+    // is there a leak in given code? if so, return the linenr
+    int dofindleak(const char code[], bool all = false) const
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // replace "if ( ! var )" => "if(!var)"
+        for (Token *tok = tokenizer._tokens; tok; tok = tok->next())
+        {
+            if (Token::simpleMatch(tok, "if ( var )"))
+            {
+                Token::eraseTokens(tok, tok->tokAt(4));
+                tok->str("if(var)");
+            }
+
+            else if (Token::simpleMatch(tok, "if ( ! var )"))
+            {
+                Token::eraseTokens(tok, tok->tokAt(5));
+                tok->str("if(!var)");
+            }
+        }
+
+        const Token *tok = CheckMemoryLeakInFunction::findleak(tokenizer.tokens(), all);
+        return (tok ? tok->linenr() : -1);
+    }
+
+    void findleak()
+    {
+        ASSERT_EQUALS(1,  dofindleak("alloc;"));
+        ASSERT_EQUALS(1,  dofindleak("; use; alloc; }"));
+        ASSERT_EQUALS(2,  dofindleak("alloc;\n return;"));
+        ASSERT_EQUALS(-1, dofindleak("alloc; return use;"));
+        ASSERT_EQUALS(2, dofindleak("alloc;\n callfunc;"));
+        ASSERT_EQUALS(-1, dofindleak("alloc; use;"));
+        ASSERT_EQUALS(-1, dofindleak("assign; alloc; dealloc;"));
+        ASSERT_EQUALS(-1, dofindleak("assign; if alloc; dealloc;"));
+
+        // if alloc..
+        ASSERT_EQUALS(2,  dofindleak("if alloc;\n return;"));
+        ASSERT_EQUALS(-1, dofindleak("if alloc;\n return use;"));
+        ASSERT_EQUALS(-1, dofindleak("if alloc;\n use;"));
+
+        // if..
+        ASSERT_EQUALS(-1, dofindleak("alloc; ifv { dealloc; }"));
+        ASSERT_EQUALS(2,  dofindleak("alloc;\n if return;\n dealloc;"));
+        ASSERT_EQUALS(3,  dofindleak("alloc;\n if\n return;\n dealloc;"));
+        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; return; } dealloc;"));
+        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; return; } dealloc;"));
+        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; alloc; } dealloc;"));
+        ASSERT_EQUALS(-1, dofindleak("alloc;\n if(!var)\n { callfunc;\n return;\n }\n use;"));
+
+        // assign..
+        ASSERT_EQUALS(2,  dofindleak("alloc;\n assign;\n dealloc;"));
+        ASSERT_EQUALS(-1,  dofindleak("alloc;\n if(!var) assign;\n dealloc;"));
+
+        // Todo..
+        ASSERT_EQUALS(-1, dofindleak("; alloc;\n if { dealloc; }\n ;"));
+        TODO_ASSERT_EQUALS(3,  dofindleak("; alloc;\n if { dealloc; }\n ;"));
+
+        ASSERT_EQUALS(-1, dofindleak("alloc;\n if assign;\n dealloc;"));
+        TODO_ASSERT_EQUALS(2,  dofindleak("alloc;\n if assign;\n dealloc;"));
+    }
 
 
     void simple5()
@@ -524,33 +588,7 @@ private:
 
 
 
-    void ifelse1()
-    {
-        check("void f()\n"
-              "{\n"
-              "    int *a = new int[10];\n"
-              "    if (a)\n"
-              "    {\n"
-              "        delete [] a;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
 
-
-    void ifelse2()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str = strdup(\"hello\");\n"
-              "    if (somecondition)\n"
-              "    {\n"
-              "        return;\n"
-              "    }\n"
-              "    free(str);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: str\n", errout.str());
-    }
 
 
     void ifelse3()
