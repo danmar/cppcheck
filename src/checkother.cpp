@@ -1219,7 +1219,13 @@ void CheckOther::checkZeroDivision()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "/ 0"))
+        {
             zerodivError(tok);
+        }
+        else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , 0 )"))
+        {
+            zerodivError(tok);
+        }
     }
 }
 

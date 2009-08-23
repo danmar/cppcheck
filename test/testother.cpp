@@ -36,6 +36,7 @@ private:
     {
         TEST_CASE(zeroDiv1);
         TEST_CASE(zeroDiv2);
+        TEST_CASE(zeroDiv3);
 
         TEST_CASE(delete1);
         TEST_CASE(delete2);
@@ -123,6 +124,15 @@ private:
               "    int a = 0 ? (2/0) : 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv3()
+    {
+        check("void f()\n"
+              "{\n"
+              "   div_t divresult = div (1,0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
     }
 
     void delete1()
