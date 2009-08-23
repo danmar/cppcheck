@@ -138,6 +138,7 @@ private:
         TEST_CASE(vardecl4);
         TEST_CASE(vardecl5);
         TEST_CASE(vardecl6);
+        TEST_CASE(vardecl7);
         TEST_CASE(vardecl_stl);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
@@ -2336,6 +2337,20 @@ private:
         const char res1[]  = "int z ; z = x >> 16 ;";
         ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
     }
+
+    void vardecl7()
+    {
+        // ticket #603
+        const char code[] = "for (int c = 0; c < 0; ++c) {}\n"
+                            "int t;\n"
+                            "D(3 > t, \"T\");";
+        const char res[] = "for ( int c = 0 ; c < 0 ; ++ c ) { }\n"
+                           "int t ;\n"
+                           "D ( 3 > t , \"T\" ) ;";
+
+        ASSERT_EQUALS(res, tokenizeAndStringify(code));
+    }
+
 
     void volatile_variables()
     {

@@ -2447,6 +2447,10 @@ bool Tokenizer::simplifyVarDecl()
                         break;
                     }
                 }
+                else if (tok3->str() == ";")
+                {
+                    break;
+                }
             }
 
             if (Token::Match(tok2, ":: %type%"))
