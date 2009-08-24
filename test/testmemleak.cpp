@@ -3000,7 +3000,7 @@ private:
               "    free(abc->a);\n"
               "    free(abc);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     void ret()

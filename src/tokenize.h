@@ -206,6 +206,9 @@ private:
      */
     bool simplifyKnownVariables();
 
+    /** Replace a "goto" with the statements */
+    void simplifyGoto();
+
     /** Simplify "if else" */
     bool elseif();
 

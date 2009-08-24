@@ -554,15 +554,6 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkNullPointer("void foo(struct ABC *abc)\n"
-                         "{\n"
-                         "    int *a = abc->a;\n"
-                         "out:\n"
-                         "    if (!abc)\n"
-                         "        ;\n"
-                         "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         // loops..
         checkNullPointer("void freeAbc(struct ABC *abc)\n"
                          "{\n"

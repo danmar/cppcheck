@@ -100,6 +100,9 @@ private:
 
         // Simplify calculations
         TEST_CASE(calculations);
+
+        // Simplify goto..
+        TEST_CASE(goto1);
     }
 
     std::string tok(const char code[])
@@ -1203,6 +1206,62 @@ private:
         }
     }
 
+
+    void goto1()
+    {
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if (a())\n"
+                                "    {\n"
+                                "        goto out;\n"
+                                "    }\n"
+                                "    b();\n"
+                                "out:\n"
+                                "    c();\n"
+                                "}";
+
+            const char expect[] = "void foo ( ) "
+                                  "{ "
+                                  "if ( a ( ) ) "
+                                  "{ "
+                                  "c ( ) ; "
+                                  "return ; "
+                                  "} "
+                                  "b ( ) ; "
+                                  "c ( ) ; "
+                                  "}";
+
+            ASSERT_EQUALS(expect, tok(code));
+        }
+
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if (a())\n"
+                                "        goto out;\n"
+                                "    b();\n"
+                                "out:\n"
+                                "    if (c())\n"
+                                "        d();\n"
+                                "}";
+
+            const char expect[] = "void foo ( ) "
+                                  "{ "
+                                  "if ( a ( ) ) "
+                                  "{ "
+                                  "if ( c ( ) ) "
+                                  "d ( ) ; "
+                                  "return ; "
+                                  "} "
+                                  "b ( ) ; "
+                                  "if ( c ( ) ) "
+                                  "d ( ) ; "
+                                  "}";
+
+            ASSERT_EQUALS(expect, tok(code));
+        }
+    }
 };
 
 REGISTER_TEST(TestSimplifyTokens)

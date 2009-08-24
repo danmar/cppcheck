@@ -1139,6 +1139,8 @@ void Tokenizer::simplifyTokenList()
 {
     simplifyNamespaces();
 
+    simplifyGoto();
+
     // Combine wide strings
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -3107,6 +3109,119 @@ bool Tokenizer::simplifyCalculations()
     }
     return ret;
 }
+
+
+
+
+void Tokenizer::simplifyGoto()
+{
+    std::list<Token *> gotos;
+    unsigned int indentlevel = 0;
+    Token *beginfunction = 0;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+            ++indentlevel;
+
+        else if (tok->str() == "}")
+        {
+            if (indentlevel == 0)
+                break;  // break out - it seems the code is wrong
+            --indentlevel;
+            if (indentlevel == 0)
+            {
+                gotos.clear();
+                beginfunction = 0;
+            }
+        }
+
+        else if (indentlevel == 0 && Token::Match(tok, ") const| {"))
+        {
+            gotos.clear();
+            beginfunction = tok;
+        }
+
+        else if (Token::Match(tok, "goto %var% ;"))
+            gotos.push_back(tok);
+
+        else if (indentlevel == 1 && Token::Match(tok, "%var% :"))
+        {
+            // Is this label at the end..
+            bool end = false;
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "}")
+                {
+                    end = true;
+                    break;
+                }
+
+                if (tok2->str() == "{" || Token::Match(tok2, "%var% :"))
+                {
+                    break;
+                }
+            }
+            if (!end)
+                continue;
+
+            const std::string name(tok->str());
+
+            tok->deleteThis();
+            tok->deleteThis();
+
+            // This label is at the end of the function.. replace all matching goto statements..
+            for (std::list<Token *>::iterator it = gotos.begin(); it != gotos.end(); ++it)
+            {
+                Token *token = *it;
+                if (token->next()->str() == name)
+                {
+                    // Delete the "goto name;"
+                    token = token->previous();
+                    token->deleteNext();
+                    token->deleteNext();
+                    token->deleteNext();
+
+                    const bool endpar(token->str() == ")");
+                    if (endpar)
+                    {
+                        token->insertToken("{");
+                        token = token->next();
+                    }
+
+                    // Insert the statements..
+                    bool ret = false;
+                    for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+                    {
+                        if (tok2->str() == "}")
+                            break;
+                        if (tok2->str() == "return")
+                            ret = true;
+                        token->insertToken(tok2->str().c_str());
+                        token = token->next();
+                    }
+                    if (!ret)
+                    {
+                        token->insertToken("return");
+                        token = token->next();
+                        token->insertToken(";");
+                        token = token->next();
+                    }
+                    if (endpar)
+                    {
+                        token->insertToken("}");
+                        token = token->next();
+                    }
+                }
+            }
+
+            gotos.clear();
+            tok = beginfunction;
+            indentlevel = 0;
+            continue;
+        }
+    }
+}
+
 
 
 
