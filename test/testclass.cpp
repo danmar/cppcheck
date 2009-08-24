@@ -35,11 +35,11 @@ private:
 
     void run()
     {
-        TEST_CASE(virtualDestructor1);	// Base class not found => no error
+        TEST_CASE(virtualDestructor1);  // Base class not found => no error
         TEST_CASE(virtualDestructor2);      // Base class doesn't have a destructor
-        TEST_CASE(virtualDestructor3);	// Base class has a destructor, but it's not virtual
-        TEST_CASE(virtualDestructor4);	// Derived class doesn't have a destructor => no error
-        TEST_CASE(virtualDestructor5);	// Derived class has empty destructor => no error
+        TEST_CASE(virtualDestructor3);  // Base class has a destructor, but it's not virtual
+        TEST_CASE(virtualDestructor4);  // Derived class doesn't have a destructor => no error
+        TEST_CASE(virtualDestructor5);  // Derived class has empty destructor => no error
         TEST_CASE(virtualDestructorProtected);
         TEST_CASE(virtualDestructorInherited);
         TEST_CASE(virtualDestructorTemplate);
@@ -86,7 +86,7 @@ private:
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
-                       "	void goo() {}"
+                       "    void goo() {}"
                        "    void operator=(const& A);\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return something\n", errout.str());
@@ -415,6 +415,17 @@ private:
                        "};\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() { strcpy(name, ""); }\n"
+                       "\n"
+                       "private:\n"
+                       "    char name[255];\n"
+                       "};\n");
+
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarEnum()
