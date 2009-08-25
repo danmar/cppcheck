@@ -76,7 +76,7 @@ bool CheckMemoryLeak::isclass(const Tokenizer *_tokenizer, const Token *tok) con
 }
 //---------------------------------------------------------------------------
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, const unsigned int varid) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2, unsigned int varid) const
 {
     // What we may have...
     //     * var = (char *)malloc(10);
@@ -160,7 +160,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
 
 
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok2, const unsigned int varid) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok2, unsigned int varid) const
 {
     // What we may have...
     //     * var = (char *)realloc(..;
@@ -186,7 +186,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
 }
 
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, const unsigned int varid) const
+CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok, unsigned int varid) const
 {
     if (Token::Match(tok, "delete %varid% ;", varid))
         return New;
@@ -430,13 +430,13 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
     return No;
 }
 
-bool CheckMemoryLeakInFunction::matchFunctionsThatReturnArg(const Token *tok, const unsigned int varid) const
+bool CheckMemoryLeakInFunction::matchFunctionsThatReturnArg(const Token *tok, unsigned int varid) const
 {
     return Token::Match(tok, "; %varid% = strcat|memcpy|memmove|strcpy ( %varid% ,", varid);
 }
 
 
-bool CheckMemoryLeakInFunction::notvar(const Token *tok, const unsigned int varid, bool endpar) const
+bool CheckMemoryLeakInFunction::notvar(const Token *tok, unsigned int varid, bool endpar) const
 {
     const std::string end(endpar ? " &&|)" : " [;)&|]");
     return bool(Token::Match(tok, ("! %varid%" + end).c_str(), varid) ||
@@ -472,7 +472,7 @@ static int countParameters(const Token *tok)
     return -1;
 }
 
-const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
+const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
     if (bsearch(tok->str().c_str(), call_func_white_list,
                 sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
@@ -575,7 +575,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
 
 
-Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz)
+Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Token *> callstack, unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz)
 {
     Token *rethead = 0, *rettail = 0;
 #define addtoken(_str)                  \
@@ -1566,7 +1566,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens, bool all)
 
 
 // Check for memory leaks for a function variable.
-void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string varname, const unsigned int varid, bool classmember, unsigned int sz)
+void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string varname, unsigned int varid, bool classmember, unsigned int sz)
 {
     std::list<const Token *> callstack;
 
