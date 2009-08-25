@@ -124,7 +124,9 @@ private:
         TEST_CASE(testgetcode);
 
         // Todo: check that call_func works correctly..
-        // Todo: check that simplifycode works correctly..
+
+        // Check that simplifycode works correctly..
+        TEST_CASE(simplifycode);
 
         // Check that errors are found..
         TEST_CASE(findleak);
@@ -133,16 +135,12 @@ private:
         TEST_CASE(simple7);
         TEST_CASE(simple9);     // Bug 2435468 - member function "free"
         TEST_CASE(simple11);
-        TEST_CASE(simple12);
         TEST_CASE(new_nothrow);
 
         TEST_CASE(staticvar);
 
         TEST_CASE(alloc_alloc_1);
 
-        TEST_CASE(ifelse3);
-        TEST_CASE(ifelse4);
-        TEST_CASE(ifelse5);
         TEST_CASE(ifelse6);
         TEST_CASE(ifelse7);
         TEST_CASE(ifelse8);
@@ -150,36 +148,25 @@ private:
         TEST_CASE(ifelse10);
 
         TEST_CASE(if1);
-        TEST_CASE(if2);
         TEST_CASE(if3);
         TEST_CASE(if4);
         TEST_CASE(if5);
-        TEST_CASE(if6);     // Bug 2432631
         TEST_CASE(if7);     // Bug 2401436
         TEST_CASE(if8);     // Bug 2458532
         TEST_CASE(if9);     // if (realloc)
         TEST_CASE(if10);    // else if (realloc)
         TEST_CASE(if11);
 
-        TEST_CASE(forwhile1);
-        TEST_CASE(forwhile2);
-        TEST_CASE(forwhile3);
-        TEST_CASE(forwhile4);
         TEST_CASE(forwhile5);
         TEST_CASE(forwhile6);
-        TEST_CASE(forwhile7);
         TEST_CASE(forwhile8);       // Bug 2429936
         TEST_CASE(forwhile9);
         TEST_CASE(forwhile10);
         TEST_CASE(forwhile11);
 
-        TEST_CASE(dowhile1);
-
-        TEST_CASE(switch1);
         TEST_CASE(switch2);
         TEST_CASE(switch3);
 
-        TEST_CASE(ret1);
         TEST_CASE(ret2);
         TEST_CASE(ret3);
         TEST_CASE(ret4);
@@ -266,9 +253,7 @@ private:
         TEST_CASE(assign_pclose);
 
         // Using the function "exit"
-        TEST_CASE(exit1);
         TEST_CASE(exit2);
-        TEST_CASE(exit3);
         TEST_CASE(exit4);
         TEST_CASE(exit5);
         TEST_CASE(stdstring);
@@ -356,11 +341,16 @@ private:
         ASSERT_EQUALS(";;if{}", getcode("char *s; if (a && s) { }", "s"));
         ASSERT_EQUALS(";;if(!var){}", getcode("char *s; if (a && !s) { }", "s"));
 
+        // switch..
+        ASSERT_EQUALS(";;switch{case;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));
+
         // loop..
         ASSERT_EQUALS(";;loop{}", getcode("char *s; while (a) { }", "s"));
         ASSERT_EQUALS(";;loopcallfunc{}", getcode("char *s; while (a()) { }", "s"));
         ASSERT_EQUALS(";;loop{}", getcode("char *s; while (s) { }", "s"));
         ASSERT_EQUALS(";;loop{}", getcode("char *s; for (a;b;c) { }", "s"));
+        ASSERT_EQUALS(";;loop{alloc;}", getcode("char *s; for (a;b;c) { s=malloc(10); }", "s"));
+        ASSERT_EQUALS(";;do{}loop;", getcode("char *s; do { } while (a);", "s"));
 
         // use..
         ASSERT_EQUALS(";;use;", getcode("char *s; DeleteString(s);", "s"));
@@ -376,7 +366,108 @@ private:
 
         // exit..
         ASSERT_EQUALS(";;exit;", getcode("char *s; exit(0);", "s"));
+        ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { exit(0); }", "s"));
     }
+
+
+
+    std::string simplifycode(const char code[], bool all = false) const
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // replace "if ( ! var )" => "if(!var)"
+        for (Token *tok = tokenizer._tokens; tok; tok = tok->next())
+        {
+            if (Token::simpleMatch(tok, "if ( var )"))
+            {
+                Token::eraseTokens(tok, tok->tokAt(4));
+                tok->str("if(var)");
+            }
+
+            else if (Token::simpleMatch(tok, "if ( ! var )"))
+            {
+                Token::eraseTokens(tok, tok->tokAt(5));
+                tok->str("if(!var)");
+            }
+        }
+
+        Settings settings;
+        settings._showAll = all;
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
+        all = false;
+        checkMemoryLeak.simplifycode(tokenizer._tokens, all);
+
+        std::ostringstream ret;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ret << (tok->previous() ? " " : "") << tok->str();
+
+        return ret.str();
+    }
+
+
+
+
+    // Test that the CheckMemoryLeaksInFunction::simplifycode works
+    void simplifycode()
+    {
+        ASSERT_EQUALS(";", simplifycode("; ; ; ;"));
+        ASSERT_EQUALS(";", simplifycode("; if ;"));
+        ASSERT_EQUALS("alloc ;", simplifycode("alloc ; if ; if(var) ; ifv ; if(!var) ;"));
+        ASSERT_EQUALS("alloc ;", simplifycode("alloc ; if ; else ;"));
+
+        // if, else..
+        ASSERT_EQUALS("; alloc ; if break ; dealloc ;", simplifycode("; alloc ; if { break; } dealloc ;"));
+        ASSERT_EQUALS("; alloc ; if continue ; dealloc ;", simplifycode("; alloc ; if { continue; } dealloc ;"));
+        ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { return use; }"));
+        ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode("; alloc; if(!var) { return; } dealloc;"));
+        ASSERT_EQUALS("; alloc ;", simplifycode("; if { alloc; } else { return; }"));
+        ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode("; alloc ; if(!var) { alloc ; } dealloc ;"));
+
+        {
+        const char code[] = "; alloc ; if { dealloc ; return ; }";
+        ASSERT_EQUALS(code, simplifycode(code));
+        ASSERT_EQUALS("; alloc ;", simplifycode(code, true));
+        }
+
+        // switch..
+        ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode(";alloc;switch{case;break;};dealloc;"));
+
+        // loops..
+        ASSERT_EQUALS(";", simplifycode("; loop { if { break; } }"));
+        ASSERT_EQUALS("; loop alloc ;", simplifycode("; loop { alloc ; }"));
+        ASSERT_EQUALS("; alloc ; alloc ;", simplifycode("; alloc ; do { alloc ; } loop ;"));
+
+        // return..
+
+        // exit..
+        ASSERT_EQUALS(";", simplifycode("; if { alloc; exit; }"));
+        ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if { use; exit; }"));
+
+        // Todo..
+        ASSERT_EQUALS("; alloc ; if(!var) exit ;", simplifycode("; alloc ; if(!var) { exit; }"));
+        TODO_ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if(!var) { exit; }"));
+
+        TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; if(var) { exit; }"));
+        TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; ifv { exit; }", false));
+        TODO_ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; ifv { exit; }", true));
+
+        ASSERT_EQUALS("; alloc ; if { dealloc ; return ; }", simplifycode("; alloc; if { dealloc; return; }"));
+        TODO_ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { dealloc; return; }"));
+
+        ASSERT_EQUALS("; alloc ; if return ; return ;", simplifycode(";alloc;if{return;}return;"));
+        TODO_ASSERT_EQUALS("; alloc ; return ;", simplifycode(";alloc;if{return;}return;"));
+
+        {
+        const char code[] = "; alloc ; if { dealloc ; return ; } dealloc ;";
+        ASSERT_EQUALS(code, simplifycode(code));
+        TODO_ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode(code));
+        }
+    }
+
+
 
     // is there a leak in given code? if so, return the linenr
     int dofindleak(const char code[], bool all = false) const
@@ -431,9 +522,18 @@ private:
         ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; alloc; } dealloc;"));
         ASSERT_EQUALS(-1, dofindleak("alloc;\n if(!var)\n { callfunc;\n return;\n }\n use;"));
 
+        ASSERT_EQUALS(-1, dofindleak("alloc; if { return use; } dealloc;"));
+        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc; return; } dealloc;"));
+
         // assign..
         ASSERT_EQUALS(2,  dofindleak("alloc;\n assign;\n dealloc;"));
         ASSERT_EQUALS(-1,  dofindleak("alloc;\n if(!var) assign;\n dealloc;"));
+
+        // loop..
+        ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if break; dealloc ; }"));
+        ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if continue; dealloc ; }"));
+        ASSERT_EQUALS(1, dofindleak("; loop alloc ;"));
+        ASSERT_EQUALS(1, dofindleak("; loop alloc ; dealloc ;"));
 
         // Todo..
         ASSERT_EQUALS(-1, dofindleak("; alloc;\n if { dealloc; }\n ;"));
@@ -441,6 +541,11 @@ private:
 
         ASSERT_EQUALS(-1, dofindleak("alloc;\n if assign;\n dealloc;"));
         TODO_ASSERT_EQUALS(2,  dofindleak("alloc;\n if assign;\n dealloc;"));
+
+        ASSERT_EQUALS(-1, dofindleak("alloc; if { return use; }"));
+        TODO_ASSERT_EQUALS(1, dofindleak("alloc; if { return use; }"));
+        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc; return; }"));
+        TODO_ASSERT_EQUALS(1, dofindleak("alloc; if { dealloc; return; }"));
     }
 
 
@@ -498,17 +603,6 @@ private:
               "    free(s);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-    }
-
-    void simple12()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *s;\n"
-              "    foo(s);\n"
-              "    s = malloc(100);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s\n", errout.str());
     }
 
 
@@ -590,66 +684,6 @@ private:
 
 
 
-
-    void ifelse3()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str = strdup(\"hello\");\n"
-              "    if (a==b)\n"
-              "    {\n"
-              "        free(str);\n"
-              "        return;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "    char *str = strdup(\"hello\");\n"
-              "    if (a==b)\n"
-              "    {\n"
-              "        free(str);\n"
-              "        return;\n"
-              "    }\n"
-              "}\n", true);
-        ASSERT_EQUALS("[test.cpp:9]: (possible error) Memory leak: str\n", errout.str());
-    }
-
-
-    void ifelse4()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str = new char[10];\n"
-              "    if (a==b)\n"
-              "    {\n"
-              "        delete [] str;\n"
-              "        return;\n"
-              "    }\n"
-              "    delete [] str;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void ifelse5()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str;\n"
-              "    if (somecondition)\n"
-              "    {\n"
-              "        str = new char[100];\n"
-              "    }\n"
-              "    else\n"
-              "    {\n"
-              "        return;\n"
-              "    }\n"
-              "    delete [] str;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
 
 
     void ifelse6()
@@ -744,19 +778,6 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
     }
 
-    void if2()
-    {
-        check("void f()\n"
-              "{\n"
-              "    struct smp_alt_module *smp;\n"
-              "    smp = kzalloc(sizeof(*smp), GFP_KERNEL);\n"
-              "    if (NULL == smp)\n"
-              "        return;\n"
-              "    kfree( smp );\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void if3()
     {
         check("void f()\n"
@@ -790,22 +811,6 @@ private:
               "    if (somecondition && !p)\n"
               "        return;\n"
               "    free(p);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void if6()
-    {
-        check("void f()\n"
-              "{\n"
-              "    FILE *a = 0;\n"
-              "    a = fopen(\"test.txt\", \"rw\");\n"
-              "    if( a == 0 )\n"
-              "    {\n"
-              "        a = fopen(\"test.txt\", \"r\");\n"
-              "    }\n"
-              "\n"
-              "    fclose( a );\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -893,73 +898,6 @@ private:
 
 
 
-
-
-    void forwhile1()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str = strdup(\"hello\");\n"
-              "    while (condition)\n"
-              "    {\n"
-              "        if (condition)\n"
-              "        {\n"
-              "            break;\n"
-              "        }\n"
-              "    }\n"
-              "    free(str);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void forwhile2()
-    {
-        check("void f()\n"
-              "{\n"
-              "    for (int i = 0; i < j; i++)\n"
-              "    {\n"
-              "        char *str = strdup(\"hello\");\n"
-              "        if (condition)\n"
-              "            continue;\n"
-              "        free(str);\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: str\n", errout.str());
-    }
-
-
-    void forwhile3()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str = 0;\n"
-              "    for (int i = 0; i < 10; i++)\n"
-              "    {\n"
-              "        str = strdup(\"hello\");\n"
-              "    }\n"
-              "    free(str);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: str\n", errout.str());
-    }
-
-
-    void forwhile4()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str = 0;\n"
-              "    for (int i = 0; i < 10; i++)\n"
-              "    {\n"
-              "        str = strdup(\"hello\");\n"
-              "        if (str) { }\n"
-              "    }\n"
-              "    free(str);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: str\n", errout.str());
-    }
-
-
     void forwhile5()
     {
         check("void f(const char **a)\n"
@@ -986,22 +924,6 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: str\n", errout.str());
-    }
-
-
-    void forwhile7()
-    {
-        check("void f()\n"
-              "{\n"
-              "    for (int i = 0; i < j; i++)\n"
-              "    {\n"
-              "        char *str = strdup(\"hello\");\n"
-              "        if (condition)\n"
-              "            break;\n"
-              "        free(str);\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: str\n", errout.str());
     }
 
 
@@ -1085,38 +1007,6 @@ private:
 
 
 
-    void dowhile1()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str = strdup(\"abc\");\n"
-              "    do\n"
-              "    {\n"
-              "        str = strdup(\"def\");\n"
-              "    }\n"
-              "    while (!str);\n"
-              "    return str;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: str\n", errout.str());
-    }
-
-
-
-    void switch1()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *str = new char[10];\n"
-              "    switch (abc)\n"
-              "    {\n"
-              "        case 1:\n"
-              "            break;\n"
-              "    };\n"
-              "    delete [] str;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void switch2()
     {
         const std::string code("void f()\n"
@@ -1156,18 +1046,6 @@ private:
     }
 
 
-
-
-    void ret1()
-    {
-        check("char *f( char **str )\n"
-              "{\n"
-              "    char *ret = malloc( 10 );\n"
-              "    return *str = ret;\n"
-              "}\n");
-
-        ASSERT_EQUALS("", errout.str());
-    }
 
 
     void ret2()
@@ -2152,22 +2030,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void exit1()
-    {
-        // Ticket #297
-        check("void f()\n"
-              "{\n"
-              "    char *out = new char[100];\n"
-              "    if (c())\n"
-              "    {\n"
-              "        delete [] out;\n"
-              "        exit(0);\n"
-              "    }\n"
-              "    delete [] out;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void exit2()
     {
         check("void f()\n"
@@ -2182,19 +2044,6 @@ private:
               "    char *out = new char[100];\n"
               "    if( out ) {}\n"
               "    exit(0);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void exit3()
-    {
-        check("void f()\n"
-              "{\n"
-              "    char *p = malloc(100);\n"
-              "    if (p)\n"
-              "    {\n"
-              "        exit(0);\n"
-              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
