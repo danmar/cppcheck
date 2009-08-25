@@ -170,7 +170,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         {
             if (Assign && Token::Match(ftok, "%var% ("))
             {
-                initVar(varlist, ftok->str().c_str());
+                initVar(varlist, ftok->strAt(0));
             }
 
             Assign |= (ftok->str() == ":");
@@ -196,7 +196,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         // Variable getting value from stream?
         if (Token::Match(ftok, ">> %var%"))
         {
-            initVar(varlist, ftok->next()->str().c_str());
+            initVar(varlist, ftok->strAt(1));
         }
 
         // Before a new statement there is "[{};)=]" or "else"
@@ -237,7 +237,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             {
                 callstack.push_back(ftok->str());
                 int i = 0;
-                const Token *ftok2 = Tokenizer::findClassFunction(tok1, classname, ftok->str().c_str(), i);
+                const Token *ftok2 = Tokenizer::findClassFunction(tok1, classname, ftok->strAt(0), i);
                 initializeVarList(tok1, ftok2, varlist, classname, callstack);
             }
         }
@@ -245,19 +245,19 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         // Assignment of member variable?
         else if (Token::Match(ftok, "%var% ="))
         {
-            initVar(varlist, ftok->str().c_str());
+            initVar(varlist, ftok->strAt(0));
         }
 
         // Assignment of array item of member variable?
         else if (Token::Match(ftok, "%var% [ %any% ] ="))
         {
-            initVar(varlist, ftok->str().c_str());
+            initVar(varlist, ftok->strAt(0));
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (Token::Match(ftok, "%var% . clear|Clear ("))
         {
-            initVar(varlist, ftok->str().c_str());
+            initVar(varlist, ftok->strAt(0));
         }
     }
 }
