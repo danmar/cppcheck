@@ -474,7 +474,7 @@ static int countParameters(const Token *tok)
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
-    if (bsearch(tok->str().c_str(), call_func_white_list,
+    if (bsearch(tok->strAt(0), call_func_white_list,
                 sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
                 sizeof(call_func_white_list[0]), call_func_white_list_compare))
         return 0;

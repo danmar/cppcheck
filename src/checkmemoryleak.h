@@ -37,7 +37,6 @@
 
 #include "check.h"
 
-#include <set>
 #include <list>
 #include <string>
 #include <vector>
