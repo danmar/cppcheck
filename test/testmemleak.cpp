@@ -427,9 +427,9 @@ private:
         ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode("; alloc ; if(!var) { alloc ; } dealloc ;"));
 
         {
-        const char code[] = "; alloc ; if { dealloc ; return ; }";
-        ASSERT_EQUALS(code, simplifycode(code));
-        ASSERT_EQUALS("; alloc ;", simplifycode(code, true));
+            const char code[] = "; alloc ; if { dealloc ; return ; }";
+            ASSERT_EQUALS(code, simplifycode(code));
+            ASSERT_EQUALS("; alloc ;", simplifycode(code, true));
         }
 
         // switch..
@@ -461,9 +461,9 @@ private:
         TODO_ASSERT_EQUALS("; alloc ; return ;", simplifycode(";alloc;if{return;}return;"));
 
         {
-        const char code[] = "; alloc ; if { dealloc ; return ; } dealloc ;";
-        ASSERT_EQUALS(code, simplifycode(code));
-        TODO_ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode(code));
+            const char code[] = "; alloc ; if { dealloc ; return ; } dealloc ;";
+            ASSERT_EQUALS(code, simplifycode(code));
+            TODO_ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode(code));
         }
     }
 
