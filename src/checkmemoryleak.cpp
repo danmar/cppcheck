@@ -627,7 +627,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         if (parlevel == 0 && tok->str() == ";")
             addtoken(";");
 
-        if (Token::Match(tok->previous(), "[(;{}] %varid% =", varid))
+        if (varid && Token::Match(tok->previous(), "[(;{}] %varid% =", varid))
         {
             AllocType alloc = getAllocationType(tok->tokAt(2), varid);
             bool realloc = false;
@@ -870,12 +870,12 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
             }
 
-            else if (Token::Match(tok, "return &| %varid%", varid))
+            else if (varid && Token::Match(tok, "return &| %varid%", varid))
             {
                 addtoken("use");
             }
 
-            else if (Token::Match(tok, "return strcpy|strncpy|memcpy ( %varid%", varid))
+            else if (varid && Token::Match(tok, "return strcpy|strncpy|memcpy ( %varid%", varid))
             {
                 addtoken("use");
                 tok = tok->tokAt(2);
@@ -909,16 +909,19 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }
 
         // Assignment..
-        if (Token::Match(tok, "[)=] %varid% [+;)]", varid) ||
-            Token::Match(tok, "%varid% +=|-=", varid) ||
-            Token::Match(tok, "+=|<< %varid% ;", varid) ||
-            Token::Match(tok, "= strcpy|strcat|memmove|memcpy ( %varid% ,", varid))
+        if (varid)
         {
-            addtoken("use");
-        }
-        else if (Token::Match(tok->previous(), "[;{}=(,+-*/] %varid% [", varid))
-        {
-            addtoken("use_");
+            if (Token::Match(tok, "[)=] %varid% [+;)]", varid) ||
+                Token::Match(tok, "%varid% +=|-=", varid) ||
+                Token::Match(tok, "+=|<< %varid% ;", varid) ||
+                Token::Match(tok, "= strcpy|strcat|memmove|memcpy ( %varid% ,", varid))
+            {
+                addtoken("use");
+            }
+            else if (Token::Match(tok->previous(), "[;{}=(,+-*/] %varid% [", varid))
+            {
+                addtoken("use_");
+            }
         }
 
         // Investigate function calls..
