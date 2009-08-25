@@ -3175,6 +3175,8 @@ void Tokenizer::simplifyGoto()
                 Token *token = *it;
                 if (token->next()->str() == name)
                 {
+                    Token *openBrace = NULL;
+
                     // Delete the "goto name;"
                     token = token->previous();
                     token->deleteNext();
@@ -3186,6 +3188,7 @@ void Tokenizer::simplifyGoto()
                     {
                         token->insertToken("{");
                         token = token->next();
+                        openBrace = token;
                     }
 
                     // Insert the statements..
@@ -3210,6 +3213,7 @@ void Tokenizer::simplifyGoto()
                     {
                         token->insertToken("}");
                         token = token->next();
+                        Token::createMutualLinks(openBrace, token);
                     }
                 }
             }
