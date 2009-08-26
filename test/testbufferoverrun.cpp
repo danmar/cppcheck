@@ -92,6 +92,7 @@ private:
         TEST_CASE(buffer_overrun_2);
         TEST_CASE(buffer_overrun_3);
         TEST_CASE(buffer_overrun_4);
+        TEST_CASE(buffer_overrun_5);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -546,6 +547,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void buffer_overrun_5()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char n[5];\n"
+              "    sprintf(n, \"d\");\n"
+              "    printf(\"hello!\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     void sprintf1()

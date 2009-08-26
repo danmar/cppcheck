@@ -387,7 +387,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% [,)]", varid))
         {
             int len = -2;
-            const Token *end = tok->next()->link();
 
             // check format string
             const char *fmt = tok->strAt(4);
@@ -412,26 +411,30 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 bufferOverrun(tok);
             }
 
-            // check arguments
-            len = 0;
-            for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
+            // check arguments (if they exists)
+            if (tok->tokAt(5)->str() == ",")
             {
-                if (tok2->str()[0] == '\"')
+                len = 0;
+                const Token *end = tok->next()->link();
+                for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
                 {
-                    len -= 2;
-                    const char *str = tok2->str().c_str();
-                    while (*str)
+                    if (tok2->str()[0] == '\"')
                     {
-                        if (*str == '\\')
+                        len -= 2;
+                        const char *str = tok2->str().c_str();
+                        while (*str)
+                        {
+                            if (*str == '\\')
+                                ++str;
                             ++str;
-                        ++str;
-                        ++len;
+                            ++len;
+                        }
                     }
                 }
-            }
-            if (len >= (int)size)
-            {
-                bufferOverrun(tok);
+                if (len >= (int)size)
+                {
+                    bufferOverrun(tok);
+                }
             }
         }
 
