@@ -1101,7 +1101,11 @@ private:
         const char filedata[] = "#pragma asm\n"
                                 "    mov r1, 11\n"
                                 "#pragma endasm\n"
-                                "aaa";
+                                "aaa\n"
+                                "#pragma asm foo\n"
+                                "    mov r1, 11\n"
+                                "#pragma endasm bar\n"
+                                "bbb";
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
@@ -1111,7 +1115,7 @@ private:
 
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\naaa\n", actual[""]);
+        ASSERT_EQUALS("\n\n\naaa\n\n\n\nbbb\n", actual[""]);
     }
 
     void endifsemicolon()

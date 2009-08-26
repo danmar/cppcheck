@@ -905,14 +905,14 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     std::string line;
     while (getline(istr, line))
     {
-        if (line == "#pragma asm")
+        if (line.substr(0, 11) == "#pragma asm")
         {
             ret << "\n";
             bool found_end = false;
             while (getline(istr, line))
             {
                 ret << "\n";
-                if (line == "#pragma endasm")
+                if (line.substr(0, 14) == "#pragma endasm")
                 {
                     found_end = true;
                     break;
