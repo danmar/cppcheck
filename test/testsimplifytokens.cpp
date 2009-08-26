@@ -1266,6 +1266,11 @@ private:
             const char code[] = "class NoLabels { bool varOne : 1 ; bool varTwo : 1 ; } ;";
             ASSERT_EQUALS(code, tok(code));
         }
+
+        {
+            const char code[] = "void foo ( ) { int var ; var = x < y ? y : z ; } ;";
+            ASSERT_EQUALS(code, tok(code));
+        }
     }
 };
 
