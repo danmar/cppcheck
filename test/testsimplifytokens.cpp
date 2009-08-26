@@ -1261,6 +1261,11 @@ private:
 
             ASSERT_EQUALS(expect, tok(code));
         }
+
+        {
+            const char code[] = "class NoLabels { bool varOne : 1 ; bool varTwo : 1 ; } ;";
+            ASSERT_EQUALS(code, tok(code));
+        }
     }
 };
 

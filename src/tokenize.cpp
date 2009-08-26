@@ -3121,7 +3121,12 @@ void Tokenizer::simplifyGoto()
     for (Token *tok = _tokens; tok; tok = (tok ? tok->next() : NULL))
     {
         if (tok->str() == "{")
-            ++indentlevel;
+        {
+            if (beginfunction == 0 && indentlevel == 0 && tok->link())
+                tok = tok->link();
+            else
+                ++indentlevel;
+        }
 
         else if (tok->str() == "}")
         {
@@ -3144,7 +3149,7 @@ void Tokenizer::simplifyGoto()
         else if (Token::Match(tok, "goto %var% ;"))
             gotos.push_back(tok);
 
-        else if (indentlevel == 1 && Token::Match(tok, "%var% :"))
+        else if (indentlevel == 1 && Token::Match(tok->previous(), "[};] %var% :"))
         {
             // Is this label at the end..
             bool end = false;
