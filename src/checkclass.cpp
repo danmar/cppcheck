@@ -221,6 +221,10 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         if (Token::simpleMatch(ftok, "this ."))
             ftok = ftok->tokAt(2);
 
+        // Skip "classname :: "
+        if (Token::Match(ftok, "%var% ::"))
+            ftok = ftok->tokAt(2);
+
         // Clearing all variables..
         if (Token::simpleMatch(ftok, "memset ( this ,"))
         {

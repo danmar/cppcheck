@@ -414,7 +414,7 @@ private:
                        "    char name[255];\n"
                        "};\n");
 
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("class John\n"
                        "{\n"
