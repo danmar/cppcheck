@@ -3118,7 +3118,7 @@ void Tokenizer::simplifyGoto()
     std::list<Token *> gotos;
     unsigned int indentlevel = 0;
     Token *beginfunction = 0;
-    for (Token *tok = _tokens; tok; tok = (tok ? tok->next() : NULL))
+    for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() == "{")
         {
