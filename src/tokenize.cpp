@@ -34,6 +34,7 @@
 #include <list>
 #include <algorithm>
 #include <cctype>
+#include <stack>
 
 //---------------------------------------------------------------------------
 
@@ -654,6 +655,9 @@ void Tokenizer::simplifyTemplates()
                     continue;
 
                 int indentlevel = 0;
+                std::stack<Token *> braces;     // holds "{" tokens
+                std::stack<Token *> brackets;   // holds "(" tokens
+
                 for (; tok3; tok3 = tok3->next())
                 {
                     if (tok3->str() == "{")
@@ -668,6 +672,8 @@ void Tokenizer::simplifyTemplates()
                             // if indentlevel ever becomes 0, cppcheck will write:
                             // ### Error: Invalid number of character {
                             addtoken("}", tok3->linenr(), tok3->fileIndex());
+                            Token::createMutualLinks(braces.top(), _tokensBack);
+                            braces.pop();
                             break;
                         }
                         --indentlevel;
@@ -689,7 +695,29 @@ void Tokenizer::simplifyTemplates()
 
                         // copy
                         else
+                        {
                             addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
+
+                            // link() newly tokens manually
+                            if (tok3->str() == "{")
+                            {
+                                braces.push(_tokensBack);
+                            }
+                            else if (tok3->str() == "}")
+                            {
+                                Token::createMutualLinks(braces.top(), _tokensBack);
+                                braces.pop();
+                            }
+                            else if (tok3->str() == "(")
+                            {
+                                brackets.push(_tokensBack);
+                            }
+                            else if (tok3->str() == ")")
+                            {
+                                Token::createMutualLinks(brackets.top(), _tokensBack);
+                                brackets.pop();
+                            }
+                        }
                     }
                 }
             }
