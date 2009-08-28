@@ -41,7 +41,7 @@ CheckMemoryLeakStructMember instance3;
 // This list needs to be alphabetically sorted so we can run bsearch on it
 static const char * const call_func_white_list[] =
 {
-    "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
+    "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
     , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
     , "flock", "for", "fprintf", "fputc", "fputs", "fread", "fseek"
     , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
@@ -49,7 +49,7 @@ static const char * const call_func_white_list[] =
     , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
     , "printf", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
     , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
-    , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "sprintf", "strcasecmp"
+    , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
     , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strncat", "strncmp"
     , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
     , "sync_file_range", "telldir", "while", "write", "writev"

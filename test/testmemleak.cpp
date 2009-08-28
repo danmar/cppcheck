@@ -352,6 +352,11 @@ private:
         ASSERT_EQUALS(";;loop{alloc;}", getcode("char *s; for (a;b;c) { s=malloc(10); }", "s"));
         ASSERT_EQUALS(";;do{}loop;", getcode("char *s; do { } while (a);", "s"));
 
+        // asprintf..
+        TODO_ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"xyz\");", "s"));
+        TODO_ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"s: %s\", s);", "s"));
+        ASSERT_EQUALS(";;;", getcode("char *s; asprintf(&p, \"s: %s\", s);", "s"));
+
         // use..
         ASSERT_EQUALS(";;use;", getcode("char *s; DeleteString(s);", "s"));
         ASSERT_EQUALS(";;use;", getcode("char *s; s2 = s;", "s"));
