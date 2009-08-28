@@ -39,8 +39,7 @@ private:
 
     void run()
     {
-        TEST_CASE(cast0);
-        TEST_CASE(cast1);
+        TEST_CASE(cast);
         TEST_CASE(iftruefalse);
         TEST_CASE(combine_strings);
         TEST_CASE(double_plus);
@@ -122,19 +121,26 @@ private:
         return ret;
     }
 
-    void cast0()
+    void cast()
     {
-        const char code1[] = " if ( p == (char *)0 ) ";
-        const char code2[] = " if ( p == 0 ) ";
-        ASSERT_EQUALS(tok(code1), tok(code2));
+        ASSERT_EQUALS("if ( p == 0 )", tok("if (p == (char *)0)"));
+        ASSERT_EQUALS("return str ;", tok("return (char *)str;"));
+
+        {
+            const char code[] = "static void crash()\n"
+                                "{\n"
+                                "    goto err_exit;\n"
+                                "err_exit:\n"
+                                "    (void)foo();\n"
+                                "}\n";
+
+            const char expected[] = "static void crash ( ) "
+                                    "{ foo ( ) ; }";
+
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
-    void cast1()
-    {
-        const char code[] = "return (unsigned char *)str;";
-        const char expected[] = "return str;";
-        ASSERT_EQUALS(tok(expected), tok(code));
-    }
 
     void iftruefalse()
     {

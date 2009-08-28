@@ -2160,6 +2160,8 @@ bool Tokenizer::simplifyQuestionMark()
 
 bool Tokenizer::simplifyCasts()
 {
+    createLinks();
+    
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
