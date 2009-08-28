@@ -88,7 +88,7 @@ bool MathLib::isInt(const std::string & s)
     // remember position
     unsigned long n = 0;
     // eat up whitespace
-    while (isspace(s[n])) ++n;
+    while (std::isspace(s[n])) ++n;
 
     // determine type
     if (s.find("E", 0) != std::string::npos)
@@ -99,7 +99,7 @@ bool MathLib::isInt(const std::string & s)
     {
         Mode = eHex;
     }
-    else if (s.find("0", n, 1) != std::string::npos && isdigit(s[n+1]))
+    else if (s.find("0", n, 1) != std::string::npos && std::isdigit(s[n+1]))
     {
         Mode = eOctal;
     }
@@ -111,7 +111,7 @@ bool MathLib::isInt(const std::string & s)
     if (Mode == eScientific)
     {
         // check digits
-        while (isdigit(s[n])) ++n;
+        while (std::isdigit(s[n])) ++n;
 
         // check scientific notation
         if (std::tolower(s[n]) == 'e')
@@ -122,7 +122,7 @@ bool MathLib::isInt(const std::string & s)
             // floating pointer number e.g. 124E-2
             if (s[n] == '-') return false;
             // check digits of the exponent
-            while (isdigit(s[n])) ++n;
+            while (std::isdigit(s[n])) ++n;
         }
     }
     // check hex notation
@@ -130,7 +130,7 @@ bool MathLib::isInt(const std::string & s)
     {
         ++n; // 0
         ++n; // x
-        while (isxdigit(s[n]))
+        while (std::isxdigit(s[n]))
             ++n;
     }
     // check octal notation
@@ -141,12 +141,12 @@ bool MathLib::isInt(const std::string & s)
     }
     else if (Mode == eDefault)
     {
-        while (isdigit(s[n])) ++n;
+        while (std::isdigit(s[n])) ++n;
         // unsigned or long
         if (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n;
     }
     // eat up whitespace
-    while (isspace(s[n]))
+    while (std::isspace(s[n]))
         ++n;
 
     // if everything goes good, we are at the end of the string and no digits/character
