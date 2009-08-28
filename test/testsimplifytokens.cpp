@@ -1204,6 +1204,9 @@ private:
             const char code[] = "a[10+10-10-10]";
             ASSERT_EQUALS("a [ 0 ]", tok(code));
         }
+
+        ASSERT_EQUALS("x = 1 + 2 * y ;", tok("x=1+2*y;"));
+        ASSERT_EQUALS("x = 7 ;", tok("x=1+2*3;"));
     }
 
 

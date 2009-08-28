@@ -17,7 +17,8 @@
  */
 
 
-
+#ifndef testsuiteH
+#define testsuiteH
 
 #include <sstream>
 #include "../src/errorlogger.h"
@@ -62,4 +63,6 @@ public:
 #define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (EXCEPTION &) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
 #define TODO_ASSERT_EQUALS( EXPECTED , ACTUAL ) if (EXPECTED==ACTUAL) assertEquals(__FILE__, __LINE__, "TODO assertion", "The assertion succeeded")
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance; }
+
+#endif
 

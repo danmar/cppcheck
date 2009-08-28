@@ -3100,6 +3100,15 @@ bool Tokenizer::simplifyCalculations()
             if (Token::simpleMatch(tok->next(), "/ 0"))
                 continue;
 
+            // + and - are calculated after *
+            if (Token::Match(tok->next(),"[+-]"))
+            {
+                if (tok->previous()->str() == "*")
+                    continue;
+                if (Token::simpleMatch(tok->tokAt(3), "*"))
+                    continue;
+            }
+
             tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), *(tok->strAt(1))));
 
             Token::eraseTokens(tok, tok->tokAt(3));
