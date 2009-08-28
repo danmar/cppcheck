@@ -2161,7 +2161,7 @@ bool Tokenizer::simplifyQuestionMark()
 bool Tokenizer::simplifyCasts()
 {
     createLinks();
-    
+
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -3103,7 +3103,7 @@ bool Tokenizer::simplifyCalculations()
                 continue;
 
             // + and - are calculated after *
-            if (Token::Match(tok->next(),"[+-]"))
+            if (Token::Match(tok->next(), "[+-]"))
             {
                 if (tok->previous()->str() == "*")
                     continue;
