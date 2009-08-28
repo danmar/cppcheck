@@ -2160,8 +2160,6 @@ bool Tokenizer::simplifyQuestionMark()
 
 bool Tokenizer::simplifyCasts()
 {
-    createLinks();
-
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -3237,6 +3235,8 @@ void Tokenizer::simplifyGoto()
 
                     // Insert the statements..
                     bool ret = false;
+
+                    std::list<Token*> links;
                     for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "}")
@@ -3245,7 +3245,24 @@ void Tokenizer::simplifyGoto()
                             ret = true;
                         token->insertToken(tok2->str().c_str());
                         token = token->next();
+                        if (token->str() == "(")
+                        {
+                            links.push_back(token);
+                        }
+                        else if (token->str() == ")")
+                        {
+                            if (links.size() == 0)
+                            {
+                                // This should never happen at this point
+                                syntaxError(token, ')');
+                                return;
+                            }
+
+                            Token::createMutualLinks(links.back(), token);
+                            links.pop_back();
+                        }
                     }
+
                     if (!ret)
                     {
                         token->insertToken("return");

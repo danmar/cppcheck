@@ -90,6 +90,9 @@ void Token::deleteThis()
         _fileIndex = _next->_fileIndex;
         _linenr = _next->_linenr;
         _link = _next->_link;
+        if (_link)
+            _link->link(this);
+
         deleteNext();
     }
     else if (_previous)
