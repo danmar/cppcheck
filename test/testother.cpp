@@ -504,6 +504,14 @@ private:
                          "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n", errout.str());
 
+        checkNullPointer("void foo(struct ABC *abc)\n"
+                         "{\n"
+                         "    bar(abc->a);\n"
+                         "    if (!abc)\n"
+                         "        ;\n"
+                         "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: abc - otherwise it is redundant to check if abc is null at line 4\n", errout.str());
+
         // ok dereferencing in a condition
         checkNullPointer("void foo(struct ABC *abc)\n"
                          "{\n"
@@ -592,6 +600,14 @@ private:
                          "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n", errout.str());
 
+        checkNullPointer("void foo(int *p)\n"
+                         "{\n"
+                         "    bar(*p);\n"
+                         "    if (!p)\n"
+                         "        ;\n"
+                         "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: p\n", errout.str());
+
         // no error
         checkNullPointer("void foo()\n"
                          "{\n"
@@ -628,6 +644,15 @@ private:
                          "        ;\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("void foo(int *p)\n"
+                         "{\n"
+                         "    int var1 = p ? *p : 0;\n"
+                         "    if (!p)\n"
+                         "        ;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
 

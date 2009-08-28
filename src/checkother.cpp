@@ -1185,7 +1185,7 @@ void CheckOther::nullPointer()
             {
                 if (tok1->varId() == varid)
                 {
-                    if (tok1->previous() && tok1->previous()->str() == "*" && tok1->tokAt(-2)->str() != "*")
+                    if (Token::Match(tok1->tokAt(-2), "[=;{}] *"))
                     {
                         nullPointerError(tok1, varname);
                         break;
