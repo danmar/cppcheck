@@ -123,7 +123,7 @@ private:
 
     void cast()
     {
-        ASSERT_EQUALS("if ( p == 0 )", tok("if (p == (char *)0)"));
+        ASSERT_EQUALS("if ( ! p )", tok("if (p == (char *)0)"));
         ASSERT_EQUALS("return str ;", tok("return (char *)str;"));
 
         {
@@ -135,7 +135,7 @@ private:
                                 "}\n";
 
             const char expected[] = "static void crash ( ) "
-                                    "{ foo ( ) ; }";
+                                    "{ foo ( ) ; return ; foo ( ) ; }";
 
             ASSERT_EQUALS(expected, tok(code));
         }
@@ -1260,12 +1260,12 @@ private:
                                   "if ( a ( ) ) "
                                   "{ "
                                   "if ( c ( ) ) "
-                                  "d ( ) ; "
+                                  "{ d ( ) ; } "
                                   "return ; "
                                   "} "
                                   "b ( ) ; "
                                   "if ( c ( ) ) "
-                                  "d ( ) ; "
+                                  "{ d ( ) ; } "
                                   "}";
 
             ASSERT_EQUALS(expect, tok(code));
