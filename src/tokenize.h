@@ -118,10 +118,8 @@ private:
 
     /**
      * Simplify variable declarations
-     * @return true if something is modified
-     *         false if nothing is done.
      */
-    bool simplifyVarDecl();
+    void simplifyVarDecl();
 
     /**
      * insert an "int" after "unsigned" if needed:

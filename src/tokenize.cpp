@@ -2356,12 +2356,10 @@ static void incdec(std::string &value, const std::string &op)
 
 
 
-bool Tokenizer::simplifyVarDecl()
+void Tokenizer::simplifyVarDecl()
 {
     // Split up variable declarations..
     // "int a=4;" => "int a; a=4;"
-    bool ret = false;
-
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->previous() && !Token::Match(tok->previous(), "[{};)]"))
@@ -2506,8 +2504,6 @@ bool Tokenizer::simplifyVarDecl()
 
         if (tok2)
         {
-            ret = true;
-
             if (tok2->str() == ",")
             {
                 tok2->str(";");
@@ -2556,8 +2552,6 @@ bool Tokenizer::simplifyVarDecl()
             }
         }
     }
-
-    return ret;
 }
 
 
