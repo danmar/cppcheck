@@ -1877,10 +1877,8 @@ void Tokenizer::simplifyIfAddBraces()
     }
 }
 
-bool Tokenizer::simplifyDoWhileAddBraces()
+void Tokenizer::simplifyDoWhileAddBraces()
 {
-    bool ret = false;
-
     for (Token *tok = _tokens; tok; tok = (tok ? tok->next() : NULL))
     {
         if (! Token::Match(tok, "do !!{"))
@@ -1913,12 +1911,8 @@ bool Tokenizer::simplifyDoWhileAddBraces()
             tok2->previous()->insertToken("}");
 
             Token::createMutualLinks(tok1->next(), tok2->previous());
-
-            ret = true;
         }
     }
-
-    return ret;
 }
 
 bool Tokenizer::simplifyConditionOperator()
