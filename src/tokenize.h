@@ -144,10 +144,8 @@ private:
     /**
      * simplify if-not..
      * Example: "if(0==x);" => "if(!x);"
-     * @return true if something is modified
-     *         false if nothing is done.
      */
-    bool simplifyIfNot();
+    void simplifyIfNot();
 
     /**
      * simplify if-not NULL..

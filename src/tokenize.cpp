@@ -2689,9 +2689,8 @@ void Tokenizer::simplifyIfAssign()
 
 
 
-bool Tokenizer::simplifyIfNot()
+void Tokenizer::simplifyIfNot()
 {
-    bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() == "(" || tok->str() == "||" || tok->str() == "&&")
@@ -2708,7 +2707,6 @@ bool Tokenizer::simplifyIfNot()
             {
                 tok->deleteNext();
                 tok->str("!");
-                ret = true;
             }
 
             else if (Token::Match(tok, "%var% == 0"))
@@ -2716,7 +2714,6 @@ bool Tokenizer::simplifyIfNot()
                 tok->deleteNext();
                 tok->next()->str(tok->str());
                 tok->str("!");
-                ret = true;
             }
 
             else if (Token::Match(tok, "%var% .|:: %var% == 0"))
@@ -2725,7 +2722,6 @@ bool Tokenizer::simplifyIfNot()
                 tok->insertToken("!");
                 tok = tok->tokAt(4);
                 Token::eraseTokens(tok, tok->tokAt(3));
-                ret = true;
             }
         }
 
@@ -2745,11 +2741,8 @@ bool Tokenizer::simplifyIfNot()
                 tok->link()->str("!");
                 Token::createMutualLinks(tok->link()->next(), tok);
             }
-
-            ret = true;
         }
     }
-    return ret;
 }
 
 
