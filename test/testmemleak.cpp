@@ -322,9 +322,7 @@ private:
 
         // alloc; return use;
         ASSERT_EQUALS(";;alloc;returnuse;", getcode("int *a = new int[10]; return a;", "a"));
-
-        TODO_ASSERT_EQUALS(";;alloc;returnuse;", getcode("char *a = new char[100]; return (char *)a;", "a"));
-        ASSERT_EQUALS(";;alloc;returnuseuse;", getcode("char *a = new char[100]; return (char *)a;", "a"));
+        ASSERT_EQUALS(";;alloc;returnuse;", getcode("char *a = new char[100]; return (char *)a;", "a"));
 
         // alloc; return;
         ASSERT_EQUALS(";;alloc;return;", getcode("char *s = new char[100]; return 0;", "s"));

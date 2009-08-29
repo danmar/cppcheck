@@ -891,6 +891,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     if (tok2->varId() == varid)
                     {
                         addtoken("use");
+                        tok = tok2;
                         break;
                     }
                 }
