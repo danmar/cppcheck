@@ -150,10 +150,8 @@ private:
     /**
      * simplify if-not NULL..
      * Example: "if(0!=x);" => "if(x);"
-     * @return true if something is modified
-     *         false if nothing is done.
      */
-    bool simplifyIfNotNull();
+    void simplifyIfNotNull();
 
     /**
      * Simplify the "not" and "and" keywords to "!" and "&&"

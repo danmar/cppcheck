@@ -2746,9 +2746,8 @@ void Tokenizer::simplifyIfNot()
 }
 
 
-bool Tokenizer::simplifyIfNotNull()
+void Tokenizer::simplifyIfNotNull()
 {
-    bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         Token *deleteFrom = NULL;
@@ -2784,11 +2783,8 @@ bool Tokenizer::simplifyIfNotNull()
         {
             Token::eraseTokens(deleteFrom, deleteFrom->tokAt(3));
             tok = deleteFrom;
-            ret = true;
         }
-
     }
-    return ret;
 }
 
 
