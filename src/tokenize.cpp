@@ -937,10 +937,10 @@ void Tokenizer::setVarId()
         {
             ++_varId;
 
-            const std::string pattern(std::string(". ") + tok->strAt(2));
+            const std::string pattern(std::string("%varid% . ") + tok->strAt(2));
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
-                if (tok2->varId() == tok->varId() && Token::simpleMatch(tok2->next(), pattern.c_str()))
+                if (Token::Match(tok2, pattern.c_str(), tok->varId()))
                     tok2->tokAt(2)->varId(_varId);
             }
         }
