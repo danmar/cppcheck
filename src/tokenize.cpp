@@ -2616,11 +2616,12 @@ bool Tokenizer::simplifyIfAssign()
         if (isNot)
             tok->next()->deleteNext();
 
-        // Delete paranthesis.. and remember how many there are.
-        unsigned int numpar = 0;
+        // Delete paranthesis.. and remember how many there are with
+        // their links.
+        std::list<Token *> braces;
         while (tok->next()->str() == "(")
         {
-            ++numpar;
+            braces.push_back(tok->next()->link());
             tok->deleteNext();
         }
 
@@ -2647,8 +2648,14 @@ bool Tokenizer::simplifyIfAssign()
             tok2->insertToken(tok->strAt(2));
         }
         tok2->insertToken(tok->strAt(1));
-        for (unsigned int p = 0; p < numpar; ++p)
+
+        while (! braces.empty())
+        {
             tok2->insertToken("(");
+            Token::createMutualLinks(tok2->next(), braces.back());
+            braces.pop_back();
+        }
+
         if (isNot)
             tok2->next()->insertToken("!");
         tok2->insertToken(iswhile ? "while" : "if");
@@ -2743,6 +2750,7 @@ bool Tokenizer::simplifyIfNot()
                 // if( (x) == 0 )
                 tok->link()->insertToken("(");
                 tok->link()->str("!");
+                Token::createMutualLinks(tok->link()->next(), tok);
             }
 
             ret = true;
@@ -3011,9 +3019,6 @@ bool Tokenizer::elseif()
 
 bool Tokenizer::simplifyRedundantParanthesis()
 {
-    if (!createLinks())
-        return false;
-
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
