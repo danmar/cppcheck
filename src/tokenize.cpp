@@ -2968,9 +2968,8 @@ bool Tokenizer::simplifyKnownVariables()
 }
 
 
-bool Tokenizer::elseif()
+void Tokenizer::elseif()
 {
-    bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (!Token::simpleMatch(tok, "else if"))
@@ -2989,14 +2988,12 @@ bool Tokenizer::elseif()
                 {
                     tok->insertToken("{");
                     tok2->insertToken("}");
-                    ret = true;
                     Token::createMutualLinks(tok->next(), tok2->next());
                     break;
                 }
             }
         }
     }
-    return ret;
 }
 
 

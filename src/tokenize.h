@@ -197,7 +197,7 @@ private:
     void simplifyGoto();
 
     /** Simplify "if else" */
-    bool elseif();
+    void elseif();
 
     std::vector<const Token *> _functionList;
 
