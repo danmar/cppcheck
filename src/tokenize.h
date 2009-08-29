@@ -162,12 +162,15 @@ private:
     bool simplifyIfNotNull();
 
     /**
-     * simplify the "not" keyword to "!"
-     * Example: "if (not p)" => "if (!p)"
+     * Simplify the "not" and "and" keywords to "!" and "&&"
+     * accordingly.
+     * Examples:
+     *     "if (not p)" => "if (!p)"
+     *     "if (p and q)" => "if (p && q)"
      * @return true if something is modified
      *         false if nothing is done.
      */
-    bool simplifyNot();
+    bool simplifyLogicalOperators();
 
     /**
      * Simplify comma into a semicolon when possible

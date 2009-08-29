@@ -1011,14 +1011,14 @@ private:
 
 
 
-    std::string simplifyNot(const char code[])
+    std::string simplifyLogicalOperators(const char code[])
     {
         // tokenize..
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyNot();
+        tokenizer.simplifyLogicalOperators();
 
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
@@ -1029,18 +1029,24 @@ private:
 
     void not1()
     {
-        ASSERT_EQUALS("if ( ! p )", simplifyNot("if (not p)"));
-        ASSERT_EQUALS("if ( p && ! q )", simplifyNot("if (p && not q)"));
-        ASSERT_EQUALS("void foo ( not i )", simplifyNot("void foo ( not i )"));
+        ASSERT_EQUALS("if ( ! p )", simplifyLogicalOperators("if (not p)"));
+        ASSERT_EQUALS("if ( p && ! q )", simplifyLogicalOperators("if (p && not q)"));
+        ASSERT_EQUALS("void foo ( not i )", simplifyLogicalOperators("void foo ( not i )"));
     }
 
     void and1()
     {
-        ASSERT_EQUALS(" if ( p && q )",
-              sizeof_(" if (p and q)"));
+        ASSERT_EQUALS("if ( p && q ) ;",
+              simplifyLogicalOperators("if (p and q) ;"));
 
-        ASSERT_EQUALS(" return operator == ( a ) && radius == 4 ;",
-              sizeof_(" return operator==(a) and radius == 4;"));
+        ASSERT_EQUALS("if ( foo ( ) && q ) ;",
+              simplifyLogicalOperators("if (foo() and q) ;"));
+
+        ASSERT_EQUALS("if ( foo ( ) && bar ( ) ) ;",
+              simplifyLogicalOperators("if (foo() and bar()) ;"));
+
+        ASSERT_EQUALS("if ( p && bar ( ) ) ;",
+              simplifyLogicalOperators("if (p and bar()) ;"));
     }
 
     void comma_keyword()

@@ -1504,13 +1504,7 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
-    // Replace "and" with "&&"
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (tok->str() == "and")
-            tok->str("&&");
-    }
-
+    simplifyLogicalOperators();
     simplifyCasts();
 
     // Simplify simple calculations..
@@ -1571,7 +1565,6 @@ void Tokenizer::simplifyTokenList()
     elseif();
     simplifyIfNot();
     simplifyIfNotNull();
-    simplifyNot();
     simplifyIfAssign();
 
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -2826,9 +2819,10 @@ bool Tokenizer::simplifyIfNotNull()
 }
 
 
-bool Tokenizer::simplifyNot()
+bool Tokenizer::simplifyLogicalOperators()
 {
     // "if (not p)" => "if (!p)"
+    // "if (p and q)" => "if (p and q)"
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2843,6 +2837,13 @@ bool Tokenizer::simplifyNot()
         else if (Token::Match(tok, "|| not %var%"))
         {
             tok->next()->str("!");
+        }
+        // "%var%|) and %var%|("
+        else if (tok->str() == "and" &&
+                 ((Token::Match(tok->previous(), "%var%") || tok->previous()->str() == ")") ||
+                 (Token::Match(tok->next(), "%var%") || tok->next()->str() == "(")))
+        {
+            tok->str("&&");
         }
     }
     return ret;
