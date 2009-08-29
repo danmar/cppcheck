@@ -167,10 +167,8 @@ private:
      * Example: "delete a, delete b" => "delete a; delete b;"
      * Example: "a = 0, b = 0;" => "a = 0; b = 0;"
      * Example: "return a(), b;" => "a(); return b;"
-     * @return true if something is modified
-     *         false if nothing is done.
      */
-    bool simplifyComma();
+    void simplifyComma();
 
     /** Add braces to an if-block
      * @return true if something is modified

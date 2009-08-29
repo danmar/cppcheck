@@ -3556,9 +3556,8 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 
 }
 
-bool Tokenizer::simplifyComma()
+void Tokenizer::simplifyComma()
 {
-    bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "for (") ||
@@ -3580,7 +3579,6 @@ bool Tokenizer::simplifyComma()
         {
             // Handle "delete a, delete b;"
             tok->str(";");
-            ret = true;
         }
 
         if (tok->previous() && tok->previous()->previous())
@@ -3591,7 +3589,6 @@ bool Tokenizer::simplifyComma()
                 // Handle "delete a, b;"
                 tok->str(";");
                 tok->insertToken("delete");
-                ret = true;
             }
             else
             {
@@ -3601,7 +3598,6 @@ bool Tokenizer::simplifyComma()
                     {
                         // Handle "a = 0, b = 0;"
                         tok->str(";");
-                        ret = true;
                         break;
                     }
                     else if (Token::Match(tok2, "delete %var%") ||
@@ -3609,7 +3605,6 @@ bool Tokenizer::simplifyComma()
                     {
                         // Handle "delete a, a = 0;"
                         tok->str(";");
-                        ret = true;
                         break;
                     }
                     else if (Token::Match(tok2, "[;,{}()]"))
@@ -3705,11 +3700,8 @@ bool Tokenizer::simplifyComma()
                 startFrom->previous()->deleteThis();
 
                 tok = endAt;
-                ret = true;
             }
         }
 
     }
-
-    return ret;
 }
