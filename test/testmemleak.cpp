@@ -366,6 +366,7 @@ private:
 
         // assign..
         ASSERT_EQUALS(";;assign;", getcode("char *s; s = 0;", "s"));
+        ASSERT_EQUALS(";;;", getcode("char *s; s = strcpy(s, p);", "s"));
 
         // callfunc..
         ASSERT_EQUALS(";;assign" "callfunc;", getcode("char *s; s = a();", "s"));

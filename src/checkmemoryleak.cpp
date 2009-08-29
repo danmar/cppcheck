@@ -627,6 +627,13 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         if (parlevel == 0 && tok->str() == ";")
             addtoken(";");
 
+        // var = strcpy|.. ( var , 
+        if (Token::Match(tok, "[;{}] %varid% = memcpy|memmove|memset|strcpy|strncpy|strcat|strncat ( %varid% ,", varid))
+        {
+            tok = tok->tokAt(4)->link();
+            continue;
+        }
+
         if (Token::Match(tok->previous(), "[(;{}] %varid% =", varid) ||
             Token::Match(tok, "asprintf ( & %varid% ,", varid))
         {
