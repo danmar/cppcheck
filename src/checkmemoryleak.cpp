@@ -627,8 +627,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         if (parlevel == 0 && tok->str() == ";")
             addtoken(";");
 
-        if (Token::Match(tok->previous(), "[(;{}] %varid% =", varid) ||
-            Token::Match(tok, "asprintf ( & %varid% ,", varid))
+        if (varid &&
+            (Token::Match(tok->previous(), "[(;{}] %varid% =", varid) ||
+             Token::Match(tok, "asprintf ( & %varid% ,", varid)))
         {
             AllocType alloc;
 
