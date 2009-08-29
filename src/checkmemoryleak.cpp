@@ -1270,6 +1270,30 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
+            // Reduce "} else .." => "} if .."
+            if (Token::simpleMatch(tok2, "} else"))
+            {
+                int indentlevel = 0;
+                for (const Token *tok3 = tok2; tok3; tok3 = tok3->previous())
+                {
+                    if (tok3->str() == "{")
+                    {
+                        --indentlevel;
+                        if (indentlevel == 0)
+                        {
+                            if (tok3->previous()->str() == "if")
+                                tok2->next()->str("if");
+                        }
+                        if (indentlevel <= 0)
+                            break;
+                    }
+                    else if (tok3->str() == "}")
+                    {
+                        ++indentlevel;
+                    }
+                }
+            }
+
             // Remove "catch ;"
             if (Token::simpleMatch(tok2->next(), "catch ;"))
             {

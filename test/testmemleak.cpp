@@ -444,10 +444,14 @@ private:
         ASSERT_EQUALS("; ifv xxx ;", simplifycode("; ifv ; else xxx ;"));
 
         {
-            const char code[] = "; alloc ; if { dealloc ; return ; }";
-            ASSERT_EQUALS(code, simplifycode(code));
-            ASSERT_EQUALS("; alloc ;", simplifycode(code, true));
+            const char code1[] = "; alloc ; if { dealloc ; return ; }";
+            ASSERT_EQUALS(code1, simplifycode(code1));
+            ASSERT_EQUALS("; alloc ;", simplifycode(code1, true));
+
+            const char code2[] = "; alloc ; if { dealloc ; return ; } else { return ; }";
+            ASSERT_EQUALS("; alloc ; if return ;", simplifycode(code2));
         }
+
 
         // switch..
         ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode(";alloc;switch{case;break;};dealloc;"));
