@@ -1587,7 +1587,6 @@ void Tokenizer::simplifyTokenList()
         modified |= simplifyKnownVariables();
         modified |= removeReduntantConditions();
         modified |= simplifyRedundantParanthesis();
-        modified |= simplifyCalculations();
         modified |= simplifyQuestionMark();
     }
 
