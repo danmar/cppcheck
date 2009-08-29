@@ -2158,9 +2158,8 @@ bool Tokenizer::simplifyQuestionMark()
     return ret;
 }
 
-bool Tokenizer::simplifyCasts()
+void Tokenizer::simplifyCasts()
 {
-    bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok->next(), "( %type% *| )") || Token::Match(tok->next(), "( %type% %type% *| )"))
@@ -2177,8 +2176,6 @@ bool Tokenizer::simplifyCasts()
 
             // Remove cast..
             Token::eraseTokens(tok, tok->next()->link()->next());
-
-            ret = true;
         }
 
         else if (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <"))
@@ -2213,13 +2210,9 @@ bool Tokenizer::simplifyCasts()
                 }
                 if (tok2->next())
                     tok2->deleteNext();
-
-                ret = true;
             }
         }
     }
-
-    return ret;
 }
 
 

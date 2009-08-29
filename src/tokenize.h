@@ -192,11 +192,10 @@ private:
      */
     bool simplifyDoWhileAddBraces();
 
-    /** Simplify casts
-     * @return true if something is modified
-     *         false if nothing is done.
+    /**
+     * Simplify casts
      */
-    bool simplifyCasts();
+    void simplifyCasts();
 
     /**
      * A simplify function that replaces a variable with its value in cases
