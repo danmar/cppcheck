@@ -2579,10 +2579,8 @@ void Tokenizer::unsignedint()
 }
 
 
-bool Tokenizer::simplifyIfAssign()
+void Tokenizer::simplifyIfAssign()
 {
-    bool ret = false;
-
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (!Token::Match(tok->next(), "if|while ( !| (| %var% =") &&
@@ -2594,9 +2592,6 @@ bool Tokenizer::simplifyIfAssign()
 
         // delete the "if"
         tok->deleteNext();
-
-        // The tokenlist has changed
-        ret = true;
 
         // Remember if there is a "!" or not. And delete it if there are.
         const bool isNot(tok->tokAt(2)->str() == "!");
@@ -2690,8 +2685,6 @@ bool Tokenizer::simplifyIfAssign()
             }
         }
     }
-
-    return ret;
 }
 
 

@@ -138,10 +138,8 @@ private:
     /**
      * simplify if-assignments..
      * Example: "if(a=b);" => "a=b;if(a);"
-     * @return true if something is modified
-     *         false if nothing is done.
      */
-    bool simplifyIfAssign();
+    void simplifyIfAssign();
 
     /**
      * simplify if-not..
