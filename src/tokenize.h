@@ -214,10 +214,8 @@ private:
 
     /**
      * Simplify the operator "?:"
-     * @return true if something is modified
-     *         false if nothing is done.
      */
-    bool simplifyConditionOperator();
+    void simplifyConditionOperator();
 
     /** Simplify conditions
      * @return true if something is modified

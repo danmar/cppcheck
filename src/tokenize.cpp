@@ -1915,9 +1915,8 @@ void Tokenizer::simplifyDoWhileAddBraces()
     }
 }
 
-bool Tokenizer::simplifyConditionOperator()
+void Tokenizer::simplifyConditionOperator()
 {
-    bool ret = false;
     int parlevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -1955,7 +1954,6 @@ bool Tokenizer::simplifyConditionOperator()
             Token::createMutualLinks(tok->tokAt(-10), tok->tokAt(-8));
         }
     }
-    return ret;
 }
 
 bool Tokenizer::simplifyConditions()
