@@ -3567,16 +3567,8 @@ bool Tokenizer::simplifyComma()
     bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::simpleMatch(tok, "for ("))
-        {
-            tok = tok->next()->link();
-            if (!tok)
-                break;
-
-            continue;
-        }
-
-        if (Token::Match(tok, "=|enum {"))
+        if (Token::simpleMatch(tok, "for (") ||
+            Token::Match(tok, "=|enum {"))
         {
             tok = tok->next()->link();
             if (!tok)
