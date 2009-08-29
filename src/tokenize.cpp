@@ -2833,11 +2833,17 @@ bool Tokenizer::simplifyNot()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "if|while ( not %var%"))
+        {
             tok->tokAt(2)->str("!");
-        if (Token::Match(tok, "&& not %var%"))
+        }
+        else if (Token::Match(tok, "&& not %var%"))
+        {
             tok->next()->str("!");
-        if (Token::Match(tok, "|| not %var%"))
+        }
+        else if (Token::Match(tok, "|| not %var%"))
+        {
             tok->next()->str("!");
+        }
     }
     return ret;
 }
