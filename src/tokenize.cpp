@@ -932,8 +932,7 @@ void Tokenizer::setVarId()
         // str.clear is a variable
         // str.clear() is a member function
         if (tok->varId() != 0 &&
-            Token::Match(tok->next(), ". %var%") &&
-            !Token::Match(tok->tokAt(3), "(") &&
+            Token::Match(tok->next(), ". %var% !!(") &&
             tok->tokAt(2)->varId() == 0)
         {
             ++_varId;
