@@ -706,20 +706,6 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
         }
     }
 
-    // Remove duplicates from the ret list..
-    for (std::list<std::string>::iterator it1 = ret.begin(); it1 != ret.end(); ++it1)
-    {
-        std::list<std::string>::iterator it2 = it1;
-        ++it2;
-        while (it2 != ret.end())
-        {
-            if (*it1 == *it2)
-                ret.erase(it2++);
-            else
-                ++it2;
-        }
-    }
-
     // convert configurations: "defined(A) && defined(B)" => "A;B"
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it)
     {
@@ -731,34 +717,57 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
             std::istringstream istr(s.c_str());
             tokenizer.tokenize(istr, "");
 
-            s = "";
+
             const Token *tok = tokenizer.tokens();
+            std::list<std::string> varList;
             while (tok)
             {
                 if (Token::Match(tok, "defined ( %var% )"))
                 {
-                    s = s + tok->strAt(2);
+                    varList.push_back(tok->strAt(2));
                     tok = tok->tokAt(4);
                     if (tok && tok->str() == "&&")
                     {
-                        s += ";";
                         tok = tok->next();
                     }
                 }
                 else if (Token::Match(tok, "%var% ;"))
                 {
-                    s += tok->str() + ";";
+                    varList.push_back(tok->str());
                     tok = tok->tokAt(2);
                 }
                 else
                 {
-                    s = "";
                     break;
                 }
             }
 
+            varList.sort();
+            s = "";
+            for (std::list<std::string>::iterator varIter = varList.begin(); varIter != varList.end(); ++varIter)
+            {
+                if (!s.empty())
+                    s += ";";
+
+                s += *varIter;
+            }
+
             if (!s.empty())
                 *it = s;
+        }
+    }
+
+    // Remove duplicates from the ret list..
+    for (std::list<std::string>::iterator it1 = ret.begin(); it1 != ret.end(); ++it1)
+    {
+        std::list<std::string>::iterator it2 = it1;
+        ++it2;
+        while (it2 != ret.end())
+        {
+            if (*it1 == *it2)
+                ret.erase(it2++);
+            else
+                ++it2;
         }
     }
 

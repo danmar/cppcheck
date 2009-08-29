@@ -93,6 +93,7 @@ private:
         TEST_CASE(if_cond2);
         TEST_CASE(if_cond3);
         TEST_CASE(if_cond4);
+        TEST_CASE(if_cond5);
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -662,7 +663,27 @@ private:
         ASSERT_EQUALS("\n\n\nab\n\n", actual[""]);
     }
 
+    void if_cond5()
+    {
+        const char filedata[] = "#if defined(A) && defined(B)\n"
+                                "ab\n"
+                                "#endif\n"
+                                "cd\n"
+                                "#if defined(B) && defined(A)\n"
+                                "ef\n"
+                                "#endif\n";
 
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n\n\ncd\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\nab\n\ncd\n\nef\n\n", actual["A;B"]);
+    }
 
 
     void multiline1()
