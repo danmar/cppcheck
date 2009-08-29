@@ -764,7 +764,14 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // if else switch
         if (tok->str() == "if")
         {
-            if (Token::Match(tok, "if ( %varid% )", varid))
+            if (alloctype == Fd && 
+                (Token::Match(tok, "if ( %varid% >= 0 )", varid) ||
+                 Token::Match(tok, "if ( %varid% != -1 )", varid)))
+            {
+                addtoken("if(var)");
+                tok = tok->next()->link();
+            }
+            else if (Token::Match(tok, "if ( %varid% )", varid))
             {
                 addtoken("if(var)");
 

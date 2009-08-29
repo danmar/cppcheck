@@ -374,6 +374,9 @@ private:
         // exit..
         ASSERT_EQUALS(";;exit;", getcode("char *s; exit(0);", "s"));
         ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { exit(0); }", "s"));
+
+        // open/close
+        ASSERT_EQUALS(";;alloc;if(var)dealloc;", getcode("int f; f=open(); if(f>=0)close(f);", "f"));
     }
 
 
