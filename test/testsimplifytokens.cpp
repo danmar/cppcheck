@@ -1037,16 +1037,16 @@ private:
     void and1()
     {
         ASSERT_EQUALS("if ( p && q ) ;",
-              simplifyLogicalOperators("if (p and q) ;"));
+                      simplifyLogicalOperators("if (p and q) ;"));
 
         ASSERT_EQUALS("if ( foo ( ) && q ) ;",
-              simplifyLogicalOperators("if (foo() and q) ;"));
+                      simplifyLogicalOperators("if (foo() and q) ;"));
 
         ASSERT_EQUALS("if ( foo ( ) && bar ( ) ) ;",
-              simplifyLogicalOperators("if (foo() and bar()) ;"));
+                      simplifyLogicalOperators("if (foo() and bar()) ;"));
 
         ASSERT_EQUALS("if ( p && bar ( ) ) ;",
-              simplifyLogicalOperators("if (p and bar()) ;"));
+                      simplifyLogicalOperators("if (p and bar()) ;"));
     }
 
     void comma_keyword()

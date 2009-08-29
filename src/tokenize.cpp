@@ -2789,7 +2789,7 @@ void Tokenizer::simplifyLogicalOperators()
         // "%var%|) and %var%|("
         else if (tok->str() == "and" &&
                  ((Token::Match(tok->previous(), "%var%") || tok->previous()->str() == ")") ||
-                 (Token::Match(tok->next(), "%var%") || tok->next()->str() == "(")))
+                  (Token::Match(tok->next(), "%var%") || tok->next()->str() == "(")))
         {
             tok->str("&&");
         }
