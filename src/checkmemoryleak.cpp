@@ -1263,6 +1263,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
+            // Reduce "; if(!var) exit ;" => ";"
+            if (Token::Match(tok2, "; if(!var) exit ;"))
+            {
+                Token::eraseTokens(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
             // Remove "catch ;"
             if (Token::simpleMatch(tok2->next(), "catch ;"))
             {

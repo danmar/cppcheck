@@ -456,11 +456,7 @@ private:
         // exit..
         ASSERT_EQUALS(";", simplifycode("; if { alloc; exit; }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if { use; exit; }"));
-
-        // Todo..
-        ASSERT_EQUALS("; alloc ; if(!var) exit ;", simplifycode("; alloc ; if(!var) { exit; }"));
-        TODO_ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if(!var) { exit; }"));
-
+        ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if(!var) { exit; }"));
         TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; if(var) { exit; }"));
         TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; ifv { exit; }", false));
         TODO_ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; ifv { exit; }", true));
