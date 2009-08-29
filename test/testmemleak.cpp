@@ -355,7 +355,7 @@ private:
         ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"s: %s\", s);", "s"));
         ASSERT_EQUALS(";;;", getcode("char *s; asprintf(&p, \"s: %s\", s);", "s"));
 
-        // Since we don't check how the return value is used we must bail out 
+        // Since we don't check how the return value is used we must bail out
         ASSERT_EQUALS("", getcode("char *s; int ret = asprintf(&s, \"xyz\");", "s"));
         TODO_ASSERT_EQUALS(";;alloc;", getcode("char *s; int ret; ret=asprintf(&s, \"xyz\"); if (ret==-1) return;", "s"));
 
