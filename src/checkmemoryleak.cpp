@@ -634,6 +634,12 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             if (Token::simpleMatch(tok, "asprintf ("))
             {
+                // todo: check how the return value is used.
+                if (!Token::Match(tok->previous(), "[;{}]"))
+                {
+                    Tokenizer::deleteTokens(rethead);
+                    return 0;
+                }
                 alloc = Malloc;
                 tok = tok->next()->link();
             }
