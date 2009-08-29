@@ -1201,8 +1201,8 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     done = false;
                 }
 
-                // Reduce "if ; else return use ;" => "if return use ;"
-                else if (Token::simpleMatch(tok2->next(), "if ; else return use ;"))
+                // Reduce "if ; else" => "if"
+                else if (Token::simpleMatch(tok2->next(), "if ; else"))
                 {
                     Token::eraseTokens(tok2->next(), tok2->tokAt(4));
                     done = false;
@@ -1277,10 +1277,26 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
-            // Reduce "if* ;" that is not followed by an else..
-            if (Token::Match(tok2->next(), "if(var)|if(!var)|ifv ; !!else"))
+            // Reduce "if* ;"..
+            if (Token::Match(tok2->next(), "if(var)|if(!var)|ifv ;"))
             {
-                Token::eraseTokens(tok2, tok2->tokAt(2));
+                // Followed by else..
+                if (Token::simpleMatch(tok2->tokAt(3), "else"))
+                {
+                    tok2 = tok2->next();
+                    if (tok2->str() == "if(var)")
+                        tok2->str("if(!var)");
+                    else if (tok2->str() == "if(!var)")
+                        tok2->str("if(var)");
+
+                    // remove the "; else"
+                    Token::eraseTokens(tok2, tok2->tokAt(3));
+                }
+                else
+                {
+                    // remove the "if* ;"
+                    Token::eraseTokens(tok2, tok2->tokAt(3));
+                }
                 done = false;
             }
 

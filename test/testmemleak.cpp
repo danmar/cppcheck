@@ -437,6 +437,12 @@ private:
         ASSERT_EQUALS("; alloc ;", simplifycode("; if { alloc; } else { return; }"));
         ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode("; alloc ; if(!var) { alloc ; } dealloc ;"));
 
+        // "if ; .."
+        ASSERT_EQUALS("; if xxx ;", simplifycode("; if ; else xxx ;"));
+        ASSERT_EQUALS("; if(var) xxx ;", simplifycode("; if(!var) ; else xxx ;"));
+        ASSERT_EQUALS("; if(!var) xxx ;", simplifycode("; if(var) ; else xxx ;"));
+        ASSERT_EQUALS("; ifv xxx ;", simplifycode("; ifv ; else xxx ;"));
+
         {
             const char code[] = "; alloc ; if { dealloc ; return ; }";
             ASSERT_EQUALS(code, simplifycode(code));
