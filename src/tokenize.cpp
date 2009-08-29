@@ -2683,9 +2683,22 @@ bool Tokenizer::simplifyIfAssign()
                 tok3 = tok3->previous();
                 for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous())
                 {
-                    tok3->insertToken(tok2->str().c_str());
-                    tok3->next()->fileIndex(tok2->fileIndex());
-                    tok3->next()->linenr(tok2->linenr());
+                    tok3->insertToken(tok2->strAt(0));
+
+                    Token *newTok = tok3->next();
+                    newTok->fileIndex(tok2->fileIndex());
+                    newTok->linenr(tok2->linenr());
+
+                    // link() newly tokens manually
+                    if (newTok->str() == ")")
+                    {
+                        braces.push_back(newTok);
+                    }
+                    else if (newTok->str() == "(")
+                    {
+                        Token::createMutualLinks(newTok, braces.back());
+                        braces.pop_back();
+                    }
                 }
             }
         }
