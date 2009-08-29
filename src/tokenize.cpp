@@ -2203,9 +2203,8 @@ void Tokenizer::simplifyCasts()
 }
 
 
-bool Tokenizer::simplifyFunctionParameters()
+void Tokenizer::simplifyFunctionParameters()
 {
-    bool ret = false;
     int indentlevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2265,7 +2264,6 @@ bool Tokenizer::simplifyFunctionParameters()
 
                     // Replace "x" with "int x" or similar
                     Token::replace(argumentNames[tok->str()], start, tok);
-                    ret = true;
                     tok = temp;
                     start = tok;
                 }
@@ -2288,8 +2286,6 @@ bool Tokenizer::simplifyFunctionParameters()
             ++indentlevel;
         }
     }
-
-    return ret;
 }
 
 

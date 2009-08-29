@@ -258,7 +258,7 @@ private:
      * Simplify functions like "void f(x) int x; {"
      * into "void f(int x) {"
      */
-    bool simplifyFunctionParameters();
+    void simplifyFunctionParameters();
 
     /**
      * Simplify namespaces by removing them, e.g.
