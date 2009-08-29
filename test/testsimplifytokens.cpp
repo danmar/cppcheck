@@ -1120,6 +1120,11 @@ private:
         }
 
         {
+            const char code[] = " typedef enum { a = 0 , b = 1 , c = 2 } abc ;";
+            ASSERT_EQUALS(code, sizeof_(code));
+        }
+
+        {
             const char code[] = "void f()\n"
                                 "{\n"
                                 "    char buf[BUFSIZ], **p;\n"

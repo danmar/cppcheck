@@ -3576,7 +3576,7 @@ bool Tokenizer::simplifyComma()
             continue;
         }
 
-        if (Token::simpleMatch(tok, "= {"))
+        if (Token::Match(tok, "=|enum {"))
         {
             tok = tok->next()->link();
             if (!tok)
