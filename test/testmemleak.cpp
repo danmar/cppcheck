@@ -377,6 +377,7 @@ private:
 
         // open/close
         ASSERT_EQUALS(";;alloc;if(var)dealloc;", getcode("int f; f=open(); if(f>=0)close(f);", "f"));
+        ASSERT_EQUALS(";;alloc;ifv;", getcode("int f; f=open(); if(f!=-1 || x);", "f"));
     }
 
 

@@ -764,25 +764,30 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // if else switch
         if (tok->str() == "if")
         {
-            if (alloctype == Fd &&
-                (Token::Match(tok, "if ( %varid% >= 0 )", varid) ||
-                 Token::Match(tok, "if ( %varid% != -1 )", varid)))
+            if (alloctype == Fd)
             {
-                addtoken("if(var)");
-                tok = tok->next()->link();
+                if (Token::Match(tok, "if ( %varid% >= 0 )", varid) ||
+                    Token::Match(tok, "if ( %varid% != -1 )", varid))
+                {
+                    addtoken("if(var)");
+                    tok = tok->next()->link();
+                    continue;
+                }
+                else if (Token::Match(tok, "if ( %varid% == -1 )", varid) ||
+                         Token::Match(tok, "if ( %varid% < 0 )", varid))
+                {
+                    addtoken("if(!var)");
+                    tok = tok->next()->link();
+                    continue;
+                }
             }
-            else if (Token::Match(tok, "if ( %varid% )", varid))
+
+            if (Token::Match(tok, "if ( %varid% )", varid))
             {
                 addtoken("if(var)");
 
                 // Make sure the "use" will not be added
                 tok = tok->next()->link();
-            }
-            else if (Token::Match(tok, "if ( %varid% == -1 )", varid) ||
-                     Token::Match(tok, "if ( %varid% < 0 )", varid))
-            {
-                // FIXME: ensure then this variable has int type and uses as file descriptor
-                addtoken("if(!var)");
             }
             else if (Token::simpleMatch(tok, "if (") && notvar(tok->tokAt(2), varid, true))
             {
@@ -814,6 +819,10 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     {
                         dep = true;
                         break;
+                    }
+                    if (alloctype == Fd && Token::Match(tok2, "%varid% !=|>=", varid))
+                    {
+                        dep = true;
                     }
                 }
 
