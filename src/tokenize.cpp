@@ -1007,8 +1007,7 @@ void Tokenizer::setVarId()
                     if (Token::Match(tok2, funcpattern.c_str()))
                     {
                         // Goto the end paranthesis..
-                        while (tok2 && tok2->str() != ")")
-                            tok2 = tok2->next();
+                        tok2 = tok2->tokAt(3)->link();
                         if (!tok2)
                             break;
 
