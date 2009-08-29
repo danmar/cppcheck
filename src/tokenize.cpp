@@ -1794,10 +1794,8 @@ bool Tokenizer::removeReduntantConditions()
     return ret;
 }
 
-bool Tokenizer::simplifyIfAddBraces()
+void Tokenizer::simplifyIfAddBraces()
 {
-    bool ret = false;
-
     for (Token *tok = _tokens; tok; tok = tok ? tok->next() : NULL)
     {
         if (Token::Match(tok, "if|for|while ("))
@@ -1834,7 +1832,7 @@ bool Tokenizer::simplifyIfAddBraces()
 
         // If there is no code after he if(), abort
         if (!tok->next())
-            return false;
+            return;
 
 
         // insert open brace..
@@ -1875,11 +1873,8 @@ bool Tokenizer::simplifyIfAddBraces()
         {
             tempToken->insertToken("}");
             Token::createMutualLinks(tok, tempToken->next());
-            ret = true;
         }
     }
-
-    return ret;
 }
 
 bool Tokenizer::simplifyDoWhileAddBraces()

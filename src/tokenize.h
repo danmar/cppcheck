@@ -171,10 +171,8 @@ private:
     void simplifyComma();
 
     /** Add braces to an if-block
-     * @return true if something is modified
-     *         false if nothing is done.
      */
-    bool simplifyIfAddBraces();
+    void simplifyIfAddBraces();
 
     /** Add braces to an do-while block
      * @return true if something is modified
