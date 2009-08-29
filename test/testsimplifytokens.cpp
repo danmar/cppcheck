@@ -91,6 +91,10 @@ private:
 
         // Simplify "not" to "!" (#345)
         TEST_CASE(not1);
+
+        // Simplify "and" to "&&" (#620)
+        TEST_CASE(and1);
+
         TEST_CASE(comma_keyword);
         TEST_CASE(remove_comma);
 
@@ -1028,6 +1032,15 @@ private:
         ASSERT_EQUALS("if ( ! p )", simplifyNot("if (not p)"));
         ASSERT_EQUALS("if ( p && ! q )", simplifyNot("if (p && not q)"));
         ASSERT_EQUALS("void foo ( not i )", simplifyNot("void foo ( not i )"));
+    }
+
+    void and1()
+    {
+        ASSERT_EQUALS(" if ( p && q )",
+              sizeof_(" if (p and q)"));
+
+        ASSERT_EQUALS(" return operator == ( a ) && radius == 4 ;",
+              sizeof_(" return operator==(a) and radius == 4;"));
     }
 
     void comma_keyword()

@@ -1504,6 +1504,13 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
+    // Replace "and" with "&&"
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "and")
+            tok->str("&&");
+    }
+
     simplifyCasts();
 
     // Simplify simple calculations..
