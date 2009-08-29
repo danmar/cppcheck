@@ -167,10 +167,8 @@ private:
      * Examples:
      *     "if (not p)" => "if (!p)"
      *     "if (p and q)" => "if (p && q)"
-     * @return true if something is modified
-     *         false if nothing is done.
      */
-    bool simplifyLogicalOperators();
+    void simplifyLogicalOperators();
 
     /**
      * Simplify comma into a semicolon when possible

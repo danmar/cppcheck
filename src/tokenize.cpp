@@ -2819,11 +2819,10 @@ bool Tokenizer::simplifyIfNotNull()
 }
 
 
-bool Tokenizer::simplifyLogicalOperators()
+void Tokenizer::simplifyLogicalOperators()
 {
     // "if (not p)" => "if (!p)"
     // "if (p and q)" => "if (p and q)"
-    bool ret = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "if|while ( not %var%"))
@@ -2846,7 +2845,6 @@ bool Tokenizer::simplifyLogicalOperators()
             tok->str("&&");
         }
     }
-    return ret;
 }
 
 
