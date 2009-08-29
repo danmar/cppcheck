@@ -351,8 +351,8 @@ private:
         ASSERT_EQUALS(";;do{}loop;", getcode("char *s; do { } while (a);", "s"));
 
         // asprintf..
-        TODO_ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"xyz\");", "s"));
-        TODO_ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"s: %s\", s);", "s"));
+        ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"xyz\");", "s"));
+        ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"s: %s\", s);", "s"));
         ASSERT_EQUALS(";;;", getcode("char *s; asprintf(&p, \"s: %s\", s);", "s"));
 
         // use..

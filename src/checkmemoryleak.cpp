@@ -627,9 +627,20 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         if (parlevel == 0 && tok->str() == ";")
             addtoken(";");
 
-        if (varid && Token::Match(tok->previous(), "[(;{}] %varid% =", varid))
+        if (Token::Match(tok->previous(), "[(;{}] %varid% =", varid) ||
+            Token::Match(tok, "asprintf ( & %varid% ,", varid))
         {
-            AllocType alloc = getAllocationType(tok->tokAt(2), varid);
+            AllocType alloc;
+
+            if (Token::simpleMatch(tok, "asprintf ("))
+            {
+                alloc = Malloc;
+                tok = tok->next()->link();
+            }
+            else
+            {
+                alloc = getAllocationType(tok->tokAt(2), varid);
+            }
             bool realloc = false;
 
             if (sz > 1 &&
