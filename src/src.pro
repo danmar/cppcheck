@@ -8,7 +8,7 @@ DEPENDPATH += .
 INCLUDEPATH += .
 OBJECTS_DIR = temp
 CONFIG += warn_on
-QT -= gui core
+CONFIG -= qt app_bundle
 
 # Input
 HEADERS += check.h \
