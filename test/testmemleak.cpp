@@ -474,8 +474,8 @@ private:
         // return..
 
         // callfunc..
-        ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;",false));
-        ASSERT_EQUALS(";", simplifycode(";callfunc;",true));
+        ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;", false));
+        ASSERT_EQUALS(";", simplifycode(";callfunc;", true));
 
         // exit..
         ASSERT_EQUALS(";", simplifycode("; if { alloc; exit; }"));
