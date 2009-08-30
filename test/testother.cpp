@@ -37,6 +37,7 @@ private:
         TEST_CASE(zeroDiv1);
         TEST_CASE(zeroDiv2);
         TEST_CASE(zeroDiv3);
+        TEST_CASE(zeroDiv4);
 
         TEST_CASE(delete1);
         TEST_CASE(delete2);
@@ -133,6 +134,45 @@ private:
               "   div_t divresult = div (1,0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+    }
+
+    void zeroDiv4()
+    {
+        check("void f()\n"
+              "{\n"
+              "   long a = b / 0x6;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   long a = b / 0x0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   long a = b / 0L;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   long a = b / 0ul;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   div_t divresult = div (1,0L);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   div_t divresult = div (1,0x5);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void delete1()

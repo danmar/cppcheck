@@ -1218,11 +1218,12 @@ void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::simpleMatch(tok, "/ 0"))
+        if (Token::Match(tok, "/ %num%") && tok->next()->str()[0] == '0')
         {
             zerodivError(tok);
         }
-        else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , 0 )"))
+        else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
+                 tok->tokAt(4)->str()[0] == '0')
         {
             zerodivError(tok);
         }
