@@ -1593,29 +1593,15 @@ void Tokenizer::simplifyTokenList()
     {
         while (Token::simpleMatch(tok, "return ("))
         {
-            unsigned int parlevel = 0;
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            Token *tok2 = tok->next()->link();
+            if (Token::simpleMatch(tok2, ") ;"))
             {
-                if (tok2->str() == "(")
-                    ++parlevel;
-
-                else if (tok2->str() == ")")
-                {
-                    if (parlevel <= 1)
-                    {
-                        if (Token::simpleMatch(tok2, ") ;"))
-                        {
-                            tok->deleteNext();
-                            tok2->deleteThis();
-                        }
-                        else
-                        {
-                            tok = tok->next();
-                        }
-                        break;
-                    }
-                    --parlevel;
-                }
+                tok->deleteNext();
+                tok2->deleteThis();
+            }
+            else
+            {
+                break;
             }
         }
     }
