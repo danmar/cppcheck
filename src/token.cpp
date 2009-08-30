@@ -491,6 +491,32 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
     return true;
 }
 
+size_t Token::getStrLength(const Token *tok)
+{
+    assert(tok != NULL);
+
+    size_t len = 0;
+    const char *str = tok->strAt(0);
+
+    assert(str[0] == '"');
+    assert(str[strlen(str)-1] == '"');
+
+    while (*str)
+    {
+        if (*str == '\\')
+            ++str;
+        ++str;
+        ++len;
+    }
+
+    assert(len >= 2);
+
+    // don't count quotes
+    len -= 2;
+
+    return len;
+}
+
 bool Token::isStandardType() const
 {
     bool ret = false;

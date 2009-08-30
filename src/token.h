@@ -117,6 +117,15 @@ public:
      */
     static bool Match(const Token *tok, const char pattern[], unsigned int varid = 0);
 
+    /**
+     * Return length of C-string.
+     *
+     * Should be called for %str% tokens only.
+     *
+     * @param tok token with C-string
+     **/
+    static size_t getStrLength(const Token *tok);
+
     bool isName() const
     {
         return _isName;

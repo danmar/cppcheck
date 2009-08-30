@@ -34,6 +34,7 @@ private:
     {
         TEST_CASE(nextprevious);
         TEST_CASE(multiCompare);
+        TEST_CASE(getStrLength);
     }
 
     void nextprevious()
@@ -78,6 +79,23 @@ private:
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("abc|def", "abcd")));
         ASSERT_EQUALS(static_cast<unsigned int>(-1), static_cast<unsigned int>(Token::multiCompare("abc|def", "default")));
     }
+
+    void getStrLength()
+    {
+        Token *tok = new Token();
+
+        tok->str("\"\"");
+        ASSERT_EQUALS(0, Token::getStrLength(tok));
+
+        tok->str("\"test\"");
+        ASSERT_EQUALS(4, Token::getStrLength(tok));
+
+        tok->str("\"test \\\\test\"");
+        ASSERT_EQUALS(10, Token::getStrLength(tok));
+
+        Tokenizer::deleteTokens(tok);
+    }
+
 };
 
 REGISTER_TEST(TestTOKEN)
