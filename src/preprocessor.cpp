@@ -758,18 +758,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
     }
 
     // Remove duplicates from the ret list..
-    for (std::list<std::string>::iterator it1 = ret.begin(); it1 != ret.end(); ++it1)
-    {
-        std::list<std::string>::iterator it2 = it1;
-        ++it2;
-        while (it2 != ret.end())
-        {
-            if (*it1 == *it2)
-                ret.erase(it2++);
-            else
-                ++it2;
-        }
-    }
+    ret.sort();
+    ret.unique();
 
     // cleanup unhandled configurations..
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end();)
@@ -786,8 +776,6 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
         else
             ++it;
     }
-
-    ret.sort();
 
     return ret;
 }
