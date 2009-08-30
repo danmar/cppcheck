@@ -352,8 +352,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             if (len >= static_cast<size_t>(size))
             {
                 bufferOverrun(tok);
+                continue;
             }
-            continue;
         }
 
 
@@ -374,6 +374,23 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 strncatUsage(tok->tokAt(9));
         }
 
+        // Detect few strcat() calls
+        if (varid > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", varid))
+        {
+            size_t charactersAppend = 0;
+            const Token *tok2 = tok;
+
+            while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", varid))
+            {
+                charactersAppend += Token::getStrLength(tok2->tokAt(4));
+                if (charactersAppend >= static_cast<size_t>(size))
+                {
+                    bufferOverrun(tok2);
+                    break;
+                }
+                tok2 = tok2->tokAt(7);
+            }
+        }
 
         // sprintf..
         if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% [,)]", varid))
