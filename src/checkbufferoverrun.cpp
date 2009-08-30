@@ -348,20 +348,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // Writing data into array..
         if (Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))
         {
-            int len = 0;
-            const char *str = tok->strAt(varc + 4);
-            while (*str)
-            {
-                if (*str == '\\')
-                    ++str;
-                ++str;
-                ++len;
-            }
-            if (len > 2 && len >= (int)size + 2)
+            size_t len = Token::getStrLength(tok->tokAt(varc + 4));
+            if (len >= static_cast<size_t>(size))
             {
                 bufferOverrun(tok);
+                continue;
             }
-            continue;
         }
 
 
@@ -382,6 +374,23 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 strncatUsage(tok->tokAt(9));
         }
 
+        // Detect few strcat() calls
+        if (varid > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", varid))
+        {
+            size_t charactersAppend = 0;
+            const Token *tok2 = tok;
+
+            while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", varid))
+            {
+                charactersAppend += Token::getStrLength(tok2->tokAt(4));
+                if (charactersAppend >= static_cast<size_t>(size))
+                {
+                    bufferOverrun(tok2);
+                    break;
+                }
+                tok2 = tok2->tokAt(7);
+            }
+        }
 
         // sprintf..
         if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% [,)]", varid))
@@ -420,15 +429,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 {
                     if (tok2->str()[0] == '\"')
                     {
-                        len -= 2;
-                        const char *str = tok2->str().c_str();
-                        while (*str)
-                        {
-                            if (*str == '\\')
-                                ++str;
-                            ++str;
-                            ++len;
-                        }
+                        len += Token::getStrLength(tok2);
                     }
                 }
                 if (len >= (int)size)
