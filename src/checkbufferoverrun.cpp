@@ -348,16 +348,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // Writing data into array..
         if (Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))
         {
-            int len = 0;
-            const char *str = tok->strAt(varc + 4);
-            while (*str)
-            {
-                if (*str == '\\')
-                    ++str;
-                ++str;
-                ++len;
-            }
-            if (len > 2 && len >= (int)size + 2)
+            size_t len = Token::getStrLength(tok->tokAt(varc + 4));
+            if (len >= static_cast<size_t>(size))
             {
                 bufferOverrun(tok);
             }
@@ -420,15 +412,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 {
                     if (tok2->str()[0] == '\"')
                     {
-                        len -= 2;
-                        const char *str = tok2->str().c_str();
-                        while (*str)
-                        {
-                            if (*str == '\\')
-                                ++str;
-                            ++str;
-                            ++len;
-                        }
+                        len += Token::getStrLength(tok2);
                     }
                 }
                 if (len >= (int)size)
