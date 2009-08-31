@@ -1473,6 +1473,23 @@ private:
             TODO_ASSERT_EQUALS("\n\n1\n\n", actual[""]);
             TODO_ASSERT_EQUALS(1, actual.size());
         }
+
+        {
+            const char filedata[] = "#define A 1\n"
+                                    "#ifdef A>0\n"
+                                    "A\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            TODO_ASSERT_EQUALS("\n\n1\n\n", actual[""]);
+            TODO_ASSERT_EQUALS(1, actual.size());
+        }
     }
 };
 
