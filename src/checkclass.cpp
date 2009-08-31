@@ -63,8 +63,29 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
         if (indentlevel != 1)
             continue;
 
+        if (tok->str() == "__published:")
+        {
+            for (; tok; tok = tok->next())
+            {
+                if (tok->str() == "{")
+                    ++indentlevel;
+                else if (tok->str() == "}")
+                {
+                    if (indentlevel <= 1)
+                        break;
+                    --indentlevel;
+                }
+                if (indentlevel == 1 && Token::Match(tok->next(), "private:|protected:|public:"))
+                    break;
+            }
+            if (tok)
+                continue;
+            else
+                break;
+        }
+
         // "private:" "public:" "protected:" etc
-        bool b = bool((*tok->strAt(0) != ':') && strchr(tok->strAt(0), ':') != 0);
+        const bool b((*tok->strAt(0) != ':') && strchr(tok->strAt(0), ':') != 0);
 
         // Search for start of statement..
         if (! Token::Match(tok, "[;{}]") && ! b)

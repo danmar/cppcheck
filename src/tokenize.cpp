@@ -395,7 +395,8 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
 
             { "private", ":", "private:" },
             { "protected", ":", "protected:" },
-            { "public", ":", "public:" }
+            { "public", ":", "public:" },
+            { "__published", ":", "__published:" }
         };
 
         for (unsigned ui = 0; ui < sizeof(combineWithNext) / sizeof(combineWithNext[0]); ui++)

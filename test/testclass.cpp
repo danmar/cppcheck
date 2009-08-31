@@ -55,6 +55,8 @@ private:
         TEST_CASE(uninitVarHeader1);    // Class is defined in header
         TEST_CASE(uninitVarHeader2);    // Class is defined in header
         TEST_CASE(uninitVarHeader3);    // Class is defined in header
+        TEST_CASE(uninitVarPublished);  // Variables in the published section are auto-initialized
+
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -563,6 +565,17 @@ private:
     }
 
 
+    void uninitVarPublished()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "__published:\n"
+                       "    int *i;\n"
+                       "public:\n"
+                       "    Fred() { }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
 
