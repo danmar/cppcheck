@@ -173,6 +173,30 @@ private:
               "   div_t divresult = div (1,0x5);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   long a = b / 0.0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   long a = b / 0.5;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   div_t divresult = div (1,0.0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   div_t divresult = div (1,0.5);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void delete1()
