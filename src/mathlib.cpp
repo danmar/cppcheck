@@ -216,7 +216,7 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         break;
 
     default:
-        std::cout << "##### If you see this, there is a bug: "
+        std::cerr << "##### If you see this, there is a bug: "
                   << "MathLib::calculate() was called with unknown action '"
                   << action
                   << "' #####"

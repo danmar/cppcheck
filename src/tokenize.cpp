@@ -3503,7 +3503,7 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 
     if (!_errorLogger)
     {
-        std::cout << "### Unlogged error at Tokenizer::syntaxError: Invalid number of character ("
+        std::cerr << "### Unlogged error at Tokenizer::syntaxError: Invalid number of character ("
                   << c << ")"
                   << std::endl;
         return;
