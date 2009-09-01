@@ -504,7 +504,9 @@ private:
     int dofindleak(const char code[], bool all = false) const
     {
         // Tokenize..
-        Tokenizer tokenizer;
+        Settings settings;
+        settings._debug = true;
+        Tokenizer tokenizer(&settings, NULL);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
