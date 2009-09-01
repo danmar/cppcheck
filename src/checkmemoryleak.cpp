@@ -1633,6 +1633,11 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens, bool all)
         return result->tokAt(2);
     }
 
+    if ((result = Token::findmatch(tokens, "alloc ; if assign ;")) != NULL)
+    {
+        return result->tokAt(3);
+    }
+
     if ((result = Token::findmatch(tokens, "alloc ; }")) != NULL)
     {
         if (result->tokAt(3) == NULL)
