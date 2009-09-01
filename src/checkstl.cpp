@@ -66,7 +66,7 @@ void CheckStl::iterators()
             }
             else if (Token::Match(tok2, "%var% . insert|erase ( %varid%", iteratorId))
             {
-                if (tok2->varId() != containerId)
+                if (tok2->varId() != containerId && tok2->tokAt(5)->str() != ".")
                     iteratorsError(tok2, tok->strAt(2), tok2->str());
                 else if (tok2->strAt(2) == std::string("erase"))
                     validIterator = false;

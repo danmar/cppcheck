@@ -37,6 +37,7 @@ private:
         TEST_CASE(iterator1);
         TEST_CASE(iterator2);
         TEST_CASE(iterator3);
+        TEST_CASE(iterator4);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_member);
@@ -120,6 +121,20 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with both l1 and l2\n", errout.str());
     }
 
+    void iterator4()
+    {
+        check("void foo(std::vector<std::string> &test)\n"
+              "{\n"
+              "    std::set<int> result;\n"
+              "    for (std::vector<std::string>::const_iterator cit = test.begin();\n"
+              "        cit != test.end();\n"
+              "        ++cit)\n"
+              "    {\n"
+              "        result.insert(cit->size());\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     // Dereferencing invalid pointer
     void dereference()
