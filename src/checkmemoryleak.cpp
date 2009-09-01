@@ -1187,7 +1187,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 }
 
                 // Reduce "if return ; alloc ;" => "alloc ;"
-                else if (Token::Match(tok2, "[;{}] if return ; alloc ;"))
+                else if (Token::Match(tok2, "[;{}] if return ; alloc|return ;"))
                 {
                     Token::eraseTokens(tok2, tok2->tokAt(4));
                     done = false;

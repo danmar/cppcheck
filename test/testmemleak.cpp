@@ -453,6 +453,7 @@ private:
         ASSERT_EQUALS("; if(!var) xxx ;", simplifycode("; if(var) ; else xxx ;"));
         ASSERT_EQUALS("; ifv xxx ;", simplifycode("; ifv ; else xxx ;"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { dealloc; return; }"));
+        ASSERT_EQUALS("; alloc ; return ;", simplifycode(";alloc;if{return;}return;"));
 
 
         // switch..
@@ -474,10 +475,6 @@ private:
         TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; if(var) { exit; }"));
         TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; ifv { exit; }", false));
         TODO_ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; ifv { exit; }", true));
-
-
-        ASSERT_EQUALS("; alloc ; if return ; return ;", simplifycode(";alloc;if{return;}return;"));
-        TODO_ASSERT_EQUALS("; alloc ; return ;", simplifycode(";alloc;if{return;}return;"));
     }
 
 
