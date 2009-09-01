@@ -174,11 +174,13 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Don't warn about floating points (gcc doesn't warn either)
+        // and floating points are handled differently than integers.
         check("void f()\n"
               "{\n"
               "   long a = b / 0.0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -186,11 +188,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Don't warn about 0.0
         check("void f()\n"
               "{\n"
               "   div_t divresult = div (1,0.0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Division by zero\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"

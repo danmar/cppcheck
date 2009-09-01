@@ -1218,15 +1218,16 @@ void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+
         if (Token::Match(tok, "/ %num%") &&
-            MathLib::toLongNumber(tok->next()->str()) == 0L  &&
-            MathLib::toDoubleNumber(tok->next()->str()) == 0.0)
+            MathLib::isInt(tok->next()->str()) &&
+            MathLib::toLongNumber(tok->next()->str()) == 0L)
         {
             zerodivError(tok);
         }
-        else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )")
-                 && MathLib::toLongNumber(tok->tokAt(4)->str()) == 0L
-                 && MathLib::toDoubleNumber(tok->tokAt(4)->str()) == 0.0)
+        else if (Token::Match(tok, "div|ldiv|lldiv|imaxdiv ( %num% , %num% )") &&
+                 MathLib::isInt(tok->tokAt(4)->str()) &&
+                 MathLib::toLongNumber(tok->tokAt(4)->str()) == 0L)
         {
             zerodivError(tok);
         }

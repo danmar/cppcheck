@@ -33,6 +33,7 @@ private:
     {
         TEST_CASE(calculate);
         TEST_CASE(convert);
+        TEST_CASE(isint);
     }
 
     void calculate()
@@ -51,6 +52,21 @@ private:
         ASSERT_EQUALS(10, MathLib::toLongNumber("0xa"));
         ASSERT_EQUALS(8, MathLib::toLongNumber("010"));
         ASSERT_EQUALS(10, MathLib::toLongNumber("10"));
+    }
+
+    void isint()
+    {
+        ASSERT_EQUALS(true, MathLib::isInt("0xa"));
+        ASSERT_EQUALS(true, MathLib::isInt("0l"));
+        ASSERT_EQUALS(true, MathLib::isInt("0L"));
+        ASSERT_EQUALS(true, MathLib::isInt("0ul"));
+        ASSERT_EQUALS(true, MathLib::isInt("0ull"));
+        ASSERT_EQUALS(true, MathLib::isInt("0llu"));
+        ASSERT_EQUALS(true, MathLib::isInt("333L"));
+        TODO_ASSERT_EQUALS(true, MathLib::isInt("330L"));
+        TODO_ASSERT_EQUALS(true, MathLib::isInt("330llu"));
+        ASSERT_EQUALS(false, MathLib::isInt("0.4"));
+        ASSERT_EQUALS(false, MathLib::isInt("2352.3f"));
     }
 };
 

@@ -143,7 +143,7 @@ bool MathLib::isInt(const std::string & s)
     {
         while (std::isdigit(s[n])) ++n;
         // unsigned or long
-        if (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n;
+        while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n;
     }
     // eat up whitespace
     while (std::isspace(s[n]))
