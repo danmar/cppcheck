@@ -1710,7 +1710,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 
     simplifycode(tok, all);
 
-    if (_settings->_debug)
+    if (_settings->_debug && _settings->_verbose)
     {
         tok->printOut(("Checkmemoryleak: simplifycode result for: " + varname).c_str());
     }
