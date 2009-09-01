@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <cctype>
 #include <stack>
+#include <stdexcept>    // for std::runtime_error
 
 //---------------------------------------------------------------------------
 
@@ -3503,9 +3504,16 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 
     if (!_errorLogger)
     {
-        std::cerr << "### Unlogged error at Tokenizer::syntaxError: Invalid number of character ("
-                  << c << ")"
-                  << std::endl;
+        std::ostringstream err;
+        err << "### Unlogged error at Tokenizer::syntaxError: Invalid number of character (" << c << ")";
+        if (_settings && _settings->_debug)
+        {
+            throw std::runtime_error(err.str());
+        }
+        else
+        {
+            std::cerr << err.str() << std::endl;
+        }
         return;
     }
 
