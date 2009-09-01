@@ -531,7 +531,7 @@ private:
     void findleak()
     {
         ASSERT_EQUALS(1,  dofindleak("alloc;"));
-        ASSERT_EQUALS(1,  dofindleak("; use; alloc; }"));
+        ASSERT_EQUALS(1,  dofindleak("; use; { alloc; }"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n return;"));
         ASSERT_EQUALS(-1, dofindleak("alloc; return use;"));
         ASSERT_EQUALS(2, dofindleak("alloc;\n callfunc;"));
