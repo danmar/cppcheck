@@ -62,6 +62,8 @@ private:
         TEST_CASE(noConstructor2);
 
         TEST_CASE(operatorEq1);
+        TEST_CASE(memsetOnStruct);
+        TEST_CASE(memsetOnClass);
 
     }
 
@@ -628,6 +630,75 @@ private:
                            "    static int foobar;\n"
                            "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkNoMemset(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.noMemset();
+    }
+
+    void memsetOnClass()
+    {
+        checkNoMemset("class A\n"
+                      "{\n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      " A fail;\n"
+                      " memset(&fail, 0, sizeof(A));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Using 'memset' on class\n", errout.str());
+
+        checkNoMemset("struct A\n"
+                      "{\n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      " struct A fail;\n"
+                      " memset(&fail, 0, sizeof(A));\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void memsetOnStruct()
+    {
+        checkNoMemset("class A\n"
+                      "{\n"
+                      " void g( struct sockaddr_in6& a);\n"
+                      "private:\n"
+                      " std::string b; \n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      " struct sockaddr_in6 fail;\n"
+                      " memset(&fail, 0, sizeof(struct sockaddr_in6));\n"
+                      "}\n");
+        TODO_ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("struct A\n"
+                      "{\n"
+                      " void g( struct sockaddr_in6& a);\n"
+                      "private:\n"
+                      " std::string b; \n"
+                      "};\n"
+                      "void f()\n"
+                      "{\n"
+                      " struct A fail;\n"
+                      " memset(&fail, 0, sizeof(struct A));\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
     }
 
 
