@@ -78,6 +78,7 @@ private:
         TEST_CASE(template10);
         TEST_CASE(template11);
         TEST_CASE(template12);
+        TEST_CASE(template_default_parameter);
 
         TEST_CASE(namespaces);
 
@@ -915,7 +916,33 @@ private:
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
+    void template_default_parameter()
+    {
+        const char code[] = "template <class T, int n=3>\n"
+                            "class A\n"
+                            "{ T ar[n]; };\n"
+                            "\n"
+                            "void f()\n"
+                            "{\n"
+                            "    A<int,2> a1;\n"
+                            "    A<int> a2;\n"
+                            "}\n";
 
+        // The expected result..
+        const std::string expected(" template < class T , int n = 3 >"
+                                   " class A"
+                                   " { T ar [ n ] ; } ;"
+                                   " void f ( )"
+                                   " {"
+                                   " A<int,2> a1 ;"
+                                   " A<int,3> a2 ;"
+                                   " }"
+                                   " class A<int,2>"
+                                   " { int ar[2]; }"
+                                   " class A<int,3>"
+                                   " { int ar[3]; }");
+        TODO_ASSERT_EQUALS(expected, sizeof_(code));
+    }
 
 
     void namespaces()
