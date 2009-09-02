@@ -685,7 +685,7 @@ private:
                       " struct sockaddr_in6 fail;\n"
                       " memset(&fail, 0, sizeof(struct sockaddr_in6));\n"
                       "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkNoMemset("struct A\n"
                       "{\n"

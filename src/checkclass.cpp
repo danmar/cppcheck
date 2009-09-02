@@ -649,7 +649,7 @@ void CheckClass::noMemset()
         }
 
         // Warn if type is a struct that contains any std::*
-        const std::string pattern2(std::string("struct ") + type);
+        const std::string pattern2(std::string("struct ") + type + " {");
         for (const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str()); tstruct; tstruct = tstruct->next())
         {
             if (tstruct->str() == "}")
