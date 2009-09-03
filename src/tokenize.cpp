@@ -564,6 +564,55 @@ void Tokenizer::simplifyTemplates()
     if (used.empty())
         return;
 
+
+
+    // Template arguments with default values
+    for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
+    {
+        Token *eq = 0;
+        std::string pattern;
+        for (Token *tok = *iter1; tok; tok = tok->next())
+        {
+            if (tok->str() == ">")
+                break;
+
+            if (tok->str() == ",")
+            {
+                if (pattern.empty())
+                    pattern = " < ";
+                else
+                    pattern += "%any% , ";
+            }
+            if (tok->str() == "=")
+            {
+                if (Token::Match(tok, "= %any% > class %var% {"))
+                {
+                    pattern = tok->strAt(4) + pattern + "%any% >";
+                    eq = tok;
+                }
+                break;
+            }
+        }
+        if (!eq || pattern.empty())
+            continue;
+
+        for (std::list<Token *>::iterator iter2 = used.begin(); iter2 != used.end(); ++iter2)
+        {
+            if (Token::Match(*iter2, pattern.c_str()))
+            {
+                Token *tok = *iter2;
+                while (tok->next()->str() != ">")
+                    tok = tok->next();
+                tok->insertToken(eq->strAt(1));
+                tok->insertToken(",");
+            }
+        }
+
+        eq->deleteThis();
+        eq->deleteThis();
+    }
+
+
     // expand templates
     for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
     {

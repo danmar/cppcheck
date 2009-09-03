@@ -929,7 +929,7 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected(" template < class T , int n = 3 >"
+        const std::string expected(" template < class T , int n >"
                                    " class A"
                                    " { T ar [ n ] ; } ;"
                                    " void f ( )"
@@ -938,10 +938,10 @@ private:
                                    " A<int,3> a2 ;"
                                    " }"
                                    " class A<int,2>"
-                                   " { int ar[2]; }"
+                                   " { int ar [ 2 ] ; }"
                                    " class A<int,3>"
-                                   " { int ar[3]; }");
-        TODO_ASSERT_EQUALS(expected, sizeof_(code));
+                                   " { int ar [ 3 ] ; }");
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
 
