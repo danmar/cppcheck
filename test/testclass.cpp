@@ -49,6 +49,7 @@ private:
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
         TEST_CASE(uninitVarArray);
+        TEST_CASE(uninitMissingFuncDef);// can't expand function in constructor
         TEST_CASE(privateCtor1);        // If constructor is private..
         TEST_CASE(privateCtor2);        // If constructor is private..
         TEST_CASE(function);            // Function is not variable
@@ -64,7 +65,6 @@ private:
         TEST_CASE(operatorEq1);
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetOnClass);
-
     }
 
     // Check the operator Equal
@@ -429,7 +429,31 @@ private:
                        "    char name[255];\n"
                        "};\n");
 
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitMissingFuncDef()
+    {
+        // Unknown member function
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { Init(); }\n"
+                       "private:\n"
+                       "    void Init();"
+                       "    int i;\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Unknown non-member function
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { Init(); }\n"
+                       "private:\n"
+                       "    int i;\n"
+                       "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
     void uninitVarEnum()
@@ -700,8 +724,6 @@ private:
                       "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
     }
-
-
 };
 
 REGISTER_TEST(TestClass)

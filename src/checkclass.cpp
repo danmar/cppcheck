@@ -263,7 +263,20 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
                 callstack.push_back(ftok->str());
                 int i = 0;
                 const Token *ftok2 = Tokenizer::findClassFunction(tok1, classname, ftok->strAt(0), i);
-                initializeVarList(tok1, ftok2, varlist, classname, callstack);
+                if (ftok2)
+                {
+                    initializeVarList(tok1, ftok2, varlist, classname, callstack);
+                }
+                else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
+                {
+                    for (Var *var = varlist; var; var = var->next)
+                        var->init = true;
+                    break;
+
+                    // we don't report this, as somewhere along the line we hope that the class and member function
+                    // are checked together. It is possible that this will not be the case (where there are enough
+                    // nested functions defined in different files), but that isn't really likely.
+                }
             }
         }
 
