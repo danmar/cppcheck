@@ -79,6 +79,7 @@ private:
         TEST_CASE(template11);
         TEST_CASE(template12);
         TEST_CASE(template_default_parameter);
+        TEST_CASE(template_typename);
 
         TEST_CASE(namespaces);
 
@@ -944,6 +945,18 @@ private:
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
+    void template_typename()
+    {
+        const char code[] = "template <class T>\n"
+                            "void foo(typename T::t *)\n"
+                            "{ }";
+
+        // The expected result..
+        const std::string expected(" template < class T >"
+                                   " void foo ( T :: t * )"
+                                   " { }");
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
 
     void namespaces()
     {

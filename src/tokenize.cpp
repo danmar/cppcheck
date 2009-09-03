@@ -504,6 +504,19 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
 
 void Tokenizer::simplifyTemplates()
 {
+    // Remove "typename" unless used in template arguments..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "typename")
+            tok->deleteThis();
+
+        if (Token::simpleMatch(tok, "template <"))
+        {
+            while (tok->str() != ">")
+                tok = tok->next();
+        }
+    }
+
     // Locate templates..
     std::list<Token *> templates;
     for (Token *tok = _tokens; tok; tok = tok->next())
