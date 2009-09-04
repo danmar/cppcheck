@@ -339,6 +339,9 @@ private:
         ASSERT_EQUALS(";;if{}", getcode("char *s; if (a && s) { }", "s"));
         ASSERT_EQUALS(";;if(!var){}", getcode("char *s; if (a && !s) { }", "s"));
 
+        // There are missing semicolons in the extracted code
+        TODO_ASSERT_EQUALS(";;;if{dealloc;}if{dealloc;return;}assign;returnuse;", getcode("char *buf, *tmp; tmp = realloc(buf, 40); if (!(tmp)) { free(buf); return; } buf = tmp; return buf;", "buf"));
+
         // switch..
         ASSERT_EQUALS(";;switch{case;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));
 
