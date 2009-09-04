@@ -26,7 +26,6 @@ gui/gui.vcproj
 gui/gui
 gui/qrc_gui.cpp
 gui/*.qm
-gui/ui_*.h
 # Doxygen output folder
 doxyoutput/
 # qmake generated
