@@ -8,7 +8,7 @@ DEPENDPATH += .
 INCLUDEPATH += ../src
 OBJECTS_DIR = temp
 CONFIG += warn_on debug
-QT -= gui core
+CONFIG -= qt app_bundle
 DEFINES += UNIT_TESTING
 
 # Input
