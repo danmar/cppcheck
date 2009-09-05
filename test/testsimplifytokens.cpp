@@ -111,6 +111,9 @@ private:
 
         // Simplify nested strcat() calls
         TEST_CASE(strcat1);
+
+        // Syntax error
+        TEST_CASE(argumentsWithSameName)
     }
 
     std::string tok(const char code[])
@@ -1362,6 +1365,16 @@ private:
                               "strcat ( dst , \".\" ) ;";
 
         ASSERT_EQUALS(expect, tok(code));
+    }
+
+    void argumentsWithSameName()
+    {
+        // This code has syntax error, two variables can not have the same name
+        const char code[] = "void foo(x, x)\n"
+                            " int x;\n"
+                            " int x;\n"
+                            "{}\n";
+        ASSERT_EQUALS("void foo ( x , x ) int x ; int x ; { }", tok(code));
     }
 };
 

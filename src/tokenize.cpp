@@ -2279,6 +2279,14 @@ void Tokenizer::simplifyFunctionParameters()
                     break;
                 }
 
+                if (argumentNames.find(tok->str()) != argumentNames.end())
+                {
+                    // Invalid code, two arguments with the same name.
+                    // TODO, print error perhaps?
+                    bailOut = true;
+                    break;
+                }
+
                 argumentNames[tok->str()] = tok;
                 if (tok->next()->str() == ")")
                 {
