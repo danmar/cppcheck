@@ -2321,6 +2321,7 @@ void Tokenizer::simplifyFunctionParameters()
 
                     // Replace "x" with "int x" or similar
                     Token::replace(argumentNames[tok->str()], start, tok);
+                    argumentNames.erase(tok->str());
                     tok = temp;
                     start = tok;
                 }

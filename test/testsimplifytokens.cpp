@@ -1370,11 +1370,21 @@ private:
     void argumentsWithSameName()
     {
         // This code has syntax error, two variables can not have the same name
-        const char code[] = "void foo(x, x)\n"
-                            " int x;\n"
-                            " int x;\n"
-                            "{}\n";
-        ASSERT_EQUALS("void foo ( x , x ) int x ; int x ; { }", tok(code));
+        {
+            const char code[] = "void foo(x, x)\n"
+                                " int x;\n"
+                                " int x;\n"
+                                "{}\n";
+            ASSERT_EQUALS("void foo ( x , x ) int x ; int x ; { }", tok(code));
+        }
+
+        {
+            const char code[] = "void foo(x, y)\n"
+                                " int x;\n"
+                                " int x;\n"
+                                "{}\n";
+            ASSERT_EQUALS("void foo ( int x , y ) int x ; { }", tok(code));
+        }
     }
 };
 
