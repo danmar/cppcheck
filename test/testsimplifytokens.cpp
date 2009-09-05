@@ -108,6 +108,9 @@ private:
 
         // Simplify goto..
         TEST_CASE(goto1);
+
+        // Simplify nested strcat() calls
+        TEST_CASE(strcat1);
     }
 
     std::string tok(const char code[])
@@ -1344,6 +1347,21 @@ private:
             const char code[] = "void foo ( ) { int var ; var = x < y ? y : z ; } ;";
             ASSERT_EQUALS(code, tok(code));
         }
+    }
+
+
+    void strcat1()
+    {
+        const char code[] = "; strcat(strcat(strcat(strcat(strcat(strcat(dst, \"this \"), \"\"), \"is \"), \"a \"), \"test\"), \".\");";
+        const char expect[] = "; "
+                              "strcat ( dst , \"this \" ) ; "
+                              "strcat ( dst , \"\" ) ; "
+                              "strcat ( dst , \"is \" ) ; "
+                              "strcat ( dst , \"a \" ) ; "
+                              "strcat ( dst , \"test\" ) ; "
+                              "strcat ( dst , \".\" ) ;";
+
+        ASSERT_EQUALS(expect, tok(code));
     }
 };
 

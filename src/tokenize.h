@@ -196,6 +196,9 @@ private:
     /** Replace a "goto" with the statements */
     void simplifyGoto();
 
+    /** Expand nested strcat() calls. */
+    void simplifyNestedStrcat();
+
     /** Simplify "if else" */
     void elseif();
 

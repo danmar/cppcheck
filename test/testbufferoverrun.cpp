@@ -568,6 +568,13 @@ private:
               "   strcat(n, \"def\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (possible error) Buffer overrun\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   char n[5];\n"
+              "   strcat(strcat(n, \"abc\"), \"def\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
     }
 
     void sprintf1()

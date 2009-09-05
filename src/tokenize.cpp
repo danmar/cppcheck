@@ -1629,6 +1629,8 @@ void Tokenizer::simplifyTokenList()
     simplifyIfNotNull();
     simplifyIfAssign();
 
+    simplifyNestedStrcat();
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "case %any% : %var%"))
@@ -3313,8 +3315,69 @@ void Tokenizer::simplifyGoto()
     }
 }
 
+void Tokenizer::simplifyNestedStrcat()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (! Token::Match(tok, "[;{}] strcat ( strcat ("))
+        {
+            continue;
+        }
 
+        // insert extracted function calls before first strcat call
+        Token *insertPos = tok;
 
+        // find inner strcat call
+        Token *tok2 = tok->tokAt(3);
+        while (Token::simpleMatch(tok2, "strcat ( strcat"))
+        {
+            tok2 = tok2->tokAt(2);
+        }
+
+        Token *end   = tok2->next()->link()->next();
+        Token *endOfFirstArg = NULL;
+        std::stack<Token *> brackets;
+
+        // copy tokens to new place
+        for (Token *cur = tok2; cur != end; cur = cur->next())
+        {
+            insertPos->insertToken(cur->strAt(0));
+            insertPos = insertPos->next();
+
+            if (cur->str() == "," && endOfFirstArg == NULL)
+            {
+                endOfFirstArg = cur;
+            }
+
+            // preserve varId
+            if (cur->varId())
+            {
+                insertPos->varId(cur->varId());
+            }
+
+            // linkify braces
+            if (insertPos->str() == "(")
+            {
+                brackets.push(insertPos);
+            }
+            else if (insertPos->str() == ")")
+            {
+                Token::createMutualLinks(brackets.top(), insertPos);
+                brackets.pop();
+            }
+        }
+        insertPos->insertToken(";");
+
+        // remove tokens at old place, but don't remove token with
+        // variable name (1st argument)
+        Token::eraseTokens(tok2->previous(), tok2->tokAt(2));
+        Token::eraseTokens(endOfFirstArg->previous(), end);
+
+        // skip just inserted tokens
+        tok = insertPos;
+    }
+
+}
 
 
 //---------------------------------------------------------------------------
