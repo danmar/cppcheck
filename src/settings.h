@@ -65,6 +65,10 @@ public:
         Default value is 0. */
     int _exitCode;
 
+    /** The output format in which the errors are printed in text mode,
+        e.g. "{severity} {file}:{line} {message} {id}" */
+    std::string _outputFormat;
+
 #ifdef __GNUC__
     /** show timing information */
     bool _showtime;

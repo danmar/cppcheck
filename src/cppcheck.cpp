@@ -172,7 +172,22 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             _settings._includePaths.push_back(path);
         }
 
-// Include paths
+
+        // Output formatter
+        else if (strcmp(argv[i], "--template") == 0)
+        {
+            // "--template path/"
+            if (strcmp(argv[i], "--template") == 0)
+            {
+                ++i;
+                if (i >= argc)
+                    return "cppcheck: argument to '--template' is missing\n";
+
+                _settings._outputFormat = argv[i];
+            }
+        }
+
+        // Include paths
         else if (strcmp(argv[i], "-j") == 0 ||
                  strncmp(argv[i], "-j", 2) == 0)
         {
@@ -308,6 +323,9 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
         "    -q, --quiet          Only print error messages\n"
         "    -s, --style          Check coding style\n"
+        "    --template '[text]'  Format the error messages. E.g.\n"
+        "                         '{file}:{line},{severity},{id},{message}' or\n"
+        "                         '{file}({line}):({severity}) {message}'\n"
         "    --unused-functions   Check if there are unused functions\n"
         "    -v, --verbose        More detailed error reports\n"
         "    --version            Print out version number\n"

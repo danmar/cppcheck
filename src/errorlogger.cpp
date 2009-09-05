@@ -158,15 +158,50 @@ std::string ErrorLogger::ErrorMessage::toXML() const
     return xml.str();
 }
 
-std::string ErrorLogger::ErrorMessage::toText() const
+void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
 {
-    std::ostringstream text;
-    if (!_callStack.empty())
-        text << callStackToString(_callStack) << ": ";
-    if (!_severity.empty())
-        text << "(" << _severity << ") ";
-    text << _msg;
-    return text.str();
+    std::string::size_type index = 0;
+    while ((index = source.find(searchFor, index)) != std::string::npos)
+    {
+        source.replace(index, searchFor.length(), replaceWith);
+        index += replaceWith.length() - searchFor.length() + 1;
+    }
+}
+
+std::string ErrorLogger::ErrorMessage::toText(const std::string &outputFormat) const
+{
+    if (outputFormat.length() == 0)
+    {
+        std::ostringstream text;
+        if (!_callStack.empty())
+            text << callStackToString(_callStack) << ": ";
+        if (!_severity.empty())
+            text << "(" << _severity << ") ";
+        text << _msg;
+        return text.str();
+    }
+    else
+    {
+        std::string result = outputFormat;
+        findAndReplace(result, "{id}", _id);
+        findAndReplace(result, "{severity}", _severity);
+        findAndReplace(result, "{message}", _msg);
+
+        if (!_callStack.empty())
+        {
+            std::ostringstream oss;
+            oss << _callStack.back().line;
+            findAndReplace(result, "{line}", oss.str());
+            findAndReplace(result, "{file}", _callStack.back().getfile());
+        }
+        else
+        {
+            findAndReplace(result, "{file}", "");
+            findAndReplace(result, "{line}", "");
+        }
+
+        return result;
+    }
 }
 
 void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const Token *tok, const char severity[], const std::string &msg, const std::string &id)

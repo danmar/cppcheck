@@ -53,6 +53,7 @@ private:
         TEST_CASE(xml);
 
         TEST_CASE(include);
+        TEST_CASE(templateFormat);
     }
 
     void linenumbers()
@@ -104,6 +105,20 @@ private:
         ASSERT_EQUALS("[ab/ef.h:0]: ", errmsg.toText());
     }
 
+    void templateFormat()
+    {
+        ErrorLogger::ErrorMessage errmsg;
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.file = "some/{file}file.cpp";
+        loc.line = 10;
+        errmsg._callStack.push_back(loc);
+        errmsg._id = "testId";
+        errmsg._severity = "testSeverity";
+        errmsg._msg = "long testMessage";
+        ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"testSeverity\" msg=\"long testMessage\"/>", errmsg.toXML());
+        ASSERT_EQUALS("[some/{file}file.cpp:10]: (testSeverity) long testMessage", errmsg.toText());
+        ASSERT_EQUALS("testId-some/{file}file.cpp,testSeverity.10?{long testMessage}", errmsg.toText("{id}-{file},{severity}.{line}?{{message}}"));
+    }
 };
 
 REGISTER_TEST(TestCppcheck)

@@ -111,6 +111,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>-j[jobs]</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--style</option></arg>
+      <arg choice="opt"><option>--template ['text']</option></arg>
       <arg choice="opt"><option>--unused-functions</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
@@ -198,6 +199,12 @@ files, this is not needed.</para>
         <term><option>--style</option></term>
         <listitem>
           <para>Check coding style.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--template ['text']</option></term>
+        <listitem>
+          <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'</para>
         </listitem>
       </varlistentry>
       <varlistentry>

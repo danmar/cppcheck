@@ -66,7 +66,21 @@ public:
         static std::string getXMLHeader();
         static std::string getXMLFooter();
 
-        std::string toText() const;
+        /**
+         * Format the error message into a string.
+         * @param outputFormat Empty string to use default output format
+         * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
+         */
+        std::string toText(const std::string &outputFormat = "") const;
+
+        /**
+         * Replace all occurances of searchFor with replaceWith in the
+         * given source.
+         * @param source The string to modify
+         * @param searchFor What should be searched for
+         * @param replaceWith What will replace the found item
+         */
+        static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
         std::string serialize() const;
         bool deserialize(const std::string &data);
         std::list<FileLocation> _callStack;
