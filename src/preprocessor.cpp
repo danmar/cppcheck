@@ -643,9 +643,15 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
                     break;
                 if (*it == "1")
                     continue;
-                if (! def.empty())
-                    def += ";";
-                def += *it;
+
+                // don't add "T;T":
+                // treat two and more similar nested conditions as one
+                if (def != *it)
+                {
+                    if (! def.empty())
+                        def += ";";
+                    def += *it;
+                }
             }
 
             if (std::find(ret.begin(), ret.end(), def) == ret.end())
