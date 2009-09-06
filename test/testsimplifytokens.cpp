@@ -64,6 +64,7 @@ private:
         TEST_CASE(sizeof6);
         TEST_CASE(sizeof7);
         TEST_CASE(sizeof8);
+        TEST_CASE(sizeof9);
         TEST_CASE(casting);
 
         TEST_CASE(template1);
@@ -609,6 +610,40 @@ private:
             std::ostringstream oss;
             oss << sizeof(void *);
             ASSERT_EQUALS(" void f ( ) { char * ptrs ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+        }
+    }
+
+    void sizeof9()
+    {
+        // ticket #487
+        {
+            const char code[] = "const char *str = \"1\"; sizeof(str);";
+
+            const char *str = "1";
+            std::ostringstream expected;
+            expected << " const char * str ; str = \"1\" ; " << sizeof(str) << " ;";
+
+           TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
+            const char code[] = "const char str[] = \"1\"; sizeof(str);";
+
+            const char str[] = "1";
+            std::ostringstream expected;
+            expected << " const char * str ; str = \"1\" ; " << sizeof(str) << " ;";
+
+            TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
+            const char code[] = "const char str[] = {'1'}; sizeof(str);";
+
+            const char str[] = {'1'};
+            std::ostringstream expected;
+            expected << " const char * str ; str = { '1' } ; " << sizeof(str) << " ;";
+
+            TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
     }
 
