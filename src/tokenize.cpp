@@ -3370,6 +3370,7 @@ void Tokenizer::simplifyNestedStrcat()
         Token *end   = tok2->next()->link()->next();
         Token *endOfFirstArg = NULL;
         std::stack<Token *> brackets;
+        unsigned int lineno = tok->next()->linenr();
 
         // copy tokens to new place
         for (Token *cur = tok2; cur != end; cur = cur->next())
@@ -3387,6 +3388,10 @@ void Tokenizer::simplifyNestedStrcat()
             {
                 insertPos->varId(cur->varId());
             }
+
+            // use line number of first strcat token for all new
+            // tokens
+            insertPos->linenr(lineno);
 
             // linkify braces
             if (insertPos->str() == "(")
