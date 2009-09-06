@@ -925,30 +925,56 @@ private:
 
     void template_default_parameter()
     {
-        const char code[] = "template <class T, int n=3>\n"
-                            "class A\n"
-                            "{ T ar[n]; };\n"
-                            "\n"
-                            "void f()\n"
-                            "{\n"
-                            "    A<int,2> a1;\n"
-                            "    A<int> a2;\n"
-                            "}\n";
+        {
+            const char code[] = "template <class T, int n=3>\n"
+                                "class A\n"
+                                "{ T ar[n]; };\n"
+                                "\n"
+                                "void f()\n"
+                                "{\n"
+                                "    A<int,2> a1;\n"
+                                "    A<int> a2;\n"
+                                "}\n";
 
-        // The expected result..
-        const std::string expected(" template < class T , int n >"
-                                   " class A"
-                                   " { T ar [ n ] ; } ;"
-                                   " void f ( )"
-                                   " {"
-                                   " A<int,2> a1 ;"
-                                   " A<int,3> a2 ;"
-                                   " }"
-                                   " class A<int,2>"
-                                   " { int ar [ 2 ] ; }"
-                                   " class A<int,3>"
-                                   " { int ar [ 3 ] ; }");
-        ASSERT_EQUALS(expected, sizeof_(code));
+            // The expected result..
+            const std::string expected(" template < class T , int n >"
+                                       " class A"
+                                       " { T ar [ n ] ; } ;"
+                                       " void f ( )"
+                                       " {"
+                                       " A<int,2> a1 ;"
+                                       " A<int,3> a2 ;"
+                                       " }"
+                                       " class A<int,2>"
+                                       " { int ar [ 2 ] ; }"
+                                       " class A<int,3>"
+                                       " { int ar [ 3 ] ; }");
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+        {
+            const char code[] = "template <class T, int n1=3, int n2=2>\n"
+                                "class A\n"
+                                "{ T ar[n1+n2]; };\n"
+                                "\n"
+                                "void f()\n"
+                                "{\n"
+                                "    A<int> a1;\n"
+                                "    A<int,3> a2;\n"
+                                "}\n";
+
+            // The expected result..
+            const std::string expected(" template < class T , int n1 , int n2 >"
+                                       " class A"
+                                       " { T ar [ n1 + n2 ] ; } ;"
+                                       " void f ( )"
+                                       " {"
+                                       " A<int,3,2> a1 ;"
+                                       " A<int,3,2> a2 ;"
+                                       " }"
+                                       " class A<int,3,2>"
+                                       " { int ar [ 5 ] ; }");
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 
     void template_typename()

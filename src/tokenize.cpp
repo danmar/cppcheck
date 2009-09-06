@@ -512,8 +512,10 @@ void Tokenizer::simplifyTemplates()
 
         if (Token::simpleMatch(tok, "template <"))
         {
-            while (tok->str() != ">")
+            while (tok && tok->str() != ">")
                 tok = tok->next();
+            if (!tok)
+                break;
         }
     }
 
@@ -582,47 +584,69 @@ void Tokenizer::simplifyTemplates()
     // Template arguments with default values
     for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
     {
-        Token *eq = 0;
-        std::string pattern;
+        std::list<Token *> eq;
+        unsigned int templatepar = 1;
+        std::string classname;
         for (Token *tok = *iter1; tok; tok = tok->next())
         {
             if (tok->str() == ">")
+            {
+                if (Token::Match(tok, "> class %var%"))
+                    classname = tok->strAt(2);
                 break;
+            }
 
             if (tok->str() == ",")
-            {
-                if (pattern.empty())
-                    pattern = " < ";
-                else
-                    pattern += "%any% , ";
-            }
-            if (tok->str() == "=")
-            {
-                if (Token::Match(tok, "= %any% > class %var% {"))
-                {
-                    pattern = tok->strAt(4) + pattern + "%any% >";
-                    eq = tok;
-                }
-                break;
-            }
+                ++templatepar;
+
+            else if (tok->str() == "=")
+                eq.push_back(tok);
         }
-        if (!eq || pattern.empty())
+        if (eq.empty() || classname.empty())
             continue;
 
         for (std::list<Token *>::iterator iter2 = used.begin(); iter2 != used.end(); ++iter2)
         {
-            if (Token::Match(*iter2, pattern.c_str()))
+            Token *tok = *iter2;
+
+            if (!Token::Match(tok, (classname + " < %any%").c_str()))
+                continue;
+
+            // count the parameters..
+            unsigned int usedpar = 1;
+            for (tok = tok->tokAt(3); tok; tok = tok->tokAt(2))
             {
-                Token *tok = *iter2;
-                while (tok->next()->str() != ">")
+                if (tok->str() == ">")
+                    break;
+
+                if (tok->str() == ",")
+                    ++usedpar;
+
+                else
+                    break;
+            }
+            if (tok && tok->str() == ">")
+            {
+                tok = tok->previous();
+                std::list<Token *>::const_iterator it = eq.begin();
+                for (unsigned int i = (templatepar - eq.size()); it != eq.end() && i < usedpar; ++i)
+                    ++it;
+                while (it != eq.end())
+                {
+                    tok->insertToken(",");
                     tok = tok->next();
-                tok->insertToken(eq->strAt(1));
-                tok->insertToken(",");
+                    tok->insertToken((*it)->strAt(1));
+                    tok = tok->next();
+                    ++it;
+                }
             }
         }
 
-        eq->deleteThis();
-        eq->deleteThis();
+        for (std::list<Token *>::iterator it = eq.begin(); it != eq.end(); ++it)
+        {
+            (*it)->deleteThis();
+            (*it)->deleteThis();
+        }
     }
 
 
