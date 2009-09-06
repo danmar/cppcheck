@@ -117,6 +117,11 @@ private:
 #endif
 
     /**
+     * Replace sizeof() to appropriate size.
+     */
+    void simplifySizeof();
+
+    /**
      * Simplify variable declarations
      */
     void simplifyVarDecl();

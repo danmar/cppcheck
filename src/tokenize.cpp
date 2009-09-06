@@ -1249,112 +1249,8 @@ bool Tokenizer::createLinks()
     return true;
 }
 
-void Tokenizer::simplifyTokenList()
+void Tokenizer::simplifySizeof()
 {
-    simplifyNamespaces();
-
-    simplifyGoto();
-
-    // Combine wide strings
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        while (tok->str() == "L" && tok->next() && tok->next()->str()[0] == '"')
-        {
-            // Combine 'L "string"'
-            tok->str(tok->next()->str());
-            tok->deleteNext();
-        }
-    }
-
-    // Combine strings
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        while (tok->str()[0] == '"' && tok->next() && tok->next()->str()[0] == '"')
-        {
-            // Two strings after each other, combine them
-            tok->concatStr(tok->next()->str());
-            tok->deleteNext();
-        }
-    }
-
-    // Remove unwanted keywords
-    static const char * const unwantedWords[] = { "unsigned", "unlikely", "likely" };
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        for (unsigned ui = 0; ui < sizeof(unwantedWords) / sizeof(unwantedWords[0]) && tok->next(); ui++)
-        {
-            if (tok->next()->str() == unwantedWords[ui])
-            {
-                tok->deleteNext();
-                break;
-            }
-        }
-        if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
-        {
-            unsigned int parlevel = 0;
-            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")")
-                {
-                    if (parlevel <= 1)
-                        break;
-                    --parlevel;
-                }
-                if (parlevel == 1 && tok2->str() == ",")
-                {
-                    if (Token::Match(tok2, ", %num% )"))
-                    {
-                        tok->deleteNext();
-                        Token::eraseTokens(tok2->previous(), tok2->tokAt(2));
-                    }
-                    break;
-                }
-            }
-        }
-    }
-
-    // Convert + + into + and + - into -
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        while (tok->next())
-        {
-            if (tok->str() == "+")
-            {
-                if (tok->next()->str() == "+")
-                {
-                    tok->deleteNext();
-                    continue;
-                }
-                else if (tok->next()->str() == "-")
-                {
-                    tok->str("-");
-                    tok->deleteNext();
-                    continue;
-                }
-            }
-            else if (tok->str() == "-")
-            {
-                if (tok->next()->str() == "-")
-                {
-                    tok->str("+");
-                    tok->deleteNext();
-                    continue;
-                }
-                else if (tok->next()->str() == "+")
-                {
-                    tok->deleteNext();
-                    continue;
-                }
-            }
-
-            break;
-        }
-    }
-
-
-
     // Fill the map _typeSize..
     _typeSize.clear();
     _typeSize["char"] = sizeof(char);
@@ -1553,6 +1449,113 @@ void Tokenizer::simplifyTokenList()
             }
         }
     }
+}
+
+void Tokenizer::simplifyTokenList()
+{
+    simplifyNamespaces();
+
+    simplifyGoto();
+
+    // Combine wide strings
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (tok->str() == "L" && tok->next() && tok->next()->str()[0] == '"')
+        {
+            // Combine 'L "string"'
+            tok->str(tok->next()->str());
+            tok->deleteNext();
+        }
+    }
+
+    // Combine strings
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (tok->str()[0] == '"' && tok->next() && tok->next()->str()[0] == '"')
+        {
+            // Two strings after each other, combine them
+            tok->concatStr(tok->next()->str());
+            tok->deleteNext();
+        }
+    }
+
+    // Remove unwanted keywords
+    static const char * const unwantedWords[] = { "unsigned", "unlikely", "likely" };
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        for (unsigned ui = 0; ui < sizeof(unwantedWords) / sizeof(unwantedWords[0]) && tok->next(); ui++)
+        {
+            if (tok->next()->str() == unwantedWords[ui])
+            {
+                tok->deleteNext();
+                break;
+            }
+        }
+        if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
+        {
+            unsigned int parlevel = 0;
+            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+                if (parlevel == 1 && tok2->str() == ",")
+                {
+                    if (Token::Match(tok2, ", %num% )"))
+                    {
+                        tok->deleteNext();
+                        Token::eraseTokens(tok2->previous(), tok2->tokAt(2));
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    // Convert + + into + and + - into -
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (tok->next())
+        {
+            if (tok->str() == "+")
+            {
+                if (tok->next()->str() == "+")
+                {
+                    tok->deleteNext();
+                    continue;
+                }
+                else if (tok->next()->str() == "-")
+                {
+                    tok->str("-");
+                    tok->deleteNext();
+                    continue;
+                }
+            }
+            else if (tok->str() == "-")
+            {
+                if (tok->next()->str() == "-")
+                {
+                    tok->str("+");
+                    tok->deleteNext();
+                    continue;
+                }
+                else if (tok->next()->str() == "+")
+                {
+                    tok->deleteNext();
+                    continue;
+                }
+            }
+
+            break;
+        }
+    }
+
+    simplifySizeof();
 
     // Replace constants..
     for (Token *tok = _tokens; tok; tok = tok->next())
