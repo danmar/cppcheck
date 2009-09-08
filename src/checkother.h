@@ -67,7 +67,10 @@ public:
             checkOther.checkConstantFunctionParameter();
             checkOther.checkStructMemberUsage();
             checkOther.checkIncompleteStatement();
-            checkOther.postIncrement();
+            if (settings->_showAll)
+            {
+                checkOther.postIncrement();
+            }
         }
 
         checkOther.strPlusChar();
