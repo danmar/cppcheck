@@ -114,6 +114,10 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--unused-functions") == 0)
             _settings._unusedFunctions = true;
 
+        // Append userdefined code to checked source code
+        else if (strncmp(argv[i], "--append=", 9) == 0)
+            _settings.append(9 + argv[i]);
+
 #ifdef __GNUC__
         // show timing information..
         else if (strcmp(argv[i], "--showtime") == 0)
@@ -294,15 +298,18 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         oss <<   "Cppcheck - A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
-        "    cppcheck [--all] [--auto-dealloc file.lst] [--error-exitcode=[n]] [--force]\n"
-        "             [--help] [-Idir] [-j [jobs]] [--quiet] [--style] [--unused-functions]\n"
-        "             [--verbose] [--version] [--xml] [file or path1] [file or path] ...\n"
+        "    cppcheck [--all] [--append=file] [--auto-dealloc file.lst]\n"
+        "             [--error-exitcode=[n]] [--force] [--help] [-Idir] [-j [jobs]]\n"
+        "             [--quiet] [--style] [--unused-functions] [--verbose] [--version]\n"
+        "             [--xml] [file or path1] [file or path] ...\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
         "Options:\n"
         "    -a, --all            Make the checking more sensitive. More bugs are\n"
         "                         detected, but there are also more false positives\n"
+        "    --append=file        This allows you to provide information about\n"
+        "                         functions by providing an implementation for these.\n"
         "    --auto-dealloc file  Suppress warnings about classes that have automatic\n"
         "                         deallocation.\n"
         "                         The classnames must be provided in plain text - one\n"
@@ -413,7 +420,7 @@ unsigned int CppCheck::check()
                 if (_settings._errorsOnly == false && it != configurations.begin())
                     _errorLogger->reportOut(std::string("Checking ") + fname + ": " + cfg + std::string("..."));
 
-                checkFile(codeWithoutCfg, _filenames[c].c_str());
+                checkFile(codeWithoutCfg + _settings.append(), _filenames[c].c_str());
                 ++checkCount;
             }
         }

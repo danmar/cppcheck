@@ -38,6 +38,9 @@ private:
     /** classes that are automaticly deallocated */
     std::list<std::string> _autoDealloc;
 
+    /** Code to append in the checks */
+    std::string _append;
+
 public:
     Settings();
     virtual ~Settings();
@@ -86,6 +89,12 @@ public:
 
     /** is a class automaticly deallocated? */
     bool isAutoDealloc(const char classname[]) const;
+
+    /** assign append code */
+    void append(const std::string &filename);
+
+    /** get append code */
+    std::string append() const;
 };
 
 /// @}

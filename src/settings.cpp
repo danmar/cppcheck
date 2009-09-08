@@ -19,6 +19,7 @@
 #include "settings.h"
 
 #include <algorithm>
+#include <fstream>
 
 Settings::Settings()
 {
@@ -35,6 +36,7 @@ Settings::Settings()
 #ifdef __GNUC__
     _showtime = false;
 #endif
+    _append = "";
 }
 
 Settings::~Settings()
@@ -67,3 +69,19 @@ bool Settings::isAutoDealloc(const char classname[]) const
     return (std::find(_autoDealloc.begin(), _autoDealloc.end(), classname) != _autoDealloc.end());
 }
 
+
+void Settings::append(const std::string &filename)
+{
+    _append = "\n";
+    std::ifstream fin(filename.c_str());
+    std::string line;
+    while (std::getline(fin, line))
+    {
+        _append += line + "\n";
+    }
+}
+
+std::string Settings::append() const
+{
+    return _append;
+}
