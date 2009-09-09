@@ -139,7 +139,7 @@ int Tokenizer::sizeOfType(const char type[]) const
 // InsertTokens - Copy and insert tokens
 //---------------------------------------------------------------------------
 
-void Tokenizer::insertTokens(Token *dest, Token *src, unsigned int n)
+void Tokenizer::insertTokens(Token *dest, const Token *src, unsigned int n)
 {
     while (n > 0)
     {

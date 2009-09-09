@@ -279,7 +279,7 @@ private:
      */
     void simplifyTemplates();
 
-    void insertTokens(Token *dest, Token *src, unsigned int n);
+    void insertTokens(Token *dest, const Token *src, unsigned int n);
 
     /**
      * Setup links for tokens so that one can call Token::link().
