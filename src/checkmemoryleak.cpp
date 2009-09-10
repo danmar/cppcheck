@@ -275,7 +275,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
 
 //--------------------------------------------------------------------------
 
-void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string varname, AllocType alloctype, bool all)
+void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype, bool all)
 {
     if (alloctype == CheckMemoryLeak::File ||
         alloctype == CheckMemoryLeak::Pipe ||
@@ -1662,7 +1662,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens, bool all)
 
 
 // Check for memory leaks for a function variable.
-void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string varname, unsigned int varid, bool classmember, unsigned int sz)
+void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz)
 {
     std::list<const Token *> callstack;
 
