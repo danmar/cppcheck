@@ -99,7 +99,7 @@ bool MathLib::isInt(const std::string & s)
     {
         Mode = eHex;
     }
-    else if (s.find("0", n, 1) != std::string::npos && std::isdigit(s[n+1]))
+    else if (s.length() > 1 && s[0] == '0' && std::isdigit(s[1]))
     {
         Mode = eOctal;
     }
