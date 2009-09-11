@@ -433,37 +433,57 @@ std::string Preprocessor::removeComments(const std::string &str)
     return code.str();
 }
 
+
+
+static void _removeAsm(std::string &str, const std::string::size_type pos)
+{
+    unsigned int newlines = 0;
+    bool instr = false;
+    int parlevel = 0;
+    std::string::size_type pos2 = pos + 1;
+    while (pos2 < str.length())
+    {
+        if (str[pos2] == '\"')
+            instr = !instr;
+
+        else if (str[pos2] == '\n')
+            ++newlines;
+
+        else if (!instr)
+        {
+            if (str[pos2] == '(')
+                ++parlevel;
+            else if (str[pos2] == ')')
+            {
+                if (parlevel <= 1)
+                    break;
+                --parlevel;
+            }
+        }
+
+        ++pos2;
+    }
+    str.erase(pos + 1, pos2 - pos);
+    str.insert(pos, std::string(newlines, '\n'));
+}
+
 void Preprocessor::removeAsm(std::string &str)
 {
     std::string::size_type pos = 0;
     while ((pos = str.find("\nasm(", pos)) != std::string::npos)
-    {
-        unsigned int newlines = 0;
-        std::string::size_type pos2 = pos + 5;
-        while (pos2 < str.length() && str[pos2] != ')')
-        {
-            if (str[pos2] == '\n')
-                ++newlines;
-            ++pos2;
-        }
-        str.erase(pos + 1, pos2 - pos);
-        str.insert(pos, std::string(newlines, '\n'));
-    }
+        _removeAsm(str, pos);
+
+    pos = 0;
+    while ((pos = str.find("\nasm (", pos)) != std::string::npos)
+        _removeAsm(str, pos);
 
     pos = 0;
     while ((pos = str.find("\nasm __volatile(", pos)) != std::string::npos)
-    {
-        unsigned int newlines = 0;
-        std::string::size_type pos2 = pos + 5;
-        while (pos2 < str.length() && str[pos2] != ')')
-        {
-            if (str[pos2] == '\n')
-                ++newlines;
-            ++pos2;
-        }
-        str.erase(pos + 1, pos2 - pos);
-        str.insert(pos, std::string(newlines, '\n'));
-    }
+        _removeAsm(str, pos);
+
+    pos = 0;
+    while ((pos = str.find("\nasm __volatile (", pos)) != std::string::npos)
+        _removeAsm(str, pos);
 }
 
 
