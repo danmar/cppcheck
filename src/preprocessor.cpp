@@ -433,6 +433,40 @@ std::string Preprocessor::removeComments(const std::string &str)
     return code.str();
 }
 
+void Preprocessor::removeAsm(std::string &str)
+{
+    std::string::size_type pos = 0;
+    while ((pos = str.find("\nasm(", pos)) != std::string::npos)
+    {
+        unsigned int newlines = 0;
+        std::string::size_type pos2 = pos + 5;
+        while (pos2 < str.length() && str[pos2] != ')')
+        {
+            if (str[pos2] == '\n')
+                ++newlines;
+            ++pos2;
+        }
+        str.erase(pos + 1, pos2 - pos);
+        str.insert(pos, std::string(newlines, '\n'));
+    }
+
+    pos = 0;
+    while ((pos = str.find("\nasm __volatile(", pos)) != std::string::npos)
+    {
+        unsigned int newlines = 0;
+        std::string::size_type pos2 = pos + 5;
+        while (pos2 < str.length() && str[pos2] != ')')
+        {
+            if (str[pos2] == '\n')
+                ++newlines;
+            ++pos2;
+        }
+        str.erase(pos + 1, pos2 - pos);
+        str.insert(pos, std::string(newlines, '\n'));
+    }
+}
+
+
 void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::string> &result, const std::string &filename, const std::list<std::string> &includePaths)
 {
     std::list<std::string> configs;
@@ -517,6 +551,9 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
 
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
+
+    // Remove asm(...)
+    removeAsm(processedFile);
 
     // Replace "defined A" with "defined(A)"
     {

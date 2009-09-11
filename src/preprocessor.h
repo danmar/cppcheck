@@ -126,6 +126,13 @@ private:
     static std::string getdef(std::string line, bool def);
 
 public:
+
+    /**
+     * Remove asm(...) from a string
+     * @param str Code
+     */
+    static void removeAsm(std::string &str);
+
     /**
      * Evaluate condition 'numerically'
      * @param cfg configuration

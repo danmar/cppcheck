@@ -101,6 +101,8 @@ private:
         TEST_CASE(multiline4);
         TEST_CASE(multiline5);
 
+        TEST_CASE(remove_asm);
+
         TEST_CASE(if_defined);      // "#if defined(AAA)" => "#ifdef AAA"
         TEST_CASE(if_not_defined);  // "#if !defined(AAA)" => "#ifndef AAA"
 
@@ -760,6 +762,17 @@ private:
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n\nint main(){\nint a = 4;\n}\n", actual[""]);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void remove_asm()
+    {
+        std::string str1("\nasm(\n\n\n);");
+        Preprocessor::removeAsm(str1);
+        ASSERT_EQUALS("\n\n\n\n;", str1);
+
+        std::string str2("\nasm __volatile(\n\n\n);");
+        Preprocessor::removeAsm(str2);
+        ASSERT_EQUALS("\n\n\n\n;", str2);
     }
 
     void if_defined()
