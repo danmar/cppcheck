@@ -384,6 +384,9 @@ private:
 
         // exit..
         ASSERT_EQUALS(";;exit;", getcode("char *s; exit(0);", "s"));
+        ASSERT_EQUALS(";;exit;", getcode("char *s; _exit(0);", "s"));
+        ASSERT_EQUALS(";;exit;", getcode("char *s; abort();", "s"));
+        ASSERT_EQUALS(";;exit;", getcode("char *s; err(0);", "s"));
         ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { exit(0); }", "s"));
 
         // open/close

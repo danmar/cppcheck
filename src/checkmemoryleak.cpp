@@ -943,11 +943,25 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             addtoken(tok->strAt(0));
 
         // exit..
-        if (Token::Match(tok->previous(), "[{};] exit ( %any% ) ;"))
+        if (Token::Match(tok->previous(), "[{};] exit|_exit|_Exit ( %any% ) ;"))
         {
             addtoken("exit");
             tok = tok->tokAt(3);
         }
+        else if (Token::simpleMatch(tok, "abort ( ) ;"))
+        {
+            addtoken("exit");
+            tok = tok->tokAt(2);
+        }
+        else if (Token::Match(tok, "err|verr|errx|verrx ("))
+        {
+            addtoken("exit");
+            while (tok->next() && tok->next()->str() != ";")
+            {
+                tok = tok->next();
+            }
+        }
+
 
         // Assignment..
         if (varid)
