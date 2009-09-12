@@ -103,6 +103,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg choice="opt"><option>--all</option></arg>
+      <arg choice="opt"><option>--append [file]</option></arg>
       <arg choice="opt"><option>--auto-dealloc [file]</option></arg>
       <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
       <arg choice="opt"><option>--force</option></arg>
@@ -142,6 +143,12 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
           found a bug. When this option is given, all messages are shown.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><option>--append=[file]</option></term>
+        <listitem>
+          <para>This allows you to provide information about functions by providing an implementation for these.</para>
+        </listitem>
+      </varlistentry>      
       <varlistentry>
         <term><option>--auto-dealloc [file]</option></term>
         <listitem>
