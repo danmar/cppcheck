@@ -115,6 +115,8 @@ private:
 
         // Syntax error
         TEST_CASE(argumentsWithSameName)
+
+        TEST_CASE(simplifyAtol)
     }
 
     std::string tok(const char code[])
@@ -1481,6 +1483,14 @@ private:
                                 "{}\n";
             ASSERT_EQUALS("void foo ( int x , y ) int x ; { }", tok(code));
         }
+    }
+
+    void simplifyAtol()
+    {
+        ASSERT_EQUALS("a = std :: atol ( x ) ;", tok("a = std::atol(x);"));
+        ASSERT_EQUALS("a = atol ( \"text\" ) ;", tok("a = atol(\"text\");"));
+        ASSERT_EQUALS("a = 0 ;", tok("a = std::atol(\"0\");"));
+        ASSERT_EQUALS("a = 10 ;", tok("a = atol(\"0xa\");"));
     }
 };
 

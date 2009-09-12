@@ -35,6 +35,7 @@ private:
         TEST_CASE(nextprevious);
         TEST_CASE(multiCompare);
         TEST_CASE(getStrLength);
+        TEST_CASE(strValue);
     }
 
     void nextprevious()
@@ -96,6 +97,15 @@ private:
         Tokenizer::deleteTokens(tok);
     }
 
+    void strValue()
+    {
+        Token tok;
+        tok.str("\"\"");
+        ASSERT_EQUALS(std::string(""), tok.strValue());
+
+        tok.str("\"0\"");
+        ASSERT_EQUALS(std::string("0"), tok.strValue());
+    }
 };
 
 REGISTER_TEST(TestTOKEN)

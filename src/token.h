@@ -266,6 +266,14 @@ public:
      **/
     static void createMutualLinks(Token *begin, Token *end);
 
+    /**
+     * This can be called only for tokens that are strings, else
+     * the assert() is called. If Token is e.g. '"hello"', this will return
+     * 'hello' (removing the double quotes).
+     * @return String value
+     */
+    std::string strValue();
+
 private:
     void next(Token *next)
     {

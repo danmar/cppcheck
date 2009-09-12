@@ -1479,6 +1479,9 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
+    // Convert e.g. atol("0") into 0
+    simplifyMathFunctions();
+
     // Remove unwanted keywords
     static const char * const unwantedWords[] = { "unsigned", "unlikely", "likely" };
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -3694,6 +3697,44 @@ void Tokenizer::syntaxError(const Token *tok, char c)
                                   std::string("Invalid number of character (") + c + "). Can't process file.",
                                   "syntaxError"));
 
+}
+
+bool Tokenizer::simplifyMathFunctions()
+{
+    bool result = false;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "atol ( %str% )"))
+        {
+            if (!MathLib::isInt(tok->tokAt(2)->strValue()))
+            {
+                // Ignore strings which we can't convert
+                continue;
+            }
+
+            if (tok->previous() &&
+                Token::simpleMatch(tok->previous()->previous(), "std ::"))
+            {
+                // Delete "std ::"
+                tok = tok->previous()->previous();
+                tok->deleteNext();
+                tok->deleteThis();
+            }
+
+            // Delete atol(
+            tok->deleteNext();
+            tok->deleteThis();
+
+            // Convert string into a number
+            tok->str(MathLib::toString(MathLib::toLongNumber(tok->strValue())));
+
+            // Delete remaining )
+            tok->deleteNext();
+            result = true;
+        }
+    }
+
+    return result;
 }
 
 void Tokenizer::simplifyComma()

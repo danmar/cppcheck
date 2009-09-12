@@ -69,6 +69,14 @@ void Token::concatStr(std::string const& b)
     _str.append(b.begin() + 1, b.end());
 }
 
+std::string Token::strValue()
+{
+    assert(_str.length() >= 2);
+    assert(_str[0] == '"');
+    assert(_str[_str.length()-1] == '"');
+    return _str.substr(1, _str.length() - 2);
+}
+
 void Token::deleteNext()
 {
     Token *n = _next;
