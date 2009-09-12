@@ -1986,6 +1986,9 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<const cha
 
 void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVarname)
 {
+    if (!_settings->_showAll)
+        return;
+
     const char *varname = tokVarname->strAt(0);
 
     // Check if member variable has been allocated and deallocated..
@@ -2075,7 +2078,7 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
         functionToken = Tokenizer::findClassFunction(functionToken->next(), classname, "~| %var%", indent_);
     }
 
-    if (_settings->_showAll && Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No)
+    if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No)
     {
         memoryLeak(tokVarname, (std::string(classname) + "::" + varname).c_str(), Alloc, true);
     }

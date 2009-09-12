@@ -2361,6 +2361,8 @@ private:
         TEST_CASE(class10);
         TEST_CASE(class11);
 
+        TEST_CASE(use);
+
         TEST_CASE(free_member_in_sub_func);
     }
 
@@ -2574,6 +2576,23 @@ private:
               "A::A() : p(new int[10])\n"
               "{ }", true);
         ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
+    }
+
+
+    void use()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    Fred * fred;\n"
+              "    A();\n"
+              "};\n"
+              "A::A()\n"
+              "{\n"
+              "    fred = new Fred;\n"
+              "    list->push_back(fred);\n"
+              "}", true);
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
 
