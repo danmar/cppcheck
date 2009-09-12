@@ -58,13 +58,14 @@ private:
         TEST_CASE(uninitVarHeader3);    // Class is defined in header
         TEST_CASE(uninitVarPublished);  // Variables in the published section are auto-initialized
 
-
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
 
         TEST_CASE(operatorEq1);
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetOnClass);
+
+        TEST_CASE(this_subtraction);    // warn about "this-x"
     }
 
     // Check the operator Equal
@@ -723,6 +724,32 @@ private:
                       " memset(&fail, 0, sizeof(struct A));\n"
                       "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (error) Using 'memset' on struct that contains a 'std::string'\n", errout.str());
+    }
+
+
+    void checkThisSubtraction(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        settings._showAll = true;
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.thisSubtraction();
+    }
+
+    void this_subtraction()
+    {
+        checkThisSubtraction("; this-x ;");
+        ASSERT_EQUALS("[test.cpp:1]: (possible style) Suspicious pointer subtraction\n", errout.str());
     }
 };
 

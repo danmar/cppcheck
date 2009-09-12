@@ -851,6 +851,21 @@ void CheckClass::virtualDestructor()
 }
 //---------------------------------------------------------------------------
 
+void CheckClass::thisSubtractionError(const Token *tok)
+{
+    reportError(tok, Severity::possibleStyle, "thisSubtraction", "Suspicious pointer subtraction");
+}
+
+void CheckClass::thisSubtraction()
+{
+    const Token *tok = Token::findmatch(_tokenizer->tokens(), "this - %var%");
+    if (tok)
+    {
+        thisSubtractionError(tok);
+    }
+}
+
+
 
 
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname)

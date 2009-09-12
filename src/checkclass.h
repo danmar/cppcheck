@@ -57,6 +57,8 @@ public:
             checkClass.constructors();
             checkClass.operatorEq();
             checkClass.privateFunctions();
+            if (settings->_showAll)
+                checkClass.thisSubtraction();
         }
         checkClass.virtualDestructor();
     }
@@ -79,6 +81,7 @@ public:
     // The destructor in a base class should be virtual
     void virtualDestructor();
 
+    void thisSubtraction();
 private:
     class Var
     {
@@ -111,6 +114,7 @@ private:
     void memsetStructError(const Token *tok, const std::string &memfunc, const std::string &classname);
     void operatorEqReturnError(const Token *tok);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
+    void thisSubtractionError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -122,6 +126,7 @@ private:
         memsetStructError(0, "memfunc", "classname");
         operatorEqReturnError(0);
         virtualDestructorError(0, "Base", "Derived");
+        thisSubtractionError(0);
     }
 
     std::string name() const
