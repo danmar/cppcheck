@@ -1309,6 +1309,15 @@ private:
                                 "}\n";
             ASSERT_EQUALS(" void f ( ) { A a ; A b ; if ( a . f ) { a . f = b . f ; a . g = b . g ; } }", sizeof_(code));
         }
+
+        // keep the comma in template specifiers..
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  int a = b<T<char,3>, int>();\n"
+                                "}\n";
+            ASSERT_EQUALS(" void f ( ) { int a ; a = b < T < char , 3 > , int > ( ) ; }", sizeof_(code));
+        }
     }
 
     void conditionOperator()
