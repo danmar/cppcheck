@@ -3913,3 +3913,35 @@ void Tokenizer::simplifyComma()
 
     }
 }
+
+
+bool Tokenizer::validate() const
+{
+    std::stack<const Token *> linktok;
+
+    for (const Token *tok = tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[{(]"))
+        {
+            assert(tok->link() != 0);
+            linktok.push(tok);
+            continue;
+        }
+
+        else if (Token::Match(tok, "[})]"))
+        {
+            assert(tok->link() != 0);
+            assert(linktok.empty() == false);
+            assert(tok->link() == linktok.top());
+            assert(tok == tok->link()->link());
+            linktok.pop();
+            continue;
+        }
+
+        assert(tok->link() == 0);
+    }
+
+    assert(linktok.empty());
+
+    return true;
+}

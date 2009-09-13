@@ -305,6 +305,13 @@ private:
     /** Disable assignments.. */
     Tokenizer(const Tokenizer &);
 
+    /**
+     * assert that tokens are ok - used during debugging for example
+     * to catch problems in simplifyTokenList.
+     * @return always true.
+     */
+    bool validate() const;
+
     /** Disable assignment operator */
     void operator=(const Tokenizer &);
 
