@@ -504,10 +504,7 @@ size_t Token::getStrLength(const Token *tok)
     assert(tok != NULL);
 
     size_t len = 0;
-    const char *str = tok->strAt(0);
-
-    assert(str[0] == '"');
-    assert(str[strlen(str)-1] == '"');
+    const char *str = tok->strValue().c_str();
 
     while (*str)
     {
@@ -516,11 +513,6 @@ size_t Token::getStrLength(const Token *tok)
         ++str;
         ++len;
     }
-
-    assert(len >= 2);
-
-    // don't count quotes
-    len -= 2;
 
     return len;
 }
