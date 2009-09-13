@@ -83,18 +83,16 @@ private:
 
     void getStrLength()
     {
-        Token *tok = new Token();
+        Token tok;
 
-        tok->str("\"\"");
-        ASSERT_EQUALS(0, Token::getStrLength(tok));
+        tok.str("\"\"");
+        ASSERT_EQUALS(0, Token::getStrLength(&tok));
 
-        tok->str("\"test\"");
-        ASSERT_EQUALS(4, Token::getStrLength(tok));
+        tok.str("\"test\"");
+        ASSERT_EQUALS(4, Token::getStrLength(&tok));
 
-        tok->str("\"test \\\\test\"");
-        ASSERT_EQUALS(10, Token::getStrLength(tok));
-
-        Tokenizer::deleteTokens(tok);
+        tok.str("\"test \\\\test\"");
+        ASSERT_EQUALS(10, Token::getStrLength(&tok));
     }
 
     void strValue()
