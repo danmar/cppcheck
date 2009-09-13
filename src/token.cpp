@@ -69,7 +69,7 @@ void Token::concatStr(std::string const& b)
     _str.append(b.begin() + 1, b.end());
 }
 
-std::string Token::strValue()
+std::string Token::strValue() const
 {
     assert(_str.length() >= 2);
     assert(_str[0] == '"');

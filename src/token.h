@@ -272,7 +272,7 @@ public:
      * 'hello' (removing the double quotes).
      * @return String value
      */
-    std::string strValue();
+    std::string strValue() const;
 
 private:
     void next(Token *next)
