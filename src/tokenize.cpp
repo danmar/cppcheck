@@ -3699,9 +3699,8 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 
 }
 
-bool Tokenizer::simplifyMathFunctions()
+void Tokenizer::simplifyMathFunctions()
 {
-    bool result = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "atol ( %str% )"))
@@ -3730,11 +3729,8 @@ bool Tokenizer::simplifyMathFunctions()
 
             // Delete remaining )
             tok->deleteNext();
-            result = true;
         }
     }
-
-    return result;
 }
 
 void Tokenizer::simplifyComma()

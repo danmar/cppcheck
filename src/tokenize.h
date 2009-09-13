@@ -281,10 +281,8 @@ private:
 
     /**
      * Simplify e.g. 'atol("0")' into '0'
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
      */
-    bool simplifyMathFunctions();
+    void simplifyMathFunctions();
 
     void insertTokens(Token *dest, const Token *src, unsigned int n);
 
