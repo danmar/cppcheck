@@ -504,7 +504,8 @@ size_t Token::getStrLength(const Token *tok)
     assert(tok != NULL);
 
     size_t len = 0;
-    const char *str = tok->strValue().c_str();
+    const std::string strValue(tok->strValue());
+    const char *str = strValue.c_str();
 
     while (*str)
     {
