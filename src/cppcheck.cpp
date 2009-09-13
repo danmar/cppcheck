@@ -430,7 +430,7 @@ unsigned int CppCheck::check()
             _errorLogger->reportOut("Bailing out from checking " + fname + ": " + e.what());
         }
 
-        _errorLogger->reportStatus(c + 1, _filenames.size());
+        _errorLogger->reportStatus(c + 1, (unsigned int)_filenames.size());
     }
 
     // This generates false positives - especially for libraries

@@ -1373,7 +1373,7 @@ public:
                                 if (_variadic && i == _params.size() - 1)
                                 {
                                     str = "";
-                                    for (unsigned int j = _params.size() - 1; j < params2.size(); ++j)
+                                    for (unsigned int j = (unsigned int)_params.size() - 1; j < params2.size(); ++j)
                                     {
                                         if (optcomma || j > _params.size() - 1)
                                             str += ",";

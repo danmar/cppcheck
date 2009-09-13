@@ -304,6 +304,12 @@ private:
      */
     void updateClassList();
 
+    /** Disable assignments.. */
+    Tokenizer(const Tokenizer &);
+
+    /** Disable assignment operator */
+    void operator=(const Tokenizer &);
+
     Token *_tokens, *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
     std::vector<std::string> _files;

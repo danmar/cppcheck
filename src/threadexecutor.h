@@ -70,6 +70,12 @@ public:
     }
 #endif
 
+private:
+    /** disabled copy constructor */
+    ThreadExecutor(const ThreadExecutor &);
+
+    /** disabled assignment operator */
+    void operator=(const ThreadExecutor &);
 };
 
 #endif // THREADEXECUTOR_H

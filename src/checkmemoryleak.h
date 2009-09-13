@@ -56,6 +56,9 @@ private:
     /** Disable the default constructors */
     CheckMemoryLeak(const CheckMemoryLeak &);
 
+    /** disable assignment operator */
+    void operator=(const CheckMemoryLeak &);
+
     /**
      * Report error. Similar with the function Check::reportError
      * @param location the token where the error occurs

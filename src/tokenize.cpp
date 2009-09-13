@@ -839,7 +839,7 @@ void Tokenizer::updateClassList()
 
     // Locate class
     const Token *tok1 = tokens();
-    while ((tok1 = Token::findmatch(tok1, pattern_class)))
+    while ((tok1 = Token::findmatch(tok1, pattern_class)) != 0)
     {
         const char *className;
         className = tok1->strAt(1);

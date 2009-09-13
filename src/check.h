@@ -127,6 +127,9 @@ private:
         return (name() < other->name());
     }
 
+    /** disabled assignment operator */
+    void operator=(const Check &);
+
 };
 
 /// @}

@@ -276,7 +276,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             pattern << varnames << " [ " << strindex << " ]";
 
             int indentlevel2 = 0;
-            while ((tok2 = tok2->next()))
+            while ((tok2 = tok2->next()) != 0)
             {
                 if (tok2->str() == ";" && indentlevel2 == 0)
                     break;
@@ -429,7 +429,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 {
                     if (tok2->str()[0] == '\"')
                     {
-                        len += Token::getStrLength(tok2);
+                        len += (int)Token::getStrLength(tok2);
                     }
                 }
                 if (len >= (int)size)
