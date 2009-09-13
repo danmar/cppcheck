@@ -672,8 +672,18 @@ private:
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
-    }
 
+        {
+            // ticket #645
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    return dynamic_cast<Foo *>((bar()));\n"
+                                "}\n";
+            const std::string expected(" void f ( ) { return bar ( ) ; }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+    }
 
 
 

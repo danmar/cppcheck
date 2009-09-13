@@ -2263,19 +2263,12 @@ void Tokenizer::simplifyCasts()
 
             if (Token::simpleMatch(tok2, "> ("))
             {
-                Token::eraseTokens(tok, tok2->tokAt(2));
-                tok2 = tok;
-                int parlevel = 0;
-                while (tok2->next() && parlevel >= 0)
+                Token *closeBracket = tok2->next()->link();
+                if (closeBracket)
                 {
-                    tok2 = tok2->next();
-                    if (tok2->next()->str() == "(")
-                        ++parlevel;
-                    else if (tok2->next()->str() == ")")
-                        --parlevel;
+                    Token::eraseTokens(tok, tok2->tokAt(2));
+                    closeBracket->deleteThis();
                 }
-                if (tok2->next())
-                    tok2->deleteNext();
             }
         }
     }
