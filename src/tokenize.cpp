@@ -32,6 +32,7 @@
 #include <iostream>
 #include <sstream>
 #include <list>
+#include <cassert>
 #include <algorithm>
 #include <cctype>
 #include <stack>
@@ -793,6 +794,7 @@ void Tokenizer::simplifyTemplates()
                             }
                             else if (tok3->str() == "}")
                             {
+                                assert(braces.empty() == false);
                                 Token::createMutualLinks(braces.top(), _tokensBack);
                                 braces.pop();
                             }
@@ -802,12 +804,16 @@ void Tokenizer::simplifyTemplates()
                             }
                             else if (tok3->str() == ")")
                             {
+                                assert(brackets.empty() == false);
                                 Token::createMutualLinks(brackets.top(), _tokensBack);
                                 brackets.pop();
                             }
                         }
                     }
                 }
+
+                assert(braces.empty());
+                assert(brackets.empty());
             }
 
             // Replace all these template usages..
