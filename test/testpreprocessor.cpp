@@ -877,10 +877,19 @@ private:
 
     void macroInMacro()
     {
-        const char filedata[] = "#define A(m) long n = m; n++;\n"
-                                "#define B(n) A(n)\n"
-                                "B(0)";
-        ASSERT_EQUALS("\n\nlong n=0;n++;", OurPreprocessor::expandMacros(filedata));
+        {
+            const char filedata[] = "#define A(m) long n = m; n++;\n"
+                                    "#define B(n) A(n)\n"
+                                    "B(0)";
+            ASSERT_EQUALS("\n\nlong n=0;n++;", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            const char filedata[] = "#define A B\n"
+                                    "#define B 3\n"
+                                    "A";
+            TODO_ASSERT_EQUALS("\n\n3", OurPreprocessor::expandMacros(filedata));
+        }
     }
 
     void macro_mismatch()
