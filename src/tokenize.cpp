@@ -1642,7 +1642,8 @@ void Tokenizer::simplifyTokenList()
     // Replace NULL with 0..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok->str() == "NULL")
+        if (tok->str() == "NULL" ||
+            tok->str() == "'\\0'")
             tok->str("0");
     }
 
