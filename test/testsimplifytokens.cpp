@@ -79,6 +79,7 @@ private:
         TEST_CASE(template10);
         TEST_CASE(template11);
         TEST_CASE(template12);
+        TEST_CASE(template13);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_typename);
 
@@ -969,6 +970,33 @@ private:
                                    " class A<12,12,11> : public B < 12 , 12 , 0 >"
                                    " { }");
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template13()
+    {
+        const char code[] = "class BB {};\n"
+                            "\n"
+                            "template <class T>\n"
+                            "class AA\n"
+                            "{\n"
+                            "public:\n"
+                            "    static AA<T> create(T* newObject);\n"
+                            "};\n"
+                            "\n"
+                            "class CC { public: CC(AA<BB>, int) {} };\n"
+                            "\n"
+                            "class XX {\n"
+                            "    AA<CC> y;\n"
+                            "public:\n"
+                            "    XX();\n"
+                            "};\n"
+                            "\n"
+                            "XX::XX():\n"
+                            "    y(AA<CC>::create(new CC(AA<BB>(), 0)))\n"
+                            "    {}\n";
+
+        // Just run it and check that there are not assertions.
+        sizeof_(code);
     }
 
     void template_default_parameter()

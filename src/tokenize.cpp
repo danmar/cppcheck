@@ -718,12 +718,17 @@ void Tokenizer::simplifyTemplates()
 
             // Copy template..
             int _indentlevel = 0;
+            int _parlevel = 0;
             for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next())
             {
                 if (tok3->str() == "{")
                     ++_indentlevel;
                 else if (tok3->str() == "}")
                     --_indentlevel;
+                else if (tok3->str() == "(")
+                    ++_parlevel;
+                else if (tok3->str() == ")")
+                    --_parlevel;
 
                 // Start of template..
                 if (tok3 == tok)
@@ -732,7 +737,7 @@ void Tokenizer::simplifyTemplates()
                 }
 
                 // member function implemented outside class definition
-                else if (_indentlevel == 0 && Token::Match(tok3, (pattern + " :: %var% (").c_str()))
+                else if (_indentlevel == 0 && _parlevel == 0 && Token::Match(tok3, (pattern + " :: %var% (").c_str()))
                 {
                     addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
                     while (tok3->str() != "::")
