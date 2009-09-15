@@ -1420,6 +1420,7 @@ private:
 
         ASSERT_EQUALS("x = 1 + 2 * y ;", tok("x=1+2*y;"));
         ASSERT_EQUALS("x = 7 ;", tok("x=1+2*3;"));
+        ASSERT_EQUALS("x = 47185 ;", tok("x=(65536*72/100);"));
     }
 
 

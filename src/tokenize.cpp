@@ -3164,7 +3164,7 @@ bool Tokenizer::simplifyCalculations()
         }
 
         // (1-2)
-        if (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*]"))
+        if (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]"))
         {
             tok = tok->next();
 
