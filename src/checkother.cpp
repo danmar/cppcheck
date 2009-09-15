@@ -454,6 +454,9 @@ void CheckOther::invalidFunctionUsage()
 
 void CheckOther::checkUnsignedDivision()
 {
+    if (!_settings->_showAll || !_settings->_checkCodingStyle)
+        return;
+
     // Check for "ivar / uvar" and "uvar / ivar"
     std::map<std::string, char> varsign;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -1307,7 +1310,7 @@ void CheckOther::udivError(const Token *tok)
 
 void CheckOther::udivWarning(const Token *tok)
 {
-    reportError(tok, Severity::possibleStyle, "udivWarning", "Warning: Division with signed and unsigned operators");
+    reportError(tok, Severity::possibleStyle, "udivWarning", "Division with signed and unsigned operators");
 }
 
 void CheckOther::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname)
