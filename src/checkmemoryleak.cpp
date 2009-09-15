@@ -1431,16 +1431,24 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
-            // Replace "loop ;" with ";"
-            if (Token::simpleMatch(tok2->next(), "loop ;"))
+            // Replace "do ; loop ;" with ";"
+            if (Token::Match(tok2->next(), "%any% ; loop ;"))
             {
-                Token::eraseTokens(tok2, tok2->tokAt(2));
+                if (tok2->next()->str() == "do")
+                    tok2->deleteNext();
+                else
+                    tok2 = tok2->next();
+                Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
 
-            // Replace "loop !var ;" with ";"
-            if (Token::Match(tok2->next(), "loop !var ;"))
+            // Replace "do ; loop !var ;" with ";"
+            if (Token::Match(tok2->next(), "%any% ; loop !var ;"))
             {
+                if (tok2->next()->str() == "do")
+                    tok2->deleteNext();
+                else
+                    tok2 = tok2->next();
                 Token::eraseTokens(tok2, tok2->tokAt(4));
                 done = false;
             }

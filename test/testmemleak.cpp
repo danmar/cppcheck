@@ -469,6 +469,7 @@ private:
         ASSERT_EQUALS(";", simplifycode("; loop { if { break; } }"));
         ASSERT_EQUALS("; loop alloc ;", simplifycode("; loop { alloc ; }"));
         ASSERT_EQUALS("; alloc ; alloc ;", simplifycode("; alloc ; do { alloc ; } loop ;"));
+        ASSERT_EQUALS("; exit ;", simplifycode("; alloc ; do { } loop ; exit ;"));
 
         // callfunc..
         ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;", false));
