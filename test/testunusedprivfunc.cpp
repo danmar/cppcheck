@@ -38,6 +38,7 @@ private:
         TEST_CASE(test2);
         TEST_CASE(test3);
         TEST_CASE(test4);
+        TEST_CASE(test5);
 
         // [ 2236547 ] False positive --style unused function, called via pointer
         TEST_CASE(func_pointer);
@@ -56,6 +57,7 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
 
         // Clear the error buffer..
         errout.str("");
@@ -191,6 +193,16 @@ private:
     }
 
 
+    void test5()
+    {
+        check("class A {\n"
+              "private:\n"
+              "    A() : lock(new Lock())\n"
+              "    { }\n"
+              "    Lock *lock;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
 

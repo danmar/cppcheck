@@ -518,6 +518,7 @@ void CheckClass::privateFunctions()
                     break;
                 --indent_level;
             }
+
             else if (indent_level != 1)
                 continue;
             else if (tok->str() == "private:")
@@ -529,10 +530,10 @@ void CheckClass::privateFunctions()
             else if (priv)
             {
                 if (Token::Match(tok, "typedef %type% ("))
-                    tok = tok->tokAt(2);
+                    tok = tok->tokAt(2)->link();
 
                 else if (Token::Match(tok, "[:,] %var% ("))
-                    tok = tok->tokAt(2);
+                    tok = tok->tokAt(2)->link();
 
                 else if (Token::Match(tok, "%var% (") &&
                          !Token::Match(tok, classname.c_str()))
