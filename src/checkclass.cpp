@@ -130,7 +130,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
             varname = next->strAt(3);
         }
 
-        else if (Token::Match(next, "%type% %var% ["))
+        else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
         {
             varname = next->strAt(1);
         }

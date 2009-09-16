@@ -431,6 +431,16 @@ private:
                        "};\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() { }\n"
+                       "\n"
+                       "    double  operator[](const unsigned long i);\n"
+                       "};\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitMissingFuncDef()
