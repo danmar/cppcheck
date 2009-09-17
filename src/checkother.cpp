@@ -594,7 +594,7 @@ void CheckOther::checkVariableScope()
                 continue;
 
             // Variable declaration?
-            if (Token::Match(tok1, "%type% %var% ; %var% = %any% ;"))
+            if (Token::Match(tok1, "%type% %var% ; %var% = %num% ;"))
             {
                 // Tokenizer modify "int i = 0;" to "int i; i = 0;",
                 // so to handle this situation we just skip
