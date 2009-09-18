@@ -21,6 +21,7 @@
 #include <QDebug>
 
 CheckThread::CheckThread(ThreadResult &result) :
+        mState(Ready),
         mResult(result),
         mCppcheck(result)
 {
