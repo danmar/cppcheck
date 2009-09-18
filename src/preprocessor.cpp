@@ -343,6 +343,14 @@ std::string Preprocessor::removeComments(const std::string &str)
     for (std::string::size_type i = 0; i < str.length(); ++i)
     {
         char ch = str[i];
+        if (i == 0 && str.size() > 3 &&
+            (char)str[0] == (char)0xef &&
+            (char)str[1] == (char)0xbb &&
+            (char)str[2] == (char)0xbf)
+        {
+            i = 2;
+            continue;
+        }
         if (ch < 0)
             throw std::runtime_error("The code contains characters that are unhandled");
 
