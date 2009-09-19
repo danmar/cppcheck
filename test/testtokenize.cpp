@@ -563,8 +563,8 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                    "void f ( ) { int a ; a = 10 ; if ( 10 ) ; }",
-                    simplifyKnownVariables(code));
+                "void f ( ) { int a ; a = 10 ; if ( 10 ) ; }",
+                simplifyKnownVariables(code));
         }
 
         {
@@ -575,8 +575,8 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                    "void f ( ) { int a ; a = 10 ; if ( ! 10 ) ; }",
-                    simplifyKnownVariables(code));
+                "void f ( ) { int a ; a = 10 ; if ( ! 10 ) ; }",
+                simplifyKnownVariables(code));
         }
     }
 
@@ -590,8 +590,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) ; }",
-                simplifyKnownVariables(code));
+            "void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables3()
@@ -607,8 +607,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void f ( ) { int a ; a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) ; }",
-                simplifyKnownVariables(code));
+            "void f ( ) { int a ; a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables4()
@@ -620,8 +620,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void f ( ) { int a ; a = 4 ; if ( g ( 4 ) ) ; }",
-                simplifyKnownVariables(code));
+            "void f ( ) { int a ; a = 4 ; if ( g ( 4 ) ) ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables5()
@@ -633,8 +633,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void f ( ) { int a ; a = 4 ; if ( a = 5 ) ; }",
-                simplifyKnownVariables(code));
+            "void f ( ) { int a ; a = 4 ; if ( a = 5 ) ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables6()
@@ -647,8 +647,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void f ( ) { char str [ 2 ] ; int a ; a = 4 ; str [ 4 ] = 0 ; }",
-                simplifyKnownVariables(code));
+            "void f ( ) { char str [ 2 ] ; int a ; a = 4 ; str [ 4 ] = 0 ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables7()
@@ -661,8 +661,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void foo ( ) { int i ; i = 24 ; abc [ 22 ] = 1 ; abc [ 24 ] = 2 ; }",
-                simplifyKnownVariables(code));
+            "void foo ( ) { int i ; i = 24 ; abc [ 22 ] = 1 ; abc [ 24 ] = 2 ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables8()
@@ -675,8 +675,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void foo ( ) { int i ; i = 23 ; ; abc [ 23 ] = 0 ; }",
-                simplifyKnownVariables(code));
+            "void foo ( ) { int i ; i = 23 ; ; abc [ 23 ] = 0 ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables9()
@@ -689,8 +689,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) ; }",
-                simplifyKnownVariables(code));
+            "void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables10()
@@ -711,8 +711,8 @@ private:
                                 "}\n";
 
             TODO_ASSERT_EQUALS(
-                    "void f ( ) { bool b ; b = false ; { b = true ; } if ( true ) { a ( ) ; } }",
-                    simplifyKnownVariables(code));
+                "void f ( ) { bool b ; b = false ; { b = true ; } if ( true ) { a ( ) ; } }",
+                simplifyKnownVariables(code));
         }
 
         {
@@ -731,8 +731,8 @@ private:
                                 "}\n";
 
             TODO_ASSERT_EQUALS(
-                    "void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( true ) { a ( ) ; } }",
-                    simplifyKnownVariables(code));
+                "void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( true ) { a ( ) ; } }",
+                simplifyKnownVariables(code));
         }
 
         {
@@ -748,8 +748,8 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                    "void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } a ( 1 ) ; }",
-                    simplifyKnownVariables(code));
+                "void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } a ( 1 ) ; }",
+                simplifyKnownVariables(code));
         }
     }
 
@@ -762,8 +762,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "const int foo = 0 ; int main ( ) { int foo ; foo = 0 ; }",
-                simplifyKnownVariables(code));
+            "const int foo = 0 ; int main ( ) { int foo ; foo = 0 ; }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables12()
@@ -772,8 +772,8 @@ private:
                             "const double pi = 3.14;\n"
                             "int main(){}\n";
         ASSERT_EQUALS(
-                "ENTER_NAMESPACE ( project_namespace ) const double pi = 3.14 ; int main ( ) { }",
-                simplifyKnownVariables(code));
+            "ENTER_NAMESPACE ( project_namespace ) const double pi = 3.14 ; int main ( ) { }",
+            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables13()
@@ -785,8 +785,8 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-                "void f ( ) { int i ; i = 10 ; while ( -- i ) { } }",
-                simplifyKnownVariables(code));
+            "void f ( ) { int i ; i = 10 ; while ( -- i ) { } }",
+            simplifyKnownVariables(code));
     }
 
 

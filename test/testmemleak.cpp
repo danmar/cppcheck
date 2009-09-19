@@ -445,7 +445,7 @@ private:
         return all ? (str1 + "\n" + str2) : str1;
     }
 
-    
+
 
     // Test that the CheckMemoryLeaksInFunction::simplifycode works
     void simplifycode()
