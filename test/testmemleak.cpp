@@ -396,7 +396,7 @@ private:
 
 
 
-    std::string simplifycode(const char code[], bool all = false) const
+    std::string simplifycode(const char code[], bool &all) const
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -432,8 +432,20 @@ private:
         return ret.str();
     }
 
+    std::string simplifycode(const char code[])
+    {
+        bool all = false;
+        const std::string str1 = simplifycode(code, all);
+        ASSERT_EQUALS(0, all ? 1 : 0);
 
+        all = true;
+        const std::string str2 = simplifycode(code, all);
+        ASSERT_EQUALS(all ? 1 : 0, (str1 != str2) ? 1 : 0);
 
+        return all ? (str1 + "\n" + str2) : str1;
+    }
+
+    
 
     // Test that the CheckMemoryLeaksInFunction::simplifycode works
     void simplifycode()
@@ -452,6 +464,8 @@ private:
         ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode("; alloc ; if(!var) { alloc ; } dealloc ;"));
 
         ASSERT_EQUALS("; use ;", simplifycode("; if(var) use ;"));
+
+        ASSERT_EQUALS("; alloc ; dealloc ;\n; alloc ;", simplifycode("; alloc ; if(!var) { return ; } if { dealloc ; }"));
 
         // "if ; .."
         ASSERT_EQUALS("; if xxx ;", simplifycode("; if ; else xxx ;"));
@@ -472,8 +486,7 @@ private:
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc ; do { } loop ; exit ;"));
 
         // callfunc..
-        ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;", false));
-        ASSERT_EQUALS(";", simplifycode(";callfunc;", true));
+        ASSERT_EQUALS("; callfunc ;\n;", simplifycode(";callfunc;"));
 
         // exit..
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; exit;"));
@@ -481,8 +494,7 @@ private:
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if { use; exit; }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if(!var) { exit; }"));
         TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; if(var) { exit; }"));
-        TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; ifv { exit; }", false));
-        TODO_ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; ifv { exit; }", true));
+        TODO_ASSERT_EQUALS(";\n; alloc ;", simplifycode("; alloc ; ifv { exit; }"));
     }
 
 

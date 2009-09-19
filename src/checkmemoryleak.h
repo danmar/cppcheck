@@ -117,9 +117,8 @@ public:
 
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
 
-    void memleakError(const Token *tok, const std::string &varname);
-    void memleakallError(const Token *tok, const std::string &varname);
-    void resourceLeakError(const Token *tok, const std::string &varname);
+    void memleakError(const Token *tok, const std::string &varname, bool all);
+    void resourceLeakError(const Token *tok, const std::string &varname, bool all);
 
     void deallocDeallocError(const Token *tok, const std::string &varname);
     void deallocuseError(const Token *tok, const std::string &varname);
@@ -252,9 +251,8 @@ private:
 
     void getErrorMessages()
     {
-        memleakError(0, "varname");
-        memleakallError(0, "varname");
-        resourceLeakError(0, "varname");
+        memleakError(0, "varname", false);
+        resourceLeakError(0, "varname", false);
 
         deallocDeallocError(0, "varname");
         deallocuseError(0, "varname");

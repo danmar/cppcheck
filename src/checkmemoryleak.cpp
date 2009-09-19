@@ -281,11 +281,9 @@ void CheckMemoryLeak::memoryLeak(const Token *tok, const std::string &varname, A
         alloctype == CheckMemoryLeak::Pipe ||
         alloctype == CheckMemoryLeak::Fd   ||
         alloctype == CheckMemoryLeak::Dir)
-        resourceLeakError(tok, varname.c_str());
-    else if (all)
-        memleakallError(tok, varname.c_str());
+        resourceLeakError(tok, varname.c_str(), all);
     else
-        memleakError(tok, varname.c_str());
+        memleakError(tok, varname.c_str(), all);
 }
 //---------------------------------------------------------------------------
 
@@ -321,19 +319,14 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
         std::cout << errmsg.toXML() << std::endl;
 }
 
-void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname, bool all)
 {
-    reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname);
+    reportErr(tok, all ? Severity::possibleError : Severity::error, "memleak", "Memory leak: " + varname);
 }
 
-void CheckMemoryLeak::memleakallError(const Token *tok, const std::string &varname)
+void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname, bool all)
 {
-    reportErr(tok, Severity::possibleError, "memleakall", "Memory leak: " + varname);
-}
-
-void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname)
-{
-    reportErr(tok, Severity::error, "resourceLeak", "Resource leak: " + varname);
+    reportErr(tok, all ? Severity::possibleError : Severity::error, "resourceLeak", "Resource leak: " + varname);
 }
 
 void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname)
