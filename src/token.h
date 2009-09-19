@@ -230,7 +230,7 @@ public:
     static void replace(Token *replaceThis, Token *start, Token *end);
 
     /** Stringify a token list (with or without varId) */
-    std::string stringifyList(const bool varid = true, const char *title = 0) const;
+    std::string stringifyList(bool varid = true, const char *title = 0) const;
 
     /**
      * This is intended to be used for the first token in the list

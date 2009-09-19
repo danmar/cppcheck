@@ -581,7 +581,7 @@ void Token::printOut(const char *title) const
     std::cout << stringifyList(true, title) << std::endl;
 }
 
-std::string Token::stringifyList(const bool varid, const char *title) const
+std::string Token::stringifyList(bool varid, const char *title) const
 {
     std::ostringstream ret;
     if (title)
