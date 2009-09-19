@@ -499,6 +499,8 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
         }
     }
 
+    setVarId();
+
     return true;
 }
 //---------------------------------------------------------------------------

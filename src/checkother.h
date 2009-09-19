@@ -52,6 +52,7 @@ public:
             checkOther.warningOldStylePointerCast();
             checkOther.checkUnsignedDivision();
             checkOther.checkCharVariable();
+            checkOther.nullPointer();
         }
     }
 
@@ -75,7 +76,6 @@ public:
 
         checkOther.strPlusChar();
         checkOther.invalidFunctionUsage();
-        checkOther.nullPointer();
         checkOther.checkZeroDivision();
     }
 

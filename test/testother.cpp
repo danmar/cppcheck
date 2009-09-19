@@ -519,8 +519,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
-        tokenizer.setVarId();
 
         // Clear the error buffer..
         errout.str("");
@@ -667,6 +665,15 @@ private:
                          "        --a;\n"
                          "    }\n"
                          "    while (a > 0);\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // dynamic_cast..
+        checkNullPointer("void foo(ABC *abc)\n"
+                         "{\n"
+                         "    int a = abc->a;\n"
+                         "    if (!dynamic_cast<DEF *>(abc))\n"
+                         "        ;\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
     }
