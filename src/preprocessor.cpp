@@ -1221,13 +1221,18 @@ private:
     std::string _name;
     std::string _macro;
     bool _variadic;
+    const std::string _prefix;
 
     /** The macro has parantheses but no parameters.. "AAA()" */
     bool _nopar;
 
 public:
+    /**
+     * @param macro The code after #define, until end of line,
+     * e.g. "A(x) foo(x);"
+     */
     PreprocessorMacro(const std::string &macro)
-            : _macro(macro)
+            : _macro(macro), _prefix("__cppcheck__")
     {
         // Tokenize the macro to make it easier to handle
         std::istringstream istr(macro.c_str());
@@ -1265,6 +1270,41 @@ public:
             else if (Token::Match(tokens(), "%var% ( )"))
                 _nopar = true;
         }
+    }
+
+    /**
+     * To avoid name collisions, we will rename macro variables by
+     * adding _prefix in front of the name of each variable.
+     * Returns the macro with converted names
+     * @return e.g. "A(__cppcheck__x) foo(__cppcheck__x);"
+     */
+    std::string renameMacroVariables()
+    {
+        // No variables
+        if (_params.size() == 0)
+            return _macro;
+
+        // Already renamed
+        if (_params[0].compare(0, _prefix.length(), _prefix) == 0)
+            return _macro;
+
+        std::string result;
+        result.append(_name);
+        result.append("(");
+        std::vector<std::string> values;
+        for (unsigned int i = 0; i < _params.size(); ++i)
+        {
+            if (i > 0)
+                result.append(",");
+            values.push_back(_prefix + _params[i]);
+            result.append(values.back());
+        }
+
+        result.append(") ");
+        std::string temp;
+        this->code(values, temp);
+        result.append(temp);
+        return result;
     }
 
     const Token *tokens() const
@@ -1424,12 +1464,12 @@ public:
 std::string Preprocessor::expandMacros(std::string code, const std::string &filename, ErrorLogger *errorLogger)
 {
     // Search for macros and expand them..
-    std::string::size_type defpos = std::string::npos;
-    while ((defpos > 0) && ((defpos = code.rfind("#define ", defpos)) != std::string::npos))
+    std::string::size_type defpos = 0;
+    while ((defpos = code.find("#define ", defpos)) != std::string::npos)
     {
         if (defpos > 0 && code[defpos-1] != '\n')
         {
-            defpos--;
+            defpos++;
             continue;
         }
 
@@ -1540,6 +1580,25 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             std::string::size_type pos2 = pos1 + macro.name().length();
             if (macro.params().size() && pos2 >= code.length())
                 continue;
+
+            // Check are we in #define
+            std::string::size_type startOfLine = code.rfind("\n", pos1);
+            ++startOfLine;
+
+            if (code.substr(startOfLine, 8) == "#define ")
+            {
+                // We are inside a define, make sure we don't have name collision
+                // by e.g. replacing the following code:
+                // #define B(a) A(a)
+                // With this:
+                // #define B(2a) A(2a)
+                std::string::size_type endOfLine = code.find("\n", pos1);
+                startOfLine += 8;
+
+                PreprocessorMacro tempMacro(code.substr(startOfLine, endOfLine - startOfLine));
+                code.erase(startOfLine, endOfLine - startOfLine);
+                code.insert(startOfLine, tempMacro.renameMacroVariables());
+            }
 
             unsigned int numberOfNewlines = 0;
 

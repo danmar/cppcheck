@@ -888,7 +888,21 @@ private:
             const char filedata[] = "#define A B\n"
                                     "#define B 3\n"
                                     "A";
-            TODO_ASSERT_EQUALS("\n\n3", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n3", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            const char filedata[] = "#define DBG(fmt, args...) printf(fmt, ## args)\n"
+                                    "#define D(fmt, args...) DBG(fmt, ## args)\n"
+                                    "DBG(\"hello\");";
+            ASSERT_EQUALS("\n\nprintf(\"hello\");", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            const char filedata[] = "#define DBG(fmt, args...) printf(fmt, ## args)\n"
+                                    "#define D(fmt, args...) DBG(fmt, ## args)\n"
+                                    "DBG(\"hello: %d\",3);";
+            ASSERT_EQUALS("\n\nprintf(\"hello: %d\",3);", OurPreprocessor::expandMacros(filedata));
         }
     }
 
