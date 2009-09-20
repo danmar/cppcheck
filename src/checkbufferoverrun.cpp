@@ -411,7 +411,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     ++fmt;
 
                     // skip field width
-                    while (std::isdigit(*fmt)) {
+                    while (std::isdigit(*fmt))
+                    {
                         ++fmt;
                     }
 
