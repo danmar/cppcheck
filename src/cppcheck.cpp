@@ -80,7 +80,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
     for (int i = 1; i < argc; i++)
     {
         if (strcmp(argv[i], "--version") == 0)
-            return "Cppcheck 1.35\n";
+            return "Cppcheck 1.36\n";
 
         // Flag used for various purposes during debugging
         if (strcmp(argv[i], "--debug") == 0)

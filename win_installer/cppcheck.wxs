@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='windows-1252'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
 
-  <Product Name='Cppcheck 1.35' Id='88DE59C3-7640-47A2-A047-7289807AE3BA' UpgradeCode='DDB850E4-F8DE-4290-BDF1-AC12475DEE80'
-    Language='1033' Codepage='1252' Version='1.35' Manufacturer='The Cppcheck team'>
+  <Product Name='Cppcheck 1.36' Id='88DE59C3-7640-47A2-A047-7289807AE3BA' UpgradeCode='DDB850E4-F8DE-4290-BDF1-AC12475DEE80'
+    Language='1033' Codepage='1252' Version='1.36' Manufacturer='The Cppcheck team'>
 
-    <Package Id='*' Keywords='Installer' Description="Cppcheck 1.35 Installer"
+    <Package Id='*' Keywords='Installer' Description="Cppcheck 1.36 Installer"
       Comments='Cppcheck is a tool for static analysis of C/C++ code' Manufacturer='The Cppcheck team'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
@@ -13,13 +13,13 @@
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
-        <Directory Id='INSTALLDIR' Name='Cppcheck 1.35'>
+        <Directory Id='INSTALLDIR' Name='Cppcheck 1.36'>
           <Component Id='MainExecutable' Guid='E1435616-5041-4079-BC4B-C4805BEEDAF9'>
             <File Id='cppcheckexe' Name='cppcheck.exe' DiskId='1' Source='cppcheck.exe' KeyPath='yes' />
           </Component>
           <Component Id='GuiExecutable' Guid='2BDB0B5A-BFD8-4DFC-8803-97D476CAB7FB'>
             <File Id='guiexe' Name='gui.exe' DiskId='1' Source='gui.exe' KeyPath='yes'>
-              <Shortcut Id='startmenuGui' Directory='ProgramMenuDir' Name='Cppcheck 1.35'
+              <Shortcut Id='startmenuGui' Directory='ProgramMenuDir' Name='Cppcheck 1.36'
                 WorkingDirectory='INSTALLDIR' Icon='gui.exe' IconIndex='0' Advertise='yes' />
             </File>
           </Component>
@@ -27,7 +27,7 @@
       </Directory>
 
       <Directory Id='ProgramMenuFolder' Name="Programs">
-        <Directory Id='ProgramMenuDir' Name="Cppcheck 1.35">
+        <Directory Id='ProgramMenuDir' Name="Cppcheck 1.36">
           <Component Id='ProgramMenuDir' Guid='5F946988-B6A7-49FD-8D24-18C1AA116BD0'>
             <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
             <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
