@@ -1353,6 +1353,11 @@ void Tokenizer::simplifySizeof()
             {
                 if (Token::Match(tempToken, "%var%"))
                 {
+                    while (tempToken->next()->str() == "[")
+                    {
+                        tempToken = tempToken->next()->link();
+                    }
+
                     if (tempToken->next()->str() == ".")
                     {
                         // We are checking a class or struct, search next varname
@@ -1371,19 +1376,12 @@ void Tokenizer::simplifySizeof()
                         // nothing after this
                         tempToken = tempToken->tokAt(2);
                     }
-                    else if (tempToken->next()->str() == "[")
-                    {
-                        /** @todo We need to find closing ], then check for
-                         * dots and arrows "var[some[0]]->other" */
-
-                        // But for now, just bail out
-                        break;
-                    }
 
                     // Ok, we should be clean. Add ) after tempToken
                     tok->insertToken("(");
                     tempToken->insertToken(")");
                     Token::createMutualLinks(tok->next(), tempToken->next());
+                    setVarId();
                     break;
                 }
             }

@@ -554,9 +554,17 @@ private:
 
     void sizeof4()
     {
-        const char code[] = "int i[10];\n"
-                            "sizeof(i[0]);\n";
-        ASSERT_EQUALS("int i [ 10 ] ; 4 ;", sizeof_(code));
+        {
+            const char code[] = "int i[10];\n"
+                                "sizeof(i[0]);\n";
+            ASSERT_EQUALS("int i [ 10 ] ; 4 ;", sizeof_(code));
+        }
+
+        {
+            const char code[] = "int i[10];\n"
+                                "sizeof i[0];\n";
+            ASSERT_EQUALS("int i [ 10 ] ; 4 ;", sizeof_(code));
+        }
     }
 
     void sizeof5()
