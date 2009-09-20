@@ -2511,6 +2511,8 @@ void Tokenizer::simplifyVarDecl()
             {
                 while (tok2 && tok2->str() != ",")
                 {
+                    if (tok2->str() == "{")
+                        tok2 = tok2->link();
                     tok2 = tok2->next();
                 }
             }
