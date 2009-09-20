@@ -1204,6 +1204,7 @@ bool Tokenizer::createLinks()
 {
     std::list<Token*> links;
     std::list<Token*> links2;
+    std::list<Token*> links3;
     for (Token *token = _tokens; token; token = token->next())
     {
         if (token->link())
@@ -1243,6 +1244,22 @@ bool Tokenizer::createLinks()
             Token::createMutualLinks(links2.back(), token);
             links2.pop_back();
         }
+        else if (token->str() == "[")
+        {
+            links3.push_back(token);
+        }
+        else if (token->str() == "]")
+        {
+            if (links3.size() == 0)
+            {
+                // Error, ( and ) don't match.
+                syntaxError(token, '[');
+                return false;
+            }
+
+            Token::createMutualLinks(links3.back(), token);
+            links3.pop_back();
+        }
     }
 
     if (links.size() > 0)
@@ -1256,6 +1273,13 @@ bool Tokenizer::createLinks()
     {
         // Error, ( and ) don't match.
         syntaxError(_tokens, '(');
+        return false;
+    }
+
+    if (links3.size() > 0)
+    {
+        // Error, [ and ] don't match.
+        syntaxError(_tokens, '[');
         return false;
     }
 

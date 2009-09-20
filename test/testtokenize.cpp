@@ -150,6 +150,7 @@ private:
         // unsigned i; => unsigned int i;
         TEST_CASE(unsigned1);
         TEST_CASE(testUpdateClassList);
+        TEST_CASE(createLinks);
     }
 
 
@@ -2376,6 +2377,68 @@ private:
         }
     }
 
+    void createLinks()
+    {
+        {
+            const char code[] = "class A{\n"
+                                " void f() {}\n"
+                                "};";
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            // A body {}
+            ASSERT_EQUALS(true, tok->tokAt(2)->link() == tok->tokAt(9));
+            ASSERT_EQUALS(true, tok->tokAt(9)->link() == tok->tokAt(2));
+
+            // f body {}
+            ASSERT_EQUALS(true, tok->tokAt(7)->link() == tok->tokAt(8));
+            ASSERT_EQUALS(true, tok->tokAt(8)->link() == tok->tokAt(7));
+
+            // f ()
+            ASSERT_EQUALS(true, tok->tokAt(5)->link() == tok->tokAt(6));
+            ASSERT_EQUALS(true, tok->tokAt(6)->link() == tok->tokAt(5));
+        }
+
+        {
+            const char code[] = "void f(){\n"
+                                " char a[10];\n"
+                                " char *b ; b = new char[a[0]];\n"
+                                "};";
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            // a[10]
+            ASSERT_EQUALS(true, tok->tokAt(7)->link() == tok->tokAt(9));
+            ASSERT_EQUALS(true, tok->tokAt(9)->link() == tok->tokAt(7));
+
+            // new char[]
+            ASSERT_EQUALS(true, tok->tokAt(19)->link() == tok->tokAt(24));
+            ASSERT_EQUALS(true, tok->tokAt(24)->link() == tok->tokAt(19));
+
+            // a[0]
+            ASSERT_EQUALS(true, tok->tokAt(21)->link() == tok->tokAt(23));
+            ASSERT_EQUALS(true, tok->tokAt(23)->link() == tok->tokAt(21));
+        }
+
+        {
+            const char code[] = "void f(){\n"
+                                " foo(g());\n"
+                                "};";
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            const Token *tok = tokenizer.tokens();
+            // foo(
+            ASSERT_EQUALS(true, tok->tokAt(6)->link() == tok->tokAt(10));
+            ASSERT_EQUALS(true, tok->tokAt(10)->link() == tok->tokAt(6));
+
+            // g(
+            ASSERT_EQUALS(true, tok->tokAt(8)->link() == tok->tokAt(9));
+            ASSERT_EQUALS(true, tok->tokAt(9)->link() == tok->tokAt(8));
+        }
+    }
 };
 
 REGISTER_TEST(TestTokenizer)
