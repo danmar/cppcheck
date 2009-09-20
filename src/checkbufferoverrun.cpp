@@ -30,6 +30,7 @@
 #include <sstream>
 #include <list>
 #include <cstring>
+#include <cctype>
 
 
 #include <cstdlib>     // <- strtoul
@@ -407,8 +408,15 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 }
                 else if (*fmt == '%')
                 {
+                    ++fmt;
+
+                    // skip field width
+                    while (std::isdigit(*fmt)) {
+                        ++fmt;
+                    }
+
                     // FIXME: better handling for format specifiers
-                    fmt += 2;
+                    ++fmt;
                     continue;
                 }
                 ++fmt;

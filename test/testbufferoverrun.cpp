@@ -98,6 +98,7 @@ private:
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
+        TEST_CASE(sprintf4);
 
         TEST_CASE(snprintf1);
         TEST_CASE(snprintf2);
@@ -618,6 +619,17 @@ private:
               "{\n"
               "    char str[5];\n"
               "    sprintf(str, \"test%s\", "");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void sprintf4()
+    {
+        // ticket #690
+        check("void f()\n"
+              "{\n"
+              "    char a[3];\n"
+              "    sprintf(a, \"%02ld\", 99);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
