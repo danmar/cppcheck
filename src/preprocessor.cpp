@@ -1276,19 +1276,24 @@ public:
      * To avoid name collisions, we will rename macro variables by
      * adding _prefix in front of the name of each variable.
      * Returns the macro with converted names
-     * @return e.g. "A(__cppcheck__x) foo(__cppcheck__x);"
+     * @result If return value is false, this is not touched. If
+     * return value is true, this will contain new macro line
+     * (all that comes after #define) e.g.
+     * "A(__cppcheck__x) foo(__cppcheck__x);"
+     * @return true if code needs to be changed, false is no changes
+     * are required.
      */
-    std::string renameMacroVariables()
+    bool renameMacroVariables(std::string &result)
     {
         // No variables
         if (_params.size() == 0)
-            return _macro;
+            return false;
 
         // Already renamed
         if (_params[0].compare(0, _prefix.length(), _prefix) == 0)
-            return _macro;
+            return false;
 
-        std::string result;
+        result = "";
         result.append(_name);
         result.append("(");
         std::vector<std::string> values;
@@ -1304,7 +1309,7 @@ public:
         std::string temp;
         this->code(values, temp);
         result.append(temp);
-        return result;
+        return true;
     }
 
     const Token *tokens() const
@@ -1596,8 +1601,16 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                 startOfLine += 8;
 
                 PreprocessorMacro tempMacro(code.substr(startOfLine, endOfLine - startOfLine));
-                code.erase(startOfLine, endOfLine - startOfLine);
-                code.insert(startOfLine, tempMacro.renameMacroVariables());
+                std::string tempMacroCode;
+                if (tempMacro.renameMacroVariables(tempMacroCode))
+                {
+                    // Change the macro and then start again from the start
+                    // of the line, as code has changed.
+                    code.erase(startOfLine, endOfLine - startOfLine);
+                    code.insert(startOfLine, tempMacroCode);
+                    pos1 = startOfLine;
+                    continue;
+                }
             }
 
             unsigned int numberOfNewlines = 0;

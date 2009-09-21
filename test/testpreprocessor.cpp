@@ -904,6 +904,13 @@ private:
                                     "DBG(\"hello: %d\",3);";
             ASSERT_EQUALS("\n\nprintf(\"hello: %d\",3);", OurPreprocessor::expandMacros(filedata));
         }
+
+        {
+            const char filedata[] = "#define A 4\n"
+                                    "#define B(a) a,A\n"
+                                    "B(2);";
+            ASSERT_EQUALS("\n\n2,4;", OurPreprocessor::expandMacros(filedata));
+        }
     }
 
     void macro_mismatch()
