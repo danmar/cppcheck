@@ -156,7 +156,8 @@ private:
               "    {\n"
               "         unsigned int a;\n"
               "         unsigned int c = a / b;\n"
-              "    }\n", false, true);
+              "    }\n"
+              "}\n", false, true);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int b)\n"
@@ -165,7 +166,8 @@ private:
               "    {\n"
               "         unsigned int a;\n"
               "         unsigned int c = a / b;\n"
-              "    }\n", true, false);
+              "    }\n"
+              "}\n", true, false);
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int b)\n"
@@ -174,7 +176,8 @@ private:
               "    {\n"
               "         unsigned int a;\n"
               "         unsigned int c = a / b;\n"
-              "    }\n", true, true);
+              "    }\n"
+              "}\n", true, true);
         ASSERT_EQUALS("[test.cpp:6]: (possible style) Division with signed and unsigned operators\n", errout.str());
     }
 };
