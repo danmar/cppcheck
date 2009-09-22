@@ -1,3 +1,66 @@
+2009-09-22  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* Makefile: Makefile: made it ready for release
+
+2009-09-22  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* createrelease, src/cppcheck.cpp, src/main.cpp,
+	win_installer/cppcheck.iss: updated version to 1.37
+
+2009-09-22  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fixed #716
+	(segmentation fault: sizeof string)
+
+2009-09-22  Slava Semushin <php-coder@altlinux.ru>
+
+	* test/testdivision.cpp: test/testdivision.cpp: fixed syntax errors
+	in TestDivision::division8 Before testrunner complains:  ### Unlogged error at Tokenizer::syntaxError: Invalid number of
+	 character ({) ### Unlogged error at Tokenizer::syntaxError: Invalid
+	 number of character ({) ### Unlogged error at
+	Tokenizer::syntaxError: Invalid number of character ({) Broken since 36c7108a2821c477cf4d5eb9289281de8cd285ce commit where
+	test case was added.
+
+2009-09-22  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp: Tokenizer::createLinks(): fixed typo in comment.  Since commit 1c01dd64f353d6872ec4b04867393aa283423445.
+
+2009-09-22  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #715 (False
+	positive: Resource leak when exit() after if loop)
+
+2009-09-22  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fixed #702 (If you see
+	this, there is a bug - varid was 0)
+
+2009-09-21  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp, test/testpreprocessor.cpp: Fix #706 (false
+	positive: invalid number of character ((), can't process file)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/706
+
+2009-09-20  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #701 (false
+	positive: Invalid deallocation)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/701
+
+2009-09-20  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fix #703 (Tokenizer:
+	Create links for [])
+	http://sourceforge.net/apps/trac/cppcheck/ticket/703
+
+2009-09-20  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp: astyle fix
+
+2009-09-20  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* Changelog: Changelog
+
 2009-09-20  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
 	* createrelease, src/cppcheck.cpp, src/main.cpp,
