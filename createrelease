@@ -10,7 +10,7 @@
 # - win_installer/cppcheck.iss
 
 # Tag to use
-tag=1.36
+tag=1.37
 
 # Name of release
 releasename=cppcheck-$tag
