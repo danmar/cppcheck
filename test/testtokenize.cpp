@@ -97,6 +97,7 @@ private:
         TEST_CASE(varid9);
         TEST_CASE(varid10);
         TEST_CASE(varid11);
+        TEST_CASE(varid12);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -1213,6 +1214,30 @@ private:
         const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Foo ;\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid12()
+    {
+        const std::string code("static void a()\n"
+                               "{\n"
+                               "    class Foo *foo;\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: static void a ( )\n"
+                                   "2: {\n"
+                                   "3: class Foo * foo@1 ;\n"
+                                   "4: }\n");
 
         ASSERT_EQUALS(expected, actual);
     }

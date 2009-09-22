@@ -926,7 +926,10 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "[,;{}(] %type%"))
             tok = tok->next();
 
-        if (Token::Match(tok, "else|return|typedef|delete|class"))
+        if (Token::Match(tok, "class|struct %type% :|{|;"))
+            continue;
+
+        if (Token::Match(tok, "else|return|typedef|delete"))
             continue;
 
         if (Token::Match(tok, "const|static|extern|public:|private:|protected:"))
