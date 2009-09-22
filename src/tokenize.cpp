@@ -1255,7 +1255,7 @@ bool Tokenizer::createLinks()
         {
             if (links3.size() == 0)
             {
-                // Error, ( and ) don't match.
+                // Error, [ and ] don't match.
                 syntaxError(token, '[');
                 return false;
             }
