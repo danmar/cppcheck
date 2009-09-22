@@ -1291,6 +1291,31 @@ bool Tokenizer::createLinks()
 
 void Tokenizer::simplifySizeof()
 {
+    // Replace 'sizeof(str)'
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() != "sizeof")
+            continue;
+
+        if (Token::Match(tok, "sizeof %str%"))
+        {
+            tok->deleteThis();
+            std::ostringstream ostr;
+            ostr << (strlen(tok->str().c_str()) - 1);
+            tok->str(ostr.str());
+        }
+
+        if (Token::Match(tok, "sizeof ( %str% )"))
+        {
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteNext();
+            std::ostringstream ostr;
+            ostr << (strlen(tok->str().c_str()) - 1);
+            tok->str(ostr.str());
+        }
+    }
+
     // Fill the map _typeSize..
     _typeSize.clear();
     _typeSize["char"] = sizeof(char);

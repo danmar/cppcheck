@@ -662,6 +662,15 @@ private:
 
             TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
+
+        // ticket #716 - sizeof string
+        {
+            std::ostringstream expected;
+            expected << "; " << (sizeof "123");
+
+            ASSERT_EQUALS(expected.str(), sizeof_("; sizeof \"123\""));
+            ASSERT_EQUALS(expected.str(), sizeof_("; sizeof(\"123\")"));
+        }
     }
 
     void casting()
