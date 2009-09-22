@@ -381,6 +381,7 @@ private:
                             "    if (p1 != NULL || p2 == NULL) { ; }\n"
                             "    if (p1 != NULL && p2 == NULL) { ; }\n"
                             "    if (p == '\\0');\n"
+                            "    if (p == 0L);\n"
                             "}\n";
 
         ASSERT_EQUALS("void f ( )\n"
@@ -411,6 +412,7 @@ private:
                       "while ( ! Foo :: p ) { ; }\n"
                       "if ( p1 || ! p2 ) { ; }\n"
                       "if ( p1 && ! p2 ) { ; }\n"
+                      "if ( ! p ) { ; }\n"
                       "if ( ! p ) { ; }\n"
                       "}", tokenizeAndStringify(code, true));
     }

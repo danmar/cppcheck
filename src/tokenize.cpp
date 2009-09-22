@@ -1700,7 +1700,8 @@ void Tokenizer::simplifyTokenList()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() == "NULL" ||
-            tok->str() == "'\\0'")
+            tok->str() == "'\\0'" ||
+            tok->str() == "0L")
             tok->str("0");
     }
 
