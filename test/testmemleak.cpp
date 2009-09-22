@@ -490,6 +490,7 @@ private:
 
         // exit..
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; exit;"));
+        ASSERT_EQUALS("; exit ;", simplifycode("; alloc; if { loop ; } dealloc; exit;"));
         ASSERT_EQUALS(";", simplifycode("; if { alloc; exit; }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if { use; exit; }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if(!var) { exit; }"));
