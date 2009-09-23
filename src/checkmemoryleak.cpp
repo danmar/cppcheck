@@ -1084,22 +1084,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             tok2->str("return");
     }
 
-    // If "--all" is given, remove all "callfunc"..
-    if (_settings->_showAll)
-    {
-        Token *tok2 = tok;
-        while (tok2)
-        {
-            if (tok2->str() == "callfunc")
-            {
-                tok2->deleteThis();
-                all = true;
-            }
-            else
-                tok2 = tok2->next();
-        }
-    }
-
     // reduce the code..
     bool done = false;
     while (! done)
@@ -1138,10 +1122,17 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
-            // Reduce "if if" => "if"
+            // reduce "; callfunc ; %var%"
+            else if (Token::Match(tok2, "; callfunc ; %type%"))
+            {
+                tok2->deleteNext();
+                done = false;
+            }
+
+            // Reduce "if if|callfunc" => "if"
             else if (Token::Match(tok2, "if if|callfunc"))
             {
-                Token::eraseTokens(tok2, tok2->tokAt(2));
+                tok2->deleteNext();
                 done = false;
             }
 
@@ -1282,30 +1273,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
-            }
-
-            // Reduce "} else .." => "} if .."
-            if (Token::simpleMatch(tok2, "} else"))
-            {
-                int indentlevel = 0;
-                for (const Token *tok3 = tok2; tok3; tok3 = tok3->previous())
-                {
-                    if (tok3->str() == "{")
-                    {
-                        --indentlevel;
-                        if (indentlevel == 0)
-                        {
-                            if (tok3->previous()->str() == "if")
-                                tok2->next()->str("if");
-                        }
-                        if (indentlevel <= 0)
-                            break;
-                    }
-                    else if (tok3->str() == "}")
-                    {
-                        ++indentlevel;
-                    }
-                }
             }
 
             // Remove "catch ;"
@@ -1616,9 +1583,21 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 }
             }
         }
+
+        // If "--all" is given, remove all "callfunc"..
+        if (done && _settings->_showAll)
+        {
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "callfunc")
+                {
+                    tok2->deleteThis();
+                    all = true;
+                    done = false;
+                }
+            }
+        }
     }
-
-
 }
 
 
