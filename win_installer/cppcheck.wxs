@@ -1,10 +1,11 @@
 <?xml version='1.0' encoding='windows-1252'?>
+<?define ProductName = "Cppcheck 1.37" ?>
+<?define ProductVersion = "1.37" ?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='$(var.ProductName)' Id='88DE59C3-7640-47A2-A047-7289807AE3BA' UpgradeCode='DDB850E4-F8DE-4290-BDF1-AC12475DEE80'
+    Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='The Cppcheck team'>
 
-  <Product Name='Cppcheck 1.36' Id='88DE59C3-7640-47A2-A047-7289807AE3BA' UpgradeCode='DDB850E4-F8DE-4290-BDF1-AC12475DEE80'
-    Language='1033' Codepage='1252' Version='1.36' Manufacturer='The Cppcheck team'>
-
-    <Package Id='*' Keywords='Installer' Description="Cppcheck 1.36 Installer"
+    <Package Id='*' Keywords='Installer' Description="$(var.ProductName) Setup"
       Comments='Cppcheck is a tool for static analysis of C/C++ code' Manufacturer='The Cppcheck team'
       InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
 
@@ -13,35 +14,30 @@
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
-        <Directory Id='INSTALLDIR' Name='Cppcheck 1.36'>
-          <Component Id='MainExecutable' Guid='E1435616-5041-4079-BC4B-C4805BEEDAF9'>
+        <Directory Id='INSTALLDIR' Name='$(var.ProductName)'>
+          <Component Id='Executable' Guid='E1435616-5041-4079-BC4B-C4805BEEDAF9'>
             <File Id='cppcheckexe' Name='cppcheck.exe' DiskId='1' Source='cppcheck.exe' KeyPath='yes' />
           </Component>
-          <Component Id='GuiExecutable' Guid='2BDB0B5A-BFD8-4DFC-8803-97D476CAB7FB'>
-            <File Id='guiexe' Name='gui.exe' DiskId='1' Source='gui.exe' KeyPath='yes'>
-              <Shortcut Id='startmenuGui' Directory='ProgramMenuDir' Name='Cppcheck 1.36'
-                WorkingDirectory='INSTALLDIR' Icon='gui.exe' IconIndex='0' Advertise='yes' />
-            </File>
+          <Component Id='Authors' Guid='DA54245B-7A5D-481B-A930-D2C9FDD95E19'>
+            <File Id='authorstxt' Name='authors.txt' DiskId='1' Source='..\authors' KeyPath='yes' />
           </Component>
-        </Directory>
-      </Directory>
-
-      <Directory Id='ProgramMenuFolder' Name="Programs">
-        <Directory Id='ProgramMenuDir' Name="Cppcheck 1.36">
-          <Component Id='ProgramMenuDir' Guid='5F946988-B6A7-49FD-8D24-18C1AA116BD0'>
-            <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
-            <RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+          <Component Id='Readme' Guid='4C111DD0-A84A-11DE-8A39-0800200C9A66'>
+            <File Id='readmetxt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
           </Component>
         </Directory>
       </Directory>
     </Directory>
 
-    <Feature Id='Complete' Level='1'>
-      <ComponentRef Id='MainExecutable' />
-      <ComponentRef Id='GuiExecutable' />
-      <ComponentRef Id='ProgramMenuDir' />
+    <Feature Id='Complete' Title='$(var.ProductName)' Description='The complete package.' 
+      Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR' >
+      <Feature Id='MainProgram' Title='Command line interface' Description='Command line tool' Level='1'>
+        <ComponentRef Id='Executable' />
+        <ComponentRef Id='Authors' />
+        <ComponentRef Id='Readme' />
+      </Feature>
     </Feature>
 
-    <Icon Id='gui.exe' SourceFile='gui.exe' />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <UIRef Id="WixUI_InstallDir"/>
   </Product>
 </Wix>
