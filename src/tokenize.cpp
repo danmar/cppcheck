@@ -1301,7 +1301,7 @@ void Tokenizer::simplifySizeof()
         {
             tok->deleteThis();
             std::ostringstream ostr;
-            ostr << (strlen(tok->str().c_str()) - 1);
+            ostr << Token::getStrLength(tok) + 1;
             tok->str(ostr.str());
         }
 
@@ -1311,7 +1311,7 @@ void Tokenizer::simplifySizeof()
             tok->deleteThis();
             tok->deleteNext();
             std::ostringstream ostr;
-            ostr << (strlen(tok->str().c_str()) - 1);
+            ostr << Token::getStrLength(tok) + 1;
             tok->str(ostr.str());
         }
     }

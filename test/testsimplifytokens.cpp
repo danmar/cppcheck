@@ -671,6 +671,12 @@ private:
             ASSERT_EQUALS(expected.str(), sizeof_("; sizeof \"123\""));
             ASSERT_EQUALS(expected.str(), sizeof_("; sizeof(\"123\")"));
         }
+
+        {
+            std::ostringstream expected;
+            expected << "; " << sizeof("\"quote\"");
+            ASSERT_EQUALS(expected.str(), sizeof_("; sizeof(\"\\\"quote\\\"\")"));
+        }
     }
 
     void casting()
