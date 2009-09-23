@@ -112,7 +112,7 @@ public:
      */
     std::map<std::string, ClassInfo> _classInfoList;
 
-#ifndef UNIT_TESTING
+#ifndef _MSC_VER
 private:
 #endif
 

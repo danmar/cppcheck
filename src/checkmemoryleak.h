@@ -161,7 +161,7 @@ public:
 
     void check();
 
-#ifndef UNIT_TESTING
+#ifndef _MSC_VER
 private:
 #endif
 
