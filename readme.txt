@@ -23,6 +23,11 @@ Compiling
     make sub-src – this will build command-line tool only
     make check – this one will build and run autotests
 
+Cross compiling Win32 (CLI) version of Cppcheck in Linux
+
+  sudo apt-get install mingw32
+  make CXX=i586-mingw32msvc-g++ LDFLAGS="-lshlwapi"
+  mv cppcheck cppcheck.exe
 
 Usage
 
