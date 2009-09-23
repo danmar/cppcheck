@@ -53,7 +53,7 @@ public:
      *         given value is returned instead of default 0.
      *         If no errors are found, 0 is returned.
      */
-    int check(int argc, const char* const argv[]);
+    virtual int check(int argc, const char* const argv[]);
 
     /**
      * Information about progress is directed here. This should be
@@ -68,14 +68,17 @@ public:
 
     virtual void reportStatus(unsigned int index, unsigned int max);
 
-private:
+protected:
 
     /**
      * Helper function to print out errors. Appends a line change.
      * @param errmsg String printed to error stream
      */
-    void reportErr(const std::string &errmsg);
+    virtual void reportErr(const std::string &errmsg);
 
+    /**
+     * check() will setup this in the beginning of check().
+     */
     Settings _settings;
 };
 
