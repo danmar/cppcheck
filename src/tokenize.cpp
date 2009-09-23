@@ -1699,10 +1699,16 @@ void Tokenizer::simplifyTokenList()
     // Replace NULL with 0..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok->str() == "NULL" ||
-            tok->str() == "'\\0'" ||
-            tok->str() == "0L")
+        if (tok->str() == "NULL" || tok->str() == "'\\0'")
+        {
             tok->str("0");
+        }
+        else if (tok->isNumber() &&
+                 MathLib::isInt(tok->str()) &&
+                 MathLib::toLongNumber(tok->str()) == 0)
+        {
+            tok->str("0");
+        }
     }
 
     // Replace pointer casts of 0.. "(char *)0" => "0"
