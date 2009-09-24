@@ -338,9 +338,7 @@ private:
         ASSERT_EQUALS(";;if(!var){}else{}", getcode("char *s; if (!s) { } else { }", "s"));
         ASSERT_EQUALS(";;if{}", getcode("char *s; if (a && s) { }", "s"));
         ASSERT_EQUALS(";;if(!var){}", getcode("char *s; if (a && !s) { }", "s"));
-
-        // There are missing semicolons in the extracted code
-        TODO_ASSERT_EQUALS(";;;if{dealloc;}if{dealloc;return;}assign;returnuse;", getcode("char *buf, *tmp; tmp = realloc(buf, 40); if (!(tmp)) { free(buf); return; } buf = tmp; return buf;", "buf"));
+        ASSERT_EQUALS(";;;if{dealloc;};if{dealloc;return;}assign;returnuse;", getcode("char *buf, *tmp; tmp = realloc(buf, 40); if (!(tmp)) { free(buf); return; } buf = tmp; return buf;", "buf"));
 
         // switch..
         ASSERT_EQUALS(";;switch{case;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));
@@ -1527,17 +1525,17 @@ private:
     {
         check("void foo()\n"
               "{\n"
-              "char *buf;\n"
-              "char *new_buf;\n"
-              "buf = calloc( 10 );\n"
-              "new_buf = realloc ( buf, 20);\n"
-              "if ( !new_buf )\n"
-              "  free(buf);\n"
-              "else\n"
-              "  free(new_buf);\n"
+              "    char *buf;\n"
+              "    char *new_buf;\n"
+              "    buf = calloc( 10 );\n"
+              "    new_buf = realloc ( buf, 20);\n"
+              "    if ( !new_buf )\n"
+              "        free(buf);\n"
+              "    else\n"
+              "        free(new_buf);\n"
               "}\n", true);
 
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (possible error) Memory leak: buf\n", errout.str());
     }
 
     void realloc6()
