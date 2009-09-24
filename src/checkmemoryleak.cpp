@@ -1017,7 +1017,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         addtoken("dealloc");
                         addtoken(";");
                         addtoken("}");
-                        tok = tok->tokAt(2);
+                        tok = tok->next()->link();
                         continue;
                     }
                 }
