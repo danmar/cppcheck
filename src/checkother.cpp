@@ -45,7 +45,8 @@ void CheckOther::warningOldStylePointerCast()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Old style pointer casting..
-        if (!Token::Match(tok, "( const| %type% * ) %var%"))
+        if (!Token::Match(tok, "( const| %type% * ) %var%") &&
+            !Token::Match(tok, "( const| %type% * ) (| new"))
             continue;
 
         int addToIndex = 0;
