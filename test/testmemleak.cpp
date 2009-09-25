@@ -1535,6 +1535,11 @@ private:
               "        free(new_buf);\n"
               "}\n", true);
 
+        // There isn't a memory leak in the code
+        TODO_ASSERT_EQUALS("", errout.str());
+
+        // This assertion checks that the message stays the same. Upon changes in the error message
+        // we will be notified
         ASSERT_EQUALS("[test.cpp:11]: (possible error) Memory leak: buf\n", errout.str());
     }
 
