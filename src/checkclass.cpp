@@ -541,6 +541,13 @@ void CheckClass::privateFunctions()
                     FuncList.push_back(tok);
                 }
             }
+
+            /** @todo embedded class have access to private functions */
+            if (tok->str() == "class")
+            {
+                FuncList.clear();
+                break;
+            }
         }
 
         // Check that all private functions are used..

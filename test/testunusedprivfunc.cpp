@@ -266,6 +266,25 @@ private:
               "    { }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    A()\n"
+              "    { }\n"
+              "\n"
+              "private:\n"
+              "    void f()\n"
+              "    { }\n"
+              "\n"
+              "    class B\n"
+              "    {\n"
+              "    public:\n"
+              "        B(A *a)\n"
+              "        { a->f(); }\n"
+              "    };\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
