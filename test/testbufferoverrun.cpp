@@ -119,6 +119,7 @@ private:
 
         TEST_CASE(memset1);
         TEST_CASE(counter_test);
+        TEST_CASE(strncpy1);
     }
 
 
@@ -793,6 +794,50 @@ private:
         ASSERT_EQUALS(6, CheckBufferOverrun::count(str1));
         ASSERT_EQUALS(11, CheckBufferOverrun::count(str2));
         ASSERT_EQUALS(8, CheckBufferOverrun::count(str3));
+    }
+
+    void strncpy1()
+    {
+        check("void f()\n"
+              "{\n"
+              " char a[6];\n"
+              " char c[7];\n"
+              " strcpy(a,\"hello\");\n"
+              " strncpy(c,a,sizeof(c));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              " char a[6];\n"
+              " char c[6];\n"
+              " strcpy(a,\"hello\");\n"
+              " strncpy(c,a,sizeof(c));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              " char a[6];\n"
+              " char c[5];\n"
+              " strcpy(a,\"hello\");\n"
+              " strncpy(c,a,sizeof(c)+1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              " char c[6];\n"
+              " strncpy(c,\"hello!\",sizeof(c));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              " char c[6];\n"
+              " strncpy(c,\"hello!\",sizeof(c)+1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
     }
 };
 

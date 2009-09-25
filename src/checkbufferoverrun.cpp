@@ -172,21 +172,18 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid > 0)
         {
-            if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets"))
+            if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", varid) ||
+                Token::Match(tok, "memset|memcpy|memmove|memcmp|fgets ( %var% , %varid% , %any% )", varid))
             {
-                if (Token::Match(tok->next(), "( %varid% , %any% , %any% )", varid) ||
-                    Token::Match(tok->next(), "( %var% , %varid% , %any% )", varid))
+                const Token *tokSz = tok->tokAt(6);
+                if (tokSz->str()[0] == '\'')
+                    sizeArgumentAsChar(tok);
+                else if (tokSz->isNumber())
                 {
-                    const Token *tokSz = tok->tokAt(6);
-                    if (tokSz->str()[0] == '\'')
-                        sizeArgumentAsChar(tok);
-                    else if (tokSz->isNumber())
+                    const char *num  = tok->strAt(6);
+                    if (std::atoi(num) > total_size)
                     {
-                        const char *num  = tok->strAt(6);
-                        if (std::atoi(num) > total_size)
-                        {
-                            bufferOverrun(tok);
-                        }
+                        bufferOverrun(tok);
                     }
                 }
             }
