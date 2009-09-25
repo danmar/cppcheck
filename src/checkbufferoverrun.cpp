@@ -749,6 +749,70 @@ void CheckBufferOverrun::bufferOverrun()
 //---------------------------------------------------------------------------
 
 
+int CheckBufferOverrun::count(const std::string &input_string)
+{
+
+
+
+    int flag = 1;
+    int input_string_size = 0;
+    int on_on_next = 0;
+    std::string digits_string = "";
+    int digits = 0;
+
+    for (std::string::size_type i = 0; i != input_string.size(); i++)
+    {
+
+        if (on_on_next == 1)
+        {
+            flag = 1;
+            on_on_next = 0;
+        }
+        switch (input_string[i])
+        {
+        case 'd':
+        case 'i':
+        case 'c':
+        case 'e':
+        case 'E':
+        case 'f':
+        case 'g':
+        case 'o':
+        case 's':
+        case 'u':
+        case 'x':
+        case 'X':
+        case 'p':
+        case 'n':
+            if (flag == 0) on_on_next = 1;
+            break;
+        case '%':
+            if (flag == 1) flag = 0;
+            break;
+        case '/':
+            input_string_size--;
+            break;
+        }
+
+        if (flag) input_string_size++;
+        else
+            digits_string += input_string[i];
+
+        if (on_on_next == 1 && flag == 0)
+        {
+            digits_string = digits_string.substr(1, digits_string.size());
+            digits += abs(atoi(digits_string.c_str()));
+            digits_string = "";
+
+        }
+
+
+    }
+
+
+    return input_string_size + 1 + digits;
+}
+
 
 
 

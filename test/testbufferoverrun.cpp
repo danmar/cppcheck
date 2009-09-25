@@ -118,6 +118,7 @@ private:
         TEST_CASE(alloc);    // Buffer allocated with new
 
         TEST_CASE(memset1);
+        TEST_CASE(counter_test);
     }
 
 
@@ -781,8 +782,22 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible error) The size argument is given as a char constant\n", errout.str());
     }
+
+    void counter_test()
+    {
+
+        std::string str1 = "Hello";
+        std::string str2 = "Hello %2.2d %1d";
+        std::string str3 = "Test \" ";
+
+        ASSERT_EQUALS(6, CheckBufferOverrun::count(str1));
+        ASSERT_EQUALS(11, CheckBufferOverrun::count(str2));
+        ASSERT_EQUALS(8, CheckBufferOverrun::count(str3));
+    }
 };
 
 REGISTER_TEST(TestBufferOverrun)
+
+
 
 

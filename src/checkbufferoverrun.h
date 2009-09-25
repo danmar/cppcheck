@@ -56,6 +56,8 @@ public:
 
     /** Check for buffer overruns */
     void bufferOverrun();
+    static int count(const std::string &input_string);
+
 private:
 
     /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
@@ -99,4 +101,6 @@ private:
 /// @}
 //---------------------------------------------------------------------------
 #endif
+
+
 
