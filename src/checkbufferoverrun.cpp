@@ -800,7 +800,7 @@ int CheckBufferOverrun::count(const std::string &input_string)
 
         if (on_on_next == 1 && flag == 0)
         {
-            std::cout << digits_string;
+            //std::cout << digits_string;
 
             digits_string = digits_string.substr(1, digits_string.size());
             if (check_for_i_d_x_f == 1) digits += std::max(abs(atoi(digits_string.c_str())), 1);
