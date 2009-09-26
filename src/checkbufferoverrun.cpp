@@ -756,6 +756,7 @@ int CheckBufferOverrun::count(const std::string &input_string)
     int on_on_next = 0;
     std::string digits_string = "";
     int digits = 0;
+    int check_for_i_d_x_f = 0;
 
     for (std::string::size_type i = 0; i != input_string.size(); i++)
     {
@@ -767,18 +768,20 @@ int CheckBufferOverrun::count(const std::string &input_string)
         }
         switch (input_string[i])
         {
+
+        case 'f':
+        case 'x':
+        case 'X':
         case 'd':
         case 'i':
+            check_for_i_d_x_f = 1;
         case 'c':
         case 'e':
         case 'E':
-        case 'f':
         case 'g':
         case 'o':
         case 's':
         case 'u':
-        case 'x':
-        case 'X':
         case 'p':
         case 'n':
             if (flag == 0) on_on_next = 1;
@@ -797,19 +800,21 @@ int CheckBufferOverrun::count(const std::string &input_string)
 
         if (on_on_next == 1 && flag == 0)
         {
+            std::cout << digits_string;
+
             digits_string = digits_string.substr(1, digits_string.size());
-            digits += abs(atoi(digits_string.c_str()));
+            if (check_for_i_d_x_f == 1) digits += std::max(abs(atoi(digits_string.c_str())), 1);
+            else
+                digits += abs(atoi(digits_string.c_str()));
+
             digits_string = "";
-
+            check_for_i_d_x_f = 0;
         }
-
 
     }
 
 
     return input_string_size + 1 + digits;
 }
-
-
 
 
