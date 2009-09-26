@@ -101,6 +101,7 @@ private:
         TEST_CASE(sprintf3);
         TEST_CASE(sprintf4);
         TEST_CASE(sprintf5);
+        TEST_CASE(sprintf6);
 
         TEST_CASE(snprintf1);
         TEST_CASE(snprintf2);
@@ -658,6 +659,16 @@ private:
               "    sprintf(buf, \"%s\", condition ? \"11\" : \"22\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void sprintf6()
+    {
+        check("void f(bool condition)\n"
+              "{\n"
+              "    char buf[3];\n"
+              "    sprintf(buf, \"%s\", condition ? \"11\" : \"222\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
     }
 
     void snprintf1()

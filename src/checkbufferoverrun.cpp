@@ -432,16 +432,32 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 len = 0;
                 const Token *end = tok->next()->link();
                 bool argumentAlreadyChecked = false;
+                int lastCheckedArgumentMaxSize = 0;
                 for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
                 {
                     if (tok2->str() == ",")
                     {
                         argumentAlreadyChecked = false;
+                        lastCheckedArgumentMaxSize = 0;
                     }
-                    else if (Token::Match(tok2, "%str%") && argumentAlreadyChecked == false)
+                    else if (Token::Match(tok2, "%str%"))
                     {
-                        len += (int)Token::getStrLength(tok2);
-                        argumentAlreadyChecked = true;
+                        int argumentSize = static_cast<int>(Token::getStrLength(tok2));
+                        if (argumentAlreadyChecked == false)
+                        {
+                            lastCheckedArgumentMaxSize = argumentSize;
+                            len += argumentSize;
+                            argumentAlreadyChecked = true;
+                        }
+                        else if (argumentSize > lastCheckedArgumentMaxSize)
+                        {
+                            // when sprintf() argument is ternary
+                            // operation we may have two and more
+                            // strings as argument. In this case we
+                            // use length of longest string.
+                            len += (argumentSize - lastCheckedArgumentMaxSize);
+                            lastCheckedArgumentMaxSize = argumentSize;
+                        }
                     }
                 }
                 if (len >= (int)size)
