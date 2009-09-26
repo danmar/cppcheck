@@ -94,6 +94,7 @@ private:
         TEST_CASE(buffer_overrun_4);
         TEST_CASE(buffer_overrun_5);
         TEST_CASE(buffer_overrun_6);
+        TEST_CASE(buffer_overrun_7);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -578,6 +579,17 @@ private:
               "   strcat(strcat(n, \"abc\"), \"def\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+    }
+
+    void buffer_overrun_7()
+    {
+        // ticket #731
+        check("void f()\n"
+              "{\n"
+              "    char a[2];\n"
+              "    strcpy(a, \"a\\0\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sprintf1()

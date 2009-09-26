@@ -510,7 +510,14 @@ size_t Token::getStrLength(const Token *tok)
     while (*str)
     {
         if (*str == '\\')
+        {
             ++str;
+
+            // string ends at '\0'
+            if (*str == '0')
+                break;
+        }
+
         ++str;
         ++len;
     }

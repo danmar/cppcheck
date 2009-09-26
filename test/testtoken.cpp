@@ -93,6 +93,9 @@ private:
 
         tok.str("\"test \\\\test\"");
         ASSERT_EQUALS(10, Token::getStrLength(&tok));
+
+        tok.str("\"a\\0\"");
+        ASSERT_EQUALS(1, Token::getStrLength(&tok));
     }
 
     void strValue()
