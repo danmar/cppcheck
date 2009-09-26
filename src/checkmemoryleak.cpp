@@ -1152,6 +1152,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     done = false;
                 }
 
+                // Reduce "if X ; else X ;" => "X ;"
+                else if (Token::Match(tok2->next(), "if %var% ; else %var% ;") &&
+                         std::string(tok2->strAt(2)) == std::string(tok2->strAt(5)))
+                {
+                    Token::eraseTokens(tok2, tok2->tokAt(5));
+                    done = false;
+                }
+
                 // Two "if alloc ;" after one another.. perhaps only one of them can be executed each time
                 else if (!_settings->_showAll && Token::Match(tok2, "[;{}] if alloc ; if alloc ;"))
                 {
@@ -1370,6 +1378,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(4));
+                done = false;
+            }
+
+            // Reduce "loop break ; => ";"
+            if (Token::Match(tok2->next(), "loop break|continue ;"))
+            {
+                Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
 
