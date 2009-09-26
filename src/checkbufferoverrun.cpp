@@ -431,11 +431,17 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             {
                 len = 0;
                 const Token *end = tok->next()->link();
+                bool argumentAlreadyChecked = false;
                 for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
                 {
-                    if (tok2->str()[0] == '\"')
+                    if (tok2->str() == ",")
+                    {
+                        argumentAlreadyChecked = false;
+                    }
+                    else if (Token::Match(tok2, "%str%") && argumentAlreadyChecked == false)
                     {
                         len += (int)Token::getStrLength(tok2);
+                        argumentAlreadyChecked = true;
                     }
                 }
                 if (len >= (int)size)
