@@ -142,6 +142,7 @@ private:
         TEST_CASE(vardecl7);
         TEST_CASE(vardecl8);
         TEST_CASE(vardecl9);
+        TEST_CASE(vardecl10);
         TEST_CASE(vardecl_stl);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
@@ -2287,6 +2288,14 @@ private:
         const char res[]  = "char a [ 2 ] = { 'A' , '\\0' } ; char b [ 2 ] = { 'B' , '\\0' } ;";
 
         ASSERT_EQUALS(res, tokenizeAndStringify(code));
+    }
+
+    void vardecl10()
+    {
+        // ticket #732
+        const char code[] = "char a [ 2 ] = { '-' } ; memset ( a , '-' , sizeof ( a ) ) ;";
+
+        ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 
     void volatile_variables()

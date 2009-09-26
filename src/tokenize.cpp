@@ -2570,7 +2570,11 @@ void Tokenizer::simplifyVarDecl()
                 {
                     if (tok2->str() == "{")
                         tok2 = tok2->link();
+
                     tok2 = tok2->next();
+
+                    if (tok2->str() == ";")
+                        tok2 = NULL;
                 }
             }
         }
