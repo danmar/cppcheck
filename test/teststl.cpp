@@ -55,6 +55,7 @@ private:
         TEST_CASE(pushback2);
         TEST_CASE(pushback3);
         TEST_CASE(pushback4);
+        TEST_CASE(pushback5);
 
         TEST_CASE(insert1);
 
@@ -371,6 +372,23 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (error) Invalid pointer 'first' after push_back / push_front\n", errout.str());
     }
 
+    void pushback5()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int>::const_iterator i;\n"
+              "\n"
+              "    for (i=v.begin(); i!=v.end(); ++i)\n"
+              "    {\n"
+              "    }\n"
+              "\n"
+              "    for (i=rhs.v.begin(); i!=rhs.v.end(); ++i)\n"
+              "    {\n"
+              "        v.push_back(*i);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
 

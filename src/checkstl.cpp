@@ -306,14 +306,14 @@ void CheckStl::pushback()
                             continue;
 
                         const Token *pushback = 0;
-                        int indent3 = 0;
+                        unsigned int indent3 = 0;
                         for (const Token *tok3 = tok2->tokAt(22); tok3; tok3 = tok3->next())
                         {
                             if (tok3->str() == "{")
                                 ++indent3;
                             else if (tok3->str() == "}")
                             {
-                                if (indent3 == 0)
+                                if (indent3 <= 1)
                                     break;
                                 --indent3;
                             }
@@ -333,9 +333,12 @@ void CheckStl::pushback()
                     }
 
                     // Assigning iterator..
-                    if (Token::Match(tok2, "%varid% = %var% . begin ( )", iteratorid))
+                    if (Token::Match(tok2, "%varid% =", iteratorid))
                     {
-                        vectorname = tok2->strAt(2);
+                        if (Token::Match(tok2->tokAt(2), "%var% . begin ( )"))
+                            vectorname = tok2->strAt(2);
+                        else
+                            vectorname = "";
                         invalidIterator = false;
                     }
 
