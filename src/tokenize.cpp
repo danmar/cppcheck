@@ -1534,8 +1534,14 @@ void Tokenizer::simplifyTokenList()
     // Combine strings
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        while (tok->str()[0] == '"' && tok->next() && tok->next()->str()[0] == '"')
+        if (tok->str()[0] != '"')
+            continue;
+
+        tok->str(simplifyString(tok->str()));
+        while (tok->next() && tok->next()->str()[0] == '"')
         {
+            tok->next()->str(simplifyString(tok->next()->str()));
+
             // Two strings after each other, combine them
             tok->concatStr(tok->next()->str());
             tok->deleteNext();
@@ -4023,4 +4029,56 @@ bool Tokenizer::validate() const
     assert(linktok.empty());
 
     return true;
+}
+
+std::string Tokenizer::simplifyString(const std::string &source)
+{
+    std::string str = source;
+    bool escaped = false;
+    for (std::string::size_type i = 0; i + 2 < str.size(); i++)
+    {
+        if (!escaped)
+        {
+            if (str[i] == '\\')
+                escaped = true;
+
+            continue;
+        }
+
+        if (str[i] == 'x')
+        {
+            // Hex value
+            if (str[i+1] == '0' && str[i+2] == '0')
+                str.replace(i, 3, "0");
+            else
+            {
+                // We will replace all other character as 'a'
+                // If that causes problems in the future, this can
+                // be improved. But for now, this should be OK.
+                --i;
+                str.replace(i, 4, "a");
+            }
+        }
+        else if (MathLib::isOctalDigit(str[i]))
+        {
+            if (MathLib::isOctalDigit(str[i+1]) &&
+                MathLib::isOctalDigit(str[i+2]))
+            {
+                if (str[i+1] == '0' && str[i+2] == '0')
+                    str.replace(i, 3, "0");
+                else
+                {
+                    // We will replace all other character as 'a'
+                    // If that causes problems in the future, this can
+                    // be improved. But for now, this should be OK.
+                    --i;
+                    str.replace(i, 4, "a");
+                }
+            }
+        }
+
+        escaped = false;
+    }
+
+    return str;
 }

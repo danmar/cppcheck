@@ -136,7 +136,7 @@ bool MathLib::isInt(const std::string & s)
     // check octal notation
     else if (Mode == eOctal)
     {
-        while (s[n] == '0' || s[n] == '1' || s[n] == '2' || s[n] == '3' || s[n] == '4' || s[n] == '5' || s[n] == '6' || s[n] == '7')
+        while (isOctalDigit(s[n]))
             ++n;
     }
     else if (Mode == eDefault)
@@ -254,4 +254,11 @@ bool MathLib::isGreater(const std::string &first, const std::string &second)
     return toDoubleNumber(first) > toDoubleNumber(second);
 }
 
+bool MathLib::isOctalDigit(char c)
+{
+    if (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7')
+        return true;
+
+    return false;
+}
 
