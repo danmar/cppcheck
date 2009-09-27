@@ -181,14 +181,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--template") == 0)
         {
             // "--template path/"
-            if (strcmp(argv[i], "--template") == 0)
-            {
-                ++i;
-                if (i >= argc)
-                    return "cppcheck: argument to '--template' is missing\n";
+            ++i;
+            if (i >= argc)
+                return "cppcheck: argument to '--template' is missing\n";
 
-                _settings._outputFormat = argv[i];
-            }
+            _settings._outputFormat = argv[i];
         }
 
         // Include paths
