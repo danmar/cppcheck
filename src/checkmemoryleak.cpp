@@ -863,6 +863,12 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // Loops..
         else if ((tok->str() == "for") || (tok->str() == "while"))
         {
+            if (Token::simpleMatch(tok, "while ( true )"))
+            {
+                addtoken("while1");
+                tok = tok->next()->link();
+                continue;
+            }
             addtoken("loop");
             isloop = true;
         }
@@ -1317,6 +1323,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::simpleMatch(tok2->next(), "else ;"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(2));
+                done = false;
+            }
+
+            // Reduce "while1 ;" => "use ;"
+            if (Token::simpleMatch(tok2, "while1 ;"))
+            {
+                tok2->str("use");
                 done = false;
             }
 
