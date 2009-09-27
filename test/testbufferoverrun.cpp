@@ -888,18 +888,15 @@ private:
 
     void counter_test()
     {
-
-        std::string str1 = "Hello";
-        std::string str2 = "Hello %2.2d %1d";
-        std::string str3 = "Test \" ";
-        std::string str4 = "Try %s";
-        std::string str5 = "%d";
-
-        ASSERT_EQUALS(6, CheckBufferOverrun::count(str1));
-        ASSERT_EQUALS(11, CheckBufferOverrun::count(str2));
-        ASSERT_EQUALS(8, CheckBufferOverrun::count(str3));
-        ASSERT_EQUALS(5, CheckBufferOverrun::count(str4));
-        ASSERT_EQUALS(2, CheckBufferOverrun::count(str5));
+        ASSERT_EQUALS(6, CheckBufferOverrun::count("Hello"));
+        ASSERT_EQUALS(2, CheckBufferOverrun::count("s"));
+        ASSERT_EQUALS(2, CheckBufferOverrun::count("i"));
+        ASSERT_EQUALS(2, CheckBufferOverrun::count("%d"));
+        ASSERT_EQUALS(2, CheckBufferOverrun::count("%1d"));
+        ASSERT_EQUALS(3, CheckBufferOverrun::count("%2.2d"));
+        ASSERT_EQUALS(1, CheckBufferOverrun::count("%s"));
+        ASSERT_EQUALS(6, CheckBufferOverrun::count("%-5s"));
+        TODO_ASSERT_EQUALS(2, CheckBufferOverrun::count("\\\""));
     }
 
     void strncpy1()
