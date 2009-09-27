@@ -318,7 +318,7 @@ void CheckStl::pushback()
                         tok2 = tok2->tokAt(2);
                     }
 
-                    if (Token::Match(tok2, "%varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++ %varid% ) {", iteratorid))
+                    if (Token::Match(tok2, "%varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++| %varid% ++| ) {", iteratorid))
                     {
                         const unsigned int vectorid(tok2->tokAt(2)->varId());
                         if (vectorid == 0)

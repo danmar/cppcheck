@@ -57,6 +57,7 @@ private:
         TEST_CASE(pushback4);
         TEST_CASE(pushback5);
         TEST_CASE(pushback6);
+        TEST_CASE(pushback7);
 
         TEST_CASE(insert1);
 
@@ -419,6 +420,21 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+    }
+
+    void pushback7()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int> foo;\n"
+              "    foo.push_back(10);\n"
+              "    std::vector<int>::iterator it;\n"
+              "    for (it = foo.begin(); it != foo.end(); it++)\n"
+              "    {\n"
+              "        foo.push_back(123);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
     }
 
 
