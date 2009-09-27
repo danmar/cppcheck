@@ -273,6 +273,14 @@ void CheckStl::pushback()
     {
         if (Token::simpleMatch(tok, "vector <"))
         {
+            // if iterator declaration inside for() loop
+            bool iteratorDeclaredInsideLoop = false;
+            if ((tok->tokAt(-2) && Token::simpleMatch(tok->tokAt(-2), "for (")) ||
+                (tok->tokAt(-4) && Token::simpleMatch(tok->tokAt(-4), "for ( std ::")))
+            {
+                iteratorDeclaredInsideLoop = true;
+            }
+
             while (tok && tok->str() != ">")
                 tok = tok->next();
             if (!tok)
@@ -282,6 +290,12 @@ void CheckStl::pushback()
                 const unsigned int iteratorid(tok->tokAt(3)->varId());
                 if (iteratorid == 0)
                     continue;
+
+                if (iteratorDeclaredInsideLoop && tok->tokAt(4)->str() == "=")
+                {
+                    // skip "> :: iterator|const_iterator"
+                    tok = tok->tokAt(3);
+                }
 
                 std::string vectorname;
                 int indent = 0;
@@ -299,15 +313,20 @@ void CheckStl::pushback()
                     }
 
                     // Using push_back or push_front inside a loop..
-                    if (Token::Match(tok2, "for ( %varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++ %varid% ) {", iteratorid))
+                    if (Token::Match(tok2, "for ("))
                     {
-                        const unsigned int vectorid(tok2->tokAt(4)->varId());
+                        tok2 = tok2->tokAt(2);
+                    }
+
+                    if (Token::Match(tok2, "%varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++ %varid% ) {", iteratorid))
+                    {
+                        const unsigned int vectorid(tok2->tokAt(2)->varId());
                         if (vectorid == 0)
                             continue;
 
                         const Token *pushback = 0;
                         unsigned int indent3 = 0;
-                        for (const Token *tok3 = tok2->tokAt(22); tok3; tok3 = tok3->next())
+                        for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next())
                         {
                             if (tok3->str() == "{")
                                 ++indent3;
@@ -329,7 +348,7 @@ void CheckStl::pushback()
                         }
 
                         if (pushback)
-                            pushbackError(pushback, tok2->strAt(2));
+                            pushbackError(pushback, tok2->strAt(0));
                     }
 
                     // Assigning iterator..
