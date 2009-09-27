@@ -39,6 +39,8 @@
 		<Unit filename="gui/checkthread.cpp" />
 		<Unit filename="gui/checkthread.h" />
 		<Unit filename="gui/common.h" />
+		<Unit filename="gui/csvreport.cpp" />
+		<Unit filename="gui/csvreport.h" />
 		<Unit filename="gui/fileviewdialog.cpp" />
 		<Unit filename="gui/fileviewdialog.h" />
 		<Unit filename="gui/main.cpp" />
@@ -136,9 +138,6 @@
 		<Unit filename="test/testunusedprivfunc.cpp" />
 		<Unit filename="test/testunusedvar.cpp" />
 		<Unit filename="tools/dmake.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
-		<Unit filename="tools/errmsg.cpp">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
 		<Extensions>
