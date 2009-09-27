@@ -32,7 +32,7 @@
 #include <cstring>
 #include <cctype>
 
-
+#include <cassert>     // <- assert
 #include <cstdlib>     // <- strtoul
 
 //---------------------------------------------------------------------------
@@ -246,14 +246,17 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             else
                 continue;
 
+            int value = 0;
             if (counter_varid)
             {
                 if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
                 {
-                    max_counter_value = MathLib::toString<long>(std::atol(tok2->strAt(2)) - 1);
+                    value = std::atoi(tok2->strAt(2));
+                    max_counter_value = MathLib::toString<long>(value - 1);
                 }
                 else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
                 {
+                    value = std::atoi(tok2->strAt(2));
                     max_counter_value = tok2->strAt(2);
                 }
             }
@@ -261,9 +264,24 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             // Get index variable and stopsize.
             const char *strindex = tok2->str().c_str();
             bool condition_out_of_bounds = true;
-            int value = ((tok2->strAt(1)[1] == '=') ? 1 : 0) + std::atoi(tok2->strAt(2));
-            if (value <= size)
+            if (value < size)
                 condition_out_of_bounds = false;;
+
+            const Token *tok3 = tok2->tokAt(4);
+            assert(tok3 != NULL);
+            if (Token::Match(tok3, "%varid% += %num% )", counter_varid) ||
+                Token::Match(tok3, "%varid%  = %num% + %varid% )", counter_varid))
+            {
+                const int num = std::atoi(tok3->strAt(2));
+                if (num > value)
+                    condition_out_of_bounds = false;
+            }
+            else if (Token::Match(tok3, "%varid% = %varid% + %num% )", counter_varid))
+            {
+                const int num = std::atoi(tok3->strAt(4));
+                if (num > value)
+                    condition_out_of_bounds = false;
+            }
 
             // Goto the end paranthesis of the for-statement: "for (x; y; z)" ..
             tok2 = tok->next()->link();
