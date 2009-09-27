@@ -265,7 +265,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             const char *strindex = tok2->str().c_str();
             bool condition_out_of_bounds = true;
             if (value < size)
-                condition_out_of_bounds = false;;
+                condition_out_of_bounds = false;
 
             const Token *tok3 = tok2->tokAt(4);
             assert(tok3 != NULL);
