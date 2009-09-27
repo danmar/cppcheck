@@ -256,7 +256,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 }
                 else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
                 {
-                    value = std::atoi(tok2->strAt(2));
+                    value = std::atoi(tok2->strAt(2)) + 1;
                     max_counter_value = tok2->strAt(2);
                 }
             }
