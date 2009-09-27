@@ -96,6 +96,7 @@ private:
         TEST_CASE(buffer_overrun_6);
         TEST_CASE(buffer_overrun_7);
         TEST_CASE(buffer_overrun_8);
+        TEST_CASE(buffer_overrun_9);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -624,6 +625,21 @@ private:
               "    for (int i = 0; i < 20; i = 100 + i)\n"
               "    {\n"
               "        a[i] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_9()
+    {
+        // ticket #738
+        check("void f()\n"
+              "{\n"
+              "    char a[5];\n"
+              "    for (int i = 0; i < 20; )\n"
+              "    {\n"
+              "        a[i] = 0;\n"
+              "        i += 100;\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());

@@ -282,6 +282,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 if (num > value)
                     condition_out_of_bounds = false;
             }
+            else if (! Token::Match(tok3, "++| %varid% ++| )", counter_varid))
+            {
+                continue;
+            }
 
             // Goto the end paranthesis of the for-statement: "for (x; y; z)" ..
             tok2 = tok->next()->link();
