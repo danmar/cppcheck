@@ -2733,6 +2733,9 @@ private:
 
         // Handle if-else
         TEST_CASE(ifelse);
+
+        // struct variable is a global variable
+        TEST_CASE(globalvar);
     }
 
     void err()
@@ -2893,6 +2896,19 @@ private:
               "    }\n"
               "    free(abc->a);\n"
               "    free(abc);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void globalvar()
+    {
+        check("struct ABC *abc;\n"
+              "\n"
+              "static void foo()\n"
+              "{\n"
+              "    abc = malloc(sizeof(struct ABC));\n"
+              "    abc->a = malloc(10);\n"
+              "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -2116,10 +2116,17 @@ void CheckMemoryLeakStructMember::check()
     ignoredFunctions.insert("while");
     ignoredFunctions.insert("malloc");
 
+
+    unsigned int indentlevel1 = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        if (tok->str() == "{")
+            ++indentlevel1;
+        else if (tok->str() == "}")
+            --indentlevel1;
+
         // Locate struct variables..
-        if (Token::Match(tok, "struct|;|{|} %type% * %var% [=;]"))
+        if (indentlevel1 > 0 && Token::Match(tok, "struct|;|{|} %type% * %var% [=;]"))
         {
             const Token * const vartok = tok->tokAt(3);
             if (vartok->varId() == 0)
