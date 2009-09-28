@@ -186,6 +186,10 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
                 return "cppcheck: argument to '--template' is missing\n";
 
             _settings._outputFormat = argv[i];
+            if (_settings._outputFormat == "gcc")
+                _settings._outputFormat = "{file}:{line}: {severity}: {message}";
+            else if (_settings._outputFormat == "vs")
+                _settings._outputFormat = "{file}({line}): {severity}: {message}";
         }
 
         // Include paths
@@ -330,6 +334,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    --template '[text]'  Format the error messages. E.g.\n"
         "                         '{file}:{line},{severity},{id},{message}' or\n"
         "                         '{file}({line}):({severity}) {message}'\n"
+        "                         Pre-defined templates: gcc, vs\n"
         "    --unused-functions   Check if there are unused functions\n"
         "    -v, --verbose        More detailed error reports\n"
         "    --version            Print out version number\n"

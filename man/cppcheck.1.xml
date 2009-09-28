@@ -211,7 +211,7 @@ files, this is not needed.</para>
       <varlistentry>
         <term><option>--template ['text']</option></term>
         <listitem>
-          <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'</para>
+          <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
         </listitem>
       </varlistentry>
       <varlistentry>
