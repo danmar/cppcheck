@@ -80,6 +80,7 @@ private:
         TEST_CASE(simplifyKnownVariables11);
         TEST_CASE(simplifyKnownVariables12);
         TEST_CASE(simplifyKnownVariables13);
+        TEST_CASE(simplifyKnownVariables14);
 
         TEST_CASE(match1);
 
@@ -800,6 +801,13 @@ private:
         ASSERT_EQUALS(
             "void f ( ) { int i ; i = 10 ; while ( -- i ) { } }",
             simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables14()
+    {
+        // ticket #753
+        const char code[] = "void f ( ) { int n ; n = 1 ; do { ++ n ; } while ( n < 10 ) ; }";
+        ASSERT_EQUALS(code, simplifyKnownVariables(code));
     }
 
 

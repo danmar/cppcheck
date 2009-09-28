@@ -3022,7 +3022,7 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // Stop if something like 'while (--var)' is found
-                    if (tok3->str() == "while")
+                    if (tok3->str() == "while" || tok3->str() == "do")
                     {
                         const Token *endpar = tok3->next()->link();
                         bool bailout = false;
