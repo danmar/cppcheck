@@ -81,7 +81,7 @@ void CheckOther::warningRedundantCode()
         if (! Token::simpleMatch(tok, "if ("))
             continue;
 
-        const char *varname = NULL;
+        std::string varname;
         const Token *tok2 = tok->tokAt(2);
 
         /*
@@ -93,39 +93,18 @@ void CheckOther::warningRedundantCode()
          *
          **/
 
-        if (Token::Match(tok2, "%var% .|::"))
+        while (Token::Match(tok2, "%var% .|::"))
         {
+            varname.append(tok2->str());
+            varname.append(tok2->next()->str());
             tok2 = tok2->tokAt(2);
         }
 
-        if (Token::Match(tok2, "%var%"))
-        {
-            varname = tok2->strAt(0);
-            tok2 = tok2->next();
-        }
-
-        if (tok2->str() == ")")
-        {
-            tok2 = tok2->next();
-
-        }
-        else
-        {
-            varname = NULL;
-        }
-
-        if (varname == NULL)
+        if (!Token::Match(tok2, "%var% ) {"))
             continue;
 
-        bool ifHasBracket = false;
-        if (tok2->str() == "{")
-        {
-            tok2 = tok2->next();
-            ifHasBracket = true;
-        }
-
-        bool err = false;
-        bool funcHasBracket = false;
+        varname.append(tok2->str());
+        tok2 = tok2->tokAt(3);
 
         /*
          * Possible constructions:
@@ -142,6 +121,7 @@ void CheckOther::warningRedundantCode()
          *
          **/
 
+        bool funcHasBracket = false;
         if (Token::Match(tok2, "free|kfree ("))
         {
             tok2 = tok2->tokAt(2);
@@ -159,22 +139,25 @@ void CheckOther::warningRedundantCode()
             }
         }
 
-        if (Token::Match(tok2, "%var% ::|."))
+        std::string varname2;
+        while (Token::Match(tok2, "%var% ::|."))
         {
+            varname2.append(tok2->str());
+            varname2.append(tok2->next()->str());
             tok2 = tok2->tokAt(2);
         }
 
-        if (Token::Match(tok2, "%var%") && (strcmp(tok2->strAt(0), varname) == 0))
-        {
+        varname2.append(tok2->str());
+        if (Token::Match(tok2, "%var%") && varname == varname2)
             tok2 = tok2->next();
-            err = true;
-        }
+        else
+            continue;
 
         if (funcHasBracket)
         {
             if (tok2->str() != ")")
             {
-                err = false;
+                continue;
             }
             else
             {
@@ -182,27 +165,12 @@ void CheckOther::warningRedundantCode()
             }
         }
 
-        if (tok2->str() != ";")
+        if (!Token::Match(tok2, "; } !!else"))
         {
-            err = false;
-        }
-        else
-        {
-            tok2 = tok2->next();
+            continue;
         }
 
-        if (ifHasBracket)
-        {
-            if (tok2->str() != "}")
-            {
-                err = false;
-            }
-        }
-
-        if (err)
-        {
-            redundantIfDelete0Error(tok);
-        }
+        redundantIfDelete0Error(tok);
     }
 
 

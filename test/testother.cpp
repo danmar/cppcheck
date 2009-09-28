@@ -214,6 +214,29 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (p)\n"
+              "        delete p;\n"
+              "    else\n"
+              "        p = new P();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (0 != g->p)\n"
+              "        delete this->p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (0 != this->g->a)\n"
+              "        delete this->p->a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void delete2()
@@ -254,6 +277,14 @@ private:
               "        delete this->p;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (0 != this->p->a)\n"
+              "        delete this->p->a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
+
 
         check("void Foo::deleteInstance()\n"
               "{\n"
