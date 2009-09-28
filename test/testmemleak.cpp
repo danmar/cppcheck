@@ -2792,7 +2792,7 @@ private:
               "    free(abc->a);\n"
               "    free(abc);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ret()

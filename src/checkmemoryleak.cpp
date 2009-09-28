@@ -2243,6 +2243,35 @@ void CheckMemoryLeakStructMember::check()
                             tok3 = tok3->next()->link();
                         }
 
+                        // succeeded allocation
+                        else if (Token::Match(tok3, "if ( %var% . %varid% ) {", structmemberid))
+                        {
+                            // goto the ")"
+                            tok3 = tok3->next()->link();
+
+                            // check if the variable is deallocated or returned..
+                            unsigned int indentlevel4 = 0;
+                            for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
+                            {
+                                if (tok4->str() == "{")
+                                    ++indentlevel4;
+                                else if (tok4->str() == "}")
+                                {
+                                    --indentlevel4;
+                                    if (indentlevel4 == 0)
+                                        break;
+                                }
+                                else if (Token::Match(tok4, "free|kfree ( %var% . %varid% )", structmemberid))
+                                {
+                                    break;
+                                }
+                            }
+
+                            // was there a proper deallocation?
+                            if (indentlevel4 > 0)
+                                break;
+                        }
+
                         // Returning from function..
                         else if (tok3->str() == "return")
                         {
