@@ -2714,22 +2714,67 @@ void Tokenizer::unsignedint()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        // A variable declaration where the "int" is left out?
-        if (!Token::Match(tok, "unsigned %var% [;,=]"))
+        if (!Token::Match(tok, "unsigned|signed"))
             continue;
 
-        // Previous token should either be a symbol or one of "{};("
+        if (Token::Match(tok->previous(), "%type% unsigned|signed %var% [;,=)]") &&
+            tok->previous()->isStandardType())
+        {
+            if (tok->str() == "signed")
+            {
+                // int signed a; -> int a;
+                tok = tok->previous();
+                tok->deleteNext();
+            }
+            else
+            {
+                // int unsigned a; -> unsigned int a;
+                std::string temp = tok->str();
+                tok->str(tok->previous()->str());
+                tok->previous()->str(temp);
+            }
+
+            continue;
+        }
+
+        // signed int a; -> int a;
+        if (Token::Match(tok, "signed %type% %var% [;,=)]"))
+        {
+            if (tok->next()->isStandardType())
+            {
+                tok->str(tok->next()->str());
+                tok->deleteNext();
+                continue;
+            }
+        }
+
+        // A variable declaration where the "int" is left out?
+        else if (!Token::Match(tok, "unsigned|signed %var% [;,=)]"))
+            continue;
+
+        // Previous token should either be a symbol or one of "{};(,"
         if (tok->previous() &&
             !tok->previous()->isName() &&
-            !Token::Match(tok->previous(), "[{};(]"))
+            !Token::Match(tok->previous(), "[{};(,]"))
             continue;
 
         // next token should not be a standard type?
         if (tok->next()->isStandardType())
+        {
+            if (tok->str() == "signed")
+            {
+                tok->str(tok->next()->str());
+                tok->deleteNext();
+            }
+
             continue;
+        }
 
         // The "int" is missing.. add it
-        tok->insertToken("int");
+        if (tok->str() == "signed")
+            tok->str("int");
+        else
+            tok->insertToken("int");
     }
 }
 

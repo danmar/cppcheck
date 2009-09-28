@@ -129,6 +129,8 @@ private:
     /**
      * insert an "int" after "unsigned" if needed:
      * "unsigned i" => "unsigned int i"
+     * "signed int i" => "int i"
+     * "signed i" => "int i"
      */
     void unsignedint();
 

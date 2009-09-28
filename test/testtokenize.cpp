@@ -154,6 +154,7 @@ private:
         TEST_CASE(unsigned1);
         TEST_CASE(testUpdateClassList);
         TEST_CASE(createLinks);
+        TEST_CASE(signed1);
     }
 
 
@@ -2368,6 +2369,43 @@ private:
 
 
     /**
+     * tokenize "signed i" => "signed int i"
+     */
+    void signed1()
+    {
+        {
+            const char code[] = "void foo ( signed int , signed float ) ;";
+            const char code2[] = "void foo ( int , float ) ;";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code));
+        }
+
+        {
+            const char code1[] = "signed i ;";
+            const char code2[] = "int i ;";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+        }
+
+        {
+            const char code1[] = "signed int i ;";
+            const char code2[] = "int i ;";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+        }
+
+        {
+            const char code1[] = "int signed i ;";
+            const char code2[] = "int i ;";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+        }
+
+        {
+            const char code1[] = "for (signed i=0; i<10; i++)";
+            const char code2[] = "for ( int i = 0 ; i < 10 ; i ++ )";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+        }
+
+    }
+
+    /**
      * tokenize "unsigned i" => "unsigned int i"
      * tokenize "unsigned int" => "unsigned int"
      */
@@ -2382,6 +2420,12 @@ private:
         // insert "int" after "unsigned"..
         {
             const char code1[] = "unsigned i ;";
+            const char code2[] = "unsigned int i ;";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+        }
+
+        {
+            const char code1[] = "int unsigned i ;";
             const char code2[] = "unsigned int i ;";
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
