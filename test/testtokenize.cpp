@@ -2369,7 +2369,7 @@ private:
 
 
     /**
-     * tokenize "signed i" => "signed int i"
+     * tokenize "signed i" => "int i"
      */
     void signed1()
     {
