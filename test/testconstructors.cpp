@@ -86,7 +86,7 @@ private:
               "public:\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' has no constructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' has no constructor. Member variables not initialized.\n", errout.str());
     }
 
 

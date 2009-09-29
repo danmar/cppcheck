@@ -878,7 +878,7 @@ void CheckClass::thisSubtraction()
 
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname)
 {
-    reportError(tok, Severity::style, "noConstructor", "The class '" + classname + "' has no constructor");
+    reportError(tok, Severity::style, "noConstructor", "The class '" + classname + "' has no constructor. Member variables not initialized.");
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
