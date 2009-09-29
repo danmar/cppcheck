@@ -833,9 +833,6 @@ int CheckBufferOverrun::count(const std::string &input_string)
         case '%':
             if (flag == 1) flag = 0;
             break;
-        case '/':
-            input_string_size--;
-            break;
         }
 
         if (flag) input_string_size++;
@@ -855,6 +852,21 @@ int CheckBufferOverrun::count(const std::string &input_string)
             check_for_i_d_x_f = 0;
         }
 
+    }
+
+    // A second iteration through the string to deal with /'s
+
+    std::string::size_type j = 0;
+
+    while (j < input_string.size())
+    {
+        if (input_string[j] == '\\')
+        {
+            input_string_size--;
+            j += 2;
+            continue;
+        }
+        j++;
     }
 
 
