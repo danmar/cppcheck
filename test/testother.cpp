@@ -774,6 +774,15 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNullPointer("void foo(P *p)\n"
+                         "{\n"
+                         "  while (p)\n"
+                         "    if (p->check())\n"
+                         "      break;\n"
+                         "    else\n"
+                         "      p = p->next();\n"
+                         "}\n");
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
 

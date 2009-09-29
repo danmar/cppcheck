@@ -47,12 +47,12 @@ public:
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
+        checkOther.nullPointer();
         if (settings->_checkCodingStyle)
         {
             checkOther.warningOldStylePointerCast();
             checkOther.checkUnsignedDivision();
             checkOther.checkCharVariable();
-            checkOther.nullPointer();
         }
     }
 
