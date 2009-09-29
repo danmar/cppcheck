@@ -2087,9 +2087,9 @@ void Tokenizer::simplifyConditionOperator()
             const std::string value1(tok->strAt(5));
             const std::string value2(tok->strAt(7));
 
-            Token::eraseTokens(tok, tok->tokAt(8));
+            Token::eraseTokens(tok, tok->tokAt(9));
 
-            std::string str("if ( " + condition + " ) " + var + " = " + value1 + " ; else " + var + " = " + value2);
+            std::string str("if ( " + condition + " ) { " + var + " = " + value1 + " ; } else { " + var + " = " + value2 + " ; }");
             std::string::size_type pos1 = 0;
             while (pos1 != std::string::npos)
             {
@@ -2107,7 +2107,9 @@ void Tokenizer::simplifyConditionOperator()
                 tok = tok->next();
             }
 
-            Token::createMutualLinks(tok->tokAt(-10), tok->tokAt(-8));
+            Token::createMutualLinks(tok->tokAt(-15), tok->tokAt(-13));
+            Token::createMutualLinks(tok->tokAt(-12), tok->tokAt(-7));
+            Token::createMutualLinks(tok->tokAt(-5), tok);
         }
     }
 }
@@ -4051,14 +4053,14 @@ bool Tokenizer::validate() const
 
     for (const Token *tok = tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[{(]"))
+        if (Token::Match(tok, "[{([]"))
         {
             assert(tok->link() != 0);
             linktok.push(tok);
             continue;
         }
 
-        else if (Token::Match(tok, "[})]"))
+        else if (Token::Match(tok, "[})]]"))
         {
             assert(tok->link() != 0);
             assert(linktok.empty() == false);
