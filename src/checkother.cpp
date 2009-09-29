@@ -644,8 +644,19 @@ void CheckOther::lookupVar(const Token *tok1, const char varname[])
 
         else if (indentlevel == 0)
         {
-            if ((tok->str() == "for") || (tok->str() == "while"))
+            // %unknown% ( %any% ) {
+            // If %unknown% is anything except if, we assume
+            // that it is a for or while loop or a macro hiding either one
+            if (Token::simpleMatch(tok->next(), "(") &&
+                Token::simpleMatch(tok->next()->link()->next(), "{"))
+            {
+                if (tok->str() != "if")
+                    for_or_while = true;
+            }
+
+            if (Token::simpleMatch(tok, "do {"))
                 for_or_while = true;
+
             if (parlevel == 0 && (tok->str() == ";"))
                 for_or_while = false;
         }

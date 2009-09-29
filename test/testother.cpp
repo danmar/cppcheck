@@ -517,10 +517,20 @@ private:
 
     void varScope5()
     {
-        varScope("void f()\n"
+        varScope("void f(int x)\n"
                  "{\n"
                  "    int i = 0;\n"
-                 "    if (true) {\n"
+                 "    if (x) {\n"
+                 "        for ( ; i < 10; ++i) ;\n"
+                 "    }\n"
+                 "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable i can be limited\n", errout.str());
+
+        varScope("void f(int x)\n"
+                 "{\n"
+                 "    int i = 0;\n"
+                 "    if (x) {b()}\n"
+                 "    else {\n"
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}\n");
@@ -540,9 +550,33 @@ private:
                  "    }\n"
                  "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        varScope("void f()\n"
+                 "{\n"
+                 "int foo = 0;\n"
+                 "std::vector<int> vec(10);\n"
+                 "BOOST_FOREACH(int& i, vec)\n"
+                 "{\n"
+                 " foo += 1;\n"
+                 " if(foo == 10)\n"
+                 " {\n"
+                 "  return 0;\n"
+                 " }\n"
+                 "}\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        varScope("void f(int &x)\n"
+                 "{\n"
+                 "  int n = 1;\n"
+                 "  do\n"
+                 "  {\n"
+                 "    ++n;\n"
+                 "    ++x;\n"
+                 "  } while (x);\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
-
-
 
     void checkNullPointer(const char code[])
     {
