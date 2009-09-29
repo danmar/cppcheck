@@ -897,6 +897,7 @@ private:
         ASSERT_EQUALS(1, CheckBufferOverrun::count("%s"));
         ASSERT_EQUALS(6, CheckBufferOverrun::count("%-5s"));
         ASSERT_EQUALS(2, CheckBufferOverrun::count("\\\""));
+        TODO_ASSERT_EQUALS(6, CheckBufferOverrun::count("Hello\\0Text"));
     }
 
     void strncpy1()
