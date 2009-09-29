@@ -421,7 +421,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
         {
             const char *type1 = tok->strAt(1);
             const char *type2 = tok->strAt(2);
-            tok = const_cast<Token*>(tok->tokAt(3));
+            tok = tok->tokAt(3);
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == type2)
@@ -434,7 +434,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
             const char *type1 = tok->strAt(1);
             const char *type2 = tok->strAt(2);
             const char *type3 = tok->strAt(3);
-            tok = const_cast<Token*>(tok->tokAt(4));
+            tok = tok->tokAt(4);
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == type3)
