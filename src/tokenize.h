@@ -187,6 +187,16 @@ private:
     void simplifyDoWhileAddBraces();
 
     /**
+     * typedef A mytype;
+     * mytype c;
+     *
+     * Becomes:
+     * typedef A mytype;
+     * A c;
+     */
+    void simplifyTypedef();
+
+    /**
      * Simplify casts
      */
     void simplifyCasts();

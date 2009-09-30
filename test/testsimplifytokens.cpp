@@ -122,14 +122,18 @@ private:
         TEST_CASE(simplifyTypedef)
         TEST_CASE(simplifyTypedef2)
         TEST_CASE(simplifyTypedef3)
+        TEST_CASE(simplifyTypedef4)
     }
 
-    std::string tok(const char code[])
+    std::string tok(const char code[], bool simplify = true)
     {
         std::istringstream istr(code);
         Tokenizer tokenizer;
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
+
+        if (simplify)
+            tokenizer.simplifyTokenList();
+
         std::string ret;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
@@ -1639,9 +1643,9 @@ private:
             "{ "
             "A a ; "
             "a . foo ( ) ; "
-            "wchar_t c = 0 ; "
+            "wchar_t c ; c = 0 ; "
             "}";
-        TODO_ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef2()
@@ -1664,7 +1668,7 @@ private:
             "typedef wchar_t duplicate ; "
             "wchar_t foo ( ) { wchar_t b ; return b ; } "
             "} ;";
-        TODO_ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyTypedef3()
@@ -1695,8 +1699,32 @@ private:
             "{ "
             "A b ; "
             "}";
-        TODO_ASSERT_EQUALS(expected, tok(code));
+        ASSERT_EQUALS(expected, tok(code));
     }
+
+    void simplifyTypedef4()
+    {
+        const char code[] = "typedef int s32;\n"
+                            "typedef unsigned int u32;\n"
+                            "void f()\n"
+                            "{\n"
+                            "    s32 ivar = -2;\n"
+                            "    u32 uvar = 2;\n"
+                            "    return uvar / ivar;\n"
+                            "}\n";
+
+        const std::string expected =
+            "typedef int s32 ; "
+            "typedef unsigned int u32 ; "
+            "void f ( ) "
+            "{ "
+            "int ivar ; ivar = -2 ; "
+            "unsigned int uvar ; uvar = 2 ; "
+            "return uvar / ivar ; "
+            "}";
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
 };
 
 REGISTER_TEST(TestSimplifyTokens)

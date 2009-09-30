@@ -341,6 +341,116 @@ void Tokenizer::createTokens(std::istream &code)
 
 }
 
+void Tokenizer::simplifyTypedef()
+{
+    std::string className;
+    int classLevel = 0;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "class %any%"))
+        {
+            className = tok->next()->str();
+            classLevel = 0;
+            continue;
+        }
+        else if (tok->str() == "}")
+        {
+            --classLevel;
+            if (classLevel < 0)
+                className = "";
+
+            continue;
+        }
+        else if (tok->str() == "{")
+        {
+            ++classLevel;
+            continue;
+        }
+        else if (tok->str() != "typedef")
+            continue;
+
+        const char *type1 = 0;
+        const char *type2 = 0;
+        const char *typeName = 0;
+
+        if (Token::Match(tok->next(), "%type% %type% ;") ||
+            Token::Match(tok->next(), "%type% %type% %type% ;"))
+        {
+            if (tok->tokAt(3)->str() == ";")
+            {
+                type1 = tok->strAt(1);
+                type2 = 0;
+                typeName = tok->strAt(2);
+                tok = tok->tokAt(3);
+            }
+            else
+            {
+                type1 = tok->strAt(1);
+                type2 = tok->strAt(2);
+                typeName = tok->strAt(3);
+                tok = tok->tokAt(4);
+            }
+
+            const std::string pattern = className + " :: " + typeName;
+            int level = 0;
+            bool inScope = true;
+
+            bool exitThisScope = false;
+            int exitScope = 0;
+            bool simplifyType = false;
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "}")
+                {
+                    --level;
+                    if (level < 0)
+                        inScope = false;
+
+                    if (exitThisScope)
+                    {
+                        if (level < exitScope)
+                            exitThisScope = false;
+                    }
+                }
+                else if (tok2->str() == "{")
+                    ++level;
+                else if (Token::Match(tok2, pattern.c_str()))
+                {
+                    tok2->deleteNext();
+                    tok2->deleteNext();
+                    simplifyType = true;
+                }
+                else if (inScope && !exitThisScope && tok2->str() == typeName)
+                {
+                    if (Token::Match(tok2->tokAt(-2), "!!typedef") &&
+                        Token::Match(tok2->tokAt(-3), "!!typedef"))
+                    {
+                        simplifyType = true;
+                    }
+                    else
+                    {
+                        // Typedef with the same name.
+                        exitThisScope = true;
+                        exitScope = level;
+                    }
+                }
+
+                if (simplifyType)
+                {
+                    tok2->str(type1);
+                    if (type2)
+                    {
+                        tok2->insertToken(type2);
+                        tok2 = tok2->next();
+                    }
+
+                    simplifyType = false;
+                }
+            }
+        }
+    }
+}
+
 bool Tokenizer::tokenize(std::istream &code, const char FileName[])
 {
     // The "_files" vector remembers what files have been tokenized..
@@ -412,40 +522,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     }
 
     // typedef..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (tok->str() != "typedef")
-            continue;
-
-        if (Token::Match(tok->next(), "%type% %type% ;"))
-        {
-            const char *type1 = tok->strAt(1);
-            const char *type2 = tok->strAt(2);
-            tok = tok->tokAt(3);
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == type2)
-                    tok2->str(type1);
-            }
-        }
-
-        else if (Token::Match(tok->next(), "%type% %type% %type% ;"))
-        {
-            const char *type1 = tok->strAt(1);
-            const char *type2 = tok->strAt(2);
-            const char *type3 = tok->strAt(3);
-            tok = tok->tokAt(4);
-            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == type3)
-                {
-                    tok2->str(type1);
-                    tok2->insertToken(type2);
-                    tok2 = tok2->next();
-                }
-            }
-        }
-    }
+    simplifyTypedef();
 
     // Remove __asm..
     for (Token *tok = _tokens; tok; tok = tok->next())
