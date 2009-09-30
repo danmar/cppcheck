@@ -464,6 +464,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
         return false;
     }
 
+    simplifyDoWhileAddBraces();
+    simplifyIfAddBraces();
+
     // Combine "- %num%" ..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -1602,6 +1605,12 @@ void Tokenizer::simplifyTokenList()
 
     simplifyGoto();
 
+    // TODO, simplifyDoWhileAddBraces and simplifyIfAddBraces calls
+    // should be removed from here, but currently simplifyGoto
+    // removes braces which causes some tests to fail.
+    simplifyDoWhileAddBraces();
+    simplifyIfAddBraces();
+
     // Combine wide strings
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -1809,8 +1818,6 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
-    simplifyDoWhileAddBraces();
-    simplifyIfAddBraces();
     simplifyFunctionParameters();
 
     elseif();

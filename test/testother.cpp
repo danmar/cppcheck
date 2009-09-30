@@ -816,7 +816,7 @@ private:
                          "    else\n"
                          "      p = p->next();\n"
                          "}\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 

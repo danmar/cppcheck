@@ -578,7 +578,7 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                "void f ( ) { int a ; a = 10 ; if ( 10 ) ; }",
+                "void f ( ) { int a ; a = 10 ; if ( 10 ) { ; } }",
                 simplifyKnownVariables(code));
         }
 
@@ -590,7 +590,7 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS(
-                "void f ( ) { int a ; a = 10 ; if ( ! 10 ) ; }",
+                "void f ( ) { int a ; a = 10 ; if ( ! 10 ) { ; } }",
                 simplifyKnownVariables(code));
         }
     }
@@ -605,7 +605,7 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-            "void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) ; }",
+            "void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) { ; } }",
             simplifyKnownVariables(code));
     }
 
@@ -622,7 +622,7 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-            "void f ( ) { int a ; a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) ; }",
+            "void f ( ) { int a ; a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) { ; } }",
             simplifyKnownVariables(code));
     }
 
@@ -635,7 +635,7 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-            "void f ( ) { int a ; a = 4 ; if ( g ( 4 ) ) ; }",
+            "void f ( ) { int a ; a = 4 ; if ( g ( 4 ) ) { ; } }",
             simplifyKnownVariables(code));
     }
 
@@ -648,7 +648,7 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-            "void f ( ) { int a ; a = 4 ; if ( a = 5 ) ; }",
+            "void f ( ) { int a ; a = 4 ; if ( a = 5 ) { ; } }",
             simplifyKnownVariables(code));
     }
 
@@ -704,7 +704,7 @@ private:
                             "}\n";
 
         ASSERT_EQUALS(
-            "void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) ; }",
+            "void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) { ; } }",
             simplifyKnownVariables(code));
     }
 
@@ -953,8 +953,8 @@ private:
                                        "2: void f ( )\n"
                                        "3: {\n"
                                        "4: int i@2 ; i@2 = 2 ;\n"
-                                       "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 )\n"
-                                       "6: i@3 = 3 ;\n"
+                                       "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 ) {\n"
+                                       "6: i@3 = 3 ; }\n"
                                        "7: i@2 = 4 ;\n"
                                        "8: }\n");
 

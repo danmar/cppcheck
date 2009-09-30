@@ -130,10 +130,10 @@ private:
         std::istringstream istr(code);
         Tokenizer tokenizer;
         tokenizer.tokenize(istr, "test.cpp");
-
         if (simplify)
             tokenizer.simplifyTokenList();
 
+        tokenizer.validate();
         std::string ret;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
@@ -1169,10 +1169,10 @@ private:
 
     void ifassign1()
     {
-        ASSERT_EQUALS("; a = b ; if ( a ) ;", simplifyIfAssign(";if(a=b);"));
-        ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) ;", simplifyIfAssign(";if((a=b()));"));
-        ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) ;", simplifyIfAssign(";if(!(a=b()));"));
-        ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) ;", simplifyIfAssign(";if(!(a->x=b()));"));
+        ASSERT_EQUALS("; a = b ; if ( a ) { ; }", simplifyIfAssign(";if(a=b);"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) { ; }", simplifyIfAssign(";if((a=b()));"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAssign(";if(!(a=b()));"));
+        ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAssign(";if(!(a->x=b()));"));
     }
 
 
@@ -1241,16 +1241,16 @@ private:
 
     void and1()
     {
-        ASSERT_EQUALS("if ( p && q ) ;",
+        ASSERT_EQUALS("if ( p && q ) { ; }",
                       simplifyLogicalOperators("if (p and q) ;"));
 
-        ASSERT_EQUALS("if ( foo ( ) && q ) ;",
+        ASSERT_EQUALS("if ( foo ( ) && q ) { ; }",
                       simplifyLogicalOperators("if (foo() and q) ;"));
 
-        ASSERT_EQUALS("if ( foo ( ) && bar ( ) ) ;",
+        ASSERT_EQUALS("if ( foo ( ) && bar ( ) ) { ; }",
                       simplifyLogicalOperators("if (foo() and bar()) ;"));
 
-        ASSERT_EQUALS("if ( p && bar ( ) ) ;",
+        ASSERT_EQUALS("if ( p && bar ( ) ) { ; }",
                       simplifyLogicalOperators("if (p and bar()) ;"));
     }
 
