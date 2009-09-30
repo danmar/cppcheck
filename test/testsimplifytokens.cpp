@@ -119,6 +119,9 @@ private:
 
         TEST_CASE(simplifyAtol)
         TEST_CASE(simplifyHexInString)
+        TEST_CASE(simplifyTypedef)
+        TEST_CASE(simplifyTypedef2)
+        TEST_CASE(simplifyTypedef3)
     }
 
     std::string tok(const char code[])
@@ -1577,6 +1580,93 @@ private:
         // become 'a'
         ASSERT_EQUALS("\"a\"", tok("\"\\x62\""));
         ASSERT_EQUALS("\"a\"", tok("\"\\177\""));
+    }
+
+    void simplifyTypedef()
+    {
+        const char code[] = "class A\n"
+                            "{\n"
+                            "public:\n"
+                            " typedef wchar_t duplicate;\n"
+                            " void foo() {}\n"
+                            "};\n"
+                            "typedef A duplicate;\n"
+                            "int main()\n"
+                            "{\n"
+                            " duplicate a;\n"
+                            " a.foo();\n"
+                            " A::duplicate c = 0;\n"
+                            "}\n";
+
+        const std::string expected =
+            "class A "
+            "{ "
+            "public: "
+            "typedef wchar_t duplicate ; "
+            "void foo ( ) { } "
+            "} ; "
+            "typedef A duplicate ; "
+            "int main ( ) "
+            "{ "
+            "A a ; "
+            "a . foo ( ) ; "
+            "wchar_t c = 0 ; "
+            "}";
+        TODO_ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyTypedef2()
+    {
+        const char code[] = "class A;\n"
+                            "typedef A duplicate;\n"
+                            "class A\n"
+                            "{\n"
+                            "public:\n"
+                            "typedef wchar_t duplicate;\n"
+                            "duplicate foo() { wchar_t b; return b; }\n"
+                            "};\n";
+
+        const std::string expected =
+            "class A ; "
+            "typedef A duplicate ; "
+            "class A "
+            "{ "
+            "public: "
+            "typedef wchar_t duplicate ; "
+            "wchar_t foo ( ) { wchar_t b ; return b ; } "
+            "} ;";
+        TODO_ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyTypedef3()
+    {
+        const char code[] = "class A {};\n"
+                            "typedef A duplicate;\n"
+                            "wchar_t foo()\n"
+                            "{\n"
+                            "typedef wchar_t duplicate;\n"
+                            "duplicate b;\n"
+                            "return b;\n"
+                            "}\n"
+                            "int main()\n"
+                            "{\n"
+                            "duplicate b;\n"
+                            "}\n";
+
+        const std::string expected =
+            "class A { } ; "
+            "typedef A duplicate ; "
+            "wchar_t foo ( ) "
+            "{ "
+            "typedef wchar_t duplicate ; "
+            "wchar_t b ; "
+            "return b ; "
+            "} "
+            "int main ( ) "
+            "{ "
+            "A b ; "
+            "}";
+        TODO_ASSERT_EQUALS(expected, tok(code));
     }
 };
 
