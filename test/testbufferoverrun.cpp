@@ -495,6 +495,22 @@ private:
               "        a[i*2] = i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int a[12];\n"
+              "    for (int i = 0; i < 12; i+=6)\n"
+              "        a[i+5] = i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int a[12];\n"
+              "    for (int i = 0; i < 12; i+=6)\n"
+              "        a[i+6] = i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()

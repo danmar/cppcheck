@@ -273,13 +273,27 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 Token::Match(tok3, "%varid%  = %num% + %varid% )", counter_varid))
             {
                 const int num = std::atoi(tok3->strAt(2));
-                if (num > value)
+
+                // We have for example code: "for(i=2;i<22;i+=6)
+                // We can calculate that max value for i is 20, not 21
+                // 21-2 = 19
+                // 19/6 = 3
+                // 6*3+2 = 20
+                long max = MathLib::toLongNumber(max_counter_value);
+                long min = MathLib::toLongNumber(min_counter_value);
+                max = ((max - min) / num) * num + min;
+                max_counter_value = MathLib::toString<long>(max);
+                if (max <= size)
                     condition_out_of_bounds = false;
             }
             else if (Token::Match(tok3, "%varid% = %varid% + %num% )", counter_varid))
             {
                 const int num = std::atoi(tok3->strAt(4));
-                if (num > value)
+                long max = MathLib::toLongNumber(max_counter_value);
+                long min = MathLib::toLongNumber(min_counter_value);
+                max = ((max - min) / num) * num + min;
+                max_counter_value = MathLib::toString<long>(max);
+                if (max <= size)
                     condition_out_of_bounds = false;
             }
             else if (! Token::Match(tok3, "++| %varid% ++| )", counter_varid))
