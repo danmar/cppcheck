@@ -279,7 +279,7 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
 
         const unsigned int varid(Token::findmatch(tokenizer.tokens(), varname)->varId());
 
@@ -323,9 +323,9 @@ private:
 
         // dealloc;
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; free(s);", "s"));
-        TODO_ASSERT_EQUALS(";;dealloc;", getcode("char *s; free((void *)s);", "s"));
+        ASSERT_EQUALS(";;dealloc;", getcode("char *s; free((void *)s);", "s"));
         TODO_ASSERT_EQUALS(";;dealloc;", getcode("char *s; free((void *)(s));", "s"));
-        TODO_ASSERT_EQUALS(";;dealloc;", getcode("char *s; free(reinterpret_cast<void *>(s));", "s"));
+        ASSERT_EQUALS(";;dealloc;", getcode("char *s; free(reinterpret_cast<void *>(s));", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete s;", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete (s);", "s"));
         TODO_ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete (void *)(s);", "s"));
@@ -341,7 +341,7 @@ private:
         ASSERT_EQUALS(";;;if{dealloc;};if{dealloc;return;}assign;returnuse;", getcode("char *buf, *tmp; tmp = realloc(buf, 40); if (!(tmp)) { free(buf); return; } buf = tmp; return buf;", "buf"));
 
         // switch..
-        ASSERT_EQUALS(";;switch{case;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));
+        ASSERT_EQUALS(";;switch{case;;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));
 
         // loop..
         ASSERT_EQUALS(";;loop{}", getcode("char *s; while (a) { }", "s"));
