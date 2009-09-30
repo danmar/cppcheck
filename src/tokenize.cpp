@@ -1078,6 +1078,7 @@ void Tokenizer::setVarId()
             int indentlevel = 0;
             int parlevel = 0;
             bool dot = false;
+            bool funcDeclaration = false;
             for (tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
                 if (!dot && tok2->str() == varname && !Token::Match(tok2->previous(), "struct|union"))
@@ -1089,6 +1090,10 @@ void Tokenizer::setVarId()
                     --indentlevel;
                     if (indentlevel < 0)
                         break;
+
+                    // We have reached the end of a loop: "for( int i;;) {  }"
+                    if (funcDeclaration && indentlevel <= 0)
+                        break;
                 }
                 else if (tok2->str() == "(")
                     ++parlevel;
@@ -1096,7 +1101,7 @@ void Tokenizer::setVarId()
                 {
                     // Is this a function parameter or a variable declared in for example a for loop?
                     if (parlevel == 0 && indentlevel == 0 && Token::Match(tok2, ") const| {"))
-                        ;
+                        funcDeclaration = true;
                     else
                         --parlevel;
                 }

@@ -930,34 +930,71 @@ private:
 
     void varid1()
     {
-        const std::string code("static int i = 1;\n"
-                               "void f()\n"
-                               "{\n"
-                               "    int i = 2;\n"
-                               "    for (int i = 0; i < 10; ++i)\n"
-                               "        i = 3;\n"
-                               "    i = 4;\n"
-                               "}\n");
+        {
+            const std::string code("static int i = 1;\n"
+                                   "void f()\n"
+                                   "{\n"
+                                   "    int i = 2;\n"
+                                   "    for (int i = 0; i < 10; ++i)\n"
+                                   "        i = 3;\n"
+                                   "    i = 4;\n"
+                                   "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.setVarId();
 
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
-        const std::string expected("\n\n##file 0\n"
-                                   "1: static int i@1 = 1 ;\n"
-                                   "2: void f ( )\n"
-                                   "3: {\n"
-                                   "4: int i@2 ; i@2 = 2 ;\n"
-                                   "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 )\n"
-                                   "6: i@3 = 3 ;\n"
-                                   "7: i@2 = 4 ;\n"
-                                   "8: }\n");
+            // result..
+            const std::string actual(tokenizer.tokens()->stringifyList(true));
+            const std::string expected("\n\n##file 0\n"
+                                       "1: static int i@1 = 1 ;\n"
+                                       "2: void f ( )\n"
+                                       "3: {\n"
+                                       "4: int i@2 ; i@2 = 2 ;\n"
+                                       "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 )\n"
+                                       "6: i@3 = 3 ;\n"
+                                       "7: i@2 = 4 ;\n"
+                                       "8: }\n");
 
-        ASSERT_EQUALS(expected, actual);
+            ASSERT_EQUALS(expected, actual);
+        }
+
+        {
+            const std::string code("static int i = 1;\n"
+                                   "void f()\n"
+                                   "{\n"
+                                   "    int i = 2;\n"
+                                   "    for (int i = 0; i < 10; ++i)\n"
+                                   "    {\n"
+                                   "      i = 3;\n"
+                                   "    }\n"
+                                   "    i = 4;\n"
+                                   "}\n");
+
+            // tokenize..
+            Tokenizer tokenizer;
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.setVarId();
+
+            // result..
+            const std::string actual(tokenizer.tokens()->stringifyList(true));
+            const std::string expected("\n\n##file 0\n"
+                                       "1: static int i@1 = 1 ;\n"
+                                       "2: void f ( )\n"
+                                       "3: {\n"
+                                       "4: int i@2 ; i@2 = 2 ;\n"
+                                       "5: for ( int i@3 = 0 ; i@3 < 10 ; ++ i@3 )\n"
+                                       "6: {\n"
+                                       "7: i@3 = 3 ;\n"
+                                       "8: }\n"
+                                       "9: i@2 = 4 ;\n"
+                                       "10: }\n");
+
+            ASSERT_EQUALS(expected, actual);
+        }
     }
 
     void varid2()
