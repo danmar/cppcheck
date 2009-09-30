@@ -1507,6 +1507,35 @@ private:
         }
 
         {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    if (a())\n"
+                                "        goto out;\n"
+                                "    b();\n"
+                                "out:\n"
+                                "    if (c())\n"
+                                "    {\n"
+                                "      d();\n"
+                                "    }\n"
+                                "}";
+
+            const char expect[] = "void foo ( ) "
+                                  "{ "
+                                  "if ( a ( ) ) "
+                                  "{ "
+                                  "if ( c ( ) ) "
+                                  "{ d ( ) ; } "
+                                  "return ; "
+                                  "} "
+                                  "b ( ) ; "
+                                  "if ( c ( ) ) "
+                                  "{ d ( ) ; } "
+                                  "}";
+
+            ASSERT_EQUALS(expect, tok(code));
+        }
+
+        {
             const char code[] = "class NoLabels { bool varOne : 1 ; bool varTwo : 1 ; } ;";
             ASSERT_EQUALS(code, tok(code));
         }

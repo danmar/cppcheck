@@ -3388,15 +3388,24 @@ void Tokenizer::simplifyGoto()
         {
             // Is this label at the end..
             bool end = false;
+            int lev = 0;
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "}")
                 {
-                    end = true;
-                    break;
+                    --lev;
+                    if (lev < 0)
+                    {
+                        end = true;
+                        break;
+                    }
+                }
+                else if (tok2->str() == "{")
+                {
+                    ++lev;
                 }
 
-                if (tok2->str() == "{" || Token::Match(tok2, "%var% :"))
+                if (Token::Match(tok2, "%var% :"))
                 {
                     break;
                 }
@@ -3435,11 +3444,23 @@ void Tokenizer::simplifyGoto()
                     bool ret = false;
 
                     std::list<Token*> links;
+                    int lev = 0;
                     for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "}")
-                            break;
-                        if (tok2->str() == "return")
+                        {
+                            --lev;
+                            if (lev < 0)
+                                break;
+
+                            continue;
+                        }
+                        if (tok2->str() == "{")
+                        {
+                            ++lev;
+                            continue;
+                        }
+                        else if (tok2->str() == "return")
                             ret = true;
                         token->insertToken(tok2->str().c_str());
                         token = token->next();
