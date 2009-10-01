@@ -569,6 +569,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // Simplify the operator "?:"
     simplifyConditionOperator();
 
+    // remove exception specifications..
+    removeExceptionSpecifications(_tokens);
+
     // change array to pointer..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -4163,6 +4166,39 @@ void Tokenizer::simplifyComma()
 
     }
 }
+
+
+void Tokenizer::removeExceptionSpecifications(Token *tok) const
+{
+    while (tok)
+    {
+        if (tok->str() == "{")
+            tok = tok->link();
+
+        else if (tok->str() == "}")
+            break;
+
+        else if (Token::Match(tok, ") throw ("))
+        {
+            while (tok->next() && !Token::Match(tok->next(), "[;{]"))
+                tok->deleteNext();
+        }
+
+        else if (Token::Match(tok, "class %type%"))
+        {
+            while (tok && !Token::Match(tok, "[;{]"))
+                tok = tok->next();
+            if (tok && tok->str() == "{")
+            {
+                removeExceptionSpecifications(tok->next());
+                tok = tok->link();
+            }
+        }
+
+        tok = tok ? tok->next() : 0;
+    }
+}
+
 
 
 bool Tokenizer::validate() const

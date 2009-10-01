@@ -304,6 +304,12 @@ private:
      */
     std::string simplifyString(const std::string &source);
 
+    /**
+     * Remove exception specifications. This function calls itself recursively.
+     * @param tok First token in scope to cleanup
+     */
+    void removeExceptionSpecifications(Token *tok) const;
+
     void insertTokens(Token *dest, const Token *src, unsigned int n);
 
     /**

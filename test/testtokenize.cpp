@@ -155,6 +155,8 @@ private:
         TEST_CASE(testUpdateClassList);
         TEST_CASE(createLinks);
         TEST_CASE(signed1);
+
+        TEST_CASE(removeExceptionSpecification);
     }
 
 
@@ -2570,6 +2572,28 @@ private:
             ASSERT_EQUALS(true, tok->tokAt(9)->link() == tok->tokAt(8));
         }
     }
+
+    void removeExceptionSpecification()
+    {
+        const char code[] = "class A\n"
+                            "{\n"
+                            "private:\n"
+                            "    void f() throw (std::runtime_error);\n"
+                            "};\n"
+                            "void A::f() throw (std::runtime_error)\n"
+                            "{ }";
+
+        const char expected[] = "class A\n"
+                                "{\n"
+                                "private:\n"
+                                "void f ( ) ;\n"
+                                "} ;\n"
+                                "void A :: f ( )\n"
+                                "{ }";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
 };
 
 REGISTER_TEST(TestTokenizer)
