@@ -1605,12 +1605,6 @@ void Tokenizer::simplifyTokenList()
 
     simplifyGoto();
 
-    // TODO, simplifyDoWhileAddBraces and simplifyIfAddBraces calls
-    // should be removed from here, but currently simplifyGoto
-    // removes braces which causes some tests to fail.
-    simplifyDoWhileAddBraces();
-    simplifyIfAddBraces();
-
     // Combine wide strings
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -3513,27 +3507,19 @@ void Tokenizer::simplifyGoto()
                 Token *token = *it;
                 if (token->next()->str() == name)
                 {
-                    Token *openBrace = NULL;
-
                     // Delete the "goto name;"
                     token = token->previous();
                     token->deleteNext();
                     token->deleteNext();
                     token->deleteNext();
 
-                    const bool endpar(token->str() == ")");
-                    if (endpar)
-                    {
-                        token->insertToken("{");
-                        token = token->next();
-                        openBrace = token;
-                    }
-
                     // Insert the statements..
                     bool ret = false;
-
                     std::list<Token*> links;
+                    std::list<Token*> links2;
+                    std::list<Token*> links3;
                     int lev = 0;
+                    bool quit = false;
                     for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "}")
@@ -3541,13 +3527,10 @@ void Tokenizer::simplifyGoto()
                             --lev;
                             if (lev < 0)
                                 break;
-
-                            continue;
                         }
                         if (tok2->str() == "{")
                         {
                             ++lev;
-                            continue;
                         }
                         else if (tok2->str() == "return")
                             ret = true;
@@ -3569,6 +3552,41 @@ void Tokenizer::simplifyGoto()
                             Token::createMutualLinks(links.back(), token);
                             links.pop_back();
                         }
+                        else if (token->str() == "{")
+                        {
+                            links2.push_back(token);
+                        }
+                        else if (token->str() == "}")
+                        {
+                            if (links2.size() == 0)
+                            {
+                                // This should never happen at this point
+                                syntaxError(token, '}');
+                                return;
+                            }
+
+                            Token::createMutualLinks(links2.back(), token);
+                            links2.pop_back();
+                        }
+                        else if (token->str() == "[")
+                        {
+                            links3.push_back(token);
+                        }
+                        else if (token->str() == "]")
+                        {
+                            if (links3.size() == 0)
+                            {
+                                // This should never happen at this point
+                                syntaxError(token, ']');
+                                return;
+                            }
+
+                            Token::createMutualLinks(links3.back(), token);
+                            links3.pop_back();
+                        }
+
+                        if (quit)
+                            break;
                     }
 
                     if (!ret)
@@ -3577,12 +3595,6 @@ void Tokenizer::simplifyGoto()
                         token = token->next();
                         token->insertToken(";");
                         token = token->next();
-                    }
-                    if (endpar)
-                    {
-                        token->insertToken("}");
-                        token = token->next();
-                        Token::createMutualLinks(openBrace, token);
                     }
                 }
             }

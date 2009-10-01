@@ -1540,6 +1540,35 @@ private:
         }
 
         {
+            const char code[] = "void foo(int x)\n"
+                                "{\n"
+                                "    if (a())\n"
+                                "        goto out;\n"
+                                "    b();\n"
+                                "out:\n"
+                                "    if (x)\n"
+                                "    {\n"
+                                "      x++; b[0]=x;\n"
+                                "    }\n"
+                                "}";
+
+            const char expect[] = "void foo ( int x ) "
+                                  "{ "
+                                  "if ( a ( ) ) "
+                                  "{ "
+                                  "if ( x ) "
+                                  "{ x ++ ; b [ 0 ] = x ; } "
+                                  "return ; "
+                                  "} "
+                                  "b ( ) ; "
+                                  "if ( x ) "
+                                  "{ x ++ ; b [ 0 ] = x ; } "
+                                  "}";
+
+            ASSERT_EQUALS(expect, tok(code));
+        }
+
+        {
             const char code[] = "class NoLabels { bool varOne : 1 ; bool varTwo : 1 ; } ;";
             ASSERT_EQUALS(code, tok(code));
         }
