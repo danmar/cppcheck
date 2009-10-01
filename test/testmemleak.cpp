@@ -269,6 +269,7 @@ private:
 
         // Unknown syntax
         TEST_CASE(unknownSyntax1);
+        TEST_CASE(knownFunctions);
     }
 
 
@@ -2323,6 +2324,16 @@ private:
               "    free(sym);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void knownFunctions()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    int *p = new int[100];\n"
+              "    typeid(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
     }
 };
 

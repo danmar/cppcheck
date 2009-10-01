@@ -52,7 +52,7 @@ static const char * const call_func_white_list[] =
     , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
     , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strncat", "strncmp"
     , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
-    , "sync_file_range", "telldir", "while", "write", "writev"
+    , "sync_file_range", "telldir", "typeid", "while", "write", "writev"
 };
 
 static int call_func_white_list_compare(const void *a, const void *b)
