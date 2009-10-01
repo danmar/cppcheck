@@ -311,6 +311,32 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             if (!tok2 || !tok2->tokAt(5))
                 break;
 
+            // Check is the counter variable increased elsewhere inside the loop or used
+            // for anything else except reading
+            bool bailOut = false;
+            for (Token *loopTok = tok2->next(); loopTok && loopTok != tok2->next()->link(); loopTok = loopTok->next())
+            {
+                if (loopTok->varId() == counter_varid)
+                {
+                    // Counter variable used inside loop
+                    if (Token::Match(loopTok->next(), "+=|-=|++|--|="))
+                    {
+                        bailOut = true;
+                        break;
+                    }
+                    else if (Token::Match(loopTok->previous(), "++|--"))
+                    {
+                        bailOut = true;
+                        break;
+                    }
+                }
+            }
+
+            if (bailOut)
+            {
+                break;
+            }
+
             std::ostringstream pattern;
             pattern << varnames << " [ " << strindex << " ]";
 

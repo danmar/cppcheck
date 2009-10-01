@@ -87,6 +87,7 @@ private:
         TEST_CASE(array_index_15);
         TEST_CASE(array_index_16);
         TEST_CASE(array_index_17);
+        TEST_CASE(array_index_18);
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -511,6 +512,64 @@ private:
               "        a[i+6] = i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+    }
+
+    void array_index_18()
+    {
+        check("void f()\n"
+              "{\n"
+              "    int a[5];\n"
+              "    for (int i = 0; i < 6; i++)\n"
+              "    {\n"
+              "        a[i] = i;\n"
+              "        i+=1;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int a[5];\n"
+              "    for (int i = 0; i < 6; i++)\n"
+              "    {\n"
+              "        a[i] = i;\n"
+              "        i++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int a[5];\n"
+              "    for (int i = 0; i < 6; i++)\n"
+              "    {\n"
+              "        a[i] = i;\n"
+              "        ++i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int a[5];\n"
+              "    for (int i = 0; i < 6; i++)\n"
+              "    {\n"
+              "        a[i] = i;\n"
+              "        i=4;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int a[6];\n"
+              "    for (int i = 0; i < 7; i++)\n"
+              "    {\n"
+              "        a[i] = i;\n"
+              "        i+=1;\n"
+              "    }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
     }
 
     void buffer_overrun_1()
