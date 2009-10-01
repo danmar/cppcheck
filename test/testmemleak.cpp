@@ -474,8 +474,8 @@ private:
         ASSERT_EQUALS("; if(!var) xxx ;", simplifycode("; if(var) ; else xxx ;"));
         ASSERT_EQUALS("; ifv xxx ;", simplifycode("; ifv ; else xxx ;"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { dealloc; return; }"));
+        ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { return use; }"));
         ASSERT_EQUALS("; alloc ; return ;", simplifycode(";alloc;if{return;}return;"));
-
 
         // switch..
         ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode(";alloc;switch{case;break;};dealloc;"));
@@ -576,11 +576,6 @@ private:
         // Todo..
         ASSERT_EQUALS(-1, dofindleak("; alloc;\n if { dealloc; }\n ;"));
         TODO_ASSERT_EQUALS(3,  dofindleak("; alloc;\n if { dealloc; }\n ;"));
-
-        ASSERT_EQUALS(-1, dofindleak("alloc; if { return use; }"));
-        TODO_ASSERT_EQUALS(1, dofindleak("alloc; if { return use; }"));
-        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc; return; }"));
-        TODO_ASSERT_EQUALS(1, dofindleak("alloc; if { dealloc; return; }"));
     }
 
 
