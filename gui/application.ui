@@ -20,7 +20,7 @@
       <string>Here you can add applications that can open error files.
 Specify a name for the application and the application to execute.
 
-The following texts are replaced with appriproate values when application is executed:
+The following texts are replaced with appropriate values when application is executed:
 (file) - Filename containing the error
 (line) - Line number containing the error
 (message) - Error message
