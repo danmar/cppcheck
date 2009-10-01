@@ -3519,7 +3519,6 @@ void Tokenizer::simplifyGoto()
                     std::list<Token*> links2;
                     std::list<Token*> links3;
                     int lev = 0;
-                    bool quit = false;
                     for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "}")
@@ -3584,9 +3583,6 @@ void Tokenizer::simplifyGoto()
                             Token::createMutualLinks(links3.back(), token);
                             links3.pop_back();
                         }
-
-                        if (quit)
-                            break;
                     }
 
                     if (!ret)
