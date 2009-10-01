@@ -17,6 +17,7 @@ FORMS = main.ui \
 	about.ui
 	
 TRANSLATIONS =  cppcheck_fi.ts \
+                cppcheck_nl.ts \
 		cppcheck_en.ts \
 		cppcheck_se.ts \
 		cppcheck_de.ts \

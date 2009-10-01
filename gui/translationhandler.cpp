@@ -29,6 +29,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
 {
     //Add our default languages
     mNames  << QT_TRANSLATE_NOOP("MainWindow", "English")
+    << QT_TRANSLATE_NOOP("MainWindow", "Dutch")
     << QT_TRANSLATE_NOOP("MainWindow", "Finnish")
     << QT_TRANSLATE_NOOP("MainWindow", "Swedish")
     << QT_TRANSLATE_NOOP("MainWindow", "German")
@@ -36,6 +37,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     << QT_TRANSLATE_NOOP("MainWindow", "Polish");
 
     mFiles  << "cppcheck_en"
+    << "cppcheck_nl"
     << "cppcheck_fi"
     << "cppcheck_se"
     << "cppcheck_de"
