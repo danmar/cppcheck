@@ -67,6 +67,11 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok)
     reportError(tok, Severity::possibleError, "bufferOverrun", "Buffer overrun");
 }
 
+void CheckBufferOverrun::dangerousStdCin(const Token *tok)
+{
+    reportError(tok, Severity::possibleError, "dangerousStdCin", "Dangerous usage of std::cin, possible buffer overrun");
+}
+
 void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
     reportError(tok, Severity::possibleError, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
@@ -514,7 +519,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // cin..
         if (varid > 0 && Token::Match(tok, "cin >> %varid% ;", varid))
         {
-            bufferOverrun(tok);
+            dangerousStdCin(tok);
         }
 
         // Function call..

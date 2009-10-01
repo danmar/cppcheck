@@ -827,7 +827,7 @@ private:
               "    char str[10];\n"
               "    cin >> str;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Dangerous usage of std::cin, possible buffer overrun\n", errout.str());
     }
 
 
