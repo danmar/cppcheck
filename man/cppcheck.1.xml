@@ -124,7 +124,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   <refsect1 id="description">
     <title>DESCRIPTION</title>
     <para>A tool for static C/C++ code analysis
-      Intended to complement the checking of the compiler.
+      intended to complement the checking of the compiler.
       Checks for: memory leaks, mismatching allocation-deallocation,
       buffer overrun, and many more.</para>
   </refsect1>
