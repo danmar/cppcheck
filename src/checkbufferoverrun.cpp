@@ -319,12 +319,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 if (loopTok->varId() == counter_varid)
                 {
                     // Counter variable used inside loop
-                    if (Token::Match(loopTok->next(), "+=|-=|++|--|="))
-                    {
-                        bailOut = true;
-                        break;
-                    }
-                    else if (Token::Match(loopTok->previous(), "++|--"))
+                    if (Token::Match(loopTok->next(), "+=|-=|++|--|=") ||
+                        Token::Match(loopTok->previous(), "++|--"))
                     {
                         bailOut = true;
                         break;
