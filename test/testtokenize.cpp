@@ -138,7 +138,7 @@ private:
         TEST_CASE(vardecl2);
         TEST_CASE(vardecl3);
         TEST_CASE(vardecl4);
-        TEST_CASE(vardecl5);
+        TEST_CASE(vardec_static);
         TEST_CASE(vardecl6);
         TEST_CASE(vardecl7);
         TEST_CASE(vardecl8);
@@ -2291,12 +2291,39 @@ private:
         ASSERT_EQUALS(res3, tokenizeAndStringify(code3));
     }
 
-    void vardecl5()
+    void vardec_static()
     {
-        // don't simplify declarations of static variables
-        // "static int i = 0;" is not the same as "static int i; i = 0;"
-        const char code[] = "static int i = 0 ;";
-        ASSERT_EQUALS(code, tokenizeAndStringify(code));
+        {
+            // don't simplify declarations of static variables
+            // "static int i = 0;" is not the same as "static int i; i = 0;"
+            const char code[] = "static int i = 0 ;";
+            ASSERT_EQUALS(code, tokenizeAndStringify(code));
+        }
+
+        {
+            const char code[] = "static int a, b;";
+            TODO_ASSERT_EQUALS("static int a ; static int b ;", tokenizeAndStringify(code));
+        }
+
+        {
+            const char code[] = "static unsigned int a, b;";
+            TODO_ASSERT_EQUALS("static unsigned int a ; static unsigned int b ;", tokenizeAndStringify(code));
+        }
+
+        {
+            const char code[] = "static int a=1, b=1;";
+            TODO_ASSERT_EQUALS("static int a = 1 ; static int b = 1 ;", tokenizeAndStringify(code));
+        }
+
+        {
+            const char code[] = "static int *a, *b;";
+            TODO_ASSERT_EQUALS("static int * a ; static int * b ;", tokenizeAndStringify(code));
+        }
+
+        {
+            const char code[] = "static unsigned int *a=0, *b=0;";
+            TODO_ASSERT_EQUALS("static unsigned int * a = 0 ; static unsigned int * b = 0 ;", tokenizeAndStringify(code));
+        }
     }
 
     void vardecl6()
