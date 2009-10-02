@@ -1276,14 +1276,15 @@ public:
      * To avoid name collisions, we will rename macro variables by
      * adding _prefix in front of the name of each variable.
      * Returns the macro with converted names
-     * @result If return value is false, this is not touched. If
+     * @param result If return value is false, this is not touched. If
      * return value is true, this will contain new macro line
      * (all that comes after #define) e.g.
      * "A(__cppcheck__x) foo(__cppcheck__x);"
+     * @param macro The macro which is about to cause name collision.
      * @return true if code needs to be changed, false is no changes
      * are required.
      */
-    bool renameMacroVariables(std::string &result)
+    bool renameMacroVariables(std::string &result, const PreprocessorMacro &macro)
     {
         // No variables
         if (_params.size() == 0)
@@ -1292,6 +1293,31 @@ public:
         // Already renamed
         if (_params[0].compare(0, _prefix.length(), _prefix) == 0)
             return false;
+
+        // Check does the macro contain tokens that have
+        // the same name as parameters in this macro.
+        const Token *tok = macro.tokens();
+        if (Token::Match(tok->next(), "("))
+        {
+            std::map<std::string, bool> paramMap;
+            for (unsigned int i = 0; i < _params.size(); ++i)
+                paramMap[_params[i]] = true;
+
+            bool collision = false;
+            tok = Token::findmatch(tok, ")", 0);
+            for (; tok; tok = tok->next())
+            {
+                if (paramMap.find(tok->str()) != paramMap.end())
+                {
+                    // Name collision
+                    collision = true;
+                    break;
+                }
+            }
+
+            if (!collision)
+                return false;
+        }
 
         result = "";
         result.append(_name);
@@ -1602,7 +1628,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
 
                 PreprocessorMacro tempMacro(code.substr(startOfLine, endOfLine - startOfLine));
                 std::string tempMacroCode;
-                if (tempMacro.renameMacroVariables(tempMacroCode))
+                if (tempMacro.renameMacroVariables(tempMacroCode, macro))
                 {
                     // Change the macro and then start again from the start
                     // of the line, as code has changed.
