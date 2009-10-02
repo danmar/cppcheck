@@ -4031,7 +4031,8 @@ void Tokenizer::simplifyComma()
             }
         }
 
-        if (tok->str() != ",")
+        // If token after the comma is a constant number, simplification is not required.
+        if (tok->str() != "," || Token::Match(tok->next(), "%num%"))
             continue;
 
         // We must not accept just any keyword, e.g. accepting int
