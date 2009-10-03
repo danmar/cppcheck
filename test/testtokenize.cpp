@@ -2302,27 +2302,27 @@ private:
 
         {
             const char code[] = "static int a, b;";
-            TODO_ASSERT_EQUALS("static int a ; static int b ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("static int a ; static int b ;", tokenizeAndStringify(code));
         }
 
         {
             const char code[] = "static unsigned int a, b;";
-            TODO_ASSERT_EQUALS("static unsigned int a ; static unsigned int b ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("static unsigned int a ; static unsigned int b ;", tokenizeAndStringify(code));
         }
 
         {
             const char code[] = "static int a=1, b=1;";
-            TODO_ASSERT_EQUALS("static int a = 1 ; static int b = 1 ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("static int a = 1 ; static int b = 1 ;", tokenizeAndStringify(code));
         }
 
         {
             const char code[] = "static int *a, *b;";
-            TODO_ASSERT_EQUALS("static int * a ; static int * b ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("static int * a ; static int * b ;", tokenizeAndStringify(code));
         }
 
         {
             const char code[] = "static unsigned int *a=0, *b=0;";
-            TODO_ASSERT_EQUALS("static unsigned int * a = 0 ; static unsigned int * b = 0 ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("static unsigned int * a = 0 ; static unsigned int * b = 0 ;", tokenizeAndStringify(code));
         }
     }
 

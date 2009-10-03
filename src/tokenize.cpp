@@ -2597,10 +2597,11 @@ void Tokenizer::simplifyVarDecl()
         Token *type0 = tok;
         if (!Token::Match(type0, "%type%"))
             continue;
-        if (Token::Match(type0, "else|return|static"))
+        if (Token::Match(type0, "else|return"))
             continue;
 
         bool isconst = false;
+        bool isstatic = false;
         Token *tok2 = type0;
         unsigned int typelen = 1;
 
@@ -2608,6 +2609,9 @@ void Tokenizer::simplifyVarDecl()
         {
             if (tok2->str() == "const")
                 isconst = true;
+
+            else if (tok2->str() == "static")
+                isstatic = true;
 
             tok2 = tok2->next();
             ++typelen;
@@ -2620,7 +2624,17 @@ void Tokenizer::simplifyVarDecl()
         if (Token::Match(tok2, "%type% %var% ,|="))
         {
             if (tok2->next()->str() != "operator")
+            {
                 tok2 = tok2->tokAt(2);    // The ',' or '=' token
+
+                if (isstatic && tok2->str() == "=")
+                {
+                    if (Token::Match(tok2->next(), "%num% ,"))
+                        tok2 = tok2->tokAt(2);
+                    else
+                        tok2 = NULL;
+                }
+            }
             else
                 tok2 = NULL;
         }
@@ -2628,7 +2642,17 @@ void Tokenizer::simplifyVarDecl()
         else if (Token::Match(tok2, "%type% * %var% ,|="))
         {
             if (tok2->tokAt(2)->str() != "operator")
+            {
                 tok2 = tok2->tokAt(3);    // The ',' token
+
+                if (isstatic && tok2->str() == "=")
+                {
+                    if (Token::Match(tok2->next(), "%num% ,"))
+                        tok2 = tok2->tokAt(2);
+                    else
+                        tok2 = NULL;
+                }
+            }
             else
                 tok2 = NULL;
         }
