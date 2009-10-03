@@ -2621,29 +2621,15 @@ void Tokenizer::simplifyVarDecl()
         if (isconst && Token::Match(tok2, "%type% %var% ="))
             continue;
 
-        if (Token::Match(tok2, "%type% %var% ,|="))
+        if (Token::Match(tok2, "%type% *| %var% ,|="))
         {
-            if (tok2->next()->str() != "operator")
-            {
-                tok2 = tok2->tokAt(2);    // The ',' or '=' token
+            const bool isPointer = (tok2->next()->str() == "*");
+            const Token *varName = tok2->tokAt((isPointer ? 2 : 1));
+            Token *endDeclaration = varName->next();
 
-                if (isstatic && tok2->str() == "=")
-                {
-                    if (Token::Match(tok2->next(), "%num% ,"))
-                        tok2 = tok2->tokAt(2);
-                    else
-                        tok2 = NULL;
-                }
-            }
-            else
-                tok2 = NULL;
-        }
-
-        else if (Token::Match(tok2, "%type% * %var% ,|="))
-        {
-            if (tok2->tokAt(2)->str() != "operator")
+            if (varName->str() != "operator")
             {
-                tok2 = tok2->tokAt(3);    // The ',' token
+                tok2 = endDeclaration; // The ',' or '=' token
 
                 if (isstatic && tok2->str() == "=")
                 {
