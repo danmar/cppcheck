@@ -393,7 +393,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             {
                 if (varid == 0)
                 {
-                    std::cerr << "\n###### If you see this, there is a bug ###### Token::Match() - varid was 0" << std::endl;
+                    std::cerr << "\n###### If you see this, there is a bug ######" << std::endl
+                              << "Token::Match(\"" << pattern << "\", 0)" << std::endl;
                 }
 
                 if (tok->varId() != varid)
