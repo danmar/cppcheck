@@ -372,9 +372,10 @@ void Tokenizer::simplifyTypedef()
         const char *type1 = 0;
         const char *type2 = 0;
         const char *typeName = 0;
+        bool pointer = false;
 
         if (Token::Match(tok->next(), "%type% %type% ;") ||
-            Token::Match(tok->next(), "%type% %type% %type% ;"))
+            Token::Match(tok->next(), "%type% %type% *| %type% ;"))
         {
             if (tok->tokAt(3)->str() == ";")
             {
@@ -385,10 +386,22 @@ void Tokenizer::simplifyTypedef()
             }
             else
             {
+                pointer = (tok->tokAt(3)->str() == "*");
+
                 type1 = tok->strAt(1);
                 type2 = tok->strAt(2);
-                typeName = tok->strAt(3);
-                tok = tok->tokAt(4);
+
+                if (pointer)
+                {
+                    typeName = tok->strAt(4);
+                    tok = tok->tokAt(5);
+                }
+                else
+                {
+                    typeName = tok->strAt(3);
+                    tok = tok->tokAt(4);
+
+                }
             }
 
             const std::string pattern = className + " :: " + typeName;
@@ -441,6 +454,11 @@ void Tokenizer::simplifyTypedef()
                     if (type2)
                     {
                         tok2->insertToken(type2);
+                        tok2 = tok2->next();
+                    }
+                    if (pointer)
+                    {
+                        tok2->insertToken("*");
                         tok2 = tok2->next();
                     }
 

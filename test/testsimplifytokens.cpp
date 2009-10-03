@@ -123,6 +123,7 @@ private:
         TEST_CASE(simplifyTypedef2)
         TEST_CASE(simplifyTypedef3)
         TEST_CASE(simplifyTypedef4)
+        TEST_CASE(simplifyTypedef5)
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -1751,6 +1752,26 @@ private:
             "unsigned int uvar ; uvar = 2 ; "
             "return uvar / ivar ; "
             "}";
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef5()
+    {
+        // ticket #780
+        const char code[] =
+            "typedef struct yy_buffer_state *YY_BUFFER_STATE;\n"
+            "void f()\n"
+            "{\n"
+            "    YY_BUFFER_STATE state;\n"
+            "}\n";
+
+        const char expected[] =
+            "typedef struct yy_buffer_state * YY_BUFFER_STATE ; "
+            "void f ( ) "
+            "{ "
+            "struct yy_buffer_state * state ; "
+            "}";
+
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
