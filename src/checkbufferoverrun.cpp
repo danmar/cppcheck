@@ -885,9 +885,9 @@ int CheckBufferOverrun::count(const std::string &input_string)
             //std::cout << digits_string;
 
             digits_string = digits_string.substr(1, digits_string.size());
-            if (check_for_i_d_x_f == 1) digits += std::max(abs(atoi(digits_string.c_str())), 1);
+            if (check_for_i_d_x_f == 1) digits += std::max(std::abs(std::atoi(digits_string.c_str())), 1);
             else
-                digits += abs(atoi(digits_string.c_str()));
+                digits += std::abs(std::atoi(digits_string.c_str()));
 
             digits_string = "";
             check_for_i_d_x_f = 0;
