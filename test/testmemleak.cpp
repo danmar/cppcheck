@@ -287,6 +287,7 @@ private:
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, 0, 0);
         std::list<const Token *> callstack;
+        callstack.push_back(0);
         CheckMemoryLeak::AllocType allocType, deallocType;
         allocType = deallocType = CheckMemoryLeak::No;
         bool all = false;
@@ -321,6 +322,12 @@ private:
 
         // alloc; return;
         ASSERT_EQUALS(";;alloc;return;", getcode("char *s = new char[100]; return 0;", "s"));
+
+        // lock/unlock..
+        ASSERT_EQUALS(";;alloc;", getcode("int a; __cppcheck_lock();", ""));
+        ASSERT_EQUALS(";;callfunc;", getcode("int a; __cppcheck_lock();", "a"));
+        ASSERT_EQUALS(";;dealloc;", getcode("int a; __cppcheck_unlock();", ""));
+        ASSERT_EQUALS(";;callfunc;", getcode("int a; __cppcheck_unlock();", "a"));
 
         // dealloc;
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; free(s);", "s"));
