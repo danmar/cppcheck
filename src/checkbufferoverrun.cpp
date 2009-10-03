@@ -252,18 +252,18 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 continue;
 
             int value = 0;
-            if (counter_varid)
+            if (counter_varid == 0)
+                continue;
+
+            if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
             {
-                if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
-                {
-                    value = std::atoi(tok2->strAt(2));
-                    max_counter_value = MathLib::toString<long>(value - 1);
-                }
-                else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
-                {
-                    value = std::atoi(tok2->strAt(2)) + 1;
-                    max_counter_value = tok2->strAt(2);
-                }
+                value = std::atoi(tok2->strAt(2));
+                max_counter_value = MathLib::toString<long>(value - 1);
+            }
+            else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
+            {
+                value = std::atoi(tok2->strAt(2)) + 1;
+                max_counter_value = tok2->strAt(2);
             }
 
             // Get index variable and stopsize.
