@@ -195,7 +195,7 @@ public:
                " * passing parameter by value\n"
                " * [[IncompleteStatement|Incomplete statement]]\n"
                " * [[charvar|check how signed char variables are used]]\n"
-               " * variable scope can be limited"
+               " * variable scope can be limited\n"
                " * condition that is always true/false\n"
                " * unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
 
