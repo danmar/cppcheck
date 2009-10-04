@@ -1748,6 +1748,17 @@ void Tokenizer::simplifyTokenList()
         }
     }
 
+    // 0[a] -> a[0]
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%num% [ %var% ]"))
+        {
+            const std::string temp = tok->str();
+            tok->str(tok->tokAt(2)->str());
+            tok->tokAt(2)->str(temp);
+        }
+    }
+
     simplifySizeof();
 
     // Replace constants..

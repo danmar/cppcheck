@@ -124,6 +124,7 @@ private:
         TEST_CASE(simplifyTypedef3)
         TEST_CASE(simplifyTypedef4)
         TEST_CASE(simplifyTypedef5)
+        TEST_CASE(reverseArraySyntax)
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -1775,6 +1776,10 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
+    void reverseArraySyntax()
+    {
+        ASSERT_EQUALS("a [ 13 ]", tok("13[a]"));
+    }
 };
 
 REGISTER_TEST(TestSimplifyTokens)
