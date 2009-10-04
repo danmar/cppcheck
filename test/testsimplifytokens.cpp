@@ -165,6 +165,10 @@ private:
 
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        ASSERT_EQUALS("if ( * a )", tok("if ((char)*a)"));
+        ASSERT_EQUALS("if ( & a )", tok("if ((int)&a)"));
+        ASSERT_EQUALS("if ( * a )", tok("if ((unsigned int)(unsigned char)*a)"));
     }
 
 

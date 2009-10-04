@@ -2437,23 +2437,24 @@ void Tokenizer::simplifyCasts()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok->next(), "( %type% *| )") || Token::Match(tok->next(), "( %type% %type% *| )"))
+        while (Token::Match(tok->next(), "( %type% *| ) *|&| %var%") ||
+               Token::Match(tok->next(), "( %type% %type% *| ) *|&| %var%"))
         {
             if (tok->isName() && tok->str() != "return")
-                continue;
-
-            // Is it a cast of some variable?
-            const Token *tok2 = tok->tokAt(3);
-            while (tok2 && tok2->str() != ")")
-                tok2 = tok2->next();
-            if (!Token::Match(tok2, ") %var%"))
-                continue;
+                break;
 
             // Remove cast..
             Token::eraseTokens(tok, tok->next()->link()->next());
+
+            if (tok->str() == ")" && tok->link()->previous())
+            {
+                // If there was another cast before this, go back
+                // there to check it also. e.g. "(int)(char)x"
+                tok = tok->link()->previous();
+            }
         }
 
-        else if (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <"))
+        if (Token::Match(tok->next(), "dynamic_cast|reinterpret_cast|const_cast|static_cast <"))
         {
             Token *tok2 = tok->next();
             unsigned int level = 0;
