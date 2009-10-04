@@ -69,11 +69,12 @@ private:
 
 
     void errorReturnPointerToLocalArray(const Token *tok);
+    void errorAutoVariableAssignment(const Token *tok);
 
 
     void getErrorMessages()
     {
-        reportError(0, Severity::error, "autoVariables", "Wrong assignement of an auto-variable to an effective parameter of a function");
+        errorAutoVariableAssignment(0);
         errorReturnPointerToLocalArray(0);
     }
 
