@@ -324,7 +324,7 @@ std::string Preprocessor::read(std::istream &istr)
         }
     }
 
-    return removeComments(code.str());
+    return removeParantheses(removeComments(code.str()));
 }
 
 
@@ -439,6 +439,38 @@ std::string Preprocessor::removeComments(const std::string &str)
     }
 
     return code.str();
+}
+
+
+std::string Preprocessor::removeParantheses(const std::string &str)
+{
+    if (str.find("\n#if") == std::string::npos)
+        return str;
+
+    std::istringstream istr(str.c_str());
+    std::ostringstream ret;
+    std::string line;
+    while (std::getline(istr, line))
+    {
+        if (line.substr(0, 3) == "#if")
+        {
+            while (line.find(" (") != std::string::npos)
+                line.erase(line.find(" ("), 1);
+            while (line.find("( ") != std::string::npos)
+                line.erase(line.find("( ") + 1, 1);
+            while (line.find(" )") != std::string::npos)
+                line.erase(line.find(" )"), 1);
+            while (line.find(") ") != std::string::npos)
+                line.erase(line.find(") ") + 1, 1);
+            if (line.substr(0, 4) == "#if(" && line.find(")") == line.length() - 1)
+            {
+                line[3] = ' ';
+                line.erase(line.length() - 1);
+            }
+        }
+        ret << line << "\n";
+    }
+    return ret.str();
 }
 
 

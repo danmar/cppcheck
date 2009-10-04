@@ -342,14 +342,15 @@ private:
 
     void test6()
     {
-        const char filedata[] = "#if(AAA)\n"
-                                "#if(AAA)\n";
+        const char filedata[] = "#if(A)\n"
+                                "#if ( A ) \n"
+                                "#if A\n";
 
         std::istringstream istr(filedata);
         const std::string actual(Preprocessor::read(istr));
 
         // Compare results..
-        ASSERT_EQUALS("#if (AAA)\n#if (AAA)\n", actual);
+        ASSERT_EQUALS("#if A\n#if A\n#if A\n", actual);
     }
 
     void test7()

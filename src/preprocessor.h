@@ -100,6 +100,14 @@ protected:
     static std::string removeComments(const std::string &str);
 
     /**
+     * Remove redundant parantheses from preprocessor commands. This should only be called from read().
+     * @param str Code processed by read().
+     * @return code with reduced parantheses
+     * @throws std::runtime_error when code contains unhandled characters
+     */
+    static std::string removeParantheses(const std::string &str);
+
+    /**
      * Returns the string between double quote characters or \< \> characters.
      * @param str e.g. \code#include "menu.h"\endcode or \code#include <menu.h>\endcode
      * After function call it will contain e.g. "menu.h" without double quotes.
