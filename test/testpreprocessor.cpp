@@ -344,13 +344,15 @@ private:
     {
         const char filedata[] = "#if(A)\n"
                                 "#if ( A ) \n"
-                                "#if A\n";
+                                "#if A\n"
+                                "#if defined((A))\n"
+                                "#elif defined (A)\n";
 
         std::istringstream istr(filedata);
         const std::string actual(Preprocessor::read(istr));
 
         // Compare results..
-        ASSERT_EQUALS("#if A\n#if A\n#if A\n", actual);
+        ASSERT_EQUALS("#if A\n#if A\n#if A\n#if defined(A)\n#elif defined(A)\n", actual);
     }
 
     void test7()
@@ -778,9 +780,15 @@ private:
 
     void if_defined()
     {
-        const char filedata[] = "#if defined(AAA)\n"
-                                "#endif\n";
-        ASSERT_EQUALS("#ifdef AAA\n#endif\n", OurPreprocessor::replaceIfDefined(filedata));
+        {
+            const char filedata[] = "#if defined(AAA)\n"
+                                    "#endif\n";
+            ASSERT_EQUALS("#ifdef AAA\n#endif\n", OurPreprocessor::replaceIfDefined(filedata));
+        }
+
+        {
+            ASSERT_EQUALS("#elif A\n", OurPreprocessor::replaceIfDefined("#elif defined(A)\n"));
+        }
     }
 
     void if_not_defined()

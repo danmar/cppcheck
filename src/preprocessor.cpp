@@ -452,16 +452,35 @@ std::string Preprocessor::removeParantheses(const std::string &str)
     std::string line;
     while (std::getline(istr, line))
     {
-        if (line.substr(0, 3) == "#if")
+        if (line.substr(0, 3) == "#if" || line.substr(0, 5) == "#elif")
         {
-            while (line.find(" (") != std::string::npos)
-                line.erase(line.find(" ("), 1);
-            while (line.find("( ") != std::string::npos)
-                line.erase(line.find("( ") + 1, 1);
-            while (line.find(" )") != std::string::npos)
-                line.erase(line.find(" )"), 1);
-            while (line.find(") ") != std::string::npos)
-                line.erase(line.find(") ") + 1, 1);
+            std::string::size_type pos;
+            pos = 0;
+            while ((pos = line.find(" (", pos)) != std::string::npos)
+                line.erase(pos, 1);
+            pos = 0;
+            while ((pos = line.find("( ", pos)) != std::string::npos)
+                line.erase(pos + 1, 1);
+            pos = 0;
+            while ((pos = line.find(" )", pos)) != std::string::npos)
+                line.erase(pos, 1);
+            pos = 0;
+            while ((pos = line.find(") ", pos)) != std::string::npos)
+                line.erase(pos + 1, 1);
+
+            // Remove inner paranthesis "((..))"..
+            pos = 0;
+            while ((pos = line.find("((", pos)) != std::string::npos)
+            {
+                ++pos;
+                std::string::size_type pos2 = line.find_first_of("()", pos + 1);
+                if (pos2 != std::string::npos && line[pos2] == ')')
+                {
+                    line.erase(pos2, 1);
+                    line.erase(pos, 1);
+                }
+            }
+
             if (line.substr(0, 4) == "#if(" && line.find(")") == line.length() - 1)
             {
                 line[3] = ' ';
@@ -591,6 +610,20 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
             ret.erase(pos2, 1);
             ret.erase(pos + 3, 10);
             ret.insert(pos + 3, "ndef ");
+        }
+        ++pos;
+    }
+
+    pos = 0;
+    while ((pos = ret.find("#elif defined(", pos)) != std::string::npos)
+    {
+        std::string::size_type pos2 = ret.find(")", pos + 9);
+        if (pos2 > ret.length() - 1)
+            break;
+        if (ret[pos2+1] == '\n')
+        {
+            ret.erase(pos2, 1);
+            ret.erase(pos + 6, 8);
         }
         ++pos;
     }
