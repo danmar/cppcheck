@@ -663,7 +663,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 continue;
             }
 
-            if (tok->str() == "if")
+            if (Token::simpleMatch(tok, "if ("))
             {
                 addtoken("if");
                 tok = tok->next()->link();
