@@ -215,125 +215,6 @@ void CheckOther::redundantCondition2()
 
 
 
-
-//---------------------------------------------------------------------------
-// if (condition) ....
-//---------------------------------------------------------------------------
-
-void CheckOther::warningIf()
-{
-    if (ErrorLogger::ifNoAction(*_settings))
-    {
-        // Search for 'if (condition);'
-        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-        {
-            if (!Token::simpleMatch(tok, "if ("))
-                continue;
-
-            // Search for the end paranthesis for the condition..
-            int parlevel = 0;
-            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")")
-                {
-                    --parlevel;
-                    if (parlevel <= 0)
-                    {
-                        if (Token::Match(tok2, ") ; !!else"))
-                        {
-                            ifNoActionError(tok);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    if (_settings->_checkCodingStyle)
-    {
-        // Search for 'a=b; if (a==b)'
-        for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-        {
-            // Begin statement?
-            if (! Token::Match(tok, "[;{}]"))
-                continue;
-            tok = tok->next();
-            if (! tok)
-                break;
-
-            if (!Token::Match(tok, "%var% = %var% ; if ( %var%"))
-                continue;
-
-            if (strcmp(tok->strAt(9), ")") != 0)
-                continue;
-
-            // var1 = var2 ; if ( var3 cond var4 )
-            unsigned int var1 = tok->tokAt(0)->varId();
-            unsigned int var2 = tok->tokAt(2)->varId();
-            unsigned int var3 = tok->tokAt(6)->varId();
-            const char *cond = tok->strAt(7);
-            unsigned int var4 = tok->tokAt(8)->varId();
-
-            if (var1 == 0 || var2 == 0 || var3 == 0 || var4 == 0)
-                continue;
-
-            if (var1 == var2 || var3 == var4)
-                continue;
-
-            // Check that var3 is equal with either var1 or var2
-            if (var1 != var3 && var2 != var3)
-                continue;
-
-            // Check that var4 is equal with either var1 or var2
-            if (var1 != var4 && var2 != var4)
-                continue;
-
-            // Check that there is a condition..
-            static const char * const p[6] = {"==", "<=", ">=", "!=", "<", ">"};
-            bool iscond = false;
-            for (int i = 0; i < 6; i++)
-            {
-                if (strcmp(cond, p[i]) == 0)
-                {
-                    iscond = true;
-                    break;
-                }
-            }
-            if (!iscond)
-                continue;
-
-            // If there are casting involved it's hard to know if the
-            // condition is true or false
-            const Token *vardecl1 = Token::findmatch(_tokenizer->tokens(), "; %type% %varid% ;", var1);
-            if (!vardecl1)
-                continue;
-            const Token *vardecl2 = Token::findmatch(_tokenizer->tokens(), "; %type% %varid% ;", var2);
-            if (!vardecl2)
-                continue;
-
-            // variable 1 & 2 must be the same type..
-            if (vardecl1->next()->str() != vardecl2->next()->str())
-                continue;
-
-            // we found the error. Report.
-            bool b = false;
-            for (int i = 0; i < 6; i++)
-            {
-                if (strcmp(cond, p[i]) == 0)
-                    b = (i < 3);
-            }
-            conditionAlwaysTrueFalse(tok->tokAt(4), b ? "True" : "False");
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
-
-
-
 //---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
 //---------------------------------------------------------------------------
@@ -1271,11 +1152,6 @@ void CheckOther::redundantIfRemoveError(const Token *tok)
 void CheckOther::dangerousUsageStrtolError(const Token *tok)
 {
     reportError(tok, Severity::error, "dangerousUsageStrtol", "Invalid radix in call to strtol or strtoul. Must be 0 or 2-36");
-}
-
-void CheckOther::ifNoActionError(const Token *tok)
-{
-    reportError(tok, Severity::style, "ifNoAction", "Found redundant if condition - 'if (condition);'");
 }
 
 void CheckOther::sprintfOverlappingDataError(const Token *tok, const std::string &varname)

@@ -63,7 +63,6 @@ public:
         if (settings->_checkCodingStyle)
         {
             checkOther.warningRedundantCode();
-            checkOther.warningIf();
             checkOther.checkVariableScope();
             checkOther.checkConstantFunctionParameter();
             checkOther.checkStructMemberUsage();
@@ -84,9 +83,6 @@ public:
 
     // Redundant code
     void warningRedundantCode();
-
-    // Warning upon: if (condition);
-    void warningIf();
 
     // Invalid function usage..
     void invalidFunctionUsage();
@@ -133,7 +129,6 @@ public:
     void redundantIfDelete0Error(const Token *tok);
     void redundantIfRemoveError(const Token *tok);
     void dangerousUsageStrtolError(const Token *tok);
-    void ifNoActionError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void udivError(const Token *tok);
     void udivWarning(const Token *tok);
@@ -156,7 +151,6 @@ public:
         redundantIfDelete0Error(0);
         redundantIfRemoveError(0);
         dangerousUsageStrtolError(0);
-        ifNoActionError(0);
         sprintfOverlappingDataError(0, "varname");
         udivError(0);
         udivWarning(0);
