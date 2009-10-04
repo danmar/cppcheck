@@ -1947,8 +1947,8 @@ void CheckMemoryLeakInFunction::check()
             if (!Token::Match(tok, "[{};] %type%"))
                 continue;
 
-            // Don't check static variables
-            if (tok->next()->str() == "static")
+            // Don't check static/extern variables
+            if (Token::Match(tok->next(), "static|extern"))
                 continue;
 
             // return/else is not part of a variable declaration..

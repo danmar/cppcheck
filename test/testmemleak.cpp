@@ -138,6 +138,7 @@ private:
         TEST_CASE(new_nothrow);
 
         TEST_CASE(staticvar);
+        TEST_CASE(externvar);
 
         TEST_CASE(alloc_alloc_1);
 
@@ -697,6 +698,16 @@ private:
               "    free(s);\n"
               "    s = malloc(100);\n"
               "    return 123;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void externvar()
+    {
+        check("void f()\n"
+              "{\n"
+              "    extern char *s;\n"
+              "    s = malloc(100);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
