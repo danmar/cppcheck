@@ -361,6 +361,7 @@ private:
         ASSERT_EQUALS(";;loop{alloc;}", getcode("char *s; for (a;b;c) { s=malloc(10); }", "s"));
         ASSERT_EQUALS(";;do{}loop;", getcode("char *s; do { } while (a);", "s"));
         ASSERT_EQUALS(";;while1{}", getcode("char *s; while(true) { }", "s"));
+        ASSERT_EQUALS(";;while1{}", getcode("char *s; for(;;) { }", "s"));
 
         // asprintf..
         ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"xyz\");", "s"));

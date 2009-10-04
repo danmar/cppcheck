@@ -916,7 +916,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // Loops..
         else if ((tok->str() == "for") || (tok->str() == "while"))
         {
-            if (Token::simpleMatch(tok, "while ( true )"))
+            if (Token::simpleMatch(tok, "while ( true )") ||
+                Token::simpleMatch(tok, "for ( ; ; )"))
             {
                 addtoken("while1");
                 tok = tok->next()->link();
