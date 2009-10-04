@@ -534,7 +534,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             --parlevel;
             if (parlevel < 1)
             {
-                return _settings->_showAll ? 0 : "callfunc";
+                return (_settings && _settings->_showAll) ? 0 : "callfunc";
             }
         }
 
@@ -1073,6 +1073,13 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             else
             {
+                if (varid > 0 && Token::Match(tok, "%var% ( fclose|pclose ( %varid% ) ) ;", varid))
+                {
+                    addtoken("dealloc");
+                    tok = tok->next()->link();
+                    continue;
+                }
+
                 const char *str = call_func(tok, callstack, varid, alloctype, dealloctype, all, sz);
                 if (str)
                 {

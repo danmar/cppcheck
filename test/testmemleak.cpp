@@ -339,6 +339,7 @@ private:
         TODO_ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete (void *)(s);", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete [] s;", "s"));
         ASSERT_EQUALS(";;dealloc;", getcode("char *s; delete [] (s);", "s"));
+        ASSERT_EQUALS(";;dealloc;", getcode("void *p; foo(fclose(p));", "p"));
 
         // if..
         ASSERT_EQUALS(";;if{}", getcode("char *s; if (a) { }", "s"));
