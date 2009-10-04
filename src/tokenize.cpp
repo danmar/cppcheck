@@ -585,7 +585,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
             else
                 tok->tokAt(2)->str("<=");
         }
-    }    
+    }
 
     /**
      * @todo simplify "for"
