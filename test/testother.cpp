@@ -69,6 +69,10 @@ private:
 
         TEST_CASE(postIncrementDecrementStl);
         TEST_CASE(postIncrementDecrementClass);
+
+        TEST_CASE(dangerousStrolUsage);
+
+        TEST_CASE(passedByValue);
     }
 
     void check(const char code[])
@@ -948,6 +952,69 @@ private:
                                     "        ;\n"
                                     "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (possible style) Pre-Decrementing variable 'tClass' is preferred to Post-Decrementing\n", errout.str());
+    }
+
+    void dangerousStrolUsage()
+    {
+        {
+            sprintfUsage("int f(const char *num)\n"
+                         "{\n"
+                         "    return strtol(num, NULL, 1);\n"
+                         "}\n");
+
+            ASSERT_EQUALS("[test.cpp:3]: (error) Invalid radix in call to strtol or strtoul. Must be 0 or 2-36\n", errout.str());
+        }
+
+        {
+            sprintfUsage("int f(const char *num)\n"
+                         "{\n"
+                         "    return strtol(num, NULL, 10);\n"
+                         "}\n");
+
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void testPassedByValue(const char code[])
+    {
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings settings;
+        CheckOther checkOther(&tokenizer, &settings, this);
+        checkOther.checkConstantFunctionParameter();
+    }
+
+    void passedByValue()
+    {
+        {
+            testPassedByValue("void f(const std::string str)\n"
+                              "{\n"
+                              "}\n");
+
+            ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'str' is passed by value. It could be passed by reference instead.\n", errout.str());
+        }
+
+        {
+            testPassedByValue("class Foo;\n"
+                              "void f(const Foo foo)\n"
+                              "{\n"
+                              "}\n");
+
+            ASSERT_EQUALS("[test.cpp:2]: (style) Function parameter 'foo' is passed by value. It could be passed by reference instead.\n", errout.str());
+        }
+
+        {
+            testPassedByValue("void f(const std::string &str)\n"
+                              "{\n"
+                              "}\n");
+
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
 };
