@@ -157,6 +157,8 @@ private:
         TEST_CASE(signed1);
 
         TEST_CASE(removeExceptionSpecification);
+
+        TEST_CASE(gt);      // use "<" comparisons instead of ">"
     }
 
 
@@ -2619,6 +2621,13 @@ private:
                                 "{ }";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+
+    void gt()
+    {
+        ASSERT_EQUALS("( i < 10 )", tokenizeAndStringify("(10>i)"));
+        ASSERT_EQUALS("; i < 10 ;", tokenizeAndStringify(";10>i;"));
     }
 
 };

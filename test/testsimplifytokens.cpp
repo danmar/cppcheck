@@ -441,7 +441,7 @@ private:
                                 "        a = 10;\n"
                                 "    a++;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } a ++ ; }", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( 10 < a ) { a = 5 ; } else { a = 10 ; } a ++ ; }", tok(code));
         }
 
         {
@@ -453,7 +453,7 @@ private:
                                 "        a = 10;\n"
                                 "    ++a;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( int a ) { if ( a > 10 ) { a = 5 ; } else { a = 10 ; } ++ a ; }", tok(code));
+            ASSERT_EQUALS("void f ( int a ) { if ( 10 < a ) { a = 5 ; } else { a = 10 ; } ++ a ; }", tok(code));
         }
     }
 

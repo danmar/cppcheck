@@ -572,6 +572,21 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // replace "unsigned i" with "unsigned int i"
     unsignedint();
 
+    // Use "<" comparison instead of ">"
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[;(] %any% >|>= %any% [);]"))
+        {
+            const std::string op1(tok->strAt(1));
+            tok->next()->str(tok->strAt(3));
+            tok->tokAt(3)->str(op1);
+            if (tok->tokAt(2)->str() == ">")
+                tok->tokAt(2)->str("<");
+            else
+                tok->tokAt(2)->str("<=");
+        }
+    }    
+
     /**
      * @todo simplify "for"
      * - move out start-statement "for (a;b;c);" => "{ a; for(;b;c); }"
