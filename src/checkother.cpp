@@ -567,6 +567,16 @@ void CheckOther::checkConstantFunctionParameter()
             passedByValueError(tok, tok->strAt(5));
         }
 
+        else if (Token::Match(tok, "[,(] const std :: %type% < %type% > %var% [,)]"))
+        {
+            passedByValueError(tok, tok->strAt(8));
+        }
+
+        else if (Token::Match(tok, "[,(] const std :: %type% < std :: %type% > %var% [,)]"))
+        {
+            passedByValueError(tok, tok->strAt(10));
+        }
+
         else if (Token::Match(tok, "[,(] const %type% %var% [,)]"))
         {
             // Check if type is a struct or class.

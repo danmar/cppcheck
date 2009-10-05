@@ -1015,6 +1015,30 @@ private:
 
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            testPassedByValue("void f(const std::vector<int> v)\n"
+                              "{\n"
+                              "}\n");
+
+            ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
+        }
+
+        {
+            testPassedByValue("void f(const std::vector<std::string> v)\n"
+                              "{\n"
+                              "}\n");
+
+            ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
+        }
+
+        {
+            testPassedByValue("void f(const std::vector<int> &v)\n"
+                              "{\n"
+                              "}\n");
+
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
 };
