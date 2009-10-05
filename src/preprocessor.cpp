@@ -452,7 +452,7 @@ std::string Preprocessor::removeParantheses(const std::string &str)
     std::string line;
     while (std::getline(istr, line))
     {
-        if (line.substr(0, 3) == "#if" || line.substr(0, 5) == "#elif")
+        if (line.compare(0, 3, "#if") == 0 || line.compare(0, 5, "#elif") == 0)
         {
             std::string::size_type pos;
             pos = 0;
@@ -481,7 +481,7 @@ std::string Preprocessor::removeParantheses(const std::string &str)
                 }
             }
 
-            if (line.substr(0, 4) == "#if(" && line.find(")") == line.length() - 1)
+            if (line.compare(0, 4, "#if(") == 0 && line.find(")") == line.length() - 1)
             {
                 line[3] = ' ';
                 line.erase(line.length() - 1);
@@ -655,7 +655,7 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
         std::string line;
         while (std::getline(istr, line))
         {
-            if (line.substr(0, 4) == "#if " || line.substr(0, 6) == "#elif ")
+            if (line.compare(0, 4, "#if ") == 0 || line.compare(0, 6, "#elif ") == 0)
             {
                 std::string::size_type pos = 0;
                 while ((pos = line.find(" defined ")) != std::string::npos)
@@ -732,7 +732,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
     std::string line;
     while (getline(istr, line))
     {
-        if (line.substr(0, 6) == "#file ")
+        if (line.compare(0, 6, "#file ") == 0)
         {
             ++filelevel;
             continue;
@@ -745,7 +745,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
             continue;
         }
 
-        else if (line.substr(0, 8) == "#define " && line.find("(", 8) == std::string::npos)
+        else if (line.compare(0, 8, "#define ") == 0 && line.find("(", 8) == std::string::npos)
         {
             if (line.find(" ", 8) == std::string::npos)
                 defines.insert(line.substr(8));
@@ -1038,14 +1038,14 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     std::string line;
     while (getline(istr, line))
     {
-        if (line.substr(0, 11) == "#pragma asm")
+        if (line.compare(0, 11, "#pragma asm") == 0)
         {
             ret << "\n";
             bool found_end = false;
             while (getline(istr, line))
             {
                 ret << "\n";
-                if (line.substr(0, 14) == "#pragma endasm")
+                if (line.compare(0, 14, "#pragma endasm") == 0)
                 {
                     found_end = true;
                     break;
@@ -1060,7 +1060,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
         std::string def = getdef(line, true);
         std::string ndef = getdef(line, false);
 
-        if (line.substr(0, 8) == "#define " && line.find("(", 8) == std::string::npos)
+        if (line.compare(0, 8, "#define ") == 0 && line.find("(", 8) == std::string::npos)
         {
             std::string::size_type pos = line.find(" ", 8);
             if (pos == std::string::npos)
@@ -1597,9 +1597,9 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             if (code[pos1] == '#')
             {
                 // Are we at a #undef or #define?
-                if (code.substr(pos1, 7) == "#undef ")
+                if (code.compare(pos1, 7, "#undef ") == 0)
                     pos1 += 7;
-                else if (code.substr(pos1, 8) == "#define ")
+                else if (code.compare(pos1, 8, "#define ") == 0)
                     pos1 += 8;
                 else
                     continue;
@@ -1608,7 +1608,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                 // If it's the same macroname.. break.
                 std::string::size_type pos = pos1 + macro.name().length();
                 if (pos < code.length()
-                    && code.substr(pos1, macro.name().length()) == macro.name()
+                    && code.compare(pos1, macro.name().length(), macro.name()) == 0
                     && !std::isalnum(code[pos]) && code[pos] != '_')
                     break;
 
@@ -1634,7 +1634,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                     std::string::size_type lineStart = code.rfind('\n', pos1 - 1);
                     if (lineStart != std::string::npos)
                     {
-                        if (code.substr(lineStart + 1, 7) == "#define")
+                        if (code.compare(lineStart + 1, 7, "#define") == 0)
                         {
                             // There is nothing wrong #define containing quote without
                             // a pair.
@@ -1657,7 +1657,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
 
             // Matching the macroname?
             const std::string substr(code.substr(pos1, macro.name().length()));
-            if (code.substr(pos1, macro.name().length()) != macro.name())
+            if (code.compare(pos1, macro.name().length(), macro.name()) != 0)
                 continue;
 
             // Previous char must not be alphanumeric nor '_'
@@ -1681,7 +1681,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             std::string::size_type startOfLine = code.rfind("\n", pos1);
             ++startOfLine;
 
-            if (code.substr(startOfLine, 8) == "#define ")
+            if (code.compare(startOfLine, 8, "#define ") == 0)
             {
                 // We are inside a define, make sure we don't have name collision
                 // by e.g. replacing the following code:
