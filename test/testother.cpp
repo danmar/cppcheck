@@ -628,6 +628,21 @@ private:
                          "    }\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("void foo(A*a)\n"
+                         "{\n"
+                         "  switch (a->b()) {\n"
+                         "    case 1:\n"
+                         "      while( a ){\n"
+                         "        a = a->next;\n"
+                         "      }\n"
+                         "    break;\n"
+                         "    case 2:\n"
+                         "      a->b();\n"
+                         "      break;\n"
+                         "  }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer2()

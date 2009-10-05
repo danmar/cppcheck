@@ -866,7 +866,7 @@ void CheckOther::nullPointer()
         // Check if the variable is dereferenced..
         while (tok2)
         {
-            if (tok2->str() == "{" || tok2->str() == "}")
+            if (tok2->str() == "{" || tok2->str() == "}" || tok2->str() == "break")
                 break;
 
             if (tok2->varId() == varid)
