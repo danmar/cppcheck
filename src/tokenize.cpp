@@ -1862,6 +1862,7 @@ void Tokenizer::simplifyTokenList()
     simplifyFunctionParameters();
 
     elseif();
+    simplifyRedundantParanthesis();
     simplifyIfNot();
     simplifyIfNotNull();
     simplifyIfAssign();
@@ -3066,6 +3067,14 @@ void Tokenizer::simplifyIfNot()
                 tok = tok->tokAt(4);
                 Token::eraseTokens(tok, tok->tokAt(3));
             }
+
+            else if (Token::Match(tok, "* %var% == 0"))
+            {
+                tok = tok->previous();
+                tok->insertToken("!");
+                tok = tok->tokAt(3);
+                Token::eraseTokens(tok, tok->tokAt(3));
+            }
         }
 
         else if (tok->link() && Token::simpleMatch(tok, ") == 0"))
@@ -3082,7 +3091,9 @@ void Tokenizer::simplifyIfNot()
                 // if( (x) == 0 )
                 tok->link()->insertToken("(");
                 tok->link()->str("!");
+                Token *temp = tok->link();
                 Token::createMutualLinks(tok->link()->next(), tok);
+                temp->link(0);
             }
         }
     }
@@ -3397,7 +3408,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "( ( %var% )") && tok->next()->varId() != 0)
+        if (Token::Match(tok->previous(), "[(!*] ( %var% )") && tok->next()->varId() != 0)
         {
             // We have "( var )", remove the paranthesis
             tok = tok->previous();
