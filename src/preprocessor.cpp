@@ -1656,7 +1656,6 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             }
 
             // Matching the macroname?
-            const std::string substr(code.substr(pos1, macro.name().length()));
             if (code.compare(pos1, macro.name().length(), macro.name()) != 0)
                 continue;
 
