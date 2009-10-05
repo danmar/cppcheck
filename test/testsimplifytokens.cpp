@@ -402,8 +402,7 @@ private:
 
     void parantheses1()
     {
-        const char code1[] = "<= (10+100);";
-        ASSERT_EQUALS("<= 110 ;", tok(code1));
+        ASSERT_EQUALS("<= 110 ;", tok("<= (10+100);"));
     }
 
     void paranthesesVar()
@@ -1425,15 +1424,23 @@ private:
         }
 
         {
+            const char code[] = "int a = (1?0:1 == 1?0:1);";
+            ASSERT_EQUALS("int a ; a = 0 ;", tok(code));
+        }
+
+        {
+            const char code[] = "(1?0:foo())";
+            ASSERT_EQUALS("( 0 )", tok(code));
+        }
+
+        {
             const char code[] = "( true ? a ( ) : b ( ) )";
-            ASSERT_EQUALS(code, tok(code));
-            TODO_ASSERT_EQUALS("( a ( ) )", tok(code));
+            ASSERT_EQUALS("( a ( ) )", tok(code));
         }
 
         {
             const char code[] = "( true ? abc . a : abc . b )";
-            ASSERT_EQUALS(code, tok(code));
-            TODO_ASSERT_EQUALS("( abc . a )", tok(code));
+            ASSERT_EQUALS("( abc . a )", tok(code));
         }
     }
 

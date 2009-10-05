@@ -1890,6 +1890,7 @@ void Tokenizer::simplifyTokenList()
         modified |= removeReduntantConditions();
         modified |= simplifyRedundantParanthesis();
         modified |= simplifyQuestionMark();
+        modified |= simplifyCalculations();
     }
 
     // Remove redundant parantheses in return..
@@ -2335,7 +2336,7 @@ bool Tokenizer::simplifyQuestionMark()
         if (tok->str() != "?")
             continue;
 
-        if (!tok->previous() || !tok->tokAt(-2))
+        if (!tok->tokAt(-2))
             continue;
 
         if (!Token::Match(tok->tokAt(-2), "[=,(]"))
@@ -2382,15 +2383,37 @@ bool Tokenizer::simplifyQuestionMark()
         }
 
         // The condition is true. Delete the operator after the ":"..
-        else if (Token::Match(semicolon, ": %num%") || Token::Match(semicolon, ": %var% [);]"))
+        else
         {
             // delete the condition token and the "?"
             tok = tok->tokAt(-2);
             Token::eraseTokens(tok, tok->tokAt(3));
+            int ind = 0;
+            for (const Token *end = semicolon; end; end = end->next())
+            {
+                if (end->str() == ";")
+                {
+                    Token::eraseTokens(semicolon->previous(), end->next());
+                    ret = true;
+                    break;
+                }
 
-            // delete the ":" token and the token after it..
-            semicolon->deleteThis();
-            semicolon->deleteThis();
+                else if (end->str() == "(")
+                {
+                    ++ind;
+                }
+
+                else if (end->str() == ")")
+                {
+                    --ind;
+                    if (ind < 0)
+                    {
+                        Token::eraseTokens(semicolon->previous(), end);
+                        ret = true;
+                        break;
+                    }
+                }
+            }
         }
     }
 
