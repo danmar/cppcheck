@@ -1918,34 +1918,6 @@ void Tokenizer::simplifyTokenList()
 }
 //---------------------------------------------------------------------------
 
-const Token *Tokenizer::findClosing(const Token *tok, const char *start, const char *end)
-{
-    if (!tok)
-        return 0;
-
-    // Find the closing "}"
-    int indentLevel = 0;
-    for (const Token *closing = tok->next(); closing; closing = closing->next())
-    {
-        if (closing->str() == start)
-        {
-            ++indentLevel;
-            continue;
-        }
-
-        if (closing->str() == end)
-            --indentLevel;
-
-        if (indentLevel >= 0)
-            continue;
-
-        // Closing } is found.
-        return closing;
-    }
-
-    return 0;
-}
-
 bool Tokenizer::removeReduntantConditions()
 {
     bool ret = false;
@@ -1962,9 +1934,7 @@ bool Tokenizer::removeReduntantConditions()
         const Token *elseTag = 0;
 
         // Find the closing "}"
-        elseTag = Tokenizer::findClosing(tok->tokAt(4), "{", "}");
-        if (elseTag)
-            elseTag = elseTag->next();
+        elseTag = tok->tokAt(4)->link()->next();
 
         bool boolValue = false;
         if (tok->tokAt(2)->str() == "true")
@@ -1973,7 +1943,7 @@ bool Tokenizer::removeReduntantConditions()
         // Handle if with else
         if (elseTag && elseTag->str() == "else")
         {
-            if (elseTag->next()->str() ==  "if")
+            if (Token::simpleMatch(elseTag->next(), "if ("))
             {
                 // Handle "else if"
                 if (boolValue == false)
@@ -1990,13 +1960,11 @@ bool Tokenizer::removeReduntantConditions()
                     {
                         if (lastTagInIf->str() == "(")
                         {
-                            lastTagInIf = Tokenizer::findClosing(lastTagInIf, "(", ")");
-                            lastTagInIf = lastTagInIf->next();
+                            lastTagInIf = lastTagInIf->link()->next();
                         }
 
-                        lastTagInIf = Tokenizer::findClosing(lastTagInIf, "{", "}");
-                        lastTagInIf = lastTagInIf->next();
-                        if (lastTagInIf->str() != "else")
+                        lastTagInIf = lastTagInIf->link()->next();
+                        if (!Token::simpleMatch(lastTagInIf, "else"))
                             break;
 
                         lastTagInIf = lastTagInIf->next();
@@ -2026,12 +1994,7 @@ bool Tokenizer::removeReduntantConditions()
                     if (elseTag->tokAt(1)->str() == "{")
                     {
                         // Convert "if( true ) {aaa;} else {bbb;}" => "{aaa;}"
-                        const Token *end = Tokenizer::findClosing(elseTag->tokAt(1), "{", "}");
-                        if (!end)
-                        {
-                            // Possibly syntax error in code
-                            return false;
-                        }
+                        const Token *end = elseTag->tokAt(1)->link();
 
                         // Remove the "else { aaa; }"
                         Token::eraseTokens(elseTag->previous(), end->tokAt(1));

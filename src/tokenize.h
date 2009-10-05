@@ -221,15 +221,6 @@ private:
 
     std::vector<const Token *> _functionList;
 
-    /**
-     * Finds matching "end" for "start".
-     * @param tok The start tag
-     * @param start e.g. "{"
-     * @param end e.g. "}"
-     * @return The end tag that matches given parameter or 0 if not found.
-     */
-    static const Token *findClosing(const Token *tok, const char *start, const char *end);
-
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
 
     /**
