@@ -7,5 +7,7 @@ lcov --directory ./ --capture --output-file lcov.info -b ./
 genhtml lcov.info -o coverage_report
 rm src/*.gcda
 rm src/*.gcno
+rm test/*.gcda
+rm test/*.gcno
 rm lcov.info
 make clean
