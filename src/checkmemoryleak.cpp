@@ -414,10 +414,8 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
         {
             if (varid > 0 && Token::Match(tok->next(), "%varid% ;", varid))
                 return allocType;
-            if (Token::Match(tok, "return new %type% ;"))
-                return New;
-            if (Token::Match(tok, "return new %type% [ %any% ] ;"))
-                return NewArray;
+
+            return getAllocationType(tok->next(), varid);
         }
 
         return No;

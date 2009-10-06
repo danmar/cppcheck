@@ -1391,6 +1391,26 @@ private:
               "    char *p = a();\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
+
+        check("FILE *a()\n"
+              "{\n"
+              "    return fopen(\"test.txt\",\"w\");\n"
+              "}\n"
+              "static void b()\n"
+              "{\n"
+              "    FILE *p = a();\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
+
+        check("char *a()\n"
+              "{\n"
+              "    return malloc(10);\n"
+              "}\n"
+              "static void b()\n"
+              "{\n"
+              "    char *p = a();\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
     }
 
     void allocfunc2()
@@ -1404,6 +1424,29 @@ private:
               "    int len = 100;\n"
               "    char *p = a(len);\n"
               "    delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        check("char *a(char *a)\n"
+              "{\n"
+              "    return realloc(a, 10);\n"
+              "}\n"
+              "static void b()\n"
+              "{\n"
+              "    char *p = a(0);\n"
+              "    char *p = a(p);\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        check("char *a()\n"
+              "{\n"
+              "    return malloc(10);\n"
+              "}\n"
+              "static void b()\n"
+              "{\n"
+              "    char *p = a();\n"
+              "    free(p);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
