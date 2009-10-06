@@ -125,6 +125,7 @@ private:
         TEST_CASE(simplifyTypedef4)
         TEST_CASE(simplifyTypedef5)
         TEST_CASE(reverseArraySyntax)
+        TEST_CASE(simplify_numeric_condition);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -1799,6 +1800,98 @@ private:
     void reverseArraySyntax()
     {
         ASSERT_EQUALS("a [ 13 ]", tok("13[a]"));
+    }
+
+
+    void simplify_numeric_condition()
+    {
+        {
+            const char code[] =
+                "void f()\n"
+                "{\n"
+                "int x = 0;\n"
+                "if( !x || 0 )\n"
+                "{ g();\n"
+                "}\n"
+                "}";
+
+            ASSERT_EQUALS("void f ( ) { int x ; x = 0 ; { g ( ) ; } }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f()\n"
+                "{\n"
+                "int x = 1;\n"
+                "if( !x )\n"
+                "{ g();\n"
+                "}\n"
+                "}";
+
+            ASSERT_EQUALS("void f ( ) { int x ; x = 1 ; }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f()\n"
+                "{\n"
+                "bool x = true;\n"
+                "if( !x )\n"
+                "{ g();\n"
+                "}\n"
+                "}";
+
+            ASSERT_EQUALS("void f ( ) { bool x ; x = true ; }", tok(code));
+        }
+
+        {
+            const char code[] =
+                "void f()\n"
+                "{\n"
+                "bool x = false;\n"
+                "if( !x )\n"
+                "{ g();\n"
+                "}\n"
+                "}";
+
+            ASSERT_EQUALS("void f ( ) { bool x ; x = false ; { g ( ) ; } }", tok(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    if (5==5);\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    if (4<5);\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    if (5<5);\n"
+                                "}\n";
+
+            ASSERT_EQUALS("void f ( ) { }", tok(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    if (13>12?true:false);\n"
+                                "}\n";
+
+            TODO_ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+        }
     }
 };
 
