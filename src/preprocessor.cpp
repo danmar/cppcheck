@@ -444,7 +444,7 @@ std::string Preprocessor::removeComments(const std::string &str)
 
 std::string Preprocessor::removeParantheses(const std::string &str)
 {
-    if (str.find("\n#if") == std::string::npos)
+    if (str.find("\n#if") == std::string::npos && str.compare(0, 3, "#if") != 0)
         return str;
 
     std::istringstream istr(str.c_str());
@@ -481,14 +481,38 @@ std::string Preprocessor::removeParantheses(const std::string &str)
                 }
             }
 
-            if (line.compare(0, 4, "#if(") == 0 && line.find(")") == line.length() - 1)
+            // "#if(A) => #if A", but avoid "#if (defined A) || defined (B)"
+            if (line.compare(0, 4, "#if(") == 0 && line[line.length() - 1] == ')')
             {
-                line[3] = ' ';
-                line.erase(line.length() - 1);
+                int ind = 0;
+                for (std::string::size_type i = 0; i < line.length(); ++i)
+                {
+                    if (line[i] == '(')
+                        ++ind;
+                    else if (line[i] == ')')
+                    {
+                        --ind;
+                        if (ind == 0)
+                        {
+                            if (i == line.length() - 1)
+                            {
+                                line[3] = ' ';
+                                line.erase(line.length() - 1);
+                            }
+                            break;
+                        }
+                    }
+                }
             }
+
+            if (line.compare(0, 4, "#if(") == 0)
+                line.insert(3, " ");
+            else if (line.compare(0, 4, "#elif(") == 0)
+                line.insert(5, " ");
         }
         ret << line << "\n";
     }
+
     return ret.str();
 }
 

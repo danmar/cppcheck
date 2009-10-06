@@ -651,21 +651,80 @@ private:
 
     void if_cond4()
     {
-        const char filedata[] = "#define A\n"
-                                "#define B\n"
-                                "#if defined A || defined B\n"
-                                "ab\n"
-                                "#endif\n";
+        {
+            const char filedata[] = "#define A\n"
+                                    "#define B\n"
+                                    "#if defined A || defined B\n"
+                                    "ab\n"
+                                    "#endif\n";
 
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual, "file.c");
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
 
-        // Compare results..
-        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
-        ASSERT_EQUALS("\n\n\nab\n\n", actual[""]);
+            // Compare results..
+            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+            ASSERT_EQUALS("\n\n\nab\n\n", actual[""]);
+        }
+
+        {
+            const char filedata[] = "#if A\n"
+                                    "{\n"
+                                    "#if (defined(B))\n"
+                                    "foo();\n"
+                                    "#endif\n"
+                                    "}\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+            ASSERT_EQUALS("\n\n\n\n\n\n\n", actual[""]);
+            ASSERT_EQUALS("\n{\n\n\n\n}\n\n", actual["A"]);
+            ASSERT_EQUALS("\n{\n\nfoo();\n\n}\n\n", actual["A;B"]);
+        }
+
+        {
+            const char filedata[] = "#define A\n"
+                                    "#define B\n"
+                                    "#if (defined A) || defined (B)\n"
+                                    "ab\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+            ASSERT_EQUALS("\n\n\nab\n\n", actual[""]);
+        }
+
+        {
+            const char filedata[] = "#if (A)\n"
+                                    "foo();\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+            ASSERT_EQUALS("\n\n\n", actual[""]);
+            ASSERT_EQUALS("\nfoo();\n\n", actual["A"]);
+        }
     }
 
     void if_cond5()
