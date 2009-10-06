@@ -59,6 +59,7 @@ private:
         TEST_CASE(varScope4);
         TEST_CASE(varScope5);
         TEST_CASE(varScope6);
+        TEST_CASE(varScope7);
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -441,7 +442,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
 
         // Clear the error buffer..
         errout.str("");
@@ -578,6 +578,19 @@ private:
                  "    ++n;\n"
                  "    ++x;\n"
                  "  } while (x);\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope7()
+    {
+        varScope("void f(int x)\n"
+                 "{\n"
+                 "    int y = 0;\n"
+                 "    b(y);\n"
+                 "    if (x) {\n"
+                 "        y++;\n"
+                 "    }\n"
                  "}\n");
         ASSERT_EQUALS("", errout.str());
     }

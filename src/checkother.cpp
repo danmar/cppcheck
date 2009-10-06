@@ -387,23 +387,7 @@ void CheckOther::checkVariableScope()
             {
                 if (tok2->str() == "{")
                 {
-                    int indentlevel2 = 0;
-                    for (tok = tok2; tok; tok = tok->next())
-                    {
-                        if (tok->str() == "{")
-                        {
-                            ++indentlevel2;
-                        }
-                        if (tok->str() == "}")
-                        {
-                            --indentlevel2;
-                            if (indentlevel2 <= 0)
-                            {
-                                tok = tok->next();
-                                break;
-                            }
-                        }
-                    }
+                    tok = tok2->link();
                     break;
                 }
                 if (Token::Match(tok2, "[,);]"))
@@ -415,11 +399,11 @@ void CheckOther::checkVariableScope()
                 break;
         }
 
-        if (tok->str() == "{")
+        else if (tok->str() == "{")
         {
             ++indentlevel;
         }
-        if (tok->str() == "}")
+        else if (tok->str() == "}")
         {
             --indentlevel;
             if (indentlevel == 0)

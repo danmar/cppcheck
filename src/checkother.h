@@ -53,6 +53,7 @@ public:
             checkOther.warningOldStylePointerCast();
             checkOther.checkUnsignedDivision();
             checkOther.checkCharVariable();
+            checkOther.checkVariableScope();
         }
     }
 
@@ -63,7 +64,6 @@ public:
         if (settings->_checkCodingStyle)
         {
             checkOther.warningRedundantCode();
-            checkOther.checkVariableScope();
             checkOther.checkConstantFunctionParameter();
             checkOther.checkStructMemberUsage();
             checkOther.checkIncompleteStatement();
