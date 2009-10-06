@@ -3269,7 +3269,9 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // Variable is used in calculation..
-                    if (Token::Match(tok3, "[=+-*/[] %varid% [+-*/;]]", varid))
+                    if (Token::Match(tok3, "[=+-*/[] %varid% [+-*/;]]", varid) ||
+                        Token::Match(tok3, "[=+-*/[] %varid% <<", varid) ||
+                        Token::Match(tok3, "<< %varid% [+-*/;]]", varid))
                     {
                         tok3 = tok3->next();
                         tok3->str(value);
@@ -3428,7 +3430,10 @@ bool Tokenizer::simplifyCalculations()
         }
 
         // (1-2)
-        if (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]"))
+        if (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]") ||
+            Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/]") ||
+            Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<") ||
+            Token::Match(tok, "<< %num% [+-*/] %num% <<"))
         {
             tok = tok->next();
 

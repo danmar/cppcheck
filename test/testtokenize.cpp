@@ -81,6 +81,7 @@ private:
         TEST_CASE(simplifyKnownVariables12);
         TEST_CASE(simplifyKnownVariables13);
         TEST_CASE(simplifyKnownVariables14);
+        TEST_CASE(simplifyKnownVariables15);
 
         TEST_CASE(match1);
 
@@ -815,6 +816,32 @@ private:
         ASSERT_EQUALS(code, simplifyKnownVariables(code));
     }
 
+    void simplifyKnownVariables15()
+    {
+        {
+            const char code[] = "int main()\n"
+                                "{\n"
+                                "  int x=5;\n"
+                                "  std::cout << 10 / x << std::endl;\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "int main ( ) { int x ; x = 5 ; std :: cout << 10 / 5 << std :: endl ; }",
+                simplifyKnownVariables(code));
+        }
+
+        {
+            const char code[] = "int main()\n"
+                                "{\n"
+                                "  int x=5;\n"
+                                "  std::cout << x / ( x == 1 ) << std::endl;\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "int main ( ) { int x ; x = 5 ; std :: cout << 5 / ( 5 == 1 ) << std :: endl ; }",
+                simplifyKnownVariables(code));
+        }
+    }
 
     void match1()
     {
