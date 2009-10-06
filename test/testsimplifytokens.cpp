@@ -1890,7 +1890,7 @@ private:
                                 "    if (13>12?true:false);\n"
                                 "}\n";
 
-            TODO_ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
         }
     }
 };

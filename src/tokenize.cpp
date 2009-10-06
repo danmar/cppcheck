@@ -2266,7 +2266,7 @@ bool Tokenizer::simplifyConditions()
         if ((tok->str() == "&&" || tok->str() == "||" || tok->str() == "(") &&
             (Token::Match(tok->tokAt(1), "%num% %any% %num%") ||
              Token::Match(tok->tokAt(1), "%bool% %any% %bool%")) &&
-            (tok4->str() == "&&" || tok4->str() == "||" || tok4->str() == ")"))
+            (tok4->str() == "&&" || tok4->str() == "||" || tok4->str() == ")" || tok4->str() == "?"))
         {
             std::string cmp = tok->strAt(2);
             bool result = false;
