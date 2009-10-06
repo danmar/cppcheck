@@ -2410,6 +2410,8 @@ private:
         TEST_CASE(class10);
         TEST_CASE(class11);
 
+        TEST_CASE(staticvar);
+
         TEST_CASE(use);
 
         TEST_CASE(free_member_in_sub_func);
@@ -2625,6 +2627,23 @@ private:
               "A::A() : p(new int[10])\n"
               "{ }", true);
         ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
+    }
+
+
+    void staticvar()
+    {
+        check("class A\n"
+              "{\n"
+              "private:\n"
+              "    static int * p;\n"
+              "public:"
+              "    A()\n"
+              "    {\n"
+              "        if (!p)\n"
+              "            p = new int[100];\n"
+              "    }\n"
+              "};\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
 

@@ -2058,6 +2058,12 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<const cha
         if (indentlevel > 0)
             continue;
 
+        // skip static variables..
+        if (Token::Match(tok, "static %type% * %var% ;"))
+        {
+            tok = tok->tokAt(4);
+        }
+
         // Declaring subclass.. recursive checking
         if (Token::Match(tok, "class %var% [{:]"))
         {
