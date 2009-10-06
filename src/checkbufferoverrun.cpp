@@ -158,7 +158,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 const char *num = tok->strAt(3);
                 if (std::strtol(num, NULL, 10) >= size)
                 {
-                    arrayIndexOutOfBounds(tok->next());
+                    if (std::strtol(num, NULL, 10) > size || !Token::Match(tok->previous(), "& ("))
+                    {
+                        arrayIndexOutOfBounds(tok->next());
+                    }
                 }
             }
         }

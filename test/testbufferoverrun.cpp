@@ -88,6 +88,7 @@ private:
         TEST_CASE(array_index_16);
         TEST_CASE(array_index_17);
         TEST_CASE(array_index_18);
+        TEST_CASE(array_index_19);
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -571,6 +572,25 @@ private:
               "    }\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
+    }
+
+    void array_index_19()
+    {
+        // "One Past the End" is legal, as long as pointer is not dereferenced.
+        check("void f()\n"
+              "{\n"
+              "  char a[2];\n"
+              "  char *end = &(a[2]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Getting more than one past the end is not legal
+        check("void f()\n"
+              "{\n"
+              "  char a[2];\n"
+              "  char *end = &(a[3]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Array index out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()
