@@ -1188,6 +1188,7 @@ private:
         ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) { ; }", simplifyIfAssign(";if((a=b()));"));
         ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAssign(";if(!(a=b()));"));
         ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAssign(";if(!(a->x=b()));"));
+        ASSERT_EQUALS("A ( ) a = b ; if ( a ) { ; }", simplifyIfAssign("A() if(a=b);"));
     }
 
 

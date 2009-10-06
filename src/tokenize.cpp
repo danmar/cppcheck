@@ -2940,7 +2940,7 @@ void Tokenizer::simplifyIfAssign()
         // Skip the "%var% = ..."
         Token *tok2;
         unsigned int indentlevel = 0;
-        for (tok2 = tok; tok2; tok2 = tok2->next())
+        for (tok2 = tok->next(); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "(")
                 ++indentlevel;
