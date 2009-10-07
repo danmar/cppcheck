@@ -178,6 +178,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> foo;\n"
+              "    foo.push_back(1);\n"
+              "    for (unsigned int ii = 0; ii <= foo.size(); ++ii)\n"
+              "    {\n"
+              "    }\n"
+              "    int ii = 0;\n"
+              "    foo[ii] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void STLSizeNoErr()

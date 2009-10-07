@@ -96,7 +96,7 @@ void CheckStl::stlOutOfBounds()
             continue;
 
         unsigned int indent = 0;
-        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
         {
 
             if (tok2->str() == "(")
@@ -111,18 +111,18 @@ void CheckStl::stlOutOfBounds()
 
             if (Token::Match(tok2, "; %var% <= %var% . size ( ) ;"))
             {
-                indent = 0;
+                unsigned int indent2 = 0;
                 const std::string num(tok2->strAt(1));
                 const std::string varname(tok2->strAt(3));
                 for (const Token *tok3 = tok2->tokAt(8); tok3; tok3 = tok3->next())
                 {
                     if (tok3->str() == "{")
-                        ++indent;
+                        ++indent2;
                     else if (tok3->str() == "}")
                     {
-                        if (indent == 0)
+                        if (indent2 <= 1)
                             break;
-                        --indent;
+                        --indent2;
                     }
                     else if (tok3->str() == varname)
                     {

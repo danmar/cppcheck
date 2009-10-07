@@ -634,6 +634,17 @@ private:
 
         checkNullPointer("void foo()\n"
                          "{\n"
+                         "    for (const Token *tok = tokens; tok; tok = tok->next())\n"
+                         "    {\n"
+                         "        while (tok && tok->str() != \";\")\n"
+                         "            tok = tok->next();\n"
+                         "        if( !tok ) break;\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("void foo()\n"
+                         "{\n"
                          "    for (const Token *tok = tokens; tok; tok = tok ? tok->next() : NULL)\n"
                          "    {\n"
                          "        while (tok && tok->str() != \";\")\n"

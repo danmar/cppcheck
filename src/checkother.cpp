@@ -948,7 +948,7 @@ void CheckOther::nullPointer()
                     {
                         // Make sure there is a "break" to prevent segmentation faults..
                         unsigned int indentlevel4 = indentlevel3;
-                        for (const Token *tok4 = tok3; tok4; tok4 = tok4->next())
+                        for (const Token *tok4 = tok3->next()->link(); tok4; tok4 = tok4->next())
                         {
                             if (tok4->str() == "{")
                                 ++indentlevel4;
