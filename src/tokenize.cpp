@@ -608,16 +608,6 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // remove exception specifications..
     removeExceptionSpecifications(_tokens);
 
-    // change array to pointer..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "%type% %var% [ ] [,;=]"))
-        {
-            Token::eraseTokens(tok->next(), tok->tokAt(4));
-            tok->insertToken("*");
-        }
-    }
-
     setVarId();
 
     return true;
@@ -1729,6 +1719,16 @@ void Tokenizer::simplifyTokenList()
     }
 
     simplifySizeof();
+
+    // change array to pointer..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%type% %var% [ ] [,;=]"))
+        {
+            Token::eraseTokens(tok->next(), tok->tokAt(4));
+            tok->insertToken("*");
+        }
+    }
 
     // Replace constants..
     for (Token *tok = _tokens; tok; tok = tok->next())

@@ -673,7 +673,7 @@ private:
             std::ostringstream expected;
             expected << "; const char * str ; str = \"1\" ; " << sizeof(str) << " ;";
 
-            TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
         {
