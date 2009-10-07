@@ -1025,8 +1025,8 @@ private:
         ASSERT_EQUALS(1, CheckBufferOverrun::countSprintfLength("%s", unknownParameter));
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%-5s", unknownParameter));
         ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("\\\"", unknownParameter));
-        TODO_ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("Hello\\0Text", unknownParameter));
-        TODO_ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("%%", unknownParameter));
+        ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("Hello \0Text", unknownParameter));
+        ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("%%", unknownParameter));
 
         std::list<const Token*> stringAsParameter;
         {

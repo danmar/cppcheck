@@ -777,13 +777,14 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
 
 
     int flag = 1;
+    int second_flag = 0; // This is to check for %
     int input_string_size = 0;
     int on_on_next = 0;
     std::string digits_string = "";
     int digits = 0;
     int check_for_i_d_x_f = 0;
 
-    for (std::string::size_type i = 0; i != input_string.size(); i++)
+    for (std::string::size_type i = 0; i != input_string.length(); i++)
     {
 
         if (on_on_next == 1)
@@ -793,7 +794,8 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
         }
         switch (input_string[i])
         {
-
+        case '\\':
+            if (input_string[i+1] == '0') break;
         case 'f':
         case 'x':
         case 'X':
@@ -813,10 +815,16 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             break;
         case '%':
             if (flag == 1) flag = 0;
+            else
+            {
+                flag = 1;
+                input_string_size++;
+                second_flag = 1;
+            }
             break;
         }
 
-        if (flag) input_string_size++;
+        if (flag  && !second_flag) input_string_size++;
         else
             digits_string += input_string[i];
 
@@ -825,13 +833,14 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             //std::cout << digits_string;
 
             digits_string = digits_string.substr(1, digits_string.size());
-            if (check_for_i_d_x_f == 1) digits += std::max(std::abs(std::atoi(digits_string.c_str())), 1);
+            if (check_for_i_d_x_f == 1) digits += std::max(abs(atoi(digits_string.c_str())), 1);
             else
-                digits += std::abs(std::atoi(digits_string.c_str()));
+                digits += abs(atoi(digits_string.c_str()));
 
             digits_string = "";
             check_for_i_d_x_f = 0;
         }
+        second_flag = 0;
 
     }
 
@@ -841,6 +850,12 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
 
     while (j < input_string.size())
     {
+
+        if (input_string[j] == '\\' && input_string[j+1] == '0')
+        {
+            input_string_size++;
+            break;
+        }
         if (input_string[j] == '\\')
         {
             input_string_size--;
@@ -848,10 +863,12 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             continue;
         }
         j++;
+
     }
 
 
     return input_string_size + 1 + digits;
+
 }
 
 
