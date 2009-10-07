@@ -56,9 +56,17 @@ public:
 
     /** Check for buffer overruns */
     void bufferOverrun();
-    static int count(const std::string &input_string);
+    static int countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
 
 private:
+
+    /**
+     * Check code that matches: "sprintf ( %varid% , %str% [,)]" when varid is not 0,
+     * and report found errors.
+     * @param tok The "sprintf" token.
+     * @param size The size of the buffer where sprintf is writing.
+     */
+    void checkSprintfCall(const Token *tok, int size);
 
     /** Check for buffer overruns - locate struct variables and check them with the .._CheckScope function */
     void checkStructVariable();

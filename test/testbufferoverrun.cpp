@@ -826,7 +826,7 @@ private:
         check("void f()\n"
               "{\n"
               "    char str[5];\n"
-              "    sprintf(str, \"test%s\", "");\n"
+              "    sprintf(str, \"test%s\", \"\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1013,17 +1013,38 @@ private:
 
     void counter_test()
     {
-        ASSERT_EQUALS(6, CheckBufferOverrun::count("Hello"));
-        ASSERT_EQUALS(2, CheckBufferOverrun::count("s"));
-        ASSERT_EQUALS(2, CheckBufferOverrun::count("i"));
-        ASSERT_EQUALS(2, CheckBufferOverrun::count("%d"));
-        ASSERT_EQUALS(2, CheckBufferOverrun::count("%1d"));
-        ASSERT_EQUALS(3, CheckBufferOverrun::count("%2.2d"));
-        ASSERT_EQUALS(1, CheckBufferOverrun::count("%s"));
-        ASSERT_EQUALS(6, CheckBufferOverrun::count("%-5s"));
-        ASSERT_EQUALS(2, CheckBufferOverrun::count("\\\""));
-        TODO_ASSERT_EQUALS(6, CheckBufferOverrun::count("Hello\\0Text"));
-        TODO_ASSERT_EQUALS(2, CheckBufferOverrun::count("%%"));
+        std::list<const Token*> unknownParameter;
+        unknownParameter.push_back(0);
+
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("Hello", unknownParameter));
+        ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("s", unknownParameter));
+        ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("i", unknownParameter));
+        ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("%d", unknownParameter));
+        ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("%1d", unknownParameter));
+        ASSERT_EQUALS(3, CheckBufferOverrun::countSprintfLength("%2.2d", unknownParameter));
+        ASSERT_EQUALS(1, CheckBufferOverrun::countSprintfLength("%s", unknownParameter));
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%-5s", unknownParameter));
+        ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("\\\"", unknownParameter));
+        TODO_ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("Hello\\0Text", unknownParameter));
+        TODO_ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("%%", unknownParameter));
+
+        std::list<const Token*> stringAsParameter;
+        {
+            Token tok;
+            tok.str("\"12345\"");
+            stringAsParameter.push_back(&tok);
+        }
+
+        TODO_ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("str%s", stringAsParameter));
+
+        std::list<const Token*> intAsParameter;
+        {
+            Token tok;
+            tok.str("12345");
+            stringAsParameter.push_back(&tok);
+        }
+
+        TODO_ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%02ld", intAsParameter));
     }
 
     void strncpy1()

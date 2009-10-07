@@ -465,78 +465,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // sprintf..
         if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% [,)]", varid))
         {
-            int len = -2;
-
-            // check format string
-            const char *fmt = tok->strAt(4);
-            while (*fmt)
-            {
-                if (*fmt == '\\')
-                {
-                    ++fmt;
-                }
-                else if (*fmt == '%')
-                {
-                    ++fmt;
-
-                    // skip field width
-                    while (std::isdigit(*fmt))
-                    {
-                        ++fmt;
-                    }
-
-                    // FIXME: better handling for format specifiers
-                    ++fmt;
-                    continue;
-                }
-                ++fmt;
-                ++len;
-            }
-
-            if (len >= (int)size)
-            {
-                bufferOverrun(tok);
-            }
-
-            // check arguments (if they exists)
-            if (tok->tokAt(5)->str() == ",")
-            {
-                len = 0;
-                const Token *end = tok->next()->link();
-                bool argumentAlreadyChecked = false;
-                int lastCheckedArgumentMaxSize = 0;
-                for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
-                {
-                    if (tok2->str() == ",")
-                    {
-                        argumentAlreadyChecked = false;
-                        lastCheckedArgumentMaxSize = 0;
-                    }
-                    else if (Token::Match(tok2, "%str%"))
-                    {
-                        int argumentSize = static_cast<int>(Token::getStrLength(tok2));
-                        if (argumentAlreadyChecked == false)
-                        {
-                            lastCheckedArgumentMaxSize = argumentSize;
-                            len += argumentSize;
-                            argumentAlreadyChecked = true;
-                        }
-                        else if (argumentSize > lastCheckedArgumentMaxSize)
-                        {
-                            // when sprintf() argument is ternary
-                            // operation we may have two and more
-                            // strings as argument. In this case we
-                            // use length of longest string.
-                            len += (argumentSize - lastCheckedArgumentMaxSize);
-                            lastCheckedArgumentMaxSize = argumentSize;
-                        }
-                    }
-                }
-                if (len >= (int)size)
-                {
-                    bufferOverrun(tok);
-                }
-            }
+            checkSprintfCall(tok, size);
         }
 
         // snprintf..
@@ -842,7 +771,7 @@ void CheckBufferOverrun::bufferOverrun()
 //---------------------------------------------------------------------------
 
 
-int CheckBufferOverrun::count(const std::string &input_string)
+int CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &/*parameters*/)
 {
 
 
@@ -925,4 +854,140 @@ int CheckBufferOverrun::count(const std::string &input_string)
     return input_string_size + 1 + digits;
 }
 
+
+void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
+{
+    if (0)
+    {
+        std::list<const Token*> parameters;
+        if (tok->tokAt(5)->str() == ",")
+        {
+            const Token *end = tok->next()->link();
+            for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
+            {
+                if (Token::Match(tok2, ", %any% [,)]"))
+                {
+                    if (Token::Match(tok2->next(), "%str%"))
+                        parameters.push_back(tok2->next());
+
+                    else if (Token::Match(tok2->next(), "%num%"))
+                        parameters.push_back(tok2->next());
+
+                    // TODO, get value of the variable if possible and use that instead of 0
+                    else
+                        parameters.push_back(0);
+                }
+                else
+                {
+                    // Parameter is more complex, than just a value or variable. Ignore it for now
+                    // and skip to next token.
+                    parameters.push_back(0);
+                    int ind = 0;
+                    for (const Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
+                    {
+                        if (tok3->str() == "(")
+                            ++ind;
+
+                        else if (tok3->str() == ")")
+                        {
+                            --ind;
+                            if (ind < 0)
+                                break;
+                        }
+
+                        else if (ind == 0 && tok3->str() == ",")
+                        {
+                            tok2 = tok3->previous();
+                            break;
+                        }
+                    }
+
+                    if (ind < 0)
+                        break;
+                }
+            }
+        }
+
+        int len = countSprintfLength(tok->tokAt(4)->strValue(), parameters);
+        if (len > size)
+        {
+            bufferOverrun(tok);
+        }
+    }
+    else
+    {
+        int len = -2;
+
+        // check format string
+        const char *fmt = tok->strAt(4);
+        while (*fmt)
+        {
+            if (*fmt == '\\')
+            {
+                ++fmt;
+            }
+            else if (*fmt == '%')
+            {
+                ++fmt;
+
+                // skip field width
+                while (std::isdigit(*fmt))
+                {
+                    ++fmt;
+                }
+
+                // FIXME: better handling for format specifiers
+                ++fmt;
+                continue;
+            }
+            ++fmt;
+            ++len;
+        }
+
+        if (len >= (int)size)
+        {
+            bufferOverrun(tok);
+        }
+
+        // check arguments (if they exists)
+        if (tok->tokAt(5)->str() == ",")
+        {
+            len = 0;
+            const Token *end = tok->next()->link();
+            bool argumentAlreadyChecked = false;
+            int lastCheckedArgumentMaxSize = 0;
+            for (const Token *tok2 = tok->tokAt(6); tok2 && tok2 != end; tok2 = tok2->next())
+            {
+                if (tok2->str() == ",")
+                {
+                    argumentAlreadyChecked = false;
+                    lastCheckedArgumentMaxSize = 0;
+                }
+                else if (Token::Match(tok2, "%str%"))
+                {
+                    int argumentSize = static_cast<int>(Token::getStrLength(tok2));
+                    if (argumentAlreadyChecked == false)
+                    {
+                        lastCheckedArgumentMaxSize = argumentSize;
+                        len += argumentSize;
+                        argumentAlreadyChecked = true;
+                    }
+                    else if (argumentSize > lastCheckedArgumentMaxSize)
+                    {
+                        // when sprintf() argument is ternary
+                        // operation we may have two and more
+                        // strings as argument. In this case we
+                        // use length of longest string.
+                        len += (argumentSize - lastCheckedArgumentMaxSize);
+                        lastCheckedArgumentMaxSize = argumentSize;
+                    }
+                }
+            }
+            if (len >= (int)size)
+            {
+                bufferOverrun(tok);
+            }
+        }
+    }
+}
 
