@@ -113,7 +113,7 @@ void CheckStl::stlOutOfBounds()
             {
                 unsigned int indent2 = 0;
                 const std::string num(tok2->strAt(1));
-                const std::string varname(tok2->strAt(3));
+                unsigned int varId = tok2->tokAt(3)->varId();
                 for (const Token *tok3 = tok2->tokAt(8); tok3; tok3 = tok3->next())
                 {
                     if (tok3->str() == "{")
@@ -124,12 +124,12 @@ void CheckStl::stlOutOfBounds()
                             break;
                         --indent2;
                     }
-                    else if (tok3->str() == varname)
+                    else if (tok3->varId() == varId)
                     {
                         if (Token::simpleMatch(tok3->next(), ". size ( )"))
                             break;
                         else if (Token::simpleMatch(tok3->next(), ("[ " + num + " ]").c_str()))
-                            stlOutOfBoundsError(tok3, num, varname);
+                            stlOutOfBoundsError(tok3, num, tok3->str());
                     }
                 }
                 break;
