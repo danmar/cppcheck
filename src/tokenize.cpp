@@ -1430,10 +1430,10 @@ void Tokenizer::simplifySizeof()
         if (tok->varId() != 0 && sizeOfVar.find(tok->varId()) == sizeOfVar.end())
         {
             const unsigned int varId = tok->varId();
-            if (Token::Match(tok->tokAt(-3), "[;{}] %type% * %var% ;") ||
-                Token::Match(tok->tokAt(-4), "[;{}] const %type% * %var% ;") ||
-                Token::Match(tok->tokAt(-2), "[;{}] %type% %var% ;") ||
-                Token::Match(tok->tokAt(-3), "[;{}] const %type% %var% ;"))
+            if (Token::Match(tok->tokAt(-3), "[;{}(,] %type% * %var% [;,)]") ||
+                Token::Match(tok->tokAt(-4), "[;{}(,] const %type% * %var% [;),]") ||
+                Token::Match(tok->tokAt(-2), "[;{}(,] %type% %var% [;),]") ||
+                Token::Match(tok->tokAt(-3), "[;{}(,] const %type% %var% [;),]"))
             {
                 sizeOfVar[varId] = MathLib::toString<long>(sizeOfType(tok->tokAt(-1)));
             }
@@ -1446,6 +1446,14 @@ void Tokenizer::simplifySizeof()
                     continue;
 
                 sizeOfVar[varId] = MathLib::toString<long>(size * MathLib::toLongNumber(tok->strAt(2)));
+            }
+
+            else if (Token::Match(tok->tokAt(-1), "%type% %var% [ %num% ] [,)]") ||
+                     Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [,)]"))
+            {
+                Token tempTok;
+                tempTok.str("*");
+                sizeOfVar[varId] = MathLib::toString<long>(sizeOfType(&tempTok));
             }
 
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ ] = %str% ;"))

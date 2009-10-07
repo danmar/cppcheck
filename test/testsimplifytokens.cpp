@@ -696,6 +696,73 @@ private:
         }
 
         {
+            const char code[] = "void f(char *a,char *b, char *c)"
+                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
+            std::ostringstream expected;
+            expected << "void f ( char * a , char * b , char * c ) { g ( " <<
+            (sizeof(char *)) << " , " << (sizeof(char *)) << " , " << (sizeof(char *)) << " ) ; }";
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f(char a,char b, char c)"
+                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
+            std::ostringstream expected;
+            expected << "void f ( char a , char b , char c ) { g ( " <<
+            (sizeof(char)) << " , " << (sizeof(char)) << " , " << (sizeof(char)) << " ) ; }";
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f(const char *a,const char *b, const char *c)"
+                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
+            std::ostringstream expected;
+            expected << "void f ( const char * a , const char * b , const char * c ) { g ( " <<
+            (sizeof(char *)) << " , " << (sizeof(char *)) << " , " << (sizeof(char *)) << " ) ; }";
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f(char a[10],char b[10], char c[10])"
+                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
+            std::ostringstream expected;
+            expected << "void f ( char a [ 10 ] , char b [ 10 ] , char c [ 10 ] ) { g ( " <<
+            (sizeof(char *)) << " , " << (sizeof(char *)) << " , " << (sizeof(char *)) << " ) ; }";
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f(const char a[10],const char b[10], const char c[10])"
+                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
+            std::ostringstream expected;
+            expected << "void f ( const char a [ 10 ] , "
+            "const char b [ 10 ] , "
+            "const char c [ 10 ] ) { g ( " <<
+            (sizeof(char *)) << " , " << (sizeof(char *)) << " , " << (sizeof(char *)) << " ) ; }";
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f(const char *a[10],const char *b[10], const char *c[10])"
+                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
+            std::ostringstream expected;
+            expected << "void f ( const char * a [ 10 ] , "
+            "const char * b [ 10 ] , "
+            "const char * c [ 10 ] ) { g ( " <<
+            (sizeof(char *)) << " , " << (sizeof(char *)) << " , " << (sizeof(char *)) << " ) ; }";
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
+            const char code[] = "void f(char *a[10],char *b[10], char *c[10])"
+                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
+            std::ostringstream expected;
+            expected << "void f ( char * a [ 10 ] , char * b [ 10 ] , char * c [ 10 ] ) { g ( " <<
+            (sizeof(char *)) << " , " << (sizeof(char *)) << " , " << (sizeof(char *)) << " ) ; }";
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
+        }
+
+        {
             std::ostringstream expected;
             expected << "; " << sizeof("\"quote\"");
             ASSERT_EQUALS(expected.str(), sizeof_("; sizeof(\"\\\"quote\\\"\")"));
