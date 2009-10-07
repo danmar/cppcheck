@@ -112,7 +112,7 @@ void CheckStl::stlOutOfBounds()
             if (Token::Match(tok2, "; %var% <= %var% . size ( ) ;"))
             {
                 unsigned int indent2 = 0;
-                const std::string num(tok2->strAt(1));
+                unsigned int numId = tok2->tokAt(1)->varId();
                 unsigned int varId = tok2->tokAt(3)->varId();
                 for (const Token *tok3 = tok2->tokAt(8); tok3; tok3 = tok3->next())
                 {
@@ -128,8 +128,8 @@ void CheckStl::stlOutOfBounds()
                     {
                         if (Token::simpleMatch(tok3->next(), ". size ( )"))
                             break;
-                        else if (Token::simpleMatch(tok3->next(), ("[ " + num + " ]").c_str()))
-                            stlOutOfBoundsError(tok3, num, tok3->str());
+                        else if (Token::Match(tok3->next(), "[ %varid% ]", numId))
+                            stlOutOfBoundsError(tok3, tok3->tokAt(2)->str(), tok3->str());
                     }
                 }
                 break;
