@@ -1939,7 +1939,7 @@ void CheckMemoryLeakInFunction::check()
         // Declare a local variable => Check
         if (indentlevel > 0 && infunc)
         {
-            unsigned int sz = _tokenizer->sizeOfType(tok->strAt(1));
+            unsigned int sz = _tokenizer->sizeOfType(tok->tokAt(1));
             if (sz < 1)
                 sz = 1;
 

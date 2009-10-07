@@ -123,12 +123,15 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 
 
 
-int Tokenizer::sizeOfType(const char type[]) const
+int Tokenizer::sizeOfType(const Token *type) const
 {
-    if (!type)
+    if (!type || !type->strAt(0))
         return 0;
 
-    std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type);
+    if (type->str()[0] == '"')
+        return (Token::getStrLength(type) + 1);
+
+    std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->strAt(0));
     if (it == _typeSize.end())
         return 0;
 
@@ -1412,31 +1415,6 @@ bool Tokenizer::createLinks()
 
 void Tokenizer::simplifySizeof()
 {
-    // Replace 'sizeof(str)'
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (tok->str() != "sizeof")
-            continue;
-
-        if (Token::Match(tok, "sizeof %str%"))
-        {
-            tok->deleteThis();
-            std::ostringstream ostr;
-            ostr << (Token::getStrLength(tok) + 1);
-            tok->str(ostr.str());
-        }
-
-        if (Token::Match(tok, "sizeof ( %str% )"))
-        {
-            tok->deleteThis();
-            tok->deleteThis();
-            tok->deleteNext();
-            std::ostringstream ostr;
-            ostr << (Token::getStrLength(tok) + 1);
-            tok->str(ostr.str());
-        }
-    }
-
     // Fill the map _typeSize..
     _typeSize.clear();
     _typeSize["char"] = sizeof(char);
@@ -1455,46 +1433,70 @@ void Tokenizer::simplifySizeof()
         }
     }
 
-
-    // Replace 'sizeof(var)' with 'sizeof(type)'
+    // Locate variable declarations and calculate the size
+    std::map<unsigned int, std::string> sizeOfVar;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (! Token::Match(tok, "[;{}] %type% *| %var% ;"))
-            continue;
-
-        const int type_tok = (tok->tokAt(2)->str() == "*" ? 2 : 1);
-        const int varname_tok = type_tok + 1;
-        const unsigned int varid = tok->tokAt(varname_tok)->varId();
-
-        if (varid <= 0)
-            continue;
-
-        int indentlevel = 0;
-        for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        if (tok->varId() != 0 && sizeOfVar.find(tok->varId()) == sizeOfVar.end())
         {
-            if (tok2->str() == "{")
-                ++indentlevel;
-            else if (tok2->str() == "}")
+            const unsigned int varId = tok->varId();
+            if (Token::Match(tok->tokAt(-3), "[;{}] %type% * %var% ;") ||
+                Token::Match(tok->tokAt(-4), "[;{}] const %type% * %var% ;") ||
+                Token::Match(tok->tokAt(-2), "[;{}] %type% %var% ;") ||
+                Token::Match(tok->tokAt(-3), "[;{}] const %type% %var% ;"))
             {
-                --indentlevel;
-                if (indentlevel < 0)
-                    break;
+                sizeOfVar[varId] = MathLib::toString<long>(sizeOfType(tok->tokAt(-1)));
             }
-            else if (Token::Match(tok2, "sizeof ( %varid% )", varid))
+
+            else if (Token::Match(tok->tokAt(-1), "%type% %var% [ %num% ] [;=]") ||
+                     Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [;=]"))
             {
-                tok2 = tok2->tokAt(2);
-                tok2->str(tok->strAt(type_tok));
+                int size = sizeOfType(tok->tokAt(-1));
+                if (size <= 0)
+                    continue;
+
+                sizeOfVar[varId] = MathLib::toString<long>(size * MathLib::toLongNumber(tok->strAt(2)));
+            }
+
+            else if (Token::Match(tok->tokAt(-1), "%type% %var% [ ] = %str% ;"))
+            {
+                int size = sizeOfType(tok->tokAt(4));
+                if (size <= 0)
+                    continue;
+
+                sizeOfVar[varId] = MathLib::toString<long>(size);
             }
         }
     }
 
-
-    // Replace 'sizeof(type)'..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() != "sizeof")
             continue;
 
+        // sizeof "text"
+        if (Token::Match(tok->next(), "%str%"))
+        {
+            tok->deleteThis();
+            std::ostringstream ostr;
+            ostr << (Token::getStrLength(tok) + 1);
+            tok->str(ostr.str());
+            continue;
+        }
+
+        // sizeof ("text")
+        if (Token::Match(tok->next(), "( %str% )"))
+        {
+            tok->deleteThis();
+            tok->deleteThis();
+            tok->deleteNext();
+            std::ostringstream ostr;
+            ostr << (Token::getStrLength(tok) + 1);
+            tok->str(ostr.str());
+            continue;
+        }
+
+        // sizeof int -> sizeof( int )
         if (tok->strAt(1) != std::string("("))
         {
             // Add parenthesis around the sizeof
@@ -1537,27 +1539,38 @@ void Tokenizer::simplifySizeof()
         }
 
         // sizeof(type *) => sizeof(*)
-        if (Token::Match(tok, "sizeof ( %type% *)"))
+        if (Token::Match(tok->next(), "( %type% *)"))
         {
             tok->next()->deleteNext();
+            continue;
         }
 
-        if (Token::Match(tok, "sizeof ( * )"))
+        if (Token::Match(tok->next(), "( * )"))
         {
-            tok->str(MathLib::toString<long>(sizeOfType(tok->strAt(2))));
+            tok->str(MathLib::toString<long>(sizeOfType(tok->tokAt(2))));
             Token::eraseTokens(tok, tok->tokAt(4));
         }
 
-        else if (Token::Match(tok, "sizeof ( %var% )") && tok->tokAt(2)->varId() > 0)
+        // sizeof( a )
+        else if (Token::Match(tok->next(), "( %var% )") && tok->tokAt(2)->varId() != 0)
         {
-            // don't try to replace size of variable if variable has
-            // similar name with type (#329)
+            if (sizeOfVar.find(tok->tokAt(2)->varId()) != sizeOfVar.end())
+            {
+                tok->deleteThis();
+                tok->deleteThis();
+                tok->deleteNext();
+                tok->str(sizeOfVar[tok->varId()]);
+            }
+            else
+            {
+                // don't try to replace size of variable if variable has
+                // similar name with type (#329)
+            }
         }
 
         else if (Token::Match(tok, "sizeof ( %type% )"))
         {
-            const char *type = tok->strAt(2);
-            int size = sizeOfType(type);
+            int size = sizeOfType(tok->tokAt(2));
             if (size > 0)
             {
                 tok->str(MathLib::toString<long>(size));
@@ -1577,7 +1590,7 @@ void Tokenizer::simplifySizeof()
                 const Token *decltok = Token::findmatch(_tokens, "%type% %varid% [", varid);
                 if (decltok)
                 {
-                    sz = sizeOfType(decltok->strAt(0));
+                    sz = sizeOfType(decltok);
                 }
             }
 
@@ -1589,50 +1602,6 @@ void Tokenizer::simplifySizeof()
         }
     }
 
-    // Replace 'sizeof(var)'
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (! Token::Match(tok, "%type% *| %var% [ %num% ] ;"))
-            continue;
-
-        const int type_tok = ((tok->next()->str() == "*") ? 1 : 0);
-
-        int size = sizeOfType(tok->tokAt(type_tok)->str().c_str());
-        if (size <= 0)
-            continue;
-
-        const int varname_tok = type_tok + 1;
-        const unsigned int varid = tok->tokAt(varname_tok)->varId();
-        if (varid == 0)
-            continue;
-
-        const int num_tok = varname_tok + 2;
-        int total_size = size * MathLib::toLongNumber(tok->strAt(num_tok));
-
-        // Replace 'sizeof(var)' with number
-        int indentlevel = 0;
-        const int next_tok = num_tok + 3;
-        for (Token *tok2 = tok->tokAt(next_tok); tok2; tok2 = tok2->next())
-        {
-            if (tok2->str() == "{")
-            {
-                ++indentlevel;
-            }
-
-            else if (tok2->str() == "}")
-            {
-                --indentlevel;
-                if (indentlevel < 0)
-                    break;
-            }
-
-            else if (Token::Match(tok2, "sizeof ( %varid% )", varid))
-            {
-                tok2->str(MathLib::toString<long>(total_size));
-                Token::eraseTokens(tok2, tok2->tokAt(4));
-            }
-        }
-    }
 }
 
 void Tokenizer::simplifyTokenList()

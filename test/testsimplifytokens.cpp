@@ -657,31 +657,31 @@ private:
     {
         // ticket #487
         {
-            const char code[] = "const char *str = \"1\"; sizeof(str);";
+            const char code[] = "; const char *str = \"1\"; sizeof(str);";
 
             const char *str = "1";
             std::ostringstream expected;
-            expected << "const char * str ; str = \"1\" ; " << sizeof(str) << " ;";
+            expected << "; const char * str ; str = \"1\" ; " << sizeof(str) << " ;";
 
-            TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
         {
-            const char code[] = "const char str[] = \"1\"; sizeof(str);";
+            const char code[] = "; const char str[] = \"1\"; sizeof(str);";
 
             const char str[] = "1";
             std::ostringstream expected;
-            expected << "const char * str ; str = \"1\" ; " << sizeof(str) << " ;";
+            expected << "; const char * str ; str = \"1\" ; " << sizeof(str) << " ;";
 
             TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
         {
-            const char code[] = "const char str[] = {'1'}; sizeof(str);";
+            const char code[] = "; const char str[] = {'1'}; sizeof(str);";
 
             const char str[] = {'1'};
             std::ostringstream expected;
-            expected << "const char * str ; str = { '1' } ; " << sizeof(str) << " ;";
+            expected << "; const char * str ; str = { '1' } ; " << sizeof(str) << " ;";
 
             TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
@@ -699,6 +699,12 @@ private:
             std::ostringstream expected;
             expected << "; " << sizeof("\"quote\"");
             ASSERT_EQUALS(expected.str(), sizeof_("; sizeof(\"\\\"quote\\\"\")"));
+        }
+
+        {
+            std::ostringstream expected;
+            expected << "void f ( ) { char str [ 100 ] = \"100\" ; " << sizeof(char)*100 << " }";
+            ASSERT_EQUALS(expected.str(), tok("void f ( ) { char str [ 100 ] = \"100\" ; sizeof ( str ) }"));
         }
     }
 

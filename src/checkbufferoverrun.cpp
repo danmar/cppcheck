@@ -703,7 +703,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             continue;
         }
 
-        int total_size = size * ((*type == '*') ? 4 : _tokenizer->sizeOfType(type));
+        Token sizeTok;
+        sizeTok.str(type);
+        int total_size = size * ((*type == '*') ? 4 : _tokenizer->sizeOfType(&sizeTok));
         if (total_size == 0)
             continue;
 
@@ -748,7 +750,7 @@ void CheckBufferOverrun::checkStructVariable()
             const char *varname[3] = {0, 0, 0};
             varname[1] = tok2->strAt(ivar);
             int arrsize = std::atoi(tok2->strAt(ivar + 2));
-            int total_size = arrsize * _tokenizer->sizeOfType(tok2->strAt(1));
+            int total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(1));
             if (total_size == 0)
                 continue;
 

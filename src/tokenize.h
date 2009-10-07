@@ -85,8 +85,12 @@ public:
 
     std::string fileLine(const Token *tok) const;
 
-    // Return size.
-    int sizeOfType(const char type[]) const;
+    /**
+     * Calculates sizeof value for given type.
+     * @param type Token which will contain e.g. "int", "*", or string.
+     * @return sizeof for given type, or 0 if it can't be calculated.
+     */
+    int sizeOfType(const Token *type) const;
 
     const std::vector<std::string> *getFiles() const;
 
