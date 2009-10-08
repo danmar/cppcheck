@@ -98,6 +98,20 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0)
             _settings._checkCodingStyle = true;
 
+        // Filter errors
+        else if (strcmp(argv[i], "--suppressions") == 0)
+        {
+            ++i;
+
+            if (i >= argc)
+                return "No file specified for the --suppressions option\n";
+
+            std::ifstream f(argv[i]);
+            if (!f.is_open())
+                return "couldn't open the file \"" + std::string(argv[i]) + "\"\n";
+            _settings.suppressions(f);
+        }
+
         // Verbose error messages (configuration info)
         else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0)
             _settings._verbose = true;
@@ -301,8 +315,8 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "Syntax:\n"
         "    cppcheck [--all] [--append=file] [--auto-dealloc file.lst]\n"
         "             [--error-exitcode=[n]] [--force] [--help] [-Idir] [-j [jobs]]\n"
-        "             [--quiet] [--style] [--unused-functions] [--verbose] [--version]\n"
-        "             [--xml] [file or path1] [file or path] ...\n"
+        "             [--quiet] [--style] [--suppressions file.txt] [--unused-functions]\n"
+        "             [--verbose] [--version] [--xml] [file or path1] [file or path] ...\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
@@ -331,6 +345,9 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
         "    -q, --quiet          Only print error messages\n"
         "    -s, --style          Check coding style\n"
+        "    --suppressions file  Suppress warnings listed in the file. Filename and line\n"
+        "                         are optional. The format of the single line in file is:\n"
+        "                         [error id]:[filename]:[line]\n"
         "    --template '[text]'  Format the error messages. E.g.\n"
         "                         '{file}:{line},{severity},{id},{message}' or\n"
         "                         '{file}({line}):({severity}) {message}'\n"
@@ -526,6 +543,17 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
 
     // Alert only about unique errors
     if (std::find(_errorList.begin(), _errorList.end(), errmsg) != _errorList.end())
+        return;
+
+    std::string file;
+    unsigned int line(0);
+    if (!msg._callStack.empty())
+    {
+        file = msg._callStack.back().getfile();
+        line = msg._callStack.back().line;
+    }
+
+    if (_settings.isSuppressed(msg._id, file, line))
         return;
 
     _errorList.push_back(errmsg);

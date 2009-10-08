@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <sstream>
 
 Settings::Settings()
 {
@@ -57,6 +58,62 @@ void Settings::autoDealloc(std::istream &istr)
         // Add classname to list
         _autoDealloc.push_back(line);
     }
+}
+
+bool Settings::suppressions(std::istream &istr)
+{
+    std::string line;
+    while (getline(istr, line))
+    {
+        // Skip empty lines
+        if (line.empty())
+            continue;
+
+        std::istringstream lineStream(line);
+        std::string id;
+        std::string file;
+        unsigned int lineNumber = 0;
+        if (std::getline(lineStream, id, ':'))
+        {
+            if (std::getline(lineStream, file, ':'))
+            {
+                lineStream >> lineNumber;
+            }
+        }
+
+        // We could perhaps check if the id is valid and return error if it is not
+        addSuppression(id, file, lineNumber);
+    }
+
+    return true;
+}
+
+void Settings::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
+{
+    _suppressions[errorId][file].push_back(line);
+    _suppressions[errorId][file].sort();
+}
+
+bool Settings::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
+{
+    if (_suppressions.find(errorId) == _suppressions.end())
+        return false;
+
+    // Check are all errors of this type filtered out
+    if (_suppressions[errorId].find("") != _suppressions[errorId].end())
+        return true;
+
+    if (_suppressions[errorId].find(file) == _suppressions[errorId].end())
+        return false;
+
+    // Check should all errors in this file be filtered out
+    if (std::find(_suppressions[errorId][file].begin(), _suppressions[errorId][file].end(), 0) != _suppressions[errorId][file].end())
+        return true;
+
+    if (std::find(_suppressions[errorId][file].begin(), _suppressions[errorId][file].end(), line) == _suppressions[errorId][file].end())
+        return false;
+
+    return true;
 }
 
 void Settings::addAutoAllocClass(const std::string &name)

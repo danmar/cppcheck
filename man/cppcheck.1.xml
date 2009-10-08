@@ -112,6 +112,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>-j[jobs]</option></arg>
       <arg choice="opt"><option>--quiet</option></arg>
       <arg choice="opt"><option>--style</option></arg>
+      <arg choice="opt"><option>--suppressions [file]</option></arg>
       <arg choice="opt"><option>--template ['text']</option></arg>
       <arg choice="opt"><option>--unused-functions</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
@@ -206,6 +207,12 @@ files, this is not needed.</para>
         <term><option>--style</option></term>
         <listitem>
           <para>Check coding style.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--suppressions [file]</option></term>
+        <listitem>
+          <para>Suppress warnings listed in the file. Filename and line as optional. The format of the single line in file is: [error id]:[filename]:[line]</para>
         </listitem>
       </varlistentry>
       <varlistentry>

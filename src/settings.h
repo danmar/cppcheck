@@ -22,6 +22,7 @@
 #include <list>
 #include <string>
 #include <istream>
+#include <map>
 
 /// @addtogroup Core
 /// @{
@@ -40,6 +41,9 @@ private:
 
     /** Code to append in the checks */
     std::string _append;
+
+    /** List of error which the user doesn't want to see. */
+    std::map<std::string, std::map<std::string, std::list<int> > > _suppressions;
 
 public:
     Settings();
@@ -86,6 +90,28 @@ public:
 
     /** Add class to list of automatically deallocated classes */
     void addAutoAllocClass(const std::string &name);
+
+    /**
+     * Don't show errors listed in the file.
+     * @param istr Open file stream where errors can be read.
+     * @return true on success, false in syntax error is noticed.
+     */
+    bool suppressions(std::istream &istr);
+
+    /**
+     * Don't show this error. If file and/or line are optional. In which case
+     * the errorId alone is used for filtering.
+     * @param errorId, the id for the error, e.g. "arrayIndexOutOfBounds"
+     * @param file File name with the path, e.g. "src/main.cpp"
+     * @param line number, e.g. "123"
+     */
+    void addSuppression(const std::string &errorId, const std::string &file = "", unsigned int line = 0);
+
+    /**
+     * Returns true if this message should not be shown to the user.
+     * @return true if this error is suppressed.
+     */
+    bool isSuppressed(const std::string &errorId, const std::string &file, unsigned int line);
 
     /** is a class automaticly deallocated? */
     bool isAutoDealloc(const char classname[]) const;
