@@ -1447,13 +1447,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
-            // Replace "dealloc use ;" with "dealloc ;"
-            if (Token::simpleMatch(tok2, "dealloc use ;"))
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(2));
-                done = false;
-            }
-
             // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
             if (! _settings->_showAll && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
             {
@@ -1711,13 +1704,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
 
 const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens, bool all)
 {
-    const Token *result = 0;
-
-    // No allocation at all => no leaks
-    if (Token::findmatch(tokens, "alloc") == 0)
-    {
-        return NULL;
-    }
+    const Token *result;
 
     if ((result = Token::findmatch(tokens, "loop alloc ;")) != NULL)
     {
