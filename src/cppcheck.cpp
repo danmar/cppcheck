@@ -489,9 +489,6 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         }
     }
 
-    // Set variable id
-    _tokenizer.setVarId();
-
     _tokenizer.fillFunctionList();
 
     // call all "runChecks" in all registered Check classes
