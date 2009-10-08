@@ -1815,6 +1815,13 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         }
     }
 
+    // If the variable is not allocated at all => no memory leak
+    if (Token::findmatch(tok, "alloc") == 0)
+    {
+        Tokenizer::deleteTokens(tok);
+        return;
+    }
+
     simplifycode(tok, all);
 
     if (_settings->_debug && _settings->_verbose)
