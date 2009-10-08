@@ -1031,43 +1031,29 @@ private:
         ASSERT_EQUALS(10, CheckBufferOverrun::countSprintfLength("\\\\\\\\Hello%d \0Text\\\\\\\\", unknownParameter));
         ASSERT_EQUALS(4, CheckBufferOverrun::countSprintfLength("%%%%%d", unknownParameter));
 
-
+        Token strTok;
+        strTok.str("\"12345\"");
         std::list<const Token*> stringAsParameter;
-        {
-            Token tok;
-            tok.str("\"12345\"");
-            stringAsParameter.push_back(&tok);
-        }
-
-        TODO_ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("str%s", stringAsParameter));
-        TODO_ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%-4s", stringAsParameter));
+        stringAsParameter.push_back(&strTok);
+        ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("str%s", stringAsParameter));
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%-4s", stringAsParameter));
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%-5s", stringAsParameter));
         ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%-6s", stringAsParameter));
 
         std::list<const Token*> intAsParameter;
-        {
-            Token tok;
-            tok.str("12345");
-            stringAsParameter.push_back(&tok);
-        }
-
+        Token numTok;
+        numTok.str("12345");
+        stringAsParameter.push_back(&numTok);
         TODO_ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%02ld", intAsParameter));
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%08ld", intAsParameter));
 
         std::list<const Token*> multipleParams;
-        {
-            Token tok;
-            tok.str("\"12345\"");
-            multipleParams.push_back(&tok);
-
-            multipleParams.push_back(0);
-
-            tok.str("12345");
-            multipleParams.push_back(&tok);
-        }
-
+        multipleParams.push_back(&strTok);
+        multipleParams.push_back(0);
+        multipleParams.push_back(&numTok);
         TODO_ASSERT_EQUALS(15, CheckBufferOverrun::countSprintfLength("str%s%d%d", multipleParams));
         ASSERT_EQUALS(26, CheckBufferOverrun::countSprintfLength("str%-6s%08ld%08ld", multipleParams));
+
     }
 
     void strncpy1()

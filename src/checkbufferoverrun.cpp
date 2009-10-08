@@ -771,7 +771,7 @@ void CheckBufferOverrun::bufferOverrun()
 //---------------------------------------------------------------------------
 
 
-int CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &/*parameters*/)
+int CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters)
 {
 
 
@@ -783,7 +783,8 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
     std::string digits_string = "";
     int digits = 0;
     int check_for_i_d_x_f = 0;
-
+    std::list<const Token*>::const_iterator paramIter = parameters.begin();
+    int parameterLength = 0;
     for (std::string::size_type i = 0; i != input_string.length(); i++)
     {
 
@@ -807,12 +808,27 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
         case 'E':
         case 'g':
         case 'o':
-        case 's':
         case 'u':
         case 'p':
         case 'n':
-            if (flag == 0) on_on_next = 1;
+            if (flag == 0)
+            {
+                on_on_next = 1;
+                if (paramIter != parameters.end()) ++paramIter;
+            }
             break;
+        case 's':
+            if (flag == 0)
+            {
+                if (paramIter != parameters.end() && *paramIter && (*paramIter)->str()[0] == '"')
+                    parameterLength = Token::getStrLength(*paramIter);
+
+                on_on_next = 1;
+                if (paramIter != parameters.end()) ++paramIter;
+            }
+            break;
+
+
         case '%':
             if (flag == 1) flag = 0;
             else
@@ -830,12 +846,21 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
 
         if (on_on_next == 1 && flag == 0)
         {
-            //std::cout << digits_string;
-
             digits_string = digits_string.substr(1, digits_string.size());
-            if (check_for_i_d_x_f == 1) digits += std::max(abs(atoi(digits_string.c_str())), 1);
+            int tempDigits = 0;
+            if (check_for_i_d_x_f == 1)
+                tempDigits = std::max(abs(atoi(digits_string.c_str())), 1);
             else
-                digits += abs(atoi(digits_string.c_str()));
+                tempDigits = abs(atoi(digits_string.c_str()));
+
+            if (tempDigits < parameterLength)
+                digits += parameterLength;
+            else if (parameterLength <= tempDigits)
+                digits += tempDigits;
+            else
+                digits += parameterLength - tempDigits;
+
+            parameterLength = 0;
 
             digits_string = "";
             check_for_i_d_x_f = 0;
@@ -863,7 +888,6 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             continue;
         }
         j++;
-
     }
 
 
