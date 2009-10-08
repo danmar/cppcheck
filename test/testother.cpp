@@ -65,6 +65,7 @@ private:
         TEST_CASE(nullpointer2);
         TEST_CASE(nullpointer3);    // dereferencing struct and then checking if it's null
         TEST_CASE(nullpointer4);
+        TEST_CASE(nullpointer5); // References should not be checked
 
         TEST_CASE(oldStylePointerCast);
 
@@ -632,6 +633,16 @@ private:
                          "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: tok\n", errout.str());
 
+        checkNullPointer("void foo(Token &tok)\n"
+                         "{\n"
+                         "    for (int i = 0; i < tok.size(); i++ )\n"
+                         "    {\n"
+                         "        while (!tok)\n"
+                         "            char c = tok.read();\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkNullPointer("void foo()\n"
                          "{\n"
                          "    for (const Token *tok = tokens; tok; tok = tok->next())\n"
@@ -862,8 +873,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-
+    void nullpointer5()
+    {
+        // errors..
+        checkNullPointer("void foo(A &a)\n"
+                         "{\n"
+                         " char c = a.c();\n"
+                         " if (!a)\n"
+                         "   return;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void checkOldStylePointerCast(const char code[])
     {

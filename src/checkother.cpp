@@ -878,7 +878,7 @@ void CheckOther::nullPointer()
                 if (tok2->next()->str() == "." || Token::Match(tok2->next(), "= %varid% .", varid))
                 {
                     // Is this variable a pointer?
-                    const Token *tok3 = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)]", varid);
+                    const Token *tok3 = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
                     if (!tok3)
                         break;
 
@@ -956,7 +956,11 @@ void CheckOther::nullPointer()
                             {
                                 if (indentlevel4 <= 1)
                                 {
-                                    nullPointerError(tok1, varname);
+                                    // Is this variable a pointer?
+                                    const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
+                                    if (tempTok)
+                                        nullPointerError(tok1, varname);
+
                                     break;
                                 }
                                 --indentlevel4;
@@ -1037,7 +1041,10 @@ void CheckOther::nullPointer()
 
                 else if (Token::Match(tok2, "if ( !| %varid% )", varid1))
                 {
-                    nullPointerError(tok1, varname, tok2->linenr());
+                    // Is this variable a pointer?
+                    const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid1);
+                    if (tempTok)
+                        nullPointerError(tok1, varname, tok2->linenr());
                     break;
                 }
             }
