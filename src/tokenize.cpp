@@ -3188,7 +3188,7 @@ bool Tokenizer::simplifyKnownVariables()
                     {
                         const Token *endpar = tok3->next()->link();
                         bool bailout = false;
-                        for (const Token *tok4 = tok3; tok4 != endpar; tok4 = tok4->next())
+                        for (const Token *tok4 = tok3; tok4 && tok4 != endpar; tok4 = tok4->next())
                         {
                             if (Token::Match(tok4, "++|-- %varid%", varid) ||
                                 Token::Match(tok4, "%varid% ++|--", varid))
