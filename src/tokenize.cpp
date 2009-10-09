@@ -4291,8 +4291,11 @@ std::string Tokenizer::simplifyString(const std::string &source)
                 // We will replace all other character as 'a'
                 // If that causes problems in the future, this can
                 // be improved. But for now, this should be OK.
+                int n = 1;
+                while (n < 2 && std::isxdigit(str[i+1+n]))
+                    ++n;
                 --i;
-                str.replace(i, 4, "a");
+                str.replace(i, 2 + n, "a");
             }
         }
         else if (MathLib::isOctalDigit(str[i]))

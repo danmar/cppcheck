@@ -158,6 +158,8 @@ private:
         TEST_CASE(removeExceptionSpecification);
 
         TEST_CASE(gt);      // use "<" comparisons instead of ">"
+
+        TEST_CASE(simplifyString);
     }
 
 
@@ -2540,6 +2542,16 @@ private:
     {
         ASSERT_EQUALS("( i < 10 )", tokenizeAndStringify("(10>i)"));
         ASSERT_EQUALS("; i < 10 ;", tokenizeAndStringify(";10>i;"));
+    }
+
+
+    void simplifyString()
+    {
+        Tokenizer *tokenizer = 0;
+        ASSERT_EQUALS("\"abc\"", tokenizer->simplifyString("\"abc\""));
+        ASSERT_EQUALS("\"a\"", tokenizer->simplifyString("\"\\x3\""));
+        ASSERT_EQUALS("\"a\"", tokenizer->simplifyString("\"\\x33\""));
+        ASSERT_EQUALS("\"a3\"", tokenizer->simplifyString("\"\\x333\""));
     }
 
 };
