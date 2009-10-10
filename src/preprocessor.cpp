@@ -1027,7 +1027,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
     std::map<std::string, std::string> cfgmap;
     {
         std::string::size_type pos = 0;
-        while (true)
+        for (;;)
         {
             std::string::size_type pos2 = cfg.find_first_of(";=", pos);
             if (pos2 == std::string::npos)
