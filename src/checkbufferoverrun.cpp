@@ -849,9 +849,9 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             digits_string = digits_string.substr(1, digits_string.size());
             int tempDigits = 0;
             if (check_for_i_d_x_f == 1)
-                tempDigits = std::max(abs(atoi(digits_string.c_str())), 1);
+                tempDigits = std::max(std::abs(std::atoi(digits_string.c_str())), 1);
             else
-                tempDigits = abs(atoi(digits_string.c_str()));
+                tempDigits = std::abs(std::atoi(digits_string.c_str()));
 
             if (tempDigits < parameterLength)
                 digits += parameterLength;
