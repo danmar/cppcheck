@@ -1314,6 +1314,8 @@ private:
     /** The macro has parantheses but no parameters.. "AAA()" */
     bool _nopar;
 
+    /** disabled assignment operator */
+    void operator=(const PreprocessorMacro &);
 public:
     /**
      * @param macro The code after #define, until end of line,
