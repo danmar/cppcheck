@@ -81,6 +81,7 @@ private:
         TEST_CASE(simplifyKnownVariables13);
         TEST_CASE(simplifyKnownVariables14);
         TEST_CASE(simplifyKnownVariables15);
+        TEST_CASE(simplifyKnownVariables16);
 
         TEST_CASE(match1);
 
@@ -827,6 +828,13 @@ private:
                 "int main ( ) { int x ; x = 5 ; std :: cout << 5 / ( 5 == 1 ) << std :: endl ; }",
                 simplifyKnownVariables(code));
         }
+    }
+
+    void simplifyKnownVariables16()
+    {
+        // ticket #807 - segmentation fault when macro isn't found
+        const char code[] = "void f ( ) { int n = 1; DISPATCH(while); }";
+        simplifyKnownVariables(code);
     }
 
     void match1()
