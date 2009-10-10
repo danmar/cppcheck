@@ -65,6 +65,7 @@ private:
         TEST_CASE(sizeof7);
         TEST_CASE(sizeof8);
         TEST_CASE(sizeof9);
+        TEST_CASE(sizeof10);
         TEST_CASE(casting);
 
         TEST_CASE(template1);
@@ -773,6 +774,16 @@ private:
             expected << "void f ( ) { char str [ 100 ] = \"100\" ; " << sizeof(char)*100 << " }";
             ASSERT_EQUALS(expected.str(), tok("void f ( ) { char str [ 100 ] = \"100\" ; sizeof ( str ) }"));
         }
+    }
+
+    void sizeof10()
+    {
+        // ticket #809
+        const char code[] = "int m ; "
+                            "compat_ulong_t um ; "
+                            "size_t size ; size = sizeof ( m ) / sizeof ( um ) ;";
+
+        ASSERT_EQUALS(code, tok(code));
     }
 
     void casting()

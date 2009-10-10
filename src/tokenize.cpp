@@ -1435,7 +1435,13 @@ void Tokenizer::simplifySizeof()
                 Token::Match(tok->tokAt(-2), "[;{}(,] %type% %var% [;),]") ||
                 Token::Match(tok->tokAt(-3), "[;{}(,] const %type% %var% [;),]"))
             {
-                sizeOfVar[varId] = MathLib::toString<long>(sizeOfType(tok->tokAt(-1)));
+                const int size = sizeOfType(tok->previous());
+                if (size <= 0)
+                {
+                    continue;
+                }
+
+                sizeOfVar[varId] = MathLib::toString<long>(size);
             }
 
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ %num% ] [;=]") ||
