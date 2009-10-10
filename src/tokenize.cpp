@@ -123,7 +123,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 
 
 
-int Tokenizer::sizeOfType(const Token *type) const
+unsigned int Tokenizer::sizeOfType(const Token *type) const
 {
     if (!type || !type->strAt(0))
         return 0;
@@ -1435,8 +1435,8 @@ void Tokenizer::simplifySizeof()
                 Token::Match(tok->tokAt(-2), "[;{}(,] %type% %var% [;),]") ||
                 Token::Match(tok->tokAt(-3), "[;{}(,] const %type% %var% [;),]"))
             {
-                const int size = sizeOfType(tok->previous());
-                if (size <= 0)
+                const unsigned int size = sizeOfType(tok->previous());
+                if (size == 0)
                 {
                     continue;
                 }
@@ -1447,8 +1447,8 @@ void Tokenizer::simplifySizeof()
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ %num% ] [;=]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [;=]"))
             {
-                int size = sizeOfType(tok->tokAt(-1));
-                if (size <= 0)
+                unsigned int size = sizeOfType(tok->tokAt(-1));
+                if (size == 0)
                     continue;
 
                 sizeOfVar[varId] = MathLib::toString<long>(size * MathLib::toLongNumber(tok->strAt(2)));
@@ -1464,8 +1464,8 @@ void Tokenizer::simplifySizeof()
 
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ ] = %str% ;"))
             {
-                int size = sizeOfType(tok->tokAt(4));
-                if (size <= 0)
+                unsigned int size = sizeOfType(tok->tokAt(4));
+                if (size == 0)
                     continue;
 
                 sizeOfVar[varId] = MathLib::toString<long>(size);
@@ -1574,7 +1574,7 @@ void Tokenizer::simplifySizeof()
 
         else if (Token::Match(tok, "sizeof ( %type% )"))
         {
-            int size = sizeOfType(tok->tokAt(2));
+            unsigned int size = sizeOfType(tok->tokAt(2));
             if (size > 0)
             {
                 tok->str(MathLib::toString<long>(size));
@@ -1585,7 +1585,7 @@ void Tokenizer::simplifySizeof()
         else if (Token::Match(tok, "sizeof ( * %var% )") || Token::Match(tok, "sizeof ( %var% [ %num% ] )"))
         {
             // Some default value..
-            int sz = 100;
+            unsigned int sz = 100;
 
             unsigned int varid = tok->tokAt((tok->tokAt(2)->str() == "*") ? 3 : 2)->varId();
             if (varid != 0)
