@@ -156,6 +156,7 @@ private:
 
         // define and then ifdef
         TEST_CASE(define_ifdef);
+        TEST_CASE(endfile);
     }
 
 
@@ -1601,6 +1602,23 @@ private:
             TODO_ASSERT_EQUALS("\n\n1\n\n", actual[""]);
             TODO_ASSERT_EQUALS(1, actual.size());
         }
+    }
+
+    void endfile()
+    {
+        const char filedata[] = "char a[] = \"#endfile\";\n"
+                                "char b[] = \"#endfile\";\n"
+                                "#include \"notfound.h\"\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS("char a[] = \"#endfile\";\nchar b[] = \"#endfile\";\n\n", actual[""]);
+        ASSERT_EQUALS(1, actual.size());
     }
 };
 
