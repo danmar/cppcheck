@@ -832,10 +832,7 @@ void CheckOther::strPlusChar()
 }
 
 
-
-
-
-void CheckOther::nullPointer()
+void CheckOther::nullPointerAfterLoop()
 {
     // Locate insufficient null-pointer handling after loop
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -891,7 +888,10 @@ void CheckOther::nullPointer()
             tok2 = tok2->next();
         }
     }
+}
 
+void CheckOther::nullPointerLinkedList()
+{
     // looping through items in a linked list in a inner loop..
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
     {
@@ -969,6 +969,10 @@ void CheckOther::nullPointer()
             }
         }
     }
+}
+
+void CheckOther::nullPointerStructByDeRefAndChec()
+{
 
     // Dereferencing a struct pointer and then checking if it's NULL..
     for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
@@ -1047,6 +1051,10 @@ void CheckOther::nullPointer()
         }
     }
 
+}
+
+void CheckOther::nullPointerByDeRefAndChec()
+{
     // Dereferencing a pointer and then checking if it's NULL..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -1093,7 +1101,13 @@ void CheckOther::nullPointer()
     }
 }
 
-
+void CheckOther::nullPointer()
+{
+    nullPointerAfterLoop();
+    nullPointerLinkedList();
+    nullPointerStructByDeRefAndChec();
+    nullPointerByDeRefAndChec();
+}
 
 void CheckOther::checkZeroDivision()
 {

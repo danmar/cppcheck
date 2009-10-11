@@ -202,6 +202,32 @@ public:
                // optimisations
                " * optimisation: detect post increment/decrement\n";
     }
+
+private:
+
+    /**
+     * Does one part of the check for nullPointer().
+     * Locate insufficient null-pointer handling after loop
+     */
+    void nullPointerAfterLoop();
+
+    /**
+     * Does one part of the check for nullPointer().
+     * looping through items in a linked list in a inner loop..
+     */
+    void nullPointerLinkedList();
+
+    /**
+     * Does one part of the check for nullPointer().
+     * Dereferencing a struct pointer and then checking if it's NULL..
+     */
+    void nullPointerStructByDeRefAndChec();
+
+    /**
+     * Does one part of the check for nullPointer().
+     * Dereferencing a pointer and then checking if it's NULL..
+     */
+    void nullPointerByDeRefAndChec();
 };
 /// @}
 //---------------------------------------------------------------------------
