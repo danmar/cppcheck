@@ -330,9 +330,9 @@ std::string Preprocessor::read(std::istream &istr)
 static bool hasbom(const std::string &str)
 {
     return bool(str.size() > 3 &&
-                (char)str[0] == (char)0xef &&
-                (char)str[1] == (char)0xbb &&
-                (char)str[2] == (char)0xbf);
+                static_cast<unsigned char>(str[0]) == 0xef &&
+                static_cast<unsigned char>(str[1]) == 0xbb &&
+                static_cast<unsigned char>(str[2]) == 0xbf);
 }
 
 
