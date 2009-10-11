@@ -308,27 +308,25 @@ void CheckOther::checkUnsignedDivision()
         return;
 
     // Check for "ivar / uvar" and "uvar / ivar"
-    std::map<std::string, char> varsign;
+    std::map<unsigned int, char> varsign;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]"))
         {
             const char *type = tok->strAt(1);
             if (strcmp(type, "char") == 0 || strcmp(type, "short") == 0 || strcmp(type, "int") == 0)
-                varsign[tok->strAt(2)] = 's';
+                varsign[tok->tokAt(2)->varId()] = 's';
         }
 
         else if (Token::Match(tok, "[{};(,] unsigned %type% %var% [;=,)]"))
-            varsign[tok->strAt(3)] = 'u';
+            varsign[tok->tokAt(3)->varId()] = 'u';
 
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %var%"))
         {
             if (ErrorLogger::udivWarning(*_settings))
             {
-                const char *varname1 = tok->strAt(1);
-                const char *varname2 = tok->strAt(3);
-                char sign1 = varsign[varname1];
-                char sign2 = varsign[varname2];
+                char sign1 = varsign[tok->tokAt(1)->varId()];
+                char sign2 = varsign[tok->tokAt(3)->varId()];
 
                 if (sign1 && sign2 && sign1 != sign2)
                 {
@@ -342,8 +340,7 @@ void CheckOther::checkUnsignedDivision()
         {
             if (tok->strAt(3)[0] == '-' && ErrorLogger::udivError())
             {
-                const char *varname1 = tok->strAt(1);
-                char sign1 = varsign[varname1];
+                char sign1 = varsign[tok->tokAt(1)->varId()];
                 if (sign1 == 'u')
                 {
                     udivError(tok->next());
@@ -355,8 +352,7 @@ void CheckOther::checkUnsignedDivision()
         {
             if (tok->strAt(1)[0] == '-' && ErrorLogger::udivError())
             {
-                const char *varname2 = tok->strAt(3);
-                char sign2 = varsign[varname2];
+                char sign2 = varsign[tok->tokAt(3)->varId()];
                 if (sign2 == 'u')
                 {
                     udivError(tok->next());

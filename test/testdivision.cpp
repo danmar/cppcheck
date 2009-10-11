@@ -179,6 +179,14 @@ private:
               "    }\n"
               "}\n", true, true);
         ASSERT_EQUALS("[test.cpp:6]: (possible style) Division with signed and unsigned operators\n", errout.str());
+
+        check("void a(int i) { }\n"
+              "int foo( unsigned int sz )\n"
+              "{\n"
+              "    register unsigned int i=1;\n"
+              "    return i/sz;\n"
+              "}\n", true, true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
