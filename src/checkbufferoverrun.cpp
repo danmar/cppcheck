@@ -781,7 +781,7 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
     int digits = 0;
     int check_for_i_d_x_f = 0;
     std::list<const Token*>::const_iterator paramIter = parameters.begin();
-    int parameterLength = 0;
+    unsigned int parameterLength = 0;
     for (std::string::size_type i = 0; i != input_string.length(); i++)
     {
 
@@ -844,11 +844,23 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
         if (on_on_next == 1 && flag == 0)
         {
             digits_string = digits_string.substr(1, digits_string.size());
-            int tempDigits = 0;
+            unsigned int tempDigits = 0;
             if (check_for_i_d_x_f == 1)
                 tempDigits = std::max(std::abs(std::atoi(digits_string.c_str())), 1);
             else
                 tempDigits = std::abs(std::atoi(digits_string.c_str()));
+
+            if (parameterLength > 0 && digits_string.find('.') != std::string::npos)
+            {
+                // If parameter is known, then also the max length value
+                const std::string endStr = digits_string.substr(digits_string.find('.') + 1);
+                unsigned int maxLen = std::max(std::abs(std::atoi(endStr.c_str())), 1);
+
+                // Note, this does not work with e.g. floats the same way it
+                // works for strings. Needs fixing in the future.
+                if (parameterLength > maxLen)
+                    parameterLength = maxLen;
+            }
 
             if (tempDigits < parameterLength)
                 digits += parameterLength;
