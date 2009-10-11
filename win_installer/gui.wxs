@@ -1,8 +1,7 @@
 <?xml version='1.0' encoding='windows-1252'?>
-<?define ProductName = "Cppcheck 1.37" ?>
-<?define ProductVersion = "1.37" ?>
+<?include productInfo.wxi ?> 
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-  <Product Name='$(var.ProductName)' Id='88DE59C3-7640-47A2-A047-7289807AE3BA' UpgradeCode='DDB850E4-F8DE-4290-BDF1-AC12475DEE80'
+  <Product Name='$(var.ProductName)' Id='$(var.ProductGUID)' UpgradeCode='$(var.ProductUpgradeCode)'
     Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='The Cppcheck team'>
 
     <Package Id='*' Keywords='Installer' Description="$(var.ProductName) Setup"
@@ -14,12 +13,13 @@
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
-        <Directory Id='INSTALLDIR' Name='$(var.ProductName)'>
-          <Component Id='CliExecutable' Guid='E1435616-5041-4079-BC4B-C4805BEEDAF9'>
-            <File Id='cppcheckexe' Name='cppcheck.exe' DiskId='1' Source='cppcheck.exe' KeyPath='yes' />
+        <Directory Id='INSTALLDIR' Name='$(var.ProductNameShort)'>
+          <Component Id='cppcheck.exe' Guid='$(var.cppcheckGUID)'>
+            <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='cppcheck.exe' KeyPath='yes' />
+            <Environment Id='UpdatePath' Name='PATH' Action='set' System='yes' Part='last' Value='[INSTALLDIR]' />
           </Component>
-          <Component Id='GuiExecutable' DiskId='1' Guid='8BCF2A91-9627-4A07-8BA4-D4EAC770006E'>
-            <File Id='guiexe' Name='gui.exe' Source='gui.exe' KeyPath='yes'>
+          <Component Id='gui.exe' DiskId='1' Guid='$(var.guiGUID)'>
+            <File Id='gui.exe' Name='gui.exe' Source='gui.exe' KeyPath='yes'>
               <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name="Cppcheck"
                   WorkingDirectory='INSTALLDIR' Icon="gui.exe" IconIndex="0" Advertise="yes" />
             </File>
@@ -28,18 +28,18 @@
             <File Id='qtgui4dll' Name='qtgui4.dll' Source='qtgui4.dll' />
             <File Id='qtxml4dll' Name='qtxml4.dll' Source='qtxml4.dll' />
           </Component>
-          <Component Id='Authors' Guid='DA54245B-7A5D-481B-A930-D2C9FDD95E19'>
-            <File Id='authorstxt' Name='authors.txt' DiskId='1' Source='..\authors' KeyPath='yes' />
+          <Component Id='authors.txt' Guid='*'>
+            <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' KeyPath='yes' />
           </Component>
-          <Component Id='Readme' Guid='4C111DD0-A84A-11DE-8A39-0800200C9A66'>
-            <File Id='readmetxt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
+          <Component Id='readme.txt' Guid='*'>
+            <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
           </Component>
         </Directory>
       </Directory>
 
       <Directory Id='ProgramMenuFolder' Name='Programs' >
         <Directory Id='ProgramMenuDir' Name='$(var.ProductName)'>
-          <Component Id='ProgramMenuDir' Guid='4F2DB093-50C5-4865-A316-2FBBB4BD8BD3'>
+          <Component Id='ProgramMenuDir' Guid='*'>
             <RemoveFolder Id='ProgramMenuDir' On='uninstall' />
             <RegistryValue Root='HKCU' Key='Software\Cppcheck\$(var.ProductName)' Type='string' Value='' KeyPath='yes' />
           </Component>
@@ -50,10 +50,10 @@
     <Feature Id='Complete' Title='$(var.ProductName)' Description='The complete package.' 
       Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR' >
       <Feature Id='MainProgram' Title='Command line interface' Description='Command line tool' Level='1'>
-        <ComponentRef Id='CliExecutable' />
-        <ComponentRef Id='GuiExecutable' />
-        <ComponentRef Id='Authors' />
-        <ComponentRef Id='Readme' />
+        <ComponentRef Id='cppcheck.exe' />
+        <ComponentRef Id='gui.exe' />
+        <ComponentRef Id='authors.txt' />
+        <ComponentRef Id='readme.txt' />
         <ComponentRef Id='ProgramMenuDir' />
       </Feature>
     </Feature>

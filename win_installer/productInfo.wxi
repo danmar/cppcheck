@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include>
+<?define ProductName = "Cppcheck 1.38" ?>
+<?define ProductNameShort = "Cppcheck" ?>
+<?define ProductVersion = "1.38" ?>
+<?define ProductGUID = "{7214EC4C-8F10-4E56-8E99-0B9908E68774}" ?>
+<?define ProductUpgradeCode = "{7E94124C-1CD1-433F-9423-4614E52300DD}" ?>
+<?define cppcheckGUID = "27ef2704-6eea-42c0-ae63-dd586bc02170" ?>
+<?define guiGUID = "b25b7929-c235-4ff3-ab3b-b0851b2acdac" ?>
+</Include>
