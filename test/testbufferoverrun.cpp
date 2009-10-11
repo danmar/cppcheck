@@ -860,7 +860,7 @@ private:
               "    char buf[3];\n"
               "    sprintf(buf, \"%s\", condition ? \"11\" : \"222\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
     }
 
     void snprintf1()
@@ -1023,6 +1023,7 @@ private:
         ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("%1d", unknownParameter));
         ASSERT_EQUALS(3, CheckBufferOverrun::countSprintfLength("%2.2d", unknownParameter));
         ASSERT_EQUALS(1, CheckBufferOverrun::countSprintfLength("%s", unknownParameter));
+        ASSERT_EQUALS(1, CheckBufferOverrun::countSprintfLength("%-s", unknownParameter));
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%-5s", unknownParameter));
         ASSERT_EQUALS(2, CheckBufferOverrun::countSprintfLength("\\\"", unknownParameter));
         ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("Hello \0Text", unknownParameter));
