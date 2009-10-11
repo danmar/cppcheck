@@ -129,7 +129,7 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
         return 0;
 
     if (type->str()[0] == '"')
-        return (Token::getStrLength(type) + 1);
+        return static_cast<unsigned int>(Token::getStrLength(type) + 1);
 
     std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->strAt(0));
     if (it == _typeSize.end())
