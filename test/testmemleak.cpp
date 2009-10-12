@@ -271,6 +271,8 @@ private:
         // Unknown syntax
         TEST_CASE(unknownSyntax1);
         TEST_CASE(knownFunctions);
+
+        TEST_CASE(same_function_name);
     }
 
 
@@ -2392,6 +2394,18 @@ private:
               "    typeid(p);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void same_function_name()
+    {
+        check("void a(char *p)\n"
+              "{ }\n"
+              "void b()\n"
+              "{\n"
+              "    char *p = malloc(10);\n"
+              "    abc.a(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
