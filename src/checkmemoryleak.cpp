@@ -523,6 +523,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
     int par = 1;
     int parlevel = 0;
 
+    const bool dot(tok->previous()->str() == ".");
+
     for (; tok; tok = tok->next())
     {
         if (tok->str() == "(")
@@ -542,6 +544,9 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                 ++par;
             if (varid > 0 && Token::Match(tok, "[,()] %varid% [,()]", varid))
             {
+                if (dot)
+                    return "use";
+
                 const Token *ftok = _tokenizer->getFunctionTokenByName(funcname.c_str());
                 if (!ftok)
                     return "use";
