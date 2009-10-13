@@ -270,7 +270,7 @@ private:
                   "    for (i = 0; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer overrun\n", errout.str());
         }
 
         {
@@ -281,7 +281,7 @@ private:
                   "    for (i = 1; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer overrun\n", errout.str());
         }
 
 
@@ -293,7 +293,7 @@ private:
                   "    for (i = a; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:6]: (error) Buffer overrun\n", errout.str());
         }
     }
 
@@ -396,7 +396,22 @@ private:
               "    char str[5];\n"
               "    memclr( str );   // ERROR\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds\n", errout.str());
+
+        // This is not an error
+        check("static void memclr( char *data, int size )\n"
+              "{\n"
+              "    if( size > 10 )"
+              "      data[10] = 0;\n"
+              "}\n"
+              "\n"
+              "static void f()\n"
+              "{\n"
+              "    char str[5];\n"
+              "    memclr( str, 5 );   // ERROR\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -416,7 +431,7 @@ private:
               "{\n"
               "    memclr(abc->str);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (possible error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -586,7 +601,7 @@ private:
               "        i+=1;\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Buffer overrun\n", errout.str());
     }
 
     void array_index_19()
@@ -615,7 +630,7 @@ private:
               "    char str[3];\n"
               "    strcpy(str, \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun\n", errout.str());
     }
 
 
@@ -630,7 +645,7 @@ private:
               "{\n"
               "    strcpy( abc->str, \"abcdef\" );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer overrun\n", errout.str());
     }
 
 
@@ -644,7 +659,7 @@ private:
               "    for (i = 0; i <= 10; ++i)\n"
               "        a[i] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer overrun\n", errout.str());
     }
 
 
@@ -656,7 +671,7 @@ private:
               "    for (int i = 0; i < 8; ++i)\n"
               "        p[i] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer overrun\n", errout.str());
 
         // No false positive
         check("void foo(int x, int y)\n"
@@ -687,14 +702,14 @@ private:
               "   strcat(n, \"abc\");\n"
               "   strcat(n, \"def\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer overrun\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "   char n[5];\n"
               "   strcat(strcat(n, \"abc\"), \"def\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun\n", errout.str());
     }
 
     void buffer_overrun_7()
@@ -808,7 +823,7 @@ private:
               "    char str[3];\n"
               "    sprintf(str, \"%s\", \"abc\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -816,7 +831,7 @@ private:
               "    sprintf(c, \"%s\", \"/usr/LongLongLongLongUserName/bin/LongLongApplicationName\");\n"
               "    delete [] c;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun\n", errout.str());
     }
 
     void sprintf2()
@@ -826,7 +841,7 @@ private:
               "    char str[5];\n"
               "    sprintf(str, \"%d: %s\", getnumber(), \"abcde\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun\n", errout.str());
     }
 
     void sprintf3()
@@ -836,7 +851,7 @@ private:
               "    char str[3];\n"
               "    sprintf(str, \"test\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -875,7 +890,7 @@ private:
               "    char buf[3];\n"
               "    sprintf(buf, \"%s\", condition ? \"11\" : \"222\");\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun\n", errout.str());
     }
 
     void snprintf1()
@@ -1120,7 +1135,7 @@ private:
               " strcpy(a,\"hello\");\n"
               " strncpy(c,a,sizeof(c)+1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer overrun\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1134,7 +1149,7 @@ private:
               " char c[6];\n"
               " strncpy(c,\"hello!\",sizeof(c)+1);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Buffer overrun\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun\n", errout.str());
     }
 };
 

@@ -60,7 +60,7 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, int size)
 void CheckBufferOverrun::arrayIndexOutOfBounds(int size)
 {
     Severity::e severity;
-    if (size <= 1)
+    if (size <= 1 || _callStack.size() > 1)
     {
         severity = Severity::possibleError;
         if (_settings->_showAll == false)
@@ -76,16 +76,22 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(int size)
 
 void CheckBufferOverrun::bufferOverrun(const Token *tok)
 {
-    reportError(tok, Severity::possibleError, "bufferOverrun", "Buffer overrun");
+    reportError(tok, Severity::error, "bufferOverrun", "Buffer overrun");
 }
 
 void CheckBufferOverrun::dangerousStdCin(const Token *tok)
 {
+    if (_settings->_showAll == false)
+        return;
+
     reportError(tok, Severity::possibleError, "dangerousStdCin", "Dangerous usage of std::cin, possible buffer overrun");
 }
 
 void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
+    if (_settings->_showAll == false)
+        return;
+
     reportError(tok, Severity::possibleError, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
 }
 
@@ -96,6 +102,9 @@ void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
 
 void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
 {
+    if (_settings->_showAll == false)
+        return;
+
     reportError(tok, Severity::possibleError, "sizeArgumentAsChar", "The size argument is given as a char constant");
 }
 
