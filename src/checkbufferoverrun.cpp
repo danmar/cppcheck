@@ -76,7 +76,19 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(int size)
 
 void CheckBufferOverrun::bufferOverrun(const Token *tok)
 {
-    reportError(tok, Severity::error, "bufferOverrun", "Buffer overrun");
+    Severity::e severity;
+    if (_callStack.size() > 0)
+    {
+        severity = Severity::possibleError;
+        if (_settings->_showAll == false)
+            return;
+    }
+    else
+    {
+        severity = Severity::error;
+    }
+
+    reportError(tok, severity, "bufferOverrun", "Buffer overrun");
 }
 
 void CheckBufferOverrun::dangerousStdCin(const Token *tok)

@@ -35,7 +35,7 @@ private:
 
 
 
-    void check(const char code[])
+    void check(const char code[], bool showAll = true)
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -54,7 +54,7 @@ private:
 
         // Check for buffer overruns..
         Settings settings;
-        settings._showAll = true;
+        settings._showAll = showAll;
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
     }
@@ -680,6 +680,30 @@ private:
               "    x = y * p[1];\n"
               "    p[1] = 0;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // There is no error here
+        check("void f1(char *s,int size)\n"
+              "{\n"
+              "  if( size > 10 ) strcpy(s,\"abc\");\n"
+              "}\n"
+              "void f2()\n"
+              "{\n"
+              "  char s[3];\n"
+              "  f1(s,3);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (possible error) Buffer overrun\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());
+
+        check("void f1(char *s,int size)\n"
+              "{\n"
+              "  if( size > 10 ) strcpy(s,\"abc\");\n"
+              "}\n"
+              "void f2()\n"
+              "{\n"
+              "  char s[3];\n"
+              "  f1(s,3);\n"
+              "}\n", false);
         ASSERT_EQUALS("", errout.str());
     }
 
