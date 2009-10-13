@@ -76,10 +76,8 @@ public:
         e.g. "{severity} {file}:{line} {message} {id}" */
     std::string _outputFormat;
 
-#ifdef __GNUC__
     /** show timing information */
     bool _showtime;
-#endif
 
     /** List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. */
