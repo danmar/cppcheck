@@ -221,7 +221,7 @@ private:
               "    int data[2];\n"
               "    data[ sizeof(data[0]) ] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
     }
 
     void sizeof3()
@@ -244,7 +244,7 @@ private:
               "    str[15] = 0;\n"
               "    str[16] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -256,7 +256,7 @@ private:
               "    str[15] = 0;\n"
               "    str[16] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -306,7 +306,7 @@ private:
               "    int i[SIZE];\n"
               "    i[SIZE] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -317,7 +317,7 @@ private:
               "    int i[10];\n"
               "    i[ sizeof(i) - 1 ] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -333,7 +333,22 @@ private:
               "    struct ABC abc;\n"
               "    abc.str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Array index out of bounds\n", errout.str());
+
+        // This is not out of bounds
+        check("struct ABC\n"
+              "{\n"
+              "    char str[1];\n"
+              "};\n"
+              "\n"
+              "static void f()\n"
+              "{\n"
+              "  int datasize = 10;\n"
+              "  struct ABC* x = malloc(sizeof(struct ABC) + datasize - 1);\n"
+              "  x->str[1] = 0;"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (possible error) Array index out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -348,7 +363,7 @@ private:
               "{\n"
               "    abc->str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -366,7 +381,7 @@ private:
               "    struct ABC abc;\n"
               "    abc.str[SIZE] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Array index out of bounds\n", errout.str());
     }
 
     void array_index_9()
@@ -381,7 +396,7 @@ private:
               "    char str[5];\n"
               "    memclr( str );   // ERROR\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -401,7 +416,7 @@ private:
               "{\n"
               "    memclr(abc->str);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -422,7 +437,7 @@ private:
               "        abc->str[10] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:12]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -439,7 +454,7 @@ private:
               "{\n"
               "    str[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array index out of bounds\n", errout.str());
     }
 
     void array_index_13()
@@ -464,7 +479,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[i+10] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
     void array_index_15()
@@ -475,7 +490,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[10+i] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
     void array_index_16()
@@ -486,7 +501,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[i+1] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
     void array_index_17()
@@ -497,7 +512,7 @@ private:
               "    for (int i = 0; i < 10; i++)\n"
               "        a[i*2] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -513,7 +528,7 @@ private:
               "    for (int i = 0; i < 12; i+=6)\n"
               "        a[i+6] = i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
     void array_index_18()
@@ -590,7 +605,7 @@ private:
               "  char a[2];\n"
               "  char *end = &(a[3]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()
@@ -978,10 +993,8 @@ private:
               "{\n"
               "    str[3] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
-
-
 
     void alloc()
     {
@@ -990,14 +1003,14 @@ private:
               "    char *s = new char[10];\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    char *s = malloc(10);\n"
               "    s[10] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
     }
 
 

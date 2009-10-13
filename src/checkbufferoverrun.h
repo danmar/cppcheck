@@ -50,8 +50,7 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
-        if (settings->_showAll)
-            checkBufferOverrun.bufferOverrun();
+        checkBufferOverrun.bufferOverrun();
     }
 
     /** Check for buffer overruns */
@@ -80,8 +79,8 @@ private:
     /** callstack - used during intra-function checking */
     std::list<const Token *> _callStack;
 
-    void arrayIndexOutOfBounds(const Token *tok);
-    void arrayIndexOutOfBounds();
+    void arrayIndexOutOfBounds(const Token *tok, int size);
+    void arrayIndexOutOfBounds(int size);
     void bufferOverrun(const Token *tok);
     void dangerousStdCin(const Token *tok);
     void strncatUsage(const Token *tok);
@@ -90,7 +89,7 @@ private:
 
     void getErrorMessages()
     {
-        arrayIndexOutOfBounds(0);
+        arrayIndexOutOfBounds(0, 2);
         bufferOverrun(0);
         dangerousStdCin(0);
         strncatUsage(0);

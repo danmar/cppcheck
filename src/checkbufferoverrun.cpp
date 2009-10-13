@@ -45,21 +45,33 @@ CheckBufferOverrun instance;
 
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok)
+void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, int size)
 {
     if (!tok)
-        arrayIndexOutOfBounds();
+        arrayIndexOutOfBounds(size);
     else
     {
         _callStack.push_back(tok);
-        arrayIndexOutOfBounds();
+        arrayIndexOutOfBounds(size);
         _callStack.pop_back();
     }
 }
 
-void CheckBufferOverrun::arrayIndexOutOfBounds()
+void CheckBufferOverrun::arrayIndexOutOfBounds(int size)
 {
-    reportError(_callStack, Severity::possibleError, "arrayIndexOutOfBounds", "Array index out of bounds");
+    Severity::e severity;
+    if (size <= 1)
+    {
+        severity = Severity::possibleError;
+        if (_settings->_showAll == false)
+            return;
+    }
+    else
+    {
+        severity = Severity::error;
+    }
+
+    reportError(_callStack, severity, "arrayIndexOutOfBounds", "Array index out of bounds");
 }
 
 void CheckBufferOverrun::bufferOverrun(const Token *tok)
@@ -122,7 +134,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             const char *num = tok->strAt(2);
             if (std::strtol(num, NULL, 10) >= size)
             {
-                arrayIndexOutOfBounds(tok->next());
+                arrayIndexOutOfBounds(tok->next(), size);
             }
         }
     }
@@ -131,7 +143,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         const char *num = tok->strAt(2 + varc);
         if (std::strtol(num, NULL, 10) >= size)
         {
-            arrayIndexOutOfBounds(tok->next());
+            arrayIndexOutOfBounds(tok->next(), size);
         }
     }
 
@@ -160,7 +172,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 {
                     if (std::strtol(num, NULL, 10) > size || !Token::Match(tok->previous(), "& ("))
                     {
-                        arrayIndexOutOfBounds(tok->next());
+                        arrayIndexOutOfBounds(tok->next(), size);
                     }
                 }
             }
@@ -170,7 +182,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             const char *num = tok->next()->strAt(2 + varc);
             if (std::strtol(num, NULL, 10) >= size)
             {
-                arrayIndexOutOfBounds(tok->next());
+                arrayIndexOutOfBounds(tok->next(), size);
             }
             tok = tok->tokAt(4);
             continue;
@@ -406,7 +418,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);
                     if (min_index >= size || max_index >= size)
                     {
-                        arrayIndexOutOfBounds(tok2->next());
+                        arrayIndexOutOfBounds(tok2->next(), size);
                     }
                 }
 
