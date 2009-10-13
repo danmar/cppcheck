@@ -166,3 +166,10 @@ void ThreadHandler::SaveSettings(QSettings &settings)
     settings.setValue(SETTINGS_CHECK_THREADS, mThreads.size());
 }
 
+bool ThreadHandler::HasPreviousFiles() const
+{
+    if (mLastFiles.size() > 0)
+        return true;
+
+    return false;
+}

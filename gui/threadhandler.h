@@ -96,6 +96,13 @@ public:
     */
     bool IsChecking() const;
 
+    /**
+    * @brief Have we checked files already?
+    *
+    * @return true check has been previously run and recheck can be done
+    */
+    bool HasPreviousFiles() const;
+
 signals:
     /**
     * @brief Signal that all threads are done

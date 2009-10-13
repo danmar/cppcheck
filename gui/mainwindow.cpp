@@ -89,6 +89,7 @@ MainWindow::MainWindow() :
 
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
+    mUI.mActionRecheck->setEnabled(false);
 
 
 
@@ -419,7 +420,10 @@ void MainWindow::EnableCheckButtons(bool enable)
 {
     mUI.mActionStop->setEnabled(!enable);
     mUI.mActionCheckFiles->setEnabled(enable);
-    mUI.mActionRecheck->setEnabled(enable);
+
+    if (!enable || mThread->HasPreviousFiles())
+        mUI.mActionRecheck->setEnabled(enable);
+
     mUI.mActionCheckDirectory->setEnabled(enable);
 }
 
