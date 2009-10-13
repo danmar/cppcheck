@@ -354,7 +354,7 @@ void CheckStl::pushback()
                     // Assigning iterator..
                     if (Token::Match(tok2, "%varid% =", iteratorid))
                     {
-                        if (Token::Match(tok2->tokAt(2), "%var% . begin ( )"))
+                        if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend ( )"))
                             vectorname = tok2->strAt(2);
                         else
                             vectorname = "";
@@ -368,7 +368,7 @@ void CheckStl::pushback()
                     // Using invalid iterator..
                     if (invalidIterator)
                     {
-                        if (Token::Match(tok2, "++|--|*|+|-|(|, %varid%", iteratorid))
+                        if (Token::Match(tok2, "++|--|*|+|-|(|,|=|!= %varid%", iteratorid))
                             pushbackError(tok2, tok2->strAt(1));
                         if (Token::Match(tok2, "%varid% ++|--|+|-", iteratorid))
                             pushbackError(tok2, tok2->str());
