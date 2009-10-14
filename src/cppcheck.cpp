@@ -38,8 +38,8 @@
 #define TIMER_END(str) if(_settings._showtime){clock_t c2 = clock(); std::cout << str << ": " << ((c2 - c1) / 1000) << std::endl;}
 #else
 #include <ctime>
-#define TIMER_START() time_t t1; time(&t1);
-#define TIMER_END(str) if(_settings._showtime){time_t t2; time(&t2); std::cout << str << ": " << (t2 - t1) << std::endl;}
+#define TIMER_START() std::time_t t1; std::time(&t1);
+#define TIMER_END(str) if(_settings._showtime){std::time_t t2; std::time(&t2); std::cout << str << ": " << (t2 - t1) << std::endl;}
 #endif
 
 //---------------------------------------------------------------------------
