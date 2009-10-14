@@ -1529,11 +1529,10 @@ public:
                         continue;
                     if (str[0] == '#' || tok->isName())
                     {
-                        bool stringify = false;
-                        if (str[0] == '#')
+                        const bool stringify(str[0] == '#');
+                        if (stringify)
                         {
                             str = str.erase(0, 1);
-                            stringify = true;
                         }
                         for (unsigned int i = 0; i < _params.size(); ++i)
                         {
@@ -1557,7 +1556,18 @@ public:
                                     return false;
                                 }
                                 else if (stringify)
-                                    str = "\"" + params2[i] + "\"";
+                                {
+                                    const std::string &s(params2[i]);
+                                    std::ostringstream ostr;
+                                    ostr << "\"";
+                                    for (std::string::size_type i = 0; i < s.size(); ++i)
+                                    {
+                                        if (s[i] == '\\' || s[i] == '\"')
+                                            ostr << '\\';
+                                        ostr << s[i];
+                                    }
+                                    str = ostr.str() + "\"";
+                                }
                                 else
                                     str = params2[i];
 
