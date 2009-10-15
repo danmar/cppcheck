@@ -88,7 +88,7 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok)
         severity = Severity::error;
     }
 
-    reportError(tok, severity, "bufferOverrun", "Buffer overrun");
+    reportError(tok, severity, "bufferAccessOutOfBounds", "Buffer access out-of-bounds");
 }
 
 void CheckBufferOverrun::dangerousStdCin(const Token *tok)
