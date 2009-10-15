@@ -76,7 +76,7 @@ public:
     void erase();
 
     /**
-     * Dangerous usage of push_back
+     * Dangerous usage of push_back and insert
      */
     void pushback();
 
@@ -97,7 +97,7 @@ private:
     void stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var);
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
     void eraseError(const Token *tok);
-    void pushbackError(const Token *tok, const std::string &iterator_name);
+    void pushbackError(const Token *tok, const std::string &func, const std::string &iterator_name);
     void invalidPointerError(const Token *tok, const std::string &pointer_name);
     void stlBoundriesError(const Token *tok, const std::string &container_name);
 
@@ -107,7 +107,7 @@ private:
         dereferenceErasedError(0, "iter");
         stlOutOfBoundsError(0, "i", "foo");
         eraseError(0);
-        pushbackError(0, "iterator");
+        pushbackError(0, "push_back|push_front|insert", "iterator");
         invalidPointerError(0, "pointer");
         stlBoundriesError(0, "container");
     }

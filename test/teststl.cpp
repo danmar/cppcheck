@@ -342,7 +342,7 @@ private:
               "    foo.push_back(123);\n"
               "    *it;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) After push_back, the iterator 'it' may be invalid\n", errout.str());
     }
 
     void pushback2()
@@ -371,7 +371,7 @@ private:
               "        foo.push_back(123);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back, the iterator 'it' may be invalid\n", errout.str());
     }
 
     void pushback4()
@@ -419,7 +419,7 @@ private:
               "            v.push_back(10);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) After push_back, the iterator 'it' may be invalid\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -432,7 +432,7 @@ private:
               "            v.push_back(10);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) After push_back, the iterator 'it' may be invalid\n", errout.str());
     }
 
     void pushback7()
@@ -447,7 +447,7 @@ private:
               "        foo.push_back(123);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back or push_front, the iterator 'it' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back, the iterator 'it' may be invalid\n", errout.str());
     }
 
     void pushback8()
@@ -464,7 +464,7 @@ private:
               "        sum += *it;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back or push_front, the iterator 'end' may be invalid\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) After push_back, the iterator 'end' may be invalid\n", errout.str());
     }
 
 
@@ -476,7 +476,7 @@ private:
               "    ints.insert(ints.begin(), 1);\n"
               "    ++iter;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Invalid iterator 'iter' after insert\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) After insert, the iterator 'iter' may be invalid\n", errout.str());
     }
 
 
