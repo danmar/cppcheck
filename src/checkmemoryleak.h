@@ -100,7 +100,7 @@ public:
     /**
      * Get type of deallocation at given position
      * @param tok position
-     * @param varname variable name
+     * @param varid variable id
      * @return type of deallocation
      */
     AllocType getDeallocationType(const Token *tok, unsigned int varid) const;
@@ -170,7 +170,7 @@ private:
     /**
      * Check if there is a "!var" match inside a condition
      * @param tok      first token to match
-     * @param varname  the varname
+     * @param varid    variabla id
      * @param endpar   if this is true the "!var" must be followed by ")"
      * @return true if match
      */
@@ -180,7 +180,7 @@ private:
      * Inspect a function call. the call_func and getcode are recursive
      * @param tok          token where the function call occurs
      * @param callstack    callstack
-     * @param varnames     the variable name that is currently checked
+     * @param varid        variable id to check
      * @param alloctype    if memory is allocated, this indicates the type of allocation
      * @param dealloctype  if memory is deallocated, this indicates the type of deallocation
      * @param all          is the code simplified according to the "--all" rules or not?
@@ -195,7 +195,7 @@ private:
      * - "callfunc"
      * - "&use"
      */
-    const char * call_func(const Token *tok, std::list<const Token *> callstack, unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz);
+    const char * call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz);
 
     /**
      * Extract a new tokens list that is easier to parse than the "_tokenizer->tokens()", the
@@ -203,7 +203,7 @@ private:
      * The getcode and call_func are recursive
      * @param tok start parse token
      * @param callstack callstack
-     * @param varname name of variable
+     * @param varid variable id
      * @param alloctype keep track of what type of allocation is used
      * @param dealloctype keeps track of what type of deallocation is used
      * @param classmember should be set if the inspected function is a class member
@@ -229,7 +229,7 @@ private:
      * - goto : corresponds to a "goto"
      * - return : corresponds to a "return"
      */
-    Token *getcode(const Token *tok, std::list<const Token *> callstack, unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz);
+    Token *getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz);
 
     /**
      * Simplify code e.g. by replacing empty "{ }" with ";"
@@ -243,7 +243,8 @@ private:
     /**
      * Checking the variable varname
      * @param Tok1 start token
-     * @param varname name of variable
+     * @param varname name of variable (for error messages)
+     * @param varid variable id
      * @param classmember is the scope inside a class member function
      * @param sz size of type.. if the variable is a "int *" then sz should be "sizeof(int)"
      */

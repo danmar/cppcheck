@@ -466,7 +466,7 @@ static int countParameters(const Token *tok)
     return -1;
 }
 
-const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
+const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
     if (std::bsearch(tok->strAt(0), call_func_white_list,
                      sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
@@ -594,7 +594,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
 
 
 
-Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Token *> callstack, unsigned int varid, CheckMemoryLeak::AllocType &alloctype, CheckMemoryLeak::AllocType &dealloctype, bool classmember, bool &all, unsigned int sz)
+Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, CheckMemoryLeak::AllocType &alloctype, CheckMemoryLeak::AllocType &dealloctype, bool classmember, bool &all, unsigned int sz)
 {
     Token *rethead = 0, *rettail = 0;
 #define addtoken(_str)                  \
