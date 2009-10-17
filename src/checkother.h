@@ -54,6 +54,7 @@ public:
             checkOther.checkUnsignedDivision();
             checkOther.checkCharVariable();
             checkOther.checkVariableScope();
+            checkOther.checkStructMemberUsage();
         }
     }
 
@@ -65,7 +66,6 @@ public:
         {
             checkOther.warningRedundantCode();
             checkOther.checkConstantFunctionParameter();
-            checkOther.checkStructMemberUsage();
             checkOther.checkIncompleteStatement();
             if (settings->_showAll)
             {

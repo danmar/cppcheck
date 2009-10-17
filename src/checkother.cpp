@@ -619,6 +619,11 @@ void CheckOther::checkStructMemberUsage()
                 if (tok2->str() == "}")
                     break;
             }
+
+            // Bail out if some data is casted to struct..
+            const std::string s("( struct " + tok->next()->str() + " * ) & %var% [");
+            if (Token::findmatch(tok, s.c_str()))
+                structname = 0;
         }
 
         if (tok->str() == "}")

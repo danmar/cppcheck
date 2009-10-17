@@ -40,7 +40,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
 
         // Clear the error buffer..
         errout.str("");
@@ -58,6 +57,7 @@ private:
         TEST_CASE(structmember3);
         TEST_CASE(structmember4);
         TEST_CASE(structmember5);
+        TEST_CASE(structmember6);
     }
 
     void structmember1()
@@ -146,6 +146,22 @@ private:
               "{\n"
               "    struct AB ab;\n"
               "    ab.reset();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void structmember6()
+    {
+        check("struct AB\n"
+              "{\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "\n"
+              "void foo(char *buf)\n"
+              "{\n"
+              "    struct AB *ab = (struct AB *)&buf[10];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
