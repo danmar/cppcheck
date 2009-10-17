@@ -111,6 +111,11 @@ public:
     static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel);
 
     /**
+     * get error messages
+     */
+    virtual void getErrorMessages();
+
+    /**
      * List of classes in currently checked source code and
      * their member functions and member variables.
      */

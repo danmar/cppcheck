@@ -24,6 +24,7 @@
 #include "mathlib.h"
 #include "settings.h"
 #include "errorlogger.h"
+#include "check.h"
 
 #include <locale>
 #include <fstream>
@@ -3970,7 +3971,7 @@ void Tokenizer::syntaxError(const Token *tok, char c)
         _tokens->printOut();
     }
 
-    if (!_errorLogger)
+    if (!_errorLogger && tok)
     {
         std::ostringstream err;
         err << "### Unlogged error at Tokenizer::syntaxError: Invalid number of character (" << c << ")";
@@ -3986,15 +3987,23 @@ void Tokenizer::syntaxError(const Token *tok, char c)
     }
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    ErrorLogger::ErrorMessage::FileLocation loc;
-    loc.line = tok->linenr();
-    loc.file = file(tok);
-    locationList.push_back(loc);
-    _errorLogger->reportErr(
-        ErrorLogger::ErrorMessage(locationList,
-                                  "error",
-                                  std::string("Invalid number of character (") + c + "). Can't process file.",
-                                  "syntaxError"));
+    if (tok)
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok->linenr();
+        loc.file = file(tok);
+        locationList.push_back(loc);
+    }
+
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           "error",
+                                           std::string("Invalid number of character (") + c + "). Can't process file.",
+                                           "syntaxError");
+
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
 
 }
 
@@ -4333,4 +4342,9 @@ std::string Tokenizer::simplifyString(const std::string &source)
     }
 
     return str;
+}
+
+void Tokenizer::getErrorMessages()
+{
+    syntaxError(0, ' ');
 }

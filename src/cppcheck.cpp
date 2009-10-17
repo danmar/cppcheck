@@ -273,6 +273,10 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
             {
                 (*it)->getErrorMessages();
             }
+
+            Tokenizer tokenizer(&_settings, 0);
+            tokenizer.getErrorMessages();
+
             std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
         }
 
