@@ -3167,11 +3167,15 @@ bool Tokenizer::simplifyKnownVariables()
 
             else if (tok2->previous()->str() != "*" &&
                      (Token::Match(tok2, "%var% = %num% ;") ||
-                      Token::Match(tok2, "%var% = %bool% ;")))
+                      Token::Match(tok2, "%var% = %str% ;") ||
+                      Token::Match(tok2, "%var% = %bool% ;") ||
+                      Token::Match(tok2, "%var% = %var% ;")))
             {
                 unsigned int varid = tok2->varId();
                 if (varid == 0)
                     continue;
+
+                const bool pointeralias(tok2->tokAt(2)->isName());
 
                 std::string value(tok2->strAt(2));
                 Token* bailOutFromLoop = 0;
@@ -3188,6 +3192,9 @@ bool Tokenizer::simplifyKnownVariables()
                         if (indentlevel3 < indentlevel)
                             break;
                     }
+
+                    if (pointeralias && Token::Match(tok3, ("!!= " + value).c_str()))
+                        break;
 
                     // Stop if something like 'while (--var)' is found
                     if (tok3->str() == "while" || tok3->str() == "do")

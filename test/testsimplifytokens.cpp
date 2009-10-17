@@ -127,6 +127,8 @@ private:
         TEST_CASE(simplifyTypedef5)
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition);
+
+        TEST_CASE(pointeralias);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -1976,6 +1978,46 @@ private:
                                 "}\n";
 
             ASSERT_EQUALS("void f ( ) { { ; } }", tok(code));
+        }
+    }
+
+
+    void pointeralias()
+    {
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    char buf[100];\n"
+                                "    char *p = buf;\n"
+                                "    x(p);\n"
+                                "}\n";
+
+            const char expected[] = "void f ( ) "
+                                    "{ "
+                                    "char buf [ 100 ] ; "
+                                    "char * p ; p = buf ; "
+                                    "x ( buf ) ; "
+                                    "}";
+
+            ASSERT_EQUALS(expected, tok(code));
+        }
+
+        {
+            const char code[] = "void f(char *p1)\n"
+                                "{\n"
+                                "    char *p = p1;\n"
+                                "    p1 = 0;"
+                                "    x(p);\n"
+                                "}\n";
+
+            const char expected[] = "void f ( char * p1 ) "
+                                    "{ "
+                                    "char * p ; p = p1 ; "
+                                    "p1 = 0 ; "
+                                    "x ( p ) ; "
+                                    "}";
+
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 };
