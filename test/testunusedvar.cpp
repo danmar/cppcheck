@@ -164,6 +164,18 @@ private:
               "    struct AB *ab = (struct AB *)&buf[10];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct AB\n"
+              "{\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "\n"
+              "void foo(char *buf)\n"
+              "{\n"
+              "    struct AB *ab = (AB *)&buf[10];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
