@@ -79,17 +79,20 @@ void CppCheck::clearFiles()
 
 
 
-std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
+void CppCheck::parseFromArgs(int argc, const char* const argv[])
 {
     std::vector<std::string> pathnames;
     bool showHelp = false;
     for (int i = 1; i < argc; i++)
     {
         if (strcmp(argv[i], "--version") == 0)
-            return "Cppcheck 1.37\n";
+        {
+            reportOut("Cppcheck 1.37");
+            return;
+        }
 
         // Flag used for various purposes during debugging
-        if (strcmp(argv[i], "--debug") == 0)
+        else if (strcmp(argv[i], "--debug") == 0)
             _settings._debug = true;
 
         // Show all messages
@@ -110,11 +113,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             ++i;
 
             if (i >= argc)
-                return "No file specified for the --suppressions option\n";
+                throw std::runtime_error("No file specified for the --suppressions option");
 
             std::ifstream f(argv[i]);
             if (!f.is_open())
-                return "couldn't open the file \"" + std::string(argv[i]) + "\"\n";
+                throw std::runtime_error("couldn't open the file \"" + std::string(argv[i]) + "\"");
             _settings.suppressions(f);
         }
 
@@ -161,7 +164,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             if (!(iss >> _settings._exitCode))
             {
                 _settings._exitCode = 0;
-                return "cppcheck: Argument must be an integer. Try something like '--error-exitcode=1'\n";
+                throw std::runtime_error("cppcheck: Argument must be an integer. Try something like '--error-exitcode=1'");
             }
         }
 
@@ -175,7 +178,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             {
                 ++i;
                 if (i >= argc)
-                    return "cppcheck: argument to '-I' is missing\n";
+                    throw std::runtime_error("cppcheck: argument to '-I' is missing");
 
                 path = argv[i];
             }
@@ -201,7 +204,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             // "--template path/"
             ++i;
             if (i >= argc)
-                return "cppcheck: argument to '--template' is missing\n";
+                throw std::runtime_error("cppcheck: argument to '--template' is missing");
 
             _settings._outputFormat = argv[i];
             if (_settings._outputFormat == "gcc")
@@ -221,7 +224,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             {
                 ++i;
                 if (i >= argc)
-                    return "cppcheck: argument to '-j' is missing\n";
+                    throw std::runtime_error("cppcheck: argument to '-j' is missing");
 
                 numberString = argv[i];
             }
@@ -235,11 +238,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 
             std::istringstream iss(numberString);
             if (!(iss >> _settings._jobs))
-                return "cppcheck: argument to '-j' is not a number\n";
+                throw std::runtime_error("cppcheck: argument to '-j' is not a number");
 
             if (_settings._jobs > 1000)
             {
-                return "cppcheck: argument for '-j' is allowed to be 1000 at max\n";
+                throw std::runtime_error("cppcheck: argument for '-j' is allowed to be 1000 at max");
             }
         }
 
@@ -249,11 +252,11 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             ++i;
 
             if (i >= argc || !strstr(argv[i], ".lst"))
-                return "No .lst file specified for the --auto-dealloc option\n";
+                throw std::runtime_error("No .lst file specified for the --auto-dealloc option");
 
             std::ifstream f(argv[i]);
             if (!f.is_open())
-                return "couldn't open the file \"" + std::string(argv[i+1]) + "\"\n";
+                throw std::runtime_error("couldn't open the file \"" + std::string(argv[i+1]) + "\"");
             _settings.autoDealloc(f);
         }
 
@@ -267,7 +270,6 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
                 (*it)->getErrorMessages();
             }
             std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
-            return "";
         }
 
         // documentation..
@@ -286,12 +288,12 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
             while (doc2.find("\n\n\n") != std::string::npos)
                 doc2.erase(doc2.find("\n\n\n"), 1);
             std::cout << doc2;
-            return "";
+            return;
         }
 
         else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
         {
-            return "cppcheck: error: unrecognized command line option \"" + std::string(argv[i]) + "\"\n";
+            throw std::runtime_error("cppcheck: error: unrecognized command line option \"" + std::string(argv[i]) + "\"");
         }
 
         else
@@ -300,7 +302,7 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
 
     if (_settings._unusedFunctions && _settings._jobs > 1)
     {
-        return "cppcheck: error: --unused-functions can't be used with -j option.\n";
+        throw std::runtime_error("cppcheck: error: --unused-functions can't be used with -j option.");
     }
 
     if (pathnames.size() > 0)
@@ -371,15 +373,12 @@ std::string CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    cppcheck -v -a -s one.cpp two.cpp\n"
         "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
         "    cppcheck -I inc1/ -I inc2/ f.cpp\n";
-        return oss.str();
+        reportOut(oss.str());
     }
     else if (_filenames.empty())
     {
-        return "cppcheck: No C or C++ source files found.\n";
+        throw std::runtime_error("cppcheck: No C or C++ source files found.");
     }
-
-
-    return "";
 }
 
 unsigned int CppCheck::check()

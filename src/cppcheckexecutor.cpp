@@ -22,6 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
+#include <stdexcept>
 
 CppCheckExecutor::CppCheckExecutor()
 {
@@ -36,49 +37,50 @@ CppCheckExecutor::~CppCheckExecutor()
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     CppCheck cppCheck(*this);
-    std::string result = cppCheck.parseFromArgs(argc, argv);
-    if (result.length() == 0)
+    try
     {
-        _settings = cppCheck.settings();
-        if (_settings._xml)
-        {
-            reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
-        }
+        cppCheck.parseFromArgs(argc, argv);
+    }
+    catch (std::runtime_error &e)
+    {
+        std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
+    }
 
-        unsigned int returnValue = 0;
-        if (_settings._jobs == 1)
-        {
-            // Single process
-            returnValue = cppCheck.check();
-        }
-        else if (!ThreadExecutor::isEnabled())
-        {
-            std::cout << "No thread support yet implemented for this platform." << std::endl;
-        }
-        else
-        {
-            // Multiple processes
-            const std::vector<std::string> &filenames = cppCheck.filenames();
-            Settings settings = cppCheck.settings();
-            ThreadExecutor executor(filenames, settings, *this);
-            returnValue = executor.check();
-        }
+    _settings = cppCheck.settings();
+    if (_settings._xml)
+    {
+        reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
+    }
 
-        if (_settings._xml)
-        {
-            reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
-        }
-
-        if (returnValue)
-            return _settings._exitCode;
-        else
-            return 0;
+    unsigned int returnValue = 0;
+    if (_settings._jobs == 1)
+    {
+        // Single process
+        returnValue = cppCheck.check();
+    }
+    else if (!ThreadExecutor::isEnabled())
+    {
+        std::cout << "No thread support yet implemented for this platform." << std::endl;
     }
     else
     {
-        std::cout << result;
-        return EXIT_FAILURE;
+        // Multiple processes
+        const std::vector<std::string> &filenames = cppCheck.filenames();
+        Settings settings = cppCheck.settings();
+        ThreadExecutor executor(filenames, settings, *this);
+        returnValue = executor.check();
     }
+
+    if (_settings._xml)
+    {
+        reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
+    }
+
+    if (returnValue)
+        return _settings._exitCode;
+    else
+        return 0;
 }
 
 void CppCheckExecutor::reportErr(const std::string &errmsg)

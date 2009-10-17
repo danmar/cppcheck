@@ -102,12 +102,9 @@ public:
      *
      * @param argc argc from main()
      * @param argv argv from main()
-     * @return Empty string if parameters were accepted, or
-     * string containing "help" text if no parameters were given or
-     * -h or --help parameters was given. Or error message if no
-     * files were found or if invalid parameter was given.
+     * @throw std::runtime_error when errors are found in the input
      */
-    std::string parseFromArgs(int argc, const char* const argv[]);
+    void parseFromArgs(int argc, const char* const argv[]);
 
     const std::vector<std::string> &filenames() const;
 
