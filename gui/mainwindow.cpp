@@ -503,12 +503,8 @@ void MainWindow::About()
 {
     //TODO make a "GetVersionNumber" function to core cppcheck
     CppCheckExecutor exec;
-    CppCheck check(exec);
-    const char *argv[] = {"", "--version"};
-    QString version = check.parseFromArgs(2, argv).c_str();
-    version.replace("Cppcheck ", "");
-
-    AboutDialog *dlg = new AboutDialog(version, this);
+    const CppCheck check(exec);
+    AboutDialog *dlg = new AboutDialog(check.version(), this);
     dlg->exec();
 }
 

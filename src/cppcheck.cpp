@@ -78,6 +78,10 @@ void CppCheck::clearFiles()
 
 
 
+const char * CppCheck::version() const
+{
+    return "1.37";
+}
 
 void CppCheck::parseFromArgs(int argc, const char* const argv[])
 {
@@ -87,7 +91,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
     {
         if (strcmp(argv[i], "--version") == 0)
         {
-            reportOut("Cppcheck 1.37");
+            reportOut(std::string("Cppcheck ") + version());
             return;
         }
 

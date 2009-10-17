@@ -106,6 +106,8 @@ public:
      */
     void parseFromArgs(int argc, const char* const argv[]);
 
+    const char * version() const;
+
     const std::vector<std::string> &filenames() const;
 
     virtual void reportStatus(unsigned int index, unsigned int max);
