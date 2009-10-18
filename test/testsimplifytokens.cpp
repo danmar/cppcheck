@@ -66,6 +66,7 @@ private:
         TEST_CASE(sizeof8);
         TEST_CASE(sizeof9);
         TEST_CASE(sizeof10);
+        TEST_CASE(sizeof11);
         TEST_CASE(casting);
 
         TEST_CASE(template1);
@@ -786,6 +787,38 @@ private:
                             "size_t size ; size = sizeof ( m ) / sizeof ( um ) ;";
 
         ASSERT_EQUALS(code, tok(code));
+    }
+
+    void sizeof11()
+    {
+        // ticket #827
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    char buf2[4];\n"
+                            "    sizeof buf2;\n"
+                            "}\n"
+                            "\n"
+                            "void g()\n"
+                            "{\n"
+                            "    struct A a[2];\n"
+                            "    char buf[32];\n"
+                            "    sizeof buf;\n"
+                            "}";
+
+        const char expected[] = "void f ( ) "
+                                "{"
+                                " char buf2 [ 4 ] ;"
+                                " 4 ; "
+                                "} "
+                                ""
+                                "void g ( ) "
+                                "{"
+                                " struct A a [ 2 ] ;"
+                                " char buf [ 32 ] ;"
+                                " 32 ; "
+                                "}";
+
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void casting()

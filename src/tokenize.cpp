@@ -1039,7 +1039,7 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "class|struct %type% :|{|;"))
             continue;
 
-        if (Token::Match(tok, "else|return|typedef|delete"))
+        if (Token::Match(tok, "else|return|typedef|delete|sizeof"))
             continue;
 
         if (Token::Match(tok, "const|static|extern|public:|private:|protected:"))
@@ -1537,7 +1537,6 @@ void Tokenizer::simplifySizeof()
                     tok->insertToken("(");
                     tempToken->insertToken(")");
                     Token::createMutualLinks(tok->next(), tempToken->next());
-                    setVarId();
                     break;
                 }
             }
