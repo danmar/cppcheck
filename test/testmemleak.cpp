@@ -580,8 +580,9 @@ private:
         ASSERT_EQUALS(2,  dofindleak("alloc;\n if assign;\n dealloc;"));
 
         // loop..
-        ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if break; dealloc ; }"));
-        ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if continue; dealloc ; }"));
+        TODO_ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if break; dealloc ; }"));
+        TODO_ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if continue; dealloc ; }"));
+        ASSERT_EQUALS(-1, dofindleak("; loop { alloc ; if break; } dealloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ; dealloc ;"));
 
