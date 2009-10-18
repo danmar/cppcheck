@@ -806,82 +806,71 @@ void CheckBufferOverrun::bufferOverrun()
 
 int CheckBufferOverrun::countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters)
 {
-    int flag = 1;
-    int second_flag = 0; // This is to check for %
-    int input_string_size = 0;
-    int on_on_next = 0;
+    bool percentCharFound = false;
+    int input_string_size = 1;
+    bool handleNextParameter = false;
     std::string digits_string = "";
-    int digits = 0;
-    int check_for_i_d_x_f = 0;
+    bool i_d_x_f_found = false;
     std::list<const Token*>::const_iterator paramIter = parameters.begin();
     unsigned int parameterLength = 0;
-    for (std::string::size_type i = 0; i != input_string.length(); i++)
+    for (std::string::size_type i = 0; i < input_string.length(); ++i)
     {
+        if (input_string[i] == '\\')
+        {
+            if (input_string[i+1] == '0')
+                break;
 
-        if (on_on_next == 1)
-        {
-            flag = 1;
-            on_on_next = 0;
+            ++input_string_size;
+            ++i;
+            continue;
         }
-        switch (input_string[i])
+
+        if (percentCharFound)
         {
-        case '\\':
-            if (input_string[i+1] == '0') break;
-        case 'f':
-        case 'x':
-        case 'X':
-        case 'd':
-        case 'i':
-            check_for_i_d_x_f = 1;
-        case 'c':
-        case 'e':
-        case 'E':
-        case 'g':
-        case 'o':
-        case 'u':
-        case 'p':
-        case 'n':
-            if (flag == 0)
+            switch (input_string[i])
             {
-                on_on_next = 1;
+            case 'f':
+            case 'x':
+            case 'X':
+            case 'd':
+            case 'i':
+                i_d_x_f_found = true;
+            case 'c':
+            case 'e':
+            case 'E':
+            case 'g':
+            case 'o':
+            case 'u':
+            case 'p':
+            case 'n':
+                handleNextParameter = true;
                 if (paramIter != parameters.end()) ++paramIter;
-            }
-            break;
-        case 's':
-            if (flag == 0)
-            {
+                break;
+            case 's':
                 if (paramIter != parameters.end() && *paramIter && (*paramIter)->str()[0] == '"')
                     parameterLength = Token::getStrLength(*paramIter);
 
-                on_on_next = 1;
+                handleNextParameter = true;
                 if (paramIter != parameters.end()) ++paramIter;
+                break;
             }
-            break;
-
-
-        case '%':
-            if (flag == 1) flag = 0;
-            else
-            {
-                flag = 1;
-                input_string_size++;
-                second_flag = 1;
-            }
-            break;
         }
 
-        if (flag  && !second_flag) input_string_size++;
-        else
-            digits_string += input_string[i];
-
-        if (on_on_next == 1 && flag == 0)
+        if (input_string[i] == '%')
+            percentCharFound = !percentCharFound;
+        else if (percentCharFound)
         {
-            digits_string = digits_string.substr(1, digits_string.size());
-            unsigned int tempDigits = 0;
-            if (check_for_i_d_x_f == 1)
-                tempDigits = std::max(std::abs(std::atoi(digits_string.c_str())), 1);
-            else
-                tempDigits = std::abs(std::atoi(digits_string.c_str()));
+            digits_string.append(1, input_string[i]);
+        }
+
+        if (!percentCharFound)
+            input_string_size++;
+
+        if (handleNextParameter)
+        {
+            unsigned int tempDigits = std::abs(std::atoi(digits_string.c_str()));
+            if (i_d_x_f_found)
+                tempDigits = std::max(static_cast<int>(tempDigits), 1);
 
             if (parameterLength > 0 && digits_string.find('.') != std::string::npos)
             {
@@ -896,45 +885,21 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             }
 
             if (tempDigits < parameterLength)
-                digits += parameterLength;
+                input_string_size += parameterLength;
             else if (parameterLength <= tempDigits)
-                digits += tempDigits;
+                input_string_size += tempDigits;
             else
-                digits += parameterLength - tempDigits;
+                input_string_size += parameterLength - tempDigits;
 
             parameterLength = 0;
-
             digits_string = "";
-            check_for_i_d_x_f = 0;
+            i_d_x_f_found = false;
+            percentCharFound = false;
+            handleNextParameter = false;
         }
-        second_flag = 0;
-
     }
 
-    // A second iteration through the string to deal with /'s
-
-    std::string::size_type j = 0;
-
-    while (j < input_string.size())
-    {
-
-        if (input_string[j] == '\\' && input_string[j+1] == '0')
-        {
-            input_string_size++;
-            break;
-        }
-        if (input_string[j] == '\\')
-        {
-            input_string_size--;
-            j += 2;
-            continue;
-        }
-        j++;
-    }
-
-
-    return input_string_size + 1 + digits;
-
+    return input_string_size;
 }
 
 
