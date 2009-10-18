@@ -38,6 +38,7 @@ private:
         TEST_CASE(iterator2);
         TEST_CASE(iterator3);
         TEST_CASE(iterator4);
+        TEST_CASE(iterator5);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_member);
@@ -138,6 +139,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator5()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    std::vector<int> ints1;\n"
+              "    std::vector<int> ints2;\n"
+              "    std::vector<int>::iterator it = std::find(ints1.begin(), ints2.end(), 22);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) mismatching containers\n", errout.str());
     }
 
     // Dereferencing invalid pointer

@@ -88,6 +88,30 @@ void CheckStl::iterators()
 }
 
 
+// Error message for bad iterator usage..
+void CheckStl::mismatchingContainersError(const Token *tok)
+{
+    reportError(tok, Severity::error, "mismatchingContainers", "mismatching containers");
+}
+
+void CheckStl::mismatchingContainers()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() != "std")
+            continue;
+
+        if (Token::Match(tok, "std :: find|find_if|count|transform|replace|replace_if|sort ( %var% . begin|rbegin ( ) , %var% . end|rend ( ) ,"))
+        {
+            if (tok->tokAt(4)->str() != tok->tokAt(10)->str())
+            {
+                mismatchingContainersError(tok);
+            }
+        }
+    }
+}
+
+
 void CheckStl::stlOutOfBounds()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
