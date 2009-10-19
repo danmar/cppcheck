@@ -554,7 +554,6 @@ void CheckClass::privateFunctions()
         bool HasFuncImpl = false;
         bool inclass = false;
         indent_level = 0;
-        const std::string pattern_function(classname + " ::");
         for (const Token *ftok = _tokenizer->tokens(); ftok; ftok = ftok->next())
         {
             if (ftok->str() == "{")
