@@ -9,6 +9,7 @@ OBJECTS =     src/checkautovariables.o \
               src/checkbufferoverrun.o \
               src/checkclass.o \
               src/checkdangerousfunctions.o \
+              src/checkexceptionsafety.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
               src/checkother.o \
@@ -34,6 +35,7 @@ TESTOBJ =     test/testautovariables.o \
               test/testcppcheck.o \
               test/testdangerousfunctions.o \
               test/testdivision.o \
+              test/testexceptionsafety.o \
               test/testfilelister.o \
               test/testincompletestatement.o \
               test/testmathlib.o \
@@ -54,6 +56,7 @@ TESTOBJ =     test/testautovariables.o \
               src/checkbufferoverrun.o \
               src/checkclass.o \
               src/checkdangerousfunctions.o \
+              src/checkexceptionsafety.o \
               src/checkheaders.o \
               src/checkmemoryleak.o \
               src/checkother.o \
@@ -111,6 +114,9 @@ src/checkclass.o: src/checkclass.cpp src/checkclass.h src/check.h src/token.h sr
 src/checkdangerousfunctions.o: src/checkdangerousfunctions.cpp src/checkdangerousfunctions.h src/check.h src/token.h src/tokenize.h src/classinfo.h src/settings.h src/errorlogger.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkdangerousfunctions.o src/checkdangerousfunctions.cpp
 
+src/checkexceptionsafety.o: src/checkexceptionsafety.cpp
+	$(CXX) $(CXXFLAGS) -c -o src/checkexceptionsafety.o src/checkexceptionsafety.cpp
+
 src/checkheaders.o: src/checkheaders.cpp src/checkheaders.h src/tokenize.h src/classinfo.h src/token.h src/errorlogger.h src/settings.h src/filelister.h
 	$(CXX) $(CXXFLAGS) -c -o src/checkheaders.o src/checkheaders.cpp
 
@@ -156,7 +162,7 @@ src/threadexecutor.o: src/threadexecutor.cpp src/threadexecutor.h src/settings.h
 src/token.o: src/token.cpp src/token.h
 	$(CXX) $(CXXFLAGS) -c -o src/token.o src/token.cpp
 
-src/tokenize.o: src/tokenize.cpp src/tokenize.h src/classinfo.h src/token.h src/filelister.h src/mathlib.h src/settings.h src/errorlogger.h
+src/tokenize.o: src/tokenize.cpp src/tokenize.h src/classinfo.h src/token.h src/filelister.h src/mathlib.h src/settings.h src/errorlogger.h src/check.h
 	$(CXX) $(CXXFLAGS) -c -o src/tokenize.o src/tokenize.cpp
 
 test/testautovariables.o: test/testautovariables.cpp src/tokenize.h src/classinfo.h src/token.h src/checkautovariables.h src/check.h src/settings.h src/errorlogger.h test/testsuite.h
@@ -182,6 +188,9 @@ test/testdangerousfunctions.o: test/testdangerousfunctions.cpp src/tokenize.h sr
 
 test/testdivision.o: test/testdivision.cpp src/tokenize.h src/classinfo.h src/token.h src/checkother.h src/check.h src/settings.h src/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -c -o test/testdivision.o test/testdivision.cpp
+
+test/testexceptionsafety.o: test/testexceptionsafety.cpp
+	$(CXX) $(CXXFLAGS) -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
 test/testfilelister.o: test/testfilelister.cpp test/testsuite.h src/errorlogger.h src/settings.h src/filelister.h
 	$(CXX) $(CXXFLAGS) -c -o test/testfilelister.o test/testfilelister.cpp
