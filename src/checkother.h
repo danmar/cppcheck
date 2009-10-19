@@ -228,6 +228,14 @@ private:
      * Dereferencing a pointer and then checking if it's NULL..
      */
     void nullPointerByDeRefAndChec();
+
+    /**
+     * Does one part of the check for nullPointer().
+     * 1. initialize pointer to 0
+     * 2. conditionally assign pointer
+     * 3. dereference pointer
+     */
+    void nullPointerConditionalAssignment();
 };
 /// @}
 //---------------------------------------------------------------------------

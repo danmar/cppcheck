@@ -65,7 +65,8 @@ private:
         TEST_CASE(nullpointer2);
         TEST_CASE(nullpointer3);    // dereferencing struct and then checking if it's null
         TEST_CASE(nullpointer4);
-        TEST_CASE(nullpointer5); // References should not be checked
+        TEST_CASE(nullpointer5);    // References should not be checked
+        TEST_CASE(nullpointer6);
 
         TEST_CASE(oldStylePointerCast);
 
@@ -883,6 +884,21 @@ private:
                          "   return;\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer6()
+    {
+        // errors..
+        checkNullPointer("static void foo()\n"
+                         "{\n"
+                         "    Foo *p = 0;\n"
+                         "    if (a == 1)\n"
+                         "        p = new FooBar;\n"
+                         "    else if (a == 2)\n"
+                         "        p = new FooCar;\n"
+                         "    p->abcd();\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Possible null pointer dereference: p\n", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[])

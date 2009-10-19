@@ -1106,12 +1106,54 @@ void CheckOther::nullPointerByDeRefAndChec()
     }
 }
 
+void CheckOther::nullPointerConditionalAssignment()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // 1. Initialize..
+        if (!tok->Match(tok, "; %var% = 0 ;"))
+            continue;
+
+        const unsigned int varid(tok->next()->varId());
+        if (!varid)
+            continue;
+
+        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "{" || tok2->str() == "}")
+                break;
+
+            if (Token::simpleMatch(tok2, "if ("))
+            {
+                const Token *tok3 = tok2;
+                tok3 = tok3->next()->link();
+                if (!tok3)
+                    break;
+                if (tok3->next()->str() == "{")
+                {
+                    tok2 = tok3->next()->link();
+                    if (!tok2)
+                        break;
+                }
+                continue;
+            }
+
+            if (Token::Match(tok2, "else !!if"))
+                break;
+
+            if (Token::Match(tok2, "%varid% . %var% (", varid))
+                nullPointerError(tok2, tok->next()->str());
+        }
+    }
+}
+
 void CheckOther::nullPointer()
 {
     nullPointerAfterLoop();
     nullPointerLinkedList();
     nullPointerStructByDeRefAndChec();
     nullPointerByDeRefAndChec();
+    nullPointerConditionalAssignment();
 }
 
 void CheckOther::checkZeroDivision()
