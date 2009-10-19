@@ -843,7 +843,6 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             case 'p':
             case 'n':
                 handleNextParameter = true;
-                if (paramIter != parameters.end()) ++paramIter;
                 break;
             case 'd':
                 i_d_x_f_found = true;
@@ -851,14 +850,12 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
                     parameterLength = (*paramIter)->str().length();
 
                 handleNextParameter = true;
-                if (paramIter != parameters.end()) ++paramIter;
                 break;
             case 's':
                 if (paramIter != parameters.end() && *paramIter && (*paramIter)->str()[0] == '"')
                     parameterLength = Token::getStrLength(*paramIter);
 
                 handleNextParameter = true;
-                if (paramIter != parameters.end()) ++paramIter;
                 break;
             }
         }
@@ -910,6 +907,8 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             i_d_x_f_found = false;
             percentCharFound = false;
             handleNextParameter = false;
+            if (paramIter != parameters.end())
+                ++paramIter;
         }
     }
 
