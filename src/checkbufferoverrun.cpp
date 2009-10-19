@@ -832,7 +832,6 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             case 'f':
             case 'x':
             case 'X':
-            case 'd':
             case 'i':
                 i_d_x_f_found = true;
             case 'c':
@@ -843,6 +842,14 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             case 'u':
             case 'p':
             case 'n':
+                handleNextParameter = true;
+                if (paramIter != parameters.end()) ++paramIter;
+                break;
+            case 'd':
+                i_d_x_f_found = true;
+                if (paramIter != parameters.end() && *paramIter && (*paramIter)->str()[0] != '"')
+                    parameterLength = (*paramIter)->str().length();
+
                 handleNextParameter = true;
                 if (paramIter != parameters.end()) ++paramIter;
                 break;
@@ -872,24 +879,31 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             if (i_d_x_f_found)
                 tempDigits = std::max(static_cast<int>(tempDigits), 1);
 
-            if (parameterLength > 0 && digits_string.find('.') != std::string::npos)
+            if (digits_string.find('.') != std::string::npos)
             {
-                // If parameter is known, then also the max length value
                 const std::string endStr = digits_string.substr(digits_string.find('.') + 1);
                 unsigned int maxLen = std::max(std::abs(std::atoi(endStr.c_str())), 1);
 
-                // Note, this does not work with e.g. floats the same way it
-                // works for strings. Needs fixing in the future.
-                if (parameterLength > maxLen)
-                    parameterLength = maxLen;
+                if (input_string[i] == 's')
+                {
+                    // For strings, the length after the dot "%.2s" will limit
+                    // the length of the string.
+                    if (parameterLength > maxLen)
+                        parameterLength = maxLen;
+                }
+                else
+                {
+                    // For integers, the length after the dot "%.2d" can
+                    // increase required length
+                    if (tempDigits < maxLen)
+                        tempDigits = maxLen;
+                }
             }
 
             if (tempDigits < parameterLength)
                 input_string_size += parameterLength;
-            else if (parameterLength <= tempDigits)
-                input_string_size += tempDigits;
             else
-                input_string_size += parameterLength - tempDigits;
+                input_string_size += tempDigits;
 
             parameterLength = 0;
             digits_string = "";

@@ -1104,16 +1104,23 @@ private:
         std::list<const Token*> intAsParameter;
         Token numTok;
         numTok.str("12345");
-        stringAsParameter.push_back(&numTok);
-        TODO_ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%02ld", intAsParameter));
+        intAsParameter.push_back(&numTok);
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%02ld", intAsParameter));
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%08ld", intAsParameter));
-        TODO_ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%.2d", intAsParameter));
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%.2d", intAsParameter));
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%08.2d", intAsParameter));
+        TODO_ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%x", intAsParameter));
+        ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%4x", intAsParameter));
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%5x", intAsParameter));
+        ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%.4x", intAsParameter));
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%.5x", intAsParameter));
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%1.5x", intAsParameter));
+        ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%5.1x", intAsParameter));
 
         std::list<const Token*> floatAsParameter;
         Token floatTok;
         floatTok.str("1.12345f");
-        stringAsParameter.push_back(&floatTok);
+        floatAsParameter.push_back(&floatTok);
         TODO_ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
         ASSERT_EQUALS(9, CheckBufferOverrun::countSprintfLength("%8.2f", floatAsParameter));
         TODO_ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter));
@@ -1121,7 +1128,7 @@ private:
         std::list<const Token*> floatAsParameter2;
         Token floatTok2;
         floatTok2.str("100.12345f");
-        stringAsParameter.push_back(&floatTok2);
+        floatAsParameter2.push_back(&floatTok2);
         TODO_ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter2));
         TODO_ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
         TODO_ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%4.2f", floatAsParameter));
@@ -1130,7 +1137,7 @@ private:
         multipleParams.push_back(&strTok);
         multipleParams.push_back(0);
         multipleParams.push_back(&numTok);
-        TODO_ASSERT_EQUALS(15, CheckBufferOverrun::countSprintfLength("str%s%d%d", multipleParams));
+        ASSERT_EQUALS(15, CheckBufferOverrun::countSprintfLength("str%s%d%d", multipleParams));
         ASSERT_EQUALS(26, CheckBufferOverrun::countSprintfLength("str%-6s%08ld%08ld", multipleParams));
 
     }
