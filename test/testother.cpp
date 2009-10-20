@@ -899,6 +899,15 @@ private:
                          "    p->abcd();\n"
                          "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        // no false positive..
+        checkNullPointer("static void foo()\n"
+                         "{\n"
+                         "    Foo *p = 0;\n"
+                         "    p = new Foo;\n"
+                         "    p->abcd();\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkOldStylePointerCast(const char code[])

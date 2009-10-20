@@ -1111,14 +1111,14 @@ void CheckOther::nullPointerConditionalAssignment()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // 1. Initialize..
-        if (!tok->Match(tok, "; %var% = 0 ;"))
+        if (!Token::Match(tok, "; %var% = 0 ;"))
             continue;
 
         const unsigned int varid(tok->next()->varId());
         if (!varid)
             continue;
 
-        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+        for (const Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "{" || tok2->str() == "}")
                 break;
@@ -1141,8 +1141,12 @@ void CheckOther::nullPointerConditionalAssignment()
             if (Token::Match(tok2, "else !!if"))
                 break;
 
-            if (Token::Match(tok2, "%varid% . %var% (", varid))
-                nullPointerError(tok2, tok->next()->str());
+            if (Token::Match(tok2, "%varid%", varid))
+            {
+                if (Token::Match(tok2, "%varid% . %var% (", varid))
+                    nullPointerError(tok2, tok->next()->str());
+                break;
+            }
         }
     }
 }
