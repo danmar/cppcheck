@@ -1563,6 +1563,15 @@ private:
             const char code[] = "( true ? abc . a : abc . b )";
             ASSERT_EQUALS("( abc . a )", tok(code));
         }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  bool x = false;\n"
+                                "  int b = x ? 44 : 3;\n"
+                                "}\n";
+            ASSERT_EQUALS("void f ( ) { bool x ; x = false ; int b ; b = 3 ; }", tok(code));
+        }
     }
 
     void calculations()
