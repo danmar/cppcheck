@@ -67,6 +67,7 @@ private:
         TEST_CASE(sizeof9);
         TEST_CASE(sizeof10);
         TEST_CASE(sizeof11);
+        TEST_CASE(sizeof12);
         TEST_CASE(casting);
 
         TEST_CASE(template1);
@@ -549,11 +550,8 @@ private:
 
     void sizeof1()
     {
-        const char code1[] = " struct ABC *abc = malloc(sizeof(*abc)); ";
-        const char code2[] = " struct ABC *abc = malloc(100); ";
-        const char code3[] = " struct ABC *abc = malloc(sizeof *abc ); ";
-        ASSERT_EQUALS(tok(code1), tok(code2));
-        ASSERT_EQUALS(tok(code2), tok(code3));
+        ASSERT_EQUALS("struct ABC * abc ; abc = malloc ( 100 ) ;", tok("struct ABC *abc = malloc(sizeof(*abc));"));
+        ASSERT_EQUALS("struct ABC * abc ; abc = malloc ( 100 ) ;", tok("struct ABC *abc = malloc(sizeof *abc );"));
     }
 
 
@@ -597,9 +595,10 @@ private:
     void sizeof5()
     {
         const char code[] =
-            "for (int i = 0; i < sizeof(g_ReservedNames[0]); i++)"
+            "const char * names[2];"
+            "for (int i = 0; i < sizeof(names[0]); i++)"
             "{}";
-        ASSERT_EQUALS("for ( int i = 0 ; i < 100 ; i ++ ) { }", sizeof_(code));
+        ASSERT_EQUALS("const char * names [ 2 ] ; for ( int i = 0 ; i < 4 ; i ++ ) { }", sizeof_(code));
     }
 
     void sizeof6()
@@ -816,6 +815,24 @@ private:
                                 " struct A a [ 2 ] ;"
                                 " char buf [ 32 ] ;"
                                 " 32 ; "
+                                "}";
+
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void sizeof12()
+    {
+        // ticket #827
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int *p;\n"
+                            "    (sizeof *p);\n"
+                            "}";
+
+        const char expected[] = "void f ( ) "
+                                "{"
+                                " int * p ;"
+                                " 4 ; "
                                 "}";
 
         ASSERT_EQUALS(expected, tok(code));

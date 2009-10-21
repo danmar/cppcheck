@@ -1585,16 +1585,24 @@ void Tokenizer::simplifySizeof()
         else if (Token::Match(tok, "sizeof ( * %var% )") || Token::Match(tok, "sizeof ( %var% [ %num% ] )"))
         {
             // Some default value..
-            unsigned int sz = 100;
+            unsigned int sz = 0;
 
             unsigned int varid = tok->tokAt((tok->tokAt(2)->str() == "*") ? 3 : 2)->varId();
             if (varid != 0)
             {
                 // Try to locate variable declaration..
-                const Token *decltok = Token::findmatch(_tokens, "%type% %varid% [", varid);
-                if (decltok)
+                const Token *decltok = Token::findmatch(_tokens, "%varid%", varid);
+                if (Token::findmatch(decltok->previous(), "%type% %var% ["))
                 {
-                    sz = sizeOfType(decltok);
+                    sz = sizeOfType(decltok->previous());
+                }
+                else if (Token::findmatch(decltok->previous(), "* %var% ["))
+                {
+                    sz = sizeOfType(decltok->previous());
+                }
+                else if (Token::findmatch(decltok->tokAt(-2), "%type% * %var%"))
+                {
+                    sz = sizeOfType(decltok->tokAt(-2));
                 }
             }
 
