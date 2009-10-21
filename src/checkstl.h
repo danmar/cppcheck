@@ -105,7 +105,7 @@ private:
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
     void mismatchingContainersError(const Token *tok);
     void eraseError(const Token *tok);
-    void pushbackError(const Token *tok, const std::string &func, const std::string &iterator_name);
+    void invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name);
     void invalidPointerError(const Token *tok, const std::string &pointer_name);
     void stlBoundriesError(const Token *tok, const std::string &container_name);
 
@@ -116,7 +116,7 @@ private:
         dereferenceErasedError(0, "iter");
         stlOutOfBoundsError(0, "i", "foo");
         eraseError(0);
-        pushbackError(0, "push_back|push_front|insert", "iterator");
+        invalidIteratorError(0, "push_back|push_front|insert", "iterator");
         invalidPointerError(0, "pointer");
         stlBoundriesError(0, "container");
     }

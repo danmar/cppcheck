@@ -372,7 +372,7 @@ void CheckStl::pushback()
                         }
 
                         if (pushback)
-                            pushbackError(pushback, pushback->str(), tok2->strAt(0));
+                            invalidIteratorError(pushback, pushback->str(), tok2->strAt(0));
                     }
 
                     // Assigning iterator..
@@ -393,9 +393,9 @@ void CheckStl::pushback()
                     if (!invalidIterator.empty())
                     {
                         if (Token::Match(tok2, "++|--|*|+|-|(|,|=|!= %varid%", iteratorid))
-                            pushbackError(tok2, invalidIterator, tok2->strAt(1));
+                            invalidIteratorError(tok2, invalidIterator, tok2->strAt(1));
                         if (Token::Match(tok2, "%varid% ++|--|+|-", iteratorid))
-                            pushbackError(tok2, invalidIterator, tok2->str());
+                            invalidIteratorError(tok2, invalidIterator, tok2->str());
                     }
                 }
             }
@@ -405,16 +405,16 @@ void CheckStl::pushback()
 
 
 // Error message for bad iterator usage..
-void CheckStl::pushbackError(const Token *tok, const std::string &func, const std::string &iterator_name)
+void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name)
 {
-    reportError(tok, Severity::error, "pushback", "After " + func + ", the iterator '" + iterator_name + "' may be invalid");
+    reportError(tok, Severity::error, "invalidIterator", "After " + func + ", the iterator '" + iterator_name + "' may be invalid");
 }
 
 
 // Error message for bad iterator usage..
 void CheckStl::invalidPointerError(const Token *tok, const std::string &pointer_name)
 {
-    reportError(tok, Severity::error, "pushback", "Invalid pointer '" + pointer_name + "' after push_back / push_front");
+    reportError(tok, Severity::error, "invalidPointer", "Invalid pointer '" + pointer_name + "' after push_back / push_front");
 }
 
 
