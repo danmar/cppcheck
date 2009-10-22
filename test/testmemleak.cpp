@@ -2467,6 +2467,7 @@ private:
         TEST_CASE(class9);
         TEST_CASE(class10);
         TEST_CASE(class11);
+        TEST_CASE(class12);
 
         TEST_CASE(staticvar);
 
@@ -2684,6 +2685,29 @@ private:
               "};\n"
               "A::A() : p(new int[10])\n"
               "{ }", true);
+        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
+    }
+
+    void class12()
+    {
+        check("class A\n"
+              "{\n"
+              "private:\n"
+              "    int *p;\n"
+              "public:\n"
+              "    A();\n"
+              "    ~A();\n"
+              "    void cleanup();"
+              "};\n"
+              "\n"
+              "A::A()\n"
+              "{ p = new int[10]; }\n"
+              "\n"
+              "A::~A()\n"
+              "{ }\n"
+              "\n"
+              "void A::cleanup()\n"
+              "{ delete [] p; }\n", true);
         ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
     }
 

@@ -2100,6 +2100,8 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
     const Token *functionToken = Tokenizer::findClassFunction(_tokenizer->tokens(), classname, "~| %var%", indent_);
     while (functionToken)
     {
+        const bool destructor(functionToken->tokAt(2)->str() == "~");
+
         int indent = 0;
         bool initlist = false;
         for (const Token *tok = functionToken; tok; tok = tok->next())
@@ -2146,6 +2148,13 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                 if (indent == 0)
                     continue;
 
+                if (!destructor)
+                    continue;
+
+                // Function call..
+                if (Token::Match(tok, "[{};] %var% ("))
+                    return;
+
                 // Deallocate..
                 const char *varnames[3] = { "var", 0, 0 };
                 varnames[0] = varname;
@@ -2171,7 +2180,6 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
 
                     Dealloc = dealloc;
                 }
-
             }
         }
 
