@@ -1592,15 +1592,15 @@ void Tokenizer::simplifySizeof()
             {
                 // Try to locate variable declaration..
                 const Token *decltok = Token::findmatch(_tokens, "%varid%", varid);
-                if (Token::findmatch(decltok->previous(), "%type% %var% ["))
+                if (Token::Match(decltok->previous(), "%type% %var% ["))
                 {
                     sz = sizeOfType(decltok->previous());
                 }
-                else if (Token::findmatch(decltok->previous(), "* %var% ["))
+                else if (Token::Match(decltok->previous(), "* %var% ["))
                 {
                     sz = sizeOfType(decltok->previous());
                 }
-                else if (Token::findmatch(decltok->tokAt(-2), "%type% * %var%"))
+                else if (Token::Match(decltok->tokAt(-2), "%type% * %var%"))
                 {
                     sz = sizeOfType(decltok->tokAt(-2));
                 }

@@ -68,6 +68,7 @@ private:
         TEST_CASE(sizeof10);
         TEST_CASE(sizeof11);
         TEST_CASE(sizeof12);
+        TEST_CASE(sizeof13);
         TEST_CASE(casting);
 
         TEST_CASE(template1);
@@ -835,6 +836,31 @@ private:
                                 " 4 ; "
                                 "}";
 
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void sizeof13()
+    {
+        // ticket #851
+        const char code[] = "int main()\n"
+                            "{\n"
+                            "    char *a;\n"
+                            "    a = malloc(sizeof(*a));\n"
+                            "}\n"
+                            "\n"
+                            "struct B\n"
+                            "{\n"
+                            "    char * b[2];\n"
+                            "};";
+        const char expected[] = "int main ( ) "
+                                "{"
+                                " char * a ;"
+                                " a = malloc ( 1 ) ; "
+                                "} "
+                                "struct B "
+                                "{"
+                                " char * b [ 2 ] ; "
+                                "} ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
