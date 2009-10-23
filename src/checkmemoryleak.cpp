@@ -2095,11 +2095,15 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
     CheckMemoryLeak::AllocType Alloc = CheckMemoryLeak::No;
     CheckMemoryLeak::AllocType Dealloc = CheckMemoryLeak::No;
 
+    bool allocInConstructor = false;
+    bool deallocInDestructor = false;
+
     // Loop through all tokens. Inspect member functions
     int indent_ = 0;
     const Token *functionToken = Tokenizer::findClassFunction(_tokenizer->tokens(), classname, "~| %var%", indent_);
     while (functionToken)
     {
+        const bool constructor(Token::Match(functionToken, (classname + std::string(" :: ") + classname + " (").c_str()));
         const bool destructor(functionToken->tokAt(2)->str() == "~");
 
         int indent = 0;
@@ -2130,6 +2134,9 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                     AllocType alloc = getAllocationType(tok->tokAt((indent > 0) ? 2 : 3), 0);
                     if (alloc != CheckMemoryLeak::No)
                     {
+                        if (constructor)
+                            allocInConstructor = true;
+
                         if (Alloc != No && Alloc != alloc)
                             alloc = CheckMemoryLeak::Many;
 
@@ -2148,12 +2155,9 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                 if (indent == 0)
                     continue;
 
-                if (!destructor)
-                    continue;
-
-                // Function call..
-                if (Token::Match(tok, "[{};] %var% ("))
-                    return;
+                // Function call in destructor.. possible deallocation
+                if (destructor && Token::Match(tok, "[{};] %var% ("))
+                    deallocInDestructor = true;
 
                 // Deallocate..
                 const char *varnames[3] = { "var", 0, 0 };
@@ -2167,6 +2171,9 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                 }
                 if (dealloc != CheckMemoryLeak::No)
                 {
+                    if (destructor)
+                        deallocInDestructor = true;
+
                     if (Dealloc != CheckMemoryLeak::No && Dealloc != dealloc)
                         dealloc = CheckMemoryLeak::Many;
 
@@ -2186,7 +2193,11 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
         functionToken = Tokenizer::findClassFunction(functionToken->next(), classname, "~| %var%", indent_);
     }
 
-    if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No)
+    if (allocInConstructor && !deallocInDestructor)
+    {
+        memoryLeak(tokVarname, (std::string(classname) + "::" + varname).c_str(), Alloc, true);
+    }
+    else if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No)
     {
         memoryLeak(tokVarname, (std::string(classname) + "::" + varname).c_str(), Alloc, true);
     }
