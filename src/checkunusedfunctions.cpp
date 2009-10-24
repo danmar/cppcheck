@@ -159,7 +159,7 @@ void CheckUnusedFunctions::check()
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
-        if (it->first == "main" || it->first == "if")
+        if (it->first == "main" || it->first == "WinMain" || it->first == "if")
             continue;
         if (! func.usedSameFile)
         {
