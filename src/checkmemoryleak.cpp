@@ -2155,10 +2155,6 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                 if (indent == 0)
                     continue;
 
-                // Function call in destructor.. possible deallocation
-                if (destructor && Token::Match(tok, "[{};] %var% ("))
-                    deallocInDestructor = true;
-
                 // Deallocate..
                 const char *varnames[3] = { "var", 0, 0 };
                 varnames[0] = varname;
@@ -2186,6 +2182,17 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                     }
 
                     Dealloc = dealloc;
+                }
+
+                // Function call in destructor .. possible deallocation
+                else if (destructor && Token::Match(tok->previous(), "[{};] %var% ("))
+                {
+                    if (!std::bsearch(tok->strAt(0), call_func_white_list,
+                                      sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
+                                      sizeof(call_func_white_list[0]), call_func_white_list_compare))
+                    {
+                        return;
+                    }
                 }
             }
         }

@@ -2564,7 +2564,7 @@ private:
               "    }\n"
               "}\n", true);
 
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void class4()
@@ -2799,7 +2799,7 @@ private:
               "{\n"
               "    delete tok;\n"
               "}\n", true);
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // Global function
         check("void deleteTokens(int *tok)\n"
@@ -2826,7 +2826,7 @@ private:
               "    deleteTokens(_tokens);\n"
               "    _tokens = 0;\n"
               "}\n", true);
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
