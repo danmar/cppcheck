@@ -76,9 +76,7 @@ void CppCheck::clearFiles()
     _fileContents.clear();
 }
 
-
-
-const char * CppCheck::version() const
+const char * CppCheck::version()
 {
     return "1.38";
 }

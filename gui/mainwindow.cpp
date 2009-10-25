@@ -33,7 +33,6 @@
 #include "projectfile.h"
 #include "report.h"
 #include "../lib/filelister.h"
-#include "../lib/cppcheckexecutor.h"
 
 MainWindow::MainWindow() :
         mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
@@ -501,10 +500,7 @@ void MainWindow::ToggleAllChecked(bool checked)
 
 void MainWindow::About()
 {
-    //TODO make a "GetVersionNumber" function to core cppcheck
-    CppCheckExecutor exec;
-    const CppCheck check(exec);
-    AboutDialog *dlg = new AboutDialog(check.version(), this);
+    AboutDialog *dlg = new AboutDialog(CppCheck::version(), this);
     dlg->exec();
 }
 

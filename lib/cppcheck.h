@@ -106,7 +106,11 @@ public:
      */
     void parseFromArgs(int argc, const char* const argv[]);
 
-    const char * version() const;
+    /**
+     * Returns current version number as a string.
+     * @return version, e.g. "1.38"
+     */
+    static const char * version();
 
     const std::vector<std::string> &filenames() const;
 
