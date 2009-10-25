@@ -1,14 +1,18 @@
 TEMPLATE = app
 TARGET = cppcheck
 DEPENDPATH += .
-INCLUDEPATH += .
+INCLUDEPATH += . ../lib
 OBJECTS_DIR = temp
 CONFIG += warn_on
 CONFIG -= qt app_bundle
 
 include($$PWD/../lib/lib.pri)
 
-SOURCES += main.cpp
+SOURCES += main.cpp \
+           cppcheckexecutor.cpp \
+           threadexecutor.cpp
+HEADERS += cppcheckexecutor.cpp \
+           threadexecutor.cpp
 
 win32 {
     CONFIG += embed_manifest_exe console
