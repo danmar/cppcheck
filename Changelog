@@ -1,3 +1,1083 @@
+2009-10-25  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* createrelease, src/cppcheck.cpp, src/main.cpp,
+	win_installer/cppcheck.iss, win_installer/cppcheck.wxs: updated
+	version to 1.38
+
+2009-10-24  Daniel Marjamäki <danielm77@spray.se>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #253
+	(MemoryLeakInClass: False positive when memory is released in
+	function, which is called from destructor)
+
+2009-10-24  Daniel Marjamäki <danielm77@spray.se>
+
+	* src/checkunusedfunctions.cpp: don't report that the function
+	WinMain is unused
+
+2009-10-23  Daniel Marjamäki <danielm77@spray.se>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Memory leaks: Added
+	and fixed testcase TestMemleakInClass::class13
+
+2009-10-22  Daniel Marjamäki <danielm77@spray.se>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fixed #851
+	(Tokenizer: sizeof(*a) returns incorrect result)
+
+2009-10-22  Daniel Marjamäki <danielm77@spray.se>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #428 (Memory
+	leak not detected with class)
+
+2009-10-21  Daniel <daniel@daniel-desktop.(none)>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fixed #844
+	(Tokenizer: Simplify 'sizeof *ptr' correctly)
+
+2009-10-21  Daniel <daniel@daniel-desktop.(none)>
+
+	* src/checkstl.cpp, src/checkstl.h: Fixed #830 (id 'pushback' used
+	twice)
+
+2009-10-21  Daniel <daniel@daniel-desktop.(none)>
+
+	* cppcheck.pro: Removed toplevel qmake pro file that doesn't work
+
+2009-10-21  Daniel <daniel@daniel-desktop.(none)>
+
+	* cppcheck.geany: removed geany project file
+
+2009-10-20  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #767
+	(Tokenizer: Known variable variable not simplified)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/767
+
+2009-10-20  Daniel <daniel@daniel-desktop.(none)>
+
+	* src/checkother.cpp, test/testother.cpp: Fixed #839 (False
+	positive: possible null pointer dereference after new)
+
+2009-10-20  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp: Minor refactoring.
+
+2009-10-20  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Improved
+	countSprintfLength() to detect more errors with %d.  Fixed some
+	errors from test cases.  Added more test cases.
+
+2009-10-19  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* Makefile, src/checkexceptionsafety.cpp,
+	src/checkexceptionsafety.h, test/testexceptionsafety.cpp: Fixed by
+	#828 (Exception Safety: No throwing in destructors)
+
+2009-10-19  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkclass.cpp: David Binderman: Remove dead variable
+
+2009-10-19  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkother.cpp, src/checkother.h, test/testother.cpp: Null
+	pointers: Detect code where the assignment is conditional
+
+2009-10-18  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkstl.cpp, src/checkstl.h, test/teststl.cpp: STL: checking
+	that containers are matching
+
+2009-10-18  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fixed #827
+	(Tokenizer: sizeof is incorrectly simplified)
+
+2009-10-18  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #449 (false
+	postive:: resource leak when using errno)
+
+2009-10-18  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fix #826
+	(False positive: sprintf with "f%s")
+	http://sourceforge.net/apps/trac/cppcheck/ticket/826
+
+2009-10-18  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/check.h, src/cppcheck.cpp, src/tokenize.cpp, src/tokenize.h: 
+	Fix #825 (Error with id syntaxError not in list printed with
+	--errorlist) http://sourceforge.net/apps/trac/cppcheck/ticket/825
+
+2009-10-17  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp: Fix segmentation fault with
+	--errorlist
+
+2009-10-17  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkother.cpp, test/testunusedvar.cpp: unused struct member:
+	bail out when casting
+
+2009-10-17  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Pointer Aliasing:
+	Handle pointer aliasing through the
+	Tokenizer::simplifyKnownVariables
+
+2009-10-17  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkother.cpp, src/checkother.h, test/testunusedvar.cpp: 
+	Unused struct members: bail out upon casting
+
+2009-10-17  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* gui/mainwindow.cpp, src/cppcheck.cpp, src/cppcheck.h: fixed
+	compiler error when building gui
+
+2009-10-17  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/cppcheck.cpp, src/cppcheck.h, src/cppcheckexecutor.cpp: Fixed
+	#824 (Exit code of cppcheck)
+
+2009-10-15  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkstl.cpp, src/checkstl.h, test/teststl.cpp: stl: after
+	vector::insert, iterators may become invalid
+
+2009-10-15  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fixed #823
+	(Buffer overrun with memcpy)
+
+2009-10-15  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, src/checkmemoryleak.h: fixed doxygen
+	warning messages
+
+2009-10-14  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/preprocessor.cpp, test/testpreprocessor.cpp: Fixed #821
+	(Preprocessor: Wrong stringification in macros)
+
+2009-10-14  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/cppcheck.cpp: Fixed #820 (Borland C++: Compiler errors because
+	of time_t)
+
+2009-10-14  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Buffer
+	overrun errors behind function call should be possible errors.
+
+2009-10-13  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Move
+	buffer overrun errors behind --all Fix one possible error issue with
+	arrayindexoutofbounds Make sure that possible errors are not shown
+	without --all
+
+2009-10-13  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* : commit 4036dd5effb90957b2b9b7ffb861344215757953 Author: Reijo
+	Tomperi <aggro80@users.sourceforge.net> Date:   Tue Oct 13 22:39:51
+	2009 +0300
+
+2009-10-13  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkstl.cpp, test/teststl.cpp: stl: better checking for
+	invalid iterator after push_back
+
+2009-10-13  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/settings.cpp, src/settings.h: Fix #815 (rev. 47e9d1:
+	compilation error)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/815
+
+2009-10-13  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/cppcheck.cpp: Undocumented --showtime option should now work
+	on other platforms also.  Improved --showtime to give more
+	information.
+
+2009-10-13  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* gui/mainwindow.cpp, gui/threadhandler.cpp, gui/threadhandler.h: 
+	Fix #455 (Recheck is enabled when no previous results available)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/455
+
+2009-10-12  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* : commit ed3860a0a74ffcd325d0380130de83e703f82659 Author: Daniel
+	Marjamäki <hyd_danmar@users.sourceforge.net> Date:   Mon Oct 12
+	21:36:28 2009 +0200
+
+2009-10-12  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* readme.txt: Fix #814 (Improvements for readme.txt)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/814
+
+2009-10-11  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fix #812
+	(False positive: sprintf with "%.4s" with --all)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/812
+
+2009-10-11  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fix #694
+	(False (possible error) Buffer overrun with %-1s) ashim2009 did most
+	of the work http://sourceforge.net/apps/trac/cppcheck/ticket/694
+
+2009-10-11  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* webreport.sh: script for creating web content
+
+2009-10-11  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, src/checkother.h: Refactoring: Split null
+	pointer check into 4 smaller functions.
+
+2009-10-11  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, test/testdivision.cpp: Fix #810 (false
+	positive: Division with signed and unsigned operators)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/810
+
+2009-10-11  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp: Getting rid of warning C4267: 'return' :
+	conversion from 'size_t' to 'unsigned int'
+
+2009-10-11  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp: Getting rid of compiler warning: C4310: cast
+	truncates constant value
+
+2009-10-11  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* win_installer/build.proj, win_installer/build1.bat,
+	win_installer/build2.bat: win_installer: Added build scripts
+
+2009-10-11  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* win_installer/gui.wxs, win_installer/productInfo.wxi: 
+	win_installer: minor tweaks
+
+2009-10-10  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* htdocs/build.bat: a simple build script for building devinfo.html
+
+2009-10-10  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp, test/testpreprocessor.cpp: Fix #808
+	(Segfault in Preprocessor)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/808
+
+2009-10-10  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* : commit d2e2b1d9feb1e826c7118e1c8c3f85ae89895e38 Author: Daniel
+	Marjamäki <hyd_danmar@users.sourceforge.net> Date:   Sat Oct 10
+	22:10:33 2009 +0200
+
+2009-10-10  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp: Fix compiler warning warning C4512:
+	'PreprocessorMacro' : assignment operator could not be generated
+
+2009-10-10  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp: Get rid of compiler warning warning C4127:
+	conditional expression is constant
+
+2009-10-10  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, src/tokenize.h: Get rid of a compiler warning.
+	conversion from 'size_t' to 'int', possible loss of data
+
+2009-10-10  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fixed #809
+	(Tokenizer: don't replace sizeof() of unknown type to zero) http://sourceforge.net/apps/trac/cppcheck/ticket/809
+
+2009-10-10  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* test/testtokenize.cpp: Added testcase for #807 (cppcheck crashes
+	scanning ruby 1.9.1)
+
+2009-10-10  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/preprocessor.cpp: minor refactoring
+
+2009-10-10  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp: Borland C++: Fixed compiler errors
+
+2009-10-09  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fixed #806 (cppcheck
+	crashes scanning openssl)
+
+2009-10-09  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/tokenize.cpp: jonas054: fixed #807 (cppcheck crashes scanning
+	ruby 1.9.1)
+
+2009-10-08  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp: memory leaks: minor cleanups
+
+2009-10-08  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp: optimisation: made the memory leaks
+	checking faster
+
+2009-10-08  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/cppcheck.cpp: optimisation: removed duplicate call of
+	Tokenizer::setVarId
+
+2009-10-08  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* man/cppcheck.1.xml, src/cppcheck.cpp, src/settings.cpp,
+	src/settings.h: Fix #674 (Feature request: error filtering)
+	--suppressions argument added to CLI
+	http://sourceforge.net/apps/trac/cppcheck/ticket/674
+
+2009-10-08  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* test/testbufferoverrun.cpp: More test cases for sprintf counter
+
+2009-10-08  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: sprintf
+	counter improvements
+
+2009-10-08  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, test/testother.cpp: Fix #802 (possible null
+	pointer dereference reported for reference)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/802
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkstl.cpp: Use var id instead of var name in check stl.
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkstl.cpp: Use varid instead of varname in stl check.
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, src/checkstl.cpp, test/testother.cpp,
+	test/teststl.cpp: Optimize speed and fix one false positive with stl
+	checks.
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* test/testbufferoverrun.cpp: Added more test cases for sprintf
+	counter
+
+2009-10-07  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Ashim
+	Kapoor: updated the counter (#694)
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, src/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: Refactoring: Moved some code into a new
+	function.  Renamed count->countSprintfLength.  Added code to collect
+	sprintf parameters.  Added a few TODO test cases.
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #801
+	(Tokenizer: Simplify sizeof for function parameters)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/801
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #487
+	(Tokenizer: Simplify sizeof for string array and string pointer)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/487
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, src/checkmemoryleak.cpp,
+	src/tokenize.cpp, src/tokenize.h, test/testsimplifytokens.cpp: 
+	Refactored sizeof simplification and fixed one TODO assert.
+
+2009-10-07  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, test/testother.cpp: Detect referenced by value
+	errors for std::map also.
+
+2009-10-06  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fix #388 (resource
+	leak not detected, allocation through function call)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/388
+
+2009-10-06  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #796
+	(segmentation fault while scanning)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/796
+
+2009-10-06  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: memory leaks: don't
+	write errors for static member variables
+
+2009-10-06  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkother.cpp, src/checkother.h, test/testother.cpp: Fix #797
+	(false positive: variable scope when using function call)
+
+2009-10-06  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fix #575
+	(Array index out of bounds check: get address of one-past-the-end
+	array is legal) http://sourceforge.net/apps/trac/cppcheck/ticket/575
+
+2009-10-06  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #580 (double
+	free not found) http://sourceforge.net/apps/trac/cppcheck/ticket/580
+
+2009-10-06  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* test/testsimplifytokens.cpp, test/testtokenize.cpp: Moved some
+	test cases from testtokenize into testsimplifytokens and added one
+	TODO case.
+
+2009-10-06  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp, test/testpreprocessor.cpp: Fix #795
+	(Preprocessor: Incorrect handling of #if (A) || (B))
+	http://sourceforge.net/apps/trac/cppcheck/ticket/795
+
+2009-10-06  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fix #765 (divsion by zero
+	not detected in std::cout stream)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/765
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp: Removed variable that wasn't used.
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp: Replace substr() with compare() to speed up
+	preprocessing.  See #762 (version 1.37 of cppcheck runs extremely
+	slowly on windows)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/762
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fix #794
+	(Floating point exception on CheckBufferOverrun)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/794
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #365 (Improve
+	simplifyQuestionMark() in tokenize.cpp)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/365
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, src/tokenize.h: Refactoring: Remove
+	findClosing(). It is replaced by Token::link().
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, test/testother.cpp: Fix #771 (False positive.
+	Null pointer dereference in a switch case)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/771
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix
+	simplifyRedundantParanthesis() to work after '}'
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #776
+	(Tokenizer: remove useless brackets around variable assignment)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/776
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #778
+	(Tokenizer: impove simplification inside if())
+	http://sourceforge.net/apps/trac/cppcheck/ticket/778
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, test/testother.cpp: Fix #793 (Improve
+	passedByValue check)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/793
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* generate_coverage_report: Better cleanup for coverage script.
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* generate_coverage_report: Add script generate_coverage_report for
+	generating test coverage report using gcov and lcov
+
+2009-10-05  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #777
+	(Tokenizer: double casting simplified incorrectly)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/777
+
+2009-10-04  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #784
+	(Tokenizer: Simplify 2[a] -> a[2])
+	http://sourceforge.net/apps/trac/cppcheck/ticket/784
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #789 (false
+	positive: resource leak reported when using for loop)
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp: Fixed #786 (memleak: segmentation fault
+	for 'if TRACE_ON(x)')
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/preprocessor.cpp, test/testpreprocessor.cpp: Preprocessor:
+	Minor fixes (#772)
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #785 (False
+	positive: resource leak of extern FILE*)
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkother.h: doc: fixed linebreak in previous commit
+	6aea2faacd
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkother.h: doc: refactoring of the docs for CheckOther
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkother.cpp, src/checkother.h: Removed
+	CheckOther::warningIf
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #727 (False
+	positive: Resource leak when release is done inside function call)
+
+2009-10-04  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkautovariables.cpp, src/checkautovariables.h: Fixed #783
+	(Refactoring: autoVariables error message is hard coded in 3
+	locations) http://sourceforge.net/apps/trac/cppcheck/ticket/783
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/tokenize.cpp: astyle formatting
+
+2009-10-04  Slava Semushin <php-coder@altlinux.ru>
+
+	* test/testother.cpp: Fixed #782 (Checks are missing test cases) http://sourceforge.net/apps/trac/cppcheck/ticket/782
+
+2009-10-04  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/preprocessor.h: src/preprocessor.h: fixed comment.  removeParantheses() doesn't throws exception.  Correction for 1a48f869c84018d73fd63bf59263224b019a5997 commit.  No code change.
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, src/tokenize.cpp,
+	test/testsimplifytokens.cpp, test/testtokenize.cpp: use '<'
+	comparisons instead of '>' (#610)
+
+2009-10-04  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/preprocessor.cpp, src/preprocessor.h,
+	test/testpreprocessor.cpp: Fixed #772 (Preprocessor: #if(A) is not
+	seen equal to #if A)
+
+2009-10-03  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #733 (New
+	check: locking & unlocking mutex and semaphore variables)
+
+2009-10-03  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fixed #780
+	(Tokenizer: replace typedef for pointers to struct) http://sourceforge.net/apps/trac/cppcheck/ticket/780
+
+2009-10-03  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/token.cpp: Token::Match(): made message about bug more
+	verbose.
+
+2009-10-03  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp: Fixed #775 (###### If you see this,
+	there is a bug ###### Token::Match() - varid was 0) http://sourceforge.net/apps/trac/cppcheck/ticket/775
+
+2009-10-03  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp: Tokenizer::simplifyVarDecl(): join 2 conditions.  No functional change.
+
+2009-10-03  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fixed #770 (Tokenizer:
+	Var id not set for static variables in some cases) http://sourceforge.net/apps/trac/cppcheck/ticket/770
+
+2009-10-03  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, src/tokenize.cpp: Borland C++: Fixed
+	compiler errors
+
+2009-10-02  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/preprocessor.cpp: Attempt to speed up preprocessing on
+	macro-in-macro situations.  See #762 (version 1.37 of cppcheck runs
+	extremely slowly on windows)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/762
+
+2009-10-02  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* test/testtokenize.cpp: TODO test cases
+	TestTokenizer::vardec_static added
+
+2009-10-02  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp: Abort comma simplification when ", %num%" is
+	detected.  This increases speed a lot in some rare situations.
+
+2009-10-01  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* test/testmemleak.cpp: memory leaks: refactoring unit tests
+
+2009-10-01  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/tokenize.cpp, src/tokenize.h, test/testtokenize.cpp: Fixed
+	#679 (False positive: Unused private function produced by exception
+	specification)
+
+2009-10-01  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* gui/application.ui: eliedebrauwer: fix typo (#755)
+
+2009-10-01  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* gui/cppcheck_nl.ts: eliedebrauwer: dutch translation (#756)
+
+2009-10-01  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* gui/gui.pro, gui/translationhandler.cpp: eliedebrauwer: dutch
+	translation (#756)
+
+2009-10-01  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* man/cppcheck.1.xml: Minor fix to man page
+
+2009-10-01  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fix #421 (Memory
+	leak not found when typeid() is used.)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/421
+
+2009-10-01  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp: Trivial refactoring
+
+2009-10-01  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fix #741
+	(False positive: Buffer overrun with -a when index increased in
+	multiple locations)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/741
+
+2009-10-01  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, src/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: Fix #419 (missleading buffer overrun)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/419
+
+2009-10-01  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp: Removed dead code created by previous commit
+
+2009-10-01  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #763
+	(Tokenizer: Goto incorrectly simplified)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/763
+
+2009-09-30  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* test/testmemleak.cpp: memory leaks: fixed TODO_ASSERT_EQUALS
+
+2009-09-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testmemleak.cpp, test/testother.cpp,
+	test/testsimplifytokens.cpp, test/testtokenize.cpp: Fix #745 (false
+	positive: possible null pointer dereference , while)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/745
+
+2009-09-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fix #744
+	(False positive: (possible error) Array index out of bounds)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/744
+
+2009-09-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fix #759 (Tokenizer:
+	Incorrect var id when two variables with same name)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/759
+
+2009-09-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, src/tokenize.h, test/testsimplifytokens.cpp: Fix
+	#761 (Tokenizer: typedef inside class is incorrectly simplified)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/761
+
+2009-09-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: Fix #760
+	(Tokenizer: Goto not simplified)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/760
+
+2009-09-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* test/testsimplifytokens.cpp: Added TODO test cases:
+	simplifyTypedef, simplifyTypedef2, simplifyTypedef3
+
+2009-09-30  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, test/testother.cpp: Fix #750 (cppcheck wants
+	variable outside do-loop to be only inside loop)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/750 Fix #758 (False
+	positive on variable scope with boost foreach)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/758
+
+2009-09-29  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp: Changed simplifyConditionOperator() to create
+	also {} around if and else Fixed validate() in tokenizer.
+
+2009-09-29  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* test/testbufferoverrun.cpp: added a TODO_ASSERT_EQUALS for the
+	counter
+
+2009-09-29  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkclass.cpp, test/testclass.cpp, test/testconstructors.cpp: 
+	Fix #757 (Change message: (style) The class 'KClass' has no
+	constructor) http://sourceforge.net/apps/trac/cppcheck/ticket/757
+
+2009-09-29  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp: Tokenizer::tokenize(): removed useless
+	const_cast.  No functional change.
+
+2009-09-29  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* test/testbufferoverrun.cpp: TODO test case for count() added
+
+2009-09-29  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Ashim
+	Kapoor: deal with backspace better (#694)
+
+2009-09-29  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* test/testtokenize.cpp: Fix comment in test case
+
+2009-09-29  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.h, test/testother.cpp: Check nullpointer check is
+	now executed without --style flag Added TODO test case for
+	nullpointer check
+
+2009-09-29  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkother.cpp, test/testother.cpp: Fix #751 (if-condition
+	considered redundant even with else-branch)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/751 Fix also other
+	issue with if(a.b) delete c.b; Fix also other issue with if(a.b.c)
+	delete a.b.c;
+
+2009-09-28  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #746 (False
+	positive, Memory leak when goto is used)
+
+2009-09-28  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: memory leaks: fixed
+	a TODO_ASSERT_EQUALS for a false positive
+
+2009-09-28  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* man/cppcheck.1.xml, src/cppcheck.cpp: Fix #739 (Pre-defined output
+	format templates)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/739 Patch from
+	lanurmi. Slightly modified by me.
+
+2009-09-28  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, src/tokenize.h, test/testtokenize.cpp: Fix #754
+	(Tokenizer: transform modifier "signed" to "int")
+	http://sourceforge.net/apps/trac/cppcheck/ticket/754 Also fix int
+	unsigned -> unsigned int
+
+2009-09-28  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fixed #753 (Tokenizer:
+	don't simplify variables inside do {} while loop) http://sourceforge.net/apps/trac/cppcheck/ticket/753
+
+2009-09-27  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* test/testbufferoverrun.cpp: Refactoring the unit testing of format
+	strings
+
+2009-09-27  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #728 (False
+	positive, resource leak, when released in a loop)
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp: src/checkbufferoverrun.cpp: fixed
+	regression.  test suite was broken after my
+	e8c83613e4bcc95b7c3d91d5c71f4e2363a5cdf3 commit.
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fixed #740
+	(False positive, buffer overrun with --all) Regression since 07f41f4563fc138b527af6ce153433a661250020 commit.  http://sourceforge.net/apps/trac/cppcheck/ticket/740
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp: src/checkbufferoverrun.cpp: removed
+	useless semicolon.  No functional change.
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fixed #738
+	(False Buffer overrun with -a when i is increased by more than 1
+	inside loop body) http://sourceforge.net/apps/trac/cppcheck/ticket/738
+
+2009-09-27  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* cppcheck.cbp, gui/aboutdialog.cpp, gui/aboutdialog.h,
+	gui/applicationdialog.cpp, gui/applicationdialog.h,
+	gui/applicationlist.cpp, gui/applicationlist.h,
+	gui/checkthread.cpp, gui/checkthread.h, gui/common.h,
+	gui/csvreport.cpp, gui/csvreport.h, gui/fileviewdialog.cpp,
+	gui/fileviewdialog.h, gui/main.cpp, gui/mainwindow.cpp,
+	gui/mainwindow.h, gui/projectfile.cpp, gui/projectfile.h,
+	gui/report.cpp, gui/report.h, gui/resultstree.cpp,
+	gui/resultstree.h, gui/resultsview.cpp, gui/resultsview.h,
+	gui/settingsdialog.cpp, gui/settingsdialog.h,
+	gui/threadhandler.cpp, gui/threadhandler.h, gui/threadresult.cpp,
+	gui/threadresult.h, gui/translationhandler.cpp,
+	gui/translationhandler.h, gui/txtreport.cpp, gui/txtreport.h,
+	gui/xmlreport.cpp, gui/xmlreport.h, src/check.h,
+	src/checkautovariables.cpp, src/checkautovariables.h,
+	src/checkbufferoverrun.cpp, src/checkbufferoverrun.h,
+	src/checkclass.cpp, src/checkclass.h,
+	src/checkdangerousfunctions.cpp, src/checkdangerousfunctions.h,
+	src/checkheaders.cpp, src/checkheaders.h, src/checkmemoryleak.cpp,
+	src/checkmemoryleak.h, src/checkother.cpp, src/checkother.h,
+	src/checkstl.cpp, src/checkstl.h, src/checkunusedfunctions.cpp,
+	src/checkunusedfunctions.h, src/classinfo.h, src/cppcheck.cpp,
+	src/cppcheck.h, src/cppcheckexecutor.cpp, src/cppcheckexecutor.h,
+	src/errorlogger.cpp, src/errorlogger.h, src/filelister.cpp,
+	src/filelister.h, src/main.cpp, src/mathlib.cpp, src/mathlib.h,
+	src/preprocessor.cpp, src/preprocessor.h, src/settings.cpp,
+	src/settings.h, src/threadexecutor.cpp, src/threadexecutor.h,
+	src/token.cpp, src/token.h, src/tokenize.cpp, src/tokenize.h,
+	test/testautovariables.cpp, test/testbufferoverrun.cpp,
+	test/testcharvar.cpp, test/testclass.cpp,
+	test/testconstructors.cpp, test/testcppcheck.cpp,
+	test/testdangerousfunctions.cpp, test/testdivision.cpp,
+	test/testfilelister.cpp, test/testincompletestatement.cpp,
+	test/testmathlib.cpp, test/testmemleak.cpp, test/testother.cpp,
+	test/testpreprocessor.cpp, test/testredundantif.cpp,
+	test/testrunner.cpp, test/testsimplifytokens.cpp, test/teststl.cpp,
+	test/testsuite.cpp, test/testsuite.h, test/testtoken.cpp,
+	test/testtokenize.cpp, test/testunusedfunctions.cpp,
+	test/testunusedprivfunc.cpp, test/testunusedvar.cpp,
+	tools/dmake.cpp: Fix GPL comments in all files. ">." was missing
+	from the end.
+
+2009-09-27  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/cppcheck.cpp: Remove redundant comparison
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fixed #714
+	(False Buffer overrun with -a when i is increased by more than 1 in
+	a loop) http://sourceforge.net/apps/trac/cppcheck/ticket/714
+
+2009-09-27  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/mathlib.cpp, src/mathlib.h, src/tokenize.cpp, src/tokenize.h,
+	test/testsimplifytokens.cpp: Fix #720 (String length for strings
+	like this "\x61" is calculated wrong)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/720
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkstl.cpp, test/teststl.cpp: Detects invalid iterator
+	inside for() when postfix form of increment used.
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkstl.cpp, test/teststl.cpp: Fixed #735 (Detects invalid
+	iterator after push_back() when iterator declared inside for()) http://sourceforge.net/apps/trac/cppcheck/ticket/735
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Detect
+	buffer overruns when ?: use as sprintf() argument.
+
+2009-09-27  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fixed #729
+	(False positive: Buffer overrun when ? is used to select parameter) http://sourceforge.net/apps/trac/cppcheck/ticket/729
+
+2009-09-26  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/token.cpp, test/testbufferoverrun.cpp, test/testtoken.cpp: 
+	Fixed #731 (False positive, strcpy copying a buffer with a null
+	character) http://sourceforge.net/apps/trac/cppcheck/ticket/731
+
+2009-09-26  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/checkbufferoverrun.cpp: CheckBufferOverrun::count(): commented
+	out debug message.  Added in 3da779725db1de541fd5e0c14468b3b09e6234a6 commit.
+
+2009-09-26  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Ashim
+	Kapoor: handle %i,%f,%d,%x,%X better (#694)
+
+2009-09-26  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fixed #732 (Tokenizer:
+	Incorrect simplification) Regression since 58a9e05697b4585883bbc00153d1584d9247190f commit.  http://sourceforge.net/apps/trac/cppcheck/ticket/732
+
+2009-09-26  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkstl.cpp, test/teststl.cpp: Fixed #710 (False positive:
+	invalid vector iterator after push_back)
+
+2009-09-26  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #718 (False
+	positive, resource leak when break in a loop before exit)
+
+2009-09-25  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, test/testbufferoverrun.cpp: Fix #730
+	(False positive, buffer overrun with strncpy)
+	http://sourceforge.net/apps/trac/cppcheck/ticket/730
+
+2009-09-25  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* test/testmemleak.cpp: Memory leaks: Added a TODO assertion for a
+	false positive
+
+2009-09-25  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkclass.cpp, test/testunusedprivfunc.cpp: Fixed #678 (False
+	positive: Unused private function produced by inner class)
+
+2009-09-25  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkbufferoverrun.cpp, src/checkbufferoverrun.h,
+	test/testbufferoverrun.cpp: Ashim Kapoor: Added function that
+	returns minimum size of format strings (#694)
+
+2009-09-24  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* : commit 16e55f4f8908acbc47b76ad7f89c73df2dabd8fe Author: Reijo
+	Tomperi <aggro80@users.sourceforge.net> Date:   Thu Sep 24 23:46:08
+	2009 +0300
+
+2009-09-24  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Memory leaks: fixed
+	a TODO_ASSERT_EQUALS
+
+2009-09-24  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* Makefile: Revert "Makefile: made it ready for release" This reverts commit 67d695437430e93a788a378cb73611ff49fb7229.
+
+2009-09-23  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.cpp, test/testmemleak.cpp: Fixed #700 (False
+	positive: Memory leak)
+
+2009-09-23  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* src/checkmemoryleak.h, src/tokenize.h, testrunner.vcproj: Replaced
+	UNIT_TESTING ifdef with _MSC_VER
+
+2009-09-23  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fix #713 (Tokenizer:
+	Simplify 0L) http://sourceforge.net/apps/trac/cppcheck/ticket/713
+	Use MathLib to handle other variations of 0.
+
+2009-09-23  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/cppcheckexecutor.h: Changed some CppcheckExecutor functions
+	and variables protected and virtual.
+
+2009-09-23  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* win_installer/gui.wxs: added wix file for gui installation
+
+2009-09-23  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* readme.txt: cross compiling info added to readme.txt
+
+2009-09-23  Slava Semushin <php-coder@altlinux.ru>
+
+	* src/tokenize.cpp, test/testsimplifytokens.cpp: 
+	Tokenizer::simplifySizeof(): use Token::getStrLength().  Fixed wrong result when string contains escaped quotes.  Correction for 0e729fedc070962d1023d4cd9ad9bdaa8e0eee30 commit.
+
+2009-09-23  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* win_installer/cppcheck.wxs: Windows Installer: A simple installer
+	without the gui
+
+2009-09-23  Reijo Tomperi <aggro80@users.sourceforge.net>
+
+	* src/tokenize.cpp, test/testtokenize.cpp: Fix #713 (Tokenizer:
+	Simplify 0L) http://sourceforge.net/apps/trac/cppcheck/ticket/713
+
+2009-09-22  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
+
+	* Changelog: updated the Changelog
+
 2009-09-22  Daniel Marjamäki <hyd_danmar@users.sourceforge.net>
 
 	* Makefile: Makefile: made it ready for release
