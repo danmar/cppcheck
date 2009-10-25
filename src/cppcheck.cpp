@@ -80,7 +80,7 @@ void CppCheck::clearFiles()
 
 const char * CppCheck::version() const
 {
-    return "1.37";
+    return "1.38";
 }
 
 void CppCheck::parseFromArgs(int argc, const char* const argv[])

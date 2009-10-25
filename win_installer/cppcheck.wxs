@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='windows-1252'?>
-<?define ProductName = "Cppcheck 1.37" ?>
-<?define ProductVersion = "1.37" ?>
+<?define ProductName = "Cppcheck 1.38" ?>
+<?define ProductVersion = "1.38" ?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='$(var.ProductName)' Id='88DE59C3-7640-47A2-A047-7289807AE3BA' UpgradeCode='DDB850E4-F8DE-4290-BDF1-AC12475DEE80'
     Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='The Cppcheck team'>
