@@ -22,9 +22,9 @@
 
 
 #include "testsuite.h"
-#include "../src/preprocessor.h"
-#include "../src/tokenize.h"
-#include "../src/token.h"
+#include "preprocessor.h"
+#include "tokenize.h"
+#include "token.h"
 #include <map>
 #include <string>
 #include <sstream>

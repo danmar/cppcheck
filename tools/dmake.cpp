@@ -23,7 +23,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../src/filelister.h"
+#include "../lib/filelister.h"
 
 std::string objfile(std::string cppfile)
 {
@@ -61,16 +61,28 @@ void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
     }
 }
 
+static void compilefiles(std::ostream &fout, const std::vector<std::string> &files)
+{
+    for (unsigned int i = 0; i < files.size(); ++i)
+    {
+        fout << objfile(files[i]) << ": " << files[i];
+        std::vector<std::string> depfiles;
+        getDeps(files[i], depfiles);
+        for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
+            fout << " " << depfiles[dep];
+        fout << "\n\t$(CXX) $(CXXFLAGS) -Ilib -c -o " << objfile(files[i]) << " " << files[i] << "\n\n";
+    }
+}
+
 int main()
 {
     // Get files..
-    std::vector<std::string> srcfiles;
-    FileLister::recursiveAddFiles(srcfiles, "src/", true);
-    if (srcfiles.empty())
-    {
-        std::cout << "No source files found." << std::endl;
-        exit(1);
-    }
+    std::vector<std::string> libfiles;
+    FileLister::recursiveAddFiles(libfiles, "lib/", true);
+
+    std::vector<std::string> clifiles;
+    FileLister::recursiveAddFiles(clifiles, "cli/", true);
+
     std::vector<std::string> testfiles;
     FileLister::recursiveAddFiles(testfiles, "test/", true);
 
@@ -82,59 +94,42 @@ int main()
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
 
     fout << "\n###### Object Files\n\n";
-    fout << "OBJECTS =     " << objfile(srcfiles[0]);
-    for (unsigned int i = 1; i < srcfiles.size(); ++i)
-        fout << " \\" << std::endl << std::string(14, ' ') << objfile(srcfiles[i]);
+    fout << "LIBOBJ =     " << objfile(libfiles[0]);
+    for (unsigned int i = 1; i < libfiles.size(); ++i)
+        fout << " \\" << std::endl << std::string(14, ' ') << objfile(libfiles[i]);
+    fout << "\n\n";
+    fout << "CLIOBJ =     " << objfile(clifiles[0]);
+    for (unsigned int i = 1; i < clifiles.size(); ++i)
+        fout << " \\" << std::endl << std::string(14, ' ') << objfile(clifiles[i]);
     fout << "\n\n";
     fout << "TESTOBJ =     " << objfile(testfiles[0]);
     for (unsigned int i = 1; i < testfiles.size(); ++i)
         fout << " \\" << std::endl << std::string(14, ' ') << objfile(testfiles[i]);
-    for (unsigned int i = 0; i < srcfiles.size(); ++i)
-    {
-        if (srcfiles[i] != "src/main.cpp")
-            fout << " \\" << std::endl << std::string(14, ' ') << objfile(srcfiles[i]);
-    }
     fout << "\n\n";
 
 
     fout << "\n###### Targets\n\n";
-    fout << "cppcheck:\t$(OBJECTS)\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o cppcheck $(OBJECTS) $(LDFLAGS)\n\n";
+    fout << "cppcheck:\t$(LIBOBJ)\t$(CLIOBJ)\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(LDFLAGS)\n\n";
     fout << "all:\tcppcheck\ttestrunner\ttools\n\n";
-    fout << "testrunner:\t$(TESTOBJ)\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LDFLAGS)\n\n";
+    fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "tools:\ttools/dmake\n\n";
-    fout << "tools/dmake:\ttools/dmake.cpp\tsrc/filelister.cpp\tsrc/filelister.h\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp src/filelister.cpp $(LDFLAGS)\n\n";
+    fout << "tools/dmake:\ttools/dmake.cpp\tlib/filelister.cpp\tlib/filelister.h\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp lib/filelister.cpp $(LDFLAGS)\n\n";
     fout << "clean:\n";
-    fout << "\trm -f src/*.o test/*.o testrunner cppcheck tools/dmake tools/errmsg\n\n";
+    fout << "\trm -f lib/*.o cli/*.o test/*.o testrunner cppcheck tools/dmake\n\n";
     fout << "install:\tcppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n\n";
 
     fout << "\n###### Build\n\n";
 
-    for (unsigned int i = 0; i < srcfiles.size(); ++i)
-    {
-        fout << objfile(srcfiles[i]) << ": " << srcfiles[i];
-        std::vector<std::string> depfiles;
-        getDeps(srcfiles[i], depfiles);
-        for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
-            fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) $(CXXFLAGS) -c -o " << objfile(srcfiles[i]) << " " << srcfiles[i] << "\n\n";
-    }
-
-    for (unsigned int i = 0; i < testfiles.size(); ++i)
-    {
-        fout << objfile(testfiles[i]) << ": " << testfiles[i];
-        std::vector<std::string> depfiles;
-        getDeps(testfiles[i], depfiles);
-        for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
-            fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) $(CXXFLAGS) -c -o " << objfile(testfiles[i]) << " " << testfiles[i] << "\n\n";
-    }
+    compilefiles(fout, libfiles);
+    compilefiles(fout, clifiles);
+    compilefiles(fout, testfiles);
 
     return 0;
 }

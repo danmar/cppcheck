@@ -17,9 +17,9 @@
  */
 
 
-#include "../src/tokenize.h"
+#include "tokenize.h"
 #include "testsuite.h"
-#include "../src/checkunusedfunctions.h"
+#include "checkunusedfunctions.h"
 #include <sstream>
 
 extern std::ostringstream errout;

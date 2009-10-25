@@ -19,8 +19,8 @@
 
 
 #define private public
-#include "../src/tokenize.h"
-#include "../src/checkmemoryleak.h"
+#include "tokenize.h"
+#include "checkmemoryleak.h"
 #undef private
 #include "testsuite.h"
 

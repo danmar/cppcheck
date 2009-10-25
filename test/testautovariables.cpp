@@ -17,8 +17,8 @@
  */
 
 
-#include "../src/tokenize.h"
-#include "../src/checkautovariables.h"
+#include "tokenize.h"
+#include "checkautovariables.h"
 #include "testsuite.h"
 
 #include <sstream>

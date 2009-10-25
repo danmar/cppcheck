@@ -21,8 +21,8 @@
 // such as "svar / uvar". Treating "svar" as unsigned data is not good
 
 
-#include "../src/tokenize.h"
-#include "../src/checkother.h"
+#include "tokenize.h"
+#include "checkother.h"
 #include "testsuite.h"
 
 #include <sstream>

@@ -16,10 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <cstring>
 #include "testsuite.h"
-#include "../src/tokenize.h"
-#include "../src/token.h"
+#include "tokenize.h"
+#include "token.h"
+
+#include <cstring>
 
 extern std::ostringstream errout;
 class TestTOKEN : public TestFixture

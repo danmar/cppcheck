@@ -21,7 +21,7 @@
 #define testsuiteH
 
 #include <sstream>
-#include "../src/errorlogger.h"
+#include "errorlogger.h"
 
 class Token;
 

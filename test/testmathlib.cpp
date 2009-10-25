@@ -18,7 +18,7 @@
 
 
 
-#include "../src/mathlib.h"
+#include "mathlib.h"
 #include "testsuite.h"
 
 class TestMathLib : public TestFixture

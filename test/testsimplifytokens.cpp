@@ -20,9 +20,9 @@
 
 #include "testsuite.h"
 #define private public
-#include "../src/tokenize.h"
+#include "tokenize.h"
 #undef private
-#include "../src/token.h"
+#include "token.h"
 #include <sstream>
 
 extern std::ostringstream errout;

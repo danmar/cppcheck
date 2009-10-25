@@ -18,8 +18,8 @@
 
 
 
-#include "../src/tokenize.h"
-#include "../src/checkstl.h"
+#include "tokenize.h"
+#include "checkstl.h"
 #include "testsuite.h"
 #include <sstream>
 

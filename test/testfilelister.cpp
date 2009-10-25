@@ -18,7 +18,7 @@
 
 #include <string>
 #include "testsuite.h"
-#include "../src/filelister.h"
+#include "filelister.h"
 
 class TestFileLister : public TestFixture
 {

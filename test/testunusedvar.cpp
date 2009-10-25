@@ -21,8 +21,8 @@
 // Check for unused variables..
 
 #include "testsuite.h"
-#include "../src/tokenize.h"
-#include "../src/checkother.h"
+#include "tokenize.h"
+#include "checkother.h"
 
 #include <sstream>
 extern std::ostringstream errout;

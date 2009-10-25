@@ -17,8 +17,8 @@
  */
 
 
-#include "../src/tokenize.h"
-#include "../src/checkexceptionsafety.h"
+#include "tokenize.h"
+#include "checkexceptionsafety.h"
 #include "testsuite.h"
 #include <sstream>
 

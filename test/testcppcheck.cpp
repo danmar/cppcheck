@@ -21,8 +21,8 @@
 // the code for a known configuration, it generates the code for each configuration.
 
 
+#include "cppcheck.h"
 #include "testsuite.h"
-#include "../src/cppcheck.h"
 
 #include <map>
 #include <string>

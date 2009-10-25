@@ -24,9 +24,9 @@
 #include <cstring>
 #include "testsuite.h"
 #define private public
-#include "../src/tokenize.h"
+#include "tokenize.h"
 #undef private
-#include "../src/token.h"
+#include "token.h"
 
 extern std::ostringstream errout;
 class TestTokenizer : public TestFixture

@@ -17,8 +17,8 @@
  */
 
 
-#include "../src/tokenize.h"
-#include "../src/checkbufferoverrun.h"
+#include "tokenize.h"
+#include "checkbufferoverrun.h"
 #include "testsuite.h"
 
 #include <sstream>
