@@ -212,7 +212,7 @@ files, this is not needed.</para>
       <varlistentry>
         <term><option>--suppressions [file]</option></term>
         <listitem>
-          <para>Suppress warnings listed in the file. Filename and line as optional. The format of the single line in file is: [error id]:[filename]:[line]</para>
+          <para>Suppress warnings listed in the file. Filename and line are optional. The format of the single line in file is: [error id]:[filename]:[line]</para>
         </listitem>
       </varlistentry>
       <varlistentry>
