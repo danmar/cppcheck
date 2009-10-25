@@ -16,17 +16,17 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/checkstl.o \
               lib/checkunusedfunctions.o \
               lib/cppcheck.o \
+              lib/cppcheckexecutor.o \
               lib/errorlogger.o \
               lib/filelister.o \
               lib/mathlib.o \
               lib/preprocessor.o \
               lib/settings.o \
+              lib/threadexecutor.o \
               lib/token.o \
               lib/tokenize.o
 
-CLIOBJ =     cli/cppcheckexecutor.o \
-              cli/main.o \
-              cli/threadexecutor.o
+CLIOBJ =     cli/main.o
 
 TESTOBJ =     test/testautovariables.o \
               test/testbufferoverrun.o \
@@ -74,7 +74,7 @@ tools/dmake:	tools/dmake.cpp	lib/filelister.cpp	lib/filelister.h
 	$(CXX) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp lib/filelister.cpp $(LDFLAGS)
 
 clean:
-	rm -f lib/*.o cli/*.o test/*.o testrunner cppcheck tools/dmake tools/errmsg
+	rm -f lib/*.o cli/*.o test/*.o testrunner cppcheck tools/dmake
 
 install:	cppcheck
 	install -d ${BIN}
@@ -116,6 +116,9 @@ lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunction
 lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/tokenize.h lib/classinfo.h lib/token.h lib/preprocessor.h lib/filelister.h lib/check.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
+lib/cppcheckexecutor.o: lib/cppcheckexecutor.cpp lib/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/tokenize.h lib/classinfo.h lib/token.h lib/threadexecutor.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheckexecutor.o lib/cppcheckexecutor.cpp
+
 lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/errorlogger.o lib/errorlogger.cpp
 
@@ -131,20 +134,17 @@ lib/preprocessor.o: lib/preprocessor.cpp lib/preprocessor.h lib/errorlogger.h li
 lib/settings.o: lib/settings.cpp lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/settings.o lib/settings.cpp
 
+lib/threadexecutor.o: lib/threadexecutor.cpp lib/threadexecutor.h lib/settings.h lib/errorlogger.h lib/cppcheck.h lib/checkunusedfunctions.h lib/tokenize.h lib/classinfo.h lib/token.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/threadexecutor.o lib/threadexecutor.cpp
+
 lib/token.o: lib/token.cpp lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/token.o lib/token.cpp
 
 lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h cli/threadexecutor.h
-	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
-
-cli/main.o: cli/main.cpp cli/cppcheckexecutor.h
+cli/main.o: cli/main.cpp lib/cppcheckexecutor.h lib/errorlogger.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/main.o cli/main.cpp
-
-cli/threadexecutor.o: cli/threadexecutor.cpp cli/threadexecutor.h
-	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/threadexecutor.o cli/threadexecutor.cpp
 
 test/testautovariables.o: test/testautovariables.cpp test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testautovariables.o test/testautovariables.cpp

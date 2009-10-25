@@ -27,7 +27,7 @@ TRANSLATIONS =  cppcheck_fi.ts \
 # Windows-specific options
 CONFIG += embed_manifest_exe
 
-include($$PWD/../src/src.pri)
+include($$PWD/../lib/lib.pri)
 HEADERS += mainwindow.h \
            checkthread.h \
            resultsview.h \

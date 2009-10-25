@@ -32,8 +32,8 @@
 #include "fileviewdialog.h"
 #include "projectfile.h"
 #include "report.h"
-#include "../src/filelister.h"
-#include "../src/cppcheckexecutor.h"
+#include "../lib/filelister.h"
+#include "../lib/cppcheckexecutor.h"
 
 MainWindow::MainWindow() :
         mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),

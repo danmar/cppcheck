@@ -6,7 +6,8 @@ OBJECTS_DIR = temp
 CONFIG += warn_on
 CONFIG -= qt app_bundle
 
-include($$PWD/src.pri)
+include($$PWD/../lib/lib.pri)
+
 SOURCES += main.cpp
 
 win32 {

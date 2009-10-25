@@ -22,8 +22,8 @@
 
 #include <QObject>
 #include <QStringList>
-#include "../src/settings.h"
-#include "../src/cppcheck.h"
+#include "../lib/settings.h"
+#include "../lib/cppcheck.h"
 #include "threadresult.h"
 #include "checkthread.h"
 #include "resultsview.h"

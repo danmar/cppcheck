@@ -82,7 +82,7 @@ void CheckOther::checkZeroDivision()
  */
 
 
-#include "cppcheckexecutor.h"
+#include "../lib/cppcheckexecutor.h"
 
 /**
  * Main function of cppcheck

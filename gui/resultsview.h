@@ -23,7 +23,7 @@
 
 #include <QWidget>
 #include <QProgressBar>
-#include "../src/errorlogger.h"
+#include "../lib/errorlogger.h"
 #include "resultstree.h"
 #include "common.h"
 #include "report.h"

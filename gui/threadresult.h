@@ -24,7 +24,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QVariant>
-#include "../src/errorlogger.h"
+#include "../lib/errorlogger.h"
 
 /// @addtogroup GUI
 /// @{
