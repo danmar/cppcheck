@@ -1,4 +1,4 @@
-CXXFLAGS=-Wall -Wextra -pedantic -g
+CXXFLAGS=-Wall -Wextra -pedantic -O2
 CXX=g++
 BIN=${DESTDIR}/usr/bin
 
