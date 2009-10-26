@@ -2,11 +2,11 @@
 make clean
 rm -r coverage_report
 make test CXXFLAGS="-Wall -Wextra -pedantic -g -fprofile-arcs -ftest-coverage"
-gcov src/*.cpp -o src/
+gcov lib/*.cpp -o lib/
 lcov --directory ./ --capture --output-file lcov.info -b ./
 genhtml lcov.info -o coverage_report
-rm src/*.gcda
-rm src/*.gcno
+rm lib/*.gcda
+rm lib/*.gcno
 rm test/*.gcda
 rm test/*.gcno
 rm lcov.info
