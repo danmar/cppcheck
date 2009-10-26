@@ -33,9 +33,17 @@ std::string objfile(std::string cppfile)
 
 void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
+    // Is the dependency already included?
+    if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
+        return;
+
     std::ifstream f(filename.c_str());
     if (! f.is_open())
+    {
+        if (filename.compare(0,4,"cli/") == 0 || filename.compare(0,5,"test/") == 0)
+            getDeps("lib" + filename.substr(filename.find("/")), depfiles);
         return;
+    }
     if (filename.find(".c") == std::string::npos)
         depfiles.push_back(filename);
 
@@ -55,8 +63,6 @@ void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
         std::string hfile(path + line.substr(pos1, pos2 - pos1));
         if (hfile.find("/../") != std::string::npos)	// TODO: Ugly fix
             hfile.erase(0, 4 + hfile.find("/../"));
-        if (std::find(depfiles.begin(), depfiles.end(), hfile) != depfiles.end())
-            continue;
         getDeps(hfile, depfiles);
     }
 }
