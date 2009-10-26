@@ -45,8 +45,8 @@
 //---------------------------------------------------------------------------
 
 CppCheck::CppCheck(ErrorLogger &errorLogger)
+ : _errorLogger(errorLogger)
 {
-    _errorLogger = &errorLogger;
 }
 
 CppCheck::~CppCheck()
@@ -397,7 +397,7 @@ unsigned int CppCheck::check()
         std::string fname = _filenames[c];
 
         if (_settings._errorsOnly == false)
-            _errorLogger->reportOut(std::string("Checking ") + fname + std::string("..."));
+            _errorLogger.reportOut(std::string("Checking ") + fname + std::string("..."));
 
         try
         {
@@ -428,19 +428,19 @@ unsigned int CppCheck::check()
                 if (!_settings._force && checkCount > 11)
                 {
                     if (_settings._errorsOnly == false)
-                        _errorLogger->reportOut(std::string("Bailing out from checking ") + fname + ": Too many configurations. Recheck this file with --force if you want to check them all.");
+                        _errorLogger.reportOut(std::string("Bailing out from checking ") + fname + ": Too many configurations. Recheck this file with --force if you want to check them all.");
 
                     break;
                 }
 
                 cfg = *it;
                 TIMER_START();
-                const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, _errorLogger);
+                const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, &_errorLogger);
                 TIMER_END("Preprocessor::getcode");
 
                 // If only errors are printed, print filename after the check
                 if (_settings._errorsOnly == false && it != configurations.begin())
-                    _errorLogger->reportOut(std::string("Checking ") + fname + ": " + cfg + std::string("..."));
+                    _errorLogger.reportOut(std::string("Checking ") + fname + ": " + cfg + std::string("..."));
 
                 checkFile(codeWithoutCfg + _settings.append(), _filenames[c].c_str());
                 ++checkCount;
@@ -449,10 +449,10 @@ unsigned int CppCheck::check()
         catch (std::runtime_error &e)
         {
             // Exception was thrown when checking this file..
-            _errorLogger->reportOut("Bailing out from checking " + fname + ": " + e.what());
+            _errorLogger.reportOut("Bailing out from checking " + fname + ": " + e.what());
         }
 
-        _errorLogger->reportStatus(c + 1, (unsigned int)_filenames.size());
+        _errorLogger.reportStatus(c + 1, (unsigned int)_filenames.size());
     }
 
     // This generates false positives - especially for libraries
@@ -461,7 +461,7 @@ unsigned int CppCheck::check()
     {
         _errout.str("");
         if (_settings._errorsOnly == false)
-            _errorLogger->reportOut("Checking usage of global functions..");
+            _errorLogger.reportOut("Checking usage of global functions..");
 
         _checkUnusedFunctions.check();
     }
@@ -559,14 +559,14 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         errmsg2 += "\n    Defines=\'" + cfg + "\'\n";
     }
 
-    _errorLogger->reportErr(msg);
+    _errorLogger.reportErr(msg);
 
     _errout << errmsg2 << std::endl;
 }
 
 void CppCheck::reportOut(const std::string &outmsg)
 {
-    _errorLogger->reportOut(outmsg);
+    _errorLogger.reportOut(outmsg);
 }
 
 const std::vector<std::string> &CppCheck::filenames() const

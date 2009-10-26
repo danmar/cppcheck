@@ -142,7 +142,7 @@ private:
     /** Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
     CheckUnusedFunctions _checkUnusedFunctions;
-    ErrorLogger *_errorLogger;
+    ErrorLogger &_errorLogger;
 
     /** Current configuration */
     std::string     cfg;
