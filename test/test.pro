@@ -1,13 +1,13 @@
 TEMPLATE = app
 TARGET = test
 DEPENDPATH += .
-INCLUDEPATH += ../src
+INCLUDEPATH += ../lib
 OBJECTS_DIR = temp
 CONFIG += warn_on debug
 CONFIG -= qt app_bundle
 DEFINES += UNIT_TESTING
 
-include($$PWD/../src/src.pri)
+include($$PWD/../lib/lib.pri)
 HEADERS += testsuite.h
 SOURCES += testautovariables.cpp \
            testbufferoverrun.cpp \
@@ -17,6 +17,7 @@ SOURCES += testautovariables.cpp \
            testcppcheck.cpp \
            testdangerousfunctions.cpp \
            testdivision.cpp \
+           testexceptionsafety.cpp \
            testfilelister.cpp \
            testincompletestatement.cpp \
            testmathlib.cpp \
