@@ -124,36 +124,37 @@ std::string ErrorLogger::ErrorMessage::getXMLFooter()
     return "</results>";
 }
 
+static std::string stringToXml(std::string s)
+{
+    std::string::size_type pos = 0;
+    while ((pos = s.find_first_of("<>&\"", pos)) != std::string::npos)
+    {
+        if (s[pos] == '<')
+            s.insert(pos + 1, "&lt;");
+        else if (s[pos] == '>')
+            s.insert(pos + 1, "&gt;");
+        else if (s[pos] == '&')
+            s.insert(pos + 1, "&amp;");
+        else if (s[pos] == '"')
+            s.insert(pos + 1, "&quot;");
+        s.erase(pos, 1);
+        ++pos;
+    }
+    return s;
+}
+
 std::string ErrorLogger::ErrorMessage::toXML() const
 {
     std::ostringstream xml;
     xml << "<error";
     if (!_callStack.empty())
     {
-        xml << " file=\"" << _callStack.back().getfile() << "\"";
+        xml << " file=\"" << stringToXml(_callStack.back().getfile()) << "\"";
         xml << " line=\"" << _callStack.back().line << "\"";
     }
     xml << " id=\"" << _id << "\"";
     xml << " severity=\"" << _severity << "\"";
-
-    // Replace characters in message
-    std::string m(_msg);
-    std::string::size_type pos = 0;
-    while ((pos = m.find_first_of("<>&\"", pos)) != std::string::npos)
-    {
-        if (m[pos] == '<')
-            m.insert(pos + 1, "&lt;");
-        else if (m[pos] == '>')
-            m.insert(pos + 1, "&gt;");
-        else if (m[pos] == '&')
-            m.insert(pos + 1, "&amp;");
-        else if (m[pos] == '"')
-            m.insert(pos + 1, "&quot;");
-        m.erase(pos, 1);
-        ++pos;
-    }
-
-    xml << " msg=\"" << m << "\"";
+    xml << " msg=\"" << stringToXml(_msg) << "\"";
     xml << "/>";
     return xml.str();
 }
