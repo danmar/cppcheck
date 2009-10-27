@@ -667,7 +667,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
         Token sizeTok;
         sizeTok.str(type);
-        int total_size = size * ((*type == '*') ? 4 : _tokenizer->sizeOfType(&sizeTok));
+        int total_size = size * _tokenizer->sizeOfType(&sizeTok);
         if (total_size == 0)
             continue;
 
