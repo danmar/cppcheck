@@ -67,7 +67,7 @@ SOURCES += main.cpp \
 
 win32 {
 	RC_FILE = cppcheck-gui.rc
-	HEADERS += ../src/resource.h
+	HEADERS += ../lib/resource.h
 	LIBS += -lshlwapi
 }
 

@@ -17,7 +17,7 @@ HEADERS += cppcheckexecutor.cpp \
 win32 {
     CONFIG += embed_manifest_exe console
     RC_FILE = cppcheck.rc
-    HEADERS += resource.h
+    HEADERS += ../lib/resource.h
     LIBS += -lshlwapi
 }
 

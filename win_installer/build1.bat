@@ -8,9 +8,7 @@ set QMAKESPEC=win32-g++
 cd ..
 
 del gui\Makefile
-del src\Makefile
 del /Q gui\temp\*
-del /Q src\temp\*
 del gui\release\gui.exe
 cd gui
 qmake -config release
