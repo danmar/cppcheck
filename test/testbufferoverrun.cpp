@@ -1061,6 +1061,13 @@ private:
               "    memset(s, 5, '*');\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible error) The size argument is given as a char constant\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    int* x[5];\n"
+              "    memset(x, 0, sizeof(x));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void counter_test()
