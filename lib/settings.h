@@ -23,6 +23,7 @@
 #include <string>
 #include <istream>
 #include <map>
+#include <set>
 
 /// @addtogroup Core
 /// @{
@@ -37,7 +38,7 @@ class Settings
 {
 private:
     /** classes that are automaticly deallocated */
-    std::list<std::string> _autoDealloc;
+    std::set<std::string> _autoDealloc;
 
     /** Code to append in the checks */
     std::string _append;

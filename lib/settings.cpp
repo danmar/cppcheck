@@ -54,7 +54,7 @@ void Settings::autoDealloc(std::istream &istr)
             continue;
 
         // Add classname to list
-        _autoDealloc.push_back(line);
+        _autoDealloc.insert(line);
     }
 }
 
@@ -116,12 +116,12 @@ bool Settings::isSuppressed(const std::string &errorId, const std::string &file,
 
 void Settings::addAutoAllocClass(const std::string &name)
 {
-    _autoDealloc.push_back(name);
+    _autoDealloc.insert(name);
 }
 
 bool Settings::isAutoDealloc(const char classname[]) const
 {
-    return (std::find(_autoDealloc.begin(), _autoDealloc.end(), classname) != _autoDealloc.end());
+    return (_autoDealloc.find(classname) != _autoDealloc.end());
 }
 
 
