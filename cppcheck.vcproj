@@ -39,6 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories=".\lib;.\cli"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -110,6 +111,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories=".\lib;.\cli"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -168,91 +170,95 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\src\check.h"
+				RelativePath=".\lib\check.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkautovariables.h"
+				RelativePath=".\lib\checkautovariables.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkbufferoverrun.h"
+				RelativePath=".\lib\checkbufferoverrun.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkclass.h"
+				RelativePath=".\lib\checkclass.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkdangerousfunctions.h"
+				RelativePath=".\lib\checkdangerousfunctions.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkheaders.h"
+				RelativePath=".\lib\checkexceptionsafety.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkmemoryleak.h"
+				RelativePath=".\lib\checkheaders.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkother.h"
+				RelativePath=".\lib\checkmemoryleak.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkstl.h"
+				RelativePath=".\lib\checkother.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkunusedfunctions.h"
+				RelativePath=".\lib\checkstl.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\cppcheck.h"
+				RelativePath=".\lib\checkunusedfunctions.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\cppcheckexecutor.h"
+				RelativePath=".\lib\classinfo.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\errorlogger.h"
+				RelativePath=".\lib\cppcheck.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\filelister.h"
+				RelativePath=".\cli\cppcheckexecutor.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\mathlib.h"
+				RelativePath=".\lib\errorlogger.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\preprocessor.h"
+				RelativePath=".\lib\filelister.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\resource.h"
+				RelativePath=".\lib\mathlib.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\resource.h"
+				RelativePath=".\lib\preprocessor.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\settings.h"
+				RelativePath=".\lib\resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\threadexecutor.h"
+				RelativePath=".\lib\settings.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\token.h"
+				RelativePath=".\cli\threadexecutor.h"
 				>
 			</File>
 			<File
-				RelativePath=".\src\tokenize.h"
+				RelativePath=".\lib\token.h"
+				>
+			</File>
+			<File
+				RelativePath=".\lib\tokenize.h"
 				>
 			</File>
 		</Filter>
@@ -262,7 +268,7 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\src\cppcheck.rc"
+				RelativePath=".\lib\cppcheck.rc"
 				>
 			</File>
 		</Filter>
@@ -272,83 +278,87 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\src\checkautovariables.cpp"
+				RelativePath=".\lib\checkautovariables.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkbufferoverrun.cpp"
+				RelativePath=".\lib\checkbufferoverrun.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkclass.cpp"
+				RelativePath=".\lib\checkclass.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkdangerousfunctions.cpp"
+				RelativePath=".\lib\checkdangerousfunctions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkheaders.cpp"
+				RelativePath=".\lib\checkexceptionsafety.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkmemoryleak.cpp"
+				RelativePath=".\lib\checkheaders.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkother.cpp"
+				RelativePath=".\lib\checkmemoryleak.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkstl.cpp"
+				RelativePath=".\lib\checkother.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\checkunusedfunctions.cpp"
+				RelativePath=".\lib\checkstl.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\cppcheck.cpp"
+				RelativePath=".\lib\checkunusedfunctions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\cppcheckexecutor.cpp"
+				RelativePath=".\lib\cppcheck.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\errorlogger.cpp"
+				RelativePath=".\cli\cppcheckexecutor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\filelister.cpp"
+				RelativePath=".\lib\errorlogger.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\main.cpp"
+				RelativePath=".\lib\filelister.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\mathlib.cpp"
+				RelativePath=".\cli\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\preprocessor.cpp"
+				RelativePath=".\lib\mathlib.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\settings.cpp"
+				RelativePath=".\lib\preprocessor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\threadexecutor.cpp"
+				RelativePath=".\lib\settings.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\token.cpp"
+				RelativePath=".\cli\threadexecutor.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\src\tokenize.cpp"
+				RelativePath=".\lib\token.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\lib\tokenize.cpp"
 				>
 			</File>
 		</Filter>
