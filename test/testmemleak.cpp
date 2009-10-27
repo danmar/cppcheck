@@ -532,7 +532,12 @@ private:
         // replace "if ( ! var )" => "if(!var)"
         for (Token *tok = tokenizer._tokens; tok; tok = tok->next())
         {
-            if (Token::simpleMatch(tok, "if ( var )"))
+            if (tok->str() == "if_var")
+            {
+                tok->str("if(var)");
+            }
+
+            else if (Token::simpleMatch(tok, "if ( var )"))
             {
                 Token::eraseTokens(tok, tok->tokAt(4));
                 tok->str("if(var)");
@@ -566,8 +571,9 @@ private:
         ASSERT_EQUALS(-1, dofindleak("if alloc;\n use;"));
 
         // if..
-        ASSERT_EQUALS(-1, dofindleak("alloc; ifv { dealloc; }"));
+        ASSERT_EQUALS(-1, dofindleak("alloc; ifv dealloc;"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n if return;\n dealloc;"));
+        ASSERT_EQUALS(2,  dofindleak("alloc;\n if_var return;\n dealloc;"));
         ASSERT_EQUALS(3,  dofindleak("alloc;\n if\n return;\n dealloc;"));
         ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; return; } dealloc;"));
         ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; return; } dealloc;"));

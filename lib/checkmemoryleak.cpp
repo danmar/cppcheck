@@ -1716,7 +1716,7 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens, bool all)
         return result;
     }
 
-    if ((result = Token::findmatch(tokens, "alloc ; if return ;")) != NULL)
+    if ((result = Token::findmatch(tokens, "alloc ; if|if(var)|ifv return ;")) != NULL)
     {
         return result->tokAt(3);
     }
