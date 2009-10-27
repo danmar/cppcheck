@@ -40,7 +40,7 @@ void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
     std::ifstream f(filename.c_str());
     if (! f.is_open())
     {
-        if (filename.compare(0,4,"cli/") == 0 || filename.compare(0,5,"test/") == 0)
+        if (filename.compare(0, 4, "cli/") == 0 || filename.compare(0, 5, "test/") == 0)
             getDeps("lib" + filename.substr(filename.find("/")), depfiles);
         return;
     }

@@ -45,7 +45,7 @@
 //---------------------------------------------------------------------------
 
 CppCheck::CppCheck(ErrorLogger &errorLogger)
- : _errorLogger(errorLogger)
+        : _errorLogger(errorLogger)
 {
 }
 
