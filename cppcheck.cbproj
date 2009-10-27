@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <ProjectGuid>{861d1a69-8a53-4340-a876-a39d49c61aa7}</ProjectGuid>
-    <Config Condition="'$(Config)'==''">Debug</Config>
+    <Config Condition="'$(Config)'==''">Release</Config>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
     <Base>true</Base>
@@ -18,76 +18,94 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
     <OutputExt>exe</OutputExt>
-    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
-    <Defines>NO_STRICT</Defines>
-    <DynamicRTL>true</DynamicRTL>
-    <ILINK_SelectedWarnings>false</ILINK_SelectedWarnings>
-    <ILINK_AllWarnings>true</ILINK_AllWarnings>
-    <ILINK_ObjectSearchPath>C:\cppcheck;src</ILINK_ObjectSearchPath>
-    <ProjectType>CppConsoleApplication</ProjectType>
-    <NoVCL>true</NoVCL>
-    <FinalOutputDir>.\</FinalOutputDir>
-    <BCC_SelectedWarnings>false</BCC_SelectedWarnings>
-    <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
-    <PackageImports>vcl.bpi;rtl.bpi;bcbie.bpi;vclx.bpi;vclactnband.bpi;xmlrtl.bpi;bcbsmp.bpi;dbrtl.bpi;vcldb.bpi;vcldbx.bpi;bdertl.bpi;A407_R110.bpi;DreamEdit_C6.bpi</PackageImports>
-    <BCC_AllWarnings>true</BCC_AllWarnings>
-    <BCC_wpar>false</BCC_wpar>
-    <IncludePath>$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;src</IncludePath>
-    <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;src</ILINK_LibraryPath>
-    <DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
-    <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
-    <DCC_Optimize>false</DCC_Optimize>
-    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
-    <Defines>_DEBUG;$(Defines)</Defines>
-    <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
-    <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
-    <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
-    <BCC_UseRegisterVariables>None</BCC_UseRegisterVariables>
-    <DCC_Define>DEBUG</DCC_Define>
-    <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
-    <BCC_SelectedWarnings>false</BCC_SelectedWarnings>
-    <FinalOutputDir>.\</FinalOutputDir>
-    <IntermediateOutputDir>bcb_Debug</IntermediateOutputDir>
-    <BCC_AllWarnings>true</BCC_AllWarnings>
-    <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
-    <BCC_StackFrames>true</BCC_StackFrames>
-    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
-    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
-    <TASM_Debugging>Full</TASM_Debugging>
-    <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Cfg_2)'!=''">
+    <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
     <BCC_wamb>true</BCC_wamb>
-    <Defines>NDEBUG;$(Defines)</Defines>
+    <Defines>NO_STRICT</Defines>
+    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
     <BCC_wexc>true</BCC_wexc>
     <BCC_wprc>true</BCC_wprc>
     <BCC_wnod>true</BCC_wnod>
+    <DynamicRTL>true</DynamicRTL>
     <BCC_wuse>true</BCC_wuse>
     <BCC_wdef>true</BCC_wdef>
     <BCC_wbbf>true</BCC_wbbf>
     <BCC_wsig>true</BCC_wsig>
     <ILINK_SelectedWarnings>false</ILINK_SelectedWarnings>
     <BCC_wnak>true</BCC_wnak>
+    <ILINK_ObjectSearchPath>C:\cppcheck;src;cli;lib</ILINK_ObjectSearchPath>
     <ILINK_AllWarnings>true</ILINK_AllWarnings>
     <BCC_wstl>true</BCC_wstl>
+    <BCC_winl>true</BCC_winl>
+    <NoVCL>true</NoVCL>
+    <ProjectType>CppConsoleApplication</ProjectType>
     <BCC_wasm>true</BCC_wasm>
+    <FinalOutputDir>.\</FinalOutputDir>
+    <BCC_wpin>true</BCC_wpin>
+    <BCC_wcln>true</BCC_wcln>
+    <PackageImports>vcl.bpi;rtl.bpi;bcbie.bpi;vclx.bpi;vclactnband.bpi;xmlrtl.bpi;bcbsmp.bpi;dbrtl.bpi;vcldb.bpi;vcldbx.bpi;bdertl.bpi;A407_R110.bpi;DreamEdit_C6.bpi</PackageImports>
+    <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
+    <BCC_wimp>true</BCC_wimp>
+    <BCC_wucp>true</BCC_wucp>
+    <BCC_wamp>true</BCC_wamp>
+    <BCC_wstu>true</BCC_wstu>
+    <IncludePath>$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;src;cli;lib</IncludePath>
+    <BCC_wstv>true</BCC_wstv>
+    <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;src;cli;lib</ILINK_LibraryPath>
+    <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
+    <DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Cfg_1)'!=''">
+    <DCC_Optimize>false</DCC_Optimize>
+    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
+    <BCC_wamb>true</BCC_wamb>
+    <Defines>_DEBUG;$(Defines)</Defines>
+    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+    <BCC_wexc>true</BCC_wexc>
+    <BCC_wprc>true</BCC_wprc>
+    <BCC_wnod>true</BCC_wnod>
+    <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
+    <BCC_wuse>true</BCC_wuse>
+    <BCC_wdef>true</BCC_wdef>
+    <BCC_wbbf>true</BCC_wbbf>
+    <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
+    <BCC_wsig>true</BCC_wsig>
+    <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
+    <BCC_UseRegisterVariables>None</BCC_UseRegisterVariables>
+    <DCC_Define>DEBUG</DCC_Define>
+    <BCC_wnak>true</BCC_wnak>
+    <BCC_DebugLineNumbers>true</BCC_DebugLineNumbers>
+    <BCC_wstl>true</BCC_wstl>
+    <BCC_winl>true</BCC_winl>
+    <BCC_wasm>true</BCC_wasm>
+    <FinalOutputDir>.\</FinalOutputDir>
     <BCC_SelectedWarnings>true</BCC_SelectedWarnings>
     <BCC_wpin>true</BCC_wpin>
     <BCC_wcln>true</BCC_wcln>
-    <IntermediateOutputDir>Release</IntermediateOutputDir>
+    <IntermediateOutputDir>bcb_Debug</IntermediateOutputDir>
     <BCC_wimp>true</BCC_wimp>
     <BCC_wucp>true</BCC_wucp>
     <BCC_wamp>true</BCC_wamp>
     <BCC_AllWarnings>false</BCC_AllWarnings>
     <BCC_wpar>true</BCC_wpar>
-    <BCC_waus>false</BCC_waus>
+    <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
+    <BCC_StackFrames>true</BCC_StackFrames>
     <BCC_wstu>true</BCC_wstu>
     <BCC_wstv>true</BCC_wstv>
+    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
+    <TASM_Debugging>Full</TASM_Debugging>
+    <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Cfg_2)'!=''">
+    <Defines>NDEBUG;$(Defines)</Defines>
+    <ILINK_SelectedWarnings>false</ILINK_SelectedWarnings>
+    <ILINK_AllWarnings>true</ILINK_AllWarnings>
+    <BCC_winl>false</BCC_winl>
+    <BCC_SelectedWarnings>true</BCC_SelectedWarnings>
+    <IntermediateOutputDir>Release</IntermediateOutputDir>
+    <BCC_AllWarnings>false</BCC_AllWarnings>
+    <BCC_waus>false</BCC_waus>
     <ILINK_LibraryPath>$(BDS)\lib\release;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <TASM_Debugging>None</TASM_Debugging>
   </PropertyGroup>
@@ -95,89 +113,89 @@
     <Borland.Personality>CPlusPlusBuilder.Personality</Borland.Personality>
     <Borland.ProjectType>CppConsoleApplication</Borland.ProjectType>
     <BorlandProject>
-<BorlandProject><CPlusPlusBuilder.Personality><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1053</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Debugging><Debugging Name="DebugSourceDirs"></Debugging></Debugging><Parameters><Parameters Name="RunParams">applicom.c</Parameters><Parameters Name="Launcher"></Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="DebugCWD">C:\linux-2.6.25.1\drivers\char</Parameters><Parameters Name="HostApplication"></Parameters><Parameters Name="RemoteHost"></Parameters><Parameters Name="RemotePath"></Parameters><Parameters Name="RemoteParams"></Parameters><Parameters Name="RemoteLauncher"></Parameters><Parameters Name="UseRemoteLauncher">False</Parameters><Parameters Name="RemoteCWD"></Parameters><Parameters Name="RemoteDebug">False</Parameters><Parameters Name="Debug Symbols Search Path"></Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Linker><Linker Name="LibPrefix"></Linker><Linker Name="LibSuffix"></Linker><Linker Name="LibVersion"></Linker></Linker><ProjectProperties><ProjectProperties Name="AutoShowDeps">False</ProjectProperties><ProjectProperties Name="ManagePaths">True</ProjectProperties><ProjectProperties Name="VerifyPackages">True</ProjectProperties></ProjectProperties><HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Count">2</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item0">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;src</HistoryLists_hlIncludePath>  <HistoryLists_hlIncludePath Name="Item1">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck</HistoryLists_hlIncludePath>
-    </HistoryLists_hlIncludePath><HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Item0">$(BDS)\lib\release;$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;src</HistoryLists_hlILINK_LibraryPath></HistoryLists_hlILINK_LibraryPath><HistoryLists_hlDefines><HistoryLists_hlDefines Name="Count">1</HistoryLists_hlDefines><HistoryLists_hlDefines Name="Item0">NDEBUG;NO_STRICT</HistoryLists_hlDefines></HistoryLists_hlDefines><HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Count">3</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item0">.\</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item1">bcb_debug</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item2">.</HistoryLists_hlFinalOutputDir></HistoryLists_hlFinalOutputDir><HistoryLists_hlBCC_MaxIdentifierLength><HistoryLists_hlBCC_MaxIdentifierLength Name="Count">1</HistoryLists_hlBCC_MaxIdentifierLength><HistoryLists_hlBCC_MaxIdentifierLength Name="Item0">250</HistoryLists_hlBCC_MaxIdentifierLength></HistoryLists_hlBCC_MaxIdentifierLength>  <HistoryLists_hlIntermediateOutputDir>
-      <HistoryLists_hlIntermediateOutputDir Name="Count">1</HistoryLists_hlIntermediateOutputDir>
-      <HistoryLists_hlIntermediateOutputDir Name="Item0">Release</HistoryLists_hlIntermediateOutputDir>
-    </HistoryLists_hlIntermediateOutputDir>
-  </CPlusPlusBuilder.Personality></BorlandProject></BorlandProject>
+<BorlandProject><CPlusPlusBuilder.Personality><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1053</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Debugging><Debugging Name="DebugSourceDirs"></Debugging></Debugging><Parameters><Parameters Name="RunParams">applicom.c</Parameters><Parameters Name="Launcher"></Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="DebugCWD">C:\linux-2.6.25.1\drivers\char</Parameters><Parameters Name="HostApplication"></Parameters><Parameters Name="RemoteHost"></Parameters><Parameters Name="RemotePath"></Parameters><Parameters Name="RemoteParams"></Parameters><Parameters Name="RemoteLauncher"></Parameters><Parameters Name="UseRemoteLauncher">False</Parameters><Parameters Name="RemoteCWD"></Parameters><Parameters Name="RemoteDebug">False</Parameters><Parameters Name="Debug Symbols Search Path"></Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Linker><Linker Name="LibPrefix"></Linker><Linker Name="LibSuffix"></Linker><Linker Name="LibVersion"></Linker></Linker><ProjectProperties><ProjectProperties Name="AutoShowDeps">False</ProjectProperties><ProjectProperties Name="ManagePaths">True</ProjectProperties><ProjectProperties Name="VerifyPackages">True</ProjectProperties></ProjectProperties><HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Count">3</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item0">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;src;cli;lib</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item1">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;src</HistoryLists_hlIncludePath>  <HistoryLists_hlIncludePath Name="Item2">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck</HistoryLists_hlIncludePath>
+    </HistoryLists_hlIncludePath><HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Item0">$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;src;cli;lib</HistoryLists_hlILINK_LibraryPath></HistoryLists_hlILINK_LibraryPath><HistoryLists_hlDefines><HistoryLists_hlDefines Name="Count">1</HistoryLists_hlDefines><HistoryLists_hlDefines Name="Item0">NO_STRICT</HistoryLists_hlDefines></HistoryLists_hlDefines><HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Count">3</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item0">.\</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item1">bcb_debug</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item2">.</HistoryLists_hlFinalOutputDir></HistoryLists_hlFinalOutputDir><HistoryLists_hlBCC_MaxIdentifierLength><HistoryLists_hlBCC_MaxIdentifierLength Name="Count">1</HistoryLists_hlBCC_MaxIdentifierLength><HistoryLists_hlBCC_MaxIdentifierLength Name="Item0">250</HistoryLists_hlBCC_MaxIdentifierLength></HistoryLists_hlBCC_MaxIdentifierLength></CPlusPlusBuilder.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(MSBuildBinPath)\Borland.Cpp.Targets" />
   <ItemGroup>
-    <CppCompile Include="src\checkautovariables.cpp">
-      <DependentOn>src\checkautovariables.h</DependentOn>
+    <CppCompile Include="cli\cppcheckexecutor.cpp">
       <BuildOrder>0</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkbufferoverrun.cpp">
-      <DependentOn>src\checkbufferoverrun.h</DependentOn>
+    <CppCompile Include="cli\main.cpp">
       <BuildOrder>1</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkclass.cpp">
-      <DependentOn>src\checkclass.h</DependentOn>
+    <CppCompile Include="cli\threadexecutor.cpp">
       <BuildOrder>2</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkdangerousfunctions.cpp">
-      <DependentOn>src\checkdangerousfunctions.h</DependentOn>
+    <CppCompile Include="lib\checkautovariables.cpp">
+      <DependentOn>lib\checkautovariables.h</DependentOn>
       <BuildOrder>3</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkheaders.cpp">
-      <DependentOn>src\checkheaders.h</DependentOn>
+    <CppCompile Include="lib\checkbufferoverrun.cpp">
+      <DependentOn>lib\checkbufferoverrun.h</DependentOn>
       <BuildOrder>4</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkmemoryleak.cpp">
-      <DependentOn>src\checkmemoryleak.h</DependentOn>
+    <CppCompile Include="lib\checkclass.cpp">
+      <DependentOn>lib\checkclass.h</DependentOn>
       <BuildOrder>5</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkother.cpp">
-      <DependentOn>src\checkother.h</DependentOn>
+    <CppCompile Include="lib\checkdangerousfunctions.cpp">
+      <DependentOn>lib\checkdangerousfunctions.h</DependentOn>
       <BuildOrder>6</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkstl.cpp">
-      <DependentOn>src\checkstl.h</DependentOn>
+    <CppCompile Include="lib\checkexceptionsafety.cpp">
+      <DependentOn>lib\checkexceptionsafety.h</DependentOn>
       <BuildOrder>7</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkunusedfunctions.cpp">
-      <DependentOn>src\checkunusedfunctions.h</DependentOn>
+    <CppCompile Include="lib\checkheaders.cpp">
+      <DependentOn>lib\checkheaders.h</DependentOn>
       <BuildOrder>8</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\cppcheck.cpp">
+    <CppCompile Include="lib\checkmemoryleak.cpp">
+      <DependentOn>lib\checkmemoryleak.h</DependentOn>
       <BuildOrder>9</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\cppcheckexecutor.cpp">
+    <CppCompile Include="lib\checkother.cpp">
+      <DependentOn>lib\checkother.h</DependentOn>
       <BuildOrder>10</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\errorlogger.cpp">
-      <DependentOn>src\errorlogger.h</DependentOn>
+    <CppCompile Include="lib\checkstl.cpp">
+      <DependentOn>lib\checkstl.h</DependentOn>
       <BuildOrder>11</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\filelister.cpp">
-      <DependentOn>src\filelister.h</DependentOn>
+    <CppCompile Include="lib\checkunusedfunctions.cpp">
+      <DependentOn>lib\checkunusedfunctions.h</DependentOn>
       <BuildOrder>12</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\main.cpp">
+    <CppCompile Include="lib\cppcheck.cpp">
       <BuildOrder>13</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\mathlib.cpp">
-      <DependentOn>src\mathlib.h</DependentOn>
+    <CppCompile Include="lib\errorlogger.cpp">
+      <DependentOn>lib\errorlogger.h</DependentOn>
       <BuildOrder>14</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\preprocessor.cpp">
-      <DependentOn>src\preprocessor.h</DependentOn>
+    <CppCompile Include="lib\filelister.cpp">
+      <DependentOn>lib\filelister.h</DependentOn>
       <BuildOrder>15</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\settings.cpp">
+    <CppCompile Include="lib\mathlib.cpp">
+      <DependentOn>lib\mathlib.h</DependentOn>
       <BuildOrder>16</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\threadexecutor.cpp">
+    <CppCompile Include="lib\preprocessor.cpp">
+      <DependentOn>lib\preprocessor.h</DependentOn>
       <BuildOrder>17</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\token.cpp">
-      <DependentOn>src\token.h</DependentOn>
+    <CppCompile Include="lib\settings.cpp">
       <BuildOrder>18</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\tokenize.cpp">
-      <DependentOn>src\tokenize.h</DependentOn>
+    <CppCompile Include="lib\token.cpp">
+      <DependentOn>lib\token.h</DependentOn>
       <BuildOrder>19</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="lib\tokenize.cpp">
+      <DependentOn>lib\tokenize.h</DependentOn>
+      <BuildOrder>20</BuildOrder>
     </CppCompile>
     <BuildConfiguration Include="Debug">
       <Key>Cfg_1</Key>
