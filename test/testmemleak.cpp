@@ -512,6 +512,9 @@ private:
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; if(!var) { exit; }"));
         TODO_ASSERT_EQUALS(";", simplifycode("; alloc ; if(var) { exit; }"));
         TODO_ASSERT_EQUALS(";\n; alloc ;", simplifycode("; alloc ; ifv { exit; }"));
+
+        // dealloc; dealloc;
+        ASSERT_EQUALS("; alloc ; dealloc ; dealloc ;", simplifycode("; alloc ; if { dealloc ; } dealloc ;"));
     }
 
 
