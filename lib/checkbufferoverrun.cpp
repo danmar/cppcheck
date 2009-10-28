@@ -132,7 +132,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
     unsigned int varc = 0;
 
     std::string varnames;
-    while (varname[varc])
+    while (varname && varname[varc])
     {
         if (varc > 0)
             varnames += " . ";
@@ -148,7 +148,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
     varc = 2 * (varc - 1);
 
     // Array index..
-    if (varid > 0)
+    if (varid > 0 && Token::Match(tok, "%varid% [ %num% ]", varid))
     {
         if (Token::Match(tok, "%varid% [ %num% ]", varid))
         {
@@ -449,7 +449,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
 
 
         // Writing data into array..
-        if (Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str()))
+        if ((varid > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", varid)) ||
+            (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str())))
         {
             size_t len = Token::getStrLength(tok->tokAt(varc + 4));
             if (len >= static_cast<size_t>(size))
@@ -458,7 +459,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 continue;
             }
         }
-
 
         // Dangerous usage of strncat..
         if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
@@ -551,10 +551,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     ++par;
                 }
 
-                if (parlevel == 1 && Token::Match(tok2, std::string("[(,] " + varnames + " [,)]").c_str()))
+                if (parlevel == 1)
                 {
-                    ++par;
-                    break;
+                    if ((varid > 0 && Token::Match(tok2, std::string("[(,] %varid% [,)]").c_str(), varid)) ||
+                        (varid == 0 &&  Token::Match(tok2, std::string("[(,] " + varnames + " [,)]").c_str())))
+                    {
+                        ++par;
+                        break;
+                    }
                 }
             }
 
@@ -623,7 +627,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         else if (tok->str() == "}")
             --indentlevel;
 
-        const char *varname[2] = {0};
         unsigned int size = 0;
         const char *type = 0;
         unsigned int varid = 0;
@@ -638,7 +641,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             unsigned int varpos = 1;
             if (tok->next()->str() == "*")
                 ++varpos;
-            varname[0] = tok->strAt(varpos);
             size = std::strtoul(tok->strAt(varpos + 2), NULL, 10);
             type = tok->strAt(varpos - 1);
             varid = tok->tokAt(varpos)->varId();
@@ -646,7 +648,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         }
         else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
         {
-            varname[0] = tok->strAt(1);
             size = std::strtoul(tok->strAt(6), NULL, 10);
             type = tok->strAt(4);
             varid = tok->tokAt(1)->varId();
@@ -654,7 +655,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         }
         else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc ( %num% ) ;"))
         {
-            varname[0] = tok->strAt(1);
             size = std::strtoul(tok->strAt(5), NULL, 10);
             type = "char";
             varid = tok->tokAt(1)->varId();
@@ -673,7 +673,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
         // The callstack is empty
         _callStack.clear();
-        checkScope(tok->tokAt(nextTok), varname, size, total_size, varid);
+        checkScope(tok->tokAt(nextTok), 0, size, total_size, varid);
     }
 }
 //---------------------------------------------------------------------------
