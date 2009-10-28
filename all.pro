@@ -4,5 +4,5 @@ CONFIG += ordered
 
 # check target - build and run tests
 check.depends = sub-test
-check.commands = $$PWD/test/test
+check.commands = $$PWD/test/debug/test
 QMAKE_EXTRA_TARGETS += check
