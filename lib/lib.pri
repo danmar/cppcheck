@@ -17,12 +17,10 @@ HEADERS += $$PWD/check.h \
            $$PWD/filelister.h \
            $$PWD/mathlib.h \
            $$PWD/preprocessor.h \
-           $$PWD/resource.h \
            $$PWD/settings.h \
            $$PWD/token.h \
            $$PWD/tokenize.h
 
-# no main.cpp here
 SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkbufferoverrun.cpp \
            $$PWD/checkclass.cpp \

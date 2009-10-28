@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding = "Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9,00"
+	Name="cppcheck"
+	ProjectGUID="{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}"
+	Keyword="Qt4VSv1.0">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="."
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			ConfigurationType="1"
+			IntermediateDirectory="temp\"
+			UseOfMfc="0">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\lib&quot;,&quot;.&quot;,..\..\..\..\Qt\2009.01\qt\mkspecs\win32-msvc2008"
+				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
+				AssemblerListingLocation="temp\"
+				BufferSecurityCheck="false"
+				DebugInformationFormat="3"
+				ExceptionHandling="1"
+				GeneratePreprocessedFile="0"
+				ObjectFile="temp\"
+				Optimization ="4"
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT"
+				ProgramDataBaseFileName=".\"
+				RuntimeLibrary="3"
+				RuntimeTypeInfo="true"
+				SuppressStartupBanner="true"
+				TreatWChar_tAsBuiltInType="false"
+				WarningLevel="4"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="shlwapi.lib"
+				GenerateDebugInformation="true"
+				IgnoreImportLibrary="true"
+				LinkTimeCodeGeneration="0"
+				OutputFile="debug\cppcheck.exe"
+				ProgramDatabaseFile=""
+				SubSystem="1"
+				SuppressStartupBanner="true"/>
+			<Tool
+				Name="VCMIDLTool"
+				DefaultCharType="0"
+				EnableErrorChecks="1"
+				WarningLevel="0"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_DEBUG"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="."
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			ConfigurationType="1"
+			IntermediateDirectory="temp\"
+			UseOfMfc="0"
+			WholeProgramOptimization="true">
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;.&quot;,&quot;..\lib&quot;,&quot;.&quot;,..\..\..\..\Qt\2009.01\qt\mkspecs\win32-msvc2008"
+				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
+				AssemblerListingLocation="temp\"
+				BufferSecurityCheck="false"
+				DebugInformationFormat="0"
+				ExceptionHandling="1"
+				GeneratePreprocessedFile="0"
+				ObjectFile="temp\"
+				Optimization ="2"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG"
+				ProgramDataBaseFileName=".\"
+				RuntimeLibrary="2"
+				RuntimeTypeInfo="true"
+				SuppressStartupBanner="true"
+				TreatWChar_tAsBuiltInType="false"
+				WarningLevel="4"
+				WholeProgramOptimization="true"/>
+			<Tool
+				Name="VCCustomBuildTool"/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="shlwapi.lib"
+				GenerateDebugInformation="false"
+				IgnoreImportLibrary="true"
+				LinkIncremental="1"
+				LinkTimeCodeGeneration="1"
+				OutputFile="release\cppcheck.exe"
+				ProgramDatabaseFile=""
+				SubSystem="1"
+				SuppressStartupBanner="true"/>
+			<Tool
+				Name="VCMIDLTool"
+				DefaultCharType="0"
+				EnableErrorChecks="1"
+				WarningLevel="0"/>
+			<Tool
+				Name="VCPostBuildEventTool"/>
+			<Tool
+				Name="VCPreBuildEventTool"/>
+			<Tool
+				Name="VCPreLinkEventTool"/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT"/>
+		</Configuration>
+	</Configurations>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+			<File
+				RelativePath="..\lib\checkautovariables.cpp"/>
+			<File
+				RelativePath="..\lib\checkbufferoverrun.cpp"/>
+			<File
+				RelativePath="..\lib\checkclass.cpp"/>
+			<File
+				RelativePath="..\lib\checkdangerousfunctions.cpp"/>
+			<File
+				RelativePath="..\lib\checkexceptionsafety.cpp"/>
+			<File
+				RelativePath="..\lib\checkheaders.cpp"/>
+			<File
+				RelativePath="..\lib\checkmemoryleak.cpp"/>
+			<File
+				RelativePath="..\lib\checkother.cpp"/>
+			<File
+				RelativePath="..\lib\checkstl.cpp"/>
+			<File
+				RelativePath="..\lib\checkunusedfunctions.cpp"/>
+			<File
+				RelativePath="..\lib\cppcheck.cpp"/>
+			<File
+				RelativePath="cppcheckexecutor.cpp"/>
+			<File
+				RelativePath="..\lib\errorlogger.cpp"/>
+			<File
+				RelativePath="..\lib\filelister.cpp"/>
+			<File
+				RelativePath="main.cpp"/>
+			<File
+				RelativePath="..\lib\mathlib.cpp"/>
+			<File
+				RelativePath="..\lib\preprocessor.cpp"/>
+			<File
+				RelativePath="..\lib\settings.cpp"/>
+			<File
+				RelativePath="threadexecutor.cpp"/>
+			<File
+				RelativePath="..\lib\token.cpp"/>
+			<File
+				RelativePath="..\lib\tokenize.cpp"/>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\check.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkautovariables.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkbufferoverrun.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkclass.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkdangerousfunctions.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkexceptionsafety.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkheaders.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkmemoryleak.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkother.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkstl.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkunusedfunctions.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\classinfo.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\cppcheck.h"/>
+			<File
+				RelativePath="cppcheckexecutor.cpp"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\errorlogger.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\filelister.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\mathlib.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\preprocessor.h"/>
+			<File
+				RelativePath="resource.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\settings.h"/>
+			<File
+				RelativePath="threadexecutor.cpp"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\token.h"/>
+			<File
+				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\tokenize.h"/>
+		</Filter>
+		<Filter
+			Name="Generated Files"
+			Filter="cpp;c;cxx;moc;h;def;odl;idl;res;"
+			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}">
+			<File
+				RelativePath="temp\cppcheck.res"/>
+		</Filter>
+		<File
+			RelativePath="cppcheck.rc"/>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

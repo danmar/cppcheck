@@ -1,7 +1,10 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual C++ Express 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppcheck", "cppcheck.vcproj", "{ECA5D746-4926-48BA-A372-FC888498531F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppcheck", "cli\cppcheck.vcproj", "{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcproj", "{BA98E531-D8B3-39CB-8171-064854404B81}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gui", "gui\gui.vcproj", "{90DD0565-D4DF-3B1A-A053-7947FB35F90D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -9,10 +12,18 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{ECA5D746-4926-48BA-A372-FC888498531F}.Debug|Win32.ActiveCfg = Debug|Win32
-		{ECA5D746-4926-48BA-A372-FC888498531F}.Debug|Win32.Build.0 = Debug|Win32
-		{ECA5D746-4926-48BA-A372-FC888498531F}.Release|Win32.ActiveCfg = Release|Win32
-		{ECA5D746-4926-48BA-A372-FC888498531F}.Release|Win32.Build.0 = Release|Win32
+		{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}.Debug|Win32.Build.0 = Debug|Win32
+		{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}.Release|Win32.ActiveCfg = Release|Win32
+		{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}.Release|Win32.Build.0 = Release|Win32
+		{BA98E531-D8B3-39CB-8171-064854404B81}.Debug|Win32.ActiveCfg = Debug|Win32
+		{BA98E531-D8B3-39CB-8171-064854404B81}.Debug|Win32.Build.0 = Debug|Win32
+		{BA98E531-D8B3-39CB-8171-064854404B81}.Release|Win32.ActiveCfg = Release|Win32
+		{BA98E531-D8B3-39CB-8171-064854404B81}.Release|Win32.Build.0 = Release|Win32
+		{90DD0565-D4DF-3B1A-A053-7947FB35F90D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{90DD0565-D4DF-3B1A-A053-7947FB35F90D}.Debug|Win32.Build.0 = Debug|Win32
+		{90DD0565-D4DF-3B1A-A053-7947FB35F90D}.Release|Win32.ActiveCfg = Release|Win32
+		{90DD0565-D4DF-3B1A-A053-7947FB35F90D}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
