@@ -148,7 +148,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
     varc = 2 * (varc - 1);
 
     // Array index..
-    if (varid > 0 && Token::Match(tok, "%varid% [ %num% ]", varid))
+    if (varid > 0)
     {
         if (Token::Match(tok, "%varid% [ %num% ]", varid))
         {
