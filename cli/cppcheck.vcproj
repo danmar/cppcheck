@@ -171,51 +171,51 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}">
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\check.h"/>
+				RelativePath="..\lib\check.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkautovariables.h"/>
+				RelativePath="..\lib\checkautovariables.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkbufferoverrun.h"/>
+				RelativePath="..\lib\checkbufferoverrun.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkclass.h"/>
+				RelativePath="..\lib\checkclass.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkdangerousfunctions.h"/>
+				RelativePath="..\lib\checkdangerousfunctions.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkexceptionsafety.h"/>
+				RelativePath="..\lib\checkexceptionsafety.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkheaders.h"/>
+				RelativePath="..\lib\checkheaders.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkmemoryleak.h"/>
+				RelativePath="..\lib\checkmemoryleak.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkother.h"/>
+				RelativePath="..\lib\checkother.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkstl.h"/>
+				RelativePath="..\lib\checkstl.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\checkunusedfunctions.h"/>
+				RelativePath="..\lib\checkunusedfunctions.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\classinfo.h"/>
+				RelativePath="..\lib\classinfo.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\cppcheck.h"/>
+				RelativePath="..\lib\cppcheck.h"/>
 			<File
 				RelativePath="cppcheckexecutor.cpp"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\errorlogger.h"/>
+				RelativePath="..\lib\errorlogger.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\filelister.h"/>
+				RelativePath="..\lib\filelister.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\mathlib.h"/>
+				RelativePath="..\lib\mathlib.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\preprocessor.h"/>
+				RelativePath="..\lib\preprocessor.h"/>
 			<File
 				RelativePath="resource.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\settings.h"/>
+				RelativePath="..\lib\settings.h"/>
 			<File
 				RelativePath="threadexecutor.cpp"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\token.h"/>
+				RelativePath="..\lib\token.h"/>
 			<File
-				RelativePath="c:\Documents and Settings\danmar\cppcheck\lib\tokenize.h"/>
+				RelativePath="..\lib\tokenize.h"/>
 		</Filter>
 		<Filter
 			Name="Generated Files"
