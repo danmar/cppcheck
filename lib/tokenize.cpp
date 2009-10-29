@@ -2421,6 +2421,9 @@ void Tokenizer::simplifyCasts()
             if (tok->isName() && tok->str() != "return")
                 break;
 
+            if (Token::simpleMatch(tok->previous(), "operator"))
+                break;
+
             // Remove cast..
             Token::eraseTokens(tok, tok->next()->link()->next());
 
@@ -3475,7 +3478,8 @@ bool Tokenizer::simplifyCalculations()
 
         // Remove parantheses around variable..
         // keep parantheses here: dynamic_cast<Fred *>(p);
-        if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% ) [;),+-*/><]]"))
+        // keep parantheses here: A operator * (int);
+        if (!tok->isName() && tok->str() != ">" && Token::Match(tok->next(), "( %var% ) [;),+-*/><]]") && !Token::simpleMatch(tok->previous(), "operator"))
         {
             tok->deleteNext();
             tok = tok->next();

@@ -176,6 +176,8 @@ private:
         ASSERT_EQUALS("if ( * a )", tok("if ((char)*a)"));
         ASSERT_EQUALS("if ( & a )", tok("if ((int)&a)"));
         ASSERT_EQUALS("if ( * a )", tok("if ((unsigned int)(unsigned char)*a)"));
+        ASSERT_EQUALS("class A { A operator * ( int ) ; } ;", tok("class A { A operator *(int); };"));
+        ASSERT_EQUALS("class A { A operator * ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
     }
 
 
