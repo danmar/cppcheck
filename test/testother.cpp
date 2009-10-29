@@ -68,6 +68,8 @@ private:
         TEST_CASE(nullpointer5);    // References should not be checked
         TEST_CASE(nullpointer6);
 
+        TEST_CASE(uninitvar1);
+
         TEST_CASE(oldStylePointerCast);
 
         TEST_CASE(postIncrementDecrementStl);
@@ -909,6 +911,59 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+
+    void checkUninitVar(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for redundant code..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckOther checkOther(&tokenizer, &settings, this);
+        checkOther.uninitvar();
+    }
+
+    void uninitvar1()
+    {
+        checkUninitVar("static void foo()\n"
+                       "{\n"
+                       "    Foo *p;\n"
+                       "    if (x)\n"
+                       "        p = new Foo;\n"
+                       "    p->abcd();\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: p\n", errout.str());
+
+        checkUninitVar("int foo()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    if (x)\n"
+                       "        i = 22;\n"
+                       "    else\n"
+                       "        i = 33;\n"
+                       "    return i;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("static void foo()\n"
+                       "{\n"
+                       "    Foo *p;\n"
+                       "    if (x)\n"
+                       "        p = new Foo;\n"
+                       "    if (x)\n"
+                       "        p->abcd();\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void checkOldStylePointerCast(const char code[])
     {

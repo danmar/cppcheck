@@ -1160,6 +1160,131 @@ void CheckOther::nullPointer()
     nullPointerConditionalAssignment();
 }
 
+static const Token *uninitvar_checkscope(const Token *tok, const unsigned int varid, bool &init)
+{
+    /* limit the checking in conditional code..
+     * int x;
+     * if (y)
+     *     x = 33;
+     * if (y)
+     *     return x;
+     */
+    bool limit = false;
+
+    for (; tok; tok = tok->next())
+    {
+        if (tok->str() == "}")
+            return 0;
+
+        // todo: handle for/while
+        if (Token::Match(tok, "for|while"))
+        {
+            init = true;
+            return 0;
+        }
+
+        if (tok->str() == "if")
+        {
+            bool canInit = false;
+            bool ifInit = true;
+            while (tok->str() == "if")
+            {
+                // goto "("
+                tok = tok->next();
+
+                // goto ")"
+                tok = tok ? tok->link() : 0;
+
+                // goto "{"
+                tok = tok ? tok->next() : 0;
+
+                if (!Token::simpleMatch(tok, "{"))
+                    return 0;
+
+                // Recursively check into the if ..
+                bool init2 = false;
+                const Token *tokerr = uninitvar_checkscope(tok->next(), varid, init2);
+                if (!limit && tokerr)
+                    return tokerr;
+
+                // if the scope didn't initialize then this whole if-chain is treated as non-initializing
+                ifInit &= init2;
+                canInit |= init2;
+
+                // goto "}"
+                tok = tok->link();
+
+                // there is no else => not initialized
+                if (Token::Match(tok, "} !!else"))
+                {
+                    ifInit = false;
+                    break;
+                }
+
+                // parse next "if"..
+                tok = tok->tokAt(2);
+                if (tok->str() == "if")
+                    continue;
+
+                // there is no "if"..
+                init2 = false;
+                tokerr = uninitvar_checkscope(tok->next(), varid, init2);
+                if (!limit && tokerr)
+                    return tokerr;
+
+                ifInit &= init2;
+                canInit |= init2;
+
+                tok = tok->link();
+                if (!tok)
+                    return 0;
+            }
+
+            if (ifInit)
+            {
+                init = true;
+                return 0;
+            }
+
+            if (canInit)
+            {
+                limit = true;
+            }
+        }
+
+        if (Token::Match(tok, "%varid% =", varid))
+        {
+            init = true;
+            return 0;
+        }
+
+        if (Token::Match(tok, "return| %varid% .|", varid))
+            return tok;
+    }
+    return 0;
+}
+
+void CheckOther::uninitvar()
+{
+    const Token *tok = _tokenizer->tokens();
+    while (0 != (tok = Token::findmatch(tok, "[{};] %type% *| %var% ;")))
+    {
+        // goto the variable
+        tok = tok->tokAt(2);
+        if (tok->str() == "*")
+            tok = tok->next();
+
+        // check that the variable id is non-zero
+        if (tok->varId() == 0)
+            continue;
+
+        bool init = false;
+        const Token *tokerr = uninitvar_checkscope(tok->next(), tok->varId(), init);
+        if (tokerr)
+            uninitvarError(tokerr, tok->str());
+    }
+}
+
 void CheckOther::checkZeroDivision()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -1299,6 +1424,11 @@ void CheckOther::nullPointerError(const Token *tok, const std::string &varname)
 void CheckOther::nullPointerError(const Token *tok, const std::string &varname, const int line)
 {
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<long>(line));
+}
+
+void CheckOther::uninitvarError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error, "uninitvar", "Uninitialized variable: " + varname);
 }
 
 void CheckOther::zerodivError(const Token *tok)

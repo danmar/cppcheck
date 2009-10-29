@@ -76,6 +76,7 @@ public:
         checkOther.strPlusChar();
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
+        checkOther.uninitvar();
     }
 
     // Casting
@@ -111,6 +112,9 @@ public:
     /** possible null pointer dereference */
     void nullPointer();
 
+    /** reading uninitialized var */
+    void uninitvar();
+
     /** Check zero division*/
     void checkZeroDivision();
 
@@ -123,6 +127,7 @@ public:
     // if (haystack.find(needle) != haystack.end())
     //    haystack.remove(needle);
     void redundantCondition2();
+
 
     // Error messages..
     void cstyleCastError(const Token *tok);
@@ -142,6 +147,7 @@ public:
     void strPlusChar(const Token *tok);
     void nullPointerError(const Token *tok, const std::string &varname);
     void nullPointerError(const Token *tok, const std::string &varname, const int line);
+    void uninitvarError(const Token *tok, const std::string &varname);
     void zerodivError(const Token *tok);
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
 
@@ -151,6 +157,7 @@ public:
         sprintfOverlappingDataError(0, "varname");
         udivError(0);
         nullPointerError(0, "pointer");
+        uninitvarError(0, "varname");
         zerodivError(0);
 
         // style
@@ -186,7 +193,7 @@ public:
                " * division with zero\n"
                " * null pointer dereferencing\n"
 
-               // warning
+               // style
                " * C-style pointer cast in cpp file\n"
                " * redundant if\n"
                " * bad usage of the function 'strtol'\n"
@@ -198,6 +205,7 @@ public:
                " * variable scope can be limited\n"
                " * condition that is always true/false\n"
                " * unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
+               " * uninitialized variables\n"
 
                // optimisations
                " * optimisation: detect post increment/decrement\n";
