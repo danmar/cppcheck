@@ -376,7 +376,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             }
 
             std::ostringstream pattern;
-            pattern << varnames << " [ " << strindex << " ]";
+            if (varid > 0)
+                pattern << "%varid% [ " << strindex << " ]";
+            else
+                pattern << varnames << " [ " << strindex << " ]";
 
             int indentlevel2 = 0;
             while ((tok2 = tok2->next()) != 0)
@@ -400,7 +403,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     break;
                 }
 
-                if (Token::Match(tok2, pattern.str().c_str()) && condition_out_of_bounds)
+                if (condition_out_of_bounds && Token::Match(tok2, pattern.str().c_str(), varid))
                 {
                     bufferOverrun(tok2);
                     break;
