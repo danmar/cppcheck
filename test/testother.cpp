@@ -962,6 +962,13 @@ private:
                        "        p->abcd();\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    int a() { return i; }\n"
+                       "};\n");
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
 
