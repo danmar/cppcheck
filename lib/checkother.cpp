@@ -1211,6 +1211,21 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
                 // goto ")"
                 tok = tok ? tok->link() : 0;
 
+                // Check if the condition contains the variable
+                if (tok)
+                {
+                    for (const Token *tok2 = tok->link(); tok2 && tok2 != tok; tok2 = tok2->next())
+                    {
+                        // The variable may be initialized..
+                        // if (someFunction(&var)) ..
+                        if (tok2->varId())
+                        {
+                            init = true;
+                            return 0;
+                        }
+                    }
+                }
+
                 // goto "{"
                 tok = tok ? tok->next() : 0;
 
@@ -1333,7 +1348,7 @@ void CheckOther::uninitvar()
             {
                 if (Token::Match(tok->next(), "return|goto"))
                     continue;
-                
+
                 // if it's a pointer, dereferencing is forbidden
                 const bool pointer(tok->strAt(2) == std::string("*"));
 

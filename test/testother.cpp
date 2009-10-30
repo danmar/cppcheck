@@ -988,6 +988,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    C *c;\n"
+                       "    if (fun(&c));\n"
+                       "    c->Release();\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // switch..
         checkUninitVar("char * f()\n"
                        "{\n"
@@ -1022,7 +1030,6 @@ private:
                        "    return i;\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
-
     }
 
 
