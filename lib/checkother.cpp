@@ -1331,6 +1331,9 @@ void CheckOther::uninitvar()
             }
             if (Token::Match(tok, "[{};] %type% *| %var% ;"))
             {
+                if (Token::Match(tok->next(), "return|goto"))
+                    continue;
+                
                 // if it's a pointer, dereferencing is forbidden
                 const bool pointer(tok->strAt(2) == std::string("*"));
 
