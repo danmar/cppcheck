@@ -1160,7 +1160,7 @@ void CheckOther::nullPointer()
     nullPointerConditionalAssignment();
 }
 
-static const Token *uninitvar_checkscope(const Token *tok, const unsigned int varid, bool &init)
+static const Token *uninitvar_checkscope(const Token *tok, const unsigned int varid, bool &init, const bool pointer)
 {
     /* limit the checking in conditional code..
      * int x;
@@ -1203,7 +1203,7 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
                 // Recursively check into the if ..
                 bool init2 = false;
-                const Token *tokerr = uninitvar_checkscope(tok->next(), varid, init2);
+                const Token *tokerr = uninitvar_checkscope(tok->next(), varid, init2, pointer);
                 if (!limit && tokerr)
                     return tokerr;
 
@@ -1228,7 +1228,7 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
                 // there is no "if"..
                 init2 = false;
-                tokerr = uninitvar_checkscope(tok->next(), varid, init2);
+                tokerr = uninitvar_checkscope(tok->next(), varid, init2, pointer);
                 if (!limit && tokerr)
                     return tokerr;
 
@@ -1283,8 +1283,14 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
             }
         }
 
-        if (Token::Match(tok, "return| %varid% .|", varid))
-            return tok;
+        if (tok->varId() == varid)
+        {
+            if (Token::simpleMatch(tok->previous(), "return"))
+                return tok;
+
+            if (pointer && Token::simpleMatch(tok->next(), "."))
+                return tok;
+        }
     }
     return 0;
 }
@@ -1309,6 +1315,9 @@ void CheckOther::uninitvar()
             }
             if (Token::Match(tok, "[{};] %type% *| %var% ;"))
             {
+                // if it's a pointer, dereferencing is forbidden
+                const bool pointer(tok->strAt(2) == std::string("*"));
+
                 // goto the variable
                 tok = tok->tokAt(2);
                 if (tok->str() == "*")
@@ -1320,7 +1329,7 @@ void CheckOther::uninitvar()
 
                 // check if variable is accessed uninitialized..
                 bool init = false;
-                const Token *tokerr = uninitvar_checkscope(tok->next(), tok->varId(), init);
+                const Token *tokerr = uninitvar_checkscope(tok->next(), tok->varId(), init, pointer);
                 if (tokerr)
                     uninitvarError(tokerr, tok->str());
             }

@@ -933,6 +933,21 @@ private:
 
     void uninitvar1()
     {
+        // dereferencing uninitialized pointer..
+        checkUninitVar("static void foo()\n"
+                       "{\n"
+                       "    Foo *p;\n"
+                       "    p->abcd();\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+
+        checkUninitVar("static void foo()\n"
+                       "{\n"
+                       "    Foo p;\n"
+                       "    p.abcd();\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // if..
         checkUninitVar("static void foo()\n"
                        "{\n"
