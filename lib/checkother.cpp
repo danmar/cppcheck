@@ -1177,7 +1177,7 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
             return 0;
 
         // todo: handle for/while
-        if (Token::Match(tok, "for|while"))
+        if (Token::Match(tok, "for|while|switch"))
         {
             init = true;
             return 0;

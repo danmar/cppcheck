@@ -979,6 +979,21 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // switch..
+        checkUninitVar("char * f()\n"
+                       "{\n"
+                       "    static char ret[200];\n"
+                       "    memset(ret, 0, sizeof(ret));\n"
+                       "    switch (x)\n"
+                       "    {\n"
+                       "        case 1: return ret;\n"
+                       "        case 2: return ret;\n"
+                       "    }\n"
+                       "    return 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
         // member variables..
         checkUninitVar("class Fred\n"
                        "{\n"
