@@ -1129,6 +1129,22 @@ void CheckOther::nullPointerConditionalAssignment()
                 tok3 = tok3->next()->link();
                 if (!tok3)
                     break;
+
+                // check if the condition contains the variable..
+                for (const Token *tok4 = tok2->tokAt(2); tok4 && tok4 != tok3; tok4 = tok4->next())
+                {
+                    if (tok4->varId() == varid)
+                    {
+                        // The condition contains the variable..
+                        // to avoid false positives I bail out..
+                        tok3 = 0;
+                        break;
+                    }
+                }
+
+                if (!tok3)
+                    break;
+
                 if (tok3->next()->str() == "{")
                 {
                     tok2 = tok3->next()->link();

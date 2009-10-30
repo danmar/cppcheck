@@ -910,6 +910,15 @@ private:
                          "    p->abcd();\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("static void foo()\n"
+                         "{\n"
+                         "    Foo *p = 0;\n"
+                         "    if (!p)\n"
+                         "        return;\n"
+                         "    p->abcd();\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
