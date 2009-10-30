@@ -1266,22 +1266,40 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
 void CheckOther::uninitvar()
 {
+    // start of function..
     const Token *tok = _tokenizer->tokens();
-    while (0 != (tok = Token::findmatch(tok, "[{};] %type% *| %var% ;")))
+    while (0 != (tok = Token::findmatch(tok, ") const| {")))
     {
-        // goto the variable
-        tok = tok->tokAt(2);
-        if (tok->str() == "*")
-            tok = tok->next();
+        // Scan through this scope and check all variables..
+        unsigned int indentlevel = 0;
+        for (; tok; tok = tok->next())
+        {
+            if (tok->str() == "{")
+                ++indentlevel;
+            else if (tok->str() == "}")
+            {
+                if (indentlevel <= 1)
+                    break;
+                --indentlevel;
+            }
+            if (Token::Match(tok, "[{};] %type% *| %var% ;"))
+            {
+                // goto the variable
+                tok = tok->tokAt(2);
+                if (tok->str() == "*")
+                    tok = tok->next();
 
-        // check that the variable id is non-zero
-        if (tok->varId() == 0)
-            continue;
+                // check that the variable id is non-zero
+                if (tok->varId() == 0)
+                    continue;
 
-        bool init = false;
-        const Token *tokerr = uninitvar_checkscope(tok->next(), tok->varId(), init);
-        if (tokerr)
-            uninitvarError(tokerr, tok->str());
+                // check if variable is accessed uninitialized..
+                bool init = false;
+                const Token *tokerr = uninitvar_checkscope(tok->next(), tok->varId(), init);
+                if (tokerr)
+                    uninitvarError(tokerr, tok->str());
+            }
+        }
     }
 }
 

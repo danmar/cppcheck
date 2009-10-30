@@ -968,7 +968,7 @@ private:
                        "    int i;\n"
                        "    int a() { return i; }\n"
                        "};\n");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
