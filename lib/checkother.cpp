@@ -1258,6 +1258,31 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
             return 0;
         }
 
+        if (Token::Match(tok, "%var% ("))
+        {
+            // is the variable passed as a parameter to some function?
+            unsigned int parlevel = 0;
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                    ++parlevel;
+
+                else if (tok2->str() == "}")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+
+                else if (tok2->varId() == varid)
+                {
+                    // it is possible that the variable is initialized here
+                    init = true;
+                    return 0;
+                }
+            }
+        }
+
         if (Token::Match(tok, "return| %varid% .|", varid))
             return tok;
     }

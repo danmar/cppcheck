@@ -933,6 +933,7 @@ private:
 
     void uninitvar1()
     {
+        // if..
         checkUninitVar("static void foo()\n"
                        "{\n"
                        "    Foo *p;\n"
@@ -963,12 +964,26 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // member variables..
         checkUninitVar("class Fred\n"
                        "{\n"
                        "    int i;\n"
                        "    int a() { return i; }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // function calls..
+        checkUninitVar("void assignOne(int &x)\n"
+                       "{ x = 1; }\n"
+                       "\n"
+                       "int f()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    assignOne(i);\n"
+                       "    return i;\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
 
