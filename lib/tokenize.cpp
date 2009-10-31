@@ -632,6 +632,66 @@ void Tokenizer::simplifyTemplates()
         }
     }
 
+    // Locate specialized templates..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() != "template")
+            continue;
+        if (!Token::simpleMatch(tok->next(), "< >"))
+            continue;
+
+        // what kind of template is this?
+        Token *tok2 = tok->tokAt(3);
+        while (tok2 && (tok2->isName() || tok2->str() == "*"))
+            tok2 = tok2->next();
+
+        // unknown template.. bail out
+        if (!tok2 || !tok2->previous()->isName())
+            continue;
+
+        tok2 = tok2->previous();
+        std::string s(tok2->str());
+        {
+            const Token *tok3 = tok2->next();
+            while (Token::Match(tok3, "<|, %type%"))
+            {
+                s += " " + tok3->str() + " " + tok3->strAt(1);
+                tok3 = tok3->tokAt(2);
+                if (tok3->str() == "*")
+                {
+                    tok3 = tok3->next();
+                    s += " *";
+                }
+            }
+            if (!Token::Match(tok3, "> ("))
+                continue;
+        }
+
+        // save search pattern..
+        const std::string pattern(s + " > (");
+
+        // remove spaces to create new name
+        while (s.find(" ") != std::string::npos)
+            s.erase(s.find(" "), 1);
+        const std::string name(s + ">");
+
+        // Rename template..
+        Token::eraseTokens(tok2, Token::findmatch(tok2, "("));
+        tok2->str(name);
+
+        // delete the "template < >"
+        tok->deleteThis();
+        tok->deleteThis();
+        tok->deleteThis();
+
+        // Use this special template in the code..
+        while (0 != (tok2 = const_cast<Token *>(Token::findmatch(tok2, pattern.c_str()))))
+        {
+            Token::eraseTokens(tok2, Token::findmatch(tok2, "("));
+            tok2->str(name);
+        }
+    }
+
     // Locate templates..
     std::list<Token *> templates;
     for (Token *tok = _tokens; tok; tok = tok->next())

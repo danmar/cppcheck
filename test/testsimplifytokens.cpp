@@ -84,6 +84,7 @@ private:
         TEST_CASE(template11);
         TEST_CASE(template12);
         TEST_CASE(template13);
+        TEST_CASE(template14);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_typename);
 
@@ -1217,6 +1218,25 @@ private:
 
         // Just run it and check that there are not assertions.
         sizeof_(code);
+    }
+
+    void template14()
+    {
+        const char code[] = "template <> void foo<int *>()\n"
+                            "{ x(); }\n"
+                            "\n"
+                            "int main()\n"
+                            "{\n"
+                            "foo<int*>();\n"
+                            "}\n";
+
+        // The expected result..
+        const std::string expected("void foo<int*> ( ) "
+                                   "{ x ( ) ; } "
+                                   "int main ( ) "
+                                   "{ foo<int*> ( ) ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
     void template_default_parameter()
