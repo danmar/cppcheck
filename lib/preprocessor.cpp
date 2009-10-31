@@ -1212,7 +1212,6 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
     endfilePos = pos;
     while ((pos = code.find("#include", pos)) != std::string::npos)
     {
-
         // Accept only includes that are at the start of a line
         if (pos > 0 && code[pos-1] != '\n')
         {
@@ -1252,6 +1251,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
 
         // filename contains now a file name e.g. "menu.h"
         std::string processedFile;
+        bool fileOpened = false;
         for (std::list<std::string>::const_iterator iter = includePaths.begin(); iter != includePaths.end(); ++iter)
         {
             std::ifstream fin;
@@ -1260,16 +1260,20 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             {
                 filename = *iter + filename;
                 processedFile = Preprocessor::read(fin);
+                fileOpened = true;
                 break;
             }
         }
 
-        if (headerType == 1 && processedFile.length() == 0)
+        if (headerType == 1 && !fileOpened)
         {
             filename = paths.back() + filename;
             std::ifstream fin(filename.c_str());
             if (fin.is_open())
+            {
                 processedFile = Preprocessor::read(fin);
+                fileOpened = true;
+            }
         }
 
         if (processedFile.length() > 0)
@@ -1290,7 +1294,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             path.erase(1 + path.find_last_of("\\/"));
             paths.push_back(path);
         }
-        else
+        else if (!fileOpened)
         {
             if (headerType == 1 && _errorLogger && _settings && _settings->_verbose)
             {
