@@ -957,6 +957,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("A a()\n"
+                       "{\n"
+                       "    A ret;\n"
+                       "    return ret;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // if..
         checkUninitVar("static void foo()\n"
                        "{\n"

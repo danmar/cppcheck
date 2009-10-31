@@ -1352,6 +1352,10 @@ void CheckOther::uninitvar()
                 // if it's a pointer, dereferencing is forbidden
                 const bool pointer(tok->strAt(2) == std::string("*"));
 
+                // classes are initialized by their constructors
+                if (!pointer && !tok->next()->isStandardType())
+                    continue;
+
                 // goto the variable
                 tok = tok->tokAt(2);
                 if (tok->str() == "*")
