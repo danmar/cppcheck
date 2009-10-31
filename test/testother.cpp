@@ -1037,6 +1037,14 @@ private:
                        "    return i;\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // arrays..
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char s[20];\n"
+                       "    strcpy(s2, s);\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
     }
 
 

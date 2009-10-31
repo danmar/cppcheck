@@ -1176,7 +1176,7 @@ void CheckOther::nullPointer()
     nullPointerConditionalAssignment();
 }
 
-static const Token *uninitvar_checkscope(const Token *tok, const unsigned int varid, bool &init, const bool pointer)
+static const Token *uninitvar_checkscope(const Token *tok, const unsigned int varid, bool &init, const bool pointer, const bool array)
 {
     /* limit the checking in conditional code..
      * int x;
@@ -1234,7 +1234,7 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
                 // Recursively check into the if ..
                 bool init2 = false;
-                const Token *tokerr = uninitvar_checkscope(tok->next(), varid, init2, pointer);
+                const Token *tokerr = uninitvar_checkscope(tok->next(), varid, init2, pointer, array);
                 if (!limit && tokerr)
                     return tokerr;
 
@@ -1259,7 +1259,7 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
                 // there is no "if"..
                 init2 = false;
-                tokerr = uninitvar_checkscope(tok->next(), varid, init2, pointer);
+                tokerr = uninitvar_checkscope(tok->next(), varid, init2, pointer, array);
                 if (!limit && tokerr)
                     return tokerr;
 
@@ -1291,6 +1291,11 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
         if (Token::Match(tok, "%var% ("))
         {
+            if (Token::Match(tok, "strlen ( %varid% )", varid))
+                return tok->tokAt(2);
+            if (Token::Match(tok, "strcpy|strcat|strncpy|strncat|memcpy ( %any% , %varid% [,)]", varid))
+                return tok->tokAt(4);
+
             // is the variable passed as a parameter to some function?
             unsigned int parlevel = 0;
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
@@ -1321,6 +1326,14 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
             if (pointer && Token::simpleMatch(tok->next(), "."))
                 return tok;
+
+            if (array && Token::simpleMatch(tok->next(), "["))
+            {
+                if (Token::simpleMatch(tok->previous(), "="))
+                    return tok;
+                init = true;
+                return 0;
+            }
         }
     }
     return 0;
@@ -1344,7 +1357,7 @@ void CheckOther::uninitvar()
                     break;
                 --indentlevel;
             }
-            if (Token::Match(tok, "[{};] %type% *| %var% ;"))
+            if (Token::Match(tok, "[{};] %type% *| %var% [;[]"))
             {
                 if (Token::Match(tok->next(), "return|goto"))
                     continue;
@@ -1365,9 +1378,12 @@ void CheckOther::uninitvar()
                 if (tok->varId() == 0)
                     continue;
 
+                // Is it an array?
+                const bool array(tok->next()->str() == "[");
+
                 // check if variable is accessed uninitialized..
                 bool init = false;
-                const Token *tokerr = uninitvar_checkscope(tok->next(), tok->varId(), init, pointer);
+                const Token *tokerr = uninitvar_checkscope(tok->next(), tok->varId(), init, pointer, array);
                 if (tokerr)
                     uninitvarError(tokerr, tok->str());
             }
