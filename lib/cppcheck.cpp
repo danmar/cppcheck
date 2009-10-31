@@ -109,6 +109,10 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0)
             _settings._checkCodingStyle = true;
 
+        // Checking exception safety
+        else if (strcmp(argv[i], "--exception-safety") == 0)
+            _settings._exceptionSafety = true;
+
         // Filter errors
         else if (strcmp(argv[i], "--suppressions") == 0)
         {
@@ -348,6 +352,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "                         if arguments are not valid or if no input files are\n"
         "                         provided. Note that your operating system can\n"
         "                         modify this value, e.g. 256 can become 0.\n"
+        "    --exception-safety   Extended checking for exception safety\n"
         "    -f, --force          Force checking on files that have \"too many\"\n"
         "                         configurations\n"
         "    -h, --help           Print this help\n"

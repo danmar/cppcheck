@@ -56,6 +56,9 @@ public:
     bool _errorsOnly;
     bool _verbose;
 
+    /** extra checks for exception safety */
+    bool _exceptionSafety;
+
     /** Force checking t he files with "too many" configurations. */
     bool _force;
 

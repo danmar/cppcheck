@@ -52,6 +52,9 @@ public:
     /** Don't throw exceptions in destructors */
     void destructors();
 
+    /** unsafe use of "new" */
+    void unsafeNew();
+
 private:
     /** Don't throw exceptions in destructors */
     void destructorsError(const Token * const tok)
@@ -59,9 +62,16 @@ private:
         reportError(tok, Severity::style, "throwInDestructor", "Throwing exception in destructor is not recommended");
     }
 
+    /** Unsafe use of new */
+    void unsafeNewError(const Token * const tok)
+    {
+        reportError(tok, Severity::style, "unsafeNew", "Exception safety: unsafe use of 'new'");
+    }
+
     void getErrorMessages()
     {
         destructorsError(0);
+        unsafeNewError(0);
     }
 
     std::string name() const
@@ -72,7 +82,8 @@ private:
     std::string classInfo() const
     {
         return "Checking exception safety\n"
-               " * Don't throw exceptions in destructors";
+               " * Don't throw exceptions in destructors"
+               " * Unsafe use of 'new'";
     }
 };
 /// @}

@@ -74,3 +74,96 @@ void CheckExceptionSafety::destructors()
     }
 }
 
+
+static bool autodealloc(const Token * const C, const Token * const tokens)
+{
+    if (C->isStandardType())
+        return false;
+    return !Token::findmatch(tokens, ("class " + C->str() + " {").c_str());
+}
+
+void CheckExceptionSafety::unsafeNew()
+{
+    // Check that "--exception-safety" was given
+    if (!_settings->_exceptionSafety)
+        return;
+
+    // Inspect initializer lists..
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() != ")")
+            continue;
+        tok = tok->next();
+        if (tok->str() != ":")
+            continue;
+
+        // count "new" and check that it's an initializer list..
+        unsigned int countNew = 0;
+        for (tok = tok->next(); tok; tok = tok->next())
+        {
+            if (!Token::Match(tok, "%var% ("))
+                break;
+            tok = tok->next();
+            if (Token::Match(tok->next(), "new %type%"))
+            {
+                if (countNew > 0 || !autodealloc(tok->tokAt(2), _tokenizer->tokens()))
+                {
+                    ++countNew;
+                }
+            }
+            tok = tok->link();
+            tok = tok ? tok->next() : 0;
+            if (!tok)
+                break;
+            if (tok->str() == "{")
+            {
+                if (countNew > 1)
+                    unsafeNewError(tok);
+                break;
+            }
+            else if (tok->str() != ",")
+                break;
+        }
+        if (!tok)
+            break;
+    }
+
+
+    // Inspect constructors..
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // match this pattern.. "C :: C ( .. ) {"
+        if (!tok->next() || tok->next()->str() != "::")
+            continue;
+        if (!Token::Match(tok, "%var% :: %var% ("))
+            continue;
+        if (tok->str() != tok->strAt(2))
+            continue;
+        if (!Token::simpleMatch(tok->tokAt(3)->link(), ") {"))
+            continue;
+
+        // inspect the constructor..
+        unsigned int countNew = 0;
+        for (tok = tok->tokAt(3)->link()->tokAt(2); tok; tok = tok->next())
+        {
+            if (tok->str() == "{" || tok->str() == "}")
+                break;
+            // some variable declaration..
+            if (Token::Match(tok->previous(), "[{;] %type% * %var% ;"))
+                break;
+            // allocating with new..
+            if (Token::Match(tok, "%var% = new %type%"))
+            {
+                if (countNew > 0 || !autodealloc(tok->tokAt(3), _tokenizer->tokens()))
+                {
+                    ++countNew;
+                    if (countNew > 1)
+                    {
+                        unsafeNewError(tok);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}

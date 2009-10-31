@@ -35,13 +35,14 @@ private:
     void run()
     {
         TEST_CASE(destructors);
+        TEST_CASE(newnew);
     }
 
-    void check(const char code[])
+    void check(const std::string &code)
     {
         // Tokenize..
         Tokenizer tokenizer;
-        std::istringstream istr(code);
+        std::istringstream istr(code.c_str());
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
@@ -51,8 +52,10 @@ private:
         // Check char variable usage..
         Settings settings;
         settings._checkCodingStyle = true;
+        settings._exceptionSafety = true;
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
         checkExceptionSafety.destructors();
+        checkExceptionSafety.unsafeNew();
     }
 
     void destructors()
@@ -64,6 +67,23 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Throwing exception in destructor is not recommended\n", errout.str());
     }
 
+    void newnew()
+    {
+        const std::string AB("class A { }; class B { }; ");
+
+        check(AB + "C::C() : a(new A), b(new B) { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Exception safety: unsafe use of 'new'\n", errout.str());
+
+        check("C::C() : a(new A), b(new B) { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check(AB + "C::C()\n"
+              "{\n"
+              "    a = new A;\n"
+              "    b = new B;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Exception safety: unsafe use of 'new'\n", errout.str());
+    }
 };
 
 REGISTER_TEST(TestExceptionSafety)

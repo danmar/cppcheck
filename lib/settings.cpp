@@ -36,6 +36,7 @@ Settings::Settings()
     _exitCode = 0;
     _showtime = false;
     _append = "";
+    _exceptionSafety = false;
 }
 
 Settings::~Settings()
