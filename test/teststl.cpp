@@ -489,6 +489,13 @@ private:
               "    ++iter;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) After insert, the iterator 'iter' may be invalid\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int>::iterator iter = ints.begin();\n"
+              "    ints.insert(iter, 1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
