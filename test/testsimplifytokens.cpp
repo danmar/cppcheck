@@ -1068,9 +1068,7 @@ private:
                             "\n"
                             "template<typename T> inline B<T> h() { return B<T>(); }\n";
 
-        const std::string expected("; ; ;");
-
-        TODO_ASSERT_EQUALS(expected, sizeof_(code));
+        ASSERT_EQUALS("; ; typedef A < int > x ; typedef B < int > y ; ; ; ;", sizeof_(code));
 
         ASSERT_EQUALS("class A { ; } ;", sizeof_("class A{ template<typename T> int foo(T d);};"));
     }
