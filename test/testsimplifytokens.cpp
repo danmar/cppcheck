@@ -86,6 +86,7 @@ private:
         TEST_CASE(template13);
         TEST_CASE(template14);
         TEST_CASE(template15);
+        TEST_CASE(template16);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_typename);
 
@@ -921,8 +922,7 @@ private:
         const char code[] = "template <classname T> void f(T val) { T a; }\n"
                             "f<int>(10);";
 
-        const std::string expected("template < classname T > void f ( T val ) { T a ; } "
-                                   "f<int> ( 10 ) ; "
+        const std::string expected("; f<int> ( 10 ) ; "
                                    "void f<int> ( int val ) { int a ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
@@ -933,7 +933,7 @@ private:
         const char code[] = "template <classname T> class Fred { T a; };\n"
                             "Fred<int> fred;";
 
-        const std::string expected("template < classname T > class Fred { T a ; } ; "
+        const std::string expected("; ; "
                                    "Fred<int> fred ; "
                                    "class Fred<int> { int a ; }");
 
@@ -945,7 +945,7 @@ private:
         const char code[] = "template <classname T, int sz> class Fred { T data[sz]; };\n"
                             "Fred<float,4> fred;";
 
-        const std::string expected("template < classname T , int sz > class Fred { T data [ sz ] ; } ; "
+        const std::string expected("; ; "
                                    "Fred<float,4> fred ; "
                                    "class Fred<float,4> { float data [ 4 ] ; }");
 
@@ -957,7 +957,7 @@ private:
         const char code[] = "template <classname T> class Fred { Fred(); };\n"
                             "Fred<float> fred;";
 
-        const std::string expected("template < classname T > class Fred { Fred ( ) ; } ; "
+        const std::string expected("; ; "
                                    "Fred<float> fred ; "
                                    "class Fred<float> { Fred<float> ( ) ; }");
 
@@ -970,8 +970,8 @@ private:
                             "template <classname T> Fred<T>::Fred() { }\n"
                             "Fred<float> fred;";
 
-        const std::string expected("template < classname T > class Fred { } ; "
-                                   "template < classname T > Fred < T > :: Fred ( ) { } "
+        const std::string expected("; ; "
+                                   "; "
                                    "Fred<float> fred ; "
                                    "class Fred<float> { } "
                                    "Fred<float> :: Fred<float> ( ) { }");
@@ -985,7 +985,7 @@ private:
                             "Fred<float> fred1;\n"
                             "Fred<float> fred2;";
 
-        const std::string expected("template < classname T > class Fred { } ;"
+        const std::string expected("; ;"
                                    " Fred<float> fred1 ;"
                                    " Fred<float> fred2 ;"
                                    " class Fred<float> { }");
@@ -1005,12 +1005,7 @@ private:
                                 "\n"
                                 "};\n";
 
-            const std::string expected("template < class T > "
-                                       "class ABC "
-                                       "{ "
-                                       "public: "
-                                       "typedef ABC < T > m ; "
-                                       "} ;");
+            const std::string expected("; ;");
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
@@ -1026,10 +1021,7 @@ private:
                                 "    return 0;\n"
                                 "}\n";
 
-            const std::string expected("template < typename T > class ABC {"
-                                       " public: "
-                                       "typedef std :: vector < T > type ; "
-                                       "} ; "
+            const std::string expected("; ; "
                                        "int main ( ) { "
                                        "std :: vector < int > v ; "
                                        "v . push_back ( 4 ) ; "
@@ -1050,17 +1042,9 @@ private:
                                 "    }\n"
                                 "};\n";
 
-            const std::string expected("template < typename T > class ABC "
-                                       "{"
-                                       " public: typedef std :: vector < T > type ;"
-                                       " void f ( ) "
-                                       "{ "
-                                       "std :: vector < int > v ;"
-                                       " v . push_back ( 4 ) ;"
-                                       " } "
-                                       "} ;");
+            const std::string expected("; ;");
 
-            TODO_ASSERT_EQUALS(expected, sizeof_(code));
+            ASSERT_EQUALS(expected, sizeof_(code));
         }
     }
 
@@ -1084,20 +1068,7 @@ private:
                             "\n"
                             "template<typename T> inline B<T> h() { return B<T>(); }\n";
 
-        const std::string expected("template < typename T > class A ;"
-                                   " template < typename T > class B ;"
-                                   ""
-                                   " typedef A < int > x ;"
-                                   " typedef B < int > y ;"
-                                   ""
-                                   " template < typename T > class A {"
-                                   " void f ( ) {"
-                                   " B < T > a = B < T > :: g ( ) ;"
-                                   " T b ; b = 0 ;"
-                                   " }"
-                                   " } ;"
-                                   ""
-                                   " template < typename T > inline B < T > h ( ) { return B < T > ( ) ; }");
+        const std::string expected("; ; ;");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1118,12 +1089,7 @@ private:
                             "} ;\n";
 
         // The expected result..
-        std::string expected(std::string(code) + " class A<int> { }");
-        std::string::size_type pos;
-        while ((pos = expected.find("\n")) != std::string::npos)
-            expected[pos] = ' ';
-        while ((pos = expected.find("  ")) != std::string::npos)
-            expected.erase(pos, 1);
+        std::string expected("; ; void f ( ) { A<int> a ; } ; ; class A<int> { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1139,13 +1105,12 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("template < int ui , typename T > T * foo ( )"
-                                   " { return new T [ ui ] ; }"
-                                   " void f ( )"
-                                   " {"
-                                   " foo<3,int> ( ) ;"
-                                   " }"
-                                   " int * foo<3,int> ( ) { return new int [ 3 ] ; }");
+        const std::string expected("; "
+                                   "void f ( ) "
+                                   "{"
+                                   " foo<3,int> ( ) ; "
+                                   "} "
+                                   "int * foo<3,int> ( ) { return new int [ 3 ] ; }");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
@@ -1160,13 +1125,12 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("template < int ui , typename T > T * foo ( )"
-                                   " { return new T [ ui ] ; }"
-                                   " void f ( )"
-                                   " {"
-                                   " char * p ; p = foo<3,char> ( ) ;"
-                                   " }"
-                                   " char * foo<3,char> ( ) { return new char [ 3 ] ; }");
+        const std::string expected("; "
+                                   "void f ( ) "
+                                   "{"
+                                   " char * p ; p = foo<3,char> ( ) ; "
+                                   "} "
+                                   "char * foo<3,char> ( ) { return new char [ 3 ] ; }");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
@@ -1182,15 +1146,13 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("template < int x , int y , int z >"
-                                   " class A : public B < x , y , ( x - y ) ? ( ( y < z ) ? 1 : - 1 ) : 0 >"
-                                   " { } ;"
-                                   " void f ( )"
-                                   " {"
-                                   " A<12,12,11> a ;"
-                                   " }"
-                                   " class A<12,12,11> : public B < 12 , 12 , 0 >"
-                                   " { }");
+        const std::string expected("; ; "
+                                   "void f ( ) "
+                                   "{"
+                                   " A<12,12,11> a ; "
+                                   "} "
+                                   "class A<12,12,11> : public B < 12 , 12 , 0 > "
+                                   "{ }");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
@@ -1257,13 +1219,36 @@ private:
                             "}\n";
 
         // The expected result..
-        const std::string expected("template < int i > void a ( ) "
-                                   "{ a < i - 1 > ( ) ; } "
+        const std::string expected("; "
                                    "void a<0> ( ) { } "
                                    "int main ( ) "
                                    "{ a<2> ( ) ; return 0 ; } "
                                    "void a<2> ( ) { a<1> ( ) ; } "
                                    "void a<1> ( ) { a<0> ( ) ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template16()
+    {
+        const char code[] = "template <unsigned int i> void a()\n"
+                            "{ }\n"
+                            "\n"
+                            "template <unsigned int i> void b()\n"
+                            "{ a<i>(); }\n"
+                            "\n"
+                            "int main()\n"
+                            "{\n"
+                            "    b<2>();\n"
+                            "    return 0;\n"
+                            "}\n";
+
+        // The expected result..
+        const std::string expected("; "
+                                   "; "
+                                   "int main ( ) { b<2> ( ) ; return 0 ; } "
+                                   "void b<2> ( ) { a<2> ( ) ; } "
+                                   "void a<2> ( ) { }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1282,18 +1267,16 @@ private:
                                 "}\n";
 
             // The expected result..
-            const std::string expected("template < class T , int n >"
-                                       " class A"
-                                       " { T ar [ n ] ; } ;"
-                                       " void f ( )"
-                                       " {"
+            const std::string expected("; ; "
+                                       "void f ( ) "
+                                       "{"
                                        " A<int,2> a1 ;"
-                                       " A<int,3> a2 ;"
-                                       " }"
-                                       " class A<int,2>"
-                                       " { int ar [ 2 ] ; }"
-                                       " class A<int,3>"
-                                       " { int ar [ 3 ] ; }");
+                                       " A<int,3> a2 ; "
+                                       "} "
+                                       "class A<int,2> "
+                                       "{ int ar [ 2 ] ; } "
+                                       "class A<int,3> "
+                                       "{ int ar [ 3 ] ; }");
             ASSERT_EQUALS(expected, sizeof_(code));
         }
         {
@@ -1308,16 +1291,14 @@ private:
                                 "}\n";
 
             // The expected result..
-            const std::string expected("template < class T , int n1 , int n2 >"
-                                       " class A"
-                                       " { T ar [ n1 + n2 ] ; } ;"
-                                       " void f ( )"
-                                       " {"
+            const std::string expected("; ; "
+                                       "void f ( ) "
+                                       "{"
                                        " A<int,3,2> a1 ;"
-                                       " A<int,3,2> a2 ;"
-                                       " }"
-                                       " class A<int,3,2>"
-                                       " { int ar [ 5 ] ; }");
+                                       " A<int,3,2> a2 ; "
+                                       "} "
+                                       "class A<int,3,2> "
+                                       "{ int ar [ 5 ] ; }");
             ASSERT_EQUALS(expected, sizeof_(code));
         }
         {
@@ -1355,9 +1336,7 @@ private:
                             "{ }";
 
         // The expected result..
-        const std::string expected("template < class T >"
-                                   " void foo ( T :: t * )"
-                                   " { }");
+        const std::string expected(";");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 

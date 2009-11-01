@@ -316,8 +316,6 @@ private:
 
     void virtualDestructorTemplate()
     {
-        // Base class has protected destructor, it makes Base *p = new Derived(); fail
-        // during compilation time, so error is not possible. => no error
         checkVirtualDestructor("template <typename T> class A\n"
                                "{\n"
                                " public:\n"
@@ -333,7 +331,7 @@ private:
                                " public:\n"
                                " ~B(){int a;}\n"
                                "};\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Class AA which is inherited by class B does not have a virtual destructor\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Class AA<double> which is inherited by class B does not have a virtual destructor\n", errout.str());
     }
 
     void checkUninitVar(const char code[])

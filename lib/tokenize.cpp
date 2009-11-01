@@ -651,6 +651,41 @@ static bool templateParameters(const Token *tok)
 }
 
 
+/**
+ * Remove "template < ..." they can cause false positives because they are not expanded
+ */
+static void removeTemplates(Token *tok)
+{
+    for (; tok; tok = tok->next())
+    {
+        if (! Token::simpleMatch(tok, "template <"))
+            continue;
+
+        for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "{")
+            {
+                tok2 = tok2->link();
+                tok2 = tok2 ? tok2->next() : 0;
+                Token::eraseTokens(tok, tok2);
+                tok->str(";");
+                break;
+            }
+            if (tok2->str() == "(")
+            {
+                tok2 = tok2->link();
+                if (!tok2)
+                    break;
+            }
+            if (tok2->str() == ";")
+            {
+                Token::eraseTokens(tok, tok2);
+                tok->str(";");
+            }
+        }
+    }
+}
+
 void Tokenizer::simplifyTemplates()
 {
     // Remove "typename" unless used in template arguments..
@@ -691,24 +726,19 @@ void Tokenizer::simplifyTemplates()
             continue;
 
         tok2 = tok2->previous();
-        std::string s(tok2->str());
+        std::string s;
         {
-            const Token *tok3 = tok2->next();
-            while (Token::Match(tok3, "<|, %any%"))
+            std::ostringstream ostr;
+            const Token *tok3 = tok2;
+            for (tok3 = tok2; tok3 && tok3->str() != ">"; tok3 = tok3->next())
             {
-                if (!tok3->next()->isNumber() && !tok3->next()->isName())
-                    break;
-
-                s += " " + tok3->str() + " " + tok3->strAt(1);
-                tok3 = tok3->tokAt(2);
-                if (tok3->str() == "*")
-                {
-                    tok3 = tok3->next();
-                    s += " *";
-                }
+                if (tok3 != tok2)
+                    ostr << " ";
+                ostr << tok3->str();
             }
             if (!Token::Match(tok3, "> ("))
                 continue;
+            s = ostr.str();
         }
 
         // save search pattern..
@@ -759,7 +789,10 @@ void Tokenizer::simplifyTemplates()
         }
     }
     if (templates.empty())
+    {
+        removeTemplates(_tokens);
         return;
+    }
 
     // Locate possible instantiations of templates..
     std::list<Token *> used;
@@ -768,20 +801,17 @@ void Tokenizer::simplifyTemplates()
         // template definition.. skip it
         if (Token::simpleMatch(tok, "template <"))
         {
-            unsigned int indentlevel = 0;
             for (; tok; tok = tok->next())
             {
-                if (tok->str() == "{")
+                if (tok->str() == "{" || tok->str() == "(")
                 {
-                    ++indentlevel;
-                }
-                else if (tok->str() == "}")
-                {
-                    if (indentlevel <= 1)
+                    tok = tok->link();
+                    if (!tok)
                         break;
-                    --indentlevel;
+                    if (tok->str() == "}")
+                        break;
                 }
-                else if (indentlevel == 0 && tok->str() == ";")
+                else if (tok->str() == ";")
                 {
                     break;
                 }
@@ -789,14 +819,19 @@ void Tokenizer::simplifyTemplates()
             if (!tok)
                 break;
         }
-        else if (Token::Match(tok->previous(), "[{};=] %var% <"))
+        else if (Token::Match(tok->previous(), "[{};=] %var% <") ||
+                 Token::Match(tok->tokAt(-2), "[,:] private|protected|public %var% <"))
         {
             if (templateParameters(tok->next()))
                 used.push_back(tok);
         }
     }
     if (used.empty())
+    {
+        removeTemplates(_tokens);
         return;
+    }
+
 
 
 
@@ -870,216 +905,234 @@ void Tokenizer::simplifyTemplates()
 
 
     // expand templates
-    for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
+    bool done = false;
+    while (!done)
     {
-        Token *tok = *iter1;
-
-        std::vector<std::string> type;
-        for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next())
+        done = true;
+        for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
         {
-            if (Token::Match(tok, "%var% ,|>"))
-                type.push_back(tok->str());
-        }
+            Token *tok = *iter1;
 
-        // bail out if the end of the file was reached
-        if (!tok)
-            break;
-
-        // if this is a template function, get the position of the function name
-        unsigned int pos = 0;
-        if (Token::Match(tok, "> %type% *| %var% ("))
-            pos = 2;
-        else if (Token::Match(tok, "> %type% %type% *| %var% ("))
-            pos = 3;
-        if (pos > 0 && tok->tokAt(pos)->str() == "*")
-            ++pos;
-
-        // name of template function/class..
-        const std::string name(tok->strAt(pos > 0 ? pos : 2));
-
-        const bool isfunc(pos > 0);
-
-        // locate template usage..
-
-        std::string s(name + " <");
-        for (unsigned int i = 0; i < type.size(); ++i)
-        {
-            if (i > 0)
-                s += ",";
-            s += " %any% ";
-        }
-        const std::string pattern(s + "> ");
-
-        std::string::size_type sz1 = used.size();
-        unsigned int recursiveCount = 0;
-
-        for (std::list<Token *>::iterator iter2 = used.begin(); iter2 != used.end(); ++iter2)
-        {
-            // If the size of "used" has changed, simplify calculations
-            if (sz1 != used.size())
+            std::vector<std::string> type;
+            for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next())
             {
-                sz1 = used.size();
-                simplifyCalculations();
-                recursiveCount++;
-                if (recursiveCount > 100)
+                if (Token::Match(tok, "%var% ,|>"))
+                    type.push_back(tok->str());
+            }
+
+            // bail out if the end of the file was reached
+            if (!tok)
+                break;
+
+            // if this is a template function, get the position of the function name
+            unsigned int pos = 0;
+            if (Token::Match(tok, "> %type% *| %var% ("))
+                pos = 2;
+            else if (Token::Match(tok, "> %type% %type% *| %var% ("))
+                pos = 3;
+            if (pos > 0 && tok->tokAt(pos)->str() == "*")
+                ++pos;
+
+            // name of template function/class..
+            const std::string name(tok->strAt(pos > 0 ? pos : 2));
+
+            const bool isfunc(pos > 0);
+
+            // locate template usage..
+
+            std::string s(name + " <");
+            for (unsigned int i = 0; i < type.size(); ++i)
+            {
+                if (i > 0)
+                    s += ",";
+                s += " %any% ";
+            }
+            const std::string pattern(s + "> ");
+
+            std::string::size_type sz1 = used.size();
+            unsigned int recursiveCount = 0;
+
+            for (std::list<Token *>::iterator iter2 = used.begin(); iter2 != used.end(); ++iter2)
+            {
+                // If the size of "used" has changed, simplify calculations
+                if (sz1 != used.size())
                 {
-                    // bail out..
-                    break;
+                    sz1 = used.size();
+                    simplifyCalculations();
+                    recursiveCount++;
+                    if (recursiveCount > 100)
+                    {
+                        // bail out..
+                        break;
+                    }
                 }
-            }
 
-            Token *tok2 = *iter2;
+                Token *tok2 = *iter2;
 
-            if (tok2->str() != name)
-                continue;
+                if (tok2->str() != name)
+                    continue;
 
-            if (!Token::Match(tok2, (pattern + (isfunc ? "(" : "%var%")).c_str()))
-                continue;
+                if (Token::Match(tok2->previous(), "[;{}=]") &&
+                    !Token::Match(tok2, (pattern + (isfunc ? "(" : "%var%")).c_str()))
+                    continue;
 
-            // New type..
-            std::vector<std::string> types2;
-            s = "";
-            for (const Token *tok3 = tok2->tokAt(2); tok3->str() != ">"; tok3 = tok3->next())
-            {
-                if (tok3->str() != ",")
-                    types2.push_back(tok3->str());
-                s += tok3->str();
-            }
-            const std::string type2(s);
-
-            // New classname/funcname..
-            const std::string name2(name + "<" + type2 + ">");
-
-            if (expandedtemplates.find(name2) == expandedtemplates.end())
-            {
-                expandedtemplates.insert(name2);
-                // Copy template..
-                int _indentlevel = 0;
-                int _parlevel = 0;
-                for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next())
+                // New type..
+                std::vector<std::string> types2;
+                s = "";
+                for (const Token *tok3 = tok2->tokAt(2); tok3->str() != ">"; tok3 = tok3->next())
                 {
-                    if (tok3->str() == "{")
-                        ++_indentlevel;
-                    else if (tok3->str() == "}")
-                        --_indentlevel;
-                    else if (tok3->str() == "(")
-                        ++_parlevel;
-                    else if (tok3->str() == ")")
-                        --_parlevel;
+                    if (tok3->str() != ",")
+                        types2.push_back(tok3->str());
+                    s += tok3->str();
+                }
+                const std::string type2(s);
 
-                    // Start of template..
-                    if (tok3 == tok)
-                    {
-                        tok3 = tok3->next();
-                    }
+                // New classname/funcname..
+                const std::string name2(name + "<" + type2 + ">");
 
-                    // member function implemented outside class definition
-                    else if (_indentlevel == 0 && _parlevel == 0 && Token::Match(tok3, (pattern + " :: %var% (").c_str()))
-                    {
-                        addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
-                        while (tok3->str() != "::")
-                            tok3 = tok3->next();
-                    }
-
-                    // not part of template.. go on to next token
-                    else
-                        continue;
-
-                    int indentlevel = 0;
-                    std::stack<Token *> braces;     // holds "{" tokens
-                    std::stack<Token *> brackets;   // holds "(" tokens
-
-                    for (; tok3; tok3 = tok3->next())
+                if (expandedtemplates.find(name2) == expandedtemplates.end())
+                {
+                    expandedtemplates.insert(name2);
+                    // Copy template..
+                    int _indentlevel = 0;
+                    int _parlevel = 0;
+                    for (const Token *tok3 = _tokens; tok3; tok3 = tok3->next())
                     {
                         if (tok3->str() == "{")
-                            ++indentlevel;
-
+                            ++_indentlevel;
                         else if (tok3->str() == "}")
+                            --_indentlevel;
+                        else if (tok3->str() == "(")
+                            ++_parlevel;
+                        else if (tok3->str() == ")")
+                            --_parlevel;
+
+                        // Start of template..
+                        if (tok3 == tok)
                         {
-                            if (indentlevel <= 1)
-                            {
-                                // there is a bug if indentlevel is 0
-                                // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
-                                // if indentlevel ever becomes 0, cppcheck will write:
-                                // ### Error: Invalid number of character {
-                                addtoken("}", tok3->linenr(), tok3->fileIndex());
-                                Token::createMutualLinks(braces.top(), _tokensBack);
-                                braces.pop();
-                                break;
-                            }
-                            --indentlevel;
+                            tok3 = tok3->next();
                         }
 
+                        // member function implemented outside class definition
+                        else if (_indentlevel == 0 && _parlevel == 0 && Token::Match(tok3, (pattern + " :: %var% (").c_str()))
                         {
-                            // search for this token in the type vector
-                            unsigned int itype = 0;
-                            while (itype < type.size() && type[itype] != tok3->str())
-                                ++itype;
+                            addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
+                            while (tok3->str() != "::")
+                                tok3 = tok3->next();
+                        }
 
-                            // replace type with given type..
-                            if (itype < type.size())
-                                addtoken(types2[itype].c_str(), tok3->linenr(), tok3->fileIndex());
+                        // not part of template.. go on to next token
+                        else
+                            continue;
 
-                            // replace name..
-                            else if (Token::Match(tok3, (name + " !!<").c_str()))
-                                addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
+                        int indentlevel = 0;
+                        std::stack<Token *> braces;     // holds "{" tokens
+                        std::stack<Token *> brackets;   // holds "(" tokens
 
-                            // copy
-                            else
+                        for (; tok3; tok3 = tok3->next())
+                        {
+                            if (tok3->str() == "{")
+                                ++indentlevel;
+
+                            else if (tok3->str() == "}")
                             {
-                                addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
-                                if (Token::Match(tok3, (name + " <").c_str()))
-                                    used.push_back(_tokensBack);
-
-                                // link() newly tokens manually
-                                if (tok3->str() == "{")
+                                if (indentlevel <= 1)
                                 {
-                                    braces.push(_tokensBack);
-                                }
-                                else if (tok3->str() == "}")
-                                {
-                                    assert(braces.empty() == false);
+                                    // there is a bug if indentlevel is 0
+                                    // the "}" token should only be added if indentlevel is 1 but I add it always intentionally
+                                    // if indentlevel ever becomes 0, cppcheck will write:
+                                    // ### Error: Invalid number of character {
+                                    addtoken("}", tok3->linenr(), tok3->fileIndex());
                                     Token::createMutualLinks(braces.top(), _tokensBack);
                                     braces.pop();
+                                    break;
                                 }
-                                else if (tok3->str() == "(")
+                                --indentlevel;
+                            }
+
+
+                            if (tok3->isName())
+                            {
+                                // search for this token in the type vector
+                                unsigned int itype = 0;
+                                while (itype < type.size() && type[itype] != tok3->str())
+                                    ++itype;
+
+                                // replace type with given type..
+                                if (itype < type.size())
                                 {
-                                    brackets.push(_tokensBack);
-                                }
-                                else if (tok3->str() == ")")
-                                {
-                                    assert(brackets.empty() == false);
-                                    Token::createMutualLinks(brackets.top(), _tokensBack);
-                                    brackets.pop();
+                                    addtoken(types2[itype].c_str(), tok3->linenr(), tok3->fileIndex());
+                                    continue;
                                 }
                             }
+
+                            // replace name..
+                            if (Token::Match(tok3, (name + " !!<").c_str()))
+                            {
+                                addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
+                                continue;
+                            }
+
+                            // copy
+                            addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
+                            if (Token::Match(tok3, "%type% <"))
+                            {
+                                if (!Token::Match(tok3, (name + " <").c_str()))
+                                    done = false;
+                                used.push_back(_tokensBack);
+                            }
+
+                            // link() newly tokens manually
+                            if (tok3->str() == "{")
+                            {
+                                braces.push(_tokensBack);
+                            }
+                            else if (tok3->str() == "}")
+                            {
+                                assert(braces.empty() == false);
+                                Token::createMutualLinks(braces.top(), _tokensBack);
+                                braces.pop();
+                            }
+                            else if (tok3->str() == "(")
+                            {
+                                brackets.push(_tokensBack);
+                            }
+                            else if (tok3->str() == ")")
+                            {
+                                assert(brackets.empty() == false);
+                                Token::createMutualLinks(brackets.top(), _tokensBack);
+                                brackets.pop();
+                            }
+
                         }
+
+                        assert(braces.empty());
+                        assert(brackets.empty());
                     }
-
-                    assert(braces.empty());
-                    assert(brackets.empty());
                 }
-            }
 
-            // Replace all these template usages..
-            s = name + " < " + type2 + " >";
-            for (std::string::size_type pos = s.find(","); pos != std::string::npos; pos = s.find(",", pos + 2))
-            {
-                s.insert(pos + 1, " ");
-                s.insert(pos, " ");
-            }
-            for (Token *tok4 = tok2; tok4; tok4 = tok4->next())
-            {
-                if (Token::simpleMatch(tok4, s.c_str()))
+                // Replace all these template usages..
+                s = name + " < " + type2 + " >";
+                for (std::string::size_type pos = s.find(","); pos != std::string::npos; pos = s.find(",", pos + 2))
                 {
-                    tok4->str(name2);
-                    while (tok4->next()->str() != ">")
+                    s.insert(pos + 1, " ");
+                    s.insert(pos, " ");
+                }
+                for (Token *tok4 = tok2; tok4; tok4 = tok4->next())
+                {
+                    if (Token::simpleMatch(tok4, s.c_str()))
+                    {
+                        tok4->str(name2);
+                        while (tok4->next()->str() != ">")
+                            tok4->deleteNext();
                         tok4->deleteNext();
-                    tok4->deleteNext();
+                    }
                 }
             }
         }
     }
+
+    removeTemplates(_tokens);
 }
 //---------------------------------------------------------------------------
 
