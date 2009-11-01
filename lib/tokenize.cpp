@@ -679,8 +679,9 @@ static void removeTemplates(Token *tok)
             }
             if (tok2->str() == ";")
             {
-                Token::eraseTokens(tok, tok2);
+                Token::eraseTokens(tok, tok2->next());
                 tok->str(";");
+                break;
             }
         }
     }
