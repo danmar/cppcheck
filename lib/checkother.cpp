@@ -1160,7 +1160,11 @@ void CheckOther::nullPointerConditionalAssignment()
             if (Token::Match(tok2, "%varid%", varid))
             {
                 if (Token::Match(tok2, "%varid% . %var% (", varid))
-                    nullPointerError(tok2, tok->next()->str());
+                {
+                    const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
+                    if (tempTok)
+                        nullPointerError(tok2, tok->next()->str());
+                }
                 break;
             }
         }

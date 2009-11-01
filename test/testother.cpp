@@ -67,6 +67,7 @@ private:
         TEST_CASE(nullpointer4);
         TEST_CASE(nullpointer5);    // References should not be checked
         TEST_CASE(nullpointer6);
+        TEST_CASE(nullpointer7);
 
         TEST_CASE(uninitvar1);
 
@@ -921,7 +922,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
+    void nullpointer7()
+    {
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "  wxLongLong x = 0;\n"
+                         "  int y = x.GetValue();\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void checkUninitVar(const char code[])
     {
