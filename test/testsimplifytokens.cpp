@@ -85,6 +85,7 @@ private:
         TEST_CASE(template12);
         TEST_CASE(template13);
         TEST_CASE(template14);
+        TEST_CASE(template15);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_typename);
 
@@ -1235,6 +1236,34 @@ private:
                                    "{ x ( ) ; } "
                                    "int main ( ) "
                                    "{ foo<int*> ( ) ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template15()
+    {
+        const char code[] = "template <unsigned int i> void a()\n"
+                            "{\n"
+                            "    a<i-1>();\n"
+                            "}\n"
+                            "\n"
+                            "template <> void a<0>()\n"
+                            "{ }\n"
+                            "\n"
+                            "int main()\n"
+                            "{\n"
+                            "    a<2>();\n"
+                            "    return 0;\n"
+                            "}\n";
+
+        // The expected result..
+        const std::string expected("template < int i > void a ( ) "
+                                   "{ a < i - 1 > ( ) ; } "
+                                   "void a<0> ( ) { } "
+                                   "int main ( ) "
+                                   "{ a<2> ( ) ; return 0 ; } "
+                                   "void a<2> ( ) { a<1> ( ) ; } "
+                                   "void a<1> ( ) { a<0> ( ) ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
