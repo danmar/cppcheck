@@ -82,6 +82,7 @@ private:
         TEST_CASE(simplifyKnownVariables14);
         TEST_CASE(simplifyKnownVariables15);
         TEST_CASE(simplifyKnownVariables16);
+        TEST_CASE(simplifyKnownVariables17);
 
         TEST_CASE(match1);
 
@@ -835,6 +836,15 @@ private:
         // ticket #807 - segmentation fault when macro isn't found
         const char code[] = "void f ( ) { int n = 1; DISPATCH(while); }";
         simplifyKnownVariables(code);
+    }
+
+    void simplifyKnownVariables17()
+    {
+        // ticket #807 - segmentation fault when macro isn't found
+        const char code[] = "void f ( ) { char *s = malloc(100);mp_ptr p = s; p++; }";
+        ASSERT_EQUALS(
+            "void f ( ) { char * s ; s = malloc ( 100 ) ; mp_ptr p ; p = s ; p ++ ; }",
+            simplifyKnownVariables(code));
     }
 
     void match1()

@@ -3461,7 +3461,7 @@ bool Tokenizer::simplifyKnownVariables()
                         ret = true;
                     }
 
-                    if (Token::Match(tok3->next(), "%varid% ++|--", varid))
+                    if (Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value))
                     {
                         const std::string op(tok3->strAt(2));
                         if (Token::Match(tok3, "[{};] %any% %any% ;"))
