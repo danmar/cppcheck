@@ -1331,13 +1331,14 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
             if (Token::simpleMatch(tok->previous(), "return"))
                 return tok;
 
+            if (Token::simpleMatch(tok->previous(), "="))
+                return tok;
+
             if (pointer && Token::simpleMatch(tok->next(), "."))
                 return tok;
 
             if (array && Token::simpleMatch(tok->next(), "["))
             {
-                if (Token::simpleMatch(tok->previous(), "="))
-                    return tok;
                 init = true;
                 return 0;
             }
