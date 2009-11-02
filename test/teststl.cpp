@@ -73,11 +73,11 @@ private:
         TEST_CASE(find1);
     }
 
-    void check(const char code[])
+    void check(const std::string &code)
     {
         // Tokenize..
         Tokenizer tokenizer;
-        std::istringstream istr(code);
+        std::istringstream istr(code.c_str());
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.setVarId();
 
@@ -160,26 +160,26 @@ private:
     {
         check("void f()\n"
               "{\n"
-              "    std::vector<int> ints;"
+              "    std::vector<int> ints;\n"
               "    std::vector<int>::iterator iter;\n"
               "    iter = ints.begin() + 2;\n"
               "    ints.erase(iter);\n"
               "    std::cout << (*iter) << std::endl;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
     }
 
     void dereference_member()
     {
         check("void f()\n"
               "{\n"
-              "    std::map<int, int> ints;"
+              "    std::map<int, int> ints;\n"
               "    std::map<int, int>::iterator iter;\n"
               "    iter = ints.begin();\n"
               "    ints.erase(iter);\n"
               "    std::cout << iter->first << std::endl;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Dereferenced iterator 'iter' has been erased\n", errout.str());
     }
 
 
@@ -529,14 +529,12 @@ private:
 
         for (int i = 0; i < STL_CONTAINER_LIST; ++i)
         {
-            const std::string checkStr("void f()\n"
-                                       "{\n"
-                                       "    std::" + stlCont[i] + "<int>::iterator it;\n"
-                                       "    for (it = ab.begin(); it < ab.end(); ++it)\n"
-                                       "        ;\n"
-                                       "}\n");
-
-            check(checkStr.c_str());
+            check("void f()\n"
+                  "{\n"
+                  "    std::" + stlCont[i] + "<int>::iterator it;\n"
+                  "    for (it = ab.begin(); it < ab.end(); ++it)\n"
+                  "        ;\n"
+                  "}\n");
 
             ASSERT_EQUALS("[test.cpp:4]: (error) " + stlCont[i]  + " range check should use != and not < since the order of the pointers isn't guaranteed\n", errout.str());
         }
@@ -544,32 +542,28 @@ private:
 
     void stlBoundries2()
     {
-        const std::string checkStr("void f()\n"
-                                   "{\n"
-                                   "    std::vector<std::string> files;\n"
-                                   "    std::vector<std::string>::const_iterator it;\n"
-                                   "    for (it = files.begin(); it < files.end(); it++) { }\n"
-                                   "    for (it = files.begin(); it < files.end(); it++) { };\n"
-                                   "}\n");
-
-        check(checkStr.c_str());
+        check("void f()\n"
+              "{\n"
+              "    std::vector<std::string> files;\n"
+              "    std::vector<std::string>::const_iterator it;\n"
+              "    for (it = files.begin(); it < files.end(); it++) { }\n"
+              "    for (it = files.begin(); it < files.end(); it++) { };\n"
+              "}\n");
 
         ASSERT_EQUALS("", errout.str());
     }
 
     void stlBoundries3()
     {
-        const std::string checkStr("void f()\n"
-                                   "{\n"
-                                   "    set<int> files;\n"
-                                   "    set<int>::const_iterator current;\n"
-                                   "    for (current = files.begin(); current != files.end(); ++current)\n"
-                                   "    {\n"
-                                   "       assert(*current < 100)\n"
-                                   "    }\n"
-                                   "}\n");
-
-        check(checkStr.c_str());
+        check("void f()\n"
+              "{\n"
+              "    set<int> files;\n"
+              "    set<int>::const_iterator current;\n"
+              "    for (current = files.begin(); current != files.end(); ++current)\n"
+              "    {\n"
+              "       assert(*current < 100)\n"
+              "    }\n"
+              "}\n");
 
         ASSERT_EQUALS("", errout.str());
     }
