@@ -973,6 +973,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int a()\n"
+                       "{\n"
+                       "    int ret;\n"
+                       "    std::cin >> ret;\n"
+                       "    return ret;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // if..
         checkUninitVar("static void foo()\n"
                        "{\n"

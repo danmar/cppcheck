@@ -1287,10 +1287,13 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
             }
         }
 
-        if (Token::Match(tok, "%varid% =", varid))
+        if (Token::Match(tok, "%varid%", varid))
         {
-            init = true;
-            return 0;
+            if (Token::simpleMatch(tok->previous(), ">>") || Token::simpleMatch(tok->next(), "="))
+            {
+                init = true;
+                return 0;
+            }
         }
 
         if (Token::Match(tok, "%var% ("))
