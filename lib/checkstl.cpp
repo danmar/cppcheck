@@ -381,21 +381,28 @@ void CheckStl::pushback()
             if (Token::Match(tok2, "%varid% =", iteratorid))
             {
                 if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend ( )"))
+                {
                     vectorname = tok2->strAt(2);
+                    tok2 = tok2->tokAt(6);
+                }
                 else
                     vectorname = "";
                 invalidIterator = "";
             }
 
             // push_back on vector..
-            if (vectorname.size() && Token::Match(tok2, (vectorname + " . push_front|push_back|insert").c_str()))
+            if (vectorname.size() && Token::Match(tok2, (vectorname + " . push_front|push_back|insert (").c_str()))
             {
+                if (!invalidIterator.empty() && Token::Match(tok2->tokAt(2), "insert ( %varid% ,", iteratorid))
+                {
+                    invalidIteratorError(tok2, invalidIterator, tok2->strAt(4));
+                    break;
+                }
+
                 invalidIterator = tok2->strAt(2);
                 if (!iteratorDeclaredInsideLoop)
                 {
-                    while (tok2 && tok2->str() != "(")
-                        tok2 = tok2->next();
-                    tok2 = tok2 ? tok2->link() : 0;
+                    tok2 = tok2->tokAt(3)->link();
                     if (!tok2)
                         break;
                 }
