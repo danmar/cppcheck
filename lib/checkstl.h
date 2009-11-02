@@ -53,6 +53,7 @@ public:
         checkStl.erase();
         checkStl.pushback();
         checkStl.stlBoundries();
+        checkStl.find();
     }
 
 
@@ -91,6 +92,9 @@ public:
      * bad condition.. "it < alist.end()"
      */
     void stlBoundries();
+    
+    /** usage of std::find */
+    void find();
 
 private:
 
@@ -108,6 +112,7 @@ private:
     void invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name);
     void invalidPointerError(const Token *tok, const std::string &pointer_name);
     void stlBoundriesError(const Token *tok, const std::string &container_name);
+    void findError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -119,6 +124,7 @@ private:
         invalidIteratorError(0, "push_back|push_front|insert", "iterator");
         invalidPointerError(0, "pointer");
         stlBoundriesError(0, "container");
+        findError(0);
     }
 
     std::string name() const
@@ -133,7 +139,8 @@ private:
                " * misuse of iterators when iterating through a container\n"
                " * mismatching containers in calls\n"
                " * dereferencing an erased iterator\n"
-               " * for vectors: using iterator/pointer after push_back has been used\n";
+               " * for vectors: using iterator/pointer after push_back has been used\n"
+               " * dangerous usage of find";
     }
 };
 /// @}

@@ -482,3 +482,35 @@ void CheckStl::stlBoundriesError(const Token *tok, const std::string &container_
 {
     reportError(tok, Severity::error, "stlBoundries", container_name + " range check should use != and not < since the order of the pointers isn't guaranteed");
 }
+
+
+
+void CheckStl::find()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() != ";")
+            continue;
+        if (!Token::Match(tok->next(), "%var% = std :: find ("))
+            continue;
+        const unsigned int iteratorid = tok->next()->varId();
+        if (iteratorid == 0)
+            continue;
+        tok = tok->tokAt(6)->link();
+        if (!tok)
+            break;
+        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "{" || tok2->str() == "}" || tok2->str() == "(" || tok2->str() == ")")
+                break;
+            if (tok2->varId() == iteratorid && Token::simpleMatch(tok2->previous(), "*"))
+                findError(tok2);
+        }        
+    }
+}
+    
+    
+void CheckStl::findError(const Token *tok)
+{
+    reportError(tok, Severity::error, "stlfind", "dangerous usage of find result");    
+}

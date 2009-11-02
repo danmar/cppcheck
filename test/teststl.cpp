@@ -68,6 +68,9 @@ private:
         TEST_CASE(stlBoundries1);
         TEST_CASE(stlBoundries2);
         TEST_CASE(stlBoundries3);
+        
+        // find
+        TEST_CASE(find1);
     }
 
     void check(const char code[])
@@ -568,6 +571,17 @@ private:
 
         check(checkStr.c_str());
 
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void find1()
+    {
+        check("void f(std::vector<int> &ints)\n"
+              "{\n"
+              "    std::vector<int>::iterator it = std::find(ints.begin(), ints.end(), 33);\n"
+              "    *it = 11;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
