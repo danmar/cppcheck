@@ -832,7 +832,7 @@ private:
     {
         std::string str1("\nasm(\n\n\n);");
         Preprocessor::removeAsm(str1);
-        ASSERT_EQUALS("\n\n\n\n;", str1);
+        ASSERT_EQUALS("\nasm()\n\n\n;", str1);
 
         std::string str2("\nasm __volatile(\"\nlw iScale, 0x00(pScale)\n\", ());");
         Preprocessor::removeAsm(str2);
