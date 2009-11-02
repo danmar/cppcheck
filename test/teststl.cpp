@@ -68,7 +68,7 @@ private:
         TEST_CASE(stlBoundries1);
         TEST_CASE(stlBoundries2);
         TEST_CASE(stlBoundries3);
-        
+
         // find
         TEST_CASE(find1);
     }

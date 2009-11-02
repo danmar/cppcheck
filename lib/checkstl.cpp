@@ -505,12 +505,12 @@ void CheckStl::find()
                 break;
             if (tok2->varId() == iteratorid && Token::simpleMatch(tok2->previous(), "*"))
                 findError(tok2);
-        }        
+        }
     }
 }
-    
-    
+
+
 void CheckStl::findError(const Token *tok)
 {
-    reportError(tok, Severity::error, "stlfind", "dangerous usage of find result");    
+    reportError(tok, Severity::error, "stlfind", "dangerous usage of find result");
 }

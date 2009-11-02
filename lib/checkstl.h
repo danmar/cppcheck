@@ -92,7 +92,7 @@ public:
      * bad condition.. "it < alist.end()"
      */
     void stlBoundries();
-    
+
     /** usage of std::find */
     void find();
 
