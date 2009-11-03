@@ -47,6 +47,7 @@ public:
         CheckExceptionSafety checkExceptionSafety(tokenizer, settings, errorLogger);
         checkExceptionSafety.destructors();
         checkExceptionSafety.unsafeNew();
+        checkExceptionSafety.realloc();
     }
 
 
@@ -56,23 +57,33 @@ public:
     /** unsafe use of "new" */
     void unsafeNew();
 
+    /** Unsafe realloc */
+    void realloc();
+
 private:
     /** Don't throw exceptions in destructors */
     void destructorsError(const Token * const tok)
     {
-        reportError(tok, Severity::style, "throwInDestructor", "Throwing exception in destructor is not recommended");
+        reportError(tok, Severity::style, "exceptThrowInDestructor", "Throwing exception in destructor is not recommended");
     }
 
     /** Unsafe use of new */
     void unsafeNewError(const Token * const tok)
     {
-        reportError(tok, Severity::style, "unsafeNew", "Exception safety: unsafe use of 'new'");
+        reportError(tok, Severity::style, "exceptNew", "Upon exception there is memory leaks");
+    }
+
+    /** Unsafe reallocation */
+    void reallocError(const Token * const tok, const std::string &varname)
+    {
+        reportError(tok, Severity::style, "exceptRealloc", "Upon exception " + varname + " becomes a dead pointer");
     }
 
     void getErrorMessages()
     {
         destructorsError(0);
         unsafeNewError(0);
+        reallocError(0, "p");
     }
 
     std::string name() const
@@ -83,8 +94,9 @@ private:
     std::string classInfo() const
     {
         return "Checking exception safety\n"
-               " * Don't throw exceptions in destructors"
-               " * Unsafe use of 'new'";
+               " * Don't throw exceptions in destructors\n"
+               " * Unsafe use of 'new'\n"
+               " * Unsafe reallocation\n";
     }
 };
 /// @}

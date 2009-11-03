@@ -194,3 +194,68 @@ void CheckExceptionSafety::unsafeNew()
         }
     }
 }
+
+
+void CheckExceptionSafety::realloc()
+{
+    // Check that "--exception-safety" was given
+    if (!_settings->_exceptionSafety)
+        return;
+
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "try {"))
+        {
+            tok = tok->next()->link();
+            if (!tok)
+                break;
+        }
+
+        if (!Token::Match(tok, "[{};] delete"))
+            continue;
+
+        tok = tok->tokAt(2);
+        if (Token::simpleMatch(tok, "[ ]"))
+            tok = tok->tokAt(2);
+        if (!tok)
+            break;
+
+        // reallocating..
+        if (!Token::Match(tok, "%var% ; %var% = new"))
+            continue;
+
+        // variable id of deallocated pointer..
+        const unsigned int varid(tok->varId());
+        if (varid == 0)
+            continue;
+
+        // variable id of allocated pointer must match..
+        if (varid != tok->tokAt(2)->varId())
+            continue;
+
+        // is is a class member variable..
+        const Token *tok1 = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
+        while (0 != (tok1 = tok1 ? tok1->previous() : 0))
+        {
+            if (tok1->str() == "}")
+                tok1 = tok1->link();
+            else if (tok1->str() == "{")
+            {
+                if (tok1->previous() && tok1->previous()->isName())
+                {
+                    while (0 != (tok1 = tok1 ? tok1->previous() : 0))
+                    {
+                        if (!tok1->isName() && tok1->str() != ":" && tok1->str() != ",")
+                            break;
+                        if (tok1->str() == "class")
+                        {
+                            reallocError(tok->tokAt(2), tok->str());
+                            break;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+}

@@ -36,6 +36,7 @@ private:
     {
         TEST_CASE(destructors);
         TEST_CASE(newnew);
+        TEST_CASE(realloc);
     }
 
     void check(const std::string &code)
@@ -56,6 +57,7 @@ private:
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
         checkExceptionSafety.destructors();
         checkExceptionSafety.unsafeNew();
+        checkExceptionSafety.realloc();
     }
 
     void destructors()
@@ -72,7 +74,7 @@ private:
         const std::string AB("class A { }; class B { }; ");
 
         check(AB + "C::C() : a(new A), b(new B) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Exception safety: unsafe use of 'new'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Upon exception there is memory leaks\n", errout.str());
 
         check("C::C() : a(new A), b(new B) { }");
         ASSERT_EQUALS("", errout.str());
@@ -82,14 +84,41 @@ private:
               "    a = new A;\n"
               "    b = new B;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Exception safety: unsafe use of 'new'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leaks\n", errout.str());
 
         check("void a()\n"
               "{\n"
               "    A *a1 = new A;\n"
               "    A *a2 = new A;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Exception safety: unsafe use of 'new'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leaks\n", errout.str());
+    }
+
+    void realloc()
+    {
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "    void a()\n"
+              "    {\n"
+              "        delete p;\n"
+              "        p = new[123];\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Upon exception p becomes a dead pointer\n", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "    void a()\n"
+              "    {\n"
+              "        try {\n"
+              "            delete p;\n"
+              "            p = new[123];\n"
+              "        } catch (...) { p = 0; }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
