@@ -1180,7 +1180,7 @@ void CheckOther::nullPointer()
     nullPointerConditionalAssignment();
 }
 
-static const Token *uninitvar_checkscope(const Token *tok, const unsigned int varid, bool &init, const bool pointer, const bool array)
+static const Token *uninitvar_checkscope(const Token * const tokens, const Token *tok, const unsigned int varid, bool &init, const bool pointer, const bool array)
 {
     /* limit the checking in conditional code..
      * int x;
@@ -1238,7 +1238,7 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
                 // Recursively check into the if ..
                 bool init2 = false;
-                const Token *tokerr = uninitvar_checkscope(tok->next(), varid, init2, pointer, array);
+                const Token *tokerr = uninitvar_checkscope(tokens, tok->next(), varid, init2, pointer, array);
                 if (!limit && tokerr)
                     return tokerr;
 
@@ -1263,7 +1263,7 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
 
                 // there is no "if"..
                 init2 = false;
-                tokerr = uninitvar_checkscope(tok->next(), varid, init2, pointer, array);
+                tokerr = uninitvar_checkscope(tokens, tok->next(), varid, init2, pointer, array);
                 if (!limit && tokerr)
                     return tokerr;
 
@@ -1302,15 +1302,22 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
                 return tok->tokAt(2);
             if (Token::Match(tok, "strcpy|strcat|strncpy|strncat|memcpy ( %any% , %varid% [,)]", varid))
                 return tok->tokAt(4);
+            if (Token::Match(tok, "strcat|strncat ( %varid% ,", varid))
+                return tok->tokAt(3);
+            if (Token::Match(tok, "asm ( )"))
+            {
+                init = true;
+                return 0;
+            }
 
             // is the variable passed as a parameter to some function?
             unsigned int parlevel = 0;
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
-                if (tok2->str() == "{")
+                if (tok2->str() == "(")
                     ++parlevel;
 
-                else if (tok2->str() == "}")
+                else if (tok2->str() == ")")
                 {
                     if (parlevel <= 1)
                         break;
@@ -1332,7 +1339,18 @@ static const Token *uninitvar_checkscope(const Token *tok, const unsigned int va
                 return tok;
 
             if (Token::simpleMatch(tok->previous(), "="))
-                return tok;
+            {
+                if (!Token::Match(tok->tokAt(-3), "[;{}] %var% ="))
+                    return tok;
+
+                const unsigned int varid2 = tok->tokAt(-2)->varId();
+                if (varid2)
+                {
+                    const Token *tok2 = Token::findmatch(tokens, "%varid%", varid2);
+                    if (tok2 && !Token::simpleMatch(tok2->previous(), "*"))
+                        return tok;
+                }
+            }
 
             if (pointer && Token::simpleMatch(tok->next(), "."))
                 return tok;
@@ -1391,7 +1409,7 @@ void CheckOther::uninitvar()
 
                 // check if variable is accessed uninitialized..
                 bool init = false;
-                const Token *tokerr = uninitvar_checkscope(tok->next(), tok->varId(), init, pointer, array);
+                const Token *tokerr = uninitvar_checkscope(_tokenizer->tokens(), tok->next(), tok->varId(), init, pointer, array);
                 if (tokerr)
                     uninitvarError(tokerr, tok->str());
             }

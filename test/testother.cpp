@@ -980,6 +980,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar("void a()\n"
+                       "{\n"
+                       "    int x[10];\n"
+                       "    int *y = x;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int a()\n"
                        "{\n"
                        "    int ret;\n"
@@ -1075,6 +1082,13 @@ private:
                        "{\n"
                        "    char s[20];\n"
                        "    strcpy(s2, s);\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char s[20];\n"
+                       "    strcat(s, \"abc\");\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
     }
