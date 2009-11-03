@@ -46,6 +46,7 @@ public:
     {
         CheckExceptionSafety checkExceptionSafety(tokenizer, settings, errorLogger);
         checkExceptionSafety.destructors();
+        checkExceptionSafety.unsafeNew();
     }
 
 

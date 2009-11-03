@@ -83,6 +83,13 @@ private:
               "    b = new B;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Exception safety: unsafe use of 'new'\n", errout.str());
+
+        check("void a()\n"
+              "{\n"
+              "    A *a1 = new A;\n"
+              "    A *a2 = new A;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Exception safety: unsafe use of 'new'\n", errout.str());
     }
 };
 

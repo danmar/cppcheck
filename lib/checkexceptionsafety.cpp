@@ -166,4 +166,31 @@ void CheckExceptionSafety::unsafeNew()
             }
         }
     }
+
+    // allocating multiple local variables..
+    std::set<unsigned int> localVars;
+    unsigned int countNew = 0;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() == "{" || tok->str() == "}")
+        {
+            localVars.clear();
+            countNew = 0;
+        }
+
+        if (Token::Match(tok, "[;{}] %type% * %var% ;"))
+        {
+            tok = tok->tokAt(3);
+            if (tok->varId())
+                localVars.insert(tok->varId());
+        }
+
+        if (Token::Match(tok, "; %var% = new"))
+        {
+            if (tok->next()->varId() && localVars.find(tok->next()->varId()) != localVars.end())
+                ++countNew;
+            if (countNew >= 2)
+                unsafeNewError(tok->next());
+        }
+    }
 }
