@@ -2356,6 +2356,42 @@ private:
             tokenizer.simplifyTokenList();
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            errout.str("");
+            const char code[] = "void f()\n"
+                                "{\n"
+                                " foo(;\n"
+                                "}\n";
+            Tokenizer tokenizer(0, this);
+            std::istringstream istr(code);
+            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
+            ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character ((). Can't process file.\n", errout.str());
+        }
+
+        {
+            errout.str("");
+            const char code[] = "void f()\n"
+                                "{\n"
+                                " for(;;){ foo();\n"
+                                "}\n";
+            Tokenizer tokenizer(0, this);
+            std::istringstream istr(code);
+            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
+            ASSERT_EQUALS("[test.cpp:2]: (error) Invalid number of character ({). Can't process file.\n", errout.str());
+        }
+
+        {
+            errout.str("");
+            const char code[] = "void f()\n"
+                                "{\n"
+                                " a[10;\n"
+                                "}\n";
+            Tokenizer tokenizer(0, this);
+            std::istringstream istr(code);
+            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
+            ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character ([). Can't process file.\n", errout.str());
+        }
     }
 
     void removeKeywords()

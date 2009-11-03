@@ -1565,21 +1565,21 @@ bool Tokenizer::createLinks()
     if (links.size() > 0)
     {
         // Error, { and } don't match.
-        syntaxError(_tokens, '{');
+        syntaxError(links.back(), '{');
         return false;
     }
 
     if (links2.size() > 0)
     {
         // Error, ( and ) don't match.
-        syntaxError(_tokens, '(');
+        syntaxError(links2.back(), '(');
         return false;
     }
 
     if (links3.size() > 0)
     {
         // Error, [ and ] don't match.
-        syntaxError(_tokens, '[');
+        syntaxError(links3.back(), '[');
         return false;
     }
 
