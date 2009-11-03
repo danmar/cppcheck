@@ -1294,6 +1294,16 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
                 init = true;
                 return 0;
             }
+
+            if (Token::simpleMatch(tok->next(), "["))
+            {
+                const Token *tok2 = Token::findmatch(tok, "]");
+                if (Token::simpleMatch(tok2 ? tok2->next() : 0, "="))
+                {
+                    init = true;
+                    return 0;
+                }
+            }
         }
 
         if (Token::Match(tok, "%var% ("))

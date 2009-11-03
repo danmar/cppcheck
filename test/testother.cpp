@@ -1080,6 +1080,13 @@ private:
         // arrays..
         checkUninitVar("void f()\n"
                        "{\n"
+                       "    char a[10], b[10];\n"
+                       "    a[0] = b[0] = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
                        "    char s[20];\n"
                        "    strcpy(s2, s);\n"
                        "};\n");
