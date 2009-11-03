@@ -1297,7 +1297,7 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
 
             if (Token::simpleMatch(tok->next(), "["))
             {
-                const Token *tok2 = Token::findmatch(tok, "]");
+                const Token *tok2 = tok->next()->link();
                 if (Token::simpleMatch(tok2 ? tok2->next() : 0, "="))
                 {
                     init = true;
