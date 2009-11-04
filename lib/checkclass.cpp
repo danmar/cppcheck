@@ -865,15 +865,19 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::thisSubtraction()
 {
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), "this - %var%");
-    if (tok)
+    const Token *tok = _tokenizer->tokens();
+    for (;;)
     {
-        thisSubtractionError(tok);
+        tok = Token::findmatch(tok, "this - %var%");
+        if (!tok)
+            break;
+
+        if (!Token::simpleMatch(tok->previous(), "*"))
+            thisSubtractionError(tok);
+
+        tok = tok->next();
     }
 }
-
-
-
 
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname)
 {
