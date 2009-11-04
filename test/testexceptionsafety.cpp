@@ -74,7 +74,7 @@ private:
         const std::string AB("class A { }; class B { }; ");
 
         check(AB + "C::C() : a(new A), b(new B) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Upon exception there is memory leaks\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Upon exception there are memory leaks\n", errout.str());
 
         check("C::C() : a(new A), b(new B) { }");
         ASSERT_EQUALS("", errout.str());
@@ -84,14 +84,14 @@ private:
               "    a = new A;\n"
               "    b = new B;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leaks\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there are memory leaks\n", errout.str());
 
         check("void a()\n"
               "{\n"
               "    A *a1 = new A;\n"
               "    A *a2 = new A;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leaks\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there are memory leaks\n", errout.str());
     }
 
     void realloc()

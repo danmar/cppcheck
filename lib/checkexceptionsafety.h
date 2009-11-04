@@ -70,7 +70,7 @@ private:
     /** Unsafe use of new */
     void unsafeNewError(const Token * const tok)
     {
-        reportError(tok, Severity::style, "exceptNew", "Upon exception there is memory leaks");
+        reportError(tok, Severity::style, "exceptNew", "Upon exception there are memory leaks");
     }
 
     /** Unsafe reallocation */
