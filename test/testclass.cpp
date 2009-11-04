@@ -766,6 +766,11 @@ private:
                              "this-x ;");
         ASSERT_EQUALS("[test.cpp:2]: (possible style) Suspicious pointer subtraction\n", errout.str());
 
+        checkThisSubtraction("; *this = *this-x ;\n"
+                             "this-x ;\n"
+                             "this-x ;\n");
+        ASSERT_EQUALS("[test.cpp:2]: (possible style) Suspicious pointer subtraction\n"
+                      "[test.cpp:3]: (possible style) Suspicious pointer subtraction\n", errout.str());
     }
 };
 
