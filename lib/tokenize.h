@@ -305,6 +305,12 @@ private:
     std::string simplifyString(const std::string &source);
 
     /**
+     * Use "<" comparison instead of ">"
+     * Use "<=" comparison instead of ">="
+     */
+    void simplifyComparisonOrder();
+
+    /**
      * Remove exception specifications. This function calls itself recursively.
      * @param tok First token in scope to cleanup
      */

@@ -577,19 +577,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     unsignedint();
 
     // Use "<" comparison instead of ">"
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::Match(tok, "[;(] %any% >|>= %any% [);]"))
-        {
-            const std::string op1(tok->strAt(1));
-            tok->next()->str(tok->strAt(3));
-            tok->tokAt(3)->str(op1);
-            if (tok->tokAt(2)->str() == ">")
-                tok->tokAt(2)->str("<");
-            else
-                tok->tokAt(2)->str("<=");
-        }
-    }
+    simplifyComparisonOrder();
 
     /**
      * @todo simplify "for"
@@ -2033,13 +2021,12 @@ void Tokenizer::simplifyTokenList()
     }
 
     simplifyFunctionParameters();
-
     elseif();
+    simplifyIfAssign();
     simplifyRedundantParanthesis();
     simplifyIfNot();
     simplifyIfNotNull();
-    simplifyIfAssign();
-
+    simplifyComparisonOrder();
     simplifyNestedStrcat();
 
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -3136,6 +3123,7 @@ void Tokenizer::simplifyIfAssign()
             tok2->insertToken(tok->strAt(2));
         }
         tok2->insertToken(tok->strAt(1));
+        tok2->next()->varId(tok->tokAt(1)->varId());
 
         while (! braces.empty())
         {
@@ -4535,6 +4523,24 @@ std::string Tokenizer::simplifyString(const std::string &source)
     }
 
     return str;
+}
+
+void Tokenizer::simplifyComparisonOrder()
+{
+    // Use "<" comparison instead of ">"
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[;(] %any% >|>= %any% [);]"))
+        {
+            const std::string op1(tok->strAt(1));
+            tok->next()->str(tok->strAt(3));
+            tok->tokAt(3)->str(op1);
+            if (tok->tokAt(2)->str() == ">")
+                tok->tokAt(2)->str("<");
+            else
+                tok->tokAt(2)->str("<=");
+        }
+    }
 }
 
 void Tokenizer::getErrorMessages()
