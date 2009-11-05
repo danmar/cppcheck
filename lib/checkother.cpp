@@ -1350,15 +1350,18 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
 
             if (Token::simpleMatch(tok->previous(), "="))
             {
-                if (!Token::Match(tok->tokAt(-3), "[;{}] %var% ="))
-                    return tok;
-
-                const unsigned int varid2 = tok->tokAt(-2)->varId();
-                if (varid2)
+                if (!Token::Match(tok->tokAt(-3), ". %var% ="))
                 {
-                    const Token *tok2 = Token::findmatch(tokens, "%varid%", varid2);
-                    if (tok2 && !Token::simpleMatch(tok2->previous(), "*"))
+                    if (!Token::Match(tok->tokAt(-3), "[;{}] %var% ="))
                         return tok;
+
+                    const unsigned int varid2 = tok->tokAt(-2)->varId();
+                    if (varid2)
+                    {
+                        const Token *tok2 = Token::findmatch(tokens, "%varid%", varid2);
+                        if (tok2 && !Token::simpleMatch(tok2->previous(), "*"))
+                            return tok;
+                    }
                 }
             }
 

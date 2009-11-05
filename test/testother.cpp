@@ -1003,6 +1003,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void a()\n"
+                       "{\n"
+                       "    int x[10];\n"
+                       "    struct xyz xyz1 = { .x = x };\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // if..
         checkUninitVar("static void foo()\n"
                        "{\n"
