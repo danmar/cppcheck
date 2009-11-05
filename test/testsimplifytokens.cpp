@@ -135,6 +135,8 @@ private:
         TEST_CASE(simplify_numeric_condition);
 
         TEST_CASE(pointeralias);
+
+        TEST_CASE(reduceConstness);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -2147,6 +2149,12 @@ private:
 
             ASSERT_EQUALS(expected, tok(code));
         }
+    }
+
+
+    void reduceConstness()
+    {
+        ASSERT_EQUALS("char * p ;", tok("char * const p;"));
     }
 };
 

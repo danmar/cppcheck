@@ -1788,6 +1788,12 @@ void Tokenizer::simplifySizeof()
 
 void Tokenizer::simplifyTokenList()
 {
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "* const"))
+            tok->deleteNext();
+    }
+
     simplifyNamespaces();
 
     simplifyGoto();
