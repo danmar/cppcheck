@@ -110,8 +110,14 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
             _settings._checkCodingStyle = true;
 
         // Checking exception safety
-        else if (strcmp(argv[i], "--exception-safety") == 0)
+        else if (strcmp(argv[i], "--enable") == 0)
+        {
+            // enable all checking
+            _settings._showAll = true;
+            _settings._checkCodingStyle = true;
             _settings._exceptionSafety = true;
+            _settings._unusedFunctions = true;
+        }
 
         // Filter errors
         else if (strcmp(argv[i], "--suppressions") == 0)
