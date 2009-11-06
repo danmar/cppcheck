@@ -1010,6 +1010,23 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // goto..
+        checkUninitVar("void foo(int x)\n"
+                       "{\n"
+                       "    long b;\n"
+                       "    if (g()) {\n"
+                       "        b =2;\n"
+                       "        goto found;\n"
+                       "    }\n"
+                       "\n"
+                       "    return;\n"
+                       "\n"
+                       "found:\n"
+                       "    int a = b;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+
         // if..
         checkUninitVar("static void foo()\n"
                        "{\n"

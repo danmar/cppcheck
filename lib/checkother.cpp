@@ -1343,6 +1343,17 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
             }
         }
 
+        if (tok->str() == "return")
+        {
+            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == ";")
+                    return 0;
+                if (tok2->varId() == varid)
+                    break;
+            }
+        }
+
         if (tok->varId() == varid)
         {
             if (Token::simpleMatch(tok->previous(), "return"))
