@@ -296,6 +296,18 @@ private:
                   "}\n");
             ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds\n", errout.str());
         }
+
+        {
+            check("typedef struct g g2[3];\n"
+                  "void foo(char *a)\n"
+                  "{\n"
+                  "  for (int i = 0; i < 4; i++)\n"
+                  "  {\n"
+                  "    a[i]=0;\n"
+                  "  }\n"
+                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
 
