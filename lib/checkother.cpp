@@ -1314,6 +1314,11 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
                 return tok->tokAt(4);
             if (Token::Match(tok, "strcat|strncat ( %varid% ,", varid))
                 return tok->tokAt(3);
+            if (Token::Match(tok, "strncpy ( %varid%", varid))
+            {
+                tok = tok->tokAt(3);
+                continue;
+            }
             if (Token::Match(tok, "asm ( )"))
             {
                 init = true;
