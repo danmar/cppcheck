@@ -43,7 +43,6 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // Assign variable ids
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         // Fill function list
