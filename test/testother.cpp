@@ -944,7 +944,6 @@ private:
 
         // Check for redundant code..
         Settings settings;
-        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.uninitvar();
     }
@@ -1106,6 +1105,13 @@ private:
                        "{\n"
                        "    char a[10], b[10];\n"
                        "    a[0] = b[0] = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char c[50] = \"\";\n"
+                       "    strcat(c, \"test\");\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 

@@ -1430,6 +1430,13 @@ void CheckOther::uninitvar()
 
                 // Is it an array?
                 const bool array(tok->next()->str() == "[");
+                if (array)
+                {
+                    // is the array initialized?
+                    if (Token::simpleMatch(tok->next(), "[ ] =") ||
+                        Token::Match(tok->next(), "[ %any% ] ="))
+                        continue;
+                }
 
                 // check if variable is accessed uninitialized..
                 bool init = false;
