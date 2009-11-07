@@ -1075,7 +1075,9 @@ private:
 
     void cin1()
     {
-        check("void f()\n"
+        check("#include <iostream>\n"
+              "using namespace std;\n"
+              "void f()\n"
               "{\n"
               "    char str[10];\n"
               "    cin >> str;\n"
@@ -1136,7 +1138,7 @@ private:
 
         check("void foo()\n"
               "{\n"
-              "    char *s = malloc(10);\n"
+              "    char *s = (char *)malloc(10);\n"
               "    s[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
