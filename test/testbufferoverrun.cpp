@@ -136,7 +136,8 @@ private:
 
     void noerr1()
     {
-        check("void f()\n"
+        check("extern int ab;\n"
+              "void f()\n"
               "{\n"
               "    if (ab)\n"
               "    {\n"
@@ -153,7 +154,8 @@ private:
 
     void noerr2()
     {
-        check("void f1(char *str)\n"
+        check("static char buf[2];\n"
+              "void f1(char *str)\n"
               "{\n"
               "    strcpy(buf,str);\n"
               "}\n"
@@ -175,7 +177,8 @@ private:
 
     void noerr3()
     {
-        check("static void f()\n"
+        check("struct { char data[10]; } abc;\n"
+              "static void f()\n"
               "{\n"
               "    char data[1];\n"
               "    return abc.data[1];\n"
@@ -227,7 +230,8 @@ private:
 
     void sizeof3()
     {
-        check("void f()\n"
+        check("struct group { int gr_gid; };\n"
+              "void f()\n"
               "{\n"
               "    char group[32];\n"
               "    snprintf(group, sizeof(group), \"%u\", 0);\n"
@@ -267,7 +271,7 @@ private:
             check("void f()\n"
                   "{\n"
                   "    int val[50];\n"
-                  "    int i;\n"
+                  "    int i, sum=0;\n"
                   "    for (i = 0; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
@@ -278,7 +282,7 @@ private:
             check("void f()\n"
                   "{\n"
                   "    int val[50];\n"
-                  "    int i;\n"
+                  "    int i, sum=0;\n"
                   "    for (i = 1; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
@@ -290,7 +294,7 @@ private:
             check("void f(int a)\n"
                   "{\n"
                   "    int val[50];\n"
-                  "    int i;\n"
+                  "    int i, sum=0;\n"
                   "    for (i = a; i < 100; i++)\n"
                   "        sum += val[i];\n"
                   "}\n");
@@ -357,7 +361,7 @@ private:
               "static void f()\n"
               "{\n"
               "  int datasize = 10;\n"
-              "  struct ABC* x = malloc(sizeof(struct ABC) + datasize - 1);\n"
+              "  struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + datasize - 1);\n"
               "  x->str[1] = 0;"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (possible error) Array index out of bounds\n", errout.str());
@@ -372,7 +376,7 @@ private:
               "    char str[10];\n"
               "};\n"
               "\n"
-              "static void f(ABC *abc)\n"
+              "static void f(struct ABC *abc)\n"
               "{\n"
               "    abc->str[10] = 0;\n"
               "}\n");
@@ -440,7 +444,7 @@ private:
               "    data[10] = 0;\n"
               "}\n"
               "\n"
-              "static void f(ABC *abc)\n"
+              "static void f(struct ABC *abc)\n"
               "{\n"
               "    memclr(abc->str);\n"
               "}\n");
@@ -455,17 +459,18 @@ private:
               "public:\n"
               "    ABC();\n"
               "    char *str[10];\n"
-              "    struct ABC *next;"
+              "    struct ABC *next();"
               "};\n"
               "\n"
               "static void f()\n"
               "{\n"
+              "    ABC *abc1;\n"
               "    for ( ABC *abc = abc1; abc; abc = abc->next() )\n"
               "    {\n"
               "        abc->str[10] = 0;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (error) Array index out of bounds\n", errout.str());
     }
 
 
@@ -725,7 +730,7 @@ private:
               "    char str[5];\n"
               "};\n"
               "\n"
-              "static void f(ABC *abc)\n"
+              "static void f(struct ABC *abc)\n"
               "{\n"
               "    strcpy( abc->str, \"abcdef\" );\n"
               "}\n");
@@ -761,7 +766,7 @@ private:
         check("void foo(int x, int y)\n"
               "{\n"
               "    const char *p[2];\n"
-              "    x = y * p[1];\n"
+              "    const char *s = y + p[1];\n"
               "    p[1] = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -944,12 +949,13 @@ private:
 
     void sprintf2()
     {
-        check("void f()\n"
+        check("int getnumber();\n"
+              "void f()\n"
               "{\n"
               "    char str[5];\n"
               "    sprintf(str, \"%d: %s\", getnumber(), \"abcde\");\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
     }
 
     void sprintf3()
@@ -983,7 +989,7 @@ private:
     void sprintf5()
     {
         // ticket #729
-        check("void f(bool condition)\n"
+        check("void f(int condition)\n"
               "{\n"
               "    char buf[3];\n"
               "    sprintf(buf, \"%s\", condition ? \"11\" : \"22\");\n"
@@ -993,7 +999,7 @@ private:
 
     void sprintf6()
     {
-        check("void f(bool condition)\n"
+        check("void f(int condition)\n"
               "{\n"
               "    char buf[3];\n"
               "    sprintf(buf, \"%s\", condition ? \"11\" : \"222\");\n"
@@ -1046,7 +1052,7 @@ private:
 
     void strncat1()
     {
-        check("void f()\n"
+        check("void f(char *a, char *b)\n"
               "{\n"
               "    char str[16];\n"
               "    strncpy(str, a, 10);\n"
@@ -1057,7 +1063,7 @@ private:
 
     void strncat2()
     {
-        check("void f()\n"
+        check("void f(char *a)\n"
               "{\n"
               "    char str[5];\n"
               "    strncat(str, a, 5);\n"
