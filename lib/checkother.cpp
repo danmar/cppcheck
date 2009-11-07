@@ -1422,7 +1422,9 @@ void CheckOther::uninitvar()
                     continue;
 
                 // goto ')'
-                tok = tok->tokAt(4)->link();
+                tok = tok->tokAt(4);
+                if (tok->str() == "(")
+                    tok = tok->link();
                 if (!tok)
                     break;
 
