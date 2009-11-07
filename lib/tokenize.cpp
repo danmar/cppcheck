@@ -1918,6 +1918,21 @@ void Tokenizer::simplifyTokenList()
 
     simplifySizeof();
 
+    // replace strlen(str)
+    simplifyKnownVariables();
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "strlen ( %str% )"))
+        {
+            std::ostringstream ostr;
+            ostr << Token::getStrLength(tok->tokAt(2));
+            tok->str(ostr.str());
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+        }
+    }
+
     // change array to pointer..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -3355,6 +3370,7 @@ bool Tokenizer::simplifyKnownVariables()
             else if (tok2->previous()->str() != "*" &&
                      (Token::Match(tok2, "%var% = %num% ;") ||
                       Token::Match(tok2, "%var% = %str% ;") ||
+                      Token::Match(tok2, "%var% [ ] = %str% ;") ||
                       Token::Match(tok2, "%var% = %bool% ;") ||
                       Token::Match(tok2, "%var% = %var% ;")))
             {
@@ -3365,6 +3381,8 @@ bool Tokenizer::simplifyKnownVariables()
                 const bool pointeralias(tok2->tokAt(2)->isName());
 
                 std::string value(tok2->strAt(2));
+                if (value == "]")
+                    value = tok2->strAt(4);
                 Token* bailOutFromLoop = 0;
                 int indentlevel3 = indentlevel;     // indentlevel for tok3
                 for (Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())

@@ -71,6 +71,8 @@ private:
         TEST_CASE(sizeof13);
         TEST_CASE(casting);
 
+        TEST_CASE(strlen1);
+
         TEST_CASE(template1);
         TEST_CASE(template2);
         TEST_CASE(template3);
@@ -917,6 +919,45 @@ private:
             ASSERT_EQUALS(expected, sizeof_(code));
         }
     }
+
+
+    void strlen1()
+    {
+        ASSERT_EQUALS("4", tok("strlen(\"abcd\")"));
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    const char *s = \"abcd\";\n"
+                                "    strlen(s);\n"
+                                "}\n";
+            const char expected[] = "void f ( ) "
+                                    "{"
+                                    " const char * s ;"
+                                    " s = \"abcd\" ;"
+                                    " 4 ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    const char s [ ] = \"abcd\";\n"
+                                "    strlen(s);\n"
+                                "}\n";
+            const char expected[] = "void f ( ) "
+                                    "{"
+                                    " const char * s ;"
+                                    " s = \"abcd\" ;"
+                                    " 4 ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+
+    }
+
+
 
 
 
