@@ -1412,9 +1412,9 @@ void CheckOther::uninitvar()
                     break;
                 --indentlevel;
             }
-            
+
             if (Token::Match(tok, "[{};] %var% = malloc|kmalloc (") ||
-                Token::Match(tok, "[{};] %var% = new char [") )
+                Token::Match(tok, "[{};] %var% = new char ["))
             {
                 // check that the variable id is non-zero
                 const unsigned int varid = tok->next()->varId();
