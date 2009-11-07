@@ -1136,6 +1136,15 @@ private:
                        "    strcat(s, \"abc\");\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: s\n", errout.str());
+
+        // alloc..
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char *s = malloc(100);\n"
+                       "    strcat(s, \"abc\");\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s\n", errout.str());
+
     }
 
 

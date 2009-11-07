@@ -1412,7 +1412,33 @@ void CheckOther::uninitvar()
                     break;
                 --indentlevel;
             }
-            if (Token::Match(tok, "[{};] %type% *| %var% [;[]"))
+            
+            if (Token::Match(tok, "[{};] %var% = malloc|kmalloc (") ||
+                Token::Match(tok, "[{};] %var% = new char [") )
+            {
+                // check that the variable id is non-zero
+                const unsigned int varid = tok->next()->varId();
+                if (varid == 0)
+                    continue;
+
+                // goto ')'
+                tok = tok->tokAt(4)->link();
+                if (!tok)
+                    break;
+
+                // check if data is accessed uninitialized..
+                for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "{" || tok2->str() == "}")
+                        break;
+                    if (tok2->varId() == varid)
+                        break;
+                    if (Token::Match(tok2, "strcat|strncat|strlen ( %varid%", varid))
+                        uninitdataError(tok2, tok2->strAt(2));
+                }
+            }
+
+            else if (Token::Match(tok, "[{};] %type% *| %var% [;[]"))
             {
                 if (Token::Match(tok->next(), "return|goto"))
                     continue;
@@ -1592,6 +1618,11 @@ void CheckOther::nullPointerError(const Token *tok, const std::string &varname)
 void CheckOther::nullPointerError(const Token *tok, const std::string &varname, const int line)
 {
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<long>(line));
+}
+
+void CheckOther::uninitdataError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error, "uninitdata", "Data is allocated but not initialized: " + varname);
 }
 
 void CheckOther::uninitvarError(const Token *tok, const std::string &varname)
