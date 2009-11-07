@@ -47,7 +47,7 @@ static const char * const call_func_white_list[] =
     , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
     , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
     , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
-    , "printf", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
+    , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
     , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
     , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
     , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strncat", "strncmp"
