@@ -3,10 +3,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <list>
 
-const std::string ext(".c");
-const std::string gcc("gcc");
+const std::string ext(".cpp");
 
 static std::string str(unsigned int value)
 {
@@ -22,8 +20,6 @@ int main(const int argc, const char * const * const argv)
         std::cerr << "syntax: extracttests testfile" << std::endl;
         return 0;
     }
-
-    std::list<std::string> fnames;
 
     std::string testname;
     unsigned int subcount = 0;
@@ -49,36 +45,7 @@ int main(const int argc, const char * const * const argv)
 
         if (!testname.empty() && line.find(" check(\"") != std::string::npos)
         {
-            const std::string fname(testname + str(++subcount));
-
-            if (ext == ".c")
-            {
-                if (fname == "array_index_21" ||
-                    fname == "array_index_81" ||
-                    fname == "array_index_111" ||
-                    fname == "array_index_121" ||
-                    fname == "array_index_131" ||
-                    fname == "array_index_141" ||
-                    fname == "array_index_151" ||
-                    fname == "array_index_161" ||
-                    fname == "array_index_171" ||
-                    fname == "array_index_172" ||
-                    fname == "array_index_173" ||
-                    fname == "array_index_181" ||
-                    fname == "array_index_201" ||
-                    fname == "buffer_overrun_41" ||
-                    fname == "buffer_overrun_81" ||
-                    fname == "buffer_overrun_91" ||
-                    fname == "buffer_overrun_101" ||
-                    fname == "buffer_overrun_111" ||
-                    fname == "sprintf12" ||
-                    fname == "cin11" ||
-                    fname == "alloc1")
-                    continue;
-            }
-
-            fnames.push_back(fname);
-            std::ofstream fout((fname + ext).c_str());
+            std::ofstream fout((testname + str(++subcount) + ext).c_str());
             fout << "#include <string.h>" << std::endl;
             fout << "#include <stdio.h>" << std::endl;
             fout << "#include <stdlib.h>" << std::endl;
@@ -115,18 +82,6 @@ int main(const int argc, const char * const * const argv)
             continue;
         }
     }
-
-    std::ofstream makefile("Makefile");
-    makefile << "all:";
-    for (std::list<std::string>::const_iterator it = fnames.begin(); it != fnames.end(); ++it)
-        makefile << "\t" << *it << ".o";
-    makefile << std::endl;
-    for (std::list<std::string>::const_iterator it = fnames.begin(); it != fnames.end(); ++it)
-    {
-        makefile << *it << ".o:\t" << *it << ext << std::endl;
-        makefile << "\t" << gcc << " -c " << *it << ext << std::endl;
-    }
-
 
     return 0;
 }
