@@ -880,7 +880,10 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
         {
             Tokenizer tokenizer;
             std::istringstream istr(s.c_str());
-            tokenizer.tokenize(istr, "");
+            if (!tokenizer.tokenize(istr, ""))
+            {
+                std::cerr << "Error parsing this:\n" << s << "\n\n";
+            }
 
 
             const Token *tok = tokenizer.tokens();
