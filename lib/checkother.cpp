@@ -1361,6 +1361,9 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
 
         if (tok->varId() == varid)
         {
+            if (array && !Token::simpleMatch(tok->next(), "["))
+                continue;
+            
             if (Token::simpleMatch(tok->previous(), "return"))
                 return tok;
 
