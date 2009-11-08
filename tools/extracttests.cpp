@@ -43,7 +43,7 @@ int main(const int argc, const char * const * const argv)
             continue;
         }
 
-        if (!testname.empty() && line.find(" check(\"") != std::string::npos)
+        if (!testname.empty() && line.find(" check") != std::string::npos && line.find("(\"") != std::string::npos)
         {
             std::ofstream fout((testname + str(++subcount) + ext).c_str());
             fout << "#include <string.h>" << std::endl;
