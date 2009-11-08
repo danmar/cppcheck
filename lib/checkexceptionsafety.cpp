@@ -97,8 +97,8 @@ void CheckExceptionSafety::unsafeNew()
         if (tok->str() != ":")
             continue;
 
-        // count "new" and check that it's an initializer list..
-        unsigned int countNew = 0;
+        // multiple "new" in an initializer list..
+        std::string varname;
         for (tok = tok->next(); tok; tok = tok->next())
         {
             if (!Token::Match(tok, "%var% ("))
@@ -106,22 +106,21 @@ void CheckExceptionSafety::unsafeNew()
             tok = tok->next();
             if (Token::Match(tok->next(), "new %type%"))
             {
-                if (countNew > 0 || !autodealloc(tok->tokAt(2), _tokenizer->tokens()))
+                if (!varname.empty())
                 {
-                    ++countNew;
+                    unsafeNewError(tok->previous(), varname);
+                    break;
+                }
+                if (!autodealloc(tok->tokAt(2), _tokenizer->tokens()))
+                {
+                    varname = tok->strAt(-1);
                 }
             }
             tok = tok->link();
             tok = tok ? tok->next() : 0;
             if (!tok)
                 break;
-            if (tok->str() == "{")
-            {
-                if (countNew > 1)
-                    unsafeNewError(tok);
-                break;
-            }
-            else if (tok->str() != ",")
+            if (tok->str() != ",")
                 break;
         }
         if (!tok)
@@ -143,7 +142,7 @@ void CheckExceptionSafety::unsafeNew()
             continue;
 
         // inspect the constructor..
-        unsigned int countNew = 0;
+        std::string varname;
         for (tok = tok->tokAt(3)->link()->tokAt(2); tok; tok = tok->next())
         {
             if (tok->str() == "{" || tok->str() == "}")
@@ -154,28 +153,26 @@ void CheckExceptionSafety::unsafeNew()
             // allocating with new..
             if (Token::Match(tok, "%var% = new %type%"))
             {
-                if (countNew > 0 || !autodealloc(tok->tokAt(3), _tokenizer->tokens()))
+                if (!varname.empty())
                 {
-                    ++countNew;
-                    if (countNew > 1)
-                    {
-                        unsafeNewError(tok);
-                        break;
-                    }
+                    unsafeNewError(tok, varname);
+                    break;
                 }
+                if (!autodealloc(tok->tokAt(3), _tokenizer->tokens()))
+                    varname = tok->str();
             }
         }
     }
 
     // allocating multiple local variables..
     std::set<unsigned int> localVars;
-    unsigned int countNew = 0;
+    std::string varname;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "{" || tok->str() == "}")
         {
             localVars.clear();
-            countNew = 0;
+            varname = "";
         }
 
         if (Token::Match(tok, "[;{}] %type% * %var% ;"))
@@ -187,10 +184,13 @@ void CheckExceptionSafety::unsafeNew()
 
         if (Token::Match(tok, "; %var% = new"))
         {
+            if (!varname.empty())
+            {
+                unsafeNewError(tok->next(), varname);
+                break;
+            }
             if (tok->next()->varId() && localVars.find(tok->next()->varId()) != localVars.end())
-                ++countNew;
-            if (countNew >= 2)
-                unsafeNewError(tok->next());
+                varname = tok->strAt(1);
         }
     }
 }
@@ -259,3 +259,83 @@ void CheckExceptionSafety::realloc()
         }
     }
 }
+
+
+void CheckExceptionSafety::deallocThrow()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() != "delete")
+            continue;
+
+        // Check if this is something similar with: "delete p;"
+        tok = tok->next();
+        if (Token::simpleMatch(tok, "[ ]"))
+            tok = tok->tokAt(2);
+        if (!tok)
+            break;
+        if (!Token::Match(tok, "%var% ;"))
+            continue;
+        const unsigned int varid(tok->varId());
+        if (varid == 0)
+            continue;
+
+        // is this variable a global variable?
+        {
+            bool globalVar = false;
+            for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
+            {
+                if (tok->varId() == varid)
+                {
+                    globalVar = true;
+                    break;
+                }
+
+                if (tok2->str() == "class")
+                {
+                    while (tok2 && tok2->str() != ";" && tok2->str() != "{")
+                        tok2 = tok2->next();
+                    tok2 = tok2 ? tok2->next() : 0;
+                    if (!tok2)
+                        break;
+                }
+
+                if (tok2->str() == "{")
+                {
+                    tok2 = tok2->link();
+                    if (!tok2)
+                        break;
+                }
+            }
+            if (!globalVar)
+                continue;
+        }
+
+        // is there a throw after the deallocation?
+        unsigned int indentlevel = 0;
+        const Token *ThrowToken = 0;
+        for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "{")
+                ++indentlevel;
+            else if (tok2->str() == "}")
+            {
+                if (indentlevel == 0)
+                    break;
+                --indentlevel;
+            }
+
+            if (tok2->str() == "throw")
+                ThrowToken = tok2;
+
+            else if (Token::Match(tok2, "%varid% =", varid))
+            {
+                if (ThrowToken)
+                    deallocThrowError(ThrowToken, tok->str());
+                break;
+            }
+        }
+    }
+}
+
+

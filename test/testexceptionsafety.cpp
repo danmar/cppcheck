@@ -37,6 +37,7 @@ private:
         TEST_CASE(destructors);
         TEST_CASE(newnew);
         TEST_CASE(realloc);
+        TEST_CASE(deallocThrow);
     }
 
     void check(const std::string &code)
@@ -55,9 +56,7 @@ private:
         settings._checkCodingStyle = true;
         settings._exceptionSafety = true;
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
-        checkExceptionSafety.destructors();
-        checkExceptionSafety.unsafeNew();
-        checkExceptionSafety.realloc();
+        checkExceptionSafety.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
     void destructors()
@@ -66,7 +65,7 @@ private:
               "{\n"
               "    throw e;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Throwing exception in destructor is not recommended\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Throwing exception in destructor\n", errout.str());
     }
 
     void newnew()
@@ -74,7 +73,7 @@ private:
         const std::string AB("class A { }; class B { }; ");
 
         check(AB + "C::C() : a(new A), b(new B) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Upon exception there are memory leaks\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Upon exception there is memory leak: a\n", errout.str());
 
         check("C::C() : a(new A), b(new B) { }");
         ASSERT_EQUALS("", errout.str());
@@ -84,14 +83,14 @@ private:
               "    a = new A;\n"
               "    b = new B;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there are memory leaks\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leak: a\n", errout.str());
 
         check("void a()\n"
               "{\n"
               "    A *a1 = new A;\n"
               "    A *a2 = new A;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there are memory leaks\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leak: a1\n", errout.str());
     }
 
     void realloc()
@@ -119,6 +118,19 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocThrow()
+    {
+        check("int * p;\n"
+              "void f(int x)\n"
+              "{\n"
+              "    delete p;\n"
+              "    if (x)\n"
+              "        throw 123;\n"
+              "    p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Throwing exception in invalid state, p points at deallocated memory\n", errout.str());
     }
 };
 
