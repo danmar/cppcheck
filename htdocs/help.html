@@ -1,0 +1,97 @@
+<html>
+<body>
+
+<h1>Help</h1>
+
+<p>If you have a question, you can ask in our <a href="http://sourceforge.net/apps/phpbb/cppcheck/">forum</a>.</p>
+
+
+<h2>First example</h2>
+
+Here is a simple code:
+<blockquote><code><pre>int main()
+{
+    char a[10];
+    a[10] = 0;
+    return 0;
+}</pre></code></blockquote>
+
+If you save that into <i>file1.c</i> and execute:
+
+<blockquote><code><pre>cppcheck file1.c</pre></code></blockquote>
+The output from cppcheck will then be:
+<blockquote><code><pre>Checking file1.c...
+[file1.c:4]: (error) Array index out of bounds</pre></code></blockquote>
+
+<h2>Checking all files in a folder</h2>
+
+Normally a program has many sourcefiles. And you want to check them all. Cppcheck can check all sourcefiles in a directory:
+<blockquote><code><pre>cppcheck path</pre></code></blockquote>
+
+If "path" is a folder all sourcefiles in it will be checked:
+
+<blockquote><code><pre>Checking path/file1.cpp...
+1/2 files checked 50% done
+Checking path/file2.cpp...
+2/2 files checked 100% done</pre></code></blockquote>
+
+
+<h2>Uncertain errors</h2>
+
+<p>By default, only certain errors are reported.</p>
+
+<p>With "--all" you will get more reports. But beware - some messages may be wrong.</p>
+
+<p>Here is a simple code example:</p>
+
+<blockquote><code><pre>void f()
+{
+    Fred *fred = new Fred;
+}</pre></code></blockquote>
+
+<p>Execute this command:</p>
+
+<blockquote><code><pre>cppcheck --all file1.cpp</pre></code></blockquote>
+
+<p>The output from Cppcheck:</p>
+
+<blockquote><code><pre>[file1.cpp:4]: (possible error) Memory leak: fred</pre></code></blockquote>
+
+<p>The "possible" means that the reported message may be wrong (if Fred has automatic deallocation it is not a memory leak).</p>
+
+
+<h2>Stylistic issues</h2>
+
+<p>By default Cppcheck will only check for bugs. There are also a few checks for stylistic issues.</p>
+
+<p>Here is a simple code example:</p>
+
+<blockquote><code><pre>void f(int x)
+{
+    int i;
+    if (x == 0)
+    {
+        i = 0;
+    }
+}</pre></code></blockquote>
+
+<p>To enable stylistic checks, use the --style flag:</p>
+
+<blockquote><code><pre>cppcheck --style file3.c</pre></code></blockquote>
+
+<blockquote><code><pre>[file3.c:3]: (style) The scope of the variable i can be limited</pre></code></blockquote>
+
+
+<h2>More..</h2>
+
+<p>You can generate XML output:</p>
+<blockquote><code><pre>cppcheck --xml file3.c</pre></code></blockquote>
+
+<p>You can suppress certain errors:</p>
+<blockquote><code><pre>cppcheck --suppressions=mysuppressions.txt file3.c</pre></code></blockquote>
+
+<p>If you get false positives about memory leaks because of automatic deallocation:</p>
+<blockquote><code><pre>cppcheck --auto-dealloc autodealloc.lst file4.cpp</pre></code></blockquote>
+
+</body>
+</html>
