@@ -702,7 +702,7 @@ private:
         // errors..
         checkNullPointer("void foo(struct ABC *abc)\n"
                          "{\n"
-                         "    int *a = abc->a;\n"
+                         "    int a = abc->a;\n"
                          "    if (!abc)\n"
                          "        ;\n"
                          "}\n");
@@ -737,7 +737,7 @@ private:
         // reassign struct..
         checkNullPointer("void foo(struct ABC *abc)\n"
                          "{\n"
-                         "    a = abc->a;\n"
+                         "    int a = abc->a;\n"
                          "    abc = abc->next;\n"
                          "    if (!abc)\n"
                          "        ;\n"
@@ -746,7 +746,7 @@ private:
 
         checkNullPointer("void foo(struct ABC *abc)\n"
                          "{\n"
-                         "    a = abc->a;\n"
+                         "    int a = abc->a;\n"
                          "    f(&abc);\n"
                          "    if (!abc)\n"
                          "        ;\n"
@@ -756,6 +756,7 @@ private:
         // goto..
         checkNullPointer("void foo(struct ABC *abc)\n"
                          "{\n"
+                         "    int a;\n"
                          "    if (!abc)\n"
                          "        goto out;"
                          "    a = abc->a;\n"
