@@ -178,7 +178,7 @@ private:
     void noerr3()
     {
         check("struct { char data[10]; } abc;\n"
-              "static void f()\n"
+              "static char f()\n"
               "{\n"
               "    char data[1];\n"
               "    return abc.data[1];\n"
