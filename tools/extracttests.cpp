@@ -28,11 +28,11 @@ int main(const int argc, const char * const * const argv)
     std::string line;
     while (std::getline(f, line))
     {
-		{
-	     	std::string::size_type pos = line.find_first_not_of(" ");
-	     	if (pos > 0 && pos != std::string::npos)
-	     		line.erase(0,pos);
-	    }
+        {
+            std::string::size_type pos = line.find_first_not_of(" ");
+            if (pos > 0 && pos != std::string::npos)
+                line.erase(0, pos);
+        }
 
         if (line.compare(0, 5, "void ") == 0)
         {
@@ -41,7 +41,7 @@ int main(const int argc, const char * const * const argv)
             continue;
         }
 
-        if (line =="}")
+        if (line == "}")
         {
             testname = "";
             subcount = 0;
@@ -54,90 +54,90 @@ int main(const int argc, const char * const * const argv)
             fout << "#include <string.h>" << std::endl;
             fout << "#include <stdio.h>" << std::endl;
             fout << "#include <stdlib.h>" << std::endl;
-            
+
             if (testname == "nullpointer1")
             {
-            	if (subcount < 6)
-            	{
-	            	fout << "class Token\n"
-	            		 << "{\n"
-	            		 << "public:\n"
-	            		 << "    const char  *str() const;\n"
-	            		 << "    const Token *next() const;\n"
-	            		 << "    unsigned int size() const;\n"
-	            		 << "    char         read () const;\n"
-	            		 << "    operator bool() const;\n"
-	            		 << "};\n"
-	            		 << "static Token *tokens;\n";
-            	}
-            	else
-            	{
-					fout << "struct A\n"
-                            "{\n"
-                            "    char b();\n"
-                            "    A *next;\n"
-                            "};\n";
-                }         		 
+                if (subcount < 6)
+                {
+                    fout << "class Token\n"
+                    << "{\n"
+                    << "public:\n"
+                    << "    const char  *str() const;\n"
+                    << "    const Token *next() const;\n"
+                    << "    unsigned int size() const;\n"
+                    << "    char         read () const;\n"
+                    << "    operator bool() const;\n"
+                    << "};\n"
+                    << "static Token *tokens;\n";
+                }
+                else
+                {
+                    fout << "struct A\n"
+                    "{\n"
+                    "    char b();\n"
+                    "    A *next;\n"
+                    "};\n";
+                }
             }
-            
+
             if (testname == "nullpointer2")
             {
-            	fout << "class Fred\n"
-            		 << "{\n"
-            		 << "public:\n"
-            		 << "    void hello() const;\n"
-            		 << "    operator bool() const;\n"
-            		 << "};\n";
+                fout << "class Fred\n"
+                << "{\n"
+                << "public:\n"
+                << "    void hello() const;\n"
+                << "    operator bool() const;\n"
+                << "};\n";
             }
-            
+
             if (testname == "nullpointer3")
             {
-            	fout << "struct DEF { };\n"
-            		 << "struct ABC : public DEF\n"
-            		 << "{\n"
-            		 << "    int a,b,c;\n"
-            		 << "    struct ABC *next;\n"
-            		 << "};\n"
-            		 << "void bar(int); void f(struct ABC **);\n";
+                fout << "struct DEF { };\n"
+                << "struct ABC : public DEF\n"
+                << "{\n"
+                << "    int a,b,c;\n"
+                << "    struct ABC *next;\n"
+                << "};\n"
+                << "void bar(int); void f(struct ABC **);\n";
             }
-            
+
             if (testname == "nullpointer4")
             {
-            	fout << "void bar(int);\n"
-            		 << "int** f(int **p = 0);\n"
-            		 << "extern int x;\n"
-            		 << "struct P {\n"
-            		 << "    bool check() const;\n"
-            		 << "    P* next() const;\n"
-            		 << "};\n";
+                fout << "void bar(int);\n"
+                << "int** f(int **p = 0);\n"
+                << "extern int x;\n"
+                << "struct P {\n"
+                << "    bool check() const;\n"
+                << "    P* next() const;\n"
+                << "};\n";
             }
-            
+
             if (testname == "nullpointer5")
             {
-            	fout << "struct A {\n"
-            		 << "    char c() const;\n"
-            		 << "    operator bool() const;\n"
-            		 << "};\n";
+                fout << "struct A {\n"
+                << "    char c() const;\n"
+                << "    operator bool() const;\n"
+                << "};\n";
             }
-            
+
             if (testname == "nullpointer6")
             {
-            	fout << "struct Foo {\n"
-            		 << "    void abcd() const;\n"
-            		 << "};\n"
-            		 << "struct FooBar : public Foo { };\n"
-            		 << "struct FooCar : public Foo { };\n"
-            		 << "extern int a;\n";
+                fout << "struct Foo {\n"
+                << "    void abcd() const;\n"
+                << "};\n"
+                << "struct FooBar : public Foo { };\n"
+                << "struct FooCar : public Foo { };\n"
+                << "extern int a;\n";
             }
-            
+
             if (testname == "nullpointer7")
             {
-            	fout << "struct wxLongLong {\n"
-            	     << "    wxLongLong(int) { }\n"
-            		 << "    long GetValue() const;\n"
-            		 << "};\n";
+                fout << "struct wxLongLong {\n"
+                << "    wxLongLong(int) { }\n"
+                << "    long GetValue() const;\n"
+                << "};\n";
             }
-            
+
             do
             {
                 std::string::size_type pos = line.find("\"");
