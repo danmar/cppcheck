@@ -406,8 +406,8 @@ private:
                        "private:\n"
                        "    char name[255];\n"
                        "};\n");
-
         ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'John::name'\n", errout.str());
+
         checkUninitVar("class John\n"
                        "{\n"
                        "public:\n"
@@ -416,7 +416,6 @@ private:
                        "private:\n"
                        "    char name[255];\n"
                        "};\n");
-
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("class John\n"
@@ -427,7 +426,6 @@ private:
                        "private:\n"
                        "    char name[255];\n"
                        "};\n");
-
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("class John\n"
@@ -437,7 +435,15 @@ private:
                        "\n"
                        "    double  operator[](const unsigned long i);\n"
                        "};\n");
+        ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("class A;\n"
+                       "class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() { }\n"
+                       "    A a[5];\n"
+                       "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
