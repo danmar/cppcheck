@@ -1203,6 +1203,17 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
             return 0;
         }
 
+        if (Token::Match(tok, "= {"))
+        {
+            tok = tok->next()->link();
+            if (!tok)
+            {
+                init = true;
+                return 0;
+            }
+            continue;
+        }
+
         if (tok->str() == "if")
         {
             bool canInit = false;
