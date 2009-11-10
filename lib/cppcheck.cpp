@@ -521,8 +521,13 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
 
     {
         TIMER_START();
-        _tokenizer.simplifyTokenList();
+        bool result = _tokenizer.simplifyTokenList();
         TIMER_END("Tokenizer::simplifyTokenList");
+        if (!result)
+        {
+            std::cerr << "### A bug in the Cppcheck itself, while checking: " << FileName << "\n";
+            return;
+        }
     }
 
     if (_settings._unusedFunctions)

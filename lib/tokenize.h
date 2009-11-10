@@ -77,8 +77,13 @@ public:
     /** Set variable id */
     void setVarId();
 
-    /** Simplify tokenlist */
-    void simplifyTokenList();
+    /**
+     * Simplify tokenlist
+     *
+     * @return false if there is an error that requires aborting
+     * the checking of this file.
+     */
+    bool simplifyTokenList();
 
     static void deleteTokens(Token *tok);
     static const char *getParameterName(const Token *ftok, int par);
