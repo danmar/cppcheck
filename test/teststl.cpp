@@ -258,28 +258,34 @@ private:
 
     void erase()
     {
-        {
-            check("void f()\n"
-                  "{\n"
-                  "    for (it = foo.begin(); it != foo.end(); ++it)\n"
-                  "    {\n"
-                  "        foo.erase(it);\n"
-                  "    }\n"
-                  "}\n");
-            ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of erase\n", errout.str());
-        }
+        check("void f()\n"
+              "{\n"
+              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        foo.erase(it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of erase\n", errout.str());
 
-        {
-            check("for (it = foo.begin(); it != foo.end(); ++it)\n"
-                  "{\n"
-                  "    foo.erase(it);\n"
-                  "}\n"
-                  "for (it = foo.begin(); it != foo.end(); ++it)\n"
-                  "{\n"
-                  "    foo.erase(it);\n"
-                  "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of erase\n[test.cpp:7]: (error) Dangerous usage of erase\n", errout.str());
-        }
+        check("for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "{\n"
+              "    foo.erase(it);\n"
+              "}\n"
+              "for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "{\n"
+              "    foo.erase(it);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of erase\n[test.cpp:7]: (error) Dangerous usage of erase\n", errout.str());
+
+        check("void f(std::list<int> &ints)\n"
+              "{\n"
+              "    std::list<int>::iterator i = ints.begin();\n"
+              "    i = ints.erase(i);\n"
+              "    *i = 0;\n"
+              "    \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void eraseBreak()

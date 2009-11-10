@@ -73,6 +73,13 @@ void CheckStl::iterators()
 
                 tok2 = tok2->tokAt(4);
             }
+            else if (Token::Match(tok2, "%varid% = %var% . erase (", iteratorId))
+            {
+                validIterator = true;
+                tok2 = tok2->tokAt(5)->link();
+                if (!tok2)
+                    break;
+            }
             else if (!validIterator && Token::Match(tok2, "* %varid%", iteratorId))
             {
                 dereferenceErasedError(tok2, tok2->strAt(1));
