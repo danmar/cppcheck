@@ -138,6 +138,12 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
             varname = next->strAt(1);
         }
 
+        // Pointer array?
+        else if (Token::Match(next, "%type% * %var% ["))
+        {
+            varname = next->strAt(2);
+        }
+
         // std::string..
         else if (withClasses && Token::Match(next, "std :: string %var% ;"))
         {

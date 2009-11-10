@@ -445,6 +445,15 @@ private:
                        "    A a[5];\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class A;\n"
+                       "class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() { }\n"
+                       "    A *a[5];\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Member variable not initialized in the constructor 'John::a'\n", errout.str());
     }
 
     void uninitMissingFuncDef()
