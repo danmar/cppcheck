@@ -60,6 +60,7 @@ private:
         TEST_CASE(pushback6);
         TEST_CASE(pushback7);
         TEST_CASE(pushback8);
+        TEST_CASE(pushback9);
 
         TEST_CASE(insert1);
 
@@ -357,7 +358,7 @@ private:
 
     void pushback1()
     {
-        check("void f()\n"
+        check("void f(const std::vector<int> &foo)\n"
               "{\n"
               "    std::vector<int>::const_iterator it = foo.begin();\n"
               "    foo.push_back(123);\n"
@@ -487,6 +488,28 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) After push_back, the iterator 'end' may be invalid\n", errout.str());
     }
+
+    void pushback9()
+    {
+        check("struct A {\n"
+              "    std::vector<int> ints;\n"
+              "};\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    std::vector<int> ints;\n"
+              "    A a;\n"
+              "    std::vector<int>::const_iterator i = ints.begin();\n"
+              "    std::vector<int>::const_iterator e = ints.end();\n"
+              "    while (i != e)\n"
+              "    {\n"
+              "        a.ints.push_back(*i);\n"
+              "        ++i;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
 
     void insert1()

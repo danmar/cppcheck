@@ -330,7 +330,7 @@ void CheckStl::pushback()
             tok = tok->tokAt(3);
         }
 
-        std::string vectorname;
+        unsigned int vectorid = 0;
         int indent = 0;
         std::string invalidIterator;
         for (const Token *tok2 = tok; indent >= 0 && tok2; tok2 = tok2->next())
@@ -389,16 +389,18 @@ void CheckStl::pushback()
             {
                 if (Token::Match(tok2->tokAt(2), "%var% . begin|end|rbegin|rend ( )"))
                 {
-                    vectorname = tok2->strAt(2);
+                    vectorid = tok2->tokAt(2)->varId();
                     tok2 = tok2->tokAt(6);
                 }
                 else
-                    vectorname = "";
+                {
+                    vectorid = 0;
+                }
                 invalidIterator = "";
             }
 
             // push_back on vector..
-            if (vectorname.size() && Token::Match(tok2, (vectorname + " . push_front|push_back|insert (").c_str()))
+            if (vectorid > 0 && Token::Match(tok2, "%varid% . push_front|push_back|insert (", vectorid))
             {
                 if (!invalidIterator.empty() && Token::Match(tok2->tokAt(2), "insert ( %varid% ,", iteratorid))
                 {
@@ -424,8 +426,6 @@ void CheckStl::pushback()
                     invalidIteratorError(tok2, invalidIterator, tok2->str());
             }
         }
-
-
     }
 }
 
