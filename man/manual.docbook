@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"/usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd">
+<book>
+  <bookinfo>
+    <title>Cppcheck</title>
+
+    <date>2009-10-11</date>
+  </bookinfo>
+
+  <chapter>
+    <title>Getting started</title>
+
+    <section>
+      <title>First test</title>
+
+      <para>Here is a simple code</para>
+
+      <programlisting>int main()
+{
+    char a[10];
+    a[10] = 0;
+    return 0;
+}</programlisting>
+
+      <para>If you save that into <filename>file1.c</filename> and
+      execute:</para>
+
+      <programlisting>cppcheck file1.c</programlisting>
+
+      <para>The output from cppcheck will then be:</para>
+
+      <programlisting>Checking file1.c...
+[file1.c:4]: (error) Array index out of bounds</programlisting>
+    </section>
+
+    <section>
+      <title>Checking all files in a folder</title>
+
+      <para>Normally a program has many sourcefiles. And you want to check
+      them all. Cppcheck can check all sourcefiles in a directory:</para>
+
+      <programlisting>cppcheck path</programlisting>
+
+      <para>If "path" is a folder then cppcheck will check all sourcefiles in
+      this folder.</para>
+
+      <programlisting>Checking path/file1.cpp...
+1/2 files checked 50% done
+Checking path/file2.cpp...
+2/2 files checked 100% done</programlisting>
+    </section>
+
+    <section>
+      <title>Uncertain errors</title>
+
+      <para>By default, only certain errors are reported.</para>
+
+      <para>With "--all" you will get more reports. But beware - some messages
+      may be wrong.</para>
+
+      <para>Here is a simple code example:</para>
+
+      <programlisting>void f()
+{
+    Fred *f = new Fred;
+}</programlisting>
+
+      <para>Execute this command:</para>
+
+      <programlisting>cppcheck --all file1.cpp</programlisting>
+
+      <para>The output from Cppcheck:</para>
+
+      <programlisting>[file1.cpp:4]: (possible error) Memory leak: fred</programlisting>
+
+      <para>The "possible" means that the reported message may be wrong (if
+      Fred has automatic deallocation it is not a memory leak).</para>
+    </section>
+
+    <section>
+      <title>Stylistic issues</title>
+
+      <para>By default Cppcheck will only check for bugs. There are also a few
+      checks for stylistic issues.</para>
+
+      <para>Here is a simple code example:</para>
+
+      <programlisting>void f(int x)
+{
+    int i;
+    if (x == 0)
+    {
+        i = 0;
+    }
+}</programlisting>
+
+      <para>To enable stylistic checks, use the --style flag:</para>
+
+      <programlisting>cppcheck --style file1.c</programlisting>
+
+      <para>The reported error is:</para>
+
+      <programlisting>[file3.c:3]: (style) The scope of the variable i can be limited</programlisting>
+    </section>
+
+    <section>
+      <title>Saving results in file</title>
+
+      <para>Many times you will want to save the results in a file. The
+      results are written to stderr and the progress messages are written to
+      stdout. So you can use the standard redirections to save to file.</para>
+
+      <programlisting>cppcheck file1.c 2&gt; err.txt</programlisting>
+    </section>
+
+    <section>
+      <title>Unused functions</title>
+
+      <para>This check will try to find unused functions. It is best to use
+      this when the whole program is checked, so that all usages is seen by
+      cppcheck.</para>
+
+      <programlisting>cppcheck --unused-functions path</programlisting>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>XML output</title>
+
+    <para>Cppcheck can generate the output in XML format.</para>
+
+    <para>Use the --xml flag when you execute cppcheck:</para>
+
+    <programlisting>cppcheck --xml file1.cpp</programlisting>
+
+    <para>The xml format is:</para>
+
+    <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;results&gt;
+  &lt;error file="file1.cpp" line="123" id="someError" severity="error" msg="some error text"/&gt;
+&lt;/results&gt;</programlisting>
+
+    <para>Attributes:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>file</term>
+
+        <listitem>
+          <para>filename. Both relative and absolute paths are possible</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>line</term>
+
+        <listitem>
+          <para>a number</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>id</term>
+
+        <listitem>
+          <para>id of error. These are always valid symbolnames.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>severity</term>
+
+        <listitem>
+          <para>one of: error / possible error / style / possible style</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>msg</term>
+
+        <listitem>
+          <para>the error message in plain text</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+  </chapter>
+
+  <chapter>
+    <title>Reformatting the output</title>
+
+    <para>If you want to reformat the output so it looks different you can use
+    templates.</para>
+
+    <para>To get Visual Studio compatible output you can use "--template
+    vs":</para>
+
+    <programlisting>cppcheck --template vs gui/test.cpp</programlisting>
+
+    <para>This output will look like this:</para>
+
+    <programlisting>Checking gui/test.cpp...
+gui/test.cpp(31): error: Memory leak: b
+gui/test.cpp(16): error: Mismatching allocation and deallocation: k</programlisting>
+
+    <para>To get gcc compatible output you can use "--template gcc":</para>
+
+    <programlisting>cppcheck --template gcc gui/test.cpp</programlisting>
+
+    <para>The output will look like this:</para>
+
+    <programlisting>Checking gui/test.cpp...
+gui/test.cpp:31: error: Memory leak: b
+gui/test.cpp:16: error: Mismatching allocation and deallocation: k</programlisting>
+
+    <para>You can write your own pattern (for example a comma-separated
+    format):</para>
+
+    <programlisting>cppcheck --template "{file},{line},{severity},{id},{message}" gui/test.cpp</programlisting>
+
+    <para>The output will look like this:</para>
+
+    <programlisting>Checking gui/test.cpp...
+gui/test.cpp,31,error,memleak,Memory leak: b
+gui/test.cpp,16,error,mismatchAllocDealloc,Mismatching allocation and deallocation: k</programlisting>
+
+    <para></para>
+  </chapter>
+
+  <chapter>
+    <title>Suppressions</title>
+
+    <para>If you want to filter out certain errors you can suppress these.
+    First you need to create a suppressions file.</para>
+
+    <programlisting>[error id]:[filename]
+[error id]:[filename2]
+[error id]</programlisting>
+
+    <para>The <literal>error id</literal> is the id that you want to suppress.
+    The easiest way to get it is to use the <literal>--xml</literal> command
+    line flag. Copy and paste the <literal>id</literal> string from the xml
+    output.</para>
+
+    <para>Here is an example:</para>
+
+    <programlisting>memleak:file1.cpp
+exceptNew:file1.cpp
+uninitvar</programlisting>
+
+    <para>You can then use the suppressions file:</para>
+
+    <programlisting>cppcheck --suppressions suppressions.txt src/</programlisting>
+
+    <para></para>
+  </chapter>
+
+  <chapter>
+    <title>Leaks</title>
+
+    <para>Looking for memory leaks and resource leaks is a key feature of
+    Cppcheck. Cppcheck can detect many common mistakes by default. But through
+    some tweaking you can both increase the capabilities and also reduce the
+    amount of false positives.</para>
+
+    <section>
+      <title>Automatic deallocation</title>
+
+      <para>A common cause of false positives is when there is automatic
+      deallocation. Here is an example:</para>
+
+      <programlisting>void Form1::foo()
+{
+    QPushButton *pb = new QPushButton( "OK", this );
+}</programlisting>
+
+      <para>Cppcheck can't see where the deallocation is when you have such
+      code.</para>
+
+      <para>If you execute:</para>
+
+      <programlisting>cppcheck --all file1.cpp</programlisting>
+
+      <para>The result will be:</para>
+
+      <programlisting>[file1.cpp:4]: (possible error) Memory leak: pb</programlisting>
+
+      <para>The "possible" in the error message means that the message may be
+      a false positive.</para>
+
+      <para>To avoid such false positives, create a textfile and write the
+      names of the automaticly deallocated classes.</para>
+
+      <programlisting>QLabel
+QPushButton</programlisting>
+
+      <para>Then execute cppcheck with the <literal>--auto-dealloc</literal>
+      option:</para>
+
+      <programlisting>cppcheck --auto-dealloc qt.lst file1.cpp</programlisting>
+    </section>
+
+    <section>
+      <title>Userdefined allocation/deallocation functions</title>
+
+      <para>Cppcheck understands many common allocation and deallocation
+      functions. But not all.</para>
+
+      <para>Here is a trick to add custom checking. First we write simple
+      implementations for the allocation and deallocation functions:</para>
+
+      <programlisting>void *CreateFred()
+{
+    return malloc(100);
+}
+
+void DestroyFred(void *p)
+{
+    free(p);
+}</programlisting>
+
+      <para>When Cppcheck see this it understands that CreateFred will return
+      allocated memory and that DestroyFred will deallocate memory.</para>
+
+      <para>Here is an example program that uses CreateFred and
+      DestroyFred:</para>
+
+      <programlisting>void foo(int x)
+{
+    void *f = CreateFred();
+    if (x == 1)
+        return;
+    DestroyFred(f);
+}</programlisting>
+
+      <para>Execute Cppcheck this way:</para>
+
+      <programlisting>cppcheck --append=fred.cpp fred1.cpp</programlisting>
+
+      <para>The output from cppcheck is:</para>
+
+      <programlisting>Checking fred1.cpp...
+[fred1.cpp:5]: (error) Memory leak: f</programlisting>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>Exception safety</title>
+
+    <para>Cppcheck has a few checks that ensure that you don't break the basic
+    guarantee of exception safety. We don't have any checks for the strong
+    guarantee yet.</para>
+
+    <para>Example:</para>
+
+    <programlisting>Fred::Fred() : a(new int[20]), b(new int[20])
+{
+}</programlisting>
+
+    <para>By default cppcheck will not detect any problems in that
+    code.</para>
+
+    <para>To enable the exception safety checking you can use
+    <literal>--enable</literal>:</para>
+
+    <programlisting>cppcheck --enable except.cpp</programlisting>
+
+    <para>The output will be:</para>
+
+    <programlisting>[except.cpp:3]: (style) Upon exception there is memory leak: a</programlisting>
+
+    <para>If an exception occurs when <literal>b</literal> is allocated,
+    <literal>a</literal> will leak.</para>
+
+    <para></para>
+  </chapter>
+</book>
