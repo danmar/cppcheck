@@ -1022,6 +1022,7 @@ void Tokenizer::simplifyTemplates()
                         int indentlevel = 0;
                         std::stack<Token *> braces;     // holds "{" tokens
                         std::stack<Token *> brackets;   // holds "(" tokens
+                        std::stack<Token *> brackets2;  // holds "[" tokens
 
                         for (; tok3; tok3 = tok3->next())
                         {
@@ -1091,11 +1092,21 @@ void Tokenizer::simplifyTemplates()
                             {
                                 brackets.push(_tokensBack);
                             }
+                            else if (tok3->str() == "[")
+                            {
+                                brackets2.push(_tokensBack);
+                            }
                             else if (tok3->str() == ")")
                             {
                                 assert(brackets.empty() == false);
                                 Token::createMutualLinks(brackets.top(), _tokensBack);
                                 brackets.pop();
+                            }
+                            else if (tok3->str() == "]")
+                            {
+                                assert(brackets2.empty() == false);
+                                Token::createMutualLinks(brackets2.top(), _tokensBack);
+                                brackets2.pop();
                             }
 
                         }
@@ -2015,6 +2026,8 @@ bool Tokenizer::simplifyTokenList()
 
             tok->deleteNext();
             tok->deleteNext();
+
+            Token::createMutualLinks(next->tokAt(1), next->tokAt(3));
         }
     }
 
@@ -4472,11 +4485,6 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
 
 bool Tokenizer::validate() const
 {
-    // TODO, this is here just to prevent errors, until
-    // the known problems are fixed. When testrunner works
-    // with validate enabled, this can be removed.
-    if (true) return true;
-
     std::stack<const Token *> linktok;
 
     for (const Token *tok = tokens(); tok; tok = tok->next())
