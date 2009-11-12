@@ -2197,6 +2197,22 @@ private:
 
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[] = "void foo(Result* ptr)\n"
+                                "{\n"
+                                "    Result* obj = ptr;\n"
+                                "    ++obj->total;\n"
+                                "}\n";
+
+            const char expected[] = "void foo ( Result * ptr ) "
+                                    "{ "
+                                    "Result * obj ; obj = ptr ; "
+                                    "++ obj . total ; "
+                                    "}";
+
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
 
