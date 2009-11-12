@@ -1444,6 +1444,13 @@ private:
     {
         ASSERT_EQUALS("; a = b ; while ( a ) { b = 0 ; a = b ; }", simplifyIfAssign(";while(a=b) { b = 0; }"));
         ASSERT_EQUALS("; a . b = c ; while ( a . b ) { c = 0 ; a . b = c ; }", simplifyIfAssign(";while(a.b=c) { c=0; }"));
+        ASSERT_EQUALS("struct hfs_bnode * node ; "
+                      "struct hfs_btree * tree ; "
+                      "node = tree . node_hash [ i ++ ] ; "
+                      "while ( node ) { node = tree . node_hash [ i ++ ] ; }",
+                      tok("struct hfs_bnode *node;"
+                          "struct hfs_btree *tree;"
+                          "while ((node = tree->node_hash[i++])) { }"));
     }
 
 

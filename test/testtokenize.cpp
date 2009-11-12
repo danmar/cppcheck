@@ -40,7 +40,7 @@ private:
     void run()
     {
         TEST_CASE(tokenize1);
-        
+
         TEST_CASE(minus);
 
         TEST_CASE(longtok);
