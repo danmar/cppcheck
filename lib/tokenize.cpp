@@ -4609,6 +4609,8 @@ void Tokenizer::simplifyComparisonOrder()
     {
         if (Token::Match(tok, "[;(] %any% >|>= %any% [);]"))
         {
+            if (!tok->next()->isName() && !tok->next()->isNumber())
+                continue;
             const std::string op1(tok->strAt(1));
             tok->next()->str(tok->strAt(3));
             tok->tokAt(3)->str(op1);

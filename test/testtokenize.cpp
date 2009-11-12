@@ -39,6 +39,8 @@ private:
 
     void run()
     {
+        TEST_CASE(tokenize1);
+        
         TEST_CASE(minus);
 
         TEST_CASE(longtok);
@@ -209,6 +211,13 @@ private:
         return ostr.str();
     }
 
+
+    void tokenize1()
+    {
+        const std::string code("void f ( )\n"
+                               "{ if ( p . y ( ) > yof ) { } }");
+        ASSERT_EQUALS(code, tokenizeAndStringify(code.c_str()));
+    }
 
     void minus()
     {
