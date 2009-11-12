@@ -716,6 +716,7 @@ void CheckBufferOverrun::checkStructVariable()
                 continue;
 
             const char *varname[3] = {0, 0, 0};
+            const unsigned int varId = tok2->tokAt(ivar)->varId();
             varname[1] = tok2->strAt(ivar);
             int arrsize = std::atoi(tok2->strAt(ivar + 2));
             int total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(1));
@@ -737,8 +738,7 @@ void CheckBufferOverrun::checkStructVariable()
 
                         if (Token::simpleMatch(tok4, ") {"))
                         {
-                            const char *names[2] = {varname[1], 0};
-                            checkScope(tok4->tokAt(2), names, arrsize, total_size, 0);
+                            checkScope(tok4->tokAt(2), 0, arrsize, total_size, varId);
                             break;
                         }
                     }

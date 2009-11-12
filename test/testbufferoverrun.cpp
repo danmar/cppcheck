@@ -89,6 +89,7 @@ private:
         TEST_CASE(array_index_18);
         TEST_CASE(array_index_19);
         TEST_CASE(array_index_20);
+        TEST_CASE(array_index_21);
         TEST_CASE(array_index_multidim);
 
         TEST_CASE(buffer_overrun_1);
@@ -649,6 +650,21 @@ private:
               " int b[10];\n"
               " for ( int i = 0; i < 9; i++ )\n"
               "  b[i] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_21()
+    {
+        check("class A {\n"
+              " int indices[2];\n"
+              " void foo(int indices[3]);\n"
+              "};\n"
+              "\n"
+              "void A::foo(int indices[3]) {\n"
+              " for(int j=0; j<3; ++j) {\n"
+              "  int b = indices[j];\n"
+              " }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
