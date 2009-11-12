@@ -90,6 +90,7 @@ private:
         TEST_CASE(array_index_19);
         TEST_CASE(array_index_20);
         TEST_CASE(array_index_21);
+        TEST_CASE(array_index_22);
         TEST_CASE(array_index_multidim);
 
         TEST_CASE(buffer_overrun_1);
@@ -667,6 +668,16 @@ private:
               " }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_22()
+    {
+        check("#include <cstring>\n"
+              "int main() {\n"
+              "  size_t indices[2];\n"
+              "  int b = indices[2];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
     }
 
     void array_index_multidim()

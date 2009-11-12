@@ -1600,6 +1600,7 @@ void Tokenizer::simplifySizeof()
     _typeSize["long"] = sizeof(long);
     _typeSize["float"] = sizeof(float);
     _typeSize["double"] = sizeof(double);
+    _typeSize["size_t"] = sizeof(size_t);
     _typeSize["*"] = sizeof(void *);
 
     for (Token *tok = _tokens; tok; tok = tok->next())

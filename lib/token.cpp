@@ -529,7 +529,7 @@ size_t Token::getStrLength(const Token *tok)
 bool Token::isStandardType() const
 {
     bool ret = false;
-    const char *type[] = {"bool", "char", "short", "int", "long", "float", "double", 0};
+    const char *type[] = {"bool", "char", "short", "int", "long", "float", "double", "size_t", 0};
     for (int i = 0; type[i]; i++)
         ret |= (_str == type[i]);
     return ret;
