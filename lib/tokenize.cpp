@@ -3198,6 +3198,8 @@ void Tokenizer::simplifyIfAssign()
             if (tok3 && indentlevel == 1)
             {
                 tok3 = tok3->previous();
+                std::list<Token *> braces2;
+
                 for (tok2 = tok2->next(); tok2 && tok2 != tok; tok2 = tok2->previous())
                 {
                     tok3->insertToken(tok2->strAt(0));
@@ -3211,10 +3213,19 @@ void Tokenizer::simplifyIfAssign()
                     {
                         braces.push_back(newTok);
                     }
+                    else if (newTok->str() == "]")
+                    {
+                        braces2.push_back(newTok);
+                    }
                     else if (newTok->str() == "(")
                     {
                         Token::createMutualLinks(newTok, braces.back());
                         braces.pop_back();
+                    }
+                    else if (newTok->str() == "[")
+                    {
+                        Token::createMutualLinks(newTok, braces2.back());
+                        braces2.pop_back();
                     }
                 }
             }
