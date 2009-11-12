@@ -585,6 +585,8 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
      * - try to change "for" loop to a "while" loop instead
      */
 
+    simplifyConst();
+
     // Split up variable declarations.
     simplifyVarDecl();
 
@@ -4630,6 +4632,18 @@ void Tokenizer::simplifyComparisonOrder()
                 tok->tokAt(2)->str("<");
             else
                 tok->tokAt(2)->str("<=");
+        }
+    }
+}
+
+void Tokenizer::simplifyConst()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[;{}(,] %type% const"))
+        {
+            tok->tokAt(2)->str(tok->tokAt(1)->str());
+            tok->tokAt(1)->str("const");
         }
     }
 }

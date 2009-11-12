@@ -316,6 +316,11 @@ private:
     void simplifyComparisonOrder();
 
     /**
+     * Change "int const x;" into "const int x;"
+     */
+    void simplifyConst();
+
+    /**
      * Remove exception specifications. This function calls itself recursively.
      * @param tok First token in scope to cleanup
      */

@@ -164,6 +164,7 @@ private:
         TEST_CASE(gt);      // use "<" comparisons instead of ">"
 
         TEST_CASE(simplifyString);
+        TEST_CASE(simplifyConst);
     }
 
 
@@ -2617,6 +2618,27 @@ private:
         ASSERT_EQUALS("\"a3\"", tokenizer->simplifyString("\"\\x333\""));
     }
 
+    void simplifyConst()
+    {
+        ASSERT_EQUALS("void foo ( ) { const int x ; }",
+                      tokenizeAndStringify("void foo(){ int const x;}"));
+
+        ASSERT_EQUALS("void foo ( ) { { } const long x ; }",
+                      tokenizeAndStringify("void foo(){ {} long const x;}"));
+
+        ASSERT_EQUALS("void foo ( ) { bar ( ) ; const char x ; }",
+                      tokenizeAndStringify("void foo(){ bar(); char const x;}"));
+
+        ASSERT_EQUALS("void foo ( const char x ) { }",
+                      tokenizeAndStringify("void foo(char const x){}"));
+
+        ASSERT_EQUALS("void foo ( int b , const char x ) { }",
+                      tokenizeAndStringify("void foo(int b,char const x){}"));
+
+        ASSERT_EQUALS("void foo ( ) { int * const x ; }",
+                      tokenizeAndStringify("void foo(){ int * const x;}"));
+
+    }
 };
 
 REGISTER_TEST(TestTokenizer)
