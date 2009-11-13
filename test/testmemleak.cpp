@@ -488,6 +488,7 @@ private:
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { dealloc; return; }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { return use; }"));
         ASSERT_EQUALS("; alloc ; return ;", simplifycode(";alloc;if{return;}return;"));
+        ASSERT_EQUALS("; alloc ; assign ; dealloc ;", simplifycode(";alloc;if{assign;}dealloc;"));
 
         // switch..
         ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode(";alloc;switch{case;break;};dealloc;"));

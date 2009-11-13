@@ -1268,7 +1268,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 // Otherwise, only the "if" will be deleted
                 else if (Token::Match(tok2, "[;{}] if assign|dealloc|use ; !!else"))
                 {
-                    if (_settings->_showAll && !Token::simpleMatch(tok2->tokAt(2), "dealloc ; dealloc"))
+                    if (_settings->_showAll && tok2->tokAt(2)->str() != "assign" && !Token::simpleMatch(tok2->tokAt(2), "dealloc ; dealloc"))
                     {
                         Token::eraseTokens(tok2, tok2->tokAt(3));
                         all = true;
