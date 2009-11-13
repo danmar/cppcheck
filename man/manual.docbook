@@ -9,6 +9,42 @@
   </bookinfo>
 
   <chapter>
+    <title>Introduction</title>
+
+    <para>Cppcheck is a static analysis tool for C/C++ code - it textually
+    inspects the source code to detect bugs.</para>
+
+    <para>Cppcheck detects issues that you will not find with your compiler.
+    But Cppcheck doesn't detect the types of bugs that compilers
+    detect.</para>
+
+    <para>It is our goal to generate no false positives. We always try to
+    achieve 0 false positives. It means that there will always be issues that
+    Cppcheck fail to detect.</para>
+
+    <para>Supported platforms:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>You can check non-standard code that includes various compiler
+        extensions, inline assembly code, etc.</para>
+      </listitem>
+
+      <listitem>
+        <para>Cppcheck is supposed to be compilable by any C++ compiler which
+        handles the latest C++ standard.</para>
+      </listitem>
+
+      <listitem>
+        <para>Cppcheck is supposed to work on any platform that has sufficient
+        cpu and memory.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para></para>
+  </chapter>
+
+  <chapter>
     <title>Getting started</title>
 
     <section>
