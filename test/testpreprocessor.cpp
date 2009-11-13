@@ -73,6 +73,10 @@ private:
         TEST_CASE(test4);
         TEST_CASE(test5);
         TEST_CASE(test6);
+        TEST_CASE(test7);
+
+        // #error => don't extract any code
+        TEST_CASE(error1);
 
         // Handling include guards (don't create extra configuration for it)
         TEST_CASE(includeguard);
@@ -381,6 +385,29 @@ private:
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nA\n\nB\n\n\n", actual["ABC"]);
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+    }
+
+
+    void error1()
+    {
+        const char filedata[] = "#ifdef A\n"
+                                ";\n"
+                                "#else\n"
+                                "#error abcd\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        errout.str("");
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("", actual[""]);
+        ASSERT_EQUALS("\n;\n\n\n\n", actual["A"]);
+
     }
 
 
@@ -1286,7 +1313,7 @@ private:
     {
         {
             const char filedata[] = "#define A \n"
-                                    "#error don't want to \\\n"
+                                    "#define B don't want to \\\n"
                                     "more text\n"
                                     "void f()\n"
                                     "{\n"

@@ -1088,7 +1088,6 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             continue;
         }
 
-
         std::string def = getdef(line, true);
         std::string ndef = getdef(line, false);
 
@@ -1150,6 +1149,9 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
                 match &= bool(*it);
         }
 
+        // #error => return ""
+        if (match && line.compare(0, 6, "#error") == 0)
+            return "";
 
         if (!match && line.find("#define") == 0)
         {
