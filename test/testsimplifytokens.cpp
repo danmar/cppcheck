@@ -69,6 +69,7 @@ private:
         TEST_CASE(sizeof11);
         TEST_CASE(sizeof12);
         TEST_CASE(sizeof13);
+        TEST_CASE(sizeof14);
         TEST_CASE(casting);
 
         TEST_CASE(strlen1);
@@ -881,6 +882,22 @@ private:
                                 "{"
                                 " char * b [ 2 ] ; "
                                 "} ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void sizeof14()
+    {
+        // ticket #954
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    A **a;\n"
+                            "    int aa = sizeof *(*a)->b;\n"
+                            "}\n";
+        const char expected[] = "void f ( ) "
+                                "{"
+                                " A * * a ;"
+                                " int aa ; aa = sizeof ( * ( * a ) . b ) ; "
+                                "}";
         ASSERT_EQUALS(expected, tok(code));
     }
 

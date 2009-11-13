@@ -1721,6 +1721,11 @@ void Tokenizer::simplifySizeof()
                         // nothing after this
                         tempToken = tempToken->tokAt(2);
                     }
+                    else if (Token::simpleMatch(tempToken->next(), ") ."))
+                    {
+                        tempToken = tempToken->tokAt(2);
+                        continue;
+                    }
 
                     // Ok, we should be clean. Add ) after tempToken
                     tok->insertToken("(");
