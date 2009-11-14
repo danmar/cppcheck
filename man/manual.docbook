@@ -11,16 +11,10 @@
   <chapter>
     <title>Introduction</title>
 
-    <para>Cppcheck is a static analysis tool for C/C++ code - it textually
-    inspects your C/C++ source code to detect bugs.</para>
-
-    <para>Cppcheck detects issues that you will not find with your compiler.
-    But Cppcheck doesn't detect the types of bugs that compilers
-    detect.</para>
-
-    <para>It is our goal to generate no false positives. We always try to
-    achieve 0 false positives. There will always be issues that Cppcheck fail
-    to detect.</para>
+    <para>Cppcheck is an analysis tool for C/C++ code. Unlike C/C++ compilers
+    and many other analysis tools, we don't detect syntax errors. Cppcheck
+    only detects the types of bugs that the compilers normally fail to detect.
+    The goal is no false positives. </para>
 
     <para>Supported platforms:</para>
 
@@ -92,24 +86,14 @@ Checking path/file2.cpp...
       <literal><literal>Cppcheck</literal></literal> is sure there is an
       error.</para>
 
-      <para>When a likely issue is discovered, <literal>Cppcheck</literal>
-      bails out without reporting this issue - to prevent false positives. But
-      with <literal>--all</literal> you can ensure that these issues are
+      <para>When a likely issue is discovered <literal>Cppcheck</literal>
+      bails out without reporting this issue - to prevent false positives.
+      When <literal>--all</literal> is given, these issues are
       reported.</para>
 
       <para>The <literal>--all</literal> flag is useful but makes
-      <literal>Cppcheck</literal> more unreliable:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>You will probably get false positives</para>
-        </listitem>
-
-        <listitem>
-          <para>Cppcheck can detect issues that it can't detect by
-          default</para>
-        </listitem>
-      </itemizedlist>
+      <literal>Cppcheck</literal> more unreliable, you will probably get false
+      positives.</para>
 
       <para>Here is a simple code example:</para>
 
@@ -175,6 +159,16 @@ Checking path/file2.cpp...
       cppcheck.</para>
 
       <programlisting>cppcheck --unused-functions path</programlisting>
+    </section>
+
+    <section>
+      <title>Multithreaded checking</title>
+
+      <para>If you have a multicore processor, it is a good idea to use the
+      <literal>-j</literal> flag. To use 4 threads to check the files in a
+      folder:</para>
+
+      <programlisting>cppcheck -j 4 path</programlisting>
     </section>
   </chapter>
 
