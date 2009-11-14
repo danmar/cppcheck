@@ -1203,9 +1203,11 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
             return 0;
         }
 
-        if (Token::Match(tok, "= {"))
+        if (Token::Match(tok, "= {|("))
         {
             tok = tok->next()->link();
+            if (Token::simpleMatch(tok, ") {"))
+                tok = tok->next()->link();
             if (!tok)
             {
                 init = true;

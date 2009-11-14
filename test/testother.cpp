@@ -1062,6 +1062,22 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int foo()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    if (x)\n"
+                       "    {\n"
+                       "        struct abc abc1 = (struct abc) { .a=0, .b=0, .c=0 };\n"
+                       "        i = 22;\n"
+                       "    }\n"
+                       "    else\n"
+                       "    {\n"
+                       "        i = 33;\n"
+                       "    }\n"
+                       "    return i;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("static void foo()\n"
                        "{\n"
                        "    Foo *p;\n"
