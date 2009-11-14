@@ -247,6 +247,7 @@ private:
         TEST_CASE(exit2);
         TEST_CASE(exit4);
         TEST_CASE(exit5);
+        TEST_CASE(noreturn);
         TEST_CASE(stdstring);
 
         TEST_CASE(strndup_function);
@@ -2067,6 +2068,19 @@ private:
               "        xyz();\n"
               "        exit(0);\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noreturn()
+    {
+        check("void fatal_error()\n"
+              "{ exit(1); }\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    char *p = malloc(100);\n"
+              "    fatal_error();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

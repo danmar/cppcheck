@@ -165,6 +165,7 @@ public:
 private:
 #endif
 
+
     bool matchFunctionsThatReturnArg(const Token *tok, unsigned int varid) const;
 
     /**
@@ -271,6 +272,9 @@ private:
     {
         return "Is there any allocated memory when a function goes out of scope";
     }
+
+    void parse_noreturn();
+    std::set<std::string> noreturn;
 };
 
 

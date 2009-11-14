@@ -424,6 +424,45 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
     return No;
 }
 
+
+void CheckMemoryLeakInFunction::parse_noreturn()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+            tok = tok->link();
+        if (tok->str() == "(")
+        {
+            const std::string function_name((tok->previous() && tok->previous()->isName()) ? tok->strAt(-1) : "");
+
+            tok = tok->link();
+
+            if (!function_name.empty() && Token::simpleMatch(tok, ") {"))
+            {
+                // parse this function to check if it contains an "exit" call..
+                unsigned int indentlevel = 0;
+                for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "{")
+                        ++indentlevel;
+                    else if (tok2->str() == "}")
+                    {
+                        if (indentlevel <= 1)
+                            break;
+                        --indentlevel;
+                    }
+                    if (Token::Match(tok2, "[;{}] exit ("))
+                    {
+                        noreturn.insert(function_name);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 bool CheckMemoryLeakInFunction::matchFunctionsThatReturnArg(const Token *tok, unsigned int varid) const
 {
     return Token::Match(tok, "; %varid% = strcat|memcpy|memmove|strcpy ( %varid% ,", varid);
@@ -472,6 +511,9 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                      sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
                      sizeof(call_func_white_list[0]), call_func_white_list_compare))
         return 0;
+
+    if (noreturn.find(tok->str()) != noreturn.end())
+        return "exit";
 
     if (varid > 0 && (getAllocationType(tok, varid) != No || getReallocationType(tok, varid) != No || getDeallocationType(tok, varid) != No))
         return 0;
@@ -1891,6 +1933,9 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 
 void CheckMemoryLeakInFunction::check()
 {
+    // Parse the tokens and fill the "noreturn"
+    parse_noreturn();
+
     bool classmember = false;
     bool beforeParameters = false;
     bool infunc = false;
