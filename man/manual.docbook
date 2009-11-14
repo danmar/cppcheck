@@ -5,22 +5,22 @@
   <bookinfo>
     <title>Cppcheck</title>
 
-    <date>2009-10-11</date>
+    <date>2009-11-14</date>
   </bookinfo>
 
   <chapter>
     <title>Introduction</title>
 
     <para>Cppcheck is a static analysis tool for C/C++ code - it textually
-    inspects the source code to detect bugs.</para>
+    inspects your C/C++ source code to detect bugs.</para>
 
     <para>Cppcheck detects issues that you will not find with your compiler.
     But Cppcheck doesn't detect the types of bugs that compilers
     detect.</para>
 
     <para>It is our goal to generate no false positives. We always try to
-    achieve 0 false positives. It means that there will always be issues that
-    Cppcheck fail to detect.</para>
+    achieve 0 false positives. There will always be issues that Cppcheck fail
+    to detect.</para>
 
     <para>Supported platforms:</para>
 
@@ -40,8 +40,6 @@
         cpu and memory.</para>
       </listitem>
     </itemizedlist>
-
-    <para></para>
   </chapter>
 
   <chapter>
@@ -88,12 +86,30 @@ Checking path/file2.cpp...
     </section>
 
     <section>
-      <title>Uncertain errors</title>
+      <title>Possible errors</title>
 
-      <para>By default, only certain errors are reported.</para>
+      <para>By default, an error is only reported when
+      <literal><literal>Cppcheck</literal></literal> is sure there is an
+      error.</para>
 
-      <para>With "--all" you will get more reports. But beware - some messages
-      may be wrong.</para>
+      <para>When a likely issue is discovered, <literal>Cppcheck</literal>
+      bails out without reporting this issue - to prevent false positives. But
+      with <literal>--all</literal> you can ensure that these issues are
+      reported.</para>
+
+      <para>The <literal>--all</literal> flag is useful but makes
+      <literal>Cppcheck</literal> more unreliable:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>You will probably get false positives</para>
+        </listitem>
+
+        <listitem>
+          <para>Cppcheck can detect issues that it can't detect by
+          default</para>
+        </listitem>
+      </itemizedlist>
 
       <para>Here is a simple code example:</para>
 
@@ -145,7 +161,8 @@ Checking path/file2.cpp...
 
       <para>Many times you will want to save the results in a file. The
       results are written to stderr and the progress messages are written to
-      stdout. So you can use the standard redirections to save to file.</para>
+      stdout. So you can use the normal shell redirections to save to
+      file.</para>
 
       <programlisting>cppcheck file1.c 2&gt; err.txt</programlisting>
     </section>
@@ -216,7 +233,7 @@ Checking path/file2.cpp...
         <term>msg</term>
 
         <listitem>
-          <para>the error message in plain text</para>
+          <para>the error message</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -307,7 +324,7 @@ uninitvar</programlisting>
 
       <programlisting>void Form1::foo()
 {
-    QPushButton *pb = new QPushButton( "OK", this );
+    QPushButton *pb = new QPushButton("OK", this);
 }</programlisting>
 
       <para>Cppcheck can't see where the deallocation is when you have such
@@ -339,11 +356,26 @@ QPushButton</programlisting>
     <section>
       <title>Userdefined allocation/deallocation functions</title>
 
-      <para>Cppcheck understands many common allocation and deallocation
-      functions. But not all.</para>
+      <para><literal>Cppcheck</literal> understands many common allocation and
+      deallocation functions. But not all.</para>
 
-      <para>Here is a trick to add custom checking. First we write simple
-      implementations for the allocation and deallocation functions:</para>
+      <para>Here is example code that might leak memory or resources:</para>
+
+      <para><programlisting>void foo(int x)
+{
+    void *f = CreateFred();
+    if (x == 1)
+        return;
+    DestroyFred(f);
+}</programlisting></para>
+
+      <para>If you analyse that with Cppcheck it won't find any leaks:</para>
+
+      <programlisting>cppcheck --all fred1.cpp</programlisting>
+
+      <para>You can add some custom leaks checking by providing simple
+      implementations for the allocation and deallocation functions. Write
+      this in a separate file:</para>
 
       <programlisting>void *CreateFred()
 {
@@ -358,18 +390,7 @@ void DestroyFred(void *p)
       <para>When Cppcheck see this it understands that CreateFred will return
       allocated memory and that DestroyFred will deallocate memory.</para>
 
-      <para>Here is an example program that uses CreateFred and
-      DestroyFred:</para>
-
-      <programlisting>void foo(int x)
-{
-    void *f = CreateFred();
-    if (x == 1)
-        return;
-    DestroyFred(f);
-}</programlisting>
-
-      <para>Execute Cppcheck this way:</para>
+      <para>Now, execute <literal>Cppcheck</literal> this way:</para>
 
       <programlisting>cppcheck --append=fred.cpp fred1.cpp</programlisting>
 
@@ -399,11 +420,11 @@ void DestroyFred(void *p)
     <para>To enable the exception safety checking you can use
     <literal>--enable</literal>:</para>
 
-    <programlisting>cppcheck --enable except.cpp</programlisting>
+    <programlisting>cppcheck --enable fred.cpp</programlisting>
 
     <para>The output will be:</para>
 
-    <programlisting>[except.cpp:3]: (style) Upon exception there is memory leak: a</programlisting>
+    <programlisting>[fred.cpp:3]: (style) Upon exception there is memory leak: a</programlisting>
 
     <para>If an exception occurs when <literal>b</literal> is allocated,
     <literal>a</literal> will leak.</para>
