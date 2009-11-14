@@ -47,6 +47,7 @@ private:
 
         TEST_CASE(removeCast1);
         TEST_CASE(removeCast2);
+        TEST_CASE(removeCast3);
 
         TEST_CASE(inlineasm);
 
@@ -279,6 +280,14 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(" t = ( & p ) ;", ostr.str());
+    }
+
+    void removeCast3()
+    {
+        // ticket #961
+        const char code[] = "assert (iplen >= (unsigned) ipv4->ip_hl * 4 + 20);";
+        const char expected[] = "assert ( iplen >= ipv4 . ip_hl * 4 + 20 ) ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
 
