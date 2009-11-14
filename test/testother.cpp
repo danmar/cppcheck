@@ -1096,6 +1096,17 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int foo(int x)\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    if (one())\n"
+                       "        i = 1;\n"
+                       "    else\n"
+                       "        return 3;\n"
+                       "    return i;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // switch..
         checkUninitVar("char * f()\n"
                        "{\n"
