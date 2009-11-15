@@ -3635,9 +3635,17 @@ bool Tokenizer::simplifyRedundantParanthesis()
         if (Token::Match(tok->previous(), "[(!*;}] ( %var% )") && tok->next()->varId() != 0)
         {
             // We have "( var )", remove the paranthesis
-            tok = tok->previous();
+            tok->deleteThis();
             tok->deleteNext();
-            tok = tok->next();
+            ret = true;
+            continue;
+        }
+
+        if (Token::Match(tok->previous(), "[(!] ( %var% . %var% )"))
+        {
+            // We have "( var . var )", remove the paranthesis
+            tok->deleteThis();
+            tok = tok->tokAt(2);
             tok->deleteNext();
             ret = true;
             continue;
