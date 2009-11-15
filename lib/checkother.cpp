@@ -1317,6 +1317,12 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
                     return 0;
                 }
             }
+
+            if (Token::simpleMatch(tok->previous(), "delete") ||
+                Token::simpleMatch(tok->tokAt(-3), "delete [ ]"))
+            {
+                return tok;
+            }
         }
 
         if (Token::Match(tok, "%var% ("))
