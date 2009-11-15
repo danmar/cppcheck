@@ -324,7 +324,6 @@ Settings MainWindow::GetCppcheckSettings()
     result._verbose = true;
     result._force = mSettings->value(SETTINGS_CHECK_FORCE, 1).toBool();
     result._xml = false;
-    result._unusedFunctions = false;
     result._jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
 
     if (result._jobs <= 0)
