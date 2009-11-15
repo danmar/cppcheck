@@ -1361,6 +1361,32 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
             }
         }
 
+        // function call via function pointer
+        if (Token::Match(tok, "( * %var% ) ("))
+        {
+            // is the variable passed as a parameter to some function?
+            unsigned int parlevel = 0;
+            for (const Token *tok2 = tok->link()->next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+
+                else if (tok2->varId() == varid)
+                {
+                    // it is possible that the variable is initialized here
+                    init = true;
+                    return 0;
+                }
+            }
+        }
+
         if (tok->str() == "return")
         {
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
