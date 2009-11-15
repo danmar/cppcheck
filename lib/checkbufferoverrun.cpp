@@ -669,6 +669,17 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             type = "char";
             varid = tok->tokAt(1)->varId();
             nextTok = 7;
+
+            // "int * x ; x = malloc (y);"
+            const Token *declTok = tok->tokAt(-3);
+            if (varid > 0 && declTok && Token::Match(declTok, "%type% * %varid% ;", varid))
+            {
+                type = declTok->strAt(0);
+                // malloc() gets count of bytes and not count of
+                // elements, so we should calculate count of elements
+                // manually
+                size /= _tokenizer->sizeOfType(declTok);
+            }
         }
         else
         {

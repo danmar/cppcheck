@@ -91,6 +91,7 @@ private:
         TEST_CASE(array_index_20);
         TEST_CASE(array_index_21);
         TEST_CASE(array_index_22);
+        TEST_CASE(array_index_23);
         TEST_CASE(array_index_multidim);
 
         TEST_CASE(buffer_overrun_1);
@@ -679,6 +680,17 @@ private:
               "  int b = indices[2];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
+    }
+
+    void array_index_23()
+    {
+        // ticket #842
+        check("void f() {\n"
+              "  int *tab4 = malloc(20 * sizeof(int));\n"
+              "  tab4[20] = 0;\n"
+              "  free(tab4);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array index out of bounds\n", errout.str());
     }
 
     void array_index_multidim()
