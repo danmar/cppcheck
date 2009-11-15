@@ -105,6 +105,8 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--all</option></arg>
       <arg choice="opt"><option>--append [file]</option></arg>
       <arg choice="opt"><option>--auto-dealloc [file]</option></arg>
+      <arg choice="opt"><option>--enable</option></arg>
+      <arg choice="opt"><option>--enable=id</option></arg>
       <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
@@ -114,7 +116,6 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--suppressions [file]</option></arg>
       <arg choice="opt"><option>--template ['text']</option></arg>
-      <arg choice="opt"><option>--unused-functions</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
@@ -156,6 +157,18 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
           <para>Suppress warnings about classes that have automatic deallocation</para>
           <para>The classnames must be provided in plain text - one classname / line - in a .lst file. </para>
           <para>This option can be given several times, allowing you to provide several .lst files.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--enable</option></term>
+        <listitem>
+          <para>Enable all extra checks</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--enable=id</option></term>
+        <listitem>
+          <para>Enable check with given id(s). The id can be exceptNew, exceptRealloc or unusedFunctions. Multiple ids separated by comma can be given.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -219,12 +232,6 @@ files, this is not needed.</para>
         <term><option>--template ['text']</option></term>
         <listitem>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>--unused-functions</option></term>
-        <listitem>
-          <para>Check if there are unused functions</para>
         </listitem>
       </varlistentry>
       <varlistentry>
