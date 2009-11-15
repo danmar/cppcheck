@@ -1300,8 +1300,11 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
             }
         }
 
-        if (Token::Match(tok, "%varid%", varid))
+        if (tok->varId() == varid)
         {
+            if (pointer && Token::Match(tok->tokAt(-2), "[;{}] *"))
+                return tok;
+
             if (Token::simpleMatch(tok->previous(), ">>") || Token::simpleMatch(tok->next(), "="))
             {
                 init = true;
