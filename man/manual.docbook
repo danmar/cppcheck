@@ -14,7 +14,7 @@
     <para>Cppcheck is an analysis tool for C/C++ code. Unlike C/C++ compilers
     and many other analysis tools, we don't detect syntax errors. Cppcheck
     only detects the types of bugs that the compilers normally fail to detect.
-    The goal is no false positives. </para>
+    The goal is no false positives.</para>
 
     <para>Supported platforms:</para>
 
@@ -158,7 +158,7 @@ Checking path/file2.cpp...
       this when the whole program is checked, so that all usages is seen by
       cppcheck.</para>
 
-      <programlisting>cppcheck --unused-functions path</programlisting>
+      <programlisting>cppcheck --enable=unusedFunctions path</programlisting>
     </section>
 
     <section>
@@ -414,7 +414,7 @@ void DestroyFred(void *p)
     <para>To enable the exception safety checking you can use
     <literal>--enable</literal>:</para>
 
-    <programlisting>cppcheck --enable fred.cpp</programlisting>
+    <programlisting>cppcheck --enable=exceptNew,exceptRealloc fred.cpp</programlisting>
 
     <para>The output will be:</para>
 
