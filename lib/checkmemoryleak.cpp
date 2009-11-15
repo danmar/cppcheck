@@ -427,6 +427,15 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
 
 void CheckMemoryLeakInFunction::parse_noreturn()
 {
+    noreturn.insert("exit");
+    noreturn.insert("_exit");
+    noreturn.insert("_Exit");
+    noreturn.insert("abort");
+    noreturn.insert("err");
+    noreturn.insert("verr");
+    noreturn.insert("errx");
+    noreturn.insert("verrx");
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "{")
@@ -1052,27 +1061,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // throw..
         else if (Token::Match(tok, "try|throw|catch"))
             addtoken(tok->strAt(0));
-
-        // exit..
-        if (Token::Match(tok->previous(), "[{};] exit|_exit|_Exit ( %any% ) ;"))
-        {
-            addtoken("exit");
-            tok = tok->tokAt(3);
-        }
-        else if (Token::simpleMatch(tok, "abort ( ) ;"))
-        {
-            addtoken("exit");
-            tok = tok->tokAt(2);
-        }
-        else if (Token::Match(tok, "err|verr|errx|verrx ("))
-        {
-            addtoken("exit");
-            while (tok->next() && tok->next()->str() != ";")
-            {
-                tok = tok->next();
-            }
-        }
-
 
         // Assignment..
         if (varid)

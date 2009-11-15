@@ -290,6 +290,7 @@ private:
 
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, 0, 0);
+        checkMemoryLeak.parse_noreturn();
         std::list<const Token *> callstack;
         callstack.push_back(0);
         CheckMemoryLeak::AllocType allocType, deallocType;
