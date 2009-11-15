@@ -423,6 +423,24 @@ void DestroyFred(void *p)
     <para>If an exception occurs when <literal>b</literal> is allocated,
     <literal>a</literal> will leak.</para>
 
-    <para></para>
+    <para>Here is another example:</para>
+
+    <programlisting>int *p;
+
+int a(int sz)
+{
+    delete [] p;
+    if (sz &lt;= 0)
+        throw std::runtime_error("size &lt;= 0");
+    p = new int[sz];
+}</programlisting>
+
+    <para>Check that with Cppcheck:</para>
+
+    <programlisting>cppcheck --enable=exceptNew,exceptRealloc except2.cpp</programlisting>
+
+    <para>The output from Cppcheck is:</para>
+
+    <programlisting>[except2.cpp:7]: (error) Throwing exception in invalid state, p points at deallocated memory</programlisting>
   </chapter>
 </book>
