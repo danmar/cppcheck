@@ -104,6 +104,7 @@ private:
         TEST_CASE(buffer_overrun_9);
         TEST_CASE(buffer_overrun_10);
         TEST_CASE(buffer_overrun_11);
+        TEST_CASE(buffer_overrun_12);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -954,6 +955,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_12()
+    {
+        // ticket #900
+        check("void f() {\n"
+              "  char *a = new char(30);\n"
+              "  sprintf(a, \"%s\", \"b\");\n"
+              "  delete a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
     }
 
     void sprintf1()

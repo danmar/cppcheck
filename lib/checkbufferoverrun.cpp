@@ -656,6 +656,13 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             varid = tok->tokAt(1)->varId();
             nextTok = 8;
         }
+        else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% ( %num% )"))
+        {
+            size = 1;
+            type = tok->strAt(4);
+            varid = tok->tokAt(1)->varId();
+            nextTok = 8;
+        }
         else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc ( %num% ) ;"))
         {
             size = std::strtoul(tok->strAt(5), NULL, 10);
