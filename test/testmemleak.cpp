@@ -403,6 +403,9 @@ private:
         ASSERT_EQUALS(";;exit;", getcode("char *s; err(0);", "s"));
         ASSERT_EQUALS(";;if{exit;}", getcode("char *s; if (a) { exit(0); }", "s"));
 
+        // list_for_each
+        ASSERT_EQUALS(";;exit;{}", getcode("char *s; list_for_each(x,y,z) { }", "s"));
+
         // open/close
         ASSERT_EQUALS(";;alloc;if(var){dealloc;}", getcode("int f; f=open(); if(f>=0)close(f);", "f"));
         ASSERT_EQUALS(";;alloc;ifv{;}", getcode("int f; f=open(); if(f!=-1 || x);", "f"));
@@ -576,6 +579,7 @@ private:
         // if..
         ASSERT_EQUALS(-1, dofindleak("alloc; ifv dealloc;"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n if return;\n dealloc;"));
+        ASSERT_EQUALS(2,  dofindleak("alloc;\n if continue;\n dealloc;"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n if_var return;\n dealloc;"));
         ASSERT_EQUALS(3,  dofindleak("alloc;\n if\n return;\n dealloc;"));
         ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; return; } dealloc;"));

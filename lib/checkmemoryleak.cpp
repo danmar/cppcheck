@@ -1081,10 +1081,22 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // Investigate function calls..
         if (Token::Match(tok, "%var% ("))
         {
+            // A function call should normally be followed by ";"
+            if (Token::simpleMatch(tok->next()->link(), ") {"))
+            {
+                if (!Token::Match(tok, "if|for|while|switch"))
+                {
+                    addtoken("exit");
+                    addtoken(";");
+                    tok = tok->next()->link();
+                    continue;
+                }
+            }
+
             // Inside class function.. if the var is passed as a parameter then
             // just add a "::use"
             // The "::use" means that a member function was probably called but it wasn't analyzed further
-            if (classmember)
+            else if (classmember)
             {
                 int parlevel = 1;
                 for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
@@ -1744,6 +1756,11 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens, bool all)
     if ((result = Token::findmatch(tokens, "loop alloc ;")) != NULL)
     {
         return result;
+    }
+
+    if (Token::Match(tokens, "alloc ; if|if(var)|ifv break|continue|return ;"))
+    {
+        return tokens->tokAt(3);
     }
 
     if ((result = Token::findmatch(tokens, "alloc ; if|if(var)|ifv return ;")) != NULL)
