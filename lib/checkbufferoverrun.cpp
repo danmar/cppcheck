@@ -680,7 +680,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 // manually
                 unsigned int sizeOfType = _tokenizer->sizeOfType(declTok);
                 if (sizeOfType > 0)
-                    size /= _tokenizer->sizeOfType(declTok);
+                    size /= sizeOfType;
             }
         }
         else
