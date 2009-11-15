@@ -1143,11 +1143,11 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("int f(int (*assign)(char *p))\n"
-					   "{\n"
-					   "    int i;\n"
-					   "    (*assign)(&i);\n"
-					   "    return i;\n"
-					   "}\n");
+                       "{\n"
+                       "    int i;\n"
+                       "    (*assign)(&i);\n"
+                       "    return i;\n"
+                       "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // arrays..

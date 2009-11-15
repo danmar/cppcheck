@@ -678,7 +678,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 // malloc() gets count of bytes and not count of
                 // elements, so we should calculate count of elements
                 // manually
-                size /= _tokenizer->sizeOfType(declTok);
+                unsigned int sizeOfType = _tokenizer->sizeOfType(declTok);
+                if (sizeOfType > 0)
+                    size /= _tokenizer->sizeOfType(declTok);
             }
         }
         else

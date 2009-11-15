@@ -134,6 +134,7 @@ private:
         TEST_CASE(memset1);
         TEST_CASE(counter_test);
         TEST_CASE(strncpy1);
+        TEST_CASE(unknownType);
     }
 
 
@@ -1334,6 +1335,15 @@ private:
               " strncpy(c,\"hello!\",sizeof(c)+1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+
+    void unknownType()
+    {
+        check("void f()\n"
+              "{\n"
+              " UnknownType *a = malloc(4);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
