@@ -31,12 +31,10 @@ Settings::Settings()
     _verbose = false;
     _force = false;
     _xml = false;
-    _unusedFunctions = false;
     _jobs = 1;
     _exitCode = 0;
     _showtime = false;
     _append = "";
-    _exceptionSafety = false;
 }
 
 Settings::~Settings()

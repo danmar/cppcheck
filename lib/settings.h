@@ -56,17 +56,11 @@ public:
     bool _errorsOnly;
     bool _verbose;
 
-    /** extra checks for exception safety */
-    bool _exceptionSafety;
-
     /** Force checking t he files with "too many" configurations. */
     bool _force;
 
     /** write xml results */
     bool _xml;
-
-    /** Checking if there are unused functions */
-    bool _unusedFunctions;
 
     /** How many processes/threads should do checking at the same
         time. Default is 1. */
@@ -123,6 +117,9 @@ public:
 
     /** get append code */
     std::string append() const;
+
+    /** enable extra checks by id */
+    std::string enableId;
 };
 
 /// @}

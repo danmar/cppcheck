@@ -84,8 +84,7 @@ static bool autodealloc(const Token * const C, const Token * const tokens)
 
 void CheckExceptionSafety::unsafeNew()
 {
-    // Check that "--exception-safety" was given
-    if (!_settings->_exceptionSafety)
+    if (_settings->enableId != "*" && _settings->enableId.find(",exceptNew,") == std::string::npos)
         return;
 
     // Inspect initializer lists..
@@ -198,8 +197,7 @@ void CheckExceptionSafety::unsafeNew()
 
 void CheckExceptionSafety::realloc()
 {
-    // Check that "--exception-safety" was given
-    if (!_settings->_exceptionSafety)
+    if (_settings->enableId != "*" && _settings->enableId.find(",exceptRealloc,") == std::string::npos)
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
