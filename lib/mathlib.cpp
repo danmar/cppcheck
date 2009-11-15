@@ -51,7 +51,10 @@ double MathLib::toDoubleNumber(const std::string &str)
     {
         return std::strtoul(str.c_str(), '\0', 16);
     }
-    return std::atof(str.c_str());
+    std::istringstream istr(str.c_str());
+    double ret;
+    istr >> ret;
+    return ret;
 }
 
 template <typename T>
