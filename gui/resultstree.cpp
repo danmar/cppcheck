@@ -104,6 +104,9 @@ void ResultsTree::AddErrorItem(const QString &file,
                                             SeverityToIcon(severity));
 
 
+    if (!item)
+        return;
+
     //Add user data to that item
     QMap<QString, QVariant> data;
     data["severity"]  = SeverityToShowType(severity);
@@ -156,6 +159,27 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateItem(tr(message.toLatin1()));
 
     QModelIndex index = QModelIndex();
+
+    // Check for duplicate rows and don't add them if found
+    for (int i = 0; i < parent->rowCount(); i++)
+    {
+        // the first column is the file name and is always the same so skip it
+
+        // the third column is the line number so check it first
+        if (parent->child(i, 2)->text() == list[2]->text())
+        {
+            // the second column is the severity so check it next
+            if (parent->child(i, 1)->text() == list[1]->text())
+            {
+                // the forth column is the message so check it last
+                if (parent->child(i, 3)->text() == list[3]->text())
+                {
+                    // this row matches so don't add it
+                    return 0;
+                }
+            }
+        }
+    }
 
     parent->appendRow(list);
 
