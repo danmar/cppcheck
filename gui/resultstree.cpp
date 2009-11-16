@@ -432,6 +432,10 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
     if (target && application >= 0 && application < mApplications->GetApplicationCount() && target->parent())
     {
+        // Make sure we are working with the first column
+        if (target->column() != 0)
+            target = target->parent()->child(target->row(), 0);
+
         QVariantMap data = target->data().toMap();
 
         QString program = mApplications->GetApplicationPath(application);
@@ -443,7 +447,14 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         QStringList files = data["files"].toStringList();
         if (files.size() > 0)
         {
-            program.replace("(file)", files[index], Qt::CaseInsensitive);
+            QString path = files[index];
+            if (path.indexOf(" ") > -1)
+            {
+                path.insert(0, "\"");
+                path.append("\"");
+            }
+
+            program.replace("(file)", path, Qt::CaseInsensitive);
         }
         else
         {
