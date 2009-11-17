@@ -297,7 +297,7 @@ private:
     {
         // ticket #970
         const char code[] = "if (a >= (unsigned)(b)) {}";
-        const char expected[] ="if ( a >= ( int ) b ) { }";
+        const char expected[] = "if ( a >= ( int ) b ) { }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
