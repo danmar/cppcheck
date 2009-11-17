@@ -1163,7 +1163,7 @@ private:
                        "};\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkUninitVar("int f(int (*assign)(char *p))\n"
+        checkUninitVar("int f(int (*assign)(int *p))\n"
                        "{\n"
                        "    int i;\n"
                        "    (*assign)(&i);\n"
