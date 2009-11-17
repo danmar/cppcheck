@@ -1008,6 +1008,20 @@ private:
                                     "B(2);";
             ASSERT_EQUALS("\n\n2,4;", OurPreprocessor::expandMacros(filedata));
         }
+
+        {
+            const char filedata[] = "#define A(x) (x)\n"
+                                    "#define B )A(\n"
+                                    "#define C )A(\n";
+            TODO_ASSERT_EQUALS("\n\n\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            const char filedata[] = "#define A(x) (x*2)\n"
+                                    "#define B A(\n"
+                                    "foo B(i));\n";
+            TODO_ASSERT_EQUALS("\n\nfoo ((i)*2);\n", OurPreprocessor::expandMacros(filedata));
+        }
     }
 
     void macro_mismatch()
