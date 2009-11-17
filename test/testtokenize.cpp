@@ -48,6 +48,7 @@ private:
         TEST_CASE(removeCast1);
         TEST_CASE(removeCast2);
         TEST_CASE(removeCast3);
+        TEST_CASE(removeCast4);
 
         TEST_CASE(inlineasm);
 
@@ -157,6 +158,7 @@ private:
 
         // unsigned i; => unsigned int i;
         TEST_CASE(unsigned1);
+        TEST_CASE(unsigned2);
         TEST_CASE(testUpdateClassList);
         TEST_CASE(createLinks);
         TEST_CASE(signed1);
@@ -291,6 +293,13 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
+    void removeCast4()
+    {
+        // ticket #970
+        const char code[] = "if (a >= (unsigned)(b)) {}";
+        const char expected[] ="if ( a >= ( int ) b ) { }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
 
     void inlineasm()
     {
@@ -2511,6 +2520,13 @@ private:
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
 
+    }
+
+    void unsigned2()
+    {
+        const char code[] = "i = (unsigned)j;";
+        const char expected[] = "i = ( unsigned int ) j ;";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void tokenizeAndUpdateClassList(const char code[])

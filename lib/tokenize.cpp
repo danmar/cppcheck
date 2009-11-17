@@ -1853,9 +1853,6 @@ bool Tokenizer::simplifyTokenList()
     // Convert e.g. atol("0") into 0
     simplifyMathFunctions();
 
-    // simplify casts before removing "unsigned" keywords (to fix #961)
-    simplifyCasts();
-
     // Remove unwanted keywords
     static const char * const unwantedWords[] = { "unsigned", "unlikely", "likely" };
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -2007,6 +2004,7 @@ bool Tokenizer::simplifyTokenList()
     }
 
     simplifyLogicalOperators();
+    simplifyCasts();
 
     // Simplify simple calculations..
     while (simplifyCalculations())
@@ -3093,7 +3091,8 @@ void Tokenizer::unsignedint()
         }
 
         // A variable declaration where the "int" is left out?
-        else if (!Token::Match(tok, "unsigned|signed %var% [;,=)]"))
+        else if (!Token::Match(tok, "unsigned|signed %var% [;,=)]") &&
+                 !Token::Match(tok->previous(), "( unsigned|signed )"))
             continue;
 
         // Previous token should either be a symbol or one of "{};(,"
