@@ -11,6 +11,7 @@
 				<Option output="cppcheck" prefix_auto="1" extension_auto="1" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Option parameters="p.cpp --debug" />
 				<Compiler>
 					<Add option="-g" />
 				</Compiler>
