@@ -1013,14 +1013,20 @@ private:
             const char filedata[] = "#define A(x) (x)\n"
                                     "#define B )A(\n"
                                     "#define C )A(\n";
-            TODO_ASSERT_EQUALS("\n\n\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {
             const char filedata[] = "#define A(x) (x*2)\n"
                                     "#define B A(\n"
                                     "foo B(i));\n";
-            TODO_ASSERT_EQUALS("\n\nfoo ((i)*2);\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\nfoo ((i)*2);\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            const char filedata[] = "#define foo foo\n"
+                                    "foo\n";
+            ASSERT_EQUALS("\nfoo\n", OurPreprocessor::expandMacros(filedata));
         }
     }
 

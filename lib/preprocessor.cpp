@@ -1610,9 +1610,44 @@ public:
 std::string Preprocessor::expandMacros(std::string code, const std::string &filename, ErrorLogger *errorLogger)
 {
     // Search for macros and expand them..
+
+    // First item is location where macro is located and
+    // the second is its length. 0 length means that values
+    // are not set.
+    size_t macroLoc[2] = {0, 0};
+
     std::string::size_type defpos = 0;
-    while ((defpos = code.find("#define ", defpos)) != std::string::npos)
+    bool loopAgain = false;
+    int counter = 0;
+    for (;;)
     {
+        if (macroLoc[1] > 0)
+        {
+            // Erase previously handled "#define A foo"
+            code.erase(macroLoc[0], macroLoc[1]);
+            defpos -= macroLoc[1];
+            macroLoc[1] = 0;
+        }
+
+        defpos = code.find("#define ", defpos);
+        if (defpos == std::string::npos)
+        {
+            if (loopAgain)
+            {
+                loopAgain = false;
+                counter++;
+                if (counter < 100)
+                {
+                    defpos = 0;
+                    continue;
+                }
+                else
+                    std::cerr << "### Preprocessor::expandMacros() loop limit exceeded.";
+            }
+
+            break;
+        }
+
         if (defpos > 0 && code[defpos-1] != '\n')
         {
             defpos++;
@@ -1629,7 +1664,10 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
 
         // Extract the whole macro into a separate variable "macro" and then erase it from "code"
         const PreprocessorMacro macro(code.substr(defpos + 8, endpos - defpos - 7));
-        code.erase(defpos, endpos - defpos);
+        //code.erase(defpos, endpos - defpos);
+        macroLoc[0] = defpos;
+        macroLoc[1] = endpos - defpos;
+        defpos += (endpos - defpos);
 
         // No macro name => continue
         if (macro.name() == "")
@@ -1730,6 +1768,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
             std::string::size_type startOfLine = code.rfind("\n", pos1);
             ++startOfLine;
 
+            bool insideDefine = false;
             if (code.compare(startOfLine, 8, "#define ") == 0)
             {
                 // We are inside a define, make sure we don't have name collision
@@ -1751,6 +1790,8 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                     pos1 = startOfLine;
                     continue;
                 }
+
+                insideDefine = true;
             }
 
             unsigned int numberOfNewlines = 0;
@@ -1765,6 +1806,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
 
                 int parlevel = 0;
                 std::string par;
+                bool endFound = false;
                 for (; pos2 < code.length(); ++pos2)
                 {
                     if (code[pos2] == '(')
@@ -1778,6 +1820,7 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                         --parlevel;
                         if (parlevel <= 0)
                         {
+                            endFound = true;
                             params.push_back(par);
                             break;
                         }
@@ -1805,6 +1848,17 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                     }
                     else if (code[pos2] == '\n')
                     {
+                        if (insideDefine)
+                        {
+                            // We have code like this "#define B A("
+                            // so we shouldn't modify the A
+
+                            // Don't delete the #define
+                            macroLoc[1] = 0;
+                            loopAgain = true;
+                            break;
+                        }
+
                         ++numberOfNewlines;
                         continue;
                     }
@@ -1827,6 +1881,9 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                         par.append(1, code[pos2]);
                     }
                 }
+
+                if (!endFound)
+                    continue;
             }
 
             if (params.size() == 1 && params[0] == "")
