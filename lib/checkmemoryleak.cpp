@@ -1119,7 +1119,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
 
             else
             {
-                if (varid > 0 && Token::Match(tok, "%var% ( fclose|pclose ( %varid% ) ) ;", varid))
+                if (varid > 0 && Token::Match(tok, "%var% ( close|fclose|pclose ( %varid% ) ) ;", varid))
                 {
                     addtoken("dealloc");
                     tok = tok->next()->link();
