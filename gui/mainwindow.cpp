@@ -529,7 +529,7 @@ void MainWindow::Save()
 
     if (!selectedFile.isEmpty())
     {
-        Report::Type type;
+        Report::Type type = Report::TXT;
         if (selectedFilter == tr("XML files (*.xml)"))
         {
             type = Report::XML;
@@ -542,11 +542,20 @@ void MainWindow::Save()
             if (!selectedFile.endsWith(".txt", Qt::CaseInsensitive))
                 selectedFile += ".txt";
         }
-        else
+        else if (selectedFilter == tr("CSV files (*.csv)"))
         {
             type = Report::CSV;
             if (!selectedFile.endsWith(".csv", Qt::CaseInsensitive))
                 selectedFile += ".csv";
+        }
+        else
+        {
+            if (selectedFile.endsWith(".xml", Qt::CaseInsensitive))
+                type = Report::XML;
+            else if (selectedFile.endsWith(".txt", Qt::CaseInsensitive))
+                type = Report::TXT;
+            else if (selectedFile.endsWith(".csv", Qt::CaseInsensitive))
+                type = Report::CSV;
         }
 
         mUI.mResults->Save(selectedFile, type);
