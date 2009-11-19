@@ -134,6 +134,7 @@ private:
         TEST_CASE(simplifyTypedef3)
         TEST_CASE(simplifyTypedef4)
         TEST_CASE(simplifyTypedef5)
+        TEST_CASE(simplifyTypedef6)
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition);
 
@@ -2074,6 +2075,24 @@ private:
             "void f ( ) "
             "{ "
             "struct yy_buffer_state * state ; "
+            "}";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef6()
+    {
+        // ticket #983
+        const char code[] =
+            "namespace VL {\n"
+            "    typedef float float_t ;\n"
+            "    inline VL::float_t fast_atan2(VL::float_t y, VL::float_t x){}\n"
+            "}\n";
+
+        const char expected[] =
+            "namespace VL { "
+            "typedef float float_t ; "
+            "inline float fast_atan2 ( float y , float x ) { } "
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));

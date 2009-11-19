@@ -351,7 +351,7 @@ void Tokenizer::simplifyTypedef()
     int classLevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class %any%"))
+        if (Token::Match(tok, "class|namespace %any%"))
         {
             className = tok->next()->str();
             classLevel = 0;
