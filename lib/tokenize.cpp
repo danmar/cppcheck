@@ -2339,6 +2339,13 @@ void Tokenizer::simplifyIfAddBraces()
                 --indentlevel;
                 if (indentlevel == 0 && parlevel == 0)
                     break;
+
+                else if (indentlevel < 0 && parlevel == 0)
+                {
+                    // insert closing brace before this
+                    tempToken = tempToken->previous();
+                    break;
+                }
             }
 
             else if (tempToken->str() == "(")

@@ -64,6 +64,7 @@ private:
         TEST_CASE(ifAddBraces6);
         TEST_CASE(ifAddBraces7);
         TEST_CASE(ifAddBraces8);
+        TEST_CASE(ifAddBraces9);
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -552,6 +553,23 @@ private:
     {
         const char code[] = "do { ; } while(0);";
         ASSERT_EQUALS("do { ; } while ( false ) ;", tokenizeAndStringify(code, true));
+    }
+
+    void ifAddBraces9()
+    {
+        // ticket #990
+        const char code[] =
+            "{"
+            "    for (int k=0; k<VectorSize; k++)"
+            "        LOG_OUT(ID_Vector[k])"
+            "}";
+        const char expected[] =
+            "{ "
+            "for ( int k = 0 ; k < VectorSize ; k ++ ) { "
+            "LOG_OUT ( ID_Vector [ k ] ) "
+            "} "
+            "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
     void whileAddBraces()
