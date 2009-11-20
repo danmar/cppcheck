@@ -2439,6 +2439,20 @@ private:
             ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character ([). Can't process file.\n", errout.str());
         }
+
+        {
+            errout.str("");
+            const char code[] = "{\n"
+                                "   a(\n"
+                                "}\n"
+                                "{\n"
+                                "   b());\n"
+                                "}\n";
+            Tokenizer tokenizer(0, this);
+            std::istringstream istr(code);
+            ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
+            ASSERT_EQUALS("[test.cpp:2]: (error) Invalid number of character ((). Can't process file.\n", errout.str());
+        }
     }
 
     void removeKeywords()

@@ -1508,6 +1508,7 @@ void Tokenizer::simplifyNamespaces()
 
 bool Tokenizer::createLinks()
 {
+    std::list<const Token*> type;
     std::list<Token*> links;
     std::list<Token*> links2;
     std::list<Token*> links3;
@@ -1521,6 +1522,7 @@ bool Tokenizer::createLinks()
         if (token->str() == "{")
         {
             links.push_back(token);
+            type.push_back(token);
         }
         else if (token->str() == "}")
         {
@@ -1530,6 +1532,12 @@ bool Tokenizer::createLinks()
                 syntaxError(token, '{');
                 return false;
             }
+            if (type.back()->str() != "{")
+            {
+                syntaxError(type.back(), type.back()->str()[0]);
+                return false;
+            }
+            type.pop_back();
 
             Token::createMutualLinks(links.back(), token);
             links.pop_back();
@@ -1537,6 +1545,7 @@ bool Tokenizer::createLinks()
         else if (token->str() == "(")
         {
             links2.push_back(token);
+            type.push_back(token);
         }
         else if (token->str() == ")")
         {
@@ -1546,6 +1555,12 @@ bool Tokenizer::createLinks()
                 syntaxError(token, '(');
                 return false;
             }
+            if (type.back()->str() != "(")
+            {
+                syntaxError(type.back(), type.back()->str()[0]);
+                return false;
+            }
+            type.pop_back();
 
             Token::createMutualLinks(links2.back(), token);
             links2.pop_back();
@@ -1553,6 +1568,7 @@ bool Tokenizer::createLinks()
         else if (token->str() == "[")
         {
             links3.push_back(token);
+            type.push_back(token);
         }
         else if (token->str() == "]")
         {
@@ -1562,6 +1578,12 @@ bool Tokenizer::createLinks()
                 syntaxError(token, '[');
                 return false;
             }
+            if (type.back()->str() != "[")
+            {
+                syntaxError(type.back(), type.back()->str()[0]);
+                return false;
+            }
+            type.pop_back();
 
             Token::createMutualLinks(links3.back(), token);
             links3.pop_back();
