@@ -26,7 +26,6 @@
 #include <stdexcept>
 #include <sstream>
 #include <fstream>
-#include <iostream>
 #include <cstdlib>
 #include <cctype>
 #include <cstring>
@@ -161,7 +160,15 @@ void Preprocessor::writeError(const std::string &fileName, const std::string &co
                 {
                     if (lineNumbers.empty() || fileIndexes.empty())
                     {
-                        std::cerr << "####### Preprocessor bug! #######\n";
+                        std::ostringstream line;
+                        line << __LINE__;
+
+                        ErrorLogger::ErrorMessage errmsg;
+                        errmsg._severity = "error";
+                        errmsg._msg = "####### Preprocessor bug! #######";
+                        errmsg._id  = "preprocessor" + line.str();
+                        errorLogger->reportErr(errmsg);
+
                         std::exit(0);
                     }
 
@@ -707,7 +714,7 @@ void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, st
     processedFile = replaceIfDefined(processedFile);
 
     // Get all possible configurations..
-    resultConfigurations = getcfgs(processedFile);
+    resultConfigurations = getcfgs(processedFile, filename);
 }
 
 
@@ -743,7 +750,7 @@ std::string Preprocessor::getdef(std::string line, bool def)
 
 
 
-std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
+std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const std::string &filename)
 {
     std::list<std::string> ret;
     ret.push_back("");
@@ -757,10 +764,13 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
     // 0=>Source file, 1=>Included by source file, 2=>included by header that was included by source file, etc
     int filelevel = 0;
 
+    unsigned int linenr = 0;
     std::istringstream istr(filedata);
     std::string line;
     while (getline(istr, line))
     {
+        ++linenr;
+
         if (line.compare(0, 6, "#file ") == 0)
         {
             ++filelevel;
@@ -792,6 +802,36 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
         std::string def = getdef(line, true) + getdef(line, false);
         if (!def.empty())
         {
+            int par = 0;
+            for (std::string::size_type pos = 0; pos < def.length(); ++pos)
+            {
+                if (def[pos] == '(')
+                    ++par;
+                else if (def[pos] == ')')
+                {
+                    --par;
+                    if (par < 0)
+                        break;
+                }
+            }
+            if (par != 0)
+            {
+                std::ostringstream line;
+                line << __LINE__;
+
+                ErrorLogger::ErrorMessage errmsg;
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.file = filename;
+                loc.line = linenr;
+                errmsg._callStack.push_back(loc);
+                errmsg._severity = "error";
+                errmsg._msg = "mismatching number of '(' and ')' in this line: " + def;
+                errmsg._id  = "preprocessor" + line.str();
+                _errorLogger->reportErr(errmsg);
+                ret.clear();
+                return ret;
+            }
+
             if (! deflist.empty() && line.find("#elif ") == 0)
                 deflist.pop_back();
             deflist.push_back(def);
@@ -812,7 +852,6 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
                     def += *it;
                 }
             }
-
             if (std::find(ret.begin(), ret.end(), def) == ret.end())
                 ret.push_back(def);
         }
@@ -878,11 +917,22 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata)
 
         if (s.find("&&") != std::string::npos)
         {
-            Tokenizer tokenizer;
+            Tokenizer tokenizer(_settings, _errorLogger);
             std::istringstream istr(s.c_str());
-            if (!tokenizer.tokenize(istr, ""))
+            if (!tokenizer.tokenize(istr, filename.c_str()))
             {
-                std::cerr << "Error parsing this:\n" << s << "\n\n";
+                std::ostringstream line;
+                line << __LINE__;
+
+                ErrorLogger::ErrorMessage errmsg;
+                ErrorLogger::ErrorMessage::FileLocation loc;
+                loc.file = filename;
+                loc.line = 1;
+                errmsg._callStack.push_back(loc);
+                errmsg._severity = "error";
+                errmsg._msg = "Error parsing this: " + s;
+                errmsg._id  = "preprocessor" + line.str();
+                _errorLogger->reportErr(errmsg);
             }
 
 
@@ -1642,7 +1692,16 @@ std::string Preprocessor::expandMacros(std::string code, const std::string &file
                     continue;
                 }
                 else
-                    std::cerr << "### Preprocessor::expandMacros() loop limit exceeded.";
+                {
+                    std::ostringstream line;
+                    line << __LINE__;
+
+                    ErrorLogger::ErrorMessage errmsg;
+                    errmsg._severity = "error";
+                    errmsg._msg = "### Preprocessor::expandMacros() loop limit exceeded.";
+                    errmsg._id  = "preprocessor" + line.str();
+                    errorLogger->reportErr(errmsg);
+                }
             }
 
             break;

@@ -129,7 +129,7 @@ private:
      * Get all possible configurations sorted in alphabetical order.
      * By looking at the ifdefs and ifndefs in filedata
      */
-    std::list<std::string> getcfgs(const std::string &filedata);
+    std::list<std::string> getcfgs(const std::string &filedata, const std::string &filename);
 
     static std::string getdef(std::string line, bool def);
 

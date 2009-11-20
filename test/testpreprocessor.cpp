@@ -98,6 +98,7 @@ private:
         TEST_CASE(if_cond3);
         TEST_CASE(if_cond4);
         TEST_CASE(if_cond5);
+        TEST_CASE(if_cond6);
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -776,6 +777,25 @@ private:
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n\n\ncd\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\nab\n\ncd\n\nef\n\n", actual["A;B"]);
+    }
+
+    void if_cond6()
+    {
+        const char filedata[] = "\n"
+                                "#if defined(A) && defined(B))\n"
+                                "#endif\n";
+
+        errout.str("");
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        const Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS("[file.c:2]: (error) mismatching number of '(' and ')' in this line: defined(A)&&defined(B))\n", errout.str());
     }
 
 
