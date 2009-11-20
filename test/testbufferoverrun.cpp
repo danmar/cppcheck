@@ -761,6 +761,34 @@ private:
               "    strcpy(str, \"abc\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("void f(int fd)\n"
+              "{\n"
+              "    char str[3];\n"
+              "    read(fd, str, 3);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int fd)\n"
+              "{\n"
+              "    char str[3];\n"
+              "    read(fd, str, 4);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char str[3];\n"
+              "    fgets(str, 2, stdin);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char str[3];\n"
+              "    fgets(str, 3, stdin);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
     }
 
 

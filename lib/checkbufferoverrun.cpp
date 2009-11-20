@@ -463,6 +463,32 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             }
         }
 
+        // Writing data into array..
+        if (varid > 0 &&
+            Token::Match(tok, "read ( %any% , %varid% , %num% )", varid) &&
+            MathLib::isInt(tok->strAt(6)))
+        {
+            size_t len = MathLib::toLongNumber(tok->strAt(6));
+            if (len > static_cast<size_t>(size))
+            {
+                bufferOverrun(tok);
+                continue;
+            }
+        }
+
+        // Writing data into array..
+        if (varid > 0 &&
+            Token::Match(tok, "fgets ( %varid% , %num% , %any% )", varid) &&
+            MathLib::isInt(tok->strAt(4)))
+        {
+            size_t len = MathLib::toLongNumber(tok->strAt(4));
+            if (len >= static_cast<size_t>(size))
+            {
+                bufferOverrun(tok);
+                continue;
+            }
+        }
+
         // Dangerous usage of strncat..
         if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
