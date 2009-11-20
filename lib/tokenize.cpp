@@ -3714,7 +3714,7 @@ bool Tokenizer::simplifyCalculations()
                 continue;
 
             // + and - are calculated after *
-            if (Token::Match(tok->next(), "[+-]"))
+            if (Token::Match(tok->next(), "[+-/]"))
             {
                 if (tok->previous()->str() == "*")
                     continue;
