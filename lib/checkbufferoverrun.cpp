@@ -482,7 +482,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             MathLib::isInt(tok->strAt(4)))
         {
             size_t len = MathLib::toLongNumber(tok->strAt(4));
-            if (len >= static_cast<size_t>(size))
+            if (len > static_cast<size_t>(size))
             {
                 bufferOverrun(tok);
                 continue;

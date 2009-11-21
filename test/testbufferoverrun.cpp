@@ -779,14 +779,14 @@ private:
         check("void f()\n"
               "{\n"
               "    char str[3];\n"
-              "    fgets(str, 2, stdin);\n"
+              "    fgets(str, 3, stdin);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char str[3];\n"
-              "    fgets(str, 3, stdin);\n"
+              "    fgets(str, 4, stdin);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
     }
