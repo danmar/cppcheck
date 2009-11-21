@@ -837,11 +837,11 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 std::map<std::string, std::string> varmap;
                 for (std::set<std::string>::const_iterator it = defines.begin(); it != defines.end(); ++it)
                 {
-                    std::string::size_type pos = (*it).find("=");
+                    std::string::size_type pos = it->find("=");
                     if (pos == std::string::npos)
                         continue;
-                    const std::string varname((*it).substr(0, pos));
-                    const std::string value((*it).substr(pos + 1));
+                    const std::string varname(it->substr(0, pos));
+                    const std::string value(it->substr(pos + 1));
                     varmap[varname] = value;
                 }
 
@@ -1034,9 +1034,9 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
     if (!tokenizer.tokens()->tokAt(3) && Token::Match(tokenizer.tokens(), "%num% ==|!=|<=|>=|<|> %num%"))
     {
-        const std::string op1(tokenizer.tokens()->str());
-        const std::string cmp(tokenizer.tokens()->strAt(1));
-        const std::string op2(tokenizer.tokens()->strAt(2));
+        const std::string &op1(tokenizer.tokens()->str());
+        const std::string &cmp(tokenizer.tokens()->tokAt(1)->str());
+        const std::string &op2(tokenizer.tokens()->tokAt(2)->str());
         if (cmp == "==")
             condition = (op1 == op2) ? "1" : "0";
         else if (cmp == "!=")
@@ -1049,7 +1049,6 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
             condition = (op1 < op2) ? "1" : "0";
         else if (cmp == ">")
             condition = (op1 > op2) ? "1" : "0";
-        return;
     }
 }
 
