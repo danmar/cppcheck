@@ -126,6 +126,13 @@ public:
      */
     std::map<std::string, ClassInfo> _classInfoList;
 
+    /**
+     * Simplify constant calculations such as "1+2" => "3"
+     * @return true if modifications to token-list are done.
+     *         false if no modifications are done.
+     */
+    bool simplifyCalculations();
+
 #ifndef _MSC_VER
 private:
 #endif
@@ -271,13 +278,6 @@ private:
      *         false if no modifications are done.
      */
     bool simplifyRedundantParanthesis();
-
-    /**
-     * Simplify constant calculations such as "1+2" => "3"
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifyCalculations();
 
     /**
      * Simplify functions like "void f(x) int x; {"

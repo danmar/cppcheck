@@ -99,6 +99,7 @@ private:
         TEST_CASE(if_cond4);
         TEST_CASE(if_cond5);
         TEST_CASE(if_cond6);
+        TEST_CASE(if_cond7);
 
         TEST_CASE(multiline1);
         TEST_CASE(multiline2);
@@ -606,8 +607,8 @@ private:
             cfg["A"] = "1";
             cfg["B"] = "2";
 
-            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A==1"));
-            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A<2"));
+            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A==1"));
+            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A<2"));
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A==2"));
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A<1"));
             TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "A>=1&&B<=A"));
@@ -796,6 +797,25 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("[file.c:2]: (error) mismatching number of '(' and ')' in this line: defined(A)&&defined(B))\n", errout.str());
+    }
+
+    void if_cond7()
+    {
+        const char filedata[] = "#define A 1\n"
+                                "#if A==1\n"
+                                "a1;\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        const Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS("\n\na1;\n\n", actual[""]);
     }
 
 
@@ -1657,8 +1677,8 @@ private:
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
-            TODO_ASSERT_EQUALS("\n\n1\n\n", actual[""]);
-            TODO_ASSERT_EQUALS(1, actual.size());
+            ASSERT_EQUALS("\n\n1\n\n", actual[""]);
+            ASSERT_EQUALS(1, actual.size());
         }
 
         {
@@ -1674,8 +1694,8 @@ private:
             preprocessor.preprocess(istr, actual, "file.c");
 
             // Compare results..
-            TODO_ASSERT_EQUALS("\n\n1\n\n", actual[""]);
-            TODO_ASSERT_EQUALS(1, actual.size());
+            ASSERT_EQUALS("\n\n1\n\n", actual[""]);
+            ASSERT_EQUALS(1, actual.size());
         }
     }
 

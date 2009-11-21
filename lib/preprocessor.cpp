@@ -832,6 +832,22 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 return ret;
             }
 
+            // Replace defined constants
+            {
+                std::map<std::string, std::string> varmap;
+                for (std::set<std::string>::const_iterator it = defines.begin(); it != defines.end(); ++it)
+                {
+                    std::string::size_type pos = (*it).find("=");
+                    if (pos == std::string::npos)
+                        continue;
+                    const std::string varname((*it).substr(0, pos));
+                    const std::string value((*it).substr(pos + 1));
+                    varmap[varname] = value;
+                }
+
+                simplifyCondition(varmap, def);
+            }
+
             if (! deflist.empty() && line.find("#elif ") == 0)
                 deflist.pop_back();
             deflist.push_back(def);
@@ -999,11 +1015,52 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 }
 
 
+void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition)
+{
+    Tokenizer tokenizer;
+    std::istringstream istr(condition.c_str());
+    tokenizer.tokenize(istr, "");
+
+    // replace variable names with values..
+    for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
+    {
+        const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
+        if (it != variables.end())
+            tok->str(it->second);
+    }
+
+    // simplify calculations..
+    tokenizer.simplifyCalculations();
+
+    if (!tokenizer.tokens()->tokAt(3) && Token::Match(tokenizer.tokens(), "%num% ==|!=|<=|>=|<|> %num%"))
+    {
+        const std::string op1(tokenizer.tokens()->str());
+        const std::string cmp(tokenizer.tokens()->strAt(1));
+        const std::string op2(tokenizer.tokens()->strAt(2));
+        if (cmp == "==")
+            condition = (op1 == op2) ? "1" : "0";
+        else if (cmp == "!=")
+            condition = (op1 != op2) ? "1" : "0";
+        else if (cmp == "<=")
+            condition = (op1 <= op2) ? "1" : "0";
+        else if (cmp == ">=")
+            condition = (op1 >= op2) ? "1" : "0";
+        else if (cmp == "<")
+            condition = (op1 < op2) ? "1" : "0";
+        else if (cmp == ">")
+            condition = (op1 > op2) ? "1" : "0";
+        return;
+    }
+}
+
+
 
 bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def)
 {
     //std::cout << "cfg: \"" << cfg << "\"  ";
     //std::cout << "def: \"" << def << "\"";
+
+    simplifyCondition(cfg, def);
 
     if (cfg.find(def) != cfg.end())
         return true;
