@@ -7,6 +7,5 @@ del cppcheck.exe
 copy ..\gui\release\gui.exe .
 copy ..\cli\release\cppcheck.exe .
 
-candle gui.wxs
-light -ext WixUIExtension gui.wixobj
-move gui.msi cppcheck.msi
+candle cppcheck.wxs
+light -ext WixUIExtension cppcheck.wixobj
