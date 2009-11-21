@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<?define ProductName = "Cppcheck 1.38" ?>
+<?define ProductVersion = "1.38" ?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <Product Name='$(var.ProductName)' Id='88DE59C3-7640-47A2-A047-7289807AE3BA' UpgradeCode='DDB850E4-F8DE-4290-BDF1-AC12475DEE80'
+    Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='The Cppcheck team'>
+
+    <Package Id='*' Keywords='Installer' Description="$(var.ProductName) Setup"
+      Comments='Cppcheck is a tool for static analysis of C/C++ code' Manufacturer='The Cppcheck team'
+      InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' />
+
+    <Media Id='1' Cabinet='Cppcheck.cab' EmbedCab='yes' DiskPrompt='CD-ROM 1' />
+    <Property Id='DiskPrompt' Value='Cppcheck installation [1]' />
+
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+        <Directory Id='INSTALLDIR' Name='$(var.ProductName)'>
+          <Component Id='Executable' Guid='E1435616-5041-4079-BC4B-C4805BEEDAF9'>
+            <File Id='cppcheckexe' Name='cppcheck.exe' DiskId='1' Source='cppcheck.exe' KeyPath='yes' />
+          </Component>
+          <Component Id='Authors' Guid='DA54245B-7A5D-481B-A930-D2C9FDD95E19'>
+            <File Id='authorstxt' Name='authors.txt' DiskId='1' Source='..\authors' KeyPath='yes' />
+          </Component>
+          <Component Id='Readme' Guid='4C111DD0-A84A-11DE-8A39-0800200C9A66'>
+            <File Id='readmetxt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Feature Id='Complete' Title='$(var.ProductName)' Description='The complete package.' 
+      Display='expand' Level='1' ConfigurableDirectory='INSTALLDIR' >
+      <Feature Id='MainProgram' Title='Command line interface' Description='Command line tool' Level='1'>
+        <ComponentRef Id='Executable' />
+        <ComponentRef Id='Authors' />
+        <ComponentRef Id='Readme' />
+      </Feature>
+    </Feature>
+
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+    <UIRef Id="WixUI_InstallDir"/>
+  </Product>
+</Wix>
