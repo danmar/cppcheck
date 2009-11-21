@@ -2375,6 +2375,12 @@ void Tokenizer::simplifyDoWhileAddBraces()
             continue;
         }
 
+        if (tok->next()->str() == ")")
+        {
+            // fix for #988
+            continue;
+        }
+
         Token *tok1 = tok;  // token with "do"
         Token *tok2 = NULL; // token with "while"
         Token *tok3 = tok;
