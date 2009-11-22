@@ -44,7 +44,7 @@ private:
 public:
     Tokenizer();
     Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
-    ~Tokenizer();
+    virtual ~Tokenizer();
 
     /**
      * Tokenize code
