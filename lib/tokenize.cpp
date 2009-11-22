@@ -983,6 +983,23 @@ void Tokenizer::simplifyTemplates()
                 }
                 const std::string type2(s);
 
+                if (type.size() != types2.size())
+                {
+                    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+                    ErrorLogger::ErrorMessage::FileLocation loc;
+                    loc.line = tok2->linenr();
+                    loc.file = file(tok2);
+                    locationList.push_back(loc);
+
+                    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                                           "error",
+                                                           "Internal error: failed to instantiate template. The checking continues anyway.",
+                                                           "internalError");
+
+                    _errorLogger->reportErr(errmsg);
+                    break;
+                }
+
                 // New classname/funcname..
                 const std::string name2(name + "<" + type2 + ">");
 

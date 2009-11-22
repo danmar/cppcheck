@@ -91,6 +91,7 @@ private:
         TEST_CASE(template15);
         TEST_CASE(template16);
         TEST_CASE(template_default_parameter);
+        TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
 
         TEST_CASE(namespaces);
@@ -1389,6 +1390,41 @@ private:
                                        " { int ar [ 3 ] ; }");
             TODO_ASSERT_EQUALS(expected, sizeof_(code));
         }
+    }
+
+    void template_default_type()
+    {
+        const char code[] = "template <typename T, typename U=T>\n"
+                            "class A\n"
+                            "{\n"
+                            "public:\n"
+                            "  void foo() {\n"
+                            "    int a;\n"
+                            "    a = static_cast<U>(a);\n"
+                            "  }\n"
+                            "};\n"
+                            "\n"
+                            "template <typename T>\n"
+                            "class B\n"
+                            "{\n"
+                            "protected:\n"
+                            "  A<int> a;\n"
+                            "};\n"
+                            "\n"
+                            "class C\n"
+                            "  : public B<int>\n"
+                            "{\n"
+                            "};\n";
+
+        errout.str("");
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "file1.cpp");
+        tokenizer.simplifyTokenList();
+
+        ASSERT_EQUALS("[file1.cpp:15]: (error) Internal error: failed to instantiate template. The checking continues anyway.\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
     void template_typename()
