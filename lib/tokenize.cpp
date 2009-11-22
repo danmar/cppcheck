@@ -2870,6 +2870,13 @@ void Tokenizer::simplifyVarDecl()
     // "int a=4;" => "int a; a=4;"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
+        if (Token::simpleMatch(tok, "= {"))
+        {
+            tok = tok->next()->link();
+            if (!tok)
+                break;
+        }
+
         if (tok->previous() && !Token::Match(tok->previous(), "[{};)]"))
             continue;
 
@@ -2898,6 +2905,10 @@ void Tokenizer::simplifyVarDecl()
 
         // Don't split up const declaration..
         if (isconst && Token::Match(tok2, "%type% %var% ="))
+            continue;
+
+        // strange looking variable declaration => don't split up.
+        if (Token::Match(tok2, "%type% *| %var% , %type% *| %var%"))
             continue;
 
         if (Token::Match(tok2, "%type% *| %var% ,|="))

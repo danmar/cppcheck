@@ -40,6 +40,7 @@ private:
     void run()
     {
         TEST_CASE(tokenize1);
+        TEST_CASE(tokenize2);
 
         TEST_CASE(minus);
 
@@ -223,6 +224,12 @@ private:
         const std::string code("void f ( )\n"
                                "{ if ( p . y ( ) > yof ) { } }");
         ASSERT_EQUALS(code, tokenizeAndStringify(code.c_str()));
+    }
+
+    void tokenize2()
+    {
+        const std::string code("{ sizeof a, sizeof b }");
+        ASSERT_EQUALS("{ sizeof a , sizeof b }", tokenizeAndStringify(code.c_str()));
     }
 
     void minus()
