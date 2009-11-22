@@ -98,6 +98,10 @@ int main()
     fout << "CXXFLAGS=-Wall -Wextra -pedantic -g\n";
     fout << "CXX=g++\n";
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
+    fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml\n";
+    fout << "DB2MAN=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl\n";
+    fout << "XP=xsltproc -''-nonet -''-param man.charmap.use.subset \"0\"\n";
+    fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
     fout << "\n###### Object Files\n\n";
     fout << "LIBOBJ =     " << objfile(libfiles[0]);
@@ -127,6 +131,8 @@ int main()
     fout << "\t$(CXX) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp lib/filelister.cpp $(LDFLAGS)\n\n";
     fout << "clean:\n";
     fout << "\trm -f lib/*.o cli/*.o test/*.o testrunner cppcheck tools/dmake\n\n";
+    fout << "man:\t$(MAN_SOURCE)\n";
+    fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
     fout << "install:\tcppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n\n";

@@ -2,6 +2,11 @@ CXXFLAGS=-Wall -Wextra -pedantic -g
 CXX=g++
 BIN=${DESTDIR}/usr/bin
 
+# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml
+DB2MAN=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl
+XP=xsltproc -''-nonet -''-param man.charmap.use.subset "0"
+MAN_SOURCE=man/cppcheck.1.xml
+
 
 ###### Object Files
 
@@ -75,6 +80,9 @@ tools/dmake:	tools/dmake.cpp	lib/filelister.cpp	lib/filelister.h
 
 clean:
 	rm -f lib/*.o cli/*.o test/*.o testrunner cppcheck tools/dmake
+
+man:	$(MAN_SOURCE)
+	$(XP) $(DB2MAN) $(MAN_SOURCE)
 
 install:	cppcheck
 	install -d ${BIN}
