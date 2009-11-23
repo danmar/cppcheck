@@ -530,6 +530,9 @@ private:
     {
         const char code[] = "else if(ab) { cd } else { ef }gh";
         ASSERT_EQUALS("\n\n##file 0\n1: else { if ( ab ) { cd } else { ef } } gh\n", elseif(code));
+
+        // syntax error: assert there is no segmentation fault
+        ASSERT_EQUALS("\n\n##file 0\n1: else if ( x ) { }\n", elseif("else if (x) { }"));
     }
 
 

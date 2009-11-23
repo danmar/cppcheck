@@ -3635,7 +3635,7 @@ void Tokenizer::elseif()
 
             if (indent == 0 && Token::Match(tok2, "}|;"))
             {
-                if (tok2->next()->str() != "else")
+                if (tok2->next() && tok2->next()->str() != "else")
                 {
                     tok->insertToken("{");
                     tok2->insertToken("}");
