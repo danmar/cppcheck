@@ -36,7 +36,7 @@
           </Component>
           <Component Id='manual.pdf' Guid='*'>
             <File Id='manual.pdf' Name='manual.pdf' DiskId='1' Source='manual.pdf' KeyPath='yes'>
-              <Shortcut Id='startmenuManual' Directory="ProgramMenuDir" Name="Manual" Advertise="yes" />
+              <Shortcut Id='startmenuManual' Directory="ProgramMenuDir" Name="manual.pdf" Advertise="no" />
             </File>
           </Component>
         </Directory>
