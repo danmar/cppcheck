@@ -34,6 +34,9 @@ ResultsTree::ResultsTree(QWidget * parent) :
         mCheckPath(""),
         mVisibleErrors(false)
 {
+    for (int i = 0; i < SHOW_NONE; i++)
+        mShowTypes[i] = false;
+
     setModel(&mModel);
     QStringList labels;
     labels << tr("File") << tr("Severity") << tr("Line") << tr("Message");
