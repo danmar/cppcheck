@@ -93,6 +93,7 @@ private:
         TEST_CASE(array_index_22);
         TEST_CASE(array_index_23);
         TEST_CASE(array_index_multidim);
+        TEST_CASE(array_index_switch_in_for);
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -751,6 +752,45 @@ private:
               "  a[1][1][2] = 'a';\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
+    }
+
+    void array_index_switch_in_for()
+    {
+        check("void f()\n"
+              "{\n"
+              " int ar[10];\n"
+              " for (int i = 0; i < 10; ++i)\n"
+              " {\n"
+              "  switch(i)\n"
+              "  {\n"
+              "   case 9:\n"
+              "    ar[i] = 0;\n"
+              "    break;\n"
+              "   default:\n"
+              "    ar[i] = ar[i+1];\n"
+              "    break;\n"
+              "  };\n"
+              " }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              " int ar[10];\n"
+              " for (int i = 0; i < 10; ++i)\n"
+              " {\n"
+              "  switch(i)\n"
+              "  {\n"
+              "   case 8:\n"
+              "    ar[i] = 0;\n"
+              "    break;\n"
+              "   default:\n"
+              "    ar[i] = ar[i+1];\n"
+              "    break;\n"
+              "  };\n"
+              " }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()

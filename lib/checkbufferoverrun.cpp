@@ -397,7 +397,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                         break;
                 }
 
-                if (tok2->str() == "if")
+                if (Token::Match(tok2, "if|switch"))
                 {
                     // Bailout
                     break;
