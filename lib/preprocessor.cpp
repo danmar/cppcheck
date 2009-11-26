@@ -1703,7 +1703,7 @@ public:
                     }
                     optcomma = false;
                     macrocode += str;
-                    if (Token::Match(tok, "%type% %var%"))
+                    if (Token::Match(tok, "%var% %var%"))
                         macrocode += " ";
                 }
             }
