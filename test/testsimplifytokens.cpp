@@ -136,8 +136,9 @@ private:
         TEST_CASE(simplifyTypedef4)
         TEST_CASE(simplifyTypedef5)
         TEST_CASE(simplifyTypedef6)
+        TEST_CASE(simplifyTypedef7);
         TEST_CASE(reverseArraySyntax)
-        TEST_CASE(simplify_numeric_condition);
+        TEST_CASE(simplify_numeric_condition)
 
         TEST_CASE(pointeralias);
 
@@ -2136,6 +2137,13 @@ private:
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef7()
+    {
+        const char code[] = "typedef int abc ; "
+                            "Fred :: abc f ;";
+        ASSERT_EQUALS(code, tok(code, false));
     }
 
     void reverseArraySyntax()

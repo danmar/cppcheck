@@ -408,7 +408,7 @@ void Tokenizer::simplifyTypedef()
                 }
             }
 
-            const std::string pattern = className + " :: " + typeName;
+            const std::string pattern(className.empty() ? std::string("") : className + " :: " + typeName);
             int level = 0;
             bool inScope = true;
 
@@ -431,7 +431,7 @@ void Tokenizer::simplifyTypedef()
                 }
                 else if (tok2->str() == "{")
                     ++level;
-                else if (Token::Match(tok2, pattern.c_str()))
+                else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
                 {
                     tok2->deleteNext();
                     tok2->deleteNext();
@@ -439,8 +439,12 @@ void Tokenizer::simplifyTypedef()
                 }
                 else if (inScope && !exitThisScope && tok2->str() == typeName)
                 {
-                    if (Token::Match(tok2->tokAt(-2), "!!typedef") &&
-                        Token::Match(tok2->tokAt(-3), "!!typedef"))
+                    if (Token::simpleMatch(tok2->previous(), "::"))
+                    {
+                        // Don't replace this typename if it's preceded by "::"
+                    }
+                    else if (Token::Match(tok2->tokAt(-2), "!!typedef") &&
+                             Token::Match(tok2->tokAt(-3), "!!typedef"))
                     {
                         simplifyType = true;
                     }
