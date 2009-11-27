@@ -20,6 +20,7 @@
 #define TokenH
 
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -221,6 +222,16 @@ public:
     void printOut(const char *title = 0) const;
 
     /**
+     * For debugging purposes, prints token and all tokens
+     * followed by it.
+     * @param title Title for the printout or use default parameter or 0
+     * for no title.
+     * @param fileNames Prints out file name instead of file index.
+     * File index should match the index of the string in this vector.
+     */
+    void printOut(const char *title, const std::vector<std::string> &fileNames) const;
+
+    /**
      * Replace token replaceThis with tokens between start and end,
      * including start and end. The replaceThis token is deleted.
      * @param replaceThis This token will be deleted.
@@ -230,7 +241,8 @@ public:
     static void replace(Token *replaceThis, Token *start, Token *end);
 
     /** Stringify a token list (with or without varId) */
-    std::string stringifyList(bool varid = true, const char *title = 0) const;
+    std::string stringifyList(bool varid = 0, const char *title = 0) const;
+    std::string stringifyList(bool varid, const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
      * This is intended to be used for the first token in the list

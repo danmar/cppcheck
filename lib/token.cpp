@@ -603,10 +603,22 @@ void Token::createMutualLinks(Token *begin, Token *end)
 
 void Token::printOut(const char *title) const
 {
-    std::cout << stringifyList(true, title) << std::endl;
+    const std::vector<std::string> fileNames;
+    std::cout << stringifyList(true, title, fileNames) << std::endl;
+}
+
+void Token::printOut(const char *title, const std::vector<std::string> &fileNames) const
+{
+    std::cout << stringifyList(true, title, fileNames) << std::endl;
 }
 
 std::string Token::stringifyList(bool varid, const char *title) const
+{
+    const std::vector<std::string> fileNames;
+    return stringifyList(varid, title, fileNames);
+}
+
+std::string Token::stringifyList(bool varid, const char *title, const std::vector<std::string> &fileNames) const
 {
     std::ostringstream ret;
     if (title)
@@ -626,7 +638,11 @@ std::string Token::stringifyList(bool varid, const char *title) const
             }
 
             fileIndex = static_cast<int>(tok->_fileIndex);
-            ret << "\n\n##file " << fileIndex << "";
+            ret << "\n\n##file ";
+            if (fileNames.size() > static_cast<unsigned int>(fileIndex))
+                ret << fileNames.at(fileIndex);
+            else
+                ret << fileIndex;
 
             linenr = lineNumbers[fileIndex];
             fileChange = true;

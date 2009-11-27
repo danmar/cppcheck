@@ -2164,7 +2164,7 @@ bool Tokenizer::simplifyTokenList()
     simplifyComma();
     if (_settings && _settings->_debug)
     {
-        _tokens->printOut();
+        _tokens->printOut(0, _files);
     }
 
     return validate();
