@@ -274,6 +274,15 @@ public:
      */
     std::string strValue() const;
 
+    /**
+     * Move srcStart and srcEnd tokens and all tokens between then
+     * into new a location. Only links between tokens are changed.
+     * @param srcStart This is the first token to be moved
+     * @param srcEnd The last token to be moved
+     * @param newLocation srcStart will be placed after this token.
+     */
+    static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
+
 private:
     void next(Token *next)
     {

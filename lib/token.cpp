@@ -535,6 +535,23 @@ bool Token::isStandardType() const
     return ret;
 }
 
+void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
+{
+    /**[newLocation] -> b -> c -> [srcStart] -> [srcEnd] -> f */
+
+    // Fix the gap, which tokens to be moved will leave
+    srcStart->previous()->next(srcEnd->next());
+    srcEnd->next()->previous(srcStart->previous());
+
+    // Fix the tokens to be moved
+    srcEnd->next(newLocation->next());
+    srcStart->previous(newLocation);
+
+    // Fix the tokens at newLocation
+    newLocation->next()->previous(srcEnd);
+    newLocation->next(srcStart);
+}
+
 //---------------------------------------------------------------------------
 
 const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned int varId)

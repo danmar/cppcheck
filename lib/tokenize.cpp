@@ -3983,9 +3983,6 @@ void Tokenizer::simplifyNestedStrcat()
             continue;
         }
 
-        // insert extracted function calls before first strcat call
-        Token *insertPos = tok;
-
         // find inner strcat call
         Token *tok2 = tok->tokAt(3);
         while (Token::simpleMatch(tok2, "strcat ( strcat"))
@@ -3993,52 +3990,21 @@ void Tokenizer::simplifyNestedStrcat()
             tok2 = tok2->tokAt(2);
         }
 
-        Token *end   = tok2->next()->link()->next();
-        Token *endOfFirstArg = NULL;
-        std::stack<Token *> brackets;
-        unsigned int lineno = tok->next()->linenr();
+        // If we have this code:
+        //   strcat(strcat(dst, foo), bar);
+        // We move this part of code before all strcat() calls: strcat(dst, foo)
+        // And place "dst" token where the code was.
+        Token *prevTok = tok2->previous();
 
-        // copy tokens to new place
-        for (Token *cur = tok2; cur != end; cur = cur->next())
-        {
-            insertPos->insertToken(cur->strAt(0));
-            insertPos = insertPos->next();
+        // Move tokens to new place
+        Token::move(tok2, tok2->next()->link(), tok);
+        tok = tok2->next()->link();
 
-            if (cur->str() == "," && endOfFirstArg == NULL)
-            {
-                endOfFirstArg = cur;
-            }
+        // Insert the "dst" token
+        prevTok->insertToken(tok2->strAt(2));
 
-            // preserve varId
-            if (cur->varId())
-            {
-                insertPos->varId(cur->varId());
-            }
-
-            // use line number of first strcat token for all new
-            // tokens
-            insertPos->linenr(lineno);
-
-            // linkify braces
-            if (insertPos->str() == "(")
-            {
-                brackets.push(insertPos);
-            }
-            else if (insertPos->str() == ")")
-            {
-                Token::createMutualLinks(brackets.top(), insertPos);
-                brackets.pop();
-            }
-        }
-        insertPos->insertToken(";");
-
-        // remove tokens at old place, but don't remove token with
-        // variable name (1st argument)
-        Token::eraseTokens(tok2->previous(), tok2->tokAt(2));
-        Token::eraseTokens(endOfFirstArg->previous(), end);
-
-        // skip just inserted tokens
-        tok = insertPos;
+        // Insert semicolon after the moved strcat()
+        tok->insertToken(";");
     }
 
 }

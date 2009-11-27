@@ -124,6 +124,7 @@ private:
 
         // Simplify nested strcat() calls
         TEST_CASE(strcat1);
+        TEST_CASE(strcat2);
 
         // Syntax error
         TEST_CASE(argumentsWithSameName)
@@ -1937,6 +1938,15 @@ private:
                               "strcat ( dst , \"a \" ) ; "
                               "strcat ( dst , \"test\" ) ; "
                               "strcat ( dst , \".\" ) ;";
+
+        ASSERT_EQUALS(expect, tok(code));
+    }
+    void strcat2()
+    {
+        const char code[] = "; strcat(strcat(dst, foo[0]), \" \");";
+        const char expect[] = "; "
+                              "strcat ( dst , foo [ 0 ] ) ; "
+                              "strcat ( dst , \" \" ) ;";
 
         ASSERT_EQUALS(expect, tok(code));
     }
