@@ -465,7 +465,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
 
         // Writing data into array..
         if (varid > 0 &&
-            Token::Match(tok, "read ( %any% , %varid% , %num% )", varid) &&
+            Token::Match(tok, "read|write ( %any% , %varid% , %num% )", varid) &&
             MathLib::isInt(tok->strAt(6)))
         {
             size_t len = MathLib::toLongNumber(tok->strAt(6));
