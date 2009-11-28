@@ -133,6 +133,7 @@ private:
         TEST_CASE(alloc);    // Buffer allocated with new
 
         TEST_CASE(memset1);
+        TEST_CASE(memset2);
         TEST_CASE(counter_test);
         TEST_CASE(strncpy1);
         TEST_CASE(unknownType);
@@ -1278,6 +1279,18 @@ private:
               "{\n"
               "    int* x[5];\n"
               "    memset(x, 0, sizeof(x));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void memset2()
+    {
+        check("class X {\n"
+              "    char* array[2];\n"
+              "    X();\n"
+              "};\n"
+              "X::X() {\n"
+              "    memset(array, 0, sizeof(array));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

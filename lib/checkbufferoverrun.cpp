@@ -766,6 +766,8 @@ void CheckBufferOverrun::checkStructVariable()
             varname[1] = tok2->strAt(ivar);
             int arrsize = std::atoi(tok2->strAt(ivar + 2));
             int total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(1));
+            if (tok2->tokAt(2)->str() == "*")
+                total_size = arrsize * sizeof(void *);
             if (total_size == 0)
                 continue;
 
