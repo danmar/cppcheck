@@ -408,7 +408,7 @@ void Tokenizer::simplifyTypedef()
                 }
             }
 
-            const std::string pattern(className.empty() ? std::string("") : className + " :: " + typeName);
+            const std::string pattern(className.empty() ? "" : (className + " :: " + typeName).c_str());
             int level = 0;
             bool inScope = true;
 
