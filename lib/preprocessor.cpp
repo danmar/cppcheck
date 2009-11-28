@@ -1277,7 +1277,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             // We must not remove #file tags or line numbers
             // are corrupted. File tags are removed by the tokenizer.
         }
-        else if (!match || line.compare(0,1,"#") == 0)
+        else if (!match || line.compare(0, 1, "#") == 0)
         {
             // Remove #if, #else, #pragma etc, leaving only
             // #define, #undef, #file and #endfile. and also lines
