@@ -48,19 +48,22 @@ Token::~Token()
 void Token::str(const std::string &s)
 {
     _str = s;
+
     _isName = bool(_str[0] == '_' || std::isalpha(_str[0]));
-    _isNumber = bool(std::isdigit(_str[(_str[0] == '-') ? 1 : 0]) != 0);
+
+    if (std::isdigit(_str[0]))
+        _isNumber = true;
+    else if (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[0]))
+        _isNumber = true;
+    else
+        _isNumber = false;
+
     if (_str == "true" || _str == "false")
         _isBoolean = true;
     else
         _isBoolean = false;
 
     _varId = 0;
-}
-
-void Token::str(const char s[])
-{
-    str(std::string(s));
 }
 
 void Token::concatStr(std::string const& b)
