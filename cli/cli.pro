@@ -14,6 +14,10 @@ SOURCES += main.cpp \
 HEADERS += cppcheckexecutor.cpp \
            threadexecutor.cpp
 
+CONFIG(release, debug|release) {
+	DEFINES += NDEBUG
+}
+
 win32 {
     CONFIG += embed_manifest_exe console
     RC_FILE = cppcheck.rc
