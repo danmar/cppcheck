@@ -8,6 +8,7 @@ MOC_DIR = temp
 OBJECTS_DIR = temp
 UI_DIR = temp
 CONFIG += warn_on
+DEFINES += NDEBUG
 RESOURCES = gui.qrc
 FORMS = main.ui \
 	resultsview.ui \
