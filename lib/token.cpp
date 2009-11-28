@@ -53,7 +53,7 @@ void Token::str(const std::string &s)
 
     if (std::isdigit(_str[0]))
         _isNumber = true;
-    else if (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[0]))
+    else if (_str.length() > 1 && _str[0] == '-' && std::isdigit(_str[1]))
         _isNumber = true;
     else
         _isNumber = false;

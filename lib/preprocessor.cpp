@@ -1026,7 +1026,12 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
     {
         const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
         if (it != variables.end())
-            tok->str(it->second);
+        {
+            if (it->second.empty())
+                tok->deleteThis();
+            else
+                tok->str(it->second);
+        }
     }
 
     // simplify calculations..
@@ -1272,8 +1277,7 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             // We must not remove #file tags or line numbers
             // are corrupted. File tags are removed by the tokenizer.
         }
-        else if (!match ||
-                 line[0] == '#')
+        else if (!match || line.compare(0,1,"#") == 0)
         {
             // Remove #if, #else, #pragma etc, leaving only
             // #define, #undef, #file and #endfile. and also lines
