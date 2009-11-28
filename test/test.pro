@@ -39,3 +39,14 @@ win32 {
     CONFIG += console
     LIBS += -lshlwapi
 }
+
+contains(QMAKE_CXX, g++) {
+    QMAKE_CXXFLAGS_WARN_ON += -Wextra -pedantic
+
+    CONFIG(debug, debug|release) {
+        # checked STL
+        DEFINES += _GLIBCXX_DEBUG
+    }
+}
+
+
