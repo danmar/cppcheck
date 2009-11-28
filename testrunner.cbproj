@@ -18,26 +18,26 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <OutputExt>exe</OutputExt>
     <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
-    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+    <OutputExt>exe</OutputExt>
     <Defines>NO_STRICT</Defines>
+    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
     <DynamicRTL>true</DynamicRTL>
-    <ILINK_ObjectSearchPath>C:\cppcheck;test;src</ILINK_ObjectSearchPath>
     <UsePackages>true</UsePackages>
-    <NoVCL>true</NoVCL>
+    <ILINK_ObjectSearchPath>C:\cppcheck;test;src;lib</ILINK_ObjectSearchPath>
     <ProjectType>CppConsoleApplication</ProjectType>
+    <NoVCL>true</NoVCL>
     <FinalOutputDir>.</FinalOutputDir>
     <PackageImports>vclx.bpi;vcl.bpi;rtl.bpi;vclactnband.bpi</PackageImports>
     <BCC_wpar>false</BCC_wpar>
-    <IncludePath>$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;test;src</IncludePath>
-    <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;test;src</ILINK_LibraryPath>
+    <IncludePath>$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;test;src;lib</IncludePath>
+    <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;test;src;lib</ILINK_LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
     <DCC_Optimize>false</DCC_Optimize>
+    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
+    <Defines>_DEBUG;_HAS_ITERATOR_DEBUGGING=1;$(Defines)</Defines>
     <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
-    <Defines>_DEBUG;$(Defines)</Defines>
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
@@ -48,8 +48,8 @@
     <IntermediateOutputDir>bcb_Debug</IntermediateOutputDir>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
     <BCC_StackFrames>true</BCC_StackFrames>
-    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
   </PropertyGroup>
@@ -74,81 +74,80 @@
       
       <Excluded_Packages Name="C:\Documents and Settings\All Users\Documents\RAD Studio\5.0\BPL\A407_D110.bpl">TurboPower Async Professional 4.07 Designtime Package - VCL110</Excluded_Packages>
       <Excluded_Packages Name="C:\Documents and Settings\All Users\Documents\RAD Studio\5.0\BPL\DreamEdit_C6.bpl">Dream Editor Package</Excluded_Packages>
-    </Excluded_Packages><Linker><Linker Name="LibPrefix"></Linker><Linker Name="LibSuffix"></Linker><Linker Name="LibVersion"></Linker></Linker><ProjectProperties><ProjectProperties Name="AutoShowDeps">False</ProjectProperties><ProjectProperties Name="ManagePaths">True</ProjectProperties><ProjectProperties Name="VerifyPackages">True</ProjectProperties></ProjectProperties><HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Count">1</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item0">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck</HistoryLists_hlIncludePath></HistoryLists_hlIncludePath><HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Count">2</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item0">bcb_debug</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item1">.</HistoryLists_hlFinalOutputDir></HistoryLists_hlFinalOutputDir><HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Item0">$(BDS)\lib\debug;$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck</HistoryLists_hlILINK_LibraryPath></HistoryLists_hlILINK_LibraryPath><HistoryLists_hlDefines><HistoryLists_hlDefines Name="Count">1</HistoryLists_hlDefines><HistoryLists_hlDefines Name="Item0">_DEBUG;NO_STRICT</HistoryLists_hlDefines></HistoryLists_hlDefines><HistoryLists_hlIntermediateOutputDir><HistoryLists_hlIntermediateOutputDir Name="Count">1</HistoryLists_hlIntermediateOutputDir><HistoryLists_hlIntermediateOutputDir Name="Item0">bcb_Debug</HistoryLists_hlIntermediateOutputDir></HistoryLists_hlIntermediateOutputDir></CPlusPlusBuilder.Personality></BorlandProject></BorlandProject>
+    </Excluded_Packages><Linker><Linker Name="LibPrefix"></Linker><Linker Name="LibSuffix"></Linker><Linker Name="LibVersion"></Linker></Linker><ProjectProperties><ProjectProperties Name="AutoShowDeps">False</ProjectProperties><ProjectProperties Name="ManagePaths">True</ProjectProperties><ProjectProperties Name="VerifyPackages">True</ProjectProperties></ProjectProperties><HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Count">2</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item0">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;test;src;lib</HistoryLists_hlIncludePath>  <HistoryLists_hlIncludePath Name="Item1">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck</HistoryLists_hlIncludePath>
+    </HistoryLists_hlIncludePath><HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Count">2</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item0">bcb_debug</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item1">.</HistoryLists_hlFinalOutputDir></HistoryLists_hlFinalOutputDir><HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Item0">$(BDS)\lib\debug;$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;test;src;lib</HistoryLists_hlILINK_LibraryPath></HistoryLists_hlILINK_LibraryPath><HistoryLists_hlDefines><HistoryLists_hlDefines Name="Count">1</HistoryLists_hlDefines><HistoryLists_hlDefines Name="Item0">_DEBUG;NO_STRICT;_HAS_ITERATOR_DEBUGGING=1</HistoryLists_hlDefines></HistoryLists_hlDefines><HistoryLists_hlIntermediateOutputDir><HistoryLists_hlIntermediateOutputDir Name="Count">1</HistoryLists_hlIntermediateOutputDir><HistoryLists_hlIntermediateOutputDir Name="Item0">bcb_Debug</HistoryLists_hlIntermediateOutputDir></HistoryLists_hlIntermediateOutputDir></CPlusPlusBuilder.Personality></BorlandProject></BorlandProject>
   </ProjectExtensions>
   <Import Project="$(MSBuildBinPath)\Borland.Cpp.Targets" />
   <ItemGroup>
-    <CppCompile Include="src\checkautovariables.cpp">
-      <DependentOn>src\checkautovariables.h</DependentOn>
+    <CppCompile Include="lib\checkautovariables.cpp">
+      <DependentOn>lib\checkautovariables.h</DependentOn>
       <BuildOrder>0</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkbufferoverrun.cpp">
-      <DependentOn>src\checkbufferoverrun.h</DependentOn>
+    <CppCompile Include="lib\checkbufferoverrun.cpp">
+      <DependentOn>lib\checkbufferoverrun.h</DependentOn>
       <BuildOrder>1</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkclass.cpp">
-      <DependentOn>src\checkclass.h</DependentOn>
+    <CppCompile Include="lib\checkclass.cpp">
+      <DependentOn>lib\checkclass.h</DependentOn>
       <BuildOrder>2</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkdangerousfunctions.cpp">
-      <DependentOn>src\checkdangerousfunctions.h</DependentOn>
+    <CppCompile Include="lib\checkdangerousfunctions.cpp">
+      <DependentOn>lib\checkdangerousfunctions.h</DependentOn>
       <BuildOrder>3</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkheaders.cpp">
-      <DependentOn>src\checkheaders.h</DependentOn>
+    <CppCompile Include="lib\checkexceptionsafety.cpp">
+      <DependentOn>lib\checkexceptionsafety.h</DependentOn>
       <BuildOrder>4</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkmemoryleak.cpp">
-      <DependentOn>src\checkmemoryleak.h</DependentOn>
+    <CppCompile Include="lib\checkheaders.cpp">
+      <DependentOn>lib\checkheaders.h</DependentOn>
       <BuildOrder>5</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkother.cpp">
-      <DependentOn>src\checkother.h</DependentOn>
+    <CppCompile Include="lib\checkmemoryleak.cpp">
+      <DependentOn>lib\checkmemoryleak.h</DependentOn>
       <BuildOrder>6</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkstl.cpp">
-      <DependentOn>src\checkstl.h</DependentOn>
+    <CppCompile Include="lib\checkother.cpp">
+      <DependentOn>lib\checkother.h</DependentOn>
       <BuildOrder>7</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\checkunusedfunctions.cpp">
-      <DependentOn>src\checkunusedfunctions.h</DependentOn>
+    <CppCompile Include="lib\checkstl.cpp">
+      <DependentOn>lib\checkstl.h</DependentOn>
       <BuildOrder>8</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\cppcheck.cpp">
+    <CppCompile Include="lib\checkunusedfunctions.cpp">
+      <DependentOn>lib\checkunusedfunctions.h</DependentOn>
       <BuildOrder>9</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\cppcheckexecutor.cpp">
+    <CppCompile Include="lib\cppcheck.cpp">
       <BuildOrder>10</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\errorlogger.cpp">
-      <DependentOn>src\errorlogger.h</DependentOn>
+    <CppCompile Include="lib\errorlogger.cpp">
+      <DependentOn>lib\errorlogger.h</DependentOn>
       <BuildOrder>11</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\filelister.cpp">
-      <DependentOn>src\filelister.h</DependentOn>
+    <CppCompile Include="lib\filelister.cpp">
+      <DependentOn>lib\filelister.h</DependentOn>
       <BuildOrder>12</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\mathlib.cpp">
-      <DependentOn>src\mathlib.h</DependentOn>
+    <CppCompile Include="lib\mathlib.cpp">
+      <DependentOn>lib\mathlib.h</DependentOn>
       <BuildOrder>13</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\preprocessor.cpp">
-      <DependentOn>src\preprocessor.h</DependentOn>
+    <CppCompile Include="lib\preprocessor.cpp">
+      <DependentOn>lib\preprocessor.h</DependentOn>
       <BuildOrder>14</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\settings.cpp">
+    <CppCompile Include="lib\settings.cpp">
       <BuildOrder>15</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\threadexecutor.cpp">
+    <CppCompile Include="lib\token.cpp">
+      <DependentOn>lib\token.h</DependentOn>
       <BuildOrder>16</BuildOrder>
     </CppCompile>
-    <CppCompile Include="src\token.cpp">
-      <DependentOn>src\token.h</DependentOn>
+    <CppCompile Include="lib\tokenize.cpp">
+      <DependentOn>lib\tokenize.h</DependentOn>
       <BuildOrder>17</BuildOrder>
-    </CppCompile>
-    <CppCompile Include="src\tokenize.cpp">
-      <DependentOn>src\tokenize.h</DependentOn>
-      <BuildOrder>18</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testautovariables.cpp">
       <BuildOrder>19</BuildOrder>
@@ -165,56 +164,66 @@
     <CppCompile Include="test\testconstructors.cpp">
       <BuildOrder>23</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testdangerousfunctions.cpp">
+    <CppCompile Include="test\testcppcheck.cpp">
       <BuildOrder>24</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testdivision.cpp">
+    <CppCompile Include="test\testdangerousfunctions.cpp">
       <BuildOrder>25</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testincompletestatement.cpp">
+    <CppCompile Include="test\testdivision.cpp">
       <BuildOrder>26</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testmathlib.cpp">
+    <CppCompile Include="test\testexceptionsafety.cpp">
       <BuildOrder>27</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testmemleak.cpp">
+    <CppCompile Include="test\testfilelister.cpp">
       <BuildOrder>28</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testother.cpp">
+    <CppCompile Include="test\testincompletestatement.cpp">
       <BuildOrder>29</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testpreprocessor.cpp">
+    <CppCompile Include="test\testmathlib.cpp">
       <BuildOrder>30</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testredundantif.cpp">
+    <CppCompile Include="test\testmemleak.cpp">
       <BuildOrder>31</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testrunner.cpp">
+    <CppCompile Include="test\testother.cpp">
       <BuildOrder>32</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testsimplifytokens.cpp">
+    <CppCompile Include="test\testpreprocessor.cpp">
       <BuildOrder>33</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\teststl.cpp">
+    <CppCompile Include="test\testredundantif.cpp">
       <BuildOrder>34</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testsuite.cpp">
+    <CppCompile Include="test\testrunner.cpp">
       <BuildOrder>35</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testtoken.cpp">
+    <CppCompile Include="test\testsimplifytokens.cpp">
       <BuildOrder>36</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testtokenize.cpp">
+    <CppCompile Include="test\teststl.cpp">
       <BuildOrder>37</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testunusedfunctions.cpp">
+    <CppCompile Include="test\testsuite.cpp">
+      <DependentOn>test\testsuite.h</DependentOn>
       <BuildOrder>38</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testunusedprivfunc.cpp">
+    <CppCompile Include="test\testtoken.cpp">
       <BuildOrder>39</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testunusedvar.cpp">
+    <CppCompile Include="test\testtokenize.cpp">
       <BuildOrder>40</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\testunusedfunctions.cpp">
+      <BuildOrder>41</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\testunusedprivfunc.cpp">
+      <BuildOrder>42</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\testunusedvar.cpp">
+      <BuildOrder>18</BuildOrder>
     </CppCompile>
     <BuildConfiguration Include="Debug">
       <Key>Cfg_1</Key>
