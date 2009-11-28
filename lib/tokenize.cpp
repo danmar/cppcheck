@@ -605,10 +605,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
 
     setVarId();
     if (!validate())
-    {
-        std::cerr << "### A bug in the Cppcheck itself, while checking: " << FileName << "\n";
         return false;
-    }
 
     return true;
 }
@@ -4293,6 +4290,42 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 
 }
 
+void Tokenizer::cppcheckError(const Token *tok) const
+{
+    if (!_errorLogger && tok)
+    {
+        std::ostringstream err;
+        err << "### Unlogged error at Tokenizer::cppcheckError";
+        if (_settings && _settings->_debug)
+        {
+            throw std::runtime_error(err.str());
+        }
+        else
+        {
+            std::cerr << err.str() << std::endl;
+        }
+        return;
+    }
+
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    if (tok)
+    {
+        ErrorLogger::ErrorMessage::FileLocation loc;
+        loc.line = tok->linenr();
+        loc.file = file(tok);
+        locationList.push_back(loc);
+    }
+
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           "error",
+                                           "### A bug was found from cppcheck. Please report it.",
+                                           "cppcheckError");
+
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+}
+
+
 void Tokenizer::simplifyMathFunctions()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -4554,7 +4587,7 @@ bool Tokenizer::validate() const
         {
             if (tok->link() == 0)
             {
-                assert(0);
+                cppcheckError(tok);
                 return false;
             }
 
@@ -4566,25 +4599,25 @@ bool Tokenizer::validate() const
         {
             if (tok->link() == 0)
             {
-                assert(0);
+                cppcheckError(tok);
                 return false;
             }
 
             if (linktok.empty() == true)
             {
-                assert(0);
+                cppcheckError(tok);
                 return false;
             }
 
             if (tok->link() != linktok.top())
             {
-                assert(0);
+                cppcheckError(tok);
                 return false;
             }
 
             if (tok != tok->link()->link())
             {
-                assert(0);
+                cppcheckError(tok);
                 return false;
             }
 
@@ -4594,14 +4627,14 @@ bool Tokenizer::validate() const
 
         if (tok->link() != 0)
         {
-            assert(0);
+            cppcheckError(tok);
             return false;
         }
     }
 
     if (!linktok.empty())
     {
-        assert(0);
+        cppcheckError(linktok.top());
         return false;
     }
 

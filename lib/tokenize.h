@@ -329,6 +329,12 @@ private:
     void insertTokens(Token *dest, const Token *src, unsigned int n);
 
     /**
+     * Send error message to error logger about internal bug.
+     * @param tok, the token that this bug concerns.
+     */
+    void cppcheckError(const Token *tok) const;
+
+    /**
      * Setup links for tokens so that one can call Token::link().
      *
      * @return false if there was a mismatch with tokens, this
