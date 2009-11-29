@@ -178,6 +178,11 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
                 if (pos != std::string::npos)
                     s.erase(pos, 1);
                 _settings.enableId += "," + s + ",";
+
+                if (_settings.enableId.find(",style,") != std::string::npos)
+                    _settings._checkCodingStyle = true;
+                if (_settings.enableId.find(",possibleError,") != std::string::npos)
+                    _settings._showAll = true;
             }
         }
 
@@ -357,8 +362,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
         "Options:\n"
-        "    -a, --all            Make the checking more sensitive. More bugs are\n"
-        "                         detected, but there are also more false positives\n"
+        "    -a, --all            deprecated, use --enable=possibleError\n"
         "    --append=file        This allows you to provide information about\n"
         "                         functions by providing an implementation for these.\n"
         "    --auto-dealloc file  Suppress warnings about classes that have automatic\n"
@@ -371,6 +375,10 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    --enable=id          Enable specific checks. The available ids are:\n"
         "                          * exceptNew - exception safety when using new\n"
         "                          * exceptRealloc - exception safety when reallocating\n"
+        "                          * possibleError - Make the checking more sensitive.\n"
+        "                            More bugs are detected, but there are also\n"
+        "                            more false positives\n"
+        "                          * style - Check coding style\n"
         "                          * unusedFunctions - check for unused functions\n"
         "                         Several ids can be given if you separate them with commas\n"
         "    --error-exitcode=[n] If errors are found, integer [n] is returned instead\n"
@@ -386,7 +394,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "                         paths are relative to source files, this is not needed\n"
         "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
         "    -q, --quiet          Only print error messages\n"
-        "    -s, --style          Check coding style\n"
+        "    -s, --style          deprecated, use --enable=style\n"
         "    --suppressions file  Suppress warnings listed in the file. Filename and line\n"
         "                         are optional. The format of the single line in file is:\n"
         "                         [error id]:[filename]:[line]\n"
