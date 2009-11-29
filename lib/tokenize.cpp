@@ -4325,7 +4325,7 @@ void Tokenizer::cppcheckError(const Token *tok) const
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            "error",
-                                           "### A bug was found from cppcheck. Please report it.",
+                                           "### Internal error in Cppcheck. Please report it.",
                                            "cppcheckError");
 
     if (_errorLogger)
