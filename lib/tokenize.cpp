@@ -1737,6 +1737,14 @@ void Tokenizer::simplifySizeof()
             tok->next()->insertToken("*");
         }
 
+        // sizeof a++ -> sizeof(a++)
+        if (Token::Match(tok->next(), "++|-- %var% !!.") || Token::Match(tok->next(), "%var% ++|--"))
+        {
+            tok->insertToken("(");
+            tok->tokAt(3)->insertToken(")");
+            Token::createMutualLinks(tok->next(), tok->tokAt(4));
+        }
+
         // sizeof int -> sizeof( int )
         if (tok->next()->str() != "(")
         {
