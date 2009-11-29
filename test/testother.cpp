@@ -1229,6 +1229,18 @@ private:
                        "    char *s2 = new char[strlen(s1)];\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s1\n", errout.str());
+
+        // struct..
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    struct Relative {\n"
+                       "        Surface *surface;\n"
+                       "        void MoveTo(int x, int y) {\n"
+                       "            surface->MoveTo();\n"
+                       "        }\n"
+                       "    };\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

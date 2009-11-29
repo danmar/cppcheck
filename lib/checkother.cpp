@@ -1458,6 +1458,13 @@ void CheckOther::uninitvar()
         unsigned int indentlevel = 0;
         for (; tok; tok = tok->next())
         {
+            // skip structs
+            if (Token::Match(tok->previous(), "[;{}] struct %var% {"))
+            {
+                tok = tok->tokAt(2)->link();
+                continue;
+            }
+
             if (tok->str() == "{")
                 ++indentlevel;
             else if (tok->str() == "}")
