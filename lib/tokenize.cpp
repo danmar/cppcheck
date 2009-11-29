@@ -1730,8 +1730,15 @@ void Tokenizer::simplifySizeof()
             continue;
         }
 
+        // sizeof * (...) -> sizeof(*...)
+        if (Token::simpleMatch(tok->next(), "* (") && !Token::simpleMatch(tok->tokAt(2)->link(), ") ."))
+        {
+            tok->deleteNext();
+            tok->next()->insertToken("*");
+        }
+
         // sizeof int -> sizeof( int )
-        if (tok->strAt(1) != std::string("("))
+        if (tok->next()->str() != "(")
         {
             // Add parenthesis around the sizeof
             for (Token *tempToken = tok->next(); tempToken; tempToken = tempToken->next())

@@ -70,6 +70,7 @@ private:
         TEST_CASE(sizeof12);
         TEST_CASE(sizeof13);
         TEST_CASE(sizeof14);
+        TEST_CASE(sizeof15);
         TEST_CASE(casting);
 
         TEST_CASE(strlen1);
@@ -148,9 +149,14 @@ private:
 
     std::string tok(const char code[], bool simplify = true)
     {
+        errout.str("");
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+
         std::istringstream istr(code);
-        Tokenizer tokenizer;
         tokenizer.tokenize(istr, "test.cpp");
+
         if (simplify)
             tokenizer.simplifyTokenList();
 
@@ -906,6 +912,17 @@ private:
                                 " int aa ; aa = sizeof ( * ( * a ) . b ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void sizeof15()
+    {
+        // ticket #1020
+        tok("void f()\n"
+            "{\n"
+            "    int *n;\n"
+            "    sizeof *(n);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void casting()
