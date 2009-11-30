@@ -116,6 +116,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--style</option></arg>
       <arg choice="opt"><option>--suppressions [file]</option></arg>
       <arg choice="opt"><option>--template ['text']</option></arg>
+      <arg choice="opt"><option>--unused-functions</option></arg>
       <arg choice="opt"><option>--verbose</option></arg>
       <arg choice="opt"><option>--version</option></arg>
       <arg choice="opt"><option>--xml</option></arg>
@@ -125,7 +126,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   </refsynopsisdiv>
   <refsect1 id="description">
     <title>DESCRIPTION</title>
-    <para>A tool for static C/C++ code analysis
+    <para>Tool for static C/C++ code analysis
       intended to complement the checking of the compiler.
       Checks for: memory leaks, mismatching allocation-deallocation,
       buffer overrun, and many more.</para>
@@ -141,8 +142,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <term><option>-a</option></term>
         <term><option>--all</option></term>
         <listitem>
-          <para>Normally a message is only shown if cppcheck is sure it has
-          found a bug. When this option is given, all messages are shown.</para>
+          <para>deprecated, use --enable=possibleError</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -168,7 +168,46 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <varlistentry>
         <term><option>--enable=id</option></term>
         <listitem>
-          <para>Enable check with given id(s). The id can be exceptNew, exceptRealloc or unusedFunctions. Multiple ids separated by comma can be given.</para>
+          <para>Enable specific checks. The available ids are:
+        <glosslist>
+        <glossentry><glossterm>exceptNew</glossterm>
+        <glossdef>
+        <para>
+        exception safety when using new
+        </para>
+        </glossdef>
+        </glossentry>
+        <glossentry><glossterm>exceptRealloc</glossterm>
+        <glossdef>
+        <para>
+        exceptRealloc - exception safety when reallocating
+        </para>
+        </glossdef>
+        </glossentry>
+        <glossentry><glossterm>possibleError</glossterm>
+        <glossdef>
+        <para>
+        exceptRealloc - Make the checking more sensitive. More bugs are detected, 
+        but there are also more false positives.
+        </para>
+        </glossdef>
+        </glossentry>
+        <glossentry><glossterm>style</glossterm>
+        <glossdef>
+        <para>
+        exceptRealloc - Check coding style
+        </para>
+        </glossdef>
+        </glossentry>
+        <glossentry><glossterm>unusedFunctions</glossterm>
+        <glossdef>
+        <para>
+        check for unused functions
+        </para>
+        </glossdef>
+        </glossentry>
+        </glosslist>          
+         Several ids can be given if you separate them with commas</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -219,7 +258,7 @@ files, this is not needed.</para>
         <term><option>-s</option></term>
         <term><option>--style</option></term>
         <listitem>
-          <para>Check coding style.</para>
+          <para>deprecated, use --enable=style</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -234,6 +273,12 @@ files, this is not needed.</para>
           <para>Format the error messages. E.g. '{file}:{line},{severity},{id},{message}' or '{file}({line}):({severity}) {message}'. Pre-defined templates: gcc, vs</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+       <term><option>--unused-functions</option></term>
+       <listitem>
+        <para>deprecated, use --enable=unusedFunctions</para>
+       </listitem>
+      </varlistentry>      
       <varlistentry>
         <term><option>-v</option></term>
         <term><option>--verbose</option></term>
