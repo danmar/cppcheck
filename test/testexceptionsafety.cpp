@@ -53,8 +53,7 @@ private:
 
         // Check char variable usage..
         Settings settings;
-        settings._checkCodingStyle = true;
-        settings.enableId = "*";
+        settings.addEnabled("");
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
         checkExceptionSafety.runSimplifiedChecks(&tokenizer, &settings, this);
     }

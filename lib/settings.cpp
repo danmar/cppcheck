@@ -113,6 +113,44 @@ bool Settings::isSuppressed(const std::string &errorId, const std::string &file,
     return true;
 }
 
+void Settings::addEnabled(const std::string &str)
+{
+    if (str.length() == 0)
+    {
+        _enabled["*"] = true;
+    }
+    else
+    {
+        std::string::size_type prevPos = 0;
+        std::string::size_type pos = 0;
+        while ((pos = str.find_first_of(",", pos)) != std::string::npos)
+        {
+            if (prevPos != pos)
+                _enabled[str.substr(prevPos, pos-prevPos)] = true;
+
+            ++pos;
+            prevPos = pos;
+        }
+
+        if (prevPos < str.length())
+            _enabled[str.substr(prevPos, pos-prevPos)] = true;
+    }
+
+    if (isEnabled("style"))
+        _checkCodingStyle = true;
+    if (isEnabled("possibleError"))
+        _showAll = true;
+}
+
+bool Settings::isEnabled(const std::string &str) const
+{
+    if (_enabled.find("*") != _enabled.end() ||
+        _enabled.find(str) != _enabled.end())
+        return true;
+    else
+        return false;
+}
+
 void Settings::addAutoAllocClass(const std::string &name)
 {
     _autoDealloc.insert(name);

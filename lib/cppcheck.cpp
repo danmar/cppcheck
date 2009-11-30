@@ -29,7 +29,6 @@
 #include <sstream>
 #include <cstring>
 #include <fstream>
-#include <map>
 #include <stdexcept>
 
 #ifdef __GNUC__
@@ -99,7 +98,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
 
         // Show all messages
         else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
-            _settings._showAll = true;
+            _settings.addEnabled("possibleError");
 
         // Only print something when there are errors
         else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0)
@@ -107,7 +106,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
 
         // Checking coding style
         else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--style") == 0)
-            _settings._checkCodingStyle = true;
+            _settings.addEnabled("style");
 
         // Filter errors
         else if (strcmp(argv[i], "--suppressions") == 0)
@@ -137,10 +136,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
 
         // Check if there are unused functions
         else if (strcmp(argv[i], "--unused-functions") == 0)
-        {
-            if (_settings.enableId != "*")
-                _settings.enableId += ",unusedFunctions,";
-        }
+            _settings.addEnabled("unusedFunctions");
 
         // Append userdefined code to checked source code
         else if (strncmp(argv[i], "--append=", 9) == 0)
@@ -161,29 +157,18 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
 
 
         else if (strcmp(argv[i], "--enable") == 0)
-        {
-            _settings.enableId = "*";
-            _settings._showAll = true;
-            _settings._checkCodingStyle = true;
-        }
+            _settings.addEnabled("");
 
         else if (strncmp(argv[i], "--enable=", 9) == 0)
         {
-            if (_settings.enableId != "*")
-            {
-                std::string s(9 + argv[i]);
-                if (s[0] == '\"')
-                    s[0] = ',';
-                std::string::size_type pos = s.find("\"");
-                if (pos != std::string::npos)
-                    s.erase(pos, 1);
-                _settings.enableId += "," + s + ",";
+            std::string s(9 + argv[i]);
+            if (s[0] == '\"')
+                s.erase(0, 1);
+            std::string::size_type pos = s.find("\"");
+            if (pos != std::string::npos)
+                s.erase(pos, 1);
 
-                if (_settings.enableId.find(",style,") != std::string::npos)
-                    _settings._checkCodingStyle = true;
-                if (_settings.enableId.find(",possibleError,") != std::string::npos)
-                    _settings._showAll = true;
-            }
+            _settings.addEnabled(s);
         }
 
         // --error-exitcode=1
@@ -335,9 +320,9 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
             pathnames.push_back(argv[i]);
     }
 
-    if (_settings.enableId.find(",unusedFunctions,") != std::string::npos  && _settings._jobs > 1)
+    if (_settings.isEnabled("unusedFunctions") && _settings._jobs > 1)
     {
-        throw std::runtime_error("cppcheck: error: the unusedFunctions check can't be used with -j option.");
+        reportOut("unusedFunctions check can't be used with -j option, so it was disabled.");
     }
 
     if (pathnames.size() > 0)
@@ -495,7 +480,7 @@ unsigned int CppCheck::check()
 
     // This generates false positives - especially for libraries
     _settings._verbose = false;
-    if (_settings.enableId != "*" && _settings.enableId.find(",unusedFunctions,") != std::string::npos)
+    if (_settings.isEnabled("unusedFunctions") && _settings._jobs == 1)
     {
         _errout.str("");
         if (_settings._errorsOnly == false)
@@ -555,7 +540,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     }
 
 
-    if (_settings.enableId != "*" || _settings.enableId.find(",unusedFunctions,") != std::string::npos)
+    if (_settings.isEnabled("unusedFunctions") && _settings._jobs == 1)
         _checkUnusedFunctions.parseTokens(_tokenizer);
 
     // call all "runSimplifiedChecks" in all registered Check classes

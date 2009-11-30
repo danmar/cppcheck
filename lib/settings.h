@@ -46,6 +46,8 @@ private:
     /** List of error which the user doesn't want to see. */
     std::map<std::string, std::map<std::string, std::list<int> > > _suppressions;
 
+    /** enable extra checks by id */
+    std::map<std::string, bool> _enabled;
 public:
     Settings();
     virtual ~Settings();
@@ -119,7 +121,22 @@ public:
     std::string append() const;
 
     /** enable extra checks by id */
-    std::string enableId;
+    //std::string enableId;
+
+    /**
+     * Returns true if given id is in the list of
+     * enabled extra checks. See addEnabled()
+     * @param str id for the extra check, e.g. "style"
+     * @return true if the check is enabled.
+     */
+    bool isEnabled(const std::string &str) const;
+
+    /**
+     * Enable extra checks by id. See isEnabled()
+     * @param str single id or list of id values to be enabled
+     * or empty string to enable all. e.g. "style,possibleError"
+     */
+    void addEnabled(const std::string &str);
 };
 
 /// @}
