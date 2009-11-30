@@ -402,6 +402,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "                         '{file}:{line},{severity},{id},{message}' or\n"
         "                         '{file}({line}):({severity}) {message}'\n"
         "                         Pre-defined templates: gcc, vs\n"
+        "    --unused-functions   deprecated, use --enable=unusedFunctions\n"
         "    -v, --verbose        More detailed error reports\n"
         "    --version            Print out version number\n"
         "    --xml                Write results in xml to error stream.\n"
