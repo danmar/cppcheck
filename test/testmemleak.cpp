@@ -2194,6 +2194,15 @@ private:
               "    close(fd);\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char *path)\n"
+              "{\n"
+              "    int fd = open(path, O_RDONLY);\n"
+              "    if (-1 == fd)\n"
+              "       return;\n"
+              "    close(fd);\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void creat_function()
