@@ -3918,6 +3918,7 @@ void Tokenizer::simplifyGoto()
                             ret = true;
                         token->insertToken(tok2->str().c_str());
                         token = token->next();
+                        token->linenr(tok2->linenr());
                         if (token->str() == "(")
                         {
                             links.push_back(token);

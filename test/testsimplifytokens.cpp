@@ -1847,18 +1847,25 @@ private:
                                 "    c();\n"
                                 "}";
 
-            const char expect[] = "void foo ( ) "
-                                  "{ "
-                                  "if ( a ( ) ) "
-                                  "{ "
-                                  "c ( ) ; "
-                                  "return ; "
-                                  "} "
-                                  "b ( ) ; "
-                                  "c ( ) ; "
-                                  "}";
+            std::istringstream istr(code);
+            Tokenizer tokenizer;
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.simplifyTokenList();
+            tokenizer.validate();
 
-            ASSERT_EQUALS(expect, tok(code));
+            const char expect[] = "\n\n##file 0\n"
+                                  "1: void foo ( )\n"
+                                  "2: {\n"
+                                  "3: if ( a ( ) )\n"
+                                  "4: {\n"
+                                  "5:\n6:\n7:\n8:\n"
+                                  "9: c ( ) ; return ; }\n"
+                                  "7: b ( ) ;\n"
+                                  "8:\n"
+                                  "9: c ( ) ;\n"
+                                  "10: }\n";
+
+            ASSERT_EQUALS(expect, tokenizer.tokens()->stringifyList(""));
         }
 
         {
@@ -1872,20 +1879,27 @@ private:
                                 "        d();\n"
                                 "}";
 
-            const char expect[] = "void foo ( ) "
-                                  "{ "
-                                  "if ( a ( ) ) "
-                                  "{ "
-                                  "if ( c ( ) ) "
-                                  "{ d ( ) ; } "
-                                  "return ; "
-                                  "} "
-                                  "b ( ) ; "
-                                  "if ( c ( ) ) "
-                                  "{ d ( ) ; } "
-                                  "}";
 
-            ASSERT_EQUALS(expect, tok(code));
+            std::istringstream istr(code);
+            Tokenizer tokenizer;
+            tokenizer.tokenize(istr, "test.cpp");
+            tokenizer.simplifyTokenList();
+            tokenizer.validate();
+
+            const char expect[] = "\n\n##file 0\n"
+                                  "1: void foo ( )\n"
+                                  "2: {\n"
+                                  "3: if ( a ( ) ) {\n"
+                                  "4:\n5:\n6:\n"
+                                  "7: if ( c ( ) ) {\n"
+                                  "8: d ( ) ; } return ; }\n"
+                                  "5: b ( ) ;\n"
+                                  "6:\n"
+                                  "7: if ( c ( ) ) {\n"
+                                  "8: d ( ) ; }\n"
+                                  "9: }\n";
+
+            ASSERT_EQUALS(expect, tokenizer.tokens()->stringifyList(""));
         }
 
         {
