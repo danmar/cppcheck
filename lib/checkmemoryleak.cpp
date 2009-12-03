@@ -1800,7 +1800,8 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens, bool all)
         Token *tok2 = last->previous();
         if (tok2)
         {
-            if (Token::simpleMatch(tok2, ";")) {
+            if (Token::simpleMatch(tok2, ";"))
+            {
                 const Token *tok3 = tok2->previous();
                 if (tok3 && Token::simpleMatch(tok3, "exit"))
                 {
