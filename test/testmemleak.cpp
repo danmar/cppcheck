@@ -2078,6 +2078,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void exit6()
+    {
+        check("int main(int argc, char *argv[]) {\n"
+              "    FILE *sfile;\n"
+              "    unsigned long line;\n"
+              "    sfile = fopen(\"bar\", \"r\");\n"
+              "    if (!sfile)\n"
+              "        return 1;\n"
+              "    for(line = 0; ; line++) {\n"
+              "        if (argc > 3)\n"
+              "            break;\n"
+              "        exit(0);\n"
+              "    }\n"
+              "    fclose(sfile);\n"
+              "    exit(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void noreturn()
     {
         check("void fatal_error()\n"
