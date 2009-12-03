@@ -599,7 +599,6 @@ void Token::createMutualLinks(Token *begin, Token *end)
     assert(begin != NULL);
     assert(end != NULL);
     assert(begin != end);
-
     begin->link(end);
     end->link(begin);
 }

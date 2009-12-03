@@ -589,10 +589,62 @@ private:
 
     void doWhileAddBraces()
     {
-        const char code[] = "do ; while (0);";
-        const char result[] = "do { ; } while ( false ) ;";
+        {
+            const char code[] = "do ; while (0);";
+            const char result[] = "do { ; } while ( false ) ;";
 
-        ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "UNKNOWN_MACRO ( do ) ; while ( a -- ) ;";
+            const char result[] = "UNKNOWN_MACRO ( do ) ; while ( a -- ) { ; }";
+
+            ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) ;";
+            const char result[] = "UNKNOWN_MACRO ( do , foo ) ; while ( a -- ) { ; }";
+
+            ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void foo ( int c , int d ) {\n"
+                                " do\n"
+                                "  if ( c ) {\n"
+                                "   while ( c ) { c -- ; }\n"
+                                "  }\n"
+                                " while ( -- d > 0 ) ;\n"
+                                " return 0 ;\n"
+                                "}\n";
+            const char result[] =   "void foo ( int c , int d ) {\n"
+                                    "do {\n"
+                                    "if ( c ) {\n"
+                                    "while ( c ) { c -- ; }\n"
+                                    "} }\n"
+                                    "while ( -- d > 0 ) ;\n"
+                                    "return 0 ;\n"
+                                    "}";
+            ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void foo ( int c , int d ) {\n"
+                                " do\n"
+                                "   do c -- ; while ( c ) ;\n"
+                                " while ( -- d > 0 ) ;\n"
+                                " return 0 ;\n"
+                                "}\n";
+            const char result[] =   "void foo ( int c , int d ) {\n"
+                                    "do {\n"
+                                    "do { c -- ; } while ( c ) ; }\n"
+                                    "while ( -- d > 0 ) ;\n"
+                                    "return 0 ;\n"
+                                    "}";
+            ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+        }
     }
 
     std::string simplifyKnownVariables(const char code[])

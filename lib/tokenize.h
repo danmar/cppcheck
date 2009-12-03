@@ -360,6 +360,13 @@ private:
      */
     bool validate() const;
 
+    /**
+     * Helper function for simplifyDoWhileAddBraces()
+     * @param tok This must be a "do" token, which is
+     * not followed by "{".
+     */
+    bool simplifyDoWhileAddBracesHelper(Token *tok);
+
     /** Disable assignment operator */
     void operator=(const Tokenizer &);
 
