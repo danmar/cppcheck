@@ -116,10 +116,29 @@ bool Settings::isSuppressed(const std::string &errorId, const std::string &file,
 
 void Settings::addEnabled(const std::string &str)
 {
+    // Enable parameters may be comma separated...
+    if (str.find(",") != std::string::npos)
+    {
+        std::string::size_type prevPos = 0;
+        std::string::size_type pos = 0;
+        while ((pos = str.find(",", pos)) != std::string::npos)
+        {
+            if (pos == prevPos)
+                throw std::runtime_error("wrong --enable argument ''");
+            addEnabled(str.substr(prevPos, pos - prevPos));
+            ++pos;
+            prevPos = pos;
+        }
+        if (prevPos >= str.length())
+            throw std::runtime_error("wrong --enable argument ''");
+        addEnabled(str.substr(prevPos));
+        return;
+    }
+
     bool handled = false;
 
     if (str == "all")
-        handled = _checkCodingStyle = _showAll = _force = true;
+        handled = _checkCodingStyle = _showAll = true;
     else if (str == "style")
         handled = _checkCodingStyle = true;
     else if (str == "possibleError")
