@@ -156,19 +156,9 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         }
 
 
-        else if (strcmp(argv[i], "--enable") == 0)
-            _settings.addEnabled("");
-
         else if (strncmp(argv[i], "--enable=", 9) == 0)
         {
-            std::string s(9 + argv[i]);
-            if (s[0] == '\"')
-                s.erase(0, 1);
-            std::string::size_type pos = s.find("\"");
-            if (pos != std::string::npos)
-                s.erase(pos, 1);
-
-            _settings.addEnabled(s);
+            _settings.addEnabled(argv[i] + 9);
         }
 
         // --error-exitcode=1

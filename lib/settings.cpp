@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 Settings::Settings()
 {
@@ -115,40 +116,37 @@ bool Settings::isSuppressed(const std::string &errorId, const std::string &file,
 
 void Settings::addEnabled(const std::string &str)
 {
-    if (str.length() == 0)
+    if (str == "all")
+        _checkCodingStyle = _showAll = _force = true;
+    else if (str == "style")
+        _checkCodingStyle = true;
+    else if (str == "possibleError")
+        _showAll = true;
+
+    std::set<std::string> id;
+    id.insert("exceptNew");
+    id.insert("exceptRealloc");
+    id.insert("unusedFunctions");
+
+    if (str == "all")
     {
-        _enabled["*"] = true;
+        std::set<std::string>::const_iterator it;
+        for (it = id.begin(); it != id.end(); ++it)
+            _enabled[*it] = true;
+    }
+    else if (id.find(str) != id.end())
+    {
+        _enabled[str] = true;
     }
     else
     {
-        std::string::size_type prevPos = 0;
-        std::string::size_type pos = 0;
-        while ((pos = str.find_first_of(",", pos)) != std::string::npos)
-        {
-            if (prevPos != pos)
-                _enabled[str.substr(prevPos, pos-prevPos)] = true;
-
-            ++pos;
-            prevPos = pos;
-        }
-
-        if (prevPos < str.length())
-            _enabled[str.substr(prevPos, pos-prevPos)] = true;
+        throw std::runtime_error("wrong --enable argument '" + str + "'");
     }
-
-    if (isEnabled("style"))
-        _checkCodingStyle = true;
-    if (isEnabled("possibleError"))
-        _showAll = true;
 }
 
 bool Settings::isEnabled(const std::string &str) const
 {
-    if (_enabled.find("*") != _enabled.end() ||
-        _enabled.find(str) != _enabled.end())
-        return true;
-    else
-        return false;
+    return bool(_enabled.find(str) != _enabled.end());
 }
 
 void Settings::addAutoAllocClass(const std::string &name)
