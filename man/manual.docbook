@@ -3,9 +3,9 @@
 "/usr/share/xml/docbook/schema/dtd/4.4/docbookx.dtd">
 <book>
   <bookinfo>
-    <title>Cppcheck</title>
+    <title>Cppcheck 1.39</title>
 
-    <date>2009-11-16</date>
+    <date>2009-12-04</date>
   </bookinfo>
 
   <chapter>
@@ -16,7 +16,7 @@
     only detects the types of bugs that the compilers normally fail to detect.
     The goal is no false positives.</para>
 
-    <para>Supported platforms:</para>
+    <para>Supported code and platforms:</para>
 
     <itemizedlist>
       <listitem>
@@ -25,15 +25,27 @@
       </listitem>
 
       <listitem>
-        <para>Cppcheck is supposed to be compilable by any C++ compiler that
-        handles the latest C++ standard.</para>
+        <para>Cppcheck should be compilable by any C++ compiler that handles
+        the latest C++ standard.</para>
       </listitem>
 
       <listitem>
-        <para>Cppcheck is supposed to work on any platform that has sufficient
-        cpu and memory.</para>
+        <para>Cppcheck should work on any platform that has sufficient cpu and
+        memory.</para>
       </listitem>
     </itemizedlist>
+
+    <para>Accuracy</para>
+
+    <para>Please understand that there are limits of Cppcheck. Cppcheck is
+    rarely wrong about reported errors. But there are many bugs that it
+    doesn't detect.</para>
+
+    <para>You will find more bugs in your software by testing your software
+    carefully, than by using Cppcheck. You will find more bugs in your
+    software by instrumenting your software, than by using Cppcheck. But
+    Cppcheck can still detect some of the bugs that you miss when testing and
+    instrumenting your software.</para>
   </chapter>
 
   <chapter>
@@ -84,12 +96,12 @@ Checking path/file2.cpp...
 
       <para>By default, an error is only reported when
       <literal><literal>Cppcheck</literal></literal> is sure there is an
-      error. When <literal>--all</literal> is given issues will also be
-      reported when <literal>Cppcheck</literal> is unsure.</para>
+      error. When <literal>--enable=possibleError</literal> is given issues
+      will also be reported when <literal>Cppcheck</literal> is unsure.</para>
 
-      <para>The <literal>--all</literal> flag is useful but makes
-      <literal>Cppcheck</literal> more unreliable, you will probably get false
-      positives.</para>
+      <para>The <literal>--enable=possibleError</literal> flag is useful but
+      makes <literal>Cppcheck</literal> more unreliable, you will probably get
+      false positives.</para>
 
       <para>Here is a simple code example:</para>
 
@@ -100,7 +112,7 @@ Checking path/file2.cpp...
 
       <para>Execute this command:</para>
 
-      <programlisting>cppcheck --all file1.cpp</programlisting>
+      <programlisting>cppcheck --enable=possibleError file1.cpp</programlisting>
 
       <para>The output from Cppcheck:</para>
 
@@ -129,7 +141,7 @@ Checking path/file2.cpp...
 
       <para>To enable stylistic checks, use the --style flag:</para>
 
-      <programlisting>cppcheck --style file1.c</programlisting>
+      <programlisting>cppcheck --enable=style file1.c</programlisting>
 
       <para>The reported error is:</para>
 
@@ -154,6 +166,15 @@ Checking path/file2.cpp...
       cppcheck.</para>
 
       <programlisting>cppcheck --enable=unusedFunctions path</programlisting>
+    </section>
+
+    <section>
+      <title>Enable all checks</title>
+
+      <para>To enable all checks your can use the
+      <literal>--enable=all</literal> flag:</para>
+
+      <programlisting>cppcheck --enable=all path</programlisting>
     </section>
 
     <section>
@@ -320,7 +341,7 @@ uninitvar</programlisting>
 
       <para>If you execute:</para>
 
-      <programlisting>cppcheck --all file1.cpp</programlisting>
+      <programlisting>cppcheck --enable=possibleError file1.cpp</programlisting>
 
       <para>The result will be:</para>
 
@@ -338,7 +359,7 @@ QPushButton</programlisting>
       <para>Then execute cppcheck with the <literal>--auto-dealloc</literal>
       option:</para>
 
-      <programlisting>cppcheck --auto-dealloc qt.lst --all file1.cpp</programlisting>
+      <programlisting>cppcheck --auto-dealloc qt.lst --enable=possibleError file1.cpp</programlisting>
     </section>
 
     <section>
@@ -359,7 +380,7 @@ QPushButton</programlisting>
 
       <para>If you analyse that with Cppcheck it won't find any leaks:</para>
 
-      <programlisting>cppcheck --all fred1.cpp</programlisting>
+      <programlisting>cppcheck --enable=possibleError fred1.cpp</programlisting>
 
       <para>You can add some custom leaks checking by providing simple
       implementations for the allocation and deallocation functions. Write
@@ -408,7 +429,7 @@ void DestroyFred(void *p)
     <para>To enable the exception safety checking you can use
     <literal>--enable</literal>:</para>
 
-    <programlisting>cppcheck --enable=exceptNew,exceptRealloc fred.cpp</programlisting>
+    <programlisting>cppcheck --enable=exceptNew --enable=exceptRealloc fred.cpp</programlisting>
 
     <para>The output will be:</para>
 
@@ -431,11 +452,10 @@ int a(int sz)
 
     <para>Check that with Cppcheck:</para>
 
-    <programlisting>cppcheck --enable=exceptNew,exceptRealloc except2.cpp</programlisting>
+    <programlisting>cppcheck --enable=exceptNew --enable=exceptRealloc except2.cpp</programlisting>
 
     <para>The output from Cppcheck is:</para>
 
-    <programlisting>[except2.cpp:7]: (error) Throwing exception in invalid state, p points
-at deallocated memory</programlisting>
+    <programlisting>[except2.cpp:7]: (error) Throwing exception in invalid state, p points at deallocated memory</programlisting>
   </chapter>
 </book>
