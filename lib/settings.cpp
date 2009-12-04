@@ -116,12 +116,14 @@ bool Settings::isSuppressed(const std::string &errorId, const std::string &file,
 
 void Settings::addEnabled(const std::string &str)
 {
+    bool handled = false;
+
     if (str == "all")
-        _checkCodingStyle = _showAll = _force = true;
+        handled = _checkCodingStyle = _showAll = _force = true;
     else if (str == "style")
-        _checkCodingStyle = true;
+        handled = _checkCodingStyle = true;
     else if (str == "possibleError")
-        _showAll = true;
+        handled = _showAll = true;
 
     std::set<std::string> id;
     id.insert("exceptNew");
@@ -138,7 +140,7 @@ void Settings::addEnabled(const std::string &str)
     {
         _enabled[str] = true;
     }
-    else
+    else if (!handled)
     {
         throw std::runtime_error("wrong --enable argument '" + str + "'");
     }
