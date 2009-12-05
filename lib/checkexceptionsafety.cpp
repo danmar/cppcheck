@@ -93,6 +93,8 @@ void CheckExceptionSafety::unsafeNew()
         if (tok->str() != ")")
             continue;
         tok = tok->next();
+        if (!tok)
+            break;
         if (tok->str() != ":")
             continue;
 
