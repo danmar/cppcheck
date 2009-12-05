@@ -153,6 +153,7 @@ private:
         TEST_CASE(vardecl9);
         TEST_CASE(vardecl10);
         TEST_CASE(vardecl_stl);
+        TEST_CASE(vardecl_template);
         TEST_CASE(volatile_variables);
         TEST_CASE(syntax_error);
 
@@ -2347,6 +2348,14 @@ private:
         const char code3[] = "std::vector<std::pair<std::string, std::string > > *c, d;";
         const char res3[]  = "std :: vector < std :: pair < std :: string , std :: string > > * c ; std :: vector < std :: pair < std :: string , std :: string > > d ;";
         ASSERT_EQUALS(res3, tokenizeAndStringify(code3));
+    }
+
+    void vardecl_template()
+    {
+        // ticket #1046
+        const char code1[] = "b<(1<<24),10,24> u, v;";
+        const char res1[]  = "b < ( 1 << 24 ) , 10 , 24 > u ; b < ( 1 << 24 ) , 10 , 24 > v ;";
+        ASSERT_EQUALS(res1, tokenizeAndStringify(code1));
     }
 
     void vardec_static()

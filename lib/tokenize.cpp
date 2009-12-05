@@ -3052,7 +3052,7 @@ void Tokenizer::simplifyVarDecl()
             //
             if (Token::simpleMatch(tok2, "std ::"))
             {
-                typelen += 1;
+                typelen += 2;
                 tok2 = tok2->tokAt(2);
             }
 
@@ -3097,6 +3097,7 @@ void Tokenizer::simplifyVarDecl()
             if (Token::Match(tok2, "%var% ,"))
             {
                 tok2 = tok2->next();    // The ',' token
+                typelen--;
             }
             else
             {
@@ -3117,6 +3118,17 @@ void Tokenizer::simplifyVarDecl()
             {
                 tok2->str(";");
                 insertTokens(tok2, type0, typelen);
+                std::list<Token *> link;
+                while (((typelen--) > 0) && (0 != (tok2 = tok2->next())))
+                {
+                    if (tok2->str() == "(")
+                        link.push_back(tok2);
+                    else if (tok2->str() == ")" && !link.empty())
+                    {
+                        Token::createMutualLinks(tok2, link.back());
+                        link.pop_back();
+                    }
+                }
             }
 
             else
