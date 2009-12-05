@@ -124,13 +124,13 @@ void Settings::addEnabled(const std::string &str)
         while ((pos = str.find(",", pos)) != std::string::npos)
         {
             if (pos == prevPos)
-                throw std::runtime_error("wrong --enable argument ''");
+                throw std::runtime_error("cppcheck: --enable parameter is empty");
             addEnabled(str.substr(prevPos, pos - prevPos));
             ++pos;
             prevPos = pos;
         }
         if (prevPos >= str.length())
-            throw std::runtime_error("wrong --enable argument ''");
+            throw std::runtime_error("cppcheck: --enable parameter is empty");
         addEnabled(str.substr(prevPos));
         return;
     }
@@ -161,7 +161,9 @@ void Settings::addEnabled(const std::string &str)
     }
     else if (!handled)
     {
-        throw std::runtime_error("wrong --enable argument '" + str + "'");
+        throw std::runtime_error(str.size() ?
+                                 std::string("cppcheck: there is no --enable parameter with the name '" + str + "'") :
+                                 std::string("cppcheck: --enable parameter is empty"));
     }
 }
 

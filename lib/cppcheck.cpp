@@ -114,11 +114,11 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
             ++i;
 
             if (i >= argc)
-                throw std::runtime_error("No file specified for the --suppressions option");
+                throw std::runtime_error("cppcheck: No file specified for the --suppressions option");
 
             std::ifstream f(argv[i]);
             if (!f.is_open())
-                throw std::runtime_error("couldn't open the file \"" + std::string(argv[i]) + "\"");
+                throw std::runtime_error("cppcheck: Couldn't open the file \"" + std::string(argv[i]) + "\"");
             _settings.suppressions(f);
         }
 
@@ -258,11 +258,11 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
             ++i;
 
             if (i >= argc || !strstr(argv[i], ".lst"))
-                throw std::runtime_error("No .lst file specified for the --auto-dealloc option");
+                throw std::runtime_error("cppcheck: No .lst file specified for the --auto-dealloc option");
 
             std::ifstream f(argv[i]);
             if (!f.is_open())
-                throw std::runtime_error("couldn't open the file \"" + std::string(argv[i+1]) + "\"");
+                throw std::runtime_error("cppcheck: couldn't open the file \"" + std::string(argv[i+1]) + "\"");
             _settings.autoDealloc(f);
         }
 
