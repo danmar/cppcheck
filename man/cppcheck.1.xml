@@ -105,7 +105,6 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--all</option></arg>
       <arg choice="opt"><option>--append [file]</option></arg>
       <arg choice="opt"><option>--auto-dealloc [file]</option></arg>
-      <arg choice="opt"><option>--enable</option></arg>
       <arg choice="opt"><option>--enable=id</option></arg>
       <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
       <arg choice="opt"><option>--force</option></arg>
@@ -160,16 +159,17 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--enable</option></term>
-        <listitem>
-          <para>Enable all extra checks</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
         <term><option>--enable=id</option></term>
         <listitem>
           <para>Enable specific checks. The available ids are:
         <glosslist>
+        <glossentry><glossterm>all</glossterm>
+        <glossdef>
+        <para>
+        enable all checks
+        </para>
+        </glossdef>
+        </glossentry>
         <glossentry><glossterm>exceptNew</glossterm>
         <glossdef>
         <para>
@@ -180,14 +180,14 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <glossentry><glossterm>exceptRealloc</glossterm>
         <glossdef>
         <para>
-        exceptRealloc - exception safety when reallocating
+        exception safety when reallocating
         </para>
         </glossdef>
         </glossentry>
         <glossentry><glossterm>possibleError</glossterm>
         <glossdef>
         <para>
-        exceptRealloc - Make the checking more sensitive. More bugs are detected, 
+        Make the checking more sensitive. More bugs are detected, 
         but there are also more false positives.
         </para>
         </glossdef>
@@ -195,7 +195,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <glossentry><glossterm>style</glossterm>
         <glossdef>
         <para>
-        exceptRealloc - Check coding style
+        Check coding style
         </para>
         </glossdef>
         </glossentry>
