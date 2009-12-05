@@ -161,9 +161,10 @@ void Settings::addEnabled(const std::string &str)
     }
     else if (!handled)
     {
-        throw std::runtime_error(str.size() ?
-                                 std::string("cppcheck: there is no --enable parameter with the name '" + str + "'") :
-                                 std::string("cppcheck: --enable parameter is empty"));
+        if (str.empty())
+            throw std::runtime_error("cppcheck: --enable parameter is empty");
+        else
+            throw std::runtime_error("cppcheck: there is no --enable parameter with the name '" + str + "'");
     }
 }
 
