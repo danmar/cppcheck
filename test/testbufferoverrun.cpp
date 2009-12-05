@@ -833,6 +833,13 @@ private:
 
         check("void f()\n"
               "{\n"
+              "    long bb[2];\n"
+              "    write(stdin, bb, sizeof(bb));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
               "    char str[3];\n"
               "    fgets(str, 3, stdin);\n"
               "}\n");
