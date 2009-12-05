@@ -3118,15 +3118,24 @@ void Tokenizer::simplifyVarDecl()
             {
                 tok2->str(";");
                 insertTokens(tok2, type0, typelen);
-                std::list<Token *> link;
+                std::stack<Token *> link1;
+                std::stack<Token *> link2;
                 while (((typelen--) > 0) && (0 != (tok2 = tok2->next())))
                 {
                     if (tok2->str() == "(")
-                        link.push_back(tok2);
-                    else if (tok2->str() == ")" && !link.empty())
+                        link1.push(tok2);
+                    else if (tok2->str() == ")" && !link1.empty())
                     {
-                        Token::createMutualLinks(tok2, link.back());
-                        link.pop_back();
+                        Token::createMutualLinks(tok2, link1.top());
+                        link1.pop();
+                    }
+
+                    else if (tok2->str() == "[")
+                        link2.push(tok2);
+                    else if (tok2->str() == "]" && !link2.empty())
+                    {
+                        Token::createMutualLinks(tok2, link2.top());
+                        link2.pop();
                     }
                 }
             }
