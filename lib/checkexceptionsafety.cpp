@@ -183,7 +183,7 @@ void CheckExceptionSafety::unsafeNew()
                 localVars.insert(tok->varId());
         }
 
-        if (Token::Match(tok, "; %var% = new"))
+        if (Token::Match(tok, "; %var% = new %type%"))
         {
             if (!varname.empty())
             {
@@ -221,7 +221,7 @@ void CheckExceptionSafety::realloc()
             break;
 
         // reallocating..
-        if (!Token::Match(tok, "%var% ; %var% = new"))
+        if (!Token::Match(tok, "%var% ; %var% = new %type%"))
             continue;
 
         // variable id of deallocated pointer..

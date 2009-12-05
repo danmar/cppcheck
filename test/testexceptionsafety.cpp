@@ -90,6 +90,13 @@ private:
               "    A *a2 = new A;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leak: a1\n", errout.str());
+
+        check("void a()\n"
+              "{\n"
+              "    A *a1 = new A;\n"
+              "    A *a2 = new (std::nothrow) A;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc()
@@ -100,7 +107,7 @@ private:
               "    void a()\n"
               "    {\n"
               "        delete p;\n"
-              "        p = new[123];\n"
+              "        p = new int[123];\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Upon exception p becomes a dead pointer\n", errout.str());
@@ -110,9 +117,20 @@ private:
               "    int *p;\n"
               "    void a()\n"
               "    {\n"
+              "        delete p;\n"
+              "        p = new (std::nothrow) int[123];\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "    void a()\n"
+              "    {\n"
               "        try {\n"
               "            delete p;\n"
-              "            p = new[123];\n"
+              "            p = new int[123];\n"
               "        } catch (...) { p = 0; }\n"
               "    }\n"
               "}\n");
