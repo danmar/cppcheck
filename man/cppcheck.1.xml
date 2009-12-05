@@ -105,7 +105,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       <arg choice="opt"><option>--all</option></arg>
       <arg choice="opt"><option>--append [file]</option></arg>
       <arg choice="opt"><option>--auto-dealloc [file]</option></arg>
-      <arg choice="opt"><option>--enable=id</option></arg>
+      <arg choice="opt"><option>--enable=[id]</option></arg>
       <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
@@ -141,7 +141,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <term><option>-a</option></term>
         <term><option>--all</option></term>
         <listitem>
-          <para>deprecated, use --enable=possibleError</para>
+          <para>Deprecated, use --enable=possibleError</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -159,28 +159,28 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>--enable=id</option></term>
+        <term><option>--enable=[id]</option></term>
         <listitem>
           <para>Enable specific checks. The available ids are:
         <glosslist>
         <glossentry><glossterm>all</glossterm>
         <glossdef>
         <para>
-        enable all checks
+        Enable all checks.
         </para>
         </glossdef>
         </glossentry>
         <glossentry><glossterm>exceptNew</glossterm>
         <glossdef>
         <para>
-        exception safety when using new
+        Check exception safety when using new.
         </para>
         </glossdef>
         </glossentry>
         <glossentry><glossterm>exceptRealloc</glossterm>
         <glossdef>
         <para>
-        exception safety when reallocating
+        Check exception safety when reallocating.
         </para>
         </glossdef>
         </glossentry>
@@ -195,19 +195,19 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <glossentry><glossterm>style</glossterm>
         <glossdef>
         <para>
-        Check coding style
+        Check coding style.
         </para>
         </glossdef>
         </glossentry>
         <glossentry><glossterm>unusedFunctions</glossterm>
         <glossdef>
         <para>
-        check for unused functions
+        Check for unused functions.
         </para>
         </glossdef>
         </glossentry>
         </glosslist>          
-         Several ids can be given if you separate them with commas</para>
+         Several ids can be given if you separate them with commas, e.g. --enable=style,possibleError.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -258,7 +258,7 @@ files, this is not needed.</para>
         <term><option>-s</option></term>
         <term><option>--style</option></term>
         <listitem>
-          <para>deprecated, use --enable=style</para>
+          <para>Deprecated, use --enable=style</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -276,7 +276,7 @@ files, this is not needed.</para>
       <varlistentry>
        <term><option>--unused-functions</option></term>
        <listitem>
-        <para>deprecated, use --enable=unusedFunctions</para>
+        <para>Deprecated, use --enable=unusedFunctions</para>
        </listitem>
       </varlistentry>      
       <varlistentry>
