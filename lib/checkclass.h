@@ -103,11 +103,11 @@ private:
     Var *getVarList(const Token *tok1, bool withClasses);
 
     // Check constructors for a specified class
-    void checkConstructors(const Token *tok1, const char funcname[]);
+    void checkConstructors(const Token *tok1, const char funcname[], bool hasPrivateConstructor);
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname);
-    void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
+    void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool hasPrivateConstructor);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetClassError(const Token *tok, const std::string &memfunc);
@@ -119,7 +119,7 @@ private:
     void getErrorMessages()
     {
         noConstructorError(0, "classname");
-        uninitVarError(0, "classname", "varname");
+        uninitVarError(0, "classname", "varname", false);
         operatorEqVarError(0, "classname", "");
         unusedPrivateFunctionError(0, "classname", "funcname");
         memsetClassError(0, "memfunc");

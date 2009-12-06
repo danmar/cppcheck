@@ -368,7 +368,7 @@ void CheckClass::constructors()
             }
         }
 
-        if (hasPrivateConstructor)
+        if (hasPrivateConstructor && !_settings->_showAll)
         {
             /** @todo Handle private constructors. Right now to avoid
              * false positives we just bail out */
@@ -408,16 +408,16 @@ void CheckClass::constructors()
         }
 
         // Check constructors
-        checkConstructors(tok1, className[0]);
+        checkConstructors(tok1, className[0], hasPrivateConstructor);
 
         // Check assignment operators
-        checkConstructors(tok1, "operator =");
+        checkConstructors(tok1, "operator =", hasPrivateConstructor);
 
         tok1 = Token::findmatch(tok1->next(), pattern_class);
     }
 }
 
-void CheckClass::checkConstructors(const Token *tok1, const char funcname[])
+void CheckClass::checkConstructors(const Token *tok1, const char funcname[], bool hasPrivateConstructor)
 {
     const char * const className = tok1->strAt(1);
 
@@ -467,7 +467,7 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[])
                     operatorEqVarError(constructor_token, className, var->name);
             }
             else
-                uninitVarError(constructor_token, className, var->name);
+                uninitVarError(constructor_token, className, var->name, hasPrivateConstructor);
         }
 
         for (Var *var = varlist; var; var = var->next)
@@ -893,9 +893,9 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
     reportError(tok, Severity::style, "noConstructor", "The class '" + classname + "' has no constructor. Member variables not initialized.");
 }
 
-void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
+void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool hasPrivateConstructor)
 {
-    reportError(tok, Severity::style, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
+    reportError(tok, hasPrivateConstructor ? Severity::possibleStyle : Severity::style, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)

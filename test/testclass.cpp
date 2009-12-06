@@ -347,6 +347,7 @@ private:
 
         // Check..
         Settings settings;
+        settings._showAll = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
@@ -532,7 +533,7 @@ private:
                        "    Foo() { }\n"
                        "};\n");
 
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
     }
 
     void privateCtor2()
@@ -546,7 +547,8 @@ private:
                        "    Foo(int _i) { }\n"
                        "};\n");
 
-        TODO_ASSERT_EQUALS("[test.cpp:7] (style) Member variable not initialized in the constructor Foo::foo", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n"
+                      "[test.cpp:7]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
     }
 
 
