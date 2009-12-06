@@ -1177,6 +1177,9 @@ private:
         return new CheckNullpointer(*this);
     }
 
+    /* no implementation */
+    void operator=(const CheckNullpointer &);
+
     const unsigned int varId;
     bool null;
 
@@ -1233,6 +1236,9 @@ private:
     {
         return new CheckUninitVar(*this);
     }
+
+    /* no implementation */
+    void operator=(const CheckUninitVar &);
 
     const unsigned int varId;
     const bool pointer;
