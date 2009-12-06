@@ -986,6 +986,7 @@ void Tokenizer::simplifyTemplates()
 
                 if (type.size() != types2.size())
                 {
+#ifndef NDEBUG
                     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
                     ErrorLogger::ErrorMessage::FileLocation loc;
                     loc.line = tok2->linenr();
@@ -998,6 +999,8 @@ void Tokenizer::simplifyTemplates()
                                                            "internalError");
 
                     _errorLogger->reportErr(errmsg);
+#endif
+
                     break;
                 }
 
