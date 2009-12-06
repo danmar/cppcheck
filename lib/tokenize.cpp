@@ -4616,6 +4616,8 @@ void Tokenizer::simplifyComma()
                 startFrom->previous()->deleteThis();
 
                 tok = endAt;
+                if (!tok)
+                    return;
             }
         }
 
