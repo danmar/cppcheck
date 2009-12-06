@@ -86,7 +86,7 @@ public:
 
 protected:
 
-    static void writeError(const std::string &fileName, const std::string &code, size_t pos, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
+    static void writeError(const std::string &fileName, const int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
 
     /**
      * Replace "#if defined" with "#ifdef" where possible
@@ -96,7 +96,7 @@ protected:
      */
     static std::string replaceIfDefined(const std::string &str);
 
-    static std::string expandMacros(std::string code, const std::string &filename, ErrorLogger *errorLogger);
+    static std::string expandMacros(const std::string &code, std::string filename, ErrorLogger *errorLogger);
 
     /**
      * Remove comments from code. This should only be called from read().
