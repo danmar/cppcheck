@@ -1745,8 +1745,17 @@ void Tokenizer::simplifySizeof()
             Token::createMutualLinks(tok->next(), tok->tokAt(4));
         }
 
+        // sizeof 1 => sizeof ( 1 )
+        if (tok->next()->isNumber())
+        {
+            Token *tok2 = tok->next();
+            tok->insertToken("(");
+            tok2->insertToken(")");
+            Token::createMutualLinks(tok->next(), tok2->next());
+        }
+
         // sizeof int -> sizeof( int )
-        if (tok->next()->str() != "(")
+        else if (tok->next()->str() != "(")
         {
             // Add parenthesis around the sizeof
             for (Token *tempToken = tok->next(); tempToken; tempToken = tempToken->next())

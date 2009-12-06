@@ -72,6 +72,7 @@ private:
         TEST_CASE(sizeof14);
         TEST_CASE(sizeof15);
         TEST_CASE(sizeof16);
+        TEST_CASE(sizeof17);
         TEST_CASE(casting);
 
         TEST_CASE(strlen1);
@@ -935,6 +936,18 @@ private:
                             "    printf(\"%i\", sizeof a++);\n"
                             "}\n";
         ASSERT_EQUALS("void f ( ) { int a ; printf ( \"%i\" , sizeof ( a ++ ) ) ; }", tok(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void sizeof17()
+    {
+        // ticket #1050
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    sizeof 1;\n"
+                            "    while (0);\n"
+                            "}\n";
+        ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; while ( false ) { ; } }", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
