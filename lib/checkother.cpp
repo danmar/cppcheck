@@ -1546,7 +1546,9 @@ static const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPat
                     it = checks.erase(it);
                 }
                 else
+                {
                     ++it;
+                }
             }
             if (checks.empty())
                 return 0;
