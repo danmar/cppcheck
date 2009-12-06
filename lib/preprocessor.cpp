@@ -201,7 +201,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
             if (i == std::string::npos)
                 break;
 
-            if (settings->_inlineSuppressions)
+            if (settings && settings->_inlineSuppressions)
             {
                 std::string comment(str, commentStart, i - commentStart);
                 std::istringstream iss(comment);

@@ -72,6 +72,12 @@ public:
     /** Just read the code into a string. Perform simple cleanup of the code */
     static std::string read(std::istream &istr, const std::string &filename, Settings *settings);
 
+    /** Just read the code into a string. Perform simple cleanup of the code */
+    static std::string read(std::istream &istr)
+    {
+        return read(istr, "", 0);
+    }
+
     /**
      * Get preprocessed code for a given configuration
      */
