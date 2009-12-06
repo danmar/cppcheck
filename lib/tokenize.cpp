@@ -2717,12 +2717,12 @@ bool Tokenizer::simplifyQuestionMark()
                     break;
                 }
 
-                else if (end->str() == "(")
+                else if (Token::Match(end, "[({[]"))
                 {
                     ++ind;
                 }
 
-                else if (end->str() == ")")
+                else if (Token::Match(end, "[)}]]"))
                 {
                     --ind;
                     if (ind < 0)

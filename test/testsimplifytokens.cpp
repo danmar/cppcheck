@@ -1810,6 +1810,16 @@ private:
                                 "}\n";
             ASSERT_EQUALS("void f ( ) { bool x ; x = false ; int b ; b = 3 ; }", tok(code));
         }
+
+        {
+            const char code[] = "int vals[] = { 0x13, 1?0x01:0x00 };";
+            ASSERT_EQUALS("int * vals ; vals = { 19 , 1 } ;", tok(code));
+        }
+
+        {
+            const char code[] = "int vals[] = { 0x13, 0?0x01:0x00 };";
+            ASSERT_EQUALS("int * vals ; vals = { 19 , 0 } ;", tok(code));
+        }
     }
 
     void calculations()
