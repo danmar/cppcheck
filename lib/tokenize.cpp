@@ -502,7 +502,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
             tok->next()->deleteNext();
         }
 
-        if (Token::Match(tok, "return - %num%") && tok->strAt(2)[0] != '-')
+        if (Token::Match(tok, "return|case - %num%") && tok->strAt(2)[0] != '-')
         {
             tok->next()->str(std::string("-") + tok->strAt(2));
             tok->next()->deleteNext();

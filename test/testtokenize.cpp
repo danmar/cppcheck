@@ -172,6 +172,7 @@ private:
 
         TEST_CASE(simplifyString);
         TEST_CASE(simplifyConst);
+        TEST_CASE(switchCase);
     }
 
 
@@ -2782,6 +2783,12 @@ private:
         ASSERT_EQUALS("void foo ( ) { int * const x ; }",
                       tokenizeAndStringify("void foo(){ int * const x;}"));
 
+    }
+
+    void switchCase()
+    {
+        ASSERT_EQUALS("void foo ( int i ) { switch ( i ) { case -1 : break ; } }",
+                      tokenizeAndStringify("void foo (int i) { switch(i) { case -1: break; } }"));
     }
 };
 
