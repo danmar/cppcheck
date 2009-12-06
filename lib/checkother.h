@@ -76,7 +76,9 @@ public:
         checkOther.strPlusChar();
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
-        checkOther.uninitvar();
+
+        // New type of check: Check execution paths
+        checkOther.executionPaths();
     }
 
     // Casting
@@ -112,8 +114,8 @@ public:
     /** possible null pointer dereference */
     void nullPointer();
 
-    /** reading uninitialized var */
-    void uninitvar();
+    /** new type of check: check execution paths */
+    void executionPaths();
 
     /** Check zero division*/
     void checkZeroDivision();

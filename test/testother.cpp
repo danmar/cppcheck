@@ -615,6 +615,7 @@ private:
         settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.nullPointer();
+        checkOther.executionPaths();
     }
 
 
@@ -946,7 +947,7 @@ private:
         // Check for redundant code..
         Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.uninitvar();
+        checkOther.executionPaths();
     }
 
     void uninitvar1()

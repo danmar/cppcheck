@@ -28,6 +28,7 @@
 #include <sstream>
 #include <cstring>
 #include <cctype>
+#include <memory>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -1106,70 +1107,6 @@ void CheckOther::nullPointerByDeRefAndChec()
     }
 }
 
-void CheckOther::nullPointerConditionalAssignment()
-{
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        // 1. Initialize..
-        if (!Token::Match(tok, "; %var% = 0 ;"))
-            continue;
-
-        const unsigned int varid(tok->next()->varId());
-        if (!varid)
-            continue;
-
-        for (const Token *tok2 = tok->tokAt(4); tok2; tok2 = tok2->next())
-        {
-            if (tok2->str() == "{" || tok2->str() == "}")
-                break;
-
-            if (Token::simpleMatch(tok2, "if ("))
-            {
-                const Token *tok3 = tok2;
-                tok3 = tok3->next()->link();
-                if (!tok3)
-                    break;
-
-                // check if the condition contains the variable..
-                for (const Token *tok4 = tok2->tokAt(2); tok4 && tok4 != tok3; tok4 = tok4->next())
-                {
-                    if (tok4->varId() == varid)
-                    {
-                        // The condition contains the variable..
-                        // to avoid false positives I bail out..
-                        tok3 = 0;
-                        break;
-                    }
-                }
-
-                if (!tok3)
-                    break;
-
-                if (tok3->next()->str() == "{")
-                {
-                    tok2 = tok3->next()->link();
-                    if (!tok2)
-                        break;
-                }
-                continue;
-            }
-
-            if (Token::Match(tok2, "else !!if"))
-                break;
-
-            if (Token::Match(tok2, "%varid%", varid))
-            {
-                if (Token::Match(tok2, "%varid% . %var% (", varid))
-                {
-                    const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
-                    if (tempTok)
-                        nullPointerError(tok2, tok->next()->str());
-                }
-                break;
-            }
-        }
-    }
-}
 
 void CheckOther::nullPointer()
 {
@@ -1177,19 +1114,312 @@ void CheckOther::nullPointer()
     nullPointerLinkedList();
     nullPointerStructByDeRefAndChec();
     nullPointerByDeRefAndChec();
-    nullPointerConditionalAssignment();
 }
 
-static const Token *uninitvar_checkscope(const Token * const tokens, const Token *tok, const unsigned int varid, bool &init, const bool pointer, const bool array)
+
+/**
+ * Base class for Execution Paths checking
+ * An execution path is a linear list of statements. There are no "if"/.. to worry about.
+ **/
+class ExecutionPath
 {
-    /* limit the checking in conditional code..
-     * int x;
-     * if (y)
-     *     x = 33;
-     * if (y)
-     *     return x;
-     */
-    bool limit = false;
+private:
+    mutable bool bailout_;
+
+public:
+    ExecutionPath() : bailout_(false)
+    { }
+
+    virtual ~ExecutionPath()
+    { }
+
+    virtual ExecutionPath *copy() = 0;
+
+    bool bailOut() const
+    { return bailout_; }
+
+    /**
+     * bail out all execution paths
+     * @param checks the execution paths to bail out on
+     **/
+    static void bailOut(const std::list<ExecutionPath *> &checks)
+    {
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+            (*it)->bailout_ = true;
+    }
+
+    /**
+     * Parse tokens at given location
+     * @param tok token to parse
+     * @param foundError If an error is found this is set to true and the return token is the error token
+     * @param checks The execution paths. All execution paths in the list are executed in the current scope.
+     * @return if error is found => error token. if you want to skip tokens, return the last skipped token. otherwise return tok.
+     **/
+    virtual const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const = 0;
+};
+
+
+
+class CheckNullpointer : public ExecutionPath
+{
+public:
+    // Startup constructor
+    CheckNullpointer(unsigned int v) : ExecutionPath(), varId(v), null(false)
+    {
+    }
+
+private:
+    ExecutionPath *copy()
+    {
+        return new CheckNullpointer(*this);
+    }
+
+    const unsigned int varId;
+    bool null;
+
+    static void setnull(std::list<ExecutionPath *> &checks)
+    {
+        std::list<ExecutionPath *>::iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+            dynamic_cast<CheckNullpointer *>(*it)->null = true;
+    }
+
+    static void dereference(bool &foundError, std::list<ExecutionPath *> &checks)
+    {
+        std::list<ExecutionPath *>::iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            if (dynamic_cast<CheckNullpointer *>(*it)->null)
+            {
+                foundError = true;
+                break;
+            }
+        }
+    }
+
+    const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
+    {
+        if (tok.varId() == varId)
+        {
+            if (Token::Match(tok.previous(), "[;{}=] %varid% = 0 ;", varId))
+                setnull(checks);
+            else if (Token::Match(tok.tokAt(-2), "[;{}=] * %varid%", varId))
+                dereference(foundError, checks);
+            else if (Token::Match(tok.next(), ". %var%"))
+                dereference(foundError, checks);
+            else
+                bailOut(checks);
+        }
+        return &tok;
+    }
+};
+
+
+
+class CheckUninitVar : public ExecutionPath
+{
+public:
+    // Startup constructor
+    CheckUninitVar(const Tokenizer *const t, unsigned int v, bool p, bool a)
+            : ExecutionPath(), varId(v), pointer(p), array(a), _tokenizer(t)
+    {
+    }
+
+private:
+    ExecutionPath *copy()
+    {
+        return new CheckUninitVar(*this);
+    }
+
+    const unsigned int varId;
+    const bool pointer;
+    const bool array;
+    const Tokenizer * const _tokenizer;
+
+    void use(bool &foundError, std::list<ExecutionPath *> &checks) const
+    {
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            if (!(*it)->bailOut())
+            {
+                foundError = true;
+                break;
+            }
+        }
+    }
+
+    const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
+    {
+        if (tok.varId() == varId)
+        {
+            if (pointer && Token::Match(tok.tokAt(-2), "[;{}] *"))
+            {
+                foundError = true;
+                return &tok;
+            }
+
+            if (Token::simpleMatch(tok.previous(), ">>") || Token::simpleMatch(tok.next(), "="))
+            {
+                ExecutionPath::bailOut(checks);
+                return &tok;
+            }
+
+            if (Token::simpleMatch(tok.next(), "["))
+            {
+                const Token *tok2 = tok.next()->link();
+                if (Token::simpleMatch(tok2 ? tok2->next() : 0, "="))
+                {
+                    ExecutionPath::bailOut(checks);
+                    return &tok;
+                }
+            }
+
+            if (Token::simpleMatch(tok.previous(), "delete") ||
+                Token::simpleMatch(tok.tokAt(-3), "delete [ ]"))
+            {
+                foundError = true;
+                return &tok;
+            }
+        }
+
+        if (Token::Match(&tok, "%var% ("))
+        {
+            if (Token::Match(&tok, "strlen ( %varid% )", varId) ||
+                Token::Match(&tok, "strcpy|strcat|strncpy|strncat|memcpy ( %any% , %varid% [,)]", varId) ||
+                Token::Match(&tok, "strcat|strncat ( %varid% ,", varId))
+            {
+                use(foundError, checks);
+                return &tok;
+            }
+
+            if (Token::Match(&tok, "strncpy ( %varid% ,", varId))
+            {
+                return tok.tokAt(3);
+            }
+
+            if (Token::Match(&tok, "asm ( )"))
+            {
+                ExecutionPath::bailOut(checks);
+                return &tok;
+            }
+
+            // is the variable passed as a parameter to some function?
+            unsigned int parlevel = 0;
+            for (const Token *tok2 = tok.next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+
+                else if (tok2->varId() == varId)
+                {
+                    // it is possible that the variable is initialized here
+                    ExecutionPath::bailOut(checks);
+                    return &tok;
+                }
+            }
+        }
+
+        // function call via function pointer
+        if (Token::Match(&tok, "( * %var% ) ("))
+        {
+            // is the variable passed as a parameter to some function?
+            unsigned int parlevel = 0;
+            for (const Token *tok2 = tok.link()->next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+
+                else if (tok2->varId() == varId)
+                {
+                    // it is possible that the variable is initialized here
+                    ExecutionPath::bailOut(checks);
+                    return &tok;
+                }
+            }
+        }
+
+        if (tok.str() == "return")
+        {
+            for (const Token *tok2 = &tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == ";")
+                    return &tok;
+
+                if (tok2->varId() == varId)
+                {
+                    use(foundError, checks);
+                    return &tok;
+                }
+            }
+        }
+
+        if (tok.varId() == varId)
+        {
+            if (array && !Token::simpleMatch(tok.next(), "["))
+                return &tok;
+
+            if (Token::simpleMatch(tok.previous(), "="))
+            {
+                if (!Token::Match(tok.tokAt(-3), ". %var% ="))
+                {
+                    if (!Token::Match(tok.tokAt(-3), "[;{}] %var% ="))
+                    {
+                        use(foundError, checks);
+                        return &tok;
+                    }
+
+                    const unsigned int varid2 = tok.tokAt(-2)->varId();
+                    if (varid2)
+                    {
+                        const Token *tok2 = Token::findmatch(_tokenizer->tokens(), "%varid%", varid2);
+                        if (tok2 && !Token::simpleMatch(tok2->previous(), "*"))
+                        {
+                            use(foundError, checks);
+                            return &tok;
+                        }
+                    }
+                }
+            }
+
+            if (pointer && Token::simpleMatch(tok.next(), "."))
+            {
+                use(foundError, checks);
+                return &tok;
+            }
+
+            if (array && Token::simpleMatch(tok.next(), "["))
+            {
+                ExecutionPath::bailOut(checks);
+                return &tok;
+            }
+        }
+        return &tok;
+    }
+};
+
+
+static const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &checks)
+{
+    const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
+
+    // Number of "if" blocks in current scope
+    unsigned int numberOfIf = 0;
 
     for (; tok; tok = tok->next())
     {
@@ -1199,7 +1429,7 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
         // todo: handle for/while
         if (Token::Match(tok, "for|while|switch"))
         {
-            init = true;
+            ExecutionPath::bailOut(checks);
             return 0;
         }
 
@@ -1210,7 +1440,7 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
                 tok = tok->next()->link();
             if (!tok)
             {
-                init = true;
+                ExecutionPath::bailOut(checks);
                 return 0;
             }
             continue;
@@ -1218,8 +1448,11 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
 
         if (tok->str() == "if")
         {
-            bool canInit = false;
-            bool ifInit = true;
+            ++numberOfIf;
+            if (numberOfIf > 1)
+                return 0;
+
+            std::list<ExecutionPath *> newchecks;
             while (tok->str() == "if")
             {
                 // goto "("
@@ -1237,7 +1470,7 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
                         // if (someFunction(&var)) ..
                         if (tok2->varId())
                         {
-                            init = true;
+                            ExecutionPath::bailOut(checks);
                             return 0;
                         }
                     }
@@ -1250,24 +1483,27 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
                     return 0;
 
                 // Recursively check into the if ..
-                bool init2 = false;
-                const Token *tokerr = uninitvar_checkscope(tokens, tok->next(), varid, init2, pointer, array);
-                if (!limit && tokerr)
-                    return tokerr;
-
-                // if the scope didn't initialize then this whole if-chain is treated as non-initializing
-                ifInit &= init2;
-                canInit |= init2;
+                {
+                    std::list<ExecutionPath *> c;
+                    std::list<ExecutionPath *>::iterator it;
+                    for (it = checks.begin(); it != checks.end(); ++it)
+                        c.push_back((*it)->copy());
+                    const Token *tokerr = checkExecutionPaths(tok->next(), c);
+                    if (tokerr)
+                        return tokerr;
+                    while (!c.empty())
+                    {
+                        newchecks.push_back(c.back());
+                        c.pop_back();
+                    }
+                }
 
                 // goto "}"
                 tok = tok->link();
 
-                // there is no else => not initialized
+                // there is no else => break out
                 if (Token::Match(tok, "} !!else"))
-                {
-                    ifInit = false;
                     break;
-                }
 
                 // parse next "if"..
                 tok = tok->tokAt(2);
@@ -1275,180 +1511,49 @@ static const Token *uninitvar_checkscope(const Token * const tokens, const Token
                     continue;
 
                 // there is no "if"..
-                init2 = false;
-                tokerr = uninitvar_checkscope(tokens, tok->next(), varid, init2, pointer, array);
-                if (!limit && tokerr)
+                const Token *tokerr = checkExecutionPaths(tok->next(), checks);
+                if (tokerr)
                     return tokerr;
-
-                ifInit &= init2;
-                canInit |= init2;
 
                 tok = tok->link();
                 if (!tok)
                     return 0;
             }
 
-            if (ifInit)
-            {
-                init = true;
-                return 0;
-            }
-
-            if (canInit)
-            {
-                limit = true;
-            }
+            std::list<ExecutionPath *>::iterator it;
+            for (it = newchecks.begin(); it != newchecks.end(); ++it)
+                checks.push_back((*it)->copy());
         }
 
-        if (tok->varId() == varid)
+
         {
-            if (pointer && Token::Match(tok->tokAt(-2), "[;{}] *"))
+            bool foundError = false;
+            tok = check->parse(*tok, foundError, checks);
+            std::list<ExecutionPath *>::iterator it;
+            for (it = checks.begin(); it != checks.end(); ++it)
+            {
+                while (it != checks.end() && (*it)->bailOut())
+                {
+                    delete *it;
+                    it = checks.erase(it);
+                }
+            }
+            if (checks.empty())
+                return 0;
+            else if (foundError)
                 return tok;
-
-            if (Token::simpleMatch(tok->previous(), ">>") || Token::simpleMatch(tok->next(), "="))
-            {
-                init = true;
-                return 0;
-            }
-
-            if (Token::simpleMatch(tok->next(), "["))
-            {
-                const Token *tok2 = tok->next()->link();
-                if (Token::simpleMatch(tok2 ? tok2->next() : 0, "="))
-                {
-                    init = true;
-                    return 0;
-                }
-            }
-
-            if (Token::simpleMatch(tok->previous(), "delete") ||
-                Token::simpleMatch(tok->tokAt(-3), "delete [ ]"))
-            {
-                return tok;
-            }
         }
 
-        if (Token::Match(tok, "%var% ("))
-        {
-            if (Token::Match(tok, "strlen ( %varid% )", varid))
-                return tok->tokAt(2);
-            if (Token::Match(tok, "strcpy|strcat|strncpy|strncat|memcpy ( %any% , %varid% [,)]", varid))
-                return tok->tokAt(4);
-            if (Token::Match(tok, "strcat|strncat ( %varid% ,", varid))
-                return tok->tokAt(3);
-            if (Token::Match(tok, "strncpy ( %varid%", varid))
-            {
-                tok = tok->tokAt(3);
-                continue;
-            }
-            if (Token::Match(tok, "asm ( )"))
-            {
-                init = true;
-                return 0;
-            }
-
-            // is the variable passed as a parameter to some function?
-            unsigned int parlevel = 0;
-            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                    ++parlevel;
-
-                else if (tok2->str() == ")")
-                {
-                    if (parlevel <= 1)
-                        break;
-                    --parlevel;
-                }
-
-                else if (tok2->varId() == varid)
-                {
-                    // it is possible that the variable is initialized here
-                    init = true;
-                    return 0;
-                }
-            }
-        }
-
-        // function call via function pointer
-        if (Token::Match(tok, "( * %var% ) ("))
-        {
-            // is the variable passed as a parameter to some function?
-            unsigned int parlevel = 0;
-            for (const Token *tok2 = tok->link()->next(); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                    ++parlevel;
-
-                else if (tok2->str() == ")")
-                {
-                    if (parlevel <= 1)
-                        break;
-                    --parlevel;
-                }
-
-                else if (tok2->varId() == varid)
-                {
-                    // it is possible that the variable is initialized here
-                    init = true;
-                    return 0;
-                }
-            }
-        }
-
+        // return ends all execution paths
         if (tok->str() == "return")
         {
-            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == ";")
-                {
-                    init = true;
-                    return 0;
-                }
-                if (tok2->varId() == varid)
-                    break;
-            }
-        }
-
-        if (tok->varId() == varid)
-        {
-            if (array && !Token::simpleMatch(tok->next(), "["))
-                continue;
-
-            if (Token::simpleMatch(tok->previous(), "return"))
-                return tok;
-
-            if (Token::simpleMatch(tok->previous(), "="))
-            {
-                if (!Token::Match(tok->tokAt(-3), ". %var% ="))
-                {
-                    if (!Token::Match(tok->tokAt(-3), "[;{}] %var% ="))
-                        return tok;
-
-                    const unsigned int varid2 = tok->tokAt(-2)->varId();
-                    if (varid2)
-                    {
-                        const Token *tok2 = Token::findmatch(tokens, "%varid%", varid2);
-                        if (tok2 && !Token::simpleMatch(tok2->previous(), "*"))
-                            return tok;
-                    }
-                }
-            }
-
-            if (pointer && Token::simpleMatch(tok->next(), "."))
-                return tok;
-
-            if (array && Token::simpleMatch(tok->next(), "["))
-            {
-                init = true;
-                return 0;
-            }
+            ExecutionPath::bailOut(checks);
         }
     }
     return 0;
 }
 
-void CheckOther::uninitvar()
+void CheckOther::executionPaths()
 {
     // start of function..
     const Token *tok = _tokenizer->tokens();
@@ -1533,10 +1638,33 @@ void CheckOther::uninitvar()
                 }
 
                 // check if variable is accessed uninitialized..
-                bool init = false;
-                const Token *tokerr = uninitvar_checkscope(_tokenizer->tokens(), tok->next(), tok->varId(), init, pointer, array);
-                if (tokerr)
-                    uninitvarError(tokerr, tok->str());
+                {
+                    std::list<ExecutionPath *> checks;
+                    checks.push_back(new CheckUninitVar(_tokenizer, tok->varId(), pointer, array));
+                    const Token *tokerr = checkExecutionPaths(tok->next(), checks);
+                    while (!checks.empty())
+                    {
+                        delete checks.back();
+                        checks.pop_back();
+                    }
+                    if (tokerr)
+                        uninitvarError(tokerr, tok->str());
+                }
+
+                // check if variable is accessed uninitialized..
+                if (pointer)
+                {
+                    std::list<ExecutionPath *> checks;
+                    checks.push_back(new CheckNullpointer(tok->varId()));
+                    const Token *tokerr = checkExecutionPaths(tok->next(), checks);
+                    while (!checks.empty())
+                    {
+                        delete checks.back();
+                        checks.pop_back();
+                    }
+                    if (tokerr)
+                        nullPointerError(tokerr, tok->str());
+                }
             }
         }
     }
