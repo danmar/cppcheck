@@ -420,14 +420,17 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             }
 
             //Create an action for the application
-            QAction *copyfilename = new QAction(tr("Copy filename"), &menu);
-            QAction *copypath = new QAction(tr("Copy full path"), &menu);
+            QAction *copyfilename 	= new QAction(tr("Copy filename"), &menu);
+            QAction *copypath 		= new QAction(tr("Copy full path"), &menu);
+            QAction *copymessage 	= new QAction(tr("Copy message"), &menu);
 
             menu.addAction(copyfilename);
             menu.addAction(copypath);
+            menu.addAction(copymessage);
 
             connect(copyfilename, SIGNAL(triggered()), this, SLOT(CopyFilename()));
             connect(copypath, SIGNAL(triggered()), this, SLOT(CopyFullPath()));
+            connect(copymessage, SIGNAL(triggered()), this, SLOT(CopyMessage()));
         }
 
         //Start the menu
@@ -515,6 +518,23 @@ void ResultsTree::CopyFilename()
 void ResultsTree::CopyFullPath()
 {
     CopyPath(mContextItem, true);
+}
+
+void ResultsTree::CopyMessage()
+{
+    if (mContextItem)
+    {
+        // Make sure we are working with the first column
+        if (mContextItem->column() != 0)
+            mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
+
+        QVariantMap data = mContextItem->data().toMap();
+
+        QString message = data["message"].toString();
+
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(message);
+    }
 }
 
 void ResultsTree::Context(int application)

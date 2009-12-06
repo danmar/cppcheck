@@ -151,6 +151,12 @@ protected slots:
     */
     void CopyFullPath();
 
+    /**
+    * @brief Slot for context menu item to the current error message to clipboard
+    *
+    */
+    void CopyMessage();
+
 protected:
 
     /**
