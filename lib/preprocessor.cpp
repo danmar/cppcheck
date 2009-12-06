@@ -33,7 +33,7 @@
 #include <set>
 #include <stack>
 
-Preprocessor::Preprocessor(const Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
+Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
 {
 
 }
@@ -70,7 +70,7 @@ static char readChar(std::istream &istr)
 }
 
 /** Just read the code into a string. Perform simple cleanup of the code */
-std::string Preprocessor::read(std::istream &istr)
+std::string Preprocessor::read(std::istream &istr, const std::string &filename, Settings *settings)
 {
     // Get filedata from stream..
     bool ignoreSpace = true;
@@ -152,7 +152,7 @@ std::string Preprocessor::read(std::istream &istr)
         }
     }
 
-    return removeParantheses(removeComments(code.str()));
+    return removeParantheses(removeComments(code.str(), filename, settings));
 }
 
 static bool hasbom(const std::string &str)
@@ -164,7 +164,7 @@ static bool hasbom(const std::string &str)
 }
 
 
-std::string Preprocessor::removeComments(const std::string &str)
+std::string Preprocessor::removeComments(const std::string &str, const std::string &filename, Settings *settings)
 {
     // For the error report
     int lineno = 1;
@@ -175,18 +175,45 @@ std::string Preprocessor::removeComments(const std::string &str)
     unsigned int newlines = 0;
     std::ostringstream code;
     char previous = 0;
+    std::vector<std::string> suppressionIDs;
+
     for (std::string::size_type i = hasbom(str) ? 3 : 0; i < str.length(); ++i)
     {
         char ch = str[i];
         if (ch < 0)
             throw std::runtime_error("The code contains characters that are unhandled");
 
+        // We have finished a line that didn't contain any comment
+        // (the '\n' is swallowed when a // comment is detected)
+        if (ch == '\n' && !suppressionIDs.empty())
+        {
+            // Add the suppressions.
+            for (size_t j(0); j < suppressionIDs.size(); ++j)
+                settings->addSuppression(suppressionIDs[j], filename, lineno);
+            suppressionIDs.clear();
+        }
+
         // Remove comments..
         if (str.compare(i, 2, "//", 0, 2) == 0)
         {
+            size_t commentStart = i + 2;
             i = str.find('\n', i);
             if (i == std::string::npos)
                 break;
+
+            if (settings->_inlineSuppressions)
+            {
+                std::string comment(str, commentStart, i - commentStart);
+                std::istringstream iss(comment);
+                std::string word;
+                iss >> word;
+                if (word == "cppcheck-suppress")
+                {
+                    iss >> word;
+                    if (iss)
+                        suppressionIDs.push_back(word);
+                }
+            }
 
             code << "\n";
             previous = '\n';
@@ -256,11 +283,15 @@ std::string Preprocessor::removeComments(const std::string &str)
 
 
             // if there has been <backspace><newline> sequences, add extra newlines..
-            if (ch == '\n' && newlines > 0)
+            if (ch == '\n')
             {
-                code << std::string(newlines, '\n');
-                newlines = 0;
-                previous = '\n';
+                ++lineno;
+                if (newlines > 0)
+                {
+                    code << std::string(newlines, '\n');
+                    newlines = 0;
+                    previous = '\n';
+                }
             }
         }
     }
@@ -490,7 +521,7 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
 
 void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
-    processedFile = read(istr);
+    processedFile = read(istr, filename, _settings);
 
     // Replace all tabs with spaces..
     std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
@@ -1201,7 +1232,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             if (fin.is_open())
             {
                 filename = *iter + filename;
-                processedFile = Preprocessor::read(fin);
+                processedFile = Preprocessor::read(fin, filename, _settings);
                 fileOpened = true;
                 break;
             }
@@ -1213,7 +1244,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             std::ifstream fin(filename.c_str());
             if (fin.is_open())
             {
-                processedFile = Preprocessor::read(fin);
+                processedFile = Preprocessor::read(fin, filename, _settings);
                 fileOpened = true;
             }
         }
@@ -1577,7 +1608,7 @@ static bool getlines(std::istream &istr, std::string &line)
                 c = (char)istr.get();
                 if (!istr.good())
                     return true;
-                if (c == '\n' && line.compare(0,1,"#")==0)
+                if (c == '\n' && line.compare(0, 1, "#") == 0)
                     return true;
                 line += c;
             }

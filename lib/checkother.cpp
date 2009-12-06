@@ -1136,7 +1136,9 @@ public:
     virtual ExecutionPath *copy() = 0;
 
     bool bailOut() const
-    { return bailout_; }
+    {
+        return bailout_;
+    }
 
     /**
      * bail out all execution paths

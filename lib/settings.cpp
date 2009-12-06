@@ -29,6 +29,7 @@ Settings::Settings()
     _showAll = false;
     _checkCodingStyle = false;
     _errorsOnly = false;
+    _inlineSuppressions = false;
     _verbose = false;
     _force = false;
     _xml = false;

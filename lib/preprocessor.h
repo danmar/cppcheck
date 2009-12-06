@@ -35,7 +35,7 @@
 class Preprocessor
 {
 public:
-    Preprocessor(const Settings *settings = 0, ErrorLogger *errorLogger = 0);
+    Preprocessor(Settings *settings = 0, ErrorLogger *errorLogger = 0);
 
     /**
      * Extract the code for each configuration
@@ -70,7 +70,7 @@ public:
     void preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
 
     /** Just read the code into a string. Perform simple cleanup of the code */
-    static std::string read(std::istream &istr);
+    static std::string read(std::istream &istr, const std::string &filename, Settings *settings);
 
     /**
      * Get preprocessed code for a given configuration
@@ -104,7 +104,7 @@ protected:
      * @return code without comments
      * @throws std::runtime_error when code contains unhandled characters
      */
-    static std::string removeComments(const std::string &str);
+    static std::string removeComments(const std::string &str, const std::string &filename, Settings *settings);
 
     /**
      * Remove redundant parantheses from preprocessor commands. This should only be called from read().
@@ -171,7 +171,7 @@ private:
      */
     void handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths);
 
-    const Settings *_settings;
+    Settings *_settings;
     ErrorLogger *_errorLogger;
 };
 

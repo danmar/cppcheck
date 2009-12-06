@@ -122,6 +122,10 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
             _settings.suppressions(f);
         }
 
+        // Enables inline suppressions.
+        else if (strcmp(argv[i], "--inline-suppr") == 0)
+            _settings._inlineSuppressions = true;
+
         // Verbose error messages (configuration info)
         else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--verbose") == 0)
             _settings._verbose = true;
@@ -331,8 +335,9 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "Syntax:\n"
         "    cppcheck [--all] [--append=file] [--auto-dealloc file.lst] [--enable]\n"
         "             [--error-exitcode=[n]] [--force] [--help] [-Idir] [-j [jobs]]\n"
-        "             [--quiet] [--style] [--suppressions file.txt] [--verbose]\n"
-        "             [--version] [--xml] [file or path1] [file or path] ...\n"
+        "             [--quiet] [--style] [--suppressions file.txt] [--inline-suppr]\n"
+        "             [--verbose] [--version] [--xml] [file or path1]\n"
+        "             [file or path] ...\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
@@ -373,6 +378,9 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    --suppressions file  Suppress warnings listed in the file. Filename and line\n"
         "                         are optional. The format of the single line in file is:\n"
         "                         [error id]:[filename]:[line]\n"
+        "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
+        "                         more comments in the form: // cppcheck-suppress memleak\n"
+        "                         on the lines before the warning to suppress.\n"
         "    --template '[text]'  Format the error messages. E.g.\n"
         "                         '{file}:{line},{severity},{id},{message}' or\n"
         "                         '{file}({line}):({severity}) {message}'\n"
