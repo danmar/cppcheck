@@ -193,6 +193,15 @@ void CheckExceptionSafety::unsafeNew()
             if (tok->next()->varId() && localVars.find(tok->next()->varId()) != localVars.end())
                 varname = tok->strAt(1);
         }
+
+        else if (tok->str() == "delete")
+        {
+            if (Token::simpleMatch(tok->next(), varname.c_str()) ||
+                Token::simpleMatch(tok->next(), ("[ ] " + varname).c_str()))
+            {
+                varname = "";
+            }
+        }
     }
 }
 

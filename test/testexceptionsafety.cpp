@@ -97,6 +97,15 @@ private:
               "    A *a2 = new (std::nothrow) A;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void a()\n"
+              "{\n"
+              "    A *a1 = new A;\n"
+              "    delete a1;\n"
+              "    A *a2 = new A;\n"
+              "    delete a2;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc()
