@@ -3676,7 +3676,8 @@ bool Tokenizer::simplifyKnownVariables()
                         ret = true;
                     }
 
-                    if (Token::Match(tok3->next(), "++|-- %varid% !!.", varid))
+                    if (Token::Match(tok3->next(), "++|-- %varid%", varid) &&
+                        !Token::Match(tok3->tokAt(3), "[.[]"))
                     {
                         incdec(value, tok3->strAt(1));
                         tok2->tokAt(2)->str(value);

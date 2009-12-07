@@ -515,14 +515,25 @@ private:
 
     void removePreIncrement()
     {
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    unsigned int c = 0;\n"
-                            "    ++c;\n"
-                            "    if (c>0) { ++c; }\n"
-                            "    ++c;\n"
-                            "}\n";
-        ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; }", tok(code));
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    unsigned int c = 0;\n"
+                                "    ++c;\n"
+                                "    if (c>0) { ++c; }\n"
+                                "    ++c;\n"
+                                "}\n";
+            ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; }", tok(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                " char a[] = \"p\";\n"
+                                " ++a[0];\n"
+                                "}\n";
+            ASSERT_EQUALS("void f ( ) { char * a ; a = \"p\" ; ++ a [ 0 ] ; }", tok(code));
+        }
     }
 
 
