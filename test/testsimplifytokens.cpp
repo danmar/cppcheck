@@ -554,6 +554,36 @@ private:
 
         // syntax error: assert there is no segmentation fault
         ASSERT_EQUALS("\n\n##file 0\n1: else if ( x ) { }\n", elseif("else if (x) { }"));
+
+        {
+            const char src[] =  "void f(int g,int f) {\n"
+                                "if(g==1) {poo();}\n"
+                                "else if( g == 2 )\n"
+                                "{\n"
+                                " if( f == 0 ){coo();}\n"
+                                " else if( f==1)\n"
+                                "  goo();\n"
+                                "}\n"
+                                "}";
+
+            const char expected[] = "void f ( int g , int f ) "
+                                    "{ "
+                                    "if ( g == 1 ) { poo ( ) ; } "
+                                    "else { "
+                                    "if ( g == 2 ) "
+                                    "{ "
+                                    "if ( ! f ) { coo ( ) ; } "
+                                    "else { "
+                                    "if ( f == 1 ) "
+                                    "{ "
+                                    "goo ( ) ; "
+                                    "} "
+                                    "} "
+                                    "} "
+                                    "} "
+                                    "}";
+            ASSERT_EQUALS(tok(expected), tok(src));
+        }
     }
 
 
