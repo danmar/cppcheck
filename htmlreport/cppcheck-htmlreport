@@ -1,0 +1,130 @@
+#!/usr/bin/python
+import sys
+import optparse
+import os
+import os.path
+from pygments import highlight
+from pygments.lexers import CppLexer
+from pygments.formatters import HtmlFormatter
+from xml.sax import parse as xml_parse
+from xml.sax import SAXParseException as XmlParseException
+from xml.sax.handler import ContentHandler as XmlContentHandler
+
+"""
+Turns a cppcheck xml file into a browsable html report along
+with syntax highlighted source code.
+"""
+
+HTML_HEAD = """
+<html>
+  <head>
+    <title>CppCheck - Html report</title>
+    <link href="style.css" rel="stylesheet" />
+  </head>
+  <body>
+"""
+
+HTML_FOOTER = """
+  </body>
+</html>
+"""
+
+class CppCheckHandler(XmlContentHandler):
+    """Parses the cppcheck xml file and produces a list of all its errors."""
+    errors = []
+
+    def startElement(self, name, attributes):
+        if name != "error":
+            return
+
+        self.errors.append(
+            {
+                "file" : attributes["file"],
+                "line" : attributes["line"],
+                "id" : attributes["id"],
+                "severity" : attributes["severity"],
+                "msg" : attributes["msg"]
+            })
+
+if __name__ == '__main__':
+    # Configure all the options this little utility is using.
+    parser = optparse.OptionParser()
+    parser.add_option("--file", dest="file", help="The cppcheck xml output file to read defects from. Default is reading from stdin.")
+    parser.add_option("--report-dir", dest="report_dir", help="The directory where the html report content is written.")
+    parser.add_option("--source-dir", dest="source_dir", help="Base directory where source code files can be found.")
+
+    # Parse options and make sure that we have an output directory set.
+    options, args = parser.parse_args()
+    if not options.report_dir:
+        parser.error("No report directory set.")
+
+    # Get the directory where source code files are located.
+    source_dir = os.getcwd()
+    if options.source_dir:
+        source_dir = options.source_dir
+
+    # Get the stream that we read cppcheck errors from.
+    stream = sys.stdin
+    if options.file:
+        if os.path.exists(options.file) == False:
+            parser.error("cppcheck xml file: %s not found." % options.file)
+        stream = open(options.file, "r")
+
+    # Parse the xml file and produce a simple list of errors.
+    print("Parsing xml report.")
+    try:
+        contentHandler = CppCheckHandler()
+        xml_parse(stream, contentHandler)
+    except XmlParseException, msg:
+        print("Failed to parse cppcheck xml file: %s" % msg)
+        sys.exit(1)
+
+    # We have a list of errors. But now we want to group them on
+    # each source code file. Lets create a files dictionary that
+    # will contain a list of all the errors in that file. For each
+    # file we will also generate a html filename to use.
+    files = {}
+    file_no = 0
+    for error in contentHandler.errors:
+        filename = error["file"]
+        if filename not in files.keys():
+            files[filename] = { "errors" : [], "htmlfile" : str(file_no) + ".html" }
+            file_no = file_no + 1
+        files[filename]["errors"].append(error)
+
+    # Make sure that the report directory is created if it doesn't exist.
+    print("Creating %s directory" % options.report_dir)
+    if not os.path.exists(options.report_dir):
+        os.mkdir(options.report_dir)
+
+    # Generate a html file with syntax highlighted source code for each
+    # file that contains one or more errors.
+    print("Processing errors")
+    for filename, data in files.iteritems():
+        htmlfile = data["htmlfile"]
+        errors = data["errors"]
+
+        stream = file(os.path.join(source_dir, filename))
+        content = stream.read()
+        stream.close()
+
+        htmlFormatter = HtmlFormatter(linenos=True, style='colorful', full=True)
+        stream = file(os.path.join(options.report_dir, htmlfile), "w")
+        stream.write(HTML_HEAD)
+        stream.write(highlight(content, CppLexer(), htmlFormatter))
+        stream.write(HTML_FOOTER)
+        stream.close()
+
+        print("  " + filename)
+
+    # Generate a master index.html file that will contain a list of
+    # all the errors created.
+    print("Creating index.html")
+    stream = file(os.path.join(options.report_dir, "index.html"), "w")
+    stream.write(HTML_HEAD)
+    stream.write("<ul>")
+    for filename, data in files.iteritems():
+        stream.write("<li><a href=\"%s\">%s</a></li>" % (data["htmlfile"], filename))
+    stream.write("</ul>")
+    stream.write(HTML_FOOTER)
+    stream.close()
