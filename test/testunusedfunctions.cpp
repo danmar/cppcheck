@@ -42,6 +42,8 @@ private:
         TEST_CASE(else1);
         TEST_CASE(functionpointer);
         TEST_CASE(template1);
+        TEST_CASE(throwIsNotAFunction);
+        TEST_CASE(unusedError);
     }
 
     void check(const char code[])
@@ -142,6 +144,31 @@ private:
               "    return 0\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void throwIsNotAFunction()
+    {
+        check("struct A {void f() const throw () {}}; int main() {A a; a.f();}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void unusedError()
+    {
+        check("void foo() {}\n"
+              "int main()\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+
+        check("void foo() const {}\n"
+              "int main()\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+
+        check("void foo() const throw() {}\n"
+              "int main()\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+
+        check("void foo() throw() {}\n"
+              "int main()\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
     }
 };
 

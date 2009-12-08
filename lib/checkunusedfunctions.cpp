@@ -69,12 +69,19 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         else if (Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2)))
             funcname = tok->tokAt(2);
 
+        // Don't assume throw as a function name: void foo() throw () {}
+        if (Token::Match(tok->previous(), ")|const"))
+            funcname = 0;
+
         // Check that ") {" is found..
         for (const Token *tok2 = funcname; tok2; tok2 = tok2->next())
         {
             if (tok2->str() == ")")
             {
-                if (! Token::simpleMatch(tok2, ") {") && ! Token::simpleMatch(tok2, ") const {"))
+                if (! Token::simpleMatch(tok2, ") {") &&
+                    ! Token::simpleMatch(tok2, ") const {") &&
+                    ! Token::simpleMatch(tok2, ") const throw ( ) {") &&
+                    ! Token::simpleMatch(tok2, ") throw ( ) {"))
                     funcname = NULL;
                 break;
             }
