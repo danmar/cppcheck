@@ -193,12 +193,12 @@ void CheckAutoVariables::autoVariables()
         {
             addVD(tok->tokAt(2)->varId());
         }
-        //Critical assignement
+        //Critical assignment
         else if (Token::Match(tok, "[;{}] %var% = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(4)))
         {
             errorAutoVariableAssignment(tok);
         }
-        //Critical assignement
+        //Critical assignment
         else if (Token::Match(tok, "[;{}] %var% [ %any% ] = & %var%") && errorAv(tok->tokAt(1), tok->tokAt(7)))
         {
             errorAutoVariableAssignment(tok);
@@ -300,6 +300,6 @@ void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
 
 void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok)
 {
-    reportError(tok, Severity::error, "autoVariables", "Wrong assignement of an auto-variable to an effective parameter of a function");
+    reportError(tok, Severity::error, "autoVariables", "Wrong assignment of an auto-variable to an effective parameter of a function");
 }
 

@@ -79,7 +79,7 @@ private:
               "{\n"
               "    int num=2;"
               "res=&num;}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignment of an auto-variable to an effective parameter of a function\n", errout.str());
 
         check("void func1(int **res)\n"
               "{\n"
@@ -95,7 +95,7 @@ private:
               "{\n"
               "    int num=2;"
               "arr[0]=&num;}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignement of an auto-variable to an effective parameter of a function\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignment of an auto-variable to an effective parameter of a function\n", errout.str());
     }
 
     void testautovar_return()
