@@ -3539,7 +3539,8 @@ bool Tokenizer::simplifyKnownVariables()
 
         // parse the block of code..
         int indentlevel = 0;
-        for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        Token *tok2 = tok;
+        for (; tok2; tok2 = tok2->next())
         {
 
             if (tok2->str() == "{")
@@ -3696,6 +3697,9 @@ bool Tokenizer::simplifyKnownVariables()
                 }
             }
         }
+
+        if (tok2)
+            tok = tok2->previous();
     }
 
     return ret;
