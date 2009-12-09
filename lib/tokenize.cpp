@@ -302,21 +302,26 @@ void Tokenizer::createTokens(std::istream &code)
                 }
 
                 // If token contains # characters, split it up
-                std::string temp;
-                for (std::string::size_type i = 0; i < CurrentToken.length(); ++i)
+                if (CurrentToken.find("##") == std::string::npos)
+                    addtoken(CurrentToken.c_str(), lineno, FileIndex);
+                else
                 {
-                    if (CurrentToken[i] == '#' && CurrentToken.length() + 1 > i && CurrentToken[i+1] == '#')
+                    std::string temp;
+                    for (std::string::size_type i = 0; i < CurrentToken.length(); ++i)
                     {
-                        addtoken(temp.c_str(), lineno, FileIndex);
-                        temp.clear();
-                        addtoken("##", lineno, FileIndex);
-                        ++i;
+                        if (CurrentToken[i] == '#' && CurrentToken.length() + 1 > i && CurrentToken[i+1] == '#')
+                        {
+                            addtoken(temp.c_str(), lineno, FileIndex);
+                            temp.clear();
+                            addtoken("##", lineno, FileIndex);
+                            ++i;
+                        }
+                        else
+                            temp += CurrentToken[i];
                     }
-                    else
-                        temp += CurrentToken[i];
+                    addtoken(temp.c_str(), lineno, FileIndex);
                 }
 
-                addtoken(temp.c_str(), lineno, FileIndex);
                 CurrentToken.clear();
 
                 if (ch == '\n')
@@ -341,8 +346,25 @@ void Tokenizer::createTokens(std::istream &code)
 
         CurrentToken += ch;
     }
-    addtoken(CurrentToken.c_str(), lineno, FileIndex);
-
+    if (CurrentToken.find("##") == std::string::npos)
+        addtoken(CurrentToken.c_str(), lineno, FileIndex);
+    else
+    {
+        std::string temp;
+        for (std::string::size_type i = 0; i < CurrentToken.length(); ++i)
+        {
+            if (CurrentToken[i] == '#' && CurrentToken.length() + 1 > i && CurrentToken[i+1] == '#')
+            {
+                addtoken(temp.c_str(), lineno, FileIndex);
+                temp.clear();
+                addtoken("##", lineno, FileIndex);
+                ++i;
+            }
+            else
+                temp += CurrentToken[i];
+        }
+        addtoken(temp.c_str(), lineno, FileIndex);
+    }
 }
 
 void Tokenizer::simplifyTypedef()

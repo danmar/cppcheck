@@ -1200,6 +1200,13 @@ private:
 
         // Compare results..
         ASSERT_EQUALS("\nfoo_20=20;\n", OurPreprocessor::expandMacros(filedata2));
+
+        const char filedata3[] = "#define ABCD 123\n"
+                                 "#define A(B) A##B\n"
+                                 "A(BCD)\n";
+
+        // Compare results..
+        ASSERT_EQUALS("\n\n123\n", OurPreprocessor::expandMacros(filedata3));
     }
 
 
