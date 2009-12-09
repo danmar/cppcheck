@@ -31,206 +31,27 @@
 #include <cstring>
 #include <vector>
 #include <set>
+#include <stack>
 
 Preprocessor::Preprocessor(Settings *settings, ErrorLogger *errorLogger) : _settings(settings), _errorLogger(errorLogger)
 {
 
 }
 
-void Preprocessor::writeError(const std::string &fileName, const std::string &code, size_t endPos, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText)
+void Preprocessor::writeError(const std::string &fileName, const int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText)
 {
     if (!errorLogger)
-    {
         return;
-    }
-
-    // line number in parsed code
-    unsigned int lineno = 1;
-
-    // The current token being parsed
-    std::string CurrentToken;
-
-    // lineNumbers holds line numbers for files in fileIndexes
-    // every time an include file is complitely parsed, last item in the vector
-    // is removed and lineno is set to point to that value.
-    std::vector<unsigned int> lineNumbers;
-
-    // fileIndexes holds index for _files vector about currently parsed files
-    // every time an include file is complitely parsed, last item in the vector
-    // is removed and FileIndex is set to point to that value.
-    std::vector<std::string> fileIndexes;
-
-    // FileIndex. What file in the _files vector is read now?
-    std::string FileIndex = fileName;
-
-    // Read one byte at a time from code and create tokens
-    if (endPos > code.length())
-        endPos = code.length();
-
-    for (size_t codePos = 0; codePos < endPos; ++codePos)
-    {
-
-        char ch = code[codePos];
-
-        // UTF / extended ASCII => The output from the preprocessor should only be standard ASCII
-        if (ch < 0)
-        {
-            /**
-             * @todo handle utf better:
-             * - remove characters that are redundant
-             * - convert needed characters to standard ASCII
-             */
-
-            // Not sure how to handle this character. Bailing out.
-            if (ch < 0)
-                continue;
-        }
-
-        // char/string..
-        if (ch == '\'' || ch == '\"')
-        {
-            std::string line;
-
-            // read char
-            bool special = false;
-            char c = ch;
-            do
-            {
-                // Append token..
-                line += c;
-
-                if (c == '\n')
-                    ++lineno;
-
-                // Special sequence '\.'
-                if (special)
-                    special = false;
-                else
-                    special = (c == '\\');
-
-                // Get next character
-                ++codePos;
-                c = code[codePos];
-            }
-            while (codePos < endPos && (special || c != ch));
-            line += ch;
-
-            // Handle #file "file.h"
-            if (CurrentToken == "#file")
-            {
-                // Extract the filename
-                line = line.substr(1, line.length() - 2);
-
-                // Has this file been tokenized already?
-                ++lineno;
-                fileIndexes.push_back(FileIndex);
-                FileIndex = FileLister::simplifyPath(line.c_str());
-                lineNumbers.push_back(lineno);
-                lineno = 0;
-            }
-
-            CurrentToken.clear();
-
-            continue;
-        }
-
-        if (strchr("+-*/%&|^?!=<>[](){};:,.~\n ", ch))
-        {
-            if (ch == '.' &&
-                CurrentToken.length() > 0 &&
-                std::isdigit(CurrentToken[0]))
-            {
-                // Don't separate doubles "5.4"
-            }
-            else if (strchr("+-", ch) &&
-                     CurrentToken.length() > 0 &&
-                     std::isdigit(CurrentToken[0]) &&
-                     CurrentToken[CurrentToken.length()-1] == 'e')
-            {
-                // Don't separate doubles "4.2e+10"
-            }
-            else
-            {
-                if (CurrentToken == "#file")
-                {
-                    // Handle this where strings are handled
-                    continue;
-                }
-                else if (CurrentToken == "#endfile")
-                {
-                    if (lineNumbers.empty() || fileIndexes.empty())
-                    {
-                        std::ostringstream line;
-                        line << __LINE__;
-
-                        ErrorLogger::ErrorMessage errmsg;
-                        errmsg._severity = "error";
-                        errmsg._msg = "####### Preprocessor bug! #######";
-                        errmsg._id  = "preprocessor" + line.str();
-                        errorLogger->reportErr(errmsg);
-
-                        std::exit(0);
-                    }
-
-                    lineno = lineNumbers.back();
-                    lineNumbers.pop_back();
-                    FileIndex = fileIndexes.back();
-                    fileIndexes.pop_back();
-                    CurrentToken.clear();
-                    continue;
-                }
-
-                // If token contains # characters, split it up
-                std::string temp;
-                for (std::string::size_type i = 0; i < CurrentToken.length(); ++i)
-                {
-                    if (CurrentToken[i] == '#' && CurrentToken.length() + 1 > i && CurrentToken[i+1] == '#')
-                    {
-                        temp.clear();
-                        ++i;
-                    }
-                    else
-                        temp += CurrentToken[i];
-                }
-
-                CurrentToken.clear();
-
-                if (ch == '\n')
-                {
-                    ++lineno;
-                    continue;
-                }
-                else if (ch == ' ')
-                {
-                    continue;
-                }
-
-                CurrentToken += ch;
-                // Add "++", "--" or ">>" token
-                if ((ch == '+' || ch == '-' || ch == '>') && (code[codePos+1] == ch))
-                {
-                    ++codePos;
-                    CurrentToken += code[codePos];
-                }
-                CurrentToken.clear();
-                continue;
-            }
-        }
-
-        CurrentToken += ch;
-    }
-
 
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
     ErrorLogger::ErrorMessage::FileLocation loc;
-    loc.line = lineno;
-    loc.file = FileIndex;
+    loc.line = linenr;
+    loc.file = fileName;
     locationList.push_back(loc);
-    errorLogger->reportErr(
-        ErrorLogger::ErrorMessage(locationList,
-                                  "error",
-                                  errorText,
-                                  errorType));
+    errorLogger->reportErr(ErrorLogger::ErrorMessage(locationList,
+                           "error",
+                           errorText,
+                           errorType));
 }
 
 static char readChar(std::istream &istr)
@@ -1589,7 +1410,7 @@ public:
         return tokenizer.tokens();
     }
 
-    const std::vector<std::string> params() const
+    const std::vector<std::string> &params() const
     {
         return _params;
     }
@@ -1748,340 +1569,322 @@ public:
     }
 };
 
-std::string Preprocessor::expandMacros(std::string code, const std::string &filename, ErrorLogger *errorLogger)
+
+static void skipstring(const std::string &line, std::string::size_type &pos)
+{
+    const char ch = line[pos];
+
+    ++pos;
+    while (pos < line.size() && line[pos] != ch)
+    {
+        if (line[pos] == '\\')
+            ++pos;
+        ++pos;
+    }
+}
+
+
+static bool getlines(std::istream &istr, std::string &line)
+{
+    if (!istr.good())
+        return false;
+    line = "";
+    for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
+    {
+        if (ch == '\'' || ch == '\"')
+        {
+            line += ch;
+            char c = 0;
+            while (istr.good() && c != ch)
+            {
+                if (c == '\\')
+                {
+                    c = (char)istr.get();
+                    if (!istr.good())
+                        return true;
+                    line += c;
+                }
+
+                c = (char)istr.get();
+                if (!istr.good())
+                    return true;
+                if (c == '\n' && line.compare(0, 1, "#") == 0)
+                    return true;
+                line += c;
+            }
+            continue;
+        }
+        if (ch == '\n')
+        {
+            if (line.compare(0, 1, "#") == 0)
+                return true;
+
+            if ((char)istr.peek() == '#')
+            {
+                line += ch;
+                return true;
+            }
+        }
+        else if (line.compare(0, 1, "#") != 0 && ch == ';')
+        {
+            line += ";";
+            return true;
+        }
+
+        line += ch;
+    }
+    return true;
+}
+
+std::string Preprocessor::expandMacros(const std::string &code, std::string filename, ErrorLogger *errorLogger)
 {
     // Search for macros and expand them..
 
-    // First item is location where macro is located and
-    // the second is its length. 0 length means that values
-    // are not set.
-    size_t macroLoc[2] = {0, 0};
+    std::map<std::string, PreprocessorMacro *> macros;
 
-    std::string::size_type defpos = 0;
-    bool loopAgain = false;
-    int counter = 0;
-    for (;;)
+    unsigned int linenr = 1;
+
+    // linenr, filename
+    std::stack< std::pair<unsigned int, std::string> > fileinfo;
+
+    std::ostringstream ostr;
+    std::istringstream istr(code.c_str());
+    std::string line;
+    while (getlines(istr, line))
     {
-        if (macroLoc[1] > 0)
+        if (line.compare(0, 8, "#define ") == 0)
         {
-            // Erase previously handled "#define A foo"
-            code.erase(macroLoc[0], macroLoc[1]);
-            defpos -= macroLoc[1];
-            macroLoc[1] = 0;
+            PreprocessorMacro *macro = new PreprocessorMacro(line.substr(8));
+            if (macro->name().empty())
+                delete macro;
+            else
+                macros[macro->name()] = macro;
+            line = "\n";
         }
 
-        defpos = code.find("#define ", defpos);
-        if (defpos == std::string::npos)
+        else if (line.compare(0, 7, "#undef ") == 0)
         {
-            if (loopAgain)
+            std::map<std::string, PreprocessorMacro *>::iterator it;
+            it = macros.find(line.substr(7));
+            if (it != macros.end())
             {
-                loopAgain = false;
-                counter++;
-                if (counter < 100)
-                {
-                    defpos = 0;
-                    continue;
-                }
-                else
-                {
-                    std::ostringstream line;
-                    line << __LINE__;
-
-                    ErrorLogger::ErrorMessage errmsg;
-                    errmsg._severity = "error";
-                    errmsg._msg = "### Preprocessor::expandMacros() loop limit exceeded.";
-                    errmsg._id  = "preprocessor" + line.str();
-                    errorLogger->reportErr(errmsg);
-                }
+                delete it->second;
+                macros.erase(it);
             }
-
-            break;
+            line = "\n";
         }
 
-        if (defpos > 0 && code[defpos-1] != '\n')
+        else if (line.compare(0, 7, "#file \"") == 0)
         {
-            defpos++;
-            continue;
+            fileinfo.push(std::pair<unsigned int, std::string>(linenr, filename));
+            filename = line.substr(7, line.length() - 8);
+            linenr = 0;
+            line += "\n";
         }
 
-        // Get macro..
-        std::string::size_type endpos = code.find("\n", defpos + 6);
-        if (endpos == std::string::npos)
+        else if (line == "#endfile")
         {
-            code.erase(defpos);
-            break;
-        }
-
-        // Extract the whole macro into a separate variable "macro" and then erase it from "code"
-        const PreprocessorMacro macro(code.substr(defpos + 8, endpos - defpos - 7));
-        //code.erase(defpos, endpos - defpos);
-        macroLoc[0] = defpos;
-        macroLoc[1] = endpos - defpos;
-        defpos += (endpos - defpos);
-
-        // No macro name => continue
-        if (macro.name() == "")
-            continue;
-
-        // Expand all macros in the code..
-        char pattern[5] = "\"'# ";
-        pattern[3] = macro.name().at(0);
-        std::string::size_type pos1 = defpos;
-        while ((pos1 = code.find_first_of(pattern, pos1 + 1)) != std::string::npos)
-        {
-            char ch = code[pos1];
-
-            // #undef => break
-            if (code[pos1] == '#')
+            if (fileinfo.size())
             {
-                // Are we at a #undef or #define?
-                if (code.compare(pos1, 7, "#undef ") == 0)
-                    pos1 += 7;
-                else if (code.compare(pos1, 8, "#define ") == 0)
-                    pos1 += 8;
-                else
-                    continue;
-
-                // Compare the macroname with the macroname we're currently parsing (macro.name())
-                // If it's the same macroname.. break.
-                std::string::size_type pos = pos1 + macro.name().length();
-                if (pos < code.length()
-                    && code.compare(pos1, macro.name().length(), macro.name()) == 0
-                    && !std::isalnum(code[pos]) && code[pos] != '_')
-                    break;
-
-
-                continue;
+                linenr = fileinfo.top().first;
+                filename = fileinfo.top().second;
+                fileinfo.pop();
             }
+            line += "\n";
+        }
 
-            // String or char..
-            if (code[pos1] == '\"' || code[pos1] == '\'')
+        else if (line.compare(0, 1, "#") == 0)
+        {
+            line += "\n";
+        }
+
+        // expand macros..
+        else
+        {
+            std::map<const PreprocessorMacro *, unsigned int> limits;
+
+            std::string::size_type pos = 0;
+            while (pos < line.size())
             {
-                // Find the end of the string/char..
-                ++pos1;
-                while (pos1 < code.size() && code[pos1] != ch && code[pos1] != '\n')
-                {
-                    if (code[pos1] == '\\')
-                        ++pos1;
-                    ++pos1;
-                }
+                if (line[pos] == '\n')
+                    ++linenr;
 
-                // End of line/file was reached without finding pair
-                if (pos1 >= code.size() || code[pos1] == '\n')
+                // skip strings..
+                if (line[pos] == '\"' || line[pos] == '\'')
                 {
-                    std::string::size_type lineStart = code.rfind('\n', pos1 - 1);
-                    if (lineStart != std::string::npos)
+                    const char ch = line[pos];
+
+                    skipstring(line, pos);
+                    ++pos;
+
+                    if (pos >= line.size())
                     {
-                        if (code.compare(lineStart + 1, 7, "#define") == 0)
-                        {
-                            // There is nothing wrong #define containing quote without
-                            // a pair.
-                            continue;
-                        }
+                        writeError(filename,
+                                   linenr,
+                                   errorLogger,
+                                   "noQuoteCharPair",
+                                   std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.");
+                        return "";
                     }
 
-                    writeError(filename,
-                               code,
-                               pos1,
-                               errorLogger,
-                               "noQuoteCharPair",
-                               std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.");
-
-                    return "";
-                }
-
-                continue;
-            }
-
-            // Matching the macroname?
-            if (code.compare(pos1, macro.name().length(), macro.name()) != 0)
-                continue;
-
-            // Previous char must not be alphanumeric nor '_'
-            if (pos1 != 0 && (std::isalnum(code[pos1-1]) || code[pos1-1] == '_'))
-                continue;
-
-            // The char after the macroname must not be alphanumeric nor '_'
-            if (pos1 + macro.name().length() < code.length())
-            {
-                std::string::size_type pos2 = pos1 + macro.name().length();
-                if (std::isalnum(code[pos2]) || code[pos2] == '_')
-                    continue;
-            }
-
-            std::vector<std::string> params;
-            std::string::size_type pos2 = pos1 + macro.name().length();
-            if (macro.params().size() && pos2 >= code.length())
-                continue;
-
-            // Check are we in #define
-            std::string::size_type startOfLine = code.rfind("\n", pos1);
-            ++startOfLine;
-
-            bool insideDefine = false;
-            if (code.compare(startOfLine, 8, "#define ") == 0)
-            {
-                // We are inside a define, make sure we don't have name collision
-                // by e.g. replacing the following code:
-                // #define B(a) A(a)
-                // With this:
-                // #define B(2a) A(2a)
-                std::string::size_type endOfLine = code.find("\n", pos1);
-                startOfLine += 8;
-
-                PreprocessorMacro tempMacro(code.substr(startOfLine, endOfLine - startOfLine));
-                std::string tempMacroCode;
-                if (tempMacro.renameMacroVariables(tempMacroCode, macro))
-                {
-                    // Change the macro and then start again from the start
-                    // of the line, as code has changed.
-                    code.erase(startOfLine, endOfLine - startOfLine);
-                    code.insert(startOfLine, tempMacroCode);
-                    pos1 = startOfLine;
                     continue;
                 }
 
-                insideDefine = true;
-            }
+                if (!std::isalpha(line[pos]) && line[pos] != '_')
+                    ++pos;
 
-            unsigned int numberOfNewlines = 0;
-
-            if (macro.variadic() || macro.nopar() || macro.params().size())
-            {
-                if (code[pos2] == ' ')
-                    pos2++;
-
-                if (code[pos2] != '(')
-                    continue;
-
-                int parlevel = 0;
-                std::string par;
-                bool endFound = false;
-                for (; pos2 < code.length(); ++pos2)
+                // found an identifier..
+                while (pos < line.length() && (std::isalpha(line[pos]) || line[pos] == '_'))
                 {
-                    if (code[pos2] == '(')
+                    const std::string::size_type pos1 = pos++;
+                    while (pos < line.size() && (std::isalnum(line[pos]) || line[pos] == '_'))
+                        ++pos;
+
+                    const std::string id = line.substr(pos1, pos - pos1);
+
+                    // is there a macro with this name?
+                    std::map<std::string, PreprocessorMacro *>::const_iterator it;
+                    it = macros.find(id);
+                    if (it == macros.end())
+                        break;
+
+                    const PreprocessorMacro * const macro = it->second;
+
                     {
-                        ++parlevel;
-                        if (parlevel == 1)
-                            continue;
-                    }
-                    else if (code[pos2] == ')')
-                    {
-                        --parlevel;
-                        if (parlevel <= 0)
-                        {
-                            endFound = true;
-                            params.push_back(par);
+                        const std::map<const PreprocessorMacro *, unsigned int>::const_iterator it2 = limits.find(macro);
+                        if (it2 != limits.end() && pos <= line.length() - it2->second)
                             break;
-                        }
                     }
-                    else if (code[pos2] == '\"' || code[pos2] == '\'')
+
+                    std::vector<std::string> params;
+                    std::string::size_type pos2 = pos;
+                    if (macro->params().size() && pos2 >= line.length())
+                        break;
+
+                    unsigned int numberOfNewlines = 0;
+
+                    if (macro->variadic() || macro->nopar() || macro->params().size())
                     {
-                        par += code[pos2];
-                        char ch = code[pos2];
-                        ++pos2;
-                        while (pos2 < code.length() && code[pos2] != ch)
+                        if (line[pos2] == ' ')
+                            pos2++;
+
+                        if (line[pos2] != '(')
+                            break;
+
+                        int parlevel = 0;
+                        std::string par;
+                        bool endFound = false;
+                        for (; pos2 < line.length(); ++pos2)
                         {
-                            if (code[pos2] == '\\')
+                            if (line[pos2] == '(')
                             {
-                                par += code[pos2];
-                                ++pos2;
+                                ++parlevel;
+                                if (parlevel == 1)
+                                    continue;
+                            }
+                            else if (line[pos2] == ')')
+                            {
+                                --parlevel;
+                                if (parlevel <= 0)
+                                {
+                                    endFound = true;
+                                    params.push_back(par);
+                                    break;
+                                }
+                            }
+                            else if (line[pos2] == '\"' || line[pos2] == '\'')
+                            {
+                                const std::string::size_type p = pos2;
+                                skipstring(line, pos2);
+                                if (pos2 == line.length())
+                                    break;
+                                par += line.substr(p, pos2 + 1 - p);
+                                continue;
+                            }
+                            else if (line[pos2] == '\n')
+                            {
+                                ++numberOfNewlines;
+                                continue;
                             }
 
-                            par += code[pos2];
-                            ++pos2;
+                            if (parlevel == 1 && line[pos2] == ',')
+                            {
+                                params.push_back(par);
+                                par = "";
+                            }
+                            else if (line[pos2] == ' ')
+                            {
+                                // Add space only if it is needed
+                                if (par.size() && std::isalnum(par[par.length()-1]))
+                                {
+                                    par += ' ';
+                                }
+                            }
+                            else if (parlevel >= 1)
+                            {
+                                par.append(1, line[pos2]);
+                            }
                         }
-                        if (pos2 == code.length())
+
+                        if (!endFound)
                             break;
-                        par += code[pos2];
-                        continue;
                     }
-                    else if (code[pos2] == '\n')
-                    {
-                        if (insideDefine)
-                        {
-                            // We have code like this "#define B A("
-                            // so we shouldn't modify the A
 
-                            // Don't delete the #define
-                            macroLoc[1] = 0;
-                            loopAgain = true;
-                            break;
+                    if (params.size() == 1 && params[0] == "")
+                        params.clear();
+
+                    // Same number of parameters..
+                    if (!macro->variadic() && params.size() != macro->params().size())
+                        break;
+
+                    // Create macro code..
+                    std::string tempMacro;
+                    if (!macro->code(params, tempMacro))
+                    {
+                        // Syntax error in code
+                        writeError(filename,
+                                   linenr,
+                                   errorLogger,
+                                   "syntaxError",
+                                   std::string("Syntax error. Not enough parameters for macro '") + macro->name() + "'.");
+                        {
+                            std::map<std::string, PreprocessorMacro *>::iterator it;
+                            for (it = macros.begin(); it != macros.end(); ++it)
+                                delete it->second;
                         }
 
-                        ++numberOfNewlines;
-                        continue;
+                        return "";
                     }
 
-                    if (parlevel == 1 && code[pos2] == ',')
-                    {
-                        params.push_back(par);
-                        par = "";
-                    }
-                    else if (code[pos2] == ' ')
-                    {
-                        // Add space only if it is needed
-                        if (par.size() && std::isalnum(par[par.length()-1]))
-                        {
-                            par += ' ';
-                        }
-                    }
-                    else if (parlevel >= 1)
-                    {
-                        par.append(1, code[pos2]);
-                    }
+                    const std::string macrocode(std::string(numberOfNewlines, '\n') + tempMacro);
+
+                    // Insert macro code..
+                    if (macro->variadic() || macro->nopar() || !macro->params().empty())
+                        ++pos2;
+
+                    limits[macro] = line.length() - pos2;
+
+                    line.erase(pos1, pos2 - pos1);
+                    line.insert(pos1, macrocode);
+                    pos = pos1;
                 }
-
-                if (!endFound)
-                    continue;
             }
+        }
 
-            if (params.size() == 1 && params[0] == "")
-                params.clear();
-
-            // Same number of parameters..
-            if (!macro.variadic() && params.size() != macro.params().size())
-                continue;
-
-            // Create macro code..
-            std::string tempMacro;
-            if (!macro.code(params, tempMacro))
-            {
-                // Syntax error in code
-
-
-                writeError(filename,
-                           code,
-                           pos1,
-                           errorLogger,
-                           "syntaxError",
-                           std::string("Syntax error. Not enough parameters for macro '") + macro.name() + "'.");
-
-
-                return "";
-            }
-
-            const std::string macrocode(std::string(numberOfNewlines, '\n') + tempMacro);
-
-            // Insert macro code..
-            if (macro.variadic() || macro.nopar() || !macro.params().empty())
-                ++pos2;
-
-            code.erase(pos1, pos2 - pos1);
-            code.insert(pos1, macrocode);
-            pos1 += macrocode.length() - 1;
+        ostr << line;
+        for (std::string::size_type p = 0; p < line.length(); ++p)
+        {
+            if (line[p] == '\n')
+                ++linenr;
         }
     }
 
-    // Remove all #undef..
-    defpos = 0;
-    while ((defpos = code.find("\n#undef ", defpos)) != std::string::npos)
     {
-        ++defpos;
-        std::string::size_type pos2 = code.find("\n", defpos);
-        code.erase(defpos, pos2 - defpos);
+        std::map<std::string, PreprocessorMacro *>::iterator it;
+        for (it = macros.begin(); it != macros.end(); ++it)
+            delete it->second;
     }
 
-    return code;
+    return ostr.str();
 }
 
