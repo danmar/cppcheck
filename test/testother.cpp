@@ -1242,6 +1242,15 @@ private:
                        "    };\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    static const struct ab {\n"
+                       "        int a,b;\n"
+                       "        int get_a() { return a; }"
+                       "    } = { 0, 0 };\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

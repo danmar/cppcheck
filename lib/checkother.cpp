@@ -1576,7 +1576,7 @@ void CheckOther::executionPaths()
         for (; tok; tok = tok->next())
         {
             // skip structs
-            if (Token::Match(tok->previous(), "[;{}] struct %var% {"))
+            if (Token::Match(tok, "struct %var% {"))
             {
                 tok = tok->tokAt(2)->link();
                 continue;
