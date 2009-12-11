@@ -1172,6 +1172,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int f()\n"
+                       "{\n"
+                       "    char s[10];\n"
+                       "    return bar(s);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // arrays..
         checkUninitVar("void f()\n"
                        "{\n"

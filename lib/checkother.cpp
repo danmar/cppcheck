@@ -1364,17 +1364,11 @@ private:
 
         if (tok.str() == "return")
         {
-            for (const Token *tok2 = &tok; tok2; tok2 = tok2->next())
+            if (!array && Token::Match(tok.next(), "%varid% ;", varId))
             {
-                if (tok2->str() == ";")
-                    return &tok;
-
-                if (tok2->varId() == varId)
-                {
-                    use(foundError, checks);
-                    return &tok;
-                }
+                use(foundError, checks);
             }
+            return &tok;
         }
 
         if (tok.varId() == varId)
