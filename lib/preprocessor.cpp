@@ -920,7 +920,21 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
     }
 
     // simplify calculations..
-    tokenizer.simplifyCalculations();
+    bool modified = true;
+    while (modified)
+    {
+        modified = false;
+        tokenizer.simplifyCalculations();
+        for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
+        {
+            if (Token::Match(tok, "! %num%"))
+            {
+                tok->deleteThis();
+                tok->str(tok->str() == "0" ? "1" : "0");
+                modified = true;
+            }
+        }
+    }
 
     if (Token::simpleMatch(tokenizer.tokens(), "( 1 )") ||
         Token::simpleMatch(tokenizer.tokens(), "( 1 ||"))

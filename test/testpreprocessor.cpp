@@ -611,10 +611,10 @@ private:
             cfg["ABC"] = "";
 
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "defined(A)"));
-            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "!defined(A)"));
+            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "!defined(A)"));
 
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "!defined(ABC)&&!defined(DEF)"));
-            TODO_ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "!defined(A)&&!defined(B)"));
+            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "!defined(A)&&!defined(B)"));
         }
 
         {
