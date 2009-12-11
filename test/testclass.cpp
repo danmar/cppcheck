@@ -45,6 +45,7 @@ private:
         TEST_CASE(virtualDestructorTemplate);
 
         TEST_CASE(uninitVar1);
+        TEST_CASE(uninitVar2);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -394,6 +395,18 @@ private:
                        "C::C(FILE *fp) {\n"
                        "    C::fp = fp;\n"
                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar2()
+    {
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() { (*this).i = 0; }\n"
+                       "private:\n"
+                       "    int i;\n"
+                       "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

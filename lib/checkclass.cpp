@@ -241,11 +241,19 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             break;
         }
 
-        if (!Token::Match(ftok->next(), "%var%") && !Token::Match(ftok->next(), "this . %var%"))
+        if (!Token::Match(ftok->next(), "%var%") &&
+            !Token::Match(ftok->next(), "this . %var%") &&
+            !Token::Match(ftok->next(), "( * this ) . %var%"))
             continue;
 
         // Goto the first token in this statement..
         ftok = ftok->next();
+
+        // Skip "( * this )"
+        if (Token::simpleMatch(ftok, "( * this ) ."))
+        {
+            ftok = ftok->tokAt(5);
+        }
 
         // Skip "this->"
         if (Token::simpleMatch(ftok, "this ."))
