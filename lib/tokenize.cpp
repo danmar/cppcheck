@@ -3900,6 +3900,48 @@ bool Tokenizer::simplifyCalculations()
             tok->deleteNext();
             ret = true;
         }
+
+        if (Token::simpleMatch(tok->previous(), "( 0 ||") ||
+            Token::simpleMatch(tok, "|| 0 )") ||
+            Token::simpleMatch(tok->previous(), "( 1 &&") ||
+            Token::simpleMatch(tok, "&& 1 )"))
+        {
+            tok->deleteThis();
+            tok->deleteThis();
+        }
+
+        if (Token::Match(tok, "%num% ==|!=|<=|>=|<|> %num%") &&
+            MathLib::isInt(tok->str()) &&
+            MathLib::isInt(tok->tokAt(2)->str()))
+        {
+            const std::string prev(tok->previous() ? tok->strAt(-1) : "");
+            const std::string after(tok->tokAt(3) ? tok->strAt(3) : "");
+            if ((prev == "(" || prev == "&&" || prev == "||") && (after == ")" || after == "&&" || after == "||"))
+            {
+                const int op1(MathLib::toLongNumber(tok->str()));
+                const std::string &cmp(tok->next()->str());
+                const int op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
+
+                std::string result;
+
+                if (cmp == "==")
+                    result = (op1 == op2) ? "1" : "0";
+                else if (cmp == "!=")
+                    result = (op1 != op2) ? "1" : "0";
+                else if (cmp == "<=")
+                    result = (op1 <= op2) ? "1" : "0";
+                else if (cmp == ">=")
+                    result = (op1 >= op2) ? "1" : "0";
+                else if (cmp == "<")
+                    result = (op1 < op2) ? "1" : "0";
+                else if (cmp == ">")
+                    result = (op1 > op2) ? "1" : "0";
+
+                tok->str(result);
+                tok->deleteNext();
+                tok->deleteNext();
+            }
+        }
     }
     return ret;
 }

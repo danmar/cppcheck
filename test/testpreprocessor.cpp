@@ -596,6 +596,18 @@ private:
     {
         {
             std::map<std::string, std::string> cfg;
+            ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "A>1||defined(B)"));
+        }
+
+        {
+            std::map<std::string, std::string> cfg;
+            cfg["A"] = "";
+            cfg["B"] = "";
+            ASSERT_EQUALS(true, Preprocessor::match_cfg_def(cfg, "defined(A)&&defined(B)"));
+        }
+
+        {
+            std::map<std::string, std::string> cfg;
             cfg["ABC"] = "";
 
             ASSERT_EQUALS(false, Preprocessor::match_cfg_def(cfg, "defined(A)"));

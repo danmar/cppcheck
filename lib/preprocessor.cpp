@@ -593,8 +593,16 @@ std::string Preprocessor::getdef(std::string line, bool def)
         line.erase(0, line.find(" "));
 
     // Remove all spaces.
-    while (line.find(" ") != std::string::npos)
-        line.erase(line.find(" "), 1);
+    std::string::size_type pos = 0;
+    while ((pos = line.find(" ", pos)) != std::string::npos)
+    {
+        const char chprev = (pos > 0) ? line[pos-1] : 0;
+        const char chnext = (pos + 1 < line.length()) ? line[pos+1] : 0;
+        if (std::isalnum(chprev) && std::isalnum(chnext))
+            ++pos;
+        else
+            line.erase(pos, 1);
+    }
 
     // The remaining string is our result.
     return line;
@@ -870,12 +878,37 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition)
 {
     Tokenizer tokenizer;
-    std::istringstream istr(condition.c_str());
+    std::istringstream istr(("(" + condition + ")").c_str());
     tokenizer.tokenize(istr, "");
 
     // replace variable names with values..
     for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
     {
+        if (!tok->isName())
+            continue;
+
+        if (Token::Match(tok, "defined ( %var% )"))
+        {
+            if (variables.find(tok->strAt(2)) == variables.end())
+                tok->str("0");
+            else
+                tok->str("1");
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+            continue;
+        }
+
+        if (Token::Match(tok, "defined %var%"))
+        {
+            if (variables.find(tok->strAt(1)) == variables.end())
+                tok->str("0");
+            else
+                tok->str("1");
+            tok->deleteNext();
+            continue;
+        }
+
         const std::map<std::string, std::string>::const_iterator it = variables.find(tok->str());
         if (it != variables.end())
         {
@@ -889,27 +922,12 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
     // simplify calculations..
     tokenizer.simplifyCalculations();
 
-    if (!tokenizer.tokens()->tokAt(3) && Token::Match(tokenizer.tokens(), "%num% ==|!=|<=|>=|<|> %num%"))
-    {
-        const std::string &op1(tokenizer.tokens()->str());
-        const std::string &cmp(tokenizer.tokens()->tokAt(1)->str());
-        const std::string &op2(tokenizer.tokens()->tokAt(2)->str());
-        if (cmp == "==")
-            condition = (op1 == op2) ? "1" : "0";
-        else if (cmp == "!=")
-            condition = (op1 != op2) ? "1" : "0";
-        else if (cmp == "<=")
-            condition = (op1 <= op2) ? "1" : "0";
-        else if (cmp == ">=")
-            condition = (op1 >= op2) ? "1" : "0";
-        else if (cmp == "<")
-            condition = (op1 < op2) ? "1" : "0";
-        else if (cmp == ">")
-            condition = (op1 > op2) ? "1" : "0";
-    }
+    if (Token::simpleMatch(tokenizer.tokens(), "( 1 )") ||
+        Token::simpleMatch(tokenizer.tokens(), "( 1 ||"))
+        condition = "1";
+    else if (Token::simpleMatch(tokenizer.tokens(), "( 0 )"))
+        condition = "0";
 }
-
-
 
 bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, std::string def)
 {
@@ -921,67 +939,11 @@ bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, 
     if (cfg.find(def) != cfg.end())
         return true;
 
-    for (std::string::size_type pos = def.find("defined("); pos != std::string::npos; pos = def.find("defined(", pos + 1))
-    {
-        // The character before "defined" must not be '_' or alphanumeric
-        unsigned char chPrev = (pos > 0) ? def[pos-1] : ' ';
-        if (chPrev == '_' || std::isalnum(chPrev))
-            continue;
-
-        // Extract the parameter..
-        std::string::size_type pos2 = def.find(")", pos);
-        if (pos2 == std::string::npos)
-            continue;
-
-        std::string::size_type pos1 = pos + 8;
-        const std::string par(def.substr(pos1, pos2 - pos1));
-        const bool isdefined(cfg.find(par) != cfg.end());
-
-        def.erase(pos, pos2 + 1 - pos);
-        def.insert(pos, isdefined ? "1" : "0");
-    }
-
-    if (def.find("1||") != std::string::npos || def.find("||1") != std::string::npos)
-        return true;
-
-    while (def.find("1&&") != std::string::npos)
-    {
-        def.erase(def.find("1&&"), 3);
-    }
-
-    //std::cout << " => \"" << def << "\"" << std::endl;
-
     if (def == "0")
         return false;
 
     if (def == "1")
         return true;
-
-    /*
-        if (cfg.empty())
-            return false;
-
-        // remove the define values
-        while (cfg.find("=") != std::string::npos)
-        {
-            std::string::size_type pos1 = cfg.find("=");
-            std::string::size_type pos2 = cfg.find(";", pos1);
-            if (pos2 == std::string::npos)
-                cfg.erase(pos1);
-            else
-                cfg.erase(pos1, pos2 - pos1);
-        }
-
-        while (! cfg.empty())
-        {
-            if (cfg.find(";") == std::string::npos)
-                return bool(cfg == def);
-            std::string _cfg = cfg.substr(0, cfg.find(";"));
-            if (_cfg == def)
-                return true;
-            cfg.erase(0, cfg.find(";") + 1);
-        }
-    */
 
     return false;
 }
@@ -1116,15 +1078,15 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
         if (match && line.compare(0, 6, "#error") == 0)
             return "";
 
-        if (!match && line.find("#define") == 0)
+        if (!match && line.compare(0, 8, "#define ") == 0)
         {
             // Remove define that is not part of this configuration
             line = "";
         }
-        else if (line.find("#file \"") == 0 ||
-                 line.find("#endfile") == 0 ||
-                 line.find("#define") == 0 ||
-                 line.find("#undef") == 0)
+        else if (line.compare(0, 7, "#file \"") == 0 ||
+                 line.compare(0, 8, "#endfile") == 0 ||
+                 line.compare(0, 8, "#define ") == 0 ||
+                 line.compare(0, 6, "#undef") == 0)
         {
             // We must not remove #file tags or line numbers
             // are corrupted. File tags are removed by the tokenizer.
