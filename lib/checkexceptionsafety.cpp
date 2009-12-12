@@ -75,13 +75,6 @@ void CheckExceptionSafety::destructors()
 }
 
 
-static bool autodealloc(const Token * const C, const Token * const tokens)
-{
-    if (C->isStandardType())
-        return false;
-    return !Token::findmatch(tokens, ("class " + C->str() + " {").c_str());
-}
-
 void CheckExceptionSafety::unsafeNew()
 {
     if (!_settings->isEnabled("exceptNew"))
@@ -112,7 +105,7 @@ void CheckExceptionSafety::unsafeNew()
                     unsafeNewError(tok->previous(), varname);
                     break;
                 }
-                if (!autodealloc(tok->tokAt(2), _tokenizer->tokens()))
+                if (!_settings->isAutoDealloc(tok->strAt(2)))
                 {
                     varname = tok->strAt(-1);
                 }
@@ -159,7 +152,7 @@ void CheckExceptionSafety::unsafeNew()
                     unsafeNewError(tok, varname);
                     break;
                 }
-                if (!autodealloc(tok->tokAt(3), _tokenizer->tokens()))
+                if (!_settings->isAutoDealloc(tok->strAt(3)))
                     varname = tok->str();
             }
         }
@@ -176,7 +169,8 @@ void CheckExceptionSafety::unsafeNew()
             varname = "";
         }
 
-        if (Token::Match(tok, "[;{}] %type% * %var% ;"))
+        if (Token::Match(tok, "[;{}] %type% * %var% ;") &&
+            !_settings->isAutoDealloc(tok->strAt(1)))
         {
             tok = tok->tokAt(3);
             if (tok->varId())

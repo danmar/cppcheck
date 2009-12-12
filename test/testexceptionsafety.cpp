@@ -40,7 +40,7 @@ private:
         TEST_CASE(deallocThrow);
     }
 
-    void check(const std::string &code)
+    void check(const std::string &code, const std::string &autodealloc = "")
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -54,6 +54,8 @@ private:
         // Check char variable usage..
         Settings settings;
         settings.addEnabled("all");
+        std::istringstream istr2(autodealloc.c_str());
+        settings.autoDealloc(istr2);
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
         checkExceptionSafety.runSimplifiedChecks(&tokenizer, &settings, this);
     }
@@ -69,15 +71,13 @@ private:
 
     void newnew()
     {
-        const std::string AB("class A { }; class B { }; ");
-
-        check(AB + "C::C() : a(new A), b(new B) { }");
+        check("C::C() : a(new A), b(new B) { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) Upon exception there is memory leak: a\n", errout.str());
 
-        check("C::C() : a(new A), b(new B) { }");
+        check("C::C() : a(new A), b(new B) { }", "A\nB\n");
         ASSERT_EQUALS("", errout.str());
 
-        check(AB + "C::C()\n"
+        check("C::C()\n"
               "{\n"
               "    a = new A;\n"
               "    b = new B;\n"
@@ -105,6 +105,13 @@ private:
               "    A *a2 = new A;\n"
               "    delete a2;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void a()\n"
+              "{\n"
+              "    A *a = new A;\n"
+              "    B *b = new B;\n"
+              "}\n", "A\n");
         ASSERT_EQUALS("", errout.str());
     }
 
