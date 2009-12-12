@@ -41,6 +41,7 @@ private:
     {
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
+        TEST_CASE(tokenize3);
 
         TEST_CASE(minus);
 
@@ -232,6 +233,22 @@ private:
     {
         const std::string code("{ sizeof a, sizeof b }");
         ASSERT_EQUALS("{ sizeof a , sizeof b }", tokenizeAndStringify(code.c_str()));
+    }
+
+    void tokenize3()
+    {
+        errout.str("");
+        const std::string code("void foo()\n"
+                               "{\n"
+                               "    int i;\n"
+                               "    ABC(for(i=0;i<10;i++) x());\n"
+                               "}");
+        ASSERT_EQUALS("void foo ( )\n"
+                      "{\n"
+                      "int i ;\n"
+                      "ABC ( for ( i = 0 ; i < 10 ; i ++ ) x ( ) ) ;\n"
+                      "}", tokenizeAndStringify(code.c_str()));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void minus()
