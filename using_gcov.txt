@@ -1,9 +1,0 @@
-
-Update the Makefile.
-CXXFLAGS=-Wall -pedantic -g -fprofile-arcs -ftest-coverage
-
-make clean
-make test
-
-gcov --object-directory src/ src/checkmemoryleak.cpp
-
