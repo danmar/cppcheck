@@ -213,7 +213,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             Assign = false;
         }
 
-        if (ftok->str() == "}")
+        else if (ftok->str() == "}")
         {
             if (indentlevel <= 1)
                 break;
@@ -243,6 +243,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
 
         if (!Token::Match(ftok->next(), "%var%") &&
             !Token::Match(ftok->next(), "this . %var%") &&
+            !Token::Match(ftok->next(), "* %var% =") &&
             !Token::Match(ftok->next(), "( * this ) . %var%"))
             continue;
 
@@ -307,6 +308,12 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         else if (Token::Match(ftok, "%var% [ %any% ] ="))
         {
             initVar(varlist, ftok->strAt(0));
+        }
+
+        // Assignment of array item of member variable?
+        else if (Token::Match(ftok, "* %var% ="))
+        {
+            initVar(varlist, ftok->strAt(1));
         }
 
         // The functions 'clear' and 'Clear' are supposed to initialize variable.

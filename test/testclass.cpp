@@ -49,7 +49,8 @@ private:
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
-        TEST_CASE(uninitVarArray);
+        TEST_CASE(uninitVarArray1);
+        TEST_CASE(uninitVarArray2);
         TEST_CASE(uninitMissingFuncDef);// can't expand function in constructor
         TEST_CASE(privateCtor1);        // If constructor is private..
         TEST_CASE(privateCtor2);        // If constructor is private..
@@ -410,7 +411,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void uninitVarArray()
+    void uninitVarArray1()
     {
         checkUninitVar("class John\n"
                        "{\n"
@@ -468,6 +469,19 @@ private:
                        "    A *a[5];\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Member variable not initialized in the constructor 'John::a'\n", errout.str());
+    }
+
+    void uninitVarArray2()
+    {
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() { *name = 0; }\n"
+                       "\n"
+                       "private:\n"
+                       "    char name[255];\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitMissingFuncDef()
