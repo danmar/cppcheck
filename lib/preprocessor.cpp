@@ -858,17 +858,59 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     // cleanup unhandled configurations..
     for (std::list<std::string>::iterator it = ret.begin(); it != ret.end();)
     {
-        const std::string &s(*it);
-        if (s.find("&&") != std::string::npos || s.find("||") != std::string::npos)
+        const std::string s(*it + ";");
+
+        bool unhandled = false;
+
+        for (std::string::size_type pos = 0; pos < s.length(); ++pos)
+        {
+            const unsigned char c = s[pos];
+
+            // ok with ";"
+            if (c == ';')
+                continue;
+
+            // identifier..
+            if (std::isalpha(c) || c == '_')
+            {
+                while (std::isalnum(s[pos]) || s[pos] == '_')
+                    ++pos;
+                if (s[pos] == '=')
+                {
+                    ++pos;
+                    while (std::isdigit(s[pos]))
+                        ++pos;
+                    if (s[pos] != ';')
+                    {
+                        unhandled = true;
+                        break;
+                    }
+                }
+
+                --pos;
+                continue;
+            }
+
+            // not ok..
+            else
+            {
+                unhandled = true;
+                break;
+            }
+        }
+
+        if (unhandled)
         {
             // unhandled ifdef configuration..
             if (_errorLogger && _settings && _settings->_debug)
-                _errorLogger->reportOut("unhandled configuration: " + s);
+                _errorLogger->reportOut("unhandled configuration: " + *it);
 
             ret.erase(it++);
         }
         else
+        {
             ++it;
+        }
     }
 
     return ret;

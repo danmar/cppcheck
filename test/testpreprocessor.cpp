@@ -646,9 +646,9 @@ private:
         preprocessor.preprocess(istr, actual, "file.c");
 
         // Compare results..
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n\n\nB\n\n", actual[""]);
-        ASSERT_EQUALS("\nA\n\n\n\n", actual["LIBVER>100"]);
-        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        TODO_ASSERT_EQUALS("\nA\n\n\n\n", actual["LIBVER=101"]);
     }
 
     void if_cond2()
