@@ -705,7 +705,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                     varmap[varname] = value;
                 }
 
-                simplifyCondition(varmap, def);
+                simplifyCondition(varmap, def, false);
             }
 
             if (! deflist.empty() && line.find("#elif ") == 0)
@@ -917,7 +917,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 }
 
 
-void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition)
+void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition, bool match)
 {
     Tokenizer tokenizer;
     std::istringstream istr(("(" + condition + ")").c_str());
@@ -931,10 +931,12 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
         if (Token::Match(tok, "defined ( %var% )"))
         {
-            if (variables.find(tok->strAt(2)) == variables.end())
+            if (variables.find(tok->strAt(2)) != variables.end())
+                tok->str("1");
+            else if (match)
                 tok->str("0");
             else
-                tok->str("1");
+                continue;
             tok->deleteNext();
             tok->deleteNext();
             tok->deleteNext();
@@ -943,10 +945,12 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
 
         if (Token::Match(tok, "defined %var%"))
         {
-            if (variables.find(tok->strAt(1)) == variables.end())
+            if (variables.find(tok->strAt(1)) != variables.end())
+                tok->str("1");
+            else if (match)
                 tok->str("0");
             else
-                tok->str("1");
+                continue;
             tok->deleteNext();
             continue;
         }
@@ -990,7 +994,7 @@ bool Preprocessor::match_cfg_def(const std::map<std::string, std::string> &cfg, 
     //std::cout << "cfg: \"" << cfg << "\"  ";
     //std::cout << "def: \"" << def << "\"";
 
-    simplifyCondition(cfg, def);
+    simplifyCondition(cfg, def, true);
 
     if (cfg.find(def) != cfg.end())
         return true;

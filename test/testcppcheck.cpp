@@ -67,7 +67,8 @@ private:
         check(filedata);
 
         // Compare results..
-        ASSERT_EQUALS("[file.cpp:5]: (error) Dereferencing 'foo' after it is deallocated / released\n", errout.str());
+        ASSERT_EQUALS("Checking file.cpp...\n"
+                      "[file.cpp:5]: (error) Dereferencing 'foo' after it is deallocated / released\n", errout.str());
     }
 
     void linenumbers2()

@@ -180,9 +180,9 @@ size_t TestFixture::runTests(const char cmd[])
     return fails_counter;
 }
 
-void TestFixture::reportOut(const std::string & /*outmsg*/)
+void TestFixture::reportOut(const std::string & outmsg)
 {
-    // These can probably be ignored
+    errout << outmsg << std::endl;
 }
 
 void TestFixture::reportErr(const ErrorLogger::ErrorMessage &msg)
