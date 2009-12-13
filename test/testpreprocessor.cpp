@@ -1128,6 +1128,15 @@ private:
                                     "foo\n";
             ASSERT_EQUALS("\nfoo\n", OurPreprocessor::expandMacros(filedata));
         }
+
+        {
+            const char filedata[] =
+                "#define B(A1, A2) } while (0)\n"
+                "#define A(name) void foo##name() { do { B(1, 2); }\n"
+                "A(0)\n"
+                "A(1)\n";
+            TODO_ASSERT_EQUALS("\n\nvoid foo0(){do{}while(0);}\nvoid foo1(){do{}while(0);}\n", OurPreprocessor::expandMacros(filedata));
+        }
     }
 
     void macro_mismatch()
