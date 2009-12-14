@@ -62,6 +62,17 @@ SET(CHECK_UIS
   settings.ui
 )
 
+# Translation files
+SET(CHECK_TRANS
+  cppcheck_de.ts
+  cppcheck_fi.ts
+  cppcheck_pl.ts
+  cppcheck_se.ts
+  cppcheck_en.ts
+  cppcheck_nl.ts
+  cppcheck_ru.ts
+)
+
 SET(CHECK_RCCS gui.qrc)
 
 # Generate rules for building source files from the resources
@@ -73,11 +84,15 @@ QT4_WRAP_UI(CHECK_UIS_H ${CHECK_UIS})
 # Mock header files
 QT4_WRAP_CPP(CHECK_MOC_SRCS ${CHECK_HEADERS})
 
+# add translations ...
+QT4_ADD_TRANSLATION(CHECK_QM ${CHECK_TRANS})
+
 include_directories (${CPPCHECK_SOURCE_DIR}/lib)
 
 # Include binary directory where code from UI files gets created
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_EXECUTABLE(gui ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_UIS_H} ${CHECK_RCC_SRCS})
+ADD_EXECUTABLE(gui ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_UIS_H}
+  ${CHECK_RCC_SRCS} ${CHECK_QM})
 TARGET_LINK_LIBRARIES(gui checklib ${QT_LIBRARIES})
 
