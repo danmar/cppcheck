@@ -1,5 +1,8 @@
 # Minimal CMake build file
-# Builds static library from lib directory and commandline executable
+# Builds:
+# - static library from lib directory
+# - commandline executable
+# - test suite
 
 # To build with CMake:
 # - install CMake 2.6 or later
@@ -12,4 +15,5 @@ PROJECT(CPPCHECK)
 
 ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(cli)
+ADD_SUBDIRECTORY(test)
 
