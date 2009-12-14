@@ -14,6 +14,7 @@ HEADERS += $$PWD/check.h \
            $$PWD/classinfo.h \
            $$PWD/cppcheck.h \
            $$PWD/errorlogger.h \
+           $$PWD/executionpath.h \
            $$PWD/filelister.h \
            $$PWD/mathlib.h \
            $$PWD/preprocessor.h \
@@ -33,6 +34,7 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkunusedfunctions.cpp \
            $$PWD/cppcheck.cpp \
            $$PWD/errorlogger.cpp \
+           $$PWD/executionpath.cpp \
            $$PWD/filelister.cpp \
            $$PWD/mathlib.cpp \
            $$PWD/preprocessor.cpp \
