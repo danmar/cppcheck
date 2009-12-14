@@ -1884,8 +1884,31 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     if (macro->variadic() || macro->nopar() || !macro->params().empty())
                         ++pos2;
 
-                    limits[macro] = line.length() - pos2;
+                    // When A is expanded in the following code, the old limit for the
+                    // B needs to deleted, or it will not allow us to expand B,
+                    // which is inside the A.
+                    // #define B(x) (
+                    // #define A() B(xx)
+                    // B(1) A() ) )
+                    unsigned int macroEnd = line.length() - (pos1 + macrocode.length());
+                    for (std::map<const PreprocessorMacro *, unsigned int>::iterator iter = limits.begin();
+                         iter != limits.end();)
+                    {
+                        if (macroEnd < iter->second)
+                        {
+                            // We have gone past this limit, so just delete it
+                            limits.erase(iter++);
+                        }
+                        else
+                        {
+                            // We need to adjust this limit, because the
+                            // length of line will be changed
+                            iter->second += macrocode.length() - (pos2 - pos1);
+                            ++iter;
+                        }
+                    }
 
+                    limits[macro] = macroEnd;
                     line.erase(pos1, pos2 - pos1);
                     line.insert(pos1, macrocode);
                     pos = pos1;
