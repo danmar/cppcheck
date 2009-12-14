@@ -62,6 +62,11 @@ SET(CHECK_UIS
   settings.ui
 )
 
+SET(CHECK_RCCS gui.qrc)
+
+# Generate rules for building source files from the resources
+QT4_ADD_RESOURCES(CHECK_RCC_SRCS ${CHECK_RCCS})
+
 # Process UI files
 QT4_WRAP_UI(CHECK_UIS_H ${CHECK_UIS})
 
@@ -73,6 +78,6 @@ include_directories (${CPPCHECK_SOURCE_DIR}/lib)
 # Include binary directory where code from UI files gets created
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_EXECUTABLE(gui ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_UIS_H})
+ADD_EXECUTABLE(gui ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_UIS_H} ${CHECK_RCC_SRCS})
 TARGET_LINK_LIBRARIES(gui checklib ${QT_LIBRARIES})
 

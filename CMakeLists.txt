@@ -3,6 +3,7 @@
 # - static library from lib directory
 # - commandline executable
 # - test suite
+# - Qt GUI
 
 # To build with CMake:
 # - install CMake 2.6 or later
