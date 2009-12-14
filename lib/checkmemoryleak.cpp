@@ -2533,7 +2533,7 @@ public:
             CheckLocalLeaks *c = dynamic_cast<CheckLocalLeaks *>(*it);
             if (c)
             {
-                ostr << std::hex << (int)c << ": varId=" << c->varId << " allocated=" << (c->allocated ? "true" : "false") << std::endl;
+                ostr << std::hex << c << ": varId=" << c->varId << " allocated=" << (c->allocated ? "true" : "false") << std::endl;
             }
         }
         std::cout << ostr.str();
