@@ -20,6 +20,7 @@
 #include "checkmemoryleak.h"
 #include "mathlib.h"
 #include "tokenize.h"
+#include "executionpath.h"
 
 #include <algorithm>
 #include <cstring>
@@ -2512,4 +2513,170 @@ void CheckMemoryLeakStructMember::check()
 }
 
 
+
+
+
+class CheckLocalLeaks : public ExecutionPath
+{
+public:
+    // Startup constructor
+    CheckLocalLeaks(CheckMemoryLeak *c) : ExecutionPath(), ownerCheck(c), varId(0), allocated(false)
+    {
+    }
+
+    static void printOut(const std::list<ExecutionPath *> &checks)
+    {
+        std::ostringstream ostr;
+        ostr << "CheckLocalLeaks::printOut" << std::endl;
+        for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckLocalLeaks *c = dynamic_cast<CheckLocalLeaks *>(*it);
+            if (c)
+            {
+                ostr << std::hex << (int)c << ": varId=" << c->varId << " allocated=" << (c->allocated ? "true" : "false") << std::endl;
+            }
+        }
+        std::cout << ostr.str();
+    }
+
+private:
+    ExecutionPath *copy()
+    {
+        return new CheckLocalLeaks(*this);
+    }
+
+    /** start checking of given variable */
+    CheckLocalLeaks(CheckMemoryLeak *c, unsigned int v, const std::string &s) : ExecutionPath(), ownerCheck(c), varId(v), allocated(false), varname(s)
+    {
+    }
+
+    CheckMemoryLeak * const ownerCheck;
+    const unsigned int varId;
+    bool allocated;
+    const std::string varname;
+
+    /* no implementation */
+    void operator=(const CheckLocalLeaks &);
+
+    static void alloc(std::list<ExecutionPath *> &checks, const unsigned int varid)
+    {
+        if (varid == 0)
+            return;
+
+        std::list<ExecutionPath *>::iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckLocalLeaks *C = dynamic_cast<CheckLocalLeaks *>(*it);
+            if (C && C->varId == varid)
+                C->allocated = true;
+        }
+    }
+
+    static void dealloc(std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        if (tok->varId() == 0)
+            return;
+
+        std::list<ExecutionPath *>::iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckLocalLeaks *C = dynamic_cast<CheckLocalLeaks *>(*it);
+            if (C && C->varId == tok->varId())
+                C->allocated = false;
+        }
+    }
+
+    static void ret(const std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckLocalLeaks *C = dynamic_cast<CheckLocalLeaks *>(*it);
+            if (C && C->allocated)
+            {
+                C->ownerCheck->memleakError(tok, C->varname, false);
+            }
+        }
+    }
+
+    const Token *parse(const Token &tok, bool &, std::list<ExecutionPath *> &checks) const
+    {
+        //std::cout << "CheckLocalLeaks::parse " << tok.str() << std::endl;
+        //printOut(checks);
+
+        if (!Token::Match(tok.previous(), "[;{}]"))
+            return &tok;
+
+        if (Token::Match(&tok, "%type% * %var% ;"))
+        {
+            const Token * vartok = tok.tokAt(2);
+            if (vartok->varId() != 0)
+                checks.push_back(new CheckLocalLeaks(ownerCheck, vartok->varId(), vartok->str()));
+            return vartok->next();
+        }
+
+        if (Token::Match(&tok, "%var% = new"))
+        {
+            alloc(checks, tok.varId());
+
+            // goto end of statement
+            const Token *tok2 = &tok;
+            while (tok2 && tok2->str() != ";")
+                tok2 = tok2->next();
+            return tok2;
+        }
+
+        if (Token::Match(&tok, "delete %var% ;"))
+        {
+            dealloc(checks, tok.next());
+            return tok.tokAt(2);
+        }
+
+        if (Token::Match(&tok, "delete [ ] %var% ;"))
+        {
+            dealloc(checks, tok.tokAt(3));
+            return tok.tokAt(4);
+        }
+
+        if (tok.str() == "return")
+        {
+            ret(checks, &tok);
+        }
+
+        return &tok;
+    }
+};
+
+
+void CheckMemoryLeakInFunction::localleaks()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() != ")")
+            continue;
+
+        // Start of implementation..
+        if (Token::Match(tok, ") const| {"))
+        {
+            // goto the "{"
+            tok = tok->next();
+            if (tok->str() == "const")
+                tok = tok->next();
+
+            // Check this scope..
+            std::list<ExecutionPath *> checks;
+            checks.push_back(new CheckLocalLeaks(this));
+            checkExecutionPaths(tok->next(), checks);
+            while (!checks.empty())
+            {
+                delete checks.back();
+                checks.pop_back();
+            }
+
+            // skip this scope - it has been checked
+            tok = tok->link();
+        }
+    }
+
+}
 

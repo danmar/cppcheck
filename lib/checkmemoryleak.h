@@ -161,6 +161,8 @@ public:
 
     void check();
 
+    void localleaks();
+
 #ifndef _MSC_VER
 private:
 #endif

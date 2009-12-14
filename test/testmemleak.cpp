@@ -29,6 +29,63 @@
 extern std::ostringstream errout;
 
 
+class TestLocalLeaks : private TestFixture
+{
+public:
+    TestLocalLeaks() : TestFixture("TestLocalLeaks")
+    { }
+
+private:
+    void run()
+    {
+        TEST_CASE(test1);
+        TEST_CASE(test2);
+    }
+
+    void check(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for memory leaks..
+        Settings settings;
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
+        checkMemoryLeak.localleaks();
+    }
+
+    void test1()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *p = new char[100];\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void test2()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *p = new char[100];\n"
+              "    delete [] p;\n"
+              "    return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+};
+
+static TestLocalLeaks testLocalLeaks;
+
+
+
 class TestMemleak : private TestFixture
 {
 public:

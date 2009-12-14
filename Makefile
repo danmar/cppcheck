@@ -22,6 +22,7 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/checkunusedfunctions.o \
               lib/cppcheck.o \
               lib/errorlogger.o \
+              lib/executionpath.o \
               lib/filelister.o \
               lib/mathlib.o \
               lib/preprocessor.o \
@@ -109,10 +110,10 @@ lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafet
 lib/checkheaders.o: lib/checkheaders.cpp lib/checkheaders.h lib/tokenize.h lib/classinfo.h lib/token.h lib/errorlogger.h lib/settings.h lib/filelister.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkheaders.o lib/checkheaders.cpp
 
-lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h
+lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkmemoryleak.o lib/checkmemoryleak.cpp
 
-lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h
+lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkother.o lib/checkother.cpp
 
 lib/checkstl.o: lib/checkstl.cpp lib/checkstl.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
@@ -126,6 +127,9 @@ lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h
 
 lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/errorlogger.o lib/errorlogger.cpp
+
+lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/executionpath.o lib/executionpath.cpp
 
 lib/filelister.o: lib/filelister.cpp lib/filelister.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/filelister.o lib/filelister.cpp
