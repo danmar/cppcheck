@@ -3848,10 +3848,10 @@ bool Tokenizer::simplifyCalculations()
         }
 
         // (1-2)
-        if (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]") ||
-            Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/]") ||
-            Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<") ||
-            Token::Match(tok, "<< %num% [+-*/] %num% <<"))
+        while (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]") ||
+               Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/]") ||
+               Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<") ||
+               Token::Match(tok, "<< %num% [+-*/] %num% <<"))
         {
             tok = tok->next();
 
@@ -3877,7 +3877,7 @@ bool Tokenizer::simplifyCalculations()
             // instead of ((2 + 2) - (2 - 2)) = 4
             if (Token::Match(tok->next(), "[+-*/]"))
             {
-                tok = tok->tokAt(-2);
+                tok = tok->previous();
                 continue;
             }
 
