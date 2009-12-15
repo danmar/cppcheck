@@ -65,7 +65,6 @@ private:
         check("void foo()\n"
               "{\n"
               "    char *p = new char[100];\n"
-              "    return;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
     }
@@ -76,7 +75,6 @@ private:
               "{\n"
               "    char *p = new char[100];\n"
               "    delete [] p;\n"
-              "    return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

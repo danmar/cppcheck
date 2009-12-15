@@ -2586,7 +2586,7 @@ private:
         }
     }
 
-    static void ret(const std::list<ExecutionPath *> &checks, const Token *tok)
+    static void ret(const std::list<ExecutionPath *> &checks, const Token *tok, bool &foundError)
     {
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
@@ -2595,11 +2595,12 @@ private:
             if (C && C->allocated)
             {
                 C->ownerCheck->memleakError(tok, C->varname, false);
+                foundError = true;
             }
         }
     }
 
-    const Token *parse(const Token &tok, bool &, std::list<ExecutionPath *> &checks) const
+    const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
     {
         //std::cout << "CheckLocalLeaks::parse " << tok.str() << std::endl;
         //printOut(checks);
@@ -2640,10 +2641,18 @@ private:
 
         if (tok.str() == "return")
         {
-            ret(checks, &tok);
+            ret(checks, &tok, foundError);
         }
 
         return &tok;
+    }
+
+public:
+    /** going out of scope - all execution paths end */
+    static void end(const std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        bool foundError = false;
+        ret(checks, tok, foundError);
     }
 };
 
@@ -2667,6 +2676,7 @@ void CheckMemoryLeakInFunction::localleaks()
             std::list<ExecutionPath *> checks;
             checks.push_back(new CheckLocalLeaks(this));
             checkExecutionPaths(tok->next(), checks);
+            CheckLocalLeaks::end(checks, tok->link());
             while (!checks.empty())
             {
                 delete checks.back();
