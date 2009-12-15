@@ -1335,6 +1335,12 @@ private:
 
             if (Token::simpleMatch(tok.previous(), "="))
             {
+                if (Token::Match(tok.tokAt(-3), "& %var% ="))
+                {
+                    bailOut(checks);
+                    return &tok;
+                }
+
                 if (!Token::Match(tok.tokAt(-3), ". %var% ="))
                 {
                     if (!Token::Match(tok.tokAt(-3), "[;{}] %var% ="))

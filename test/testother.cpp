@@ -1258,6 +1258,16 @@ private:
                        "    } = { 0, 0 };\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // references..
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    int a;\n"
+                       "    int &b = a;\n"
+                       "    b = 0;\n"
+                       "    int x = a;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
