@@ -161,6 +161,8 @@ class CppCheckHandler(XmlContentHandler):
         if name != "error":
             return
 
+        if attributes["file"] == "":
+            sys.stderr.write("ERROR: cppcheck error reported without a file name.\n")
         self.errors.append(
             {
                 "file" : attributes["file"],
@@ -233,6 +235,9 @@ if __name__ == '__main__':
             lines.append(error["line"])
 
         source_file = os.path.join(source_dir, filename)
+        if not os.path.isfile(source_file):
+            sys.stderr.write("ERROR: Source file '%s' not found.\n" % source_file)
+            continue
         stream = file(source_file)
         content = stream.read()
         stream.close()
