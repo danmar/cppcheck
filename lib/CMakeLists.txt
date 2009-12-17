@@ -15,6 +15,7 @@ SET(CHECKLIB_SRCS
   checkunusedfunctions.cpp
   cppcheck.cpp
   errorlogger.cpp
+  executionpath.cpp
   filelister.cpp
   mathlib.cpp
   preprocessor.cpp
