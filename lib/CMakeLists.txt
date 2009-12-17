@@ -4,22 +4,22 @@
 
 SET(CHECKLIB_SRCS
   checkautovariables.cpp
-  checkmemoryleak.cpp
-  filelister.cpp
   checkbufferoverrun.cpp
-  checkother.cpp
-  mathlib.cpp
   checkclass.cpp
-  checkstl.cpp
-  preprocessor.cpp
   checkdangerousfunctions.cpp
-  checkunusedfunctions.cpp
-  settings.cpp
   checkexceptionsafety.cpp
-  cppcheck.cpp
-  token.cpp
   checkheaders.cpp
+  checkmemoryleak.cpp
+  checkother.cpp
+  checkstl.cpp
+  checkunusedfunctions.cpp
+  cppcheck.cpp
   errorlogger.cpp
+  filelister.cpp
+  mathlib.cpp
+  preprocessor.cpp
+  settings.cpp
+  token.cpp
   tokenize.cpp
 )
 
