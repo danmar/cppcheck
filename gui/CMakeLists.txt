@@ -75,6 +75,18 @@ SET(CHECK_TRANS
 
 SET(CHECK_RCCS gui.qrc)
 
+# Windows needs additional shlwapi library
+if (WIN32 AND NOT CYGWIN)
+set(CHECK_LIBS
+  checklib
+  shlwapi
+)
+else (WIN32 AND NOT CYGWIN)
+set(CHECK_LIBS
+  checklib
+)
+endif (WIN32 AND NOT CYGWIN)
+
 # Generate rules for building source files from the resources
 QT4_ADD_RESOURCES(CHECK_RCC_SRCS ${CHECK_RCCS})
 
@@ -94,5 +106,5 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_EXECUTABLE(gui ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_UIS_H}
   ${CHECK_RCC_SRCS} ${CHECK_QM})
-TARGET_LINK_LIBRARIES(gui checklib ${QT_LIBRARIES})
+TARGET_LINK_LIBRARIES(gui ${CHECK_LIBS} ${QT_LIBRARIES})
 

@@ -28,7 +28,19 @@ SET(CHECKTEST_SRCS
   testmathlib.cpp
 )
 
+# Windows needs additional shlwapi library
+if (WIN32 AND NOT CYGWIN)
+set(CHECK_LIBS
+  checklib
+  shlwapi
+)
+else (WIN32 AND NOT CYGWIN)
+set(CHECK_LIBS
+  checklib
+)
+endif (WIN32 AND NOT CYGWIN)
+
 include_directories (${CPPCHECK_SOURCE_DIR}/lib)
 ADD_EXECUTABLE(test ${CHECKTEST_SRCS})
-TARGET_LINK_LIBRARIES(test checklib)
+TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
 
