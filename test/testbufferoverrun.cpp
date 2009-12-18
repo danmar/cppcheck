@@ -54,6 +54,7 @@ private:
         // Check for buffer overruns..
         Settings settings;
         settings._showAll = showAll;
+        settings._checkCodingStyle = true;
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();
     }
@@ -137,6 +138,9 @@ private:
         TEST_CASE(counter_test);
         TEST_CASE(strncpy1);
         TEST_CASE(unknownType);
+
+        TEST_CASE(terminateStrncpy1);
+        TEST_CASE(terminateStrncpy2);
     }
 
 
@@ -1448,6 +1452,39 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void terminateStrncpy1()
+    {
+         check("void foo ( char *bar )\n"
+             "{\n"
+              "    char baz[100];\n"
+              "    strncpy(baz, bar, sizeof(baz));\n"
+              "    strncpy(baz, bar, sizeof(baz));\n"
+              "    baz[99] = 0;\n"
+              "    strncpy(baz, bar, sizeof(baz));\n"
+              "    baz[sizeof(baz)-1] = 0;\n"
+              "    strncpy(baz, bar, sizeof(baz));\n"
+              "    *(baz + 99) = 0;\n"
+              "    strncpy(baz, bar, sizeof(baz));\n"
+              "    bar[99] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) After a strncpy() the buffer should be zero-terminated\n", errout.str());
+    }
+
+    void terminateStrncpy2()
+    {
+         check("char *foo ( char *bar )\n"
+             "{\n"
+              "    char baz[100];\n"
+              "    strncpy(baz, bar, sizeof(baz));\n"
+              "    bar[99] = 0;\n"
+              "    return baz;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) After a strncpy() the buffer should be zero-terminated\n", errout.str());
+    }
+
+
+
 };
 
 REGISTER_TEST(TestBufferOverrun)

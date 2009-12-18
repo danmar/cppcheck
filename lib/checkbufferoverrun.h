@@ -86,6 +86,7 @@ private:
     void strncatUsage(const Token *tok);
     void outOfBounds(const Token *tok, const std::string &what);
     void sizeArgumentAsChar(const Token *tok);
+    void terminateStrncpyError(const Token *tok);
 
     void getErrorMessages()
     {

@@ -120,6 +120,13 @@ void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
     reportError(tok, Severity::possibleError, "sizeArgumentAsChar", "The size argument is given as a char constant");
 }
 
+
+void CheckBufferOverrun::terminateStrncpyError(const Token *tok)
+{
+    reportError(tok, Severity::style, "terminateStrncpy", "After a strncpy() the buffer should be zero-terminated");
+}
+
+
 //---------------------------------------------------------------------------
 
 
@@ -213,6 +220,35 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid > 0)
         {
+            if (_settings->_checkCodingStyle)
+            {
+                // check for strncpy which is not terminated
+                if (Token::Match(tok, "strncpy ( %varid% , %any% , %any% )", varid))
+                {
+                    const Token *tokSz = tok->tokAt(6);
+                    if (tokSz->isNumber())
+                    {
+                        // strncpy takes entire variable length as input size
+                        const char *num  = tok->strAt(6);
+                        if (std::atoi(num) == total_size)
+                        {
+                            const Token *tok2 = tok->next()->link()->next()->next();
+                            for (; tok2; tok2 = tok2->next())
+                            {
+                                if (Token::Match(tok2, "%varid%", tok->tokAt(2)->varId()))
+                                {
+                                    if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
+                                    {
+                                        terminateStrncpyError(tok);
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", varid) ||
                 Token::Match(tok, "memset|memcpy|memmove|memcmp|fgets ( %var% , %varid% , %any% )", varid))
             {
