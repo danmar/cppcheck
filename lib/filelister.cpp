@@ -24,15 +24,14 @@
 #include <cctype>
 #include <algorithm>
 
-#if defined(__GNUC__) && !defined(__MINGW32__)
-#include <glob.h>
-#include <unistd.h>
-#endif
-#if defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(_WIN32)
 #include <windows.h>
 #ifndef __BORLANDC__
 #include <shlwapi.h>
 #endif
+#else // POSIX-style system
+#include <glob.h>
+#include <unistd.h>
 #endif
 
 std::string FileLister::simplifyPath(const char *originalPath)
@@ -112,50 +111,12 @@ bool FileLister::acceptFile(const std::string &filename)
     return false;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-////// This code is for __GNUC__ only /////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-#if defined(__GNUC__) && !defined(__MINGW32__)
-// gcc / cygwin..
-void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
-{
-    std::ostringstream oss;
-    oss << path;
-    if (path.length() > 0 && path[path.length()-1] == '/')
-        oss << "*";
-
-    glob_t glob_results;
-    glob(oss.str().c_str(), GLOB_MARK, 0, &glob_results);
-    for (unsigned int i = 0; i < glob_results.gl_pathc; i++)
-    {
-        std::string filename = glob_results.gl_pathv[i];
-        if (filename == "." || filename == ".." || filename.length() == 0)
-            continue;
-
-        if (filename[filename.length()-1] != '/')
-        {
-            // File
-
-            // If recursive is not used, accept all files given by user
-            if (!recursive || FileLister::acceptFile(filename))
-                filenames.push_back(filename);
-        }
-        else if (recursive)
-        {
-            // Directory
-            FileLister::recursiveAddFiles(filenames, filename, recursive);
-        }
-    }
-    globfree(&glob_results);
-}
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
-////// This code is for Borland C++ and Visual C++ ////////////////////////////
+////// This code is for Microsoft Windows /////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if (defined(__BORLANDC__) || defined(_MSC_VER) || defined(__MINGW32__))
+#if defined(_WIN32)
 
 // Here is the catch: cppcheck core is Ansi code (using char type).
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
@@ -302,6 +263,43 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const st
     }
 }
 
+#else // other than _WIN32
+
+///////////////////////////////////////////////////////////////////////////////
+////// This code is POSIX-style systems ///////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
+{
+    std::ostringstream oss;
+    oss << path;
+    if (path.length() > 0 && path[path.length()-1] == '/')
+        oss << "*";
+
+    glob_t glob_results;
+    glob(oss.str().c_str(), GLOB_MARK, 0, &glob_results);
+    for (unsigned int i = 0; i < glob_results.gl_pathc; i++)
+    {
+        std::string filename = glob_results.gl_pathv[i];
+        if (filename == "." || filename == ".." || filename.length() == 0)
+            continue;
+
+        if (filename[filename.length()-1] != '/')
+        {
+            // File
+
+            // If recursive is not used, accept all files given by user
+            if (!recursive || FileLister::acceptFile(filename))
+                filenames.push_back(filename);
+        }
+        else if (recursive)
+        {
+            // Directory
+            FileLister::recursiveAddFiles(filenames, filename, recursive);
+        }
+    }
+    globfree(&glob_results);
+}
 #endif
 
 //---------------------------------------------------------------------------
