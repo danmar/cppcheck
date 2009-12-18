@@ -148,6 +148,8 @@
 			<File
 				RelativePath="..\lib\errorlogger.cpp"/>
 			<File
+				RelativePath="..\lib\executionpath.cpp"/>
+			<File
 				RelativePath="..\lib\filelister.cpp"/>
 			<File
 				RelativePath="..\lib\mathlib.cpp"/>
@@ -242,6 +244,8 @@
 				RelativePath="..\lib\cppcheck.h"/>
 			<File
 				RelativePath="..\lib\errorlogger.h"/>
+			<File
+				RelativePath="..\lib\executionpath.h"/>
 			<File
 				RelativePath="..\lib\filelister.h"/>
 			<File

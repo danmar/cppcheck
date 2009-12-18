@@ -81,7 +81,7 @@
 				GeneratePreprocessedFile="0"
 				ObjectFile="temp\"
 				Optimization ="2"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG"
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG,NDEBUG"
 				ProgramDataBaseFileName=".\"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
@@ -115,7 +115,7 @@
 				Name="VCPreLinkEventTool"/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT"/>
+				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG"/>
 		</Configuration>
 	</Configurations>
 	<Files>
@@ -149,6 +149,8 @@
 				RelativePath="cppcheckexecutor.cpp"/>
 			<File
 				RelativePath="..\lib\errorlogger.cpp"/>
+			<File
+				RelativePath="..\lib\executionpath.cpp"/>
 			<File
 				RelativePath="..\lib\filelister.cpp"/>
 			<File
@@ -200,6 +202,8 @@
 				RelativePath="cppcheckexecutor.cpp"/>
 			<File
 				RelativePath="..\lib\errorlogger.h"/>
+			<File
+				RelativePath="..\lib\executionpath.h"/>
 			<File
 				RelativePath="..\lib\filelister.h"/>
 			<File
