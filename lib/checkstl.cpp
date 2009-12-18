@@ -220,7 +220,7 @@ void CheckStl::eraseCheckLoop(const Token *it)
         return;
 
     // Parse loop..
-    // Error if it contains "erase(it)" but neither "break;" nor "it="
+    // Error if it contains "erase(it)" but neither "break;", "=it" nor "it="
     indentlevel = 0;
     const Token *tok2 = 0;
     while (0 != (tok = tok->next()))
@@ -233,7 +233,9 @@ void CheckStl::eraseCheckLoop(const Token *it)
             if (indentlevel <= 0)
                 break;
         }
-        else if (Token::Match(tok, "break|return|goto") || Token::simpleMatch(tok, (it->str() + " =").c_str()))
+        else if (Token::Match(tok, "break|return|goto") ||
+                 Token::simpleMatch(tok, (it->str() + " =").c_str()) ||
+                 Token::simpleMatch(tok, ("= " + it->str()).c_str()))
         {
             tok2 = 0;
             break;

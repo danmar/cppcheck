@@ -46,6 +46,7 @@ private:
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
         TEST_CASE(erase);
+        TEST_CASE(erase2);
         TEST_CASE(eraseBreak);
         TEST_CASE(eraseReturn);
         TEST_CASE(eraseGoto);
@@ -287,6 +288,20 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+    }
+
+    void erase2()
+    {
+        check("static void f()\n"
+              "{\n"
+              "    for (it = foo.begin(); it != foo.end(); it = next)\n"
+              "    {\n"
+              "        next = it;\n"
+              "        next++;\n"
+              "        foo.erase(it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void eraseBreak()
