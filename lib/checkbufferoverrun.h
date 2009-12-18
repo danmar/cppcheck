@@ -96,6 +96,7 @@ private:
         strncatUsage(0);
         outOfBounds(0, "index");
         sizeArgumentAsChar(0);
+        terminateStrncpyError(0);
     }
 
     std::string name() const
