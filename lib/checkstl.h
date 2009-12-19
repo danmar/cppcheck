@@ -54,6 +54,7 @@ public:
         checkStl.pushback();
         checkStl.stlBoundries();
         checkStl.find();
+        checkStl.size();
     }
 
 
@@ -96,6 +97,12 @@ public:
     /** usage of std::find */
     void find();
 
+    /**
+     * Suggest using empty() instead of checking size() against zero for containers.
+     * Item 4 from Scott Meyers book "Effective STL".
+     */
+    void size();
+
 private:
 
     /**
@@ -113,6 +120,7 @@ private:
     void invalidPointerError(const Token *tok, const std::string &pointer_name);
     void stlBoundriesError(const Token *tok, const std::string &container_name);
     void findError(const Token *tok);
+    void sizeError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -125,6 +133,7 @@ private:
         invalidPointerError(0, "pointer");
         stlBoundriesError(0, "container");
         findError(0);
+        sizeError(0);
     }
 
     std::string name() const
@@ -142,6 +151,8 @@ private:
                " * for vectors: using iterator/pointer after push_back has been used\n"
                " * dangerous usage of find";
     }
+
+    bool isStlContainer(const Token *tok);
 };
 /// @}
 //---------------------------------------------------------------------------
