@@ -6,6 +6,14 @@ SET(CHECKCLI_SRCS
   main.cpp
 )
 
+# Add Windows resource file
+if (WIN32)
+  SET(CHECKCLI_SRCS
+    ${CHECKCLI_SRCS}
+    cppcheck.rc
+  )
+endif (WIN32)
+
 # Libraries to link
 set(CHECK_LIBS
   checklib

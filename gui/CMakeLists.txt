@@ -52,6 +52,14 @@ SET(CHECKGUI_SRCS
   xmlreport.cpp
 )
 
+# Add Windows resource file
+if (WIN32)
+  SET(CHECKGUI_SRCS
+    ${CHECKGUI_SRCS}
+    cppcheck-gui.rc
+  )
+endif (WIN32)
+
 # UI files
 SET(CHECK_UIS
   about.ui
