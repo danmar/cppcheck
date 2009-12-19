@@ -1,5 +1,5 @@
 // Include command line program's resource file containing version info etc.
-#include "..\src\cppcheck.rc"
+#include "..\cli\cppcheck.rc"
 
 // GUI Icon
 IDI_ICON1               ICON    DISCARDABLE     "cppcheck.ico"
