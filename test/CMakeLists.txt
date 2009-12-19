@@ -28,15 +28,16 @@ SET(CHECKTEST_SRCS
   testmathlib.cpp
 )
 
+# Libraries to link
+set(CHECK_LIBS
+  checklib
+)
+
 # Windows needs additional shlwapi library
 if (WIN32 AND NOT CYGWIN)
 set(CHECK_LIBS
-  checklib
+  ${CHECK_LIBS}
   shlwapi
-)
-else (WIN32 AND NOT CYGWIN)
-set(CHECK_LIBS
-  checklib
 )
 endif (WIN32 AND NOT CYGWIN)
 
