@@ -530,3 +530,75 @@ void CheckStl::findError(const Token *tok)
 {
     reportError(tok, Severity::error, "stlfind", "dangerous usage of find result");
 }
+
+bool CheckStl::isStlContainer(const Token *tok)
+{
+    // check if this token is defined
+    if (tok->varId())
+    {
+        // find where this token is defined
+        const Token *type = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->varId());
+
+        // find where this tokens type starts
+        while (type->previous() && !Token::Match(type->previous(), "[;{]"))
+            type = type->previous();
+
+        // discard namespace if supplied
+        if (Token::Match(type, "std ::"))
+            type = type->next()->next();
+
+        // all possible stl containers
+        static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
+
+        // container template string
+        const std::string checkStr = (std::string(STL_CONTAINER_LIST) + " <");
+
+        // check if it's an stl template
+        if (Token::Match(type, checkStr.c_str()))
+            return true;
+    }
+
+    return false;
+}
+
+void CheckStl::size()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var% . size ( )"))
+        {
+            if (Token::Match(tok->tokAt(5), "==|!=|> 0"))
+            {
+                if (isStlContainer(tok))
+                    sizeError(tok);
+            }
+            else if ((tok->tokAt(5)->str() == ")" ||
+                      tok->tokAt(5)->str() == "&&" ||
+                      tok->tokAt(5)->str() == "||" ||
+                      tok->tokAt(5)->str() == "!" ) &&
+                     (tok->tokAt(-1)->str() == "(" ||
+                      tok->tokAt(-1)->str() == "&&" ||
+                      tok->tokAt(-1)->str() == "||" ||
+                      tok->tokAt(-1)->str() == "!"))
+            {
+                if (tok->tokAt(-1)->str() == "(" &&
+                    tok->tokAt(5)->str() == ")")
+                {
+                    // check for passing size to function call
+                    if (Token::Match(tok->tokAt(-2), "if|while"))
+                    {
+                        if (isStlContainer(tok))
+                            sizeError(tok);
+                    }
+                }
+                else if (isStlContainer(tok))
+                    sizeError(tok);
+            }
+        }
+    }
+}
+
+void CheckStl::sizeError(const Token *tok)
+{
+    reportError(tok, Severity::possibleStyle, "stlSize", "Replace size() check against 0 with empty(): " + tok->str());
+}

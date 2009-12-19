@@ -73,6 +73,8 @@ private:
 
         // find
         TEST_CASE(find1);
+
+        TEST_CASE(size1);
     }
 
     void check(const std::string &code)
@@ -629,6 +631,44 @@ private:
               "{\n"
               "    std::vector<int>::iterator it = std::find(ints.begin(), ints.end(), 33);\n"
               "    *it = 11;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void size1()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (x.size() == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Replace size() check against 0 with empty(): x\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (x.size() != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Replace size() check against 0 with empty(): x\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (x.size() > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Replace size() check against 0 with empty(): x\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    if (x.size()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Replace size() check against 0 with empty(): x\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int> x;\n"
+              "    fun(x.size());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
