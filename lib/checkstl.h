@@ -149,7 +149,8 @@ private:
                " * mismatching containers in calls\n"
                " * dereferencing an erased iterator\n"
                " * for vectors: using iterator/pointer after push_back has been used\n"
-               " * dangerous usage of find";
+               " * dangerous usage of find\n"
+               " * optimisation: using empty() instead of size()";
     }
 
     bool isStlContainer(const Token *tok);
