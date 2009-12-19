@@ -46,6 +46,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
     // Get variable list..
     Var *varlist = NULL;
     unsigned int indentlevel = 0;
+    bool priv = true;
     for (const Token *tok = tok1; tok; tok = tok->next())
     {
         if (!tok->next())
@@ -65,6 +66,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
 
         if (tok->str() == "__published:")
         {
+            priv = false;
             for (; tok; tok = tok->next())
             {
                 if (tok->str() == "{")
@@ -86,6 +88,9 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
 
         // "private:" "public:" "protected:" etc
         const bool b((*tok->strAt(0) != ':') && strchr(tok->strAt(0), ':') != 0);
+
+        if (b)
+            priv = bool(tok->str() == "private:");
 
         // Search for start of statement..
         if (! Token::Match(tok, "[;{}]") && ! b)
@@ -162,8 +167,8 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
         // If the varname was set in one of the two if-block above, create a entry for this variable..
         if (varname)
         {
-            Var *var = new Var(varname, false, varlist);
-            varlist   = var;
+            Var *var = new Var(varname, false, priv, varlist);
+            varlist  = var;
         }
     }
 
@@ -401,14 +406,21 @@ void CheckClass::constructors()
         if (! constructor_token)
         {
             // If "--style" has been given, give a warning
-            if (ErrorLogger::noConstructor(*_settings))
+            if (_settings->_checkCodingStyle)
             {
-                // If the class has member variables there should be an constructor
+                // Get class variables...
                 Var *varlist = getVarList(tok1, false);
-                if (varlist)
+
+                // If there is a private variable, there should be a constructor..
+                for (const struct Var *var = varlist; var; var = var->next)
                 {
-                    noConstructorError(tok1, classNameToken->str());
+                    if (var->priv)
+                    {
+                        noConstructorError(tok1, classNameToken->str());
+                        break;
+                    }
                 }
+
                 // Delete the varlist..
                 while (varlist)
                 {

@@ -86,15 +86,17 @@ private:
     class Var
     {
     public:
-        Var(const char *name = 0, bool init = false, Var *next = 0)
+        Var(const char *name = 0, bool init = false, bool priv = false, Var *next = 0)
         {
             this->name = name;
             this->init = init;
+            this->priv = priv;
             this->next = next;
         }
 
         const char *name;
         bool        init;
+        bool        priv;
         Var *next;
     };
 

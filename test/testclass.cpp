@@ -62,6 +62,8 @@ private:
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
+        TEST_CASE(noConstructor3);
+        TEST_CASE(noConstructor4);
 
         TEST_CASE(operatorEq1);
         TEST_CASE(memsetOnStruct);
@@ -703,8 +705,18 @@ private:
     {
         checkNoConstructor("class Fred\n"
                            "{\n"
-                           "public:\n"
+                           "private:\n"
                            "    static int foobar;\n"
+                           "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor4()
+    {
+        checkNoConstructor("class Fred\n"
+                           "{\n"
+                           "public:\n"
+                           "    int foobar;\n"
                            "};\n");
         ASSERT_EQUALS("", errout.str());
     }
