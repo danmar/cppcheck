@@ -8,6 +8,10 @@ set(QT_USE_QTMAIN TRUE)
 set(QT_USE_QTXML TRUE)
 include(${QT_USE_FILE})
 
+include_directories (${CPPCHECK_SOURCE_DIR}/lib)
+# Generated files (in build directory) need to know gui directory
+include_directories (${CPPCHECK_SOURCE_DIR}/gui)
+
 # Header files - listed for mocking
 SET(CHECK_HEADERS
   aboutdialog.h
@@ -108,7 +112,6 @@ QT4_WRAP_CPP(CHECK_MOC_SRCS ${CHECK_HEADERS})
 # add translations ...
 QT4_ADD_TRANSLATION(CHECK_QM ${CHECK_TRANS})
 
-include_directories (${CPPCHECK_SOURCE_DIR}/lib)
 
 # Include binary directory where code from UI files gets created
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
