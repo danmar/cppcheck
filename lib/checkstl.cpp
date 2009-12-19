@@ -600,5 +600,5 @@ void CheckStl::size()
 
 void CheckStl::sizeError(const Token *tok)
 {
-    reportError(tok, Severity::possibleStyle, "stlSize", "Replace size() check against 0 with empty(): " + tok->str());
+    reportError(tok, Severity::possibleStyle, "stlSize", "Replace size() check against 0 with empty(): " + (tok ? tok->str() : std::string("variable name")));
 }
