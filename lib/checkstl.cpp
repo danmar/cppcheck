@@ -575,7 +575,7 @@ void CheckStl::size()
             else if ((tok->tokAt(5)->str() == ")" ||
                       tok->tokAt(5)->str() == "&&" ||
                       tok->tokAt(5)->str() == "||" ||
-                      tok->tokAt(5)->str() == "!" ) &&
+                      tok->tokAt(5)->str() == "!") &&
                      (tok->tokAt(-1)->str() == "(" ||
                       tok->tokAt(-1)->str() == "&&" ||
                       tok->tokAt(-1)->str() == "||" ||

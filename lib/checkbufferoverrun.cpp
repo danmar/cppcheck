@@ -240,7 +240,9 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                                     if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
                                     {
                                         terminateStrncpyError(tok);
-                                    } else {
+                                    }
+                                    else
+                                    {
                                         break;
                                     }
                                 }

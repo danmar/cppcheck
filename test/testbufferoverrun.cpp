@@ -1455,8 +1455,8 @@ private:
 
     void terminateStrncpy1()
     {
-         check("void foo ( char *bar )\n"
-             "{\n"
+        check("void foo ( char *bar )\n"
+              "{\n"
               "    char baz[100];\n"
               "    strncpy(baz, bar, sizeof(baz));\n"
               "    strncpy(baz, bar, sizeof(baz));\n"
@@ -1473,8 +1473,8 @@ private:
 
     void terminateStrncpy2()
     {
-         check("char *foo ( char *bar )\n"
-             "{\n"
+        check("char *foo ( char *bar )\n"
+              "{\n"
               "    char baz[100];\n"
               "    strncpy(baz, bar, sizeof(baz));\n"
               "    bar[99] = 0;\n"
