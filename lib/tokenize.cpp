@@ -998,15 +998,21 @@ void Tokenizer::simplifyTemplates()
                 // New type..
                 std::vector<std::string> types2;
                 s = "";
-                for (const Token *tok3 = tok2->tokAt(2); tok3->str() != ">"; tok3 = tok3->next())
+                for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next())
                 {
+                    if (!tok3->next())
+                    {
+                        s.clear();
+                        break;
+                    }
+
                     if (tok3->str() != ",")
                         types2.push_back(tok3->str());
                     s += tok3->str();
                 }
                 const std::string type2(s);
 
-                if (type.size() != types2.size())
+                if (type2.empty() || type.size() != types2.size())
                 {
 #ifndef NDEBUG
                     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
@@ -1022,7 +1028,8 @@ void Tokenizer::simplifyTemplates()
 
                     _errorLogger->reportErr(errmsg);
 #endif
-
+                    if (type2.empty())
+                        continue;
                     break;
                 }
 
