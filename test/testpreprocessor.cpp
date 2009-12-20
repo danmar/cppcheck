@@ -1165,6 +1165,21 @@ private:
                 "B(1) A() ) )\n";
             ASSERT_EQUALS("\n\n( ( ) )\n", OurPreprocessor::expandMacros(filedata));
         }
+
+        {
+            const char filedata[] =
+                "#define PTR1 (\n"
+                "#define PTR2 PTR1 PTR1\n"
+                "int PTR2 PTR2 foo )))) = 0;\n";
+            ASSERT_EQUALS("\n\nint ( ( ( ( foo )))) = 0;\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            const char filedata[] =
+                "#define PTR1 (\n"
+                "PTR1 PTR1\n";
+            ASSERT_EQUALS("\n( (\n", OurPreprocessor::expandMacros(filedata));
+        }
     }
 
     void macro_mismatch()

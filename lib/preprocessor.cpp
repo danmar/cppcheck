@@ -1890,11 +1890,11 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     // #define B(x) (
                     // #define A() B(xx)
                     // B(1) A() ) )
-                    unsigned int macroEnd = line.length() - (pos1 + macrocode.length());
+                    unsigned int macroEnd = line.length() - pos2;
                     for (std::map<const PreprocessorMacro *, unsigned int>::iterator iter = limits.begin();
                          iter != limits.end();)
                     {
-                        if (macroEnd < iter->second)
+                        if (pos1 < iter->second)
                         {
                             // We have gone past this limit, so just delete it
                             limits.erase(iter++);
