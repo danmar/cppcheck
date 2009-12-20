@@ -40,6 +40,8 @@ private:
     {
         TEST_CASE(test1);
         TEST_CASE(test2);
+        TEST_CASE(test3);
+        TEST_CASE(test4);
     }
 
     void check(const char code[])
@@ -75,6 +77,32 @@ private:
               "{\n"
               "    char *p = new char[100];\n"
               "    delete [] p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void test3()
+    {
+        check("void foo(int x)\n"
+              "{\n"
+              "    char *p = 0;\n"
+              "    if (x == 1)\n"
+              "        p = new char[100];\n"
+              "    if (x == 2)\n"
+              "        delete [] p;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:8]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void test4()
+    {
+        check("void foo(int x)\n"
+              "{\n"
+              "    char *p = 0;\n"
+              "    if (x == 1)\n"
+              "        p = new char[100];\n"
+              "    if (x == 1)\n"
+              "        delete [] p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

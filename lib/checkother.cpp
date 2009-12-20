@@ -1124,11 +1124,21 @@ class CheckNullpointer : public ExecutionPath
 {
 public:
     // Startup constructor
-    CheckNullpointer(unsigned int v) : ExecutionPath(), varId(v), null(false)
+    CheckNullpointer(CheckOther *c) : ExecutionPath(), varId(0), null(false), checkOther(c)
     {
     }
 
 private:
+    // Create checking of specific variable:
+    CheckNullpointer(CheckOther *c, const unsigned int id, const std::string &name)
+            : ExecutionPath(),
+            varId(id),
+            varname(name),
+            null(false),
+            checkOther(c)
+    {
+    }
+
     ExecutionPath *copy()
     {
         return new CheckNullpointer(*this);
@@ -1138,41 +1148,73 @@ private:
     void operator=(const CheckNullpointer &);
 
     const unsigned int varId;
+    const std::string varname;
     bool null;
+    CheckOther * const checkOther;
 
-    static void setnull(std::list<ExecutionPath *> &checks)
-    {
-        std::list<ExecutionPath *>::iterator it;
-        for (it = checks.begin(); it != checks.end(); ++it)
-            dynamic_cast<CheckNullpointer *>(*it)->null = true;
-    }
-
-    static void dereference(bool &foundError, std::list<ExecutionPath *> &checks)
+    static void setnull(std::list<ExecutionPath *> &checks, const unsigned int varid)
     {
         std::list<ExecutionPath *>::iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
         {
-            if (dynamic_cast<CheckNullpointer *>(*it)->null)
+            CheckNullpointer *c = dynamic_cast<CheckNullpointer *>(*it);
+            if (c && c->varId == varid)
+                c->null = true;
+        }
+    }
+
+    static void dereference(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        const unsigned int varid(tok->varId());
+
+        std::list<ExecutionPath *>::iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckNullpointer *c = dynamic_cast<CheckNullpointer *>(*it);
+            if (c && c->varId == varid && c->null)
             {
                 foundError = true;
+                c->checkOther->nullPointerError(tok, c->varname);
                 break;
+            }
+        }
+    }
+
+    static void bailOutVar(std::list<ExecutionPath *> &checks, const unsigned int varid)
+    {
+        std::list<ExecutionPath *>::iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckNullpointer *c = dynamic_cast<CheckNullpointer *>(*it);
+            if (c && c->varId == varid)
+            {
+                c->bailOut(true);
             }
         }
     }
 
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
     {
-        if (tok.varId() == varId)
+        if (Token::Match(tok.previous(), "[;{}] %type% * %var% ;"))
         {
-            if (Token::Match(tok.previous(), "[;{}=] %varid% = 0 ;", varId))
-                setnull(checks);
-            else if (Token::Match(tok.tokAt(-2), "[;{}=] * %varid%", varId))
-                dereference(foundError, checks);
-            else if (Token::Match(tok.next(), ". %var%"))
-                dereference(foundError, checks);
-            else
-                bailOut(checks);
+            const Token * vartok = tok.tokAt(2);
+            if (vartok->varId() != 0)
+                checks.push_back(new CheckNullpointer(checkOther, vartok->varId(), vartok->str()));
+            return vartok->next();
         }
+
+        if (tok.varId() != 0)
+        {
+            if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
+                setnull(checks, tok.varId());
+            else if (Token::Match(tok.tokAt(-2), "[;{}=] * %var%"))
+                dereference(foundError, checks, &tok);
+            else if (Token::Match(tok.next(), ". %var%"))
+                dereference(foundError, checks, &tok);
+            else
+                bailOutVar(checks, tok.varId());
+        }
+
         return &tok;
     }
 };
@@ -1386,6 +1428,18 @@ void CheckOther::executionPaths()
     const Token *tok = _tokenizer->tokens();
     while (0 != (tok = Token::findmatch(tok, ") const| {")))
     {
+        // check for null pointer errors..
+        {
+            std::list<ExecutionPath *> checks;
+            checks.push_back(new CheckNullpointer(this));
+            checkExecutionPaths(tok->next(), checks);
+            while (!checks.empty())
+            {
+                delete checks.back();
+                checks.pop_back();
+            }
+        }
+
         // Scan through this scope and check all variables..
         unsigned int indentlevel = 0;
         for (; tok; tok = tok->next())
@@ -1476,21 +1530,6 @@ void CheckOther::executionPaths()
                     }
                     if (tokerr)
                         uninitvarError(tokerr, tok->str());
-                }
-
-                // check if variable is accessed uninitialized..
-                if (pointer)
-                {
-                    std::list<ExecutionPath *> checks;
-                    checks.push_back(new CheckNullpointer(tok->varId()));
-                    const Token *tokerr = checkExecutionPaths(tok->next(), checks);
-                    while (!checks.empty())
-                    {
-                        delete checks.back();
-                        checks.pop_back();
-                    }
-                    if (tokerr)
-                        nullPointerError(tokerr, tok->str());
                 }
             }
         }

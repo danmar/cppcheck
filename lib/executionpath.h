@@ -30,7 +30,13 @@ class Token;
 class ExecutionPath
 {
 private:
-    mutable bool bailout_;
+    bool bailout_;
+
+protected:
+    void bailOut(bool b)
+    {
+        bailout_ |= b;
+    }
 
 public:
     ExecutionPath() : bailout_(false)
