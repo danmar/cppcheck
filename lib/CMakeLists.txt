@@ -1,6 +1,8 @@
 # Minimal CMake build file to build static cppcheck library
 # This static library is used to build executables:
 # - cli
+# - tests
+# - Qt GUI
 
 SET(CHECKLIB_SRCS
   checkautovariables.cpp
@@ -23,6 +25,13 @@ SET(CHECKLIB_SRCS
   token.cpp
   tokenize.cpp
 )
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS
+    ${CMAKE_CXX_FLAGS}
+    "-Wall -Wextra -pedantic"
+  )
+endif (CMAKE_COMPILER_IS_GNUCXX)
 
 ADD_LIBRARY(checklib STATIC ${CHECKLIB_SRCS})
 

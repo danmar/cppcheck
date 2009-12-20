@@ -41,6 +41,13 @@ set(CHECK_LIBS
 )
 endif (WIN32 AND NOT CYGWIN)
 
+if (CMAKE_COMPILER_IS_GNUCXX)
+  set(CMAKE_CXX_FLAGS
+    ${CMAKE_CXX_FLAGS}
+    "-Wall -Wextra -pedantic"
+  )
+endif (CMAKE_COMPILER_IS_GNUCXX)
+
 include_directories (${CPPCHECK_SOURCE_DIR}/lib)
 ADD_EXECUTABLE(test ${CHECKTEST_SRCS})
 TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
