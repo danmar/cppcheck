@@ -52,3 +52,8 @@ include_directories (${CPPCHECK_SOURCE_DIR}/lib)
 ADD_EXECUTABLE(test ${CHECKTEST_SRCS})
 TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
 
+# Add custom 'make check' -target
+# It compiles and runs tests
+add_custom_target(check COMMAND test)
+add_dependencies(check test checklib)
+

@@ -16,9 +16,13 @@ PROJECT(CPPCHECK)
 
 ADD_SUBDIRECTORY(lib)
 ADD_SUBDIRECTORY(cli)
-ADD_SUBDIRECTORY(test)
+
+# Exclude tests from normal targets
+# There is 'make check' -target for compiling and running tests
+ADD_SUBDIRECTORY(test EXCLUDE_FROM_ALL)
 
 # Don't build GUI for Cygwin (most installations don't have QT)
 IF (NOT CYGWIN)
   ADD_SUBDIRECTORY(gui)
 endif (NOT CYGWIN)
+
