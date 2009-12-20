@@ -412,7 +412,7 @@ void CheckClass::constructors()
                 Var *varlist = getVarList(tok1, false);
 
                 // If there is a private variable, there should be a constructor..
-                for (const struct Var *var = varlist; var; var = var->next)
+                for (const Var *var = varlist; var; var = var->next)
                 {
                     if (var->priv)
                     {
