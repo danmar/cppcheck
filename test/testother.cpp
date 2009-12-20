@@ -983,6 +983,14 @@ private:
 
         checkUninitVar("static void foo()\n"
                        "{\n"
+                       "    int x, y;\n"
+                       "    x = (y = 10);\n"
+                       "    int z = y * 2;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("static void foo()\n"
+                       "{\n"
                        "    Foo p;\n"
                        "    p.abcd();\n"
                        "}\n");

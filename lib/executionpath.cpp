@@ -41,7 +41,7 @@ const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &c
             return 0;
         }
 
-        if (Token::Match(tok, "= {|("))
+        if (Token::Match(tok, "= {") || Token::Match(tok, "= ( %type% !!="))
         {
             tok = tok->next()->link();
             if (Token::simpleMatch(tok, ") {"))
