@@ -54,9 +54,9 @@ void Preprocessor::writeError(const std::string &fileName, const int linenr, Err
                            errorType));
 }
 
-static char readChar(std::istream &istr)
+static unsigned char readChar(std::istream &istr)
 {
-    char ch = (char)istr.get();
+    unsigned char ch = (char)istr.get();
 
     // Handling of newlines..
     if (ch == '\r')
@@ -87,13 +87,13 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     unsigned int newlines = 0;
 
     std::ostringstream code;
-    for (char ch = readChar(istr); istr.good(); ch = readChar(istr))
+    for (unsigned char ch = readChar(istr); istr.good(); ch = readChar(istr))
     {
         if (ch == '\n')
             ++lineno;
 
         // Replace assorted special chars with spaces..
-        if ((ch > 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
+        if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';
 
         // Skip spaces after ' ' and after '#'
@@ -105,7 +105,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
         {
             if (ch == '(')
                 code << " ";
-            else if ((ch > 0) && ! std::isalpha(ch))
+            else if (!std::isalpha(ch))
                 needSpace = false;
         }
         if (ch == '#')
@@ -114,11 +114,11 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
         // <backspace><newline>..
         if (ch == '\\')
         {
-            char chNext = 0;
+            unsigned char chNext = 0;
             for (;;)
             {
                 chNext = (char)istr.peek();
-                if (chNext != '\n' && chNext != '\r' && (chNext > 0) &&
+                if (chNext != '\n' && chNext != '\r' &&
                     (std::isspace(chNext) || std::iscntrl(chNext)))
                 {
                     // Skip whitespace between <backspace> and <newline>
@@ -174,13 +174,13 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     // on the next <newline>, extra newlines will be added
     unsigned int newlines = 0;
     std::ostringstream code;
-    char previous = 0;
+    unsigned char previous = 0;
     std::vector<std::string> suppressionIDs;
 
     for (std::string::size_type i = hasbom(str) ? 3 : 0; i < str.length(); ++i)
     {
-        char ch = str[i];
-        if (ch < 0)
+        unsigned char ch = str[i];
+        if (ch & 0x80)
             throw std::runtime_error("The code contains characters that are unhandled");
 
         // We have finished a line that didn't contain any comment
@@ -221,7 +221,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         }
         else if (str.compare(i, 2, "/*", 0, 2) == 0)
         {
-            char chPrev = 0;
+            unsigned char chPrev = 0;
             ++i;
             while (i < str.length() && (chPrev != '*' || ch != '/'))
             {
@@ -240,7 +240,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         else if (ch == '\"' || ch == '\'')
         {
             code << std::string(1, ch);
-            char chNext;
+            unsigned char chNext;
             do
             {
                 ++i;
@@ -596,8 +596,8 @@ std::string Preprocessor::getdef(std::string line, bool def)
     std::string::size_type pos = 0;
     while ((pos = line.find(" ", pos)) != std::string::npos)
     {
-        const char chprev = (pos > 0) ? line[pos-1] : 0;
-        const char chnext = (pos + 1 < line.length()) ? line[pos+1] : 0;
+        const unsigned char chprev = (pos > 0) ? line[pos-1] : (unsigned char)0;
+        const unsigned char chnext = (pos + 1 < line.length()) ? line[pos+1] : (unsigned char)0;
         if (std::isalnum(chprev) && std::isalnum(chnext))
             ++pos;
         else
@@ -1175,7 +1175,7 @@ int Preprocessor::getHeaderFileName(std::string &str)
         return 0;
     }
 
-    char c = str[i];
+    unsigned char c = str[i];
     if (c == '<')
         c = '>';
 
@@ -1594,7 +1594,7 @@ public:
 
 static void skipstring(const std::string &line, std::string::size_type &pos)
 {
-    const char ch = line[pos];
+    const unsigned char ch = line[pos];
 
     ++pos;
     while (pos < line.size() && line[pos] != ch)
@@ -1611,12 +1611,12 @@ static bool getlines(std::istream &istr, std::string &line)
     if (!istr.good())
         return false;
     line = "";
-    for (char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
+    for (unsigned char ch = (char)istr.get(); istr.good(); ch = (char)istr.get())
     {
         if (ch == '\'' || ch == '\"')
         {
             line += ch;
-            char c = 0;
+            unsigned char c = 0;
             while (istr.good() && c != ch)
             {
                 if (c == '\\')
