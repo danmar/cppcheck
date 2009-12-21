@@ -2520,7 +2520,7 @@ class CheckLocalLeaks : public ExecutionPath
 {
 public:
     // Startup constructor
-    CheckLocalLeaks(CheckMemoryLeak *c) : ExecutionPath(), ownerCheck(c), varId(0), allocated(false)
+    CheckLocalLeaks(Check *c) : ExecutionPath(c, 0), allocated(false)
     {
     }
 
@@ -2546,12 +2546,10 @@ private:
     }
 
     /** start checking of given variable */
-    CheckLocalLeaks(CheckMemoryLeak *c, unsigned int v, const std::string &s) : ExecutionPath(), ownerCheck(c), varId(v), allocated(false), varname(s)
+    CheckLocalLeaks(Check *c, unsigned int v, const std::string &s) : ExecutionPath(c, v), allocated(false), varname(s)
     {
     }
 
-    CheckMemoryLeak * const ownerCheck;
-    const unsigned int varId;
     bool allocated;
     const std::string varname;
 
@@ -2594,7 +2592,8 @@ private:
             CheckLocalLeaks *C = dynamic_cast<CheckLocalLeaks *>(*it);
             if (C && C->allocated)
             {
-                C->ownerCheck->memleakError(tok, C->varname, false);
+                CheckMemoryLeak *checkMemleak = dynamic_cast<CheckMemoryLeak *>(C->owner);
+                checkMemleak->memleakError(tok, C->varname, false);
                 foundError = true;
             }
         }
@@ -2612,7 +2611,7 @@ private:
         {
             const Token * vartok = tok.tokAt(2);
             if (vartok->varId() != 0)
-                checks.push_back(new CheckLocalLeaks(ownerCheck, vartok->varId(), vartok->str()));
+                checks.push_back(new CheckLocalLeaks(owner, vartok->varId(), vartok->str()));
             return vartok->next();
         }
 

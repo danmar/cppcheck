@@ -41,6 +41,10 @@ const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &c
             return 0;
         }
 
+        // don't parse into "struct type { .."
+        if (Token::Match(tok, "struct %type% {"))
+            tok = tok->tokAt(2)->link();
+
         if (Token::Match(tok, "= {") || Token::Match(tok, "= ( %type% !!="))
         {
             tok = tok->next()->link();

@@ -22,6 +22,7 @@
 #include <list>
 
 class Token;
+class Check;
 
 /**
  * Base class for Execution Paths checking
@@ -33,13 +34,11 @@ private:
     bool bailout_;
 
 protected:
-    void bailOut(bool b)
-    {
-        bailout_ |= b;
-    }
+    const unsigned int varId;
+    Check * const owner;
 
 public:
-    ExecutionPath() : bailout_(false)
+    ExecutionPath(Check *c, unsigned int id) : bailout_(false), varId(id), owner(c)
     { }
 
     virtual ~ExecutionPath()
@@ -61,6 +60,18 @@ public:
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
             (*it)->bailout_ = true;
+    }
+
+    /**
+     * bail out execution paths with given variable id
+     * @param checks the execution paths to bail out on
+     * @param varid the specific variable id
+     **/
+    static void bailOutVar(const std::list<ExecutionPath *> &checks, const unsigned int varid)
+    {
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+            (*it)->bailout_ |= ((*it)->varId == varid);
     }
 
     /**
