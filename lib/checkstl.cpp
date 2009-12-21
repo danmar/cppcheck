@@ -253,7 +253,7 @@ void CheckStl::eraseCheckLoop(const Token *it)
 // Error message for bad iterator usage..
 void CheckStl::eraseError(const Token *tok)
 {
-    reportError(tok, Severity::error, "erase", "Dangerous usage of erase\nAfter erase has been used the iterator may be invalid so dereferencing it or comparing it with other iterator is invalid.");
+    reportError(tok, Severity::error, "erase", "Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.");
 }
 
 

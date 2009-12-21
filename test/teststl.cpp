@@ -269,7 +269,7 @@ private:
               "        foo.erase(it);\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of erase\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
 
         check("for (it = foo.begin(); it != foo.end(); ++it)\n"
               "{\n"
@@ -279,7 +279,8 @@ private:
               "{\n"
               "    foo.erase(it);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of erase\n[test.cpp:7]: (error) Dangerous usage of erase\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n"
+                      "[test.cpp:7]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
 
         check("void f(std::list<int> &ints)\n"
               "{\n"
