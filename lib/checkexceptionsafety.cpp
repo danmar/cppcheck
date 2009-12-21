@@ -177,7 +177,7 @@ void CheckExceptionSafety::unsafeNew()
                 localVars.insert(tok->varId());
         }
 
-        if (Token::Match(tok, "; %var% = new %type%"))
+        if (Token::Match(tok, "[;{}] %var% = new %type%"))
         {
             if (!varname.empty())
             {
@@ -186,6 +186,19 @@ void CheckExceptionSafety::unsafeNew()
             }
             if (tok->next()->varId() && localVars.find(tok->next()->varId()) != localVars.end())
                 varname = tok->strAt(1);
+        }
+
+        else if (Token::Match(tok, "[;{}] %var% ("))
+        {
+            for (tok = tok->next(); tok && !Token::Match(tok, "[;{}]"); tok = tok->next())
+            {
+                if (tok->str() == varname)
+                {
+                    varname = "";
+                }
+            }
+            if (!tok)
+                break;
         }
 
         else if (tok->str() == "delete")

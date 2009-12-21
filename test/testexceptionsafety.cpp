@@ -113,6 +113,15 @@ private:
               "    B *b = new B;\n"
               "}\n", "A\n");
         ASSERT_EQUALS("", errout.str());
+
+        // passing pointer to unknown function.. the pointer may be added to some list etc..
+        check("void f()\n"
+              "{\n"
+              "    A *a1 = new A;\n"
+              "    add(a1);\n"
+              "    A *a2 = new A;\n"
+              "}\n", "");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc()
