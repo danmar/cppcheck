@@ -615,6 +615,8 @@ private:
         settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.nullPointer();
+
+        tokenizer.simplifyTokenList();
         checkOther.executionPaths();
     }
 
@@ -904,6 +906,14 @@ private:
                          "    p->abcd();\n"
                          "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Possible null pointer dereference: p\n", errout.str());
+
+        checkNullPointer("static void foo()\n"
+                         "{\n"
+                         "    int *p = 0;\n"
+                         "    int *q = p;\n"
+                         "    q[0] = 0;\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: q\n", errout.str());
 
         // no false positive..
         checkNullPointer("static void foo()\n"

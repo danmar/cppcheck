@@ -1198,6 +1198,8 @@ private:
                 dereference(foundError, checks, &tok);
             else if (Token::Match(tok.next(), ". %var%"))
                 dereference(foundError, checks, &tok);
+            else if (Token::Match(tok.previous(), "[;{}] %var% [ %num% ] ="))
+                dereference(foundError, checks, &tok);
             else
                 bailOutVar(checks, tok.varId());
         }
