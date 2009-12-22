@@ -966,7 +966,7 @@ void Tokenizer::simplifyTemplates()
 
     // expand templates
     bool done = false;
-    while (!done)
+    //while (!done)
     {
         done = true;
         for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
@@ -1027,7 +1027,7 @@ void Tokenizer::simplifyTemplates()
                     }
                 }
 
-                Token *tok2 = *iter2;
+                Token * const tok2 = *iter2;
 
                 if (tok2->str() != name)
                     continue;
@@ -1222,7 +1222,9 @@ void Tokenizer::simplifyTemplates()
                     {
                         tok4->str(name2);
                         while (tok4->next()->str() != ">")
+                        {
                             tok4->deleteNext();
+                        }
                         tok4->deleteNext();
                     }
                 }
