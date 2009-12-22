@@ -2595,7 +2595,7 @@ private:
             CheckLocalLeaks *C = dynamic_cast<CheckLocalLeaks *>(*it);
             if (C && C->allocated)
             {
-                CheckMemoryLeakInFunction *checkMemleak = static_cast<CheckMemoryLeakInFunction *>(C->owner);
+                CheckMemoryLeakInFunction *checkMemleak = reinterpret_cast<CheckMemoryLeakInFunction *>(C->owner);
                 if (checkMemleak)
                 {
                     checkMemleak->memleakError(tok, C->varname, false);
