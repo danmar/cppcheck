@@ -56,7 +56,7 @@ void Preprocessor::writeError(const std::string &fileName, const int linenr, Err
 
 static unsigned char readChar(std::istream &istr)
 {
-    unsigned char ch = istr.get();
+    unsigned char ch = (unsigned char)istr.get();
 
     // Handling of newlines..
     if (ch == '\r')
@@ -117,7 +117,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
             unsigned char chNext = 0;
             for (;;)
             {
-                chNext = istr.peek();
+                chNext = (unsigned char)istr.peek();
                 if (chNext != '\n' && chNext != '\r' &&
                     (std::isspace(chNext) || std::iscntrl(chNext)))
                 {
@@ -1624,7 +1624,7 @@ static bool getlines(std::istream &istr, std::string &line)
     if (!istr.good())
         return false;
     line = "";
-    for (unsigned char ch = istr.get(); istr.good(); ch = istr.get())
+    for (unsigned char ch = (unsigned char)istr.get(); istr.good(); ch = (unsigned char)istr.get())
     {
         if (ch == '\'' || ch == '\"')
         {
@@ -1634,13 +1634,13 @@ static bool getlines(std::istream &istr, std::string &line)
             {
                 if (c == '\\')
                 {
-                    c = istr.get();
+                    c = (unsigned char)istr.get();
                     if (!istr.good())
                         return true;
                     line += c;
                 }
 
-                c = istr.get();
+                c = (unsigned char)istr.get();
                 if (!istr.good())
                     return true;
                 if (c == '\n' && line.compare(0, 1, "#") == 0)

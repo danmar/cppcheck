@@ -33,6 +33,9 @@ class ExecutionPath
 private:
     bool bailout_;
 
+    /** No implementation */
+    void operator=(const ExecutionPath &);
+
 protected:
     const unsigned int varId;
     Check * const owner;
