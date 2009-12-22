@@ -1288,7 +1288,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("void f(struct blame_entry *ent)\n"
-	               "{\n"
+                       "{\n"
                        "    struct origin *suspect = ent->suspect;\n"
                        "    char hex[41];\n"
                        "    strcpy(hex, sha1_to_hex(suspect->commit->object.sha1));\n"
