@@ -1361,7 +1361,7 @@ private:
                 return &tok;
             }
 
-            if (Token::Match(tok.next(), "= malloc|kmalloc|new"))
+            if (Token::Match(tok.next(), "= malloc|kmalloc") || Token::simpleMatch(tok.next(), "= new char ["))
             {
                 alloc_pointer(checks, tok.varId());
             }

@@ -1256,6 +1256,13 @@ private:
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s1\n", errout.str());
 
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    Fred *fred = new Fred;\n"
+                       "    fred->foo();\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         // struct..
         checkUninitVar("void f()\n"
                        "{\n"
