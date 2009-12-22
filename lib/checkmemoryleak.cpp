@@ -847,7 +847,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 }
             }
 
-            if (Token::Match(tok->previous(), "[;{})=] %var%"))
+            if (Token::Match(tok->previous(), "[;{})=] %var%") ||
+                Token::Match(tok->previous(), "|= %var%"))
             {
                 AllocType dealloc = getDeallocationType(tok, varid);
                 if (dealloc != No)
