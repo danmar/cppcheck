@@ -305,9 +305,11 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
 
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
     {
+        const Token * const tok = *it;
+
         ErrorLogger::ErrorMessage::FileLocation loc;
-        loc.line = (*it)->linenr();
-        loc.file = tokenizer->file(*it);
+        loc.line = tok->linenr();
+        loc.file = tokenizer->file(tok);
 
         locations.push_back(loc);
     }
@@ -2593,9 +2595,13 @@ private:
             CheckLocalLeaks *C = dynamic_cast<CheckLocalLeaks *>(*it);
             if (C && C->allocated)
             {
-                CheckMemoryLeak *checkMemleak = dynamic_cast<CheckMemoryLeak *>(C->owner);
-                checkMemleak->memleakError(tok, C->varname, false);
-                foundError = true;
+                CheckMemoryLeakInFunction *checkMemleak = static_cast<CheckMemoryLeakInFunction *>(C->owner);
+                if (checkMemleak)
+                {
+                    checkMemleak->memleakError(tok, C->varname, false);
+                    foundError = true;
+                    break;
+                }
             }
         }
     }

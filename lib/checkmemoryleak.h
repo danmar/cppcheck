@@ -141,7 +141,7 @@ public:
  * -# finally, check if the simplified token list contain any leaks.
  */
 
-class CheckMemoryLeakInFunction : private Check, private CheckMemoryLeak
+class CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak
 {
 public:
     /** This constructor is used when registering this class */
