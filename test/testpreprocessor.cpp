@@ -78,6 +78,9 @@ private:
         // #error => don't extract any code
         TEST_CASE(error1);
 
+        // #error with extended chars
+        TEST_CASE(error2);
+
         // Handling include guards (don't create extra configuration for it)
         TEST_CASE(includeguard);
 
@@ -416,6 +419,18 @@ private:
         ASSERT_EQUALS("", actual[""]);
         ASSERT_EQUALS("\n;\n\n\n\n", actual["A"]);
 
+    }
+
+
+    void error2()
+    {
+        const char filedata[] = "#error ê\n"
+                                "#warning ê\n"
+                                "123";
+
+        // Read string..
+        std::istringstream istr(filedata);
+        ASSERT_EQUALS("#error\n\n123", Preprocessor::read(istr));
     }
 
 

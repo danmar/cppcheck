@@ -183,6 +183,19 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         if (ch & 0x80)
             throw std::runtime_error("The code contains characters that are unhandled");
 
+        if (str.compare(i, 6, "#error") == 0 || str.compare(i, 8, "#warning") == 0)
+        {
+            if (str.compare(i, 6, "#error") == 0)
+                code << "#error";
+
+            i = str.find("\n", i);
+            if (i == std::string::npos)
+                break;
+
+            --i;
+            continue;
+        }
+
         // We have finished a line that didn't contain any comment
         // (the '\n' is swallowed when a // comment is detected)
         if (ch == '\n' && !suppressionIDs.empty())
