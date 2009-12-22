@@ -141,6 +141,7 @@ private:
         TEST_CASE(simplifyTypedef5)
         TEST_CASE(simplifyTypedef6)
         TEST_CASE(simplifyTypedef7);
+        TEST_CASE(simplifyTypedef8);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2262,6 +2263,42 @@ private:
         const char code[] = "typedef int abc ; "
                             "Fred :: abc f ;";
         ASSERT_EQUALS(code, tok(code, false));
+    }
+
+    void simplifyTypedef8()
+    {
+        const char code[] = "typedef int INT;\n"
+                            "typedef unsigned int UINT;\n"
+                            "typedef int * PINT;\n"
+                            "typedef unsigned int * PUINT;\n"
+                            "typedef struct s S, * PS\n;"
+                            "typedef struct t { int a; } T, *TP;"
+                            "INT ti;\n"
+                            "UINT tui;\n"
+                            "PINT tpi;\n"
+                            "PUINT tpui;"
+                            "S s;\n"
+                            "PS ps;\n"
+                            "T t;\n"
+                            "TP tp;\n";
+
+        const char expected[] =
+            "typedef int INT ; "
+            "typedef unsigned int UINT ; "
+            "typedef int * PINT ; "
+            "typedef unsigned int * PUINT ; "
+            "typedef struct s S ; typedef struct s * PS ; "
+            "struct t { int a ; } ; typedef struct t T ; typedef struct t * TP ; "
+            "int ti ; "
+            "unsigned int tui ; "
+            "int * tpi ; "
+            "unsigned int * tpui ; "
+            "struct s s ; "
+            "struct s * ps ; "
+            "struct t t ; "
+            "struct t * tp ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void reverseArraySyntax()
