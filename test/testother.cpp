@@ -1236,6 +1236,13 @@ private:
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char s[20];\n"
+                       "    strchr(s, ' ');\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char s[20];\n"
                        "    strncpy(s, \"abcde\", 2);\n"
                        "    strcat(s, \"abc\");\n"
                        "};\n");

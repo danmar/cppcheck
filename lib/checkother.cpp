@@ -1393,13 +1393,13 @@ private:
         if (Token::Match(&tok, "%var% ("))
         {
             // reading 1st parameter..
-            if (Token::Match(&tok, "strcat|strncat|strlen ( %var%"))
+            if (Token::Match(&tok, "strcat|strncat|strchr|strrchr|strstr|strlen|strdup ( %var%"))
             {
                 use_array(foundError, checks, tok.tokAt(2));
             }
 
             // reading 2nd parameter..
-            if (Token::Match(&tok, "strcpy ( %any% , %var% ) ") ||
+            if (Token::Match(&tok, "strcpy|strstr ( %any% , %var% ) ") ||
                 Token::Match(&tok, "strncpy ( %any% , %var% ,"))
             {
                 use_array(foundError, checks, tok.tokAt(4));
