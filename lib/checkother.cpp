@@ -1399,7 +1399,8 @@ private:
             }
 
             // reading 2nd parameter..
-            if (Token::Match(&tok, "strcpy|strncpy ( %any% , %var%"))
+            if (Token::Match(&tok, "strcpy ( %any% , %var% ) ") ||
+                Token::Match(&tok, "strncpy ( %any% , %var% ,"))
             {
                 use_array(foundError, checks, tok.tokAt(4));
             }
