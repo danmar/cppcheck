@@ -1211,6 +1211,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    FILE *f;\n"
+                       "    fflush(f);\n"
+                       "}\n");
+        ASSERT_EQUALS("error", errout.str());
+
         // arrays..
         checkUninitVar("void f()\n"
                        "{\n"

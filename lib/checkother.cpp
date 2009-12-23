@@ -1118,6 +1118,68 @@ void CheckOther::nullPointer()
 }
 
 
+/**
+ * \brief parse a function call and extract information about variable usage
+ * \param tok first token
+ * \param var variables that the function read / write.
+ * \param value 0 => invalid with null pointers as parameter.
+ *              1-.. => invalid with uninitialized data.
+ */
+static void parseFunctionCall(const Token &tok, std::list<const Token *> &var, unsigned char value)
+{
+    // standard functions that dereference first parameter..
+    // both uninitialized data and null pointers are invalid.
+    static std::set<std::string> functionNames1;
+    if (functionNames1.empty())
+    {
+        functionNames1.insert("memchr");
+        functionNames1.insert("memcmp");
+        functionNames1.insert("strcat");
+        functionNames1.insert("strncat");
+        functionNames1.insert("strchr");
+        functionNames1.insert("strrchr");
+        functionNames1.insert("strcmp");
+        functionNames1.insert("strncmp");
+        functionNames1.insert("strdup");
+        functionNames1.insert("strlen");
+        functionNames1.insert("strstr");
+    }
+
+    // standard functions that dereference second parameter..
+    // both uninitialized data and null pointers are invalid.
+    static std::set<std::string> functionNames2;
+    if (functionNames2.empty())
+    {
+        functionNames2.insert("memcmp");
+        functionNames2.insert("memcpy");
+        functionNames2.insert("memmove");
+        functionNames2.insert("strcat");
+        functionNames2.insert("strncat");
+        functionNames2.insert("strcmp");
+        functionNames2.insert("strncmp");
+        functionNames2.insert("strcpy");
+        functionNames2.insert("strncpy");
+        functionNames2.insert("strstr");
+    }
+
+    // 1st parameter..
+    if (Token::Match(&tok, "%var% ( %var% ,|)") && tok.tokAt(2)->varId() > 0)
+    {
+        if (functionNames1.find(tok.str()) != functionNames1.end())
+            var.push_back(tok.tokAt(2));
+        else if (value == 0 && Token::Match(&tok, "memchr|memcmp|memcpy|memmove|memset|strcpy|printf|sprintf|snprintf"))
+            var.push_back(tok.tokAt(2));
+        else if (Token::Match(&tok, "free|kfree|fclose|fflush"))
+            var.push_back(tok.tokAt(2));
+    }
+
+    // 2nd parameter..
+    if (Token::Match(&tok, "%var% ( %any% , %var% ,|)") && tok.tokAt(4)->varId() > 0)
+    {
+        if (functionNames2.find(tok.str()) != functionNames2.end())
+            var.push_back(tok.tokAt(4));
+    }
+}
 
 
 class CheckNullpointer : public ExecutionPath
@@ -1188,6 +1250,15 @@ private:
             if (vartok->varId() != 0)
                 checks.push_back(new CheckNullpointer(owner, vartok->varId(), vartok->str()));
             return vartok->next();
+        }
+
+        if (Token::Match(tok.previous(), "[;{}] %var% ("))
+        {
+            // parse usage..
+            std::list<const Token *> var;
+            parseFunctionCall(tok, var, 0);
+            for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
+                dereference(foundError, checks, *it);
         }
 
         if (tok.varId() != 0)
@@ -1397,17 +1468,12 @@ private:
 
         if (Token::Match(&tok, "%var% ("))
         {
-            // reading 1st parameter..
-            if (Token::Match(&tok, "strcat|strncat|strchr|strrchr|strstr|strlen|strdup ( %var%"))
+            // parse usage..
             {
-                use_array(foundError, checks, tok.tokAt(2));
-            }
-
-            // reading 2nd parameter..
-            if (Token::Match(&tok, "strcpy|strstr ( %any% , %var% ) ") ||
-                Token::Match(&tok, "strncpy ( %any% , %var% ,"))
-            {
-                use_array(foundError, checks, tok.tokAt(4));
+                std::list<const Token *> var;
+                parseFunctionCall(tok, var, 1);
+                for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
+                    use_array(foundError, checks, *it);
             }
 
             // strncpy doesn't 0-terminate first parameter
