@@ -1216,7 +1216,7 @@ private:
                        "    FILE *f;\n"
                        "    fflush(f);\n"
                        "}\n");
-        ASSERT_EQUALS("error", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n", errout.str());
 
         // arrays..
         checkUninitVar("void f()\n"

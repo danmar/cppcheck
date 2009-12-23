@@ -1252,7 +1252,7 @@ private:
             return vartok->next();
         }
 
-        if (Token::Match(tok.previous(), "[;{}] %var% ("))
+        if (Token::Match(&tok, "%var% ("))
         {
             // parse usage..
             std::list<const Token *> var;
