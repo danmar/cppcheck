@@ -991,6 +991,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
 
+        checkUninitVar("static int foo()\n"
+                       "{\n"
+                       "    int ret;\n"
+                       "    return ret;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: ret\n", errout.str());
+
         checkUninitVar("static void foo()\n"
                        "{\n"
                        "    int x, y;\n"

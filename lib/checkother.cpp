@@ -1335,24 +1335,27 @@ private:
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
     {
         // Variable declaration..
-        if (Token::Match(tok.previous(), "[;{}] %type% *| %var% ;"))
+        if (tok.str() != "return")
         {
-            const Token * vartok = tok.next();
-            const bool p(vartok->str() == "*");
-            if (p)
-                vartok = vartok->next();
-            if ((p || tok.isStandardType()) && vartok->varId() != 0)
-                checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), p, false));
-            return vartok->next();
-        }
+            if (Token::Match(tok.previous(), "[;{}] %type% *| %var% ;"))
+            {
+                const Token * vartok = tok.next();
+                const bool p(vartok->str() == "*");
+                if (p)
+                    vartok = vartok->next();
+                if ((p || tok.isStandardType()) && vartok->varId() != 0)
+                    checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), p, false));
+                return vartok->next();
+            }
 
-        // Variable declaration for array..
-        if (Token::Match(tok.previous(), "[;{}] %type% %var% [ %num% ] ;"))
-        {
-            const Token * vartok = tok.next();
-            if (vartok->varId() != 0)
-                checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), false, true));
-            return vartok->next()->link()->next();
+            // Variable declaration for array..
+            if (Token::Match(tok.previous(), "[;{}] %type% %var% [ %num% ] ;"))
+            {
+                const Token * vartok = tok.next();
+                if (vartok->varId() != 0)
+                    checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), false, true));
+                return vartok->next()->link()->next();
+            }
         }
 
         if (tok.varId())
