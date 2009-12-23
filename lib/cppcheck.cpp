@@ -319,7 +319,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         reportOut("unusedFunctions check can't be used with -j option, so it was disabled.");
     }
 
-    if (pathnames.size() > 0)
+    if (!pathnames.empty())
     {
         // Execute recursiveAddFiles() to each given file parameter
         std::vector<std::string>::const_iterator iter;
