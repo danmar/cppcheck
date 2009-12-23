@@ -1339,7 +1339,7 @@ private:
             const bool p(vartok->str() == "*");
             if (p)
                 vartok = vartok->next();
-            if (vartok->varId() != 0)
+            if ((p || tok.isStandardType()) && vartok->varId() != 0)
                 checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), p, false));
             return vartok->next();
         }

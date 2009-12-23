@@ -1006,6 +1006,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("static void foo()\n"
+                       "{\n"
+                       "    Foo p;\n"
+                       "    int x = p.abcd();\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("A a()\n"
                        "{\n"
                        "    A ret;\n"
