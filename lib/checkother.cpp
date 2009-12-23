@@ -1612,8 +1612,6 @@ void CheckOther::postIncrement()
                 // Is the variable a class?
                 else if (Token::findmatch(_tokenizer->tokens(), classDef.c_str()))
                     postIncrementError(tok2, tok2->strAt(1), (std::string("++") == tok2->strAt(2)));
-
-                break;
             }
         }
     }

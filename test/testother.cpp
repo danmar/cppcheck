@@ -1409,6 +1409,17 @@ private:
                                     "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n", errout.str());
 
+        checkpostIncrementDecrement("void f1()\n"
+                                    "{\n"
+                                    "    std::list<int>::iterator it;\n"
+                                    "    for (it = ab.begin(); it != ab.end(); it++)\n"
+                                    "        ;\n"
+                                    "    for (it = ab.begin(); it != ab.end(); it++)\n"
+                                    "        ;\n"
+                                    "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n"
+                      "[test.cpp:6]: (possible style) Pre-Incrementing variable 'it' is preferred to Post-Incrementing\n", errout.str());
+
         checkpostIncrementDecrement("void f2()\n"
                                     "{\n"
                                     "    std::list<int>::iterator it;\n"
@@ -1416,6 +1427,17 @@ private:
                                     "        ;\n"
                                     "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible style) Pre-Decrementing variable 'it' is preferred to Post-Decrementing\n", errout.str());
+
+        checkpostIncrementDecrement("void f2()\n"
+                                    "{\n"
+                                    "    std::list<int>::iterator it;\n"
+                                    "    for (it = ab.end(); it != ab.begin(); it--)\n"
+                                    "        ;\n"
+                                    "    for (it = ab.end(); it != ab.begin(); it--)\n"
+                                    "        ;\n"
+                                    "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Pre-Decrementing variable 'it' is preferred to Post-Decrementing\n"
+                      "[test.cpp:6]: (possible style) Pre-Decrementing variable 'it' is preferred to Post-Decrementing\n", errout.str());
     }
 
     void postIncrementDecrementClass()
