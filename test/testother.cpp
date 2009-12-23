@@ -1315,6 +1315,13 @@ private:
                        "    strcpy(hex, sha1_to_hex(suspect->commit->object.sha1));\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    const std::string s(x());\n"
+                       "    strchr(s.c_str(), ',');\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

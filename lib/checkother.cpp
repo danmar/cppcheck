@@ -1286,6 +1286,8 @@ private:
     static void use(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok, const int mode)
     {
         const unsigned int varid(tok->varId());
+        if (varid == 0)
+            return;
 
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
