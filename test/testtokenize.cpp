@@ -2773,11 +2773,11 @@ private:
 
     void simplifyString()
     {
-        Tokenizer *tokenizer = 0;
-        ASSERT_EQUALS("\"abc\"", tokenizer->simplifyString("\"abc\""));
-        ASSERT_EQUALS("\"a\"", tokenizer->simplifyString("\"\\x3\""));
-        ASSERT_EQUALS("\"a\"", tokenizer->simplifyString("\"\\x33\""));
-        ASSERT_EQUALS("\"a3\"", tokenizer->simplifyString("\"\\x333\""));
+        Tokenizer tokenizer;
+        ASSERT_EQUALS("\"abc\"", tokenizer.simplifyString("\"abc\""));
+        ASSERT_EQUALS("\"a\"", tokenizer.simplifyString("\"\\x3\""));
+        ASSERT_EQUALS("\"a\"", tokenizer.simplifyString("\"\\x33\""));
+        ASSERT_EQUALS("\"a3\"", tokenizer.simplifyString("\"\\x333\""));
     }
 
     void simplifyConst()
