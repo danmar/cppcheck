@@ -458,4 +458,38 @@ int a(int sz)
 
     <programlisting>[except2.cpp:7]: (error) Throwing exception in invalid state, p points at deallocated memory</programlisting>
   </chapter>
+
+  <chapter>
+    <title>html report</title>
+
+    <para>You can convert the xml output from cppcheck into a html report.
+    You'll need python and the pygments module
+    (<uri>http://pygments.org/</uri>) for this to work. In the Cppcheck source
+    tree there is a folder "htmlreport" that contains a script that transforms
+    a Cppcheck xml file into html output.</para>
+
+    <para>This command generates the help screen:</para>
+
+    <para><programlisting>htmlreport/cppcheck-htmlreport -h</programlisting></para>
+
+    <para>The output screen says:</para>
+
+    <para><programlisting>Usage: cppcheck-htmlreport [options]
+
+Options:
+  -h, --help      show this help message and exit 
+  --file=FILE     The cppcheck xml output file to read defects from. 
+                  Default is reading from stdin. 
+  --report-dir=REPORT_DIR 
+                  The directory where the html report content is written.
+  --source-dir=SOURCE_DIR
+                  Base directory where source code files can be found.</programlisting></para>
+
+    <para>An example usage:</para>
+
+    <programlisting>./cppcheck gui/test.cpp --xml 2&gt; err.xml
+htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.</programlisting>
+
+    <para></para>
+  </chapter>
 </book>
