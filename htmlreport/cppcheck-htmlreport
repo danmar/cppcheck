@@ -1,0 +1,274 @@
+#!/usr/bin/python
+import sys
+import optparse
+import os
+import os.path
+from pygments import highlight
+from pygments.lexers import CppLexer
+from pygments.lexers import guess_lexer, guess_lexer_for_filename
+from pygments.formatters import HtmlFormatter
+from xml.sax import parse as xml_parse
+from xml.sax import SAXParseException as XmlParseException
+from xml.sax.handler import ContentHandler as XmlContentHandler
+
+"""
+Turns a cppcheck xml file into a browsable html report along
+with syntax highlighted source code.
+"""
+
+STYLE_FILE = """
+body.body {
+	font-family: Arial;
+	font-size: 13px;
+	background-color: black;
+	padding: 0px;
+	margin: 0px;
+}
+
+#page-header {
+	clear: both;
+	width: 900px;
+	margin: 20px auto 0px auto;
+	height: 10px;
+        border-bottom-width: 2px;
+        border-bottom-style: solid;
+        border-bottom-color: #aaaaaa;
+}
+
+#page {
+	width: 860px;
+	margin: auto;
+        border-left-width: 2px;
+        border-left-style: solid;
+        border-left-color: #aaaaaa;
+        border-right-width: 2px;
+        border-right-style: solid;
+        border-right-color: #aaaaaa;
+	background-color: White;
+	padding: 20px;
+}
+
+#page-footer {
+	clear: both;
+	width: 900px;
+	margin: auto;
+	height: 10px;
+        border-top-width: 2px;
+        border-top-style: solid;
+        border-top-color: #aaaaaa;
+}
+
+#header {
+	width: 100%;
+	height: 70px;
+	background-image: url(logo.png);
+	background-repeat: no-repeat;
+	background-position: left top;
+
+	border-bottom-style: solid;
+	border-bottom-width: thin;
+	border-bottom-color: #aaaaaa;
+}
+
+#menu {
+	margin-top: 5px;
+	text-align: left;
+	float: left;
+	width: 100px;
+	height: 300px;
+}
+
+#menu > a {
+	margin-left: 10px;
+	display: block;
+}
+
+#content {
+	float: left;
+	width: 720px;
+
+	margin: 5px;
+	padding: 0px 10px 10px 10px;
+
+	border-left-style: solid;
+	border-left-width: thin;
+	border-left-color: #aaaaaa;
+}
+
+#footer {
+	padding-bottom: 5px;
+	padding-top: 5px;
+	border-top-style: solid;
+	border-top-width: thin;
+	border-top-color: #aaaaaa;
+	clear: both;
+	font-size: 10px;
+}
+
+#footer > div {
+	float: left;
+	width: 33%;
+}
+"""
+
+HTML_HEAD = """
+<html>
+  <head>
+    <title>CppCheck - Html report</title>
+    <link href="style.css" rel="stylesheet" />
+  </head>
+  <body class="body">
+    <div id="page-header">
+      &nbsp;
+    </div>
+    <div id="page">
+      <div id="header">
+        <h1>CppCheck report</h1>
+      </div>
+      <div id="menu">
+        <a href="index.html">Defect list</a>
+      </div>
+      <div id="content">
+"""
+
+HTML_FOOTER = """
+      </div>
+      <div id="footer">
+        <div>
+          CppCheck - a tool for static C/C++ code analysis
+        </div>
+        <div>
+          Internet: <a href="http://cppcheck.sourceforge.net">http://cppcheck.sourceforge.net</a><br/>
+          Forum: <a href="http://apps.sourceforge.net/phpbb/cppcheck/">http://apps.sourceforge.net/phpbb/cppcheck/</a><br/>
+          IRC: #cppcheck at irc.freenode.net
+        </div>
+        &nbsp;
+      </div>
+      &nbsp;
+    </div>
+    <div id="page-footer">
+      &nbsp;
+    </div>
+  </body>
+</html>
+"""
+
+class CppCheckHandler(XmlContentHandler):
+    """Parses the cppcheck xml file and produces a list of all its errors."""
+    errors = []
+
+    def startElement(self, name, attributes):
+        if name != "error":
+            return
+
+        if attributes["file"] == "":
+            sys.stderr.write("ERROR: cppcheck error reported without a file name.\n")
+        self.errors.append(
+            {
+                "file" : attributes["file"],
+                "line" : int(attributes["line"]),
+                "id" : attributes["id"],
+                "severity" : attributes["severity"],
+                "msg" : attributes["msg"]
+            })
+
+if __name__ == '__main__':
+    # Configure all the options this little utility is using.
+    parser = optparse.OptionParser()
+    parser.add_option("--file", dest="file", help="The cppcheck xml output file to read defects from. Default is reading from stdin.")
+    parser.add_option("--report-dir", dest="report_dir", help="The directory where the html report content is written.")
+    parser.add_option("--source-dir", dest="source_dir", help="Base directory where source code files can be found.")
+
+    # Parse options and make sure that we have an output directory set.
+    options, args = parser.parse_args()
+    if not options.report_dir:
+        parser.error("No report directory set.")
+
+    # Get the directory where source code files are located.
+    source_dir = os.getcwd()
+    if options.source_dir:
+        source_dir = options.source_dir
+
+    # Get the stream that we read cppcheck errors from.
+    stream = sys.stdin
+    if options.file:
+        if os.path.exists(options.file) == False:
+            parser.error("cppcheck xml file: %s not found." % options.file)
+        stream = open(options.file, "r")
+
+    # Parse the xml file and produce a simple list of errors.
+    print("Parsing xml report.")
+    try:
+        contentHandler = CppCheckHandler()
+        xml_parse(stream, contentHandler)
+    except XmlParseException, msg:
+        print("Failed to parse cppcheck xml file: %s" % msg)
+        sys.exit(1)
+
+    # We have a list of errors. But now we want to group them on
+    # each source code file. Lets create a files dictionary that
+    # will contain a list of all the errors in that file. For each
+    # file we will also generate a html filename to use.
+    files = {}
+    file_no = 0
+    for error in contentHandler.errors:
+        filename = error["file"]
+        if filename not in files.keys():
+            files[filename] = { "errors" : [], "htmlfile" : str(file_no) + ".html" }
+            file_no = file_no + 1
+        files[filename]["errors"].append(error)
+
+    # Make sure that the report directory is created if it doesn't exist.
+    print("Creating %s directory" % options.report_dir)
+    if not os.path.exists(options.report_dir):
+        os.mkdir(options.report_dir)
+
+    # Generate a html file with syntax highlighted source code for each
+    # file that contains one or more errors.
+    print("Processing errors")
+    for filename, data in files.iteritems():
+        htmlfile = data["htmlfile"]
+        errors = data["errors"]
+
+        lines = []
+        for error in errors:
+            lines.append(error["line"])
+
+        source_file = os.path.join(source_dir, filename)
+        if not os.path.isfile(source_file):
+            sys.stderr.write("ERROR: Source file '%s' not found.\n" % source_file)
+            continue
+        stream = file(source_file)
+        content = stream.read()
+        stream.close()
+
+        htmlFormatter = HtmlFormatter(linenos=True, style='colorful', full=True, hl_lines=lines, lineanchors="line")
+        stream = file(os.path.join(options.report_dir, htmlfile), "w")
+        stream.write(HTML_HEAD)
+        stream.write(highlight(content, guess_lexer_for_filename(source_file, ""), htmlFormatter))
+        stream.write(HTML_FOOTER)
+        stream.close()
+
+        print("  " + filename)
+
+    # Generate a master index.html file that will contain a list of
+    # all the errors created.
+    print("Creating index.html")
+    stream = file(os.path.join(options.report_dir, "index.html"), "w")
+    stream.write(HTML_HEAD)
+    stream.write("<table>")
+    stream.write("<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>")
+    for filename, data in files.iteritems():
+        stream.write("<tr><td colspan='4'><a href=\"%s\">%s</a></td></tr>" % (data["htmlfile"], filename))
+        for error in data["errors"]:
+            stream.write("<tr><td><a href='%s#line-%d'>%d</a></td><td>%s</td><td>%s</td><td>%s</td></tr>" %
+                         (data["htmlfile"], error["line"], error["line"], error["id"],
+                          error["severity"], error["msg"]))
+    stream.write("</table>")
+    stream.write(HTML_FOOTER)
+    stream.close()
+
+    print("Creating style.css file")
+    stream = file(os.path.join(options.report_dir, "style.css"), "w")
+    stream.write(STYLE_FILE)
+    stream.close()
