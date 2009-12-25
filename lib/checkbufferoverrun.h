@@ -79,8 +79,8 @@ private:
     /** callstack - used during intra-function checking */
     std::list<const Token *> _callStack;
 
-    void arrayIndexOutOfBounds(const Token *tok, int size);
-    void arrayIndexOutOfBounds(int size);
+    void arrayIndexOutOfBounds(const Token *tok, int size, int index);
+    void arrayIndexOutOfBounds(int size, int index);
     void bufferOverrun(const Token *tok);
     void dangerousStdCin(const Token *tok);
     void strncatUsage(const Token *tok);
@@ -90,7 +90,7 @@ private:
 
     void getErrorMessages()
     {
-        arrayIndexOutOfBounds(0, 2);
+        arrayIndexOutOfBounds(0, 2, 2);
         bufferOverrun(0);
         dangerousStdCin(0);
         strncatUsage(0);

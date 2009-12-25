@@ -45,19 +45,19 @@ CheckBufferOverrun instance;
 
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, int size)
+void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, int size, int index)
 {
     if (!tok)
-        arrayIndexOutOfBounds(size);
+        arrayIndexOutOfBounds(size, index);
     else
     {
         _callStack.push_back(tok);
-        arrayIndexOutOfBounds(size);
+        arrayIndexOutOfBounds(size, index);
         _callStack.pop_back();
     }
 }
 
-void CheckBufferOverrun::arrayIndexOutOfBounds(int size)
+void CheckBufferOverrun::arrayIndexOutOfBounds(int size, int index)
 {
     Severity::e severity;
     if (size <= 1 || _callStack.size() > 1)
@@ -71,7 +71,14 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(int size)
         severity = Severity::error;
     }
 
-    reportError(_callStack, severity, "arrayIndexOutOfBounds", "Array index out of bounds");
+    if (_callStack.size() == 1)
+    {
+        std::ostringstream oss;
+        oss << "Array '" << (*_callStack.begin())->str() << "[" << size << "]' index " << index << " out of bounds";
+        reportError(_callStack, severity, "arrayIndexOutOfBounds", oss.str().c_str());
+    }
+    else
+        reportError(_callStack, severity, "arrayIndexOutOfBounds", "Array index out of bounds");
 }
 
 void CheckBufferOverrun::bufferOverrun(const Token *tok)
@@ -159,19 +166,19 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
     {
         if (Token::Match(tok, "%varid% [ %num% ]", varid))
         {
-            const char *num = tok->strAt(2);
-            if (std::strtol(num, NULL, 10) >= size)
+            int index = std::strtol(tok->strAt(2), NULL, 10);
+            if (index >= size)
             {
-                arrayIndexOutOfBounds(tok->next(), size);
+                arrayIndexOutOfBounds(tok, size, index);
             }
         }
     }
     else if (Token::Match(tok, std::string(varnames + " [ %num% ]").c_str()))
     {
-        const char *num = tok->strAt(2 + varc);
-        if (std::strtol(num, NULL, 10) >= size)
+        int index = std::strtol(tok->strAt(2 + varc), NULL, 10);
+        if (index >= size)
         {
-            arrayIndexOutOfBounds(tok->next(), size);
+            arrayIndexOutOfBounds(tok->tokAt(varc), size, index);
         }
     }
 
@@ -195,22 +202,22 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         {
             if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", varid))
             {
-                const char *num = tok->strAt(3);
-                if (std::strtol(num, NULL, 10) >= size)
+                int index = std::strtol(tok->strAt(3), NULL, 10);
+                if (index >= size)
                 {
-                    if (std::strtol(num, NULL, 10) > size || !Token::Match(tok->previous(), "& ("))
+                    if (index > size || !Token::Match(tok->previous(), "& ("))
                     {
-                        arrayIndexOutOfBounds(tok->next(), size);
+                        arrayIndexOutOfBounds(tok->next(), size, index);
                     }
                 }
             }
         }
         else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), std::string(varnames + " [ %num% ]").c_str()))
         {
-            const char *num = tok->next()->strAt(2 + varc);
-            if (std::strtol(num, NULL, 10) >= size)
+            int index = std::strtol(tok->strAt(3 + varc), NULL, 10);
+            if (index >= size)
             {
-                arrayIndexOutOfBounds(tok->next(), size);
+                arrayIndexOutOfBounds(tok->tokAt(1 + varc), size, index);
             }
             tok = tok->tokAt(4);
             continue;
@@ -480,7 +487,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);
                     if (min_index >= size || max_index >= size)
                     {
-                        arrayIndexOutOfBounds(tok2->next(), size);
+                        arrayIndexOutOfBounds(tok2, size, min_index > max_index ? min_index : max_index);
                     }
                 }
 
@@ -587,15 +594,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // sent as the parameter, that is checked separately anyway.
         if (Token::Match(tok, "%var% ("))
         {
-            // Don't make recursive checking..
-            if (std::find(_callStack.begin(), _callStack.end(), tok) != _callStack.end())
-                continue;
-
             // Only perform this checking if showAll setting is enabled..
             if (!_settings->_showAll)
                 continue;
 
             unsigned int parlevel = 0, par = 0;
+            const Token * tok1 = tok;
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "(")
@@ -620,10 +624,16 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
 
                 if (parlevel == 1)
                 {
-                    if ((varid > 0 && Token::Match(tok2, std::string("[(,] %varid% [,)]").c_str(), varid)) ||
-                        (varid == 0 &&  Token::Match(tok2, std::string("[(,] " + varnames + " [,)]").c_str())))
+                    if (varid > 0 && Token::Match(tok2, std::string("[(,] %varid% [,)]").c_str(), varid))
                     {
                         ++par;
+                        tok1 = tok2->next();
+                        break;
+                    }
+                    else if (varid == 0 &&  Token::Match(tok2, std::string("[(,] " + varnames + " [,)]").c_str()))
+                    {
+                        ++par;
+                        tok1 = tok2->tokAt(varc + 1);
                         break;
                     }
                 }
@@ -663,8 +673,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                         ftok = ftok->next();
                     ftok = ftok ? ftok->next() : 0;
 
+                    // Don't make recursive checking..
+                    if (std::find(_callStack.begin(), _callStack.end(), tok1) != _callStack.end())
+                        continue;
+
                     // Check variable usage in the function..
-                    _callStack.push_back(tok);
+                    _callStack.push_back(tok1);
                     checkScope(ftok, parname, size, total_size, 0);
                     _callStack.pop_back();
 
