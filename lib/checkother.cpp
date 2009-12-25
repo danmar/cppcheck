@@ -1278,7 +1278,7 @@ private:
         return &tok;
     }
 
-    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) const
+    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
     {
         if (Token::Match(&tok, "!| %var% ("))
         {
@@ -1607,7 +1607,7 @@ private:
         return &tok;
     }
 
-    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) const
+    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
     {
         bool foundError = false;
 

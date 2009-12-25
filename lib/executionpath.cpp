@@ -23,8 +23,13 @@
 
 
 // default : bail out if the condition is has variable handling
-bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> & /*checks*/) const
+bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> & checks)
 {
+    if (Token::Match(tok.tokAt(-3), "!!else if ("))
+    {
+        ++ifinfo;
+    }
+
     unsigned int parlevel = 0;
     for (const Token *tok2 = &tok; tok2; tok2 = tok2->next())
     {
@@ -40,7 +45,10 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
             break;
         if (tok2->varId() != 0)
         {
-            return true;
+            if (ifinfo > 1)
+                return true;
+            else
+                bailOutVar(checks, tok2->varId());
         }
     }
 
@@ -51,9 +59,6 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
 static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
 {
     const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
-
-    // Number of "if" blocks in current scope
-    unsigned int numberOfIf = 0;
 
     for (; tok; tok = tok->next())
     {
@@ -86,10 +91,6 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
 
         if (tok->str() == "if")
         {
-            ++numberOfIf;
-            if (numberOfIf > 1)
-                return 0;
-
             std::list<ExecutionPath *> newchecks;
             while (tok->str() == "if")
             {
@@ -99,7 +100,12 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 // parse condition
                 if (check->parseCondition(*tok->next(), checks))
                 {
-                    ExecutionPath::bailOut(checks);
+                    while (!checks.empty())
+                    {
+                        delete checks.back();
+                        checks.pop_back();
+                    }
+
                     return 0;
                 }
 

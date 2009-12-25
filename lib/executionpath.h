@@ -41,13 +41,17 @@ protected:
     Check * const owner;
 
 public:
-    ExecutionPath(Check *c, unsigned int id) : bailout_(false), varId(id), owner(c)
+    ExecutionPath(Check *c, unsigned int id) : bailout_(false), varId(id), owner(c), ifinfo(0)
     { }
 
     virtual ~ExecutionPath()
     { }
 
+    /** Implement this in each derived class. This function must create a copy of the current instance */
     virtual ExecutionPath *copy() = 0;
+
+    /** Some kind of if-information */
+    unsigned int ifinfo;
 
     bool bailOut() const
     {
@@ -92,7 +96,7 @@ public:
      * @param checks The execution paths. All execution paths in the list are executed in the current scope
      * @return true => bail out all checking
      **/
-    virtual bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) const;
+    virtual bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks);
 
     /** going out of scope - all execution paths end */
     virtual void end(const std::list<ExecutionPath *> & /*checks*/, const Token * /*tok*/) const
