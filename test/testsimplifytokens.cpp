@@ -1914,6 +1914,8 @@ private:
         ASSERT_EQUALS("x = 7 ;", tok("x=1+2*3;"));
         ASSERT_EQUALS("x = 47185 ;", tok("x=(65536*72/100);"));
         ASSERT_EQUALS("x = 900 ;", tok("x = 1500000 / ((145000 - 55000) * 1000 / 54000);"));
+        ASSERT_EQUALS("int a [ 8 ] ;", tok("int a[5+6/2];"));
+        ASSERT_EQUALS("int a [ 4 ] ;", tok("int a[(10)-1-5];"));
     }
 
 
