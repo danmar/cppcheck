@@ -48,7 +48,7 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
 }
 
 
-const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &checks)
+static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
 {
     const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
 
@@ -118,7 +118,7 @@ const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &c
                     std::list<ExecutionPath *>::iterator it;
                     for (it = checks.begin(); it != checks.end(); ++it)
                         c.push_back((*it)->copy());
-                    const Token *tokerr = checkExecutionPaths(tok->next(), c);
+                    const Token *tokerr = checkExecutionPaths_(tok->next(), c);
                     if (tokerr)
                         return tokerr;
                     while (!c.empty())
@@ -141,7 +141,7 @@ const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &c
                     continue;
 
                 // there is no "if"..
-                const Token *tokerr = checkExecutionPaths(tok->next(), checks);
+                const Token *tokerr = checkExecutionPaths_(tok->next(), checks);
                 if (tokerr)
                     return tokerr;
 
@@ -185,5 +185,39 @@ const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &c
         }
     }
     return 0;
+}
+
+
+void checkExecutionPaths(const Token *tok, ExecutionPath *c)
+{
+    for (; tok; tok = tok->next())
+    {
+        if (tok->str() != ")")
+            continue;
+
+        // Start of implementation..
+        if (Token::Match(tok, ") const| {"))
+        {
+            // goto the "{"
+            tok = tok->next();
+            if (tok->str() == "const")
+                tok = tok->next();
+
+            std::list<ExecutionPath *> checks;
+            checks.push_back(c->copy());
+            checkExecutionPaths_(tok, checks);
+
+            c->end(checks, tok->link());
+
+            while (!checks.empty())
+            {
+                delete checks.back();
+                checks.pop_back();
+            }
+
+            // skip this scope - it has been checked
+            tok = tok->link();
+        }
+    }
 }
 

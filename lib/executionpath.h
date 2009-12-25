@@ -93,10 +93,14 @@ public:
      * @return true => bail out all checking
      **/
     virtual bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) const;
+
+    /** going out of scope - all execution paths end */
+    virtual void end(const std::list<ExecutionPath *> & /*checks*/, const Token * /*tok*/) const
+    { }
 };
 
 
-const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &checks);
+void checkExecutionPaths(const Token *tok, ExecutionPath *c);
 
 
 #endif

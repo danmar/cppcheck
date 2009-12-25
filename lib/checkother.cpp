@@ -1630,42 +1630,16 @@ private:
 
 void CheckOther::executionPaths()
 {
-    // start of function: ") const| {"
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    // Check for null pointer errors..
     {
-        if (tok->str() != ")")
-            continue;
-        if (!Token::Match(tok, ") const| {"))
-            continue;
-        while (tok->str() != "{")
-            tok = tok->next();
+        CheckNullpointer c(this);
+        checkExecutionPaths(_tokenizer->tokens(), &c);
+    }
 
-        // check for null pointer errors..
-        {
-            std::list<ExecutionPath *> checks;
-            checks.push_back(new CheckNullpointer(this));
-            checkExecutionPaths(tok->next(), checks);
-            while (!checks.empty())
-            {
-                delete checks.back();
-                checks.pop_back();
-            }
-        }
-
-        // check if variable is accessed uninitialized..
-        {
-            std::list<ExecutionPath *> checks;
-            checks.push_back(new CheckUninitVar(this));
-            checkExecutionPaths(tok->next(), checks);
-            while (!checks.empty())
-            {
-                delete checks.back();
-                checks.pop_back();
-            }
-        }
-
-        // skip function body..
-        tok = tok->link();
+    // check if variable is accessed uninitialized..
+    {
+        CheckUninitVar c(this);
+        checkExecutionPaths(_tokenizer->tokens(), &c);
     }
 }
 

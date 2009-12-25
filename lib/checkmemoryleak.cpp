@@ -2653,9 +2653,8 @@ private:
         return &tok;
     }
 
-public:
     /** going out of scope - all execution paths end */
-    static void end(const std::list<ExecutionPath *> &checks, const Token *tok)
+    void end(const std::list<ExecutionPath *> &checks, const Token *tok) const
     {
         bool foundError = false;
         ret(checks, tok, foundError);
@@ -2665,34 +2664,8 @@ public:
 
 void CheckMemoryLeakInFunction::localleaks()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
-    {
-        if (tok->str() != ")")
-            continue;
-
-        // Start of implementation..
-        if (Token::Match(tok, ") const| {"))
-        {
-            // goto the "{"
-            tok = tok->next();
-            if (tok->str() == "const")
-                tok = tok->next();
-
-            // Check this scope..
-            std::list<ExecutionPath *> checks;
-            checks.push_back(new CheckLocalLeaks(this));
-            checkExecutionPaths(tok->next(), checks);
-            CheckLocalLeaks::end(checks, tok->link());
-            while (!checks.empty())
-            {
-                delete checks.back();
-                checks.pop_back();
-            }
-
-            // skip this scope - it has been checked
-            tok = tok->link();
-        }
-    }
-
+    // Check this scope..
+    CheckLocalLeaks c(this);
+    checkExecutionPaths(_tokenizer->tokens(), &c);
 }
 
