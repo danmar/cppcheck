@@ -80,11 +80,19 @@ public:
     /**
      * Parse tokens at given location
      * @param tok token to parse
-     * @param foundError If an error is found this is set to true and the return token is the error token
+     * @param foundError If an error is found this is set to true
      * @param checks The execution paths. All execution paths in the list are executed in the current scope.
-     * @return if error is found => error token. if you want to skip tokens, return the last skipped token. otherwise return tok.
+     * @return the token before the "next" token.
      **/
     virtual const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const = 0;
+
+    /**
+     * Parse condition
+     * @param tok first token in condition.
+     * @param checks The execution paths. All execution paths in the list are executed in the current scope
+     * @return true => bail out all checking
+     **/
+    virtual bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) const;
 };
 
 

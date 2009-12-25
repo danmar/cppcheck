@@ -1000,6 +1000,13 @@ private:
 
         checkUninitVar("static void foo()\n"
                        "{\n"
+                       "    int i;\n"
+                       "    if (i);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar("static void foo()\n"
+                       "{\n"
                        "    int x, y;\n"
                        "    x = (y = 10);\n"
                        "    int z = y * 2;\n"

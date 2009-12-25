@@ -1277,6 +1277,20 @@ private:
 
         return &tok;
     }
+
+    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) const
+    {
+        if (Token::Match(&tok, "!| %var% ("))
+        {
+            bool foundError = false;
+            std::list<const Token *> var;
+            parseFunctionCall(tok.str() == "!" ? *tok.next() : tok, var, 0);
+            for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
+                dereference(foundError, checks, *it);
+        }
+
+        return ExecutionPath::parseCondition(tok, checks);
+    }
 };
 
 
@@ -1591,6 +1605,24 @@ private:
             }
         }
         return &tok;
+    }
+
+    bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks) const
+    {
+        bool foundError = false;
+
+        if (tok.varId() && Token::Match(&tok, "%var% <|<=|==|!=|)|["))
+            use(foundError, checks, &tok);
+
+        else if (Token::Match(&tok, "!| %var% ("))
+        {
+            std::list<const Token *> var;
+            parseFunctionCall(tok.str() == "!" ? *tok.next() : tok, var, 1);
+            for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
+                use_array(foundError, checks, *it);
+        }
+
+        return ExecutionPath::parseCondition(tok, checks);
     }
 };
 

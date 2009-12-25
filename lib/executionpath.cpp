@@ -22,6 +22,32 @@
 #include <memory>
 
 
+// default : bail out if the condition is has variable handling
+bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> & /*checks*/) const
+{
+    unsigned int parlevel = 0;
+    for (const Token *tok2 = &tok; tok2; tok2 = tok2->next())
+    {
+        if (tok2->str() == "(")
+            ++parlevel;
+        else if (tok2->str() == ")")
+        {
+            if (parlevel == 0)
+                break;
+            --parlevel;
+        }
+        else if (Token::Match(tok2, ";{}"))
+            break;
+        if (tok2->varId() != 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
 const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &checks)
 {
     const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
@@ -70,23 +96,15 @@ const Token *checkExecutionPaths(const Token *tok, std::list<ExecutionPath *> &c
                 // goto "("
                 tok = tok->next();
 
+                // parse condition
+                if (check->parseCondition(*tok->next(), checks))
+                {
+                    ExecutionPath::bailOut(checks);
+                    return 0;
+                }
+
                 // goto ")"
                 tok = tok ? tok->link() : 0;
-
-                // Check if the condition contains the variable
-                if (tok)
-                {
-                    for (const Token *tok2 = tok->link(); tok2 && tok2 != tok; tok2 = tok2->next())
-                    {
-                        // The variable may be initialized..
-                        // if (someFunction(&var)) ..
-                        if (tok2->varId())
-                        {
-                            ExecutionPath::bailOut(checks);
-                            return 0;
-                        }
-                    }
-                }
 
                 // goto "{"
                 tok = tok ? tok->next() : 0;
