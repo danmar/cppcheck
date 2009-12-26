@@ -1314,6 +1314,20 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    char *a;\n"
+                       "    if (a);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    char *a = malloc(100);\n"
+                       "    if (a);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // struct..
         checkUninitVar("void f()\n"
                        "{\n"

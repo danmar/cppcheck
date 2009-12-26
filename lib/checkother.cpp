@@ -1419,6 +1419,8 @@ private:
                         continue;
                     if (mode == 2 && !c->pointer)
                         continue;
+                    if (mode == 3 && (c->pointer && c->alloc))
+                        continue;
 
                     CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
                     if (checkOther)
@@ -1448,6 +1450,11 @@ private:
     static void use_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         use(foundError, checks, tok, 2);
+    }
+
+    static void use_not_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        use(foundError, checks, tok, 3);
     }
 
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
@@ -1650,7 +1657,7 @@ private:
         bool foundError = false;
 
         if (tok.varId() && Token::Match(&tok, "%var% <|<=|==|!=|)|["))
-            use(foundError, checks, &tok);
+            use_not_pointer(foundError, checks, &tok);
 
         else if (Token::Match(&tok, "!| %var% ("))
         {
