@@ -1324,7 +1324,7 @@ private:
     const bool array;
     bool  alloc;
 
-
+    // p = malloc ..
     static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid)
     {
         std::list<ExecutionPath *>::const_iterator it;
@@ -1339,6 +1339,39 @@ private:
         }
     }
 
+    // *p = ..
+    static void init_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        const unsigned int varid(tok->varId());
+        if (!varid)
+            return;
+
+        std::list<ExecutionPath *>::iterator it = checks.begin();
+        while (it != checks.end())
+        {
+            if (!(*it)->bailOut())
+            {
+                CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+                if (c && c->varId == varid)
+                {
+                    if (c->alloc)
+                    {
+                        delete c;
+                        checks.erase(it++);
+                        continue;
+                    }
+                    else
+                    {
+                        use_pointer(foundError, checks, tok);
+                    }
+                }
+            }
+
+            ++it;
+        }
+    }
+
+    // free p;
     static void dealloc_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());
@@ -1447,13 +1480,18 @@ private:
         {
             if (Token::Match(tok.tokAt(-2), "[;{}] *"))
             {
-                use_pointer(foundError, checks, &tok);
+                if (Token::simpleMatch(tok.next(), "="))
+                    init_pointer(foundError, checks, &tok);
+                else
+                    use_pointer(foundError, checks, &tok);
                 return &tok;
             }
 
             if (Token::Match(tok.next(), "= malloc|kmalloc") || Token::simpleMatch(tok.next(), "= new char ["))
             {
                 alloc_pointer(checks, tok.varId());
+                if (tok.tokAt(3)->str() == "(")
+                    return tok.tokAt(3)->link();
             }
 
             else if (Token::simpleMatch(tok.previous(), ">>") || Token::simpleMatch(tok.next(), "="))
