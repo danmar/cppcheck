@@ -539,11 +539,11 @@ private:
     {
         bool all = false;
         const std::string str1 = simplifycode(code, all);
-        ASSERT_EQUALS(0, all ? 1 : 0);
+        ASSERT_EQUALS(0, (unsigned int)(all ? 1 : 0));
 
         all = true;
         const std::string str2 = simplifycode(code, all);
-        ASSERT_EQUALS(all ? 1 : 0, (str1 != str2) ? 1 : 0);
+        ASSERT_EQUALS((unsigned int)(all ? 1 : 0), (unsigned int)((str1 != str2) ? 1 : 0));
 
         return all ? (str1 + "\n" + str2) : str1;
     }
@@ -614,7 +614,7 @@ private:
 
 
     // is there a leak in given code? if so, return the linenr
-    int dofindleak(const char code[], bool all = false) const
+    unsigned int dofindleak(const char code[], bool all = false) const
     {
         // Tokenize..
         Settings settings;
@@ -645,53 +645,55 @@ private:
         }
 
         const Token *tok = CheckMemoryLeakInFunction::findleak(tokenizer.tokens(), all);
-        return (tok ? tok->linenr() : -1);
+        return (tok ? tok->linenr() : (unsigned int)(-1));
     }
 
     void findleak()
     {
+        static const unsigned int notfound = (unsigned int)(-1);
+
         ASSERT_EQUALS(1,  dofindleak("alloc;"));
         ASSERT_EQUALS(1,  dofindleak("; use; { alloc; }"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n return;"));
-        ASSERT_EQUALS(-1, dofindleak("alloc; return use;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc; return use;"));
         ASSERT_EQUALS(2, dofindleak("alloc;\n callfunc;"));
-        ASSERT_EQUALS(-1, dofindleak("alloc; use;"));
-        ASSERT_EQUALS(-1, dofindleak("assign; alloc; dealloc;"));
-        ASSERT_EQUALS(-1, dofindleak("assign; if alloc; dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc; use;"));
+        ASSERT_EQUALS(notfound, dofindleak("assign; alloc; dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("assign; if alloc; dealloc;"));
 
         // if alloc..
         ASSERT_EQUALS(2,  dofindleak("if alloc;\n return;"));
-        ASSERT_EQUALS(-1, dofindleak("if alloc;\n return use;"));
-        ASSERT_EQUALS(-1, dofindleak("if alloc;\n use;"));
+        ASSERT_EQUALS(notfound, dofindleak("if alloc;\n return use;"));
+        ASSERT_EQUALS(notfound, dofindleak("if alloc;\n use;"));
 
         // if..
-        ASSERT_EQUALS(-1, dofindleak("alloc; ifv dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc; ifv dealloc;"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n if return;\n dealloc;"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n if continue;\n dealloc;"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n if_var return;\n dealloc;"));
         ASSERT_EQUALS(3,  dofindleak("alloc;\n if\n return;\n dealloc;"));
-        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; return; } dealloc;"));
-        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; return; } dealloc;"));
-        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc ; alloc; } dealloc;"));
-        ASSERT_EQUALS(-1, dofindleak("alloc;\n if(!var)\n { callfunc;\n return;\n }\n use;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc; if { dealloc ; return; } dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc; if { dealloc ; return; } dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc; if { dealloc ; alloc; } dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc;\n if(!var)\n { callfunc;\n return;\n }\n use;"));
 
-        ASSERT_EQUALS(-1, dofindleak("alloc; if { return use; } dealloc;"));
-        ASSERT_EQUALS(-1, dofindleak("alloc; if { dealloc; return; } dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc; if { return use; } dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc; if { dealloc; return; } dealloc;"));
 
         // assign..
         ASSERT_EQUALS(2,  dofindleak("alloc;\n assign;\n dealloc;"));
-        ASSERT_EQUALS(-1, dofindleak("alloc;\n if(!var) assign;\n dealloc;"));
+        ASSERT_EQUALS(notfound, dofindleak("alloc;\n if(!var) assign;\n dealloc;"));
         ASSERT_EQUALS(2,  dofindleak("alloc;\n if assign;\n dealloc;"));
 
         // loop..
         TODO_ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if break; dealloc ; }"));
         TODO_ASSERT_EQUALS(1, dofindleak("; loop { alloc ; if continue; dealloc ; }"));
-        ASSERT_EQUALS(-1, dofindleak("; loop { alloc ; if break; } dealloc ;"));
+        ASSERT_EQUALS(notfound, dofindleak("; loop { alloc ; if break; } dealloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ; dealloc ;"));
 
         // Todo..
-        ASSERT_EQUALS(-1, dofindleak("; alloc;\n if { dealloc; }\n ;"));
+        ASSERT_EQUALS(notfound, dofindleak("; alloc;\n if { dealloc; }\n ;"));
         TODO_ASSERT_EQUALS(3,  dofindleak("; alloc;\n if { dealloc; }\n ;"));
     }
 
