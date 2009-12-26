@@ -98,7 +98,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 tok = tok->next();
 
                 // parse condition
-                if (check->parseCondition(*tok->next(), checks))
+                if (checks.size() > 10 || check->parseCondition(*tok->next(), checks))
                 {
                     while (!checks.empty())
                     {
