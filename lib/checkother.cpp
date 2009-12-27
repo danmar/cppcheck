@@ -1673,6 +1673,12 @@ private:
                 ExecutionPath::bailOutVar(checks, tok.varId());
                 return &tok;
             }
+
+            if (Token::Match(tok.tokAt(-2), "[,(=] *"))
+            {
+                use(foundError, checks, &tok);
+                return &tok;
+            }
         }
         return &tok;
     }
