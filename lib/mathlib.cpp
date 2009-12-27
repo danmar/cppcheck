@@ -32,11 +32,15 @@
 
 long MathLib::toLongNumber(const std::string &str)
 {
-    if (strncmp(str.c_str(), "0x", 2) == 0)
+    if (strncmp(str.c_str(), "0x" , 2) == 0
+	  ||strncmp(str.c_str(), "+0x", 3) == 0
+	  ||strncmp(str.c_str(), "-0x", 3) == 0)
     {
         return std::strtoul(str.c_str(), '\0', 16);
     }
-    if (strncmp(str.c_str(), "0", 1) == 0)
+    if (strncmp(str.c_str(), "0" , 1) == 0 
+	||  strncmp(str.c_str(), "+0", 2) == 0
+	||  strncmp(str.c_str(), "-0", 2) == 0)
     {
         return std::strtoul(str.c_str(), '\0', 8);
     }

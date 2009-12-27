@@ -81,9 +81,38 @@ private:
 
     void convert()
     {
-        ASSERT_EQUALS(10, MathLib::toLongNumber("0xa"));
-        ASSERT_EQUALS(8, MathLib::toLongNumber("010"));
-        ASSERT_EQUALS(10, MathLib::toLongNumber("10"));
+		// ------------------
+		// tolong conversion:
+		// ------------------
+
+		// from hex
+        ASSERT_EQUALS(10	, MathLib::toLongNumber("0xa"));
+        ASSERT_EQUALS(10995	, MathLib::toLongNumber("0x2AF3"));
+        ASSERT_EQUALS(-10	, MathLib::toLongNumber("-0xa"));
+        ASSERT_EQUALS(-10995, MathLib::toLongNumber("-0x2AF3"));
+        ASSERT_EQUALS(10	, MathLib::toLongNumber("+0xa"));
+        ASSERT_EQUALS(10995 , MathLib::toLongNumber("+0x2AF3"));
+
+		// from octal
+        ASSERT_EQUALS(8 	, MathLib::toLongNumber("010"));
+        ASSERT_EQUALS(8 	, MathLib::toLongNumber("+010"));
+        ASSERT_EQUALS(-8 	, MathLib::toLongNumber("-010"));
+        ASSERT_EQUALS(125 	, MathLib::toLongNumber("0175"));
+        ASSERT_EQUALS(125 	, MathLib::toLongNumber("+0175"));
+        ASSERT_EQUALS(-125 	, MathLib::toLongNumber("-0175"));
+
+		// from base 10 
+        ASSERT_EQUALS(10	, MathLib::toLongNumber("10"));
+        ASSERT_EQUALS(10	, MathLib::toLongNumber("10."));
+        ASSERT_EQUALS(10	, MathLib::toLongNumber("10.0"));
+        ASSERT_EQUALS(100	, MathLib::toLongNumber("10E+1"));
+        ASSERT_EQUALS(1	    , MathLib::toLongNumber("10E-1"));
+        ASSERT_EQUALS(100	, MathLib::toLongNumber("+10E+1"));
+        ASSERT_EQUALS(-1	, MathLib::toLongNumber("-10E-1"));
+        ASSERT_EQUALS(100	, MathLib::toLongNumber("+10.E+1"));
+        ASSERT_EQUALS(-1	, MathLib::toLongNumber("-10.E-1"));
+        ASSERT_EQUALS(100	, MathLib::toLongNumber("+10.0E+1"));
+        ASSERT_EQUALS(-1	, MathLib::toLongNumber("-10.0E-1"));
     }
 
     void isint()
