@@ -88,7 +88,30 @@ private:
 
     void isint()
     {
-        ASSERT_EQUALS(true, MathLib::isInt("0"));
+		// zero tests
+        ASSERT_EQUALS(true , MathLib::isInt("0"));
+        ASSERT_EQUALS(false, MathLib::isInt("0."));
+        ASSERT_EQUALS(false, MathLib::isInt("0.0"));
+        ASSERT_EQUALS(false, MathLib::isInt("-0."));
+        ASSERT_EQUALS(false, MathLib::isInt("+0."));
+        ASSERT_EQUALS(false, MathLib::isInt("-0.0"));
+        ASSERT_EQUALS(false, MathLib::isInt("+0.0"));
+        ASSERT_EQUALS(false, MathLib::isInt("+0.0E+1"));
+        ASSERT_EQUALS(false, MathLib::isInt("+0.0E-1"));
+        ASSERT_EQUALS(false, MathLib::isInt("-0.0E+1"));
+        ASSERT_EQUALS(false, MathLib::isInt("-0.0E-1"));
+
+        ASSERT_EQUALS(true , MathLib::isInt("1"));	
+        ASSERT_EQUALS(true , MathLib::isInt("-1"));	
+        ASSERT_EQUALS(true , MathLib::isInt("+1"));
+        ASSERT_EQUALS(true , MathLib::isInt("+1E+1"));
+        ASSERT_EQUALS(true , MathLib::isInt("+1E+10000"));
+        ASSERT_EQUALS(true , MathLib::isInt("-1E+1"));
+        ASSERT_EQUALS(true , MathLib::isInt("-1E+10000"));
+        ASSERT_EQUALS(false, MathLib::isInt("-1E-1"));
+        ASSERT_EQUALS(false, MathLib::isInt("-1E-10000"));		
+	
+        ASSERT_EQUALS(true, MathLib::isInt("0xff"));
         ASSERT_EQUALS(true, MathLib::isInt("0xa"));
         ASSERT_EQUALS(true, MathLib::isInt("0l"));
         ASSERT_EQUALS(true, MathLib::isInt("0L"));
@@ -102,6 +125,15 @@ private:
         ASSERT_EQUALS(true, MathLib::isInt("0123"));
         ASSERT_EQUALS(false, MathLib::isInt("0.4"));
         ASSERT_EQUALS(false, MathLib::isInt("2352.3f"));
+        ASSERT_EQUALS(false, MathLib::isInt("0.00004"));
+        ASSERT_EQUALS(false, MathLib::isInt("2352.00001f"));
+        ASSERT_EQUALS(false, MathLib::isInt(".4"));
+        ASSERT_EQUALS(false, MathLib::isInt("1.0E+1"));
+        ASSERT_EQUALS(false, MathLib::isInt("1.0E-1"));
+        ASSERT_EQUALS(false, MathLib::isInt("-1.0E+1"));
+        ASSERT_EQUALS(false, MathLib::isInt("+1.0E-1"));
+        ASSERT_EQUALS(false, MathLib::isInt("-1.E+1"));
+        ASSERT_EQUALS(false, MathLib::isInt("+1.E-1"));
     }
 };
 
