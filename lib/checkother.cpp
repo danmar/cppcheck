@@ -1415,7 +1415,7 @@ private:
                 CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
                 if (c && c->varId == varid)
                 {
-                    if (mode == 0 && c->array)
+                    if (mode == 0 && (c->array || (c->pointer && c->alloc)))
                         continue;
                     if (mode == 2 && !c->pointer)
                         continue;

@@ -1080,6 +1080,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "   char *buf = malloc(100);\n"
+                       "   struct ABC *abc = buf;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // goto..
         checkUninitVar("void foo(int x)\n"
                        "{\n"
