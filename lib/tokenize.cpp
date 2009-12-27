@@ -3769,6 +3769,12 @@ bool Tokenizer::simplifyKnownVariables()
                         tok3 = tok3->next();
                         ret = true;
                     }
+
+                    // return variable..
+                    if (Token::Match(tok3, "return %varid% ;", varid))
+                    {
+                        tok3->next()->str(value);
+                    }
                 }
             }
         }

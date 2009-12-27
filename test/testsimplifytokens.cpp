@@ -2473,6 +2473,24 @@ private:
 
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[] = "int *foo()\n"
+                                "{\n"
+                                "    int a[10];\n"
+                                "    int *b = a;\n"
+                                "    return b;\n"
+                                "}\n";
+
+            const char expected[] = "int * foo ( ) "
+                                    "{ "
+                                    "int a [ 10 ] ; "
+                                    "int * b ; b = a ; "
+                                    "return a ; "
+                                    "}";
+
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
 
