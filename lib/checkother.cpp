@@ -1400,7 +1400,13 @@ private:
         }
     }
 
-
+    /**
+     * use - called from the use* functions below.
+     * @param foundError this is set to true if an error is found
+     * @param checks all available checks
+     * @param tok variable token
+     * @param mode specific behaviour
+     */
     static void use(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok, const int mode)
     {
         const unsigned int varid(tok->varId());
@@ -1415,11 +1421,16 @@ private:
                 CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
                 if (c && c->varId == varid)
                 {
+                    // mode 0 : the variable is used "directly"
+                    // example: .. = var;
+                    // it is ok to read the address of an uninitialized array.
+                    // it is ok to read the address of an allocated pointer
                     if (mode == 0 && (c->array || (c->pointer && c->alloc)))
                         continue;
+
+                    // mode 2 : bad usage of pointer. if it's not a pointer then the usage is ok.
+                    // example: ptr->foo();
                     if (mode == 2 && !c->pointer)
-                        continue;
-                    if (mode == 3 && (c->pointer && c->alloc))
                         continue;
 
                     CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
@@ -1437,24 +1448,38 @@ private:
         }
     }
 
+    /**
+     * Reading variable. Use this function in situations when it is
+     * invalid to read the data of the variable but not the address.
+     * @param foundError this is set to true if an error is found
+     * @param checks all available checks
+     * @param tok variable token
+     */
     static void use(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         use(foundError, checks, tok, 0);
     }
 
+    /**
+     * Reading array elements. If the variable is not an array then the usage is ok.
+     * @param foundError this is set to true if an error is found
+     * @param checks all available checks
+     * @param tok variable token
+     */
     static void use_array(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         use(foundError, checks, tok, 1);
     }
 
+    /**
+     * Bad pointer usage. If the variable is not a pointer then the usage is ok.
+     * @param foundError this is set to true if an error is found
+     * @param checks all available checks
+     * @param tok variable token
+     */
     static void use_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         use(foundError, checks, tok, 2);
-    }
-
-    static void use_not_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
-    {
-        use(foundError, checks, tok, 3);
     }
 
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
@@ -1657,7 +1682,7 @@ private:
         bool foundError = false;
 
         if (tok.varId() && Token::Match(&tok, "%var% <|<=|==|!=|)|["))
-            use_not_pointer(foundError, checks, &tok);
+            use(foundError, checks, &tok);
 
         else if (Token::Match(&tok, "!| %var% ("))
         {
