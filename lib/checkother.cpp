@@ -1664,7 +1664,8 @@ private:
 
             if (Token::simpleMatch(tok.next(), "."))
             {
-                use_pointer(foundError, checks, &tok);
+                if (!Token::Match(tok.previous(), "[;{}] %var% . %var% ="))
+                    use_pointer(foundError, checks, &tok);
                 return &tok;
             }
 
