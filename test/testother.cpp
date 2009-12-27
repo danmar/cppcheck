@@ -1349,6 +1349,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    ABC *abc = malloc(100);\n"
+                       "    free(abc);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // struct..
         checkUninitVar("void f()\n"
                        "{\n"

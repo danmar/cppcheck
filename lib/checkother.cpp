@@ -1169,7 +1169,7 @@ static void parseFunctionCall(const Token &tok, std::list<const Token *> &var, u
             var.push_back(tok.tokAt(2));
         else if (value == 0 && Token::Match(&tok, "memchr|memcmp|memcpy|memmove|memset|strcpy|printf|sprintf|snprintf"))
             var.push_back(tok.tokAt(2));
-        else if (Token::Match(&tok, "free|kfree|fclose|fflush"))
+        else if (Token::simpleMatch(&tok, "fflush"))
             var.push_back(tok.tokAt(2));
     }
 
@@ -1552,6 +1552,13 @@ private:
 
         if (Token::Match(&tok, "%var% ("))
         {
+            // deallocate pointer
+            if (Token::Match(&tok, "free|kfree|fclose ( %var% )"))
+            {
+                dealloc_pointer(foundError, checks, tok.tokAt(2));
+                return tok.tokAt(3);
+            }
+
             // parse usage..
             {
                 std::list<const Token *> var;
