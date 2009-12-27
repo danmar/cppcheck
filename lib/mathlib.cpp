@@ -33,14 +33,14 @@
 long MathLib::toLongNumber(const std::string &str)
 {
     if (strncmp(str.c_str(), "0x" , 2) == 0
-	  ||strncmp(str.c_str(), "+0x", 3) == 0
-	  ||strncmp(str.c_str(), "-0x", 3) == 0)
+        || strncmp(str.c_str(), "+0x", 3) == 0
+        || strncmp(str.c_str(), "-0x", 3) == 0)
     {
         return std::strtoul(str.c_str(), '\0', 16);
     }
-    if (strncmp(str.c_str(), "0" , 1) == 0 
-	||  strncmp(str.c_str(), "+0", 2) == 0
-	||  strncmp(str.c_str(), "-0", 2) == 0)
+    if (strncmp(str.c_str(), "0" , 1) == 0
+        ||  strncmp(str.c_str(), "+0", 2) == 0
+        ||  strncmp(str.c_str(), "-0", 2) == 0)
     {
         return std::strtoul(str.c_str(), '\0', 8);
     }
@@ -66,12 +66,12 @@ std::string MathLib::toString(T d)
 {
     std::ostringstream result;
     result << d;
-	std::string strResult(result.str());
-	if(strResult == "-0" 
-	|| strResult == "+0" 
-	|| strResult == "-0." 
-	|| strResult == "+0.")
-	   return std::string("0");
+    std::string strResult(result.str());
+    if (strResult == "-0"
+        || strResult == "+0"
+        || strResult == "-0."
+        || strResult == "+0.")
+        return std::string("0");
     return result.str();
 }
 
