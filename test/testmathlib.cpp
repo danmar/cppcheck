@@ -38,13 +38,45 @@ private:
 
     void calculate()
     {
+		// addition
         ASSERT_EQUALS("256", MathLib::add("0xff", "1"));
+        ASSERT_EQUALS("249", MathLib::add("250", "-1"));
+        ASSERT_EQUALS("251", MathLib::add("250", "1"));
+        ASSERT_EQUALS("-2" , MathLib::add("-1.", "-1"));
+        ASSERT_EQUALS("-1" , MathLib::add("0", "-1"));
+        ASSERT_EQUALS("1"  , MathLib::add("1", "0"));
+        ASSERT_EQUALS("0"  , MathLib::add("0", "0."));
+
+		// subtraction
+        ASSERT_EQUALS("254", MathLib::subtract("0xff", "1"));
+        ASSERT_EQUALS("251", MathLib::subtract("250", "-1"));
+        ASSERT_EQUALS("249", MathLib::subtract("250", "1"));
+        ASSERT_EQUALS("0"  , MathLib::subtract("-1.", "-1"));
+        ASSERT_EQUALS("1"  , MathLib::subtract("0", "-1"));
+        ASSERT_EQUALS("1"  , MathLib::subtract("1", "0"));
+        ASSERT_EQUALS("0"  , MathLib::subtract("0", "0."));
+
+		// multiply
         ASSERT_EQUALS("-0.003", MathLib::multiply("-1e-3", "3"));
-        ASSERT_EQUALS("5", MathLib::divide("25.5", "5.1"));
         ASSERT_EQUALS("-11.96", MathLib::multiply("-2.3", "5.2"));
-        ASSERT_EQUALS("7", MathLib::divide("21.", "3"));
-        ASSERT_EQUALS("1", MathLib::divide("3", "2"));
-        ASSERT_EQUALS("3000", MathLib::multiply("1E3", "3"));
+        ASSERT_EQUALS("3000"  , MathLib::multiply("1E3", "3"));
+        ASSERT_EQUALS("3000"  , MathLib::multiply("1E+3", "3"));
+        ASSERT_EQUALS("3000"  , MathLib::multiply("1.0E3", "3"));
+        ASSERT_EQUALS("-3000" , MathLib::multiply("-1.0E3", "3"));
+        ASSERT_EQUALS("-3000" , MathLib::multiply("-1.0E+3", "3"));
+        ASSERT_EQUALS("0" 	  , MathLib::multiply("-1.0E+3", "0"));
+        ASSERT_EQUALS("0" 	  , MathLib::multiply("+1.0E+3", "0"));
+
+		// divide
+        ASSERT_EQUALS("1"	, MathLib::divide("1", "1"));
+        ASSERT_EQUALS("0"	, MathLib::divide("0", "1"));
+        ASSERT_EQUALS("5"	, MathLib::divide("-10", "-2"));
+        ASSERT_EQUALS("-2.5", MathLib::divide("-10.", "4"));
+        ASSERT_EQUALS("2.5" , MathLib::divide("-10.", "-4"));					
+        ASSERT_EQUALS("5"	, MathLib::divide("25.5", "5.1"));
+        ASSERT_EQUALS("7"	, MathLib::divide("21.", "3"));
+        ASSERT_EQUALS("1"	, MathLib::divide("3", "2"));
+
     }
 
     void convert()
