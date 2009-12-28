@@ -54,7 +54,12 @@ public:
         checkStl.pushback();
         checkStl.stlBoundries();
         checkStl.find();
-        checkStl.size();
+
+        if (settings->_checkCodingStyle)
+        {
+            if (settings->_showAll)
+                checkStl.size();
+        }
     }
 
 

@@ -89,8 +89,11 @@ private:
         errout.str("");
 
         // Check..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        settings._showAll = true;
         CheckStl checkStl;
-        checkStl.runSimplifiedChecks(&tokenizer, (const Settings *)0, this);
+        checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
 
