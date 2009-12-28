@@ -429,6 +429,48 @@ void Tokenizer::simplifyTypedef()
             tok->deleteThis();
             tok = tok2;
         }
+        else if (Token::Match(tok->next(), "enum %type% {") ||
+                 Token::Match(tok->next(), "enum {"))
+        {
+            Token *tok1;
+            Token *tok2 = 0;
+
+            if (tok->tokAt(2)->str() == "{")
+                tok1 = tok->tokAt(3);
+            else
+            {
+                tok1 = tok->tokAt(4);
+                tok2 = tok->tokAt(2);
+            }
+
+            for (; tok1; tok1 = tok1->next())
+            {
+                if (tok1->str() == "}")
+                    break;
+            }
+
+            if (tok2 == 0)
+            {
+                if (Token::Match(tok1->next(), "%type%"))
+                {
+                    tok2 = tok1->next();
+                    tok->tokAt(1)->insertToken(tok2->strAt(0));
+                }
+                else
+                    continue;
+            }
+
+            tok1->insertToken(";");
+            tok1 = tok1->next();
+            tok1->insertToken("typedef");
+            tok1 = tok1->next();
+            Token * tok3 = tok1;
+            tok1->insertToken("enum");
+            tok1 = tok1->next();
+            tok1->insertToken(tok2->strAt(0));
+            tok->deleteThis();
+            tok = tok3;
+        }
 
         if (Token::Match(tok->next(), "%type% *| %type% ;") ||
             Token::Match(tok->next(), "%type% %type% *| %type% ;"))
@@ -464,7 +506,6 @@ void Tokenizer::simplifyTypedef()
                 {
                     typeName = tok->strAt(3);
                     tok = tok->tokAt(4);
-
                 }
             }
 
@@ -506,7 +547,9 @@ void Tokenizer::simplifyTypedef()
                     else if (Token::Match(tok2->tokAt(-2), "!!typedef") &&
                              Token::Match(tok2->tokAt(-3), "!!typedef"))
                     {
-                        simplifyType = true;
+                        // Check for enum and typedef with same name.
+                        if (tok2->tokAt(-1)->str() != type1)
+                            simplifyType = true;
                     }
                     else
                     {

@@ -1781,11 +1781,6 @@ private:
         }
 
         {
-            const char code[] = "typedef enum { a = 0 , b = 1 , c = 2 } abc ;";
-            ASSERT_EQUALS(code, sizeof_(code));
-        }
-
-        {
             const char code[] = "void f()\n"
                                 "{\n"
                                 "    char buf[BUFSIZ], **p;\n"
@@ -2297,6 +2292,8 @@ private:
                             "typedef unsigned int * PUINT;\n"
                             "typedef struct s S, * PS\n;"
                             "typedef struct t { int a; } T, *TP;"
+                            "typedef enum { a = 0 , b = 1 , c = 2 } abc;"
+                            "typedef enum xyz { a = 0 , b = 1 , c = 2 } ABC;"
                             "INT ti;\n"
                             "UINT tui;\n"
                             "PINT tpi;\n"
@@ -2304,7 +2301,9 @@ private:
                             "S s;\n"
                             "PS ps;\n"
                             "T t;\n"
-                            "TP tp;\n";
+                            "TP tp;\n"
+                            "abc e1;\n"
+                            "ABC e2;";
 
         const char expected[] =
             "typedef int INT ; "
@@ -2313,6 +2312,8 @@ private:
             "typedef unsigned int * PUINT ; "
             "typedef struct s S ; typedef struct s * PS ; "
             "struct t { int a ; } ; typedef struct t T ; typedef struct t * TP ; "
+            "enum abc { a = 0 , b = 1 , c = 2 } ; typedef enum abc abc ; "
+            "enum xyz { a = 0 , b = 1 , c = 2 } ; typedef enum xyz ABC ; "
             "int ti ; "
             "unsigned int tui ; "
             "int * tpi ; "
@@ -2320,7 +2321,9 @@ private:
             "struct s s ; "
             "struct s * ps ; "
             "struct t t ; "
-            "struct t * tp ;";
+            "struct t * tp ; "
+            "enum abc e1 ; "
+            "enum xyz e2 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
