@@ -1375,6 +1375,8 @@ private:
     static void dealloc_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());
+        if (!varid)
+            return;
 
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)

@@ -1094,6 +1094,17 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("class Fred {\n"
+                       "public:\n"
+                       "    FILE *f;\n"
+                       "    ~Fred();\n"
+                       "}\n"
+                       "Fred::~Fred()\n"
+                       "{\n"
+                       "    fclose(f);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // goto..
         checkUninitVar("void foo(int x)\n"
                        "{\n"
