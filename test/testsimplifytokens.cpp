@@ -149,6 +149,9 @@ private:
         TEST_CASE(pointeralias);
 
         TEST_CASE(reduceConstness);
+
+        // simplify "while (0)"
+        TEST_CASE(while0);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -991,7 +994,7 @@ private:
                             "    sizeof 1;\n"
                             "    while (0);\n"
                             "}\n";
-        ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; while ( false ) { ; } }", tok(code));
+        ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; }", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2497,6 +2500,11 @@ private:
     void reduceConstness()
     {
         ASSERT_EQUALS("char * p ;", tok("char * const p;"));
+    }
+
+    void while0()
+    {
+        ASSERT_EQUALS("; x = 1 ; ;", tok("; do { x = 1 ; } while (0);"));
     }
 };
 

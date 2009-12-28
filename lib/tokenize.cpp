@@ -2214,6 +2214,7 @@ bool Tokenizer::simplifyTokenList()
     simplifyIfNotNull();
     simplifyComparisonOrder();
     simplifyNestedStrcat();
+    simplifyWhile0();
 
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -4956,4 +4957,44 @@ void Tokenizer::simplifyConst()
 void Tokenizer::getErrorMessages()
 {
     syntaxError(0, ' ');
+}
+
+void Tokenizer::simplifyWhile0()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (!Token::simpleMatch(tok, "while ( 0 )"))
+            continue;
+
+        // remove "while (0) { .. }"
+        if (Token::simpleMatch(tok->tokAt(4), "{"))
+        {
+            Token::eraseTokens(tok, tok->tokAt(4)->link());
+            tok->deleteThis();  // delete "while"
+            tok->deleteThis();  // delete "}"
+        }
+
+        if (Token::simpleMatch(tok->previous(), "}"))
+        {
+            // find "do"
+            Token *tok2 = tok->previous()->link();
+            tok2 = tok2 ? tok2->previous() : 0;
+            if (tok2 && tok2->str() == "do")
+            {
+                // delete "do {"
+                tok2->deleteThis();
+                tok2->deleteThis();
+
+                // delete "} while ( 0 )"
+                tok = tok->previous();
+                tok->deleteNext();  // while
+                tok->deleteNext();  // (
+                tok->deleteNext();  // 0
+                tok->deleteNext();  // )
+                tok->deleteThis();  // }
+
+                continue;
+            }
+        }
+    }
 }

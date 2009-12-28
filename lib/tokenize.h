@@ -321,6 +321,11 @@ private:
     void simplifyConst();
 
     /**
+     * simplify "while (0)"
+     */
+    void simplifyWhile0();
+
+    /**
      * Remove exception specifications. This function calls itself recursively.
      * @param tok First token in scope to cleanup
      */

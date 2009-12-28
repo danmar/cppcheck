@@ -65,7 +65,6 @@ private:
         TEST_CASE(ifAddBraces5);
         TEST_CASE(ifAddBraces6);
         TEST_CASE(ifAddBraces7);
-        TEST_CASE(ifAddBraces8);
         TEST_CASE(ifAddBraces9);
 
         TEST_CASE(whileAddBraces);
@@ -575,12 +574,6 @@ private:
                       "}", tokenizeAndStringify(code, true));
     }
 
-    void ifAddBraces8()
-    {
-        const char code[] = "do { ; } while(0);";
-        ASSERT_EQUALS("do { ; } while ( false ) ;", tokenizeAndStringify(code, true));
-    }
-
     void ifAddBraces9()
     {
         // ticket #990
@@ -610,9 +603,9 @@ private:
     {
         {
             const char code[] = "do ; while (0);";
-            const char result[] = "do { ; } while ( false ) ;";
+            const char result[] = "do { ; } while ( 0 ) ;";
 
-            ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(result, tokenizeAndStringify(code, false));
         }
 
         {
