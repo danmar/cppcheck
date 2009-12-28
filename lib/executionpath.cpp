@@ -56,6 +56,16 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
 }
 
 
+static void dealloc_checks(std::list<ExecutionPath *> &checks)
+{
+    while (!checks.empty())
+    {
+        delete checks.back();
+        checks.pop_back();
+    }
+}
+
+
 static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
 {
     const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
@@ -100,12 +110,8 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 // parse condition
                 if (checks.size() > 10 || check->parseCondition(*tok->next(), checks))
                 {
-                    while (!checks.empty())
-                    {
-                        delete checks.back();
-                        checks.pop_back();
-                    }
-
+                    dealloc_checks(checks);
+                    dealloc_checks(newchecks);
                     return 0;
                 }
 
@@ -116,7 +122,11 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 tok = tok ? tok->next() : 0;
 
                 if (!Token::simpleMatch(tok, "{"))
+                {
+                    dealloc_checks(checks);
+                    dealloc_checks(newchecks);
                     return 0;
+                }
 
                 // Recursively check into the if ..
                 {
@@ -126,7 +136,11 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                         c.push_back((*it)->copy());
                     const Token *tokerr = checkExecutionPaths_(tok->next(), c);
                     if (tokerr)
+                    {
+                        dealloc_checks(c);
+                        dealloc_checks(newchecks);
                         return tokerr;
+                    }
                     while (!c.empty())
                     {
                         newchecks.push_back(c.back());
@@ -149,16 +163,22 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 // there is no "if"..
                 const Token *tokerr = checkExecutionPaths_(tok->next(), checks);
                 if (tokerr)
+                {
+                    dealloc_checks(newchecks);
                     return tokerr;
+                }
 
                 tok = tok->link();
                 if (!tok)
+                {
+                    dealloc_checks(newchecks);
                     return 0;
+                }
             }
 
             std::list<ExecutionPath *>::iterator it;
             for (it = newchecks.begin(); it != newchecks.end(); ++it)
-                checks.push_back((*it)->copy());
+                checks.push_back(*it);
         }
 
 
@@ -192,7 +212,6 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
     }
     return 0;
 }
-
 
 void checkExecutionPaths(const Token *tok, ExecutionPath *c)
 {

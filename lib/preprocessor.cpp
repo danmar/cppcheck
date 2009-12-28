@@ -1693,7 +1693,13 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             if (macro->name().empty())
                 delete macro;
             else
+            {
+                std::map<std::string, PreprocessorMacro *>::iterator it;
+                it = macros.find(macro->name());
+                if (it != macros.end())
+                    delete it->second;
                 macros[macro->name()] = macro;
+            }
             line = "\n";
         }
 
@@ -1759,6 +1765,11 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                    errorLogger,
                                    "noQuoteCharPair",
                                    std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.");
+
+                        std::map<std::string, PreprocessorMacro *>::iterator it;
+                        for (it = macros.begin(); it != macros.end(); ++it)
+                            delete it->second;
+
                         return "";
                     }
 
@@ -1882,11 +1893,10 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                    errorLogger,
                                    "syntaxError",
                                    std::string("Syntax error. Not enough parameters for macro '") + macro->name() + "'.");
-                        {
-                            std::map<std::string, PreprocessorMacro *>::iterator it;
-                            for (it = macros.begin(); it != macros.end(); ++it)
-                                delete it->second;
-                        }
+
+                        std::map<std::string, PreprocessorMacro *>::iterator it;
+                        for (it = macros.begin(); it != macros.end(); ++it)
+                            delete it->second;
 
                         return "";
                     }
