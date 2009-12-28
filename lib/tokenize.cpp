@@ -4969,9 +4969,9 @@ void Tokenizer::simplifyWhile0()
         // remove "while (0) { .. }"
         if (Token::simpleMatch(tok->tokAt(4), "{"))
         {
-            Token::eraseTokens(tok, tok->tokAt(4)->link());
+            const Token *end = tok->tokAt(4)->link();
+            Token::eraseTokens(tok, end ? end->next() : 0);
             tok->deleteThis();  // delete "while"
-            tok->deleteThis();  // delete "}"
         }
 
         if (Token::simpleMatch(tok->previous(), "}"))
