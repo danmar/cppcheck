@@ -59,7 +59,7 @@ void Settings::autoDealloc(std::istream &istr)
     }
 }
 
-bool Settings::suppressions(std::istream &istr)
+bool Settings::Suppressions::parseFile(std::istream &istr)
 {
     std::string line;
     while (getline(istr, line))
@@ -87,13 +87,13 @@ bool Settings::suppressions(std::istream &istr)
     return true;
 }
 
-void Settings::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
+void Settings::Suppressions::addSuppression(const std::string &errorId, const std::string &file, unsigned int line)
 {
     _suppressions[errorId][file].push_back(line);
     _suppressions[errorId][file].sort();
 }
 
-bool Settings::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
+bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
 {
     if (_suppressions.find(errorId) == _suppressions.end())
         return false;

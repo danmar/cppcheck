@@ -119,7 +119,21 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
             std::ifstream f(argv[i]);
             if (!f.is_open())
                 throw std::runtime_error("cppcheck: Couldn't open the file \"" + std::string(argv[i]) + "\"");
-            _settings.suppressions(f);
+            _settings.nomsg.parseFile(f);
+        }
+
+        // Filter errors
+        else if (strcmp(argv[i], "--exitcode-suppressions") == 0)
+        {
+            ++i;
+
+            if (i >= argc)
+                throw std::runtime_error("cppcheck: No file specified for the --exitcode-suppressions option");
+
+            std::ifstream f(argv[i]);
+            if (!f.is_open())
+                throw std::runtime_error("cppcheck: Couldn't open the file \"" + std::string(argv[i]) + "\"");
+            _settings.nofail.parseFile(f);
         }
 
         // Enables inline suppressions.
@@ -334,9 +348,10 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "\n"
         "Syntax:\n"
         "    cppcheck [--all] [--append=file] [--auto-dealloc file.lst] [--enable]\n"
-        "             [--error-exitcode=[n]] [--force] [--help] [-Idir] [-j [jobs]]\n"
-        "             [--quiet] [--style] [--suppressions file.txt] [--inline-suppr]\n"
-        "             [--verbose] [--version] [--xml] [file or path1]\n"
+        "             [--error-exitcode=[n]] [--exitcode-suppressions file] [--force]\n"
+        "             [--help] [-Idir] [-j [jobs]] [--quiet] [--style]\n"
+        "             [--suppressions file.txt] [--inline-suppr] [--verbose]\n"
+        "             [--version] [--xml] [file or path1]\n"
         "             [file or path] ...\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
@@ -366,6 +381,9 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "                         if arguments are not valid or if no input files are\n"
         "                         provided. Note that your operating system can\n"
         "                         modify this value, e.g. 256 can become 0.\n"
+        "    --exitcode-suppressions file\n"
+        "                         Used when certain messages should be displayed but\n"
+        "                         should not cause a non-zero exitcode.\n"
         "    -f, --force          Force checking on files that have \"too many\"\n"
         "                         configurations\n"
         "    -h, --help           Print this help\n"
@@ -410,6 +428,8 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
 
 unsigned int CppCheck::check()
 {
+    exitcode = 0;
+
     _checkUnusedFunctions.setErrorLogger(this);
     std::sort(_filenames.begin(), _filenames.end());
     for (unsigned int c = 0; c < _filenames.size(); c++)
@@ -487,11 +507,8 @@ unsigned int CppCheck::check()
         _checkUnusedFunctions.check();
     }
 
-
-
-    unsigned int result = static_cast<unsigned int>(_errorList.size());
     _errorList.clear();
-    return result;
+    return exitcode;
 }
 
 
@@ -573,8 +590,11 @@ void CppCheck::reportErr(const ErrorLogger::ErrorMessage &msg)
         line = msg._callStack.back().line;
     }
 
-    if (_settings.isSuppressed(msg._id, file, line))
+    if (_settings.nomsg.isSuppressed(msg._id, file, line))
         return;
+
+    if (!_settings.nofail.isSuppressed(msg._id, file, line))
+        exitcode = 1;
 
     _errorList.push_back(errmsg);
     std::string errmsg2(errmsg);

@@ -202,7 +202,7 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         {
             // Add the suppressions.
             for (size_t j(0); j < suppressionIDs.size(); ++j)
-                settings->addSuppression(suppressionIDs[j], filename, lineno);
+                settings->nomsg.addSuppression(suppressionIDs[j], filename, lineno);
             suppressionIDs.clear();
         }
 

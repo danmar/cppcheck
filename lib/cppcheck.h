@@ -135,6 +135,7 @@ private:
      */
     virtual void reportOut(const std::string &outmsg);
 
+    unsigned int exitcode;
     std::list<std::string> _errorList;
     std::ostringstream _errout;
     Settings _settings;
