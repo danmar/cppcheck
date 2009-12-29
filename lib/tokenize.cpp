@@ -1426,20 +1426,59 @@ void Tokenizer::setVarId()
         // Skip template arguments..
         if (Token::Match(tok, "%type% <"))
         {
+            int level = 1;
+            bool again;
             Token *tok2 = tok->tokAt(2);
 
-            while (Token::Match(tok2, "%var% ::"))
-                tok2 = tok2->tokAt(2);
+            do // Look for start of templates or template arguments
+            {
+                again = false;
 
-            while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->str() == "*" || tok2->str() == ","))
-                tok2 = tok2->next();
+                while (Token::Match(tok2, "%var% ::"))
+                    tok2 = tok2->tokAt(2);
 
-            if (Token::Match(tok2, "> %var%"))
-                tok = tok2;
-            else if (Token::Match(tok2, "> ::|*|& %var%"))
-                tok = tok2->next();
-            else
-                continue;       // Not code that I understand / not a variable declaration
+                if (Token::Match(tok2, "%type% <"))
+                {
+                    level++;
+                    tok2 = tok2->tokAt(2);
+                    again = true;
+                }
+                else if (Token::Match(tok2, "%type% ,"))
+                {
+                    tok2 = tok2->tokAt(2);
+                    again = true;
+                }
+                else
+                {
+                    while (tok2 && (tok2->isName() || tok2->isNumber() || tok2->str() == "*" || tok2->str() == ","))
+                        tok2 = tok2->next();
+                }
+            }
+            while (again);
+
+            do // Look for end of templates
+            {
+                again = false;
+
+                if (level == 1 && Token::Match(tok2, "> %var%"))
+                    tok = tok2;
+                else if (level > 1 && tok2->str() == ">")
+                {
+                    level--;
+                    if (level == 0)
+                        tok = tok2;
+                    else
+                    {
+                        tok2 = tok2->tokAt(1);
+                        again = true;
+                    }
+                }
+                else if (level == 1 && Token::Match(tok2, "> ::|*|& %var%"))
+                    tok = tok2->next();
+                else
+                    continue;       // Not code that I understand / not a variable declaration
+            }
+            while (again);
         }
 
         // Determine name of declared variable..
