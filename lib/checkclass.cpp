@@ -730,8 +730,10 @@ void CheckClass::noMemset()
 
 void CheckClass::operatorEq()
 {
-    const Token *tok = Token::findmatch(_tokenizer->tokens(), "void operator = (");
-    if (tok)
+    const Token *tok2 = _tokenizer->tokens();
+    const Token *tok;
+
+    while ((tok = Token::findmatch(tok2, "void operator = (")))
     {
         const Token *tok1 = tok;
         while (tok1 && !Token::Match(tok1, "class %var%"))
@@ -745,6 +747,8 @@ void CheckClass::operatorEq()
                 break;
             tok1 = tok1->previous();
         }
+
+	tok2 = tok->next();
     }
 }
 //---------------------------------------------------------------------------
