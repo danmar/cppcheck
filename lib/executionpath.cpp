@@ -175,19 +175,6 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         {
             bool foundError = false;
             tok = check->parse(*tok, foundError, checks);
-            std::list<ExecutionPath *>::iterator it;
-            for (it = checks.begin(); it != checks.end();)
-            {
-                if ((*it)->bailOut())
-                {
-                    delete *it;
-                    it = checks.erase(it);
-                }
-                else
-                {
-                    ++it;
-                }
-            }
             if (checks.empty())
                 return 0;
             else if (foundError)

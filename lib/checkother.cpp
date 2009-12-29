@@ -1330,12 +1330,9 @@ private:
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
         {
-            if (!(*it)->bailOut())
-            {
-                CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
-                if (c && c->varId == varid)
-                    c->alloc = true;
-            }
+            CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+            if (c && c->varId == varid)
+                c->alloc = true;
         }
     }
 
@@ -1349,21 +1346,18 @@ private:
         std::list<ExecutionPath *>::iterator it = checks.begin();
         while (it != checks.end())
         {
-            if (!(*it)->bailOut())
+            CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+            if (c && c->varId == varid)
             {
-                CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
-                if (c && c->varId == varid)
+                if (c->alloc)
                 {
-                    if (c->alloc)
-                    {
-                        delete c;
-                        checks.erase(it++);
-                        continue;
-                    }
-                    else
-                    {
-                        use_pointer(foundError, checks, tok);
-                    }
+                    delete c;
+                    checks.erase(it++);
+                    continue;
+                }
+                else
+                {
+                    use_pointer(foundError, checks, tok);
                 }
             }
 
@@ -1381,23 +1375,20 @@ private:
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
         {
-            if (!(*it)->bailOut())
+            CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+            if (c && c->varId == varid)
             {
-                CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
-                if (c && c->varId == varid)
+                if (!c->alloc)
                 {
-                    if (!c->alloc)
+                    CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
+                    if (checkOther)
                     {
-                        CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
-                        if (checkOther)
-                        {
-                            foundError = true;
-                            checkOther->uninitvarError(tok, c->varname);
-                            break;
-                        }
+                        foundError = true;
+                        checkOther->uninitvarError(tok, c->varname);
+                        break;
                     }
-                    c->alloc = false;
                 }
+                c->alloc = false;
             }
         }
     }
@@ -1418,33 +1409,30 @@ private:
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
         {
-            if (!(*it)->bailOut())
+            CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+            if (c && c->varId == varid)
             {
-                CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
-                if (c && c->varId == varid)
+                // mode 0 : the variable is used "directly"
+                // example: .. = var;
+                // it is ok to read the address of an uninitialized array.
+                // it is ok to read the address of an allocated pointer
+                if (mode == 0 && (c->array || (c->pointer && c->alloc)))
+                    continue;
+
+                // mode 2 : bad usage of pointer. if it's not a pointer then the usage is ok.
+                // example: ptr->foo();
+                if (mode == 2 && !c->pointer)
+                    continue;
+
+                CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
+                if (checkOther)
                 {
-                    // mode 0 : the variable is used "directly"
-                    // example: .. = var;
-                    // it is ok to read the address of an uninitialized array.
-                    // it is ok to read the address of an allocated pointer
-                    if (mode == 0 && (c->array || (c->pointer && c->alloc)))
-                        continue;
-
-                    // mode 2 : bad usage of pointer. if it's not a pointer then the usage is ok.
-                    // example: ptr->foo();
-                    if (mode == 2 && !c->pointer)
-                        continue;
-
-                    CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
-                    if (checkOther)
-                    {
-                        if (c->pointer && c->alloc)
-                            checkOther->uninitdataError(tok, c->varname);
-                        else
-                            checkOther->uninitvarError(tok, c->varname);
-                        foundError = true;
-                        break;
-                    }
+                    if (c->pointer && c->alloc)
+                        checkOther->uninitdataError(tok, c->varname);
+                    else
+                        checkOther->uninitvarError(tok, c->varname);
+                    foundError = true;
+                    break;
                 }
             }
         }

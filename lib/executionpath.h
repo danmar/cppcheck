@@ -31,8 +31,6 @@ class Check;
 class ExecutionPath
 {
 private:
-    bool bailout_;
-
     /** No implementation */
     void operator=(const ExecutionPath &);
 
@@ -41,7 +39,7 @@ protected:
     Check * const owner;
 
 public:
-    ExecutionPath(Check *c, unsigned int id) : bailout_(false), varId(id), owner(c), ifinfo(0)
+    ExecutionPath(Check *c, unsigned int id) : varId(id), owner(c), ifinfo(0)
     { }
 
     virtual ~ExecutionPath()
@@ -52,11 +50,6 @@ public:
 
     /** Some kind of if-information */
     unsigned int ifinfo;
-
-    bool bailOut() const
-    {
-        return bailout_;
-    }
 
     /**
      * bail out all execution paths
