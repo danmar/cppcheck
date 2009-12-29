@@ -748,7 +748,7 @@ void CheckClass::operatorEq()
             tok1 = tok1->previous();
         }
 
-	tok2 = tok->next();
+        tok2 = tok->next();
     }
 }
 //---------------------------------------------------------------------------
