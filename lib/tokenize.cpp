@@ -5053,6 +5053,17 @@ void Tokenizer::getErrorMessages()
     syntaxError(0, ' ');
 }
 
+/** find pattern */
+static bool findmatch(const Token *tok1, const Token *tok2, const char pattern[])
+{
+    for (const Token *tok = tok1; tok && tok != tok2; tok = tok->next())
+    {
+        if (Token::Match(tok, pattern))
+            return true;
+    }
+    return false;
+}
+
 void Tokenizer::simplifyWhile0()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
@@ -5064,8 +5075,11 @@ void Tokenizer::simplifyWhile0()
         if (Token::simpleMatch(tok->tokAt(4), "{"))
         {
             const Token *end = tok->tokAt(4)->link();
-            Token::eraseTokens(tok, end ? end->next() : 0);
-            tok->deleteThis();  // delete "while"
+            if (!findmatch(tok, end, "continue|break"))
+            {
+                Token::eraseTokens(tok, end ? end->next() : 0);
+                tok->deleteThis();  // delete "while"
+            }
         }
 
         if (Token::simpleMatch(tok->previous(), "}"))
@@ -5073,7 +5087,7 @@ void Tokenizer::simplifyWhile0()
             // find "do"
             Token *tok2 = tok->previous()->link();
             tok2 = tok2 ? tok2->previous() : 0;
-            if (tok2 && tok2->str() == "do")
+            if (tok2 && tok2->str() == "do" && !findmatch(tok2, tok, "continue|break"))
             {
                 // delete "do {"
                 tok2->deleteThis();
