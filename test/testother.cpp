@@ -932,6 +932,14 @@ private:
                          "    p->abcd();\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("static void foo(int a)\n"
+                         "{\n"
+                         "    Foo *p = 0;\n"
+                         "    if (a && p)\n"
+                         "        p->do_something();\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer7()

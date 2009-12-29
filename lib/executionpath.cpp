@@ -56,16 +56,6 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
 }
 
 
-static void dealloc_checks(std::list<ExecutionPath *> &checks)
-{
-    while (!checks.empty())
-    {
-        delete checks.back();
-        checks.pop_back();
-    }
-}
-
-
 static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
 {
     const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
@@ -110,8 +100,8 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 // parse condition
                 if (checks.size() > 10 || check->parseCondition(*tok->next(), checks))
                 {
-                    dealloc_checks(checks);
-                    dealloc_checks(newchecks);
+                    ExecutionPath::bailOut(checks);
+                    ExecutionPath::bailOut(newchecks);
                     return 0;
                 }
 
@@ -123,8 +113,8 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
 
                 if (!Token::simpleMatch(tok, "{"))
                 {
-                    dealloc_checks(checks);
-                    dealloc_checks(newchecks);
+                    ExecutionPath::bailOut(checks);
+                    ExecutionPath::bailOut(newchecks);
                     return 0;
                 }
 
@@ -137,8 +127,8 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                     const Token *tokerr = checkExecutionPaths_(tok->next(), c);
                     if (tokerr)
                     {
-                        dealloc_checks(c);
-                        dealloc_checks(newchecks);
+                        ExecutionPath::bailOut(c);
+                        ExecutionPath::bailOut(newchecks);
                         return tokerr;
                     }
                     while (!c.empty())
@@ -164,14 +154,14 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 const Token *tokerr = checkExecutionPaths_(tok->next(), checks);
                 if (tokerr)
                 {
-                    dealloc_checks(newchecks);
+                    ExecutionPath::bailOut(newchecks);
                     return tokerr;
                 }
 
                 tok = tok->link();
                 if (!tok)
                 {
-                    dealloc_checks(newchecks);
+                    ExecutionPath::bailOut(newchecks);
                     return 0;
                 }
             }

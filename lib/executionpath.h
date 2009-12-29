@@ -62,11 +62,13 @@ public:
      * bail out all execution paths
      * @param checks the execution paths to bail out on
      **/
-    static void bailOut(const std::list<ExecutionPath *> &checks)
+    static void bailOut(std::list<ExecutionPath *> &checks)
     {
-        std::list<ExecutionPath *>::const_iterator it;
-        for (it = checks.begin(); it != checks.end(); ++it)
-            (*it)->bailout_ = true;
+        while (!checks.empty())
+        {
+            delete checks.back();
+            checks.pop_back();
+        }
     }
 
     /**
@@ -74,11 +76,24 @@ public:
      * @param checks the execution paths to bail out on
      * @param varid the specific variable id
      **/
-    static void bailOutVar(const std::list<ExecutionPath *> &checks, const unsigned int varid)
+    static void bailOutVar(std::list<ExecutionPath *> &checks, const unsigned int varid)
     {
-        std::list<ExecutionPath *>::const_iterator it;
-        for (it = checks.begin(); it != checks.end(); ++it)
-            (*it)->bailout_ |= ((*it)->varId == varid);
+        if (varid == 0)
+            return;
+
+        std::list<ExecutionPath *>::iterator it = checks.begin();
+        while (it != checks.end())
+        {
+            if ((*it)->varId == varid)
+            {
+                delete *it;
+                checks.erase(it++);
+            }
+            else
+            {
+                ++it;
+            }
+        }
     }
 
     /**
