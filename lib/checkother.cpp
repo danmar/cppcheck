@@ -1378,7 +1378,7 @@ private:
             CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
             if (c && c->varId == varid)
             {
-                if (!c->alloc)
+                if (c->pointer && !c->alloc)
                 {
                     CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
                     if (checkOther)
@@ -1422,6 +1422,10 @@ private:
                 // mode 2 : bad usage of pointer. if it's not a pointer then the usage is ok.
                 // example: ptr->foo();
                 if (mode == 2 && !c->pointer)
+                    continue;
+
+                // mode 3 : using dead pointer is invalid.
+                if (mode == 3 && (!c->pointer || c->alloc))
                     continue;
 
                 CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
@@ -1470,6 +1474,17 @@ private:
     static void use_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         use(foundError, checks, tok, 2);
+    }
+
+    /**
+     * Using variable.. if it's a dead pointer the usage is invalid.
+     * @param foundError this is set to true if an error is found
+     * @param checks all available checks
+     * @param tok variable token
+     */
+    static void use_dead_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        use(foundError, checks, tok, 3);
     }
 
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
@@ -1583,6 +1598,9 @@ private:
 
                 else if (tok2->varId())
                 {
+                    if (Token::Match(tok2->tokAt(-2), "[(,] *"))
+                        use_dead_pointer(foundError, checks, tok2);
+
                     // it is possible that the variable is initialized here
                     ExecutionPath::bailOutVar(checks, tok2->varId());
                 }
