@@ -2294,6 +2294,9 @@ private:
                             "typedef struct t { int a; } T, *TP;"
                             "typedef enum { a = 0 , b = 1 , c = 2 } abc;"
                             "typedef enum xyz { a = 0 , b = 1 , c = 2 } ABC;"
+                            "typedef vector<int> V1;"
+                            "typedef std::vector<int> V2;"
+                            "typedef std::vector<std::vector<int> > V3;"
                             "INT ti;\n"
                             "UINT tui;\n"
                             "PINT tpi;\n"
@@ -2303,7 +2306,10 @@ private:
                             "T t;\n"
                             "TP tp;\n"
                             "abc e1;\n"
-                            "ABC e2;";
+                            "ABC e2;\n"
+                            "V1 v1;\n"
+                            "V2 v2;\n"
+                            "V3 v3;";
 
         const char expected[] =
             "typedef int INT ; "
@@ -2314,6 +2320,9 @@ private:
             "struct t { int a ; } ; typedef struct t T ; typedef struct t * TP ; "
             "enum abc { a = 0 , b = 1 , c = 2 } ; typedef enum abc abc ; "
             "enum xyz { a = 0 , b = 1 , c = 2 } ; typedef enum xyz ABC ; "
+            "typedef vector < int > V1 ; "
+            "typedef std :: vector < int > V2 ; "
+            "typedef std :: vector < std :: vector < int > > V3 ; "
             "int ti ; "
             "unsigned int tui ; "
             "int * tpi ; "
@@ -2323,7 +2332,10 @@ private:
             "struct t t ; "
             "struct t * tp ; "
             "enum abc e1 ; "
-            "enum xyz e2 ;";
+            "enum xyz e2 ; "
+            "vector < int > v1 ; "
+            "std :: vector < int > v2 ; "
+            "std :: vector < std :: vector < int > > v3 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }

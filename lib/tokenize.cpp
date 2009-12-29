@@ -395,11 +395,6 @@ void Tokenizer::simplifyTypedef()
         else if (tok->str() != "typedef")
             continue;
 
-        const char *type1 = 0;
-        const char *type2 = 0;
-        const char *typeName = 0;
-        bool pointer = false;
-
         // pull struct name { ... } out of typedef
         if (Token::Match(tok->next(), "struct %type% {"))
         {
@@ -472,10 +467,51 @@ void Tokenizer::simplifyTypedef()
             tok = tok3;
         }
 
-        if (Token::Match(tok->next(), "%type% *| %type% ;") ||
+        const char *type1 = 0;
+        const char *type2 = 0;
+        const char *typeName = 0;
+        bool pointer = false;
+        Token *start = 0;
+        Token *end = 0;
+
+        if (Token::Match(tok->next(), "%type% <") ||
+            Token::Match(tok->next(), "%type% :: %type% <") ||
+            Token::Match(tok->next(), "%type% *| %type% ;") ||
             Token::Match(tok->next(), "%type% %type% *| %type% ;"))
         {
-            if (tok->tokAt(3)->str() == ";")
+            if ((tok->tokAt(2)->str() == "<") ||
+                (tok->tokAt(4) && (tok->tokAt(4)->str() == "<")))
+            {
+                int level = 1;
+                start = tok->next();
+
+                if (tok->tokAt(2)->str() == "<")
+                    end = tok->tokAt(3);
+                else
+                    end = tok->tokAt(5);
+
+                for (; end ; end = end->next())
+                {
+                    if (end->str() == ">")
+                    {
+                        level--;
+                        if (level == 0)
+                            break;
+                    }
+
+                    if (end->str() == "<")
+                        level++;
+                }
+
+                if (Token::Match(end->next(), "%type% ;"))
+                {
+                    typeName = end->strAt(1);
+                    tok = end->tokAt(2);
+                }
+                else
+                    continue;
+            }
+            else if (tok->tokAt(3)->str() == ";")
             {
                 type1 = tok->strAt(1);
                 type2 = 0;
@@ -548,7 +584,9 @@ void Tokenizer::simplifyTypedef()
                              Token::Match(tok2->tokAt(-3), "!!typedef"))
                     {
                         // Check for enum and typedef with same name.
-                        if (tok2->tokAt(-1)->str() != type1)
+                        if (type1 && (tok2->tokAt(-1)->str() != type1))
+                            simplifyType = true;
+                        else if (!type1)
                             simplifyType = true;
                     }
                     else
@@ -561,16 +599,29 @@ void Tokenizer::simplifyTypedef()
 
                 if (simplifyType)
                 {
-                    tok2->str(type1);
-                    if (type2)
+                    if (start && end)
                     {
-                        tok2->insertToken(type2);
-                        tok2 = tok2->next();
+                        tok2->str(start->str());
+                        Token * nextToken;
+                        for (nextToken = start->next(); nextToken != end->next(); nextToken = nextToken->next())
+                        {
+                            tok2->insertToken(nextToken->strAt(0));
+                            tok2 = tok2->next();
+                        }
                     }
-                    if (pointer)
+                    else
                     {
-                        tok2->insertToken("*");
-                        tok2 = tok2->next();
+                        tok2->str(type1);
+                        if (type2)
+                        {
+                            tok2->insertToken(type2);
+                            tok2 = tok2->next();
+                        }
+                        if (pointer)
+                        {
+                            tok2->insertToken("*");
+                            tok2 = tok2->next();
+                        }
                     }
 
                     simplifyType = false;
