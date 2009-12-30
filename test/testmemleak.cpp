@@ -322,6 +322,9 @@ private:
         TEST_CASE(vcl1);
         TEST_CASE(vcl2);
 
+        // detect leak in class member function..
+        TEST_CASE(class1);
+
         TEST_CASE(autoptr1);
         TEST_CASE(if_with_and);
         TEST_CASE(assign_pclose);
@@ -2076,6 +2079,20 @@ private:
                  "    button = new TButton(this);\n"
                  "}\n", "TButton\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void class1()
+    {
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    Fred()\n"
+              "    {\n"
+              "        int *p = new int[100];\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: p\n", errout.str());
     }
 
 

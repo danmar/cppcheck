@@ -168,6 +168,13 @@ private:
 #endif
 
 
+    /**
+     * Check all variables in function scope
+     * @param tok The first '{' token of the function scope
+     * @param classmember Is this function a class member?
+     */
+    void parseFunctionScope(const Token *tok, const bool classmember);
+
     bool matchFunctionsThatReturnArg(const Token *tok, unsigned int varid) const;
 
     /**

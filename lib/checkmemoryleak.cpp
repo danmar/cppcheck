@@ -1957,25 +1957,26 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 // Checks for memory leaks inside function..
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeakInFunction::check()
+void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const bool classmember)
 {
-    // Parse the tokens and fill the "noreturn"
-    parse_noreturn();
+    // Check locking/unlocking of global resources..
+    checkScope(tok->next(), "", 0, classmember, 1);
 
-    bool classmember = false;
-    bool beforeParameters = false;
-    bool infunc = false;
-    int indentlevel = 0;
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    // Locate variable declarations and check their usage..
+    unsigned int indentlevel = 0;
+    do
     {
         if (tok->str() == "{")
             ++indentlevel;
-
         else if (tok->str() == "}")
+        {
+            if (indentlevel <= 1)
+                break;
             --indentlevel;
+        }
 
         // Skip these weird blocks... "( { ... } )"
-        else if (Token::simpleMatch(tok, "( {"))
+        if (Token::simpleMatch(tok, "( {"))
         {
             tok = tok->link();
             if (!tok)
@@ -1983,64 +1984,75 @@ void CheckMemoryLeakInFunction::check()
             continue;
         }
 
-        // In function..
-        if (indentlevel == 0)
+        if (!Token::Match(tok, "[{};] %type%"))
+            continue;
+
+        // Don't check static/extern variables
+        if (Token::Match(tok->next(), "static|extern"))
+            continue;
+
+        // return/else is not part of a variable declaration..
+        if (Token::Match(tok->next(), "return|else"))
+            continue;
+
+        unsigned int sz = _tokenizer->sizeOfType(tok->next());
+        if (sz < 1)
+            sz = 1;
+
+        if (Token::Match(tok, "[{};] %type% * const| %var% [;=]"))
         {
-            if (Token::simpleMatch(tok, ") {"))
-            {
-                infunc = true;
-                checkScope(tok->tokAt(2), "", 0, classmember, 1);
-            }
-
-            else if (tok->str() == "(")
-                beforeParameters = false;
-
-            else if (tok->str() == "::" && beforeParameters)
-                classmember = true;
-
-            else if (Token::Match(tok, "[;}]"))
-            {
-                infunc = classmember = false;
-                beforeParameters = true;
-            }
+            const Token *vartok = tok->tokAt(tok->tokAt(3)->str() != "const" ? 3 : 4);
+            checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
         }
 
-        // Declare a local variable => Check
-        if (indentlevel > 0 && infunc)
+        else if (Token::Match(tok, "[{};] %type% %type% * const| %var% [;=]"))
         {
-            unsigned int sz = _tokenizer->sizeOfType(tok->tokAt(1));
-            if (sz < 1)
-                sz = 1;
-
-            if (!Token::Match(tok, "[{};] %type%"))
-                continue;
-
-            // Don't check static/extern variables
-            if (Token::Match(tok->next(), "static|extern"))
-                continue;
-
-            // return/else is not part of a variable declaration..
-            if (Token::Match(tok->next(), "return|else"))
-                continue;
-
-            if (Token::Match(tok, "[{};] %type% * const| %var% [;=]"))
-            {
-                const Token *vartok = tok->tokAt(tok->tokAt(3)->str() != "const" ? 3 : 4);
-                checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
-            }
-
-            else if (Token::Match(tok, "[{};] %type% %type% * const| %var% [;=]"))
-            {
-                const Token *vartok = tok->tokAt(tok->tokAt(4)->str() != "const" ? 4 : 5);
-                checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
-            }
-
-            else if (Token::Match(tok, "[{};] int %var% [;=]"))
-            {
-                const Token *vartok = tok->tokAt(2);
-                checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
-            }
+            const Token *vartok = tok->tokAt(tok->tokAt(4)->str() != "const" ? 4 : 5);
+            checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
         }
+
+        else if (Token::Match(tok, "[{};] int %var% [;=]"))
+        {
+            const Token *vartok = tok->tokAt(2);
+            checkScope(tok->next(), vartok->str(), vartok->varId(), classmember, sz);
+        }
+    }
+    while (0 != (tok = tok->next()));
+}
+
+void CheckMemoryLeakInFunction::check()
+{
+    // Parse the tokens and fill the "noreturn"
+    parse_noreturn();
+
+    bool classmember = false;
+    bool beforeParameters = false;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // Found a function scope
+        if (Token::Match(tok, ") const| {"))
+        {
+            tok = tok->next();
+            if (tok->str() != "{")
+                tok = tok->next();
+            parseFunctionScope(tok, classmember);
+            tok = tok->link();
+            continue;
+        }
+
+        else if (tok->str() == "(")
+            beforeParameters = false;
+
+        else if (tok->str() == "::" && beforeParameters)
+            classmember = true;
+
+        else if (Token::Match(tok, "[;}]"))
+        {
+            classmember = false;
+            beforeParameters = true;
+        }
+
+
     }
 }
 //---------------------------------------------------------------------------
