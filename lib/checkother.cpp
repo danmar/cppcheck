@@ -1557,6 +1557,9 @@ private:
 
         if (Token::Match(&tok, "%var% ("))
         {
+            if (Token::simpleMatch(&tok, "sizeof ("))
+                return tok.next()->link();
+
             // deallocate pointer
             if (Token::Match(&tok, "free|kfree|fclose ( %var% )"))
             {

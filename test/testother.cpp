@@ -1274,6 +1274,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n", errout.str());
 
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    Abc *p;\n"
+                       "    int sz = sizeof(*p);\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
         // arrays..
         checkUninitVar("void f()\n"
                        "{\n"
