@@ -135,6 +135,12 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return something\n"
                       "[test.cpp:9]: (style) 'operator=' should return something\n", errout.str());
 
+        checkOpertorEq("struct A\n"
+                       "{\n"
+                       "    void operator=(const& A);\n"
+                       "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return something\n", errout.str());
+
     }
 
     // Check that base classes have virtual destructors

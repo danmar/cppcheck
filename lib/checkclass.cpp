@@ -736,7 +736,7 @@ void CheckClass::operatorEq()
     while ((tok = Token::findmatch(tok2, "void operator = (")))
     {
         const Token *tok1 = tok;
-        while (tok1 && !Token::Match(tok1, "class %var%"))
+        while (tok1 && !Token::Match(tok1, "class|struct %var%"))
         {
             if (tok1->str() == "public:")
             {
@@ -747,6 +747,9 @@ void CheckClass::operatorEq()
                 break;
             tok1 = tok1->previous();
         }
+
+        if (tok1 && Token::Match(tok1, "struct %var%"))
+            operatorEqReturnError(tok);
 
         tok2 = tok->next();
     }
