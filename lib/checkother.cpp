@@ -1722,7 +1722,7 @@ private:
 
             if (Token::Match(tok.tokAt(-2), "[,(=] *"))
             {
-                use(foundError, checks, &tok);
+                use_pointer(foundError, checks, &tok);
                 return &tok;
             }
         }
@@ -1742,6 +1742,12 @@ private:
             parseFunctionCall(tok.str() == "!" ? *tok.next() : tok, var, 1);
             for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
                 use_array(foundError, checks, *it);
+        }
+
+        else if (Token::Match(&tok, "! %var% )"))
+        {
+            use(foundError, checks, &tok);
+            return false;
         }
 
         return ExecutionPath::parseCondition(tok, checks);
