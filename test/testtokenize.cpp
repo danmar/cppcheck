@@ -107,6 +107,7 @@ private:
         TEST_CASE(varid10);
         TEST_CASE(varid11);
         TEST_CASE(varid12);
+        TEST_CASE(varid13);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -1087,7 +1088,6 @@ private:
             Tokenizer tokenizer;
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.setVarId();
 
             // result..
             const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1120,7 +1120,6 @@ private:
             Tokenizer tokenizer;
             std::istringstream istr(code);
             tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.setVarId();
 
             // result..
             const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1153,7 +1152,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1181,7 +1179,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1231,7 +1228,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
         tokenizer.simplifyTokenList();
 
         // result..
@@ -1285,7 +1281,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1340,7 +1335,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1362,7 +1356,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1384,7 +1377,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1406,7 +1398,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1427,7 +1418,6 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
 
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
@@ -1436,6 +1426,32 @@ private:
                                    "2: {\n"
                                    "3: class Foo * foo@1 ;\n"
                                    "4: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid13()
+    {
+        const std::string code("void f()\n"
+                               "{\n"
+                               "    int a; int b;\n"
+                               "    a = a;\n"
+                               "}\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void f ( )\n"
+                                   "2: {\n"
+                                   "3: int a@1 ; int b@2 ;\n"
+                                   "4: a@1 = a@1 ;\n"
+                                   "5: }\n");
 
         ASSERT_EQUALS(expected, actual);
     }

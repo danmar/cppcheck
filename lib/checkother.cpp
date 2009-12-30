@@ -1528,6 +1528,20 @@ private:
 
         if (tok.varId())
         {
+            if (Token::Match(tok.previous(), "[;{}] %var% ="))
+            {
+                // using same variable rhs?
+                for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
+                {
+                    if (Token::Match(tok2, ";|)|="))
+                        break;
+                    if (Token::Match(tok2, "%var% ("))
+                        break;
+                    if (tok2->varId() && !Token::simpleMatch(tok2->next(), "="))
+                        use(foundError, checks, tok2);
+                }
+            }
+
             if (Token::Match(tok.tokAt(-2), "[;{}] *"))
             {
                 if (Token::simpleMatch(tok.next(), "="))

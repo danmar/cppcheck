@@ -3800,6 +3800,9 @@ bool Tokenizer::simplifyKnownVariables()
                 if (varid == 0)
                     continue;
 
+                if (tok2->str() == tok2->strAt(2))
+                    continue;
+
                 const bool pointeralias(tok2->tokAt(2)->isName());
 
                 std::string value(tok2->strAt(2));
