@@ -1275,6 +1275,19 @@ private:
                 bailOutVar(checks, tok.varId());
         }
 
+        if (Token::simpleMatch(&tok, "* 0"))
+        {
+            if (Token::Match(tok.previous(), "[;{}=]"))
+            {
+                CheckOther *checkOther = dynamic_cast<CheckOther *>(owner);
+                if (checkOther)
+                {
+                    checkOther->nullPointerError(&tok);
+                    foundError = true;
+                }
+            }
+        }
+
         return &tok;
     }
 
@@ -1865,6 +1878,11 @@ void CheckOther::conditionAlwaysTrueFalse(const Token *tok, const std::string &t
 void CheckOther::strPlusChar(const Token *tok)
 {
     reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic");
+}
+
+void CheckOther::nullPointerError(const Token *tok)
+{
+    reportError(tok, Severity::error, "nullPointer", "Null pointer dereference");
 }
 
 void CheckOther::nullPointerError(const Token *tok, const std::string &varname)

@@ -147,6 +147,7 @@ public:
     void variableScopeError(const Token *tok, const std::string &varname);
     void conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse);
     void strPlusChar(const Token *tok);
+    void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
     void nullPointerError(const Token *tok, const std::string &varname);
     void nullPointerError(const Token *tok, const std::string &varname, const int line);
     void uninitdataError(const Token *tok, const std::string &varname);
