@@ -143,6 +143,7 @@ private:
         TEST_CASE(simplifyTypedef6)
         TEST_CASE(simplifyTypedef7);
         TEST_CASE(simplifyTypedef8);
+        TEST_CASE(simplifyTypedef9);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2338,6 +2339,25 @@ private:
             "std :: vector < std :: vector < int > > v3 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef9()
+    {
+        // ticket # 1167
+        const char code[] = "typedef std::pair<int(*)(void*), void*> Func;"
+                            "typedef std::vector<Func> CallQueue;"
+                            "int main() {}";
+
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        tokenizer.simplifyTokenList();
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void reverseArraySyntax()
