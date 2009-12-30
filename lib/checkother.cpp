@@ -1673,9 +1673,6 @@ private:
 
         if (tok.varId())
         {
-            if (array && !Token::simpleMatch(tok.next(), "["))
-                return &tok;
-
             if (Token::simpleMatch(tok.previous(), "="))
             {
                 if (Token::Match(tok.tokAt(-3), "& %var% ="))
