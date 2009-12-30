@@ -329,20 +329,10 @@ private:
 
     void inlineasm()
     {
-        {
-            const char code[] = "abc asm { mov ax,bx } def";
-            ASSERT_EQUALS("abc def", tokenizeAndStringify(code));
-        }
-
-        {
-            const char code[] = "abc _asm { mov ax,bx } def";
-            ASSERT_EQUALS("abc def", tokenizeAndStringify(code));
-        }
-
-        {
-            const char code[] = "abc __asm { mov ax,bx } def";
-            ASSERT_EQUALS("abc def", tokenizeAndStringify(code));
-        }
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";asm { mov ax,bx };"));
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";_asm { mov ax,bx };"));
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm { mov ax,bx };"));
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm__ __volatile__ ( \"mov ax,bx\" );"));
     }
 
 
