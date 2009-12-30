@@ -1918,62 +1918,21 @@ private:
 
     void simplify_function_parameters()
     {
-        {
-            const char code[] = "void f(x) int x;\n"
-                                "{\n"
-                                "}\n";
+        ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }", true));
+        ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }", true));
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            tokenizer.simplifyTokenList();
-
-            std::ostringstream ostr;
-            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            ASSERT_EQUALS(" void f ( int x ) { }", ostr.str());
-        }
-
-        {
-            const char code[] = "void f(x,y) int x; char y;\n"
-                                "{\n"
-                                "}\n";
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            tokenizer.simplifyTokenList();
-
-            std::ostringstream ostr;
-            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            ASSERT_EQUALS(" void f ( int x , char y ) { }", ostr.str());
-        }
+        // #1067 - Not simplified. Feel free to fix so it is simplified correctly but this syntax is obsolete.
+        ASSERT_EQUALS("int ( * d ( a , b , c ) ) ( ) int a ; int b ; int c ; { }", tokenizeAndStringify("int (*d(a,b,c))()int a,b,c; { }", true));
 
         {
             // This is not a function but the pattern is similar..
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    if (x)\n"
-                                "        int x;\n"
-                                "    { }\n"
-                                "}\n";
-
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            tokenizer.simplifyTokenList();
-
-            std::ostringstream ostr;
-            for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-                ostr << " " << tok->str();
-            ASSERT_EQUALS(" void foo ( ) { if ( x ) { int x ; } { } }", ostr.str());
+            const char code[] = "void foo()"
+                                "{"
+                                "    if (x)"
+                                "        int x;"
+                                "    { }"
+                                "}";
+            ASSERT_EQUALS("void foo ( ) { if ( x ) { int x ; } { } }", tokenizeAndStringify(code, true));
         }
     }
 

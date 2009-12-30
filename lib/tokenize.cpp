@@ -3026,17 +3026,26 @@ void Tokenizer::simplifyCasts()
 
 void Tokenizer::simplifyFunctionParameters()
 {
-    int indentlevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() == "{")
-            ++indentlevel;
+        {
+            tok = tok->link();
+            if (!tok)
+                break;
+            continue;
+        }
 
-        else if (tok->str() == "}")
-            --indentlevel;
+        if (tok->str() == "(")
+        {
+            tok = tok->link();
+            if (!tok)
+                break;
+            continue;
+        }
 
         // Find the function e.g. foo( x ) or foo( x, y )
-        else if (indentlevel == 0 && Token::Match(tok, "%var% ( %var% [,)]"))
+        if (Token::Match(tok, "%var% ( %var% [,)]"))
         {
             // We have found old style function, now we need to change it
 
@@ -3103,6 +3112,8 @@ void Tokenizer::simplifyFunctionParameters()
                 }
             }
 
+            tok = tok ? tok->link() : 0;
+
             if (tok == NULL)
             {
                 break;
@@ -3112,8 +3123,6 @@ void Tokenizer::simplifyFunctionParameters()
             {
                 continue;
             }
-
-            ++indentlevel;
         }
     }
 }
