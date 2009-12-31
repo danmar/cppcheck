@@ -66,6 +66,8 @@ private:
         TEST_CASE(noConstructor4);
 
         TEST_CASE(operatorEq1);
+        TEST_CASE(operatorEqRetRefThis);
+        TEST_CASE(operatorEqToSelf);
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetOnClass);
 
@@ -96,20 +98,20 @@ private:
                        "{\n"
                        "public:\n"
                        "    void goo() {}"
-                       "    void operator=(const& A);\n"
+                       "    void operator=(const A&);\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return something\n", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "private:\n"
-                       "    void operator=(const& A);\n"
+                       "    void operator=(const A&);\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
-                       "    void operator=(const& A);\n"
+                       "    void operator=(const A&);\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -118,29 +120,278 @@ private:
                        "public:\n"
                        "    void goo() {}\n"
                        "private:\n"
-                       "    void operator=(const& A);\n"
+                       "    void operator=(const A&);\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
 
         checkOpertorEq("class A\n"
                        "{\n"
                        "public:\n"
-                       "    void operator=(const& A);\n"
+                       "    void operator=(const A&);\n"
                        "};\n"
                        "class B\n"
                        "{\n"
                        "public:\n"
-                       "    void operator=(const& B);\n"
+                       "    void operator=(const B&);\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return something\n"
                       "[test.cpp:9]: (style) 'operator=' should return something\n", errout.str());
 
         checkOpertorEq("struct A\n"
                        "{\n"
-                       "    void operator=(const& A);\n"
+                       "    void operator=(const A&);\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return something\n", errout.str());
 
+    }
+
+    // Check that operator Equal returns reference to this
+    void checkOpertorEqRetRefThis(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.operatorEqRetRefThis();
+    }
+
+    void operatorEqRetRefThis()
+    {
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a) { return *this; }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a) { return a; }\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should return reference to self\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a) { return *this; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a) { return *this; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &)\n"
+            "};\n"
+            "A & A::operator=(const A &a) { return a; }\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to self\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a)\n"
+            "};\n"
+            "A & A::operator=(const A &a) { return a; }\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) 'operator=' should return reference to self\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &b) { return *this; }\n"
+            "    };\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &b) { return b; }\n"
+            "    };\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) 'operator=' should return reference to self\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &);\n"
+            "    };\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B &b) { return *this; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &);\n"
+            "    };\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B &b) { return b; }\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style) 'operator=' should return reference to self\n", errout.str());
+    }
+
+    // Check that operator Equal checks for assignment to self
+    void checkOpertorEqToSelf(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        settings._checkCodingStyle = true;
+        settings._showAll = true;
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.operatorEqToSelf();
+    }
+
+    void operatorEqToSelf()
+    {
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a) { if (&a == this) return *this; }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a) { return *this; }\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a) { if (&a == this) return *this; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a) { if (&a == this) return *this; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &)\n"
+            "};\n"
+            "A & A::operator=(const A &a) { return *this; }\n");
+        ASSERT_EQUALS("[test.cpp:6]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a)\n"
+            "};\n"
+            "A & A::operator=(const A &a) { return *this; }\n");
+        ASSERT_EQUALS("[test.cpp:6]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &b) { if (&b == this) return *this; }\n"
+            "    };\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &b) { return b; }\n"
+            "    };\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:7]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &);\n"
+            "    };\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B &b) { if (&b == this) return *this; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &);\n"
+            "    };\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B &b) { return b; }\n");
+        ASSERT_EQUALS("[test.cpp:10]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
     }
 
     // Check that base classes have virtual destructors

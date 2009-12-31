@@ -57,8 +57,12 @@ public:
             checkClass.constructors();
             checkClass.operatorEq();
             checkClass.privateFunctions();
+            checkClass.operatorEqRetRefThis();
             if (settings->_showAll)
+            {
                 checkClass.thisSubtraction();
+                checkClass.operatorEqToSelf();
+            }
         }
         checkClass.virtualDestructor();
     }
@@ -77,6 +81,12 @@ public:
 
     // 'operator=' should return something..
     void operatorEq();    // Warning upon "void operator=(.."
+
+    // 'operator=' should return reference to *this
+    void operatorEqRetRefThis();    // Warning upon no "return *this;"
+
+    // 'operator=' should check for assignment to self
+    void operatorEqToSelf();    // Warning upon no check for assignment to self
 
     // The destructor in a base class should be virtual
     void virtualDestructor();
@@ -117,6 +127,8 @@ private:
     void operatorEqReturnError(const Token *tok);
     void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived);
     void thisSubtractionError(const Token *tok);
+    void operatorEqRetRefThisError(const Token *tok);
+    void operatorEqToSelfError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -129,6 +141,8 @@ private:
         operatorEqReturnError(0);
         virtualDestructorError(0, "Base", "Derived");
         thisSubtractionError(0);
+        operatorEqRetRefThisError(0);
+        operatorEqToSelfError(0);
     }
 
     std::string name() const

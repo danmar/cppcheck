@@ -760,6 +760,298 @@ void CheckClass::operatorEq()
 
 
 //---------------------------------------------------------------------------
+// ClassCheck: "C& operator=(const C&) { ... return *this; }"
+// operator= should return a reference to *this
+//---------------------------------------------------------------------------
+
+// match two lists of tokens
+static bool nameMatch(const Token * tok1, const Token * tok2, int length)
+{
+    for (int i = 0; i < length; i++)
+    {
+        if (tok1->tokAt(i) == 0 || tok2->tokAt(i) == 0)
+            return false;
+
+        if (tok1->tokAt(i)->str() != tok2->tokAt(i)->str())
+            return false;
+    }
+
+    return true;
+}
+
+// create a class name from a list of tokens
+static void nameStr(const Token * name, int length, std::string & str)
+{
+    for (int i = 0; i < length; i++)
+    {
+        if (i != 0)
+            str += " ";
+
+        str += name->tokAt(i)->str();
+    }
+}
+
+void CheckClass::operatorEqRetRefThis()
+{
+    const Token *tok2 = _tokenizer->tokens();
+    const Token *tok;
+
+    while ((tok = Token::findmatch(tok2, "operator = (")))
+    {
+        const Token *tok1 = tok;
+
+        if (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
+        {
+            // make sure this is an assignment operator
+            int nameLength = 1;
+
+            tok1 = tok1->tokAt(-2);
+
+            // check backwards for proper function signature
+            while (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
+            {
+                tok1 = tok1->tokAt(-2);
+                nameLength += 2;
+            }
+
+            const Token *name = tok1;
+            std::string nameString;
+
+            nameStr(name, nameLength, nameString);
+
+            if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
+            {
+                // check class name
+                if (tok1->tokAt(-(1 + nameLength)) && nameMatch(name, tok1->tokAt(-(1 + nameLength)), nameLength))
+                {
+                    // may take overloaded argument types so no need to check them
+                    tok1 = tok->tokAt(2)->link();
+
+                    if (tok1 && tok1->next() && tok1->next()->str() == "{")
+                    {
+                        const Token *last = tok1->next()->link()->tokAt(-2);
+                        for (tok1 = tok1->tokAt(2); tok1 != last; tok1 = tok1->next())
+                        {
+                            // check for return of reference to this
+                            if (tok1->str() == "return")
+                            {
+                                if (!Token::Match(tok1->tokAt(1), "* this ;"))
+                                    operatorEqRetRefThisError(tok);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // make sure this is an assignment operator
+            tok1 = tok;
+
+            // check backwards for proper function signature
+            if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
+            {
+                const Token *name = 0;
+                bool isPublic = false;
+                while (tok1 && !Token::Match(tok1, "class|struct %var%"))
+                {
+                    if (!isPublic)
+                    {
+                        if (tok1->str() == "public:")
+                            isPublic = true;
+                    }
+                    tok1 = tok1->previous();
+                }
+
+                if (tok1 && Token::Match(tok1, "struct %var%"))
+                {
+                    isPublic = true;
+                    name = tok1->tokAt(1);
+                }
+                else if (tok1 && Token::Match(tok1, "class %var%"))
+                {
+                    name = tok1->tokAt(1);
+                }
+
+                if (tok->tokAt(-2) && tok->tokAt(-2)->str() == name->str())
+                {
+                    // may take overloaded argument types so no need to check them
+                    tok1 = tok->tokAt(2)->link();
+
+                    if (tok1 && tok1->next() && tok1->next()->str() == "{")
+                    {
+                        const Token *last = tok1->next()->link()->tokAt(-2);
+                        for (tok1 = tok1->tokAt(2); tok1 != last; tok1 = tok1->next())
+                        {
+                            // check for return of reference to this
+                            if (tok1->str() == "return")
+                            {
+                                if (!Token::Match(tok1->tokAt(1), "* this ;"))
+                                    operatorEqRetRefThisError(tok);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        tok2 = tok->next();
+    }
+}
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// ClassCheck: "C& operator=(const C& rhs) { if (this == &rhs) }"
+// operator= should check for assignment to self
+// For simple classes, an assignment to self check is only an optimization.
+// For classes that allocate dynamic memory, assignment to self is a real error.
+// This check is not valid for classes with multiple inheritance because a
+// class can have multiple addresses.  This should be checked for someday.
+//---------------------------------------------------------------------------
+
+void CheckClass::operatorEqToSelf()
+{
+    const Token *tok2 = _tokenizer->tokens();
+    const Token *tok;
+
+    while ((tok = Token::findmatch(tok2, "operator = (")))
+    {
+        const Token *tok1 = tok;
+
+        if (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
+        {
+            // make sure this is an assignment operator
+            int nameLength = 1;
+
+            tok1 = tok1->tokAt(-2);
+
+            // check backwards for proper function signature
+            while (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
+            {
+                tok1 = tok1->tokAt(-2);
+                nameLength += 2;
+            }
+
+            const Token *name = tok1;
+            std::string nameString;
+
+            nameStr(name, nameLength, nameString);
+
+            if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
+            {
+                // check class name
+                if (tok1->tokAt(-(1 + nameLength)) && nameMatch(name, tok1->tokAt(-(1 + nameLength)), nameLength))
+                {
+                    // check forward for proper function signature
+                    std::string pattern = "const " + nameString + " & %type% )";
+                    if (Token::Match(tok->tokAt(3), pattern.c_str()))
+                    {
+                        if (nameMatch(name, tok->tokAt(4), nameLength))
+                        {
+                            tok1 = tok->tokAt(2)->link();
+
+                            if (tok1 && tok1->next() && tok1->next()->str() == "{")
+                            {
+                                bool checkAssignSelf = false;
+                                const Token *tok3 = tok->tokAt(2)->link()->next()->next();
+                                const Token *last = tok->tokAt(2)->link()->next()->link();
+                                while (tok3 != last)
+                                {
+                                    if (Token::Match(tok3, "if ( this ==|!= & %var% )") ||
+                                        Token::Match(tok3, "if ( & %var% ==|!= this )"))
+                                    {
+                                        checkAssignSelf = true;
+                                        break;
+                                    }
+
+                                    tok3 = tok3->next();
+                                }
+
+                                if (!checkAssignSelf)
+                                    operatorEqToSelfError(tok);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            // make sure this is an assignment operator
+            tok1 = tok;
+
+            // check backwards for proper function signature
+            if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
+            {
+                const Token *name = 0;
+                bool isPublic = false;
+                while (tok1 && !Token::Match(tok1, "class|struct %var%"))
+                {
+                    if (!isPublic)
+                    {
+                        if (tok1->str() == "public:")
+                            isPublic = true;
+                    }
+                    tok1 = tok1->previous();
+                }
+
+                if (tok1 && Token::Match(tok1, "struct %var%"))
+                {
+                    isPublic = true;
+                    name = tok1->tokAt(1);
+                }
+                else if (tok1 && Token::Match(tok1, "class %var%"))
+                {
+                    name = tok1->tokAt(1);
+                }
+
+                if (tok->tokAt(-2) && tok->tokAt(-2)->str() == name->str())
+                {
+                    // check forward for proper function signature
+                    if (Token::Match(tok->tokAt(3), "const %type% & %type% )"))
+                    {
+                        if (tok->tokAt(4)->str() == name->str())
+                        {
+                            tok1 = tok->tokAt(2)->link();
+
+                            if (tok1 && tok1->next() && tok1->next()->str() == "{")
+                            {
+                                bool checkAssignSelf = false;
+                                const Token *tok3 = tok->tokAt(2)->link()->next()->next();
+                                const Token *last = tok->tokAt(2)->link()->next()->link();
+                                while (tok3 != last)
+                                {
+                                    if (Token::Match(tok3, "if ( this ==|!= & %var% )") ||
+                                        Token::Match(tok3, "if ( & %var% ==|!= this )"))
+                                    {
+                                        checkAssignSelf = true;
+                                        break;
+                                    }
+
+                                    tok3 = tok3->next();
+                                }
+
+                                if (!checkAssignSelf)
+                                    operatorEqToSelfError(tok);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        tok2 = tok->next();
+    }
+}
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
 // A destructor in a base class should be virtual
 //---------------------------------------------------------------------------
 
@@ -962,4 +1254,13 @@ void CheckClass::virtualDestructorError(const Token *tok, const std::string &Bas
     reportError(tok, Severity::error, "virtualDestructor", "Class " + Base + " which is inherited by class " + Derived + " does not have a virtual destructor");
 }
 
+void CheckClass::operatorEqRetRefThisError(const Token *tok)
+{
+    reportError(tok, Severity::style, "operatorEqRetRefThis", "'operator=' should return reference to self");
+}
+
+void CheckClass::operatorEqToSelfError(const Token *tok)
+{
+    reportError(tok, Severity::possibleStyle, "operatorEqToSelf", "'operator=' should check for assignment to self");
+}
 
