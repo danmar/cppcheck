@@ -1742,8 +1742,24 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
         // expand macros..
         else
         {
+            // Limit for each macro.
+            // The limit specify a position in the "line" variable.
+            // For a "recursive macro" where the expanded text contains
+            // the macro again, the macro should not be expanded again.
+            // The limits are used to prevent recursive expanding.
+            // * When a macro is expanded its limit position is set to
+            //   the last expanded character.
+            // * macros are only allowed to be expanded when the
+            //   the position is beyond the limit.
+            // * The limit is relative to the end of the "line"
+            //   variable. Inserting and deleting text before the limit
+            //   without updating the limit is safe.
+            // * when pos goes beyond a limit the limit needs to be
+            //   deleted because it is unsafe to insert/delete text
+            //   after the limit
             std::map<const PreprocessorMacro *, unsigned int> limits;
 
+            // pos is the current position in line
             std::string::size_type pos = 0;
             while (pos < line.size())
             {
@@ -1796,6 +1812,8 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
                     const PreprocessorMacro * const macro = it->second;
 
+                    // check if pos is within allowed limits for this
+                    // macro
                     {
                         const std::map<const PreprocessorMacro *, unsigned int>::const_iterator it2 = limits.find(macro);
                         if (it2 != limits.end() && pos <= line.length() - it2->second)
@@ -1907,33 +1925,31 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     if (macro->variadic() || macro->nopar() || !macro->params().empty())
                         ++pos2;
 
-                    // When A is expanded in the following code, the old limit for the
-                    // B needs to deleted, or it will not allow us to expand B,
-                    // which is inside the A.
-                    // #define B(x) (
-                    // #define A() B(xx)
-                    // B(1) A() ) )
-                    unsigned int macroEnd = line.length() - pos2;
+                    // Remove old limits
                     for (std::map<const PreprocessorMacro *, unsigned int>::iterator iter = limits.begin();
                          iter != limits.end();)
                     {
-                        if (pos1 < iter->second)
+                        if ((line.length() - pos1) < iter->second)
                         {
                             // We have gone past this limit, so just delete it
                             limits.erase(iter++);
                         }
                         else
                         {
-                            // We need to adjust this limit, because the
-                            // length of line will be changed
-                            iter->second += macrocode.length() - (pos2 - pos1);
                             ++iter;
                         }
                     }
 
-                    limits[macro] = macroEnd;
+                    // don't allow this macro to be expanded again before pos2
+                    limits[macro] = line.length() - pos2;
+
+                    // erase macro
                     line.erase(pos1, pos2 - pos1);
+
+                    // insert expanded macro code
                     line.insert(pos1, macrocode);
+
+                    // position = start position.
                     pos = pos1;
                 }
             }
