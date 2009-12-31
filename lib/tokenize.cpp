@@ -3042,15 +3042,7 @@ void Tokenizer::simplifyFunctionParameters()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok->str() == "{")
-        {
-            tok = tok->link();
-            if (!tok)
-                break;
-            continue;
-        }
-
-        if (tok->str() == "(")
+        if (tok->str() == "{" || tok->str() == "[" || tok->str() == "(")
         {
             tok = tok->link();
             if (!tok)

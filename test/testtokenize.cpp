@@ -1934,6 +1934,11 @@ private:
 
     void simplify_function_parameters()
     {
+        {
+            const char code[] = "char a [ ABC ( DEF ) ] ;";
+            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+        }
+
         ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }", true));
         ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }", true));
 
