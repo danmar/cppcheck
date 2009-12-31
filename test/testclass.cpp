@@ -306,6 +306,21 @@ private:
             "    A & operator=(const A &a) { return *this; }\n"
             "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "        return *this;\n"
+            "    }\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:5]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -333,6 +348,7 @@ private:
             "};\n"
             "A & A::operator=(const A &a) { return *this; }\n");
         ASSERT_EQUALS("[test.cpp:6]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -342,6 +358,7 @@ private:
             "};\n"
             "A & A::operator=(const A &a) { return *this; }\n");
         ASSERT_EQUALS("[test.cpp:6]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -366,6 +383,7 @@ private:
             "    };\n"
             "};\n");
         ASSERT_EQUALS("[test.cpp:7]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -392,6 +410,7 @@ private:
             "};\n"
             "A::B & A::B::operator=(const A::B &b) { return b; }\n");
         ASSERT_EQUALS("[test.cpp:10]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
     }
 
     // Check that base classes have virtual destructors
