@@ -1302,6 +1302,13 @@ private:
                        "}");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    Foo *p;\n"
+                       "    x = bar(sizeof(*p));\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // arrays..
         checkUninitVar("void f()\n"
                        "{\n"

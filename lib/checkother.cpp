@@ -1628,6 +1628,13 @@ private:
                     --parlevel;
                 }
 
+                else if (Token::simpleMatch(tok2, "sizeof ("))
+                {
+                    tok2 = tok2->link();
+                    if (!tok2)
+                        break;
+                }
+
                 else if (tok2->varId())
                 {
                     if (Token::Match(tok2->tokAt(-2), "[(,] *"))
