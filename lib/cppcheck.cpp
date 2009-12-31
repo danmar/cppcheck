@@ -46,6 +46,7 @@
 CppCheck::CppCheck(ErrorLogger &errorLogger)
         : _errorLogger(errorLogger)
 {
+    exitcode = 0;
 }
 
 CppCheck::~CppCheck()
