@@ -922,6 +922,13 @@ private:
                          "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
+        checkNullPointer("static void foo(int x)\n"
+                         "{\n"
+                         "    int *p = 0;\n"
+                         "    int y = 5 + *p;\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
+
         // no false positive..
         checkNullPointer("static void foo()\n"
                          "{\n"

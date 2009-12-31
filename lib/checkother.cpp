@@ -1265,11 +1265,15 @@ private:
         {
             if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
                 setnull(checks, tok.varId());
-            else if (Token::Match(tok.tokAt(-2), "[;{}=] * %var%"))
+            else if (Token::Match(tok.tokAt(-2), "[;{}=+-/(,] * %var%"))
+                dereference(foundError, checks, &tok);
+            else if (Token::Match(tok.tokAt(-2), "return * %var%"))
                 dereference(foundError, checks, &tok);
             else if (Token::Match(tok.next(), ". %var%"))
                 dereference(foundError, checks, &tok);
-            else if (Token::Match(tok.previous(), "[;{}] %var% [ %num% ] ="))
+            else if (Token::Match(tok.previous(), "[;{}=+-/(,] %var% [ %any% ]"))
+                dereference(foundError, checks, &tok);
+            else if (Token::Match(tok.previous(), "return %var% [ %any% ]"))
                 dereference(foundError, checks, &tok);
             else
                 bailOutVar(checks, tok.varId());
@@ -1277,7 +1281,8 @@ private:
 
         if (Token::simpleMatch(&tok, "* 0"))
         {
-            if (Token::Match(tok.previous(), "[;{}=]"))
+            if (Token::Match(tok.previous(), "[;{}=+-/(,]") ||
+                Token::simpleMatch(tok.previous(), "return"))
             {
                 CheckOther *checkOther = dynamic_cast<CheckOther *>(owner);
                 if (checkOther)
