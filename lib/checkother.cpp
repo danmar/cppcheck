@@ -1318,7 +1318,7 @@ class CheckUninitVar : public ExecutionPath
 public:
     // Startup constructor
     CheckUninitVar(Check *c)
-            : ExecutionPath(c, 0), pointer(false), array(false), alloc(false)
+            : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), suppress(false)
     {
     }
 
@@ -1333,7 +1333,7 @@ private:
 
     // internal constructor for creating extra checks
     CheckUninitVar(Check *c, unsigned int v, const std::string &name, bool p, bool a)
-            : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false)
+            : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), suppress(false)
     {
     }
 
@@ -1341,6 +1341,7 @@ private:
     const bool pointer;
     const bool array;
     bool  alloc;
+    bool  suppress;     // suppression of errors
 
     // p = malloc ..
     static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid)
@@ -1396,7 +1397,7 @@ private:
             CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
             if (c && c->varId == varid)
             {
-                if (c->pointer && !c->alloc)
+                if (c->pointer && !c->alloc && !c->suppress)
                 {
                     CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
                     if (checkOther)
@@ -1428,7 +1429,7 @@ private:
         for (it = checks.begin(); it != checks.end(); ++it)
         {
             CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
-            if (c && c->varId == varid)
+            if (c && c->varId == varid && !c->suppress)
             {
                 // mode 0 : the variable is used "directly"
                 // example: .. = var;
@@ -1505,6 +1506,29 @@ private:
         use(foundError, checks, tok, 3);
     }
 
+    void declare(std::list<ExecutionPath *> &checks, const Token *vartok, const Token &tok, const bool p, const bool a) const
+    {
+        if (vartok->varId() == 0)
+            return;
+
+        // Suppress warnings if variable in inner scope has same name as variable in outer scope
+        if (!tok.isStandardType())
+        {
+            bool dup = false;
+            for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
+            {
+                CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+                if (c && c->varname == vartok->str() && c->varId != vartok->varId())
+                    c->suppress = dup = true;
+            }
+            if (dup)
+                return;
+        }
+
+        if (a || p || tok.isStandardType())
+            checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), p, a));
+    }
+
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
     {
         // Variable declaration..
@@ -1516,8 +1540,7 @@ private:
                 const bool p(vartok->str() == "*");
                 if (p)
                     vartok = vartok->next();
-                if ((p || tok.isStandardType()) && vartok->varId() != 0)
-                    checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), p, false));
+                declare(checks, vartok, tok, p, false);
                 return vartok->next();
             }
 
@@ -1525,8 +1548,7 @@ private:
             if (Token::Match(tok.previous(), "[;{}] %type% %var% [ %num% ] ;"))
             {
                 const Token * vartok = tok.next();
-                if (vartok->varId() != 0)
-                    checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), false, true));
+                declare(checks, vartok, tok, false, true);
                 return vartok->next()->link()->next();
             }
         }

@@ -1245,6 +1245,17 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int f(int a)\n"
+                       "{\n"
+                       "    int ret;\n"
+                       "    if (a == 1)\n"
+                       "        ret = 1;\n"
+                       "    else\n"
+                       "        XYZ ret = 2;\n"  // XYZ may be an unexpanded macro so bailout the checking of "ret".
+                       "    return ret;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // switch..
         checkUninitVar("char * f()\n"
                        "{\n"
