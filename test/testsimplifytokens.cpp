@@ -153,6 +153,7 @@ private:
 
         // simplify "while (0)"
         TEST_CASE(while0);
+        TEST_CASE(while1);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -2551,6 +2552,15 @@ private:
         ASSERT_EQUALS("; do { continue ; } while ( false ) ;", tok("; do { continue ; } while (0);"));
         ASSERT_EQUALS("; do { break ; } while ( false ) ;", tok("; do { break; } while (0);"));
     }
+
+    void while1()
+    {
+        // ticket #1197
+        const char code[] = "void do {} while (0) { }";
+        const char expected[] = "void { }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
 };
 
 REGISTER_TEST(TestSimplifyTokens)

@@ -5147,17 +5147,6 @@ void Tokenizer::simplifyWhile0()
         if (!Token::simpleMatch(tok, "while ( 0 )"))
             continue;
 
-        // remove "while (0) { .. }"
-        if (Token::simpleMatch(tok->tokAt(4), "{"))
-        {
-            const Token *end = tok->tokAt(4)->link();
-            if (!findmatch(tok, end, "continue|break"))
-            {
-                Token::eraseTokens(tok, end ? end->next() : 0);
-                tok->deleteThis();  // delete "while"
-            }
-        }
-
         if (Token::simpleMatch(tok->previous(), "}"))
         {
             // find "do"
@@ -5180,5 +5169,17 @@ void Tokenizer::simplifyWhile0()
                 continue;
             }
         }
+
+        // remove "while (0) { .. }"
+        if (Token::simpleMatch(tok->tokAt(4), "{"))
+        {
+            const Token *end = tok->tokAt(4)->link();
+            if (!findmatch(tok, end, "continue|break"))
+            {
+                Token::eraseTokens(tok, end ? end->next() : 0);
+                tok->deleteThis();  // delete "while"
+            }
+        }
+
     }
 }
