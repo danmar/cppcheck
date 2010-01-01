@@ -181,8 +181,8 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 return tok;
         }
 
-        // return ends all execution paths
-        if (tok->str() == "return")
+        // return/throw ends all execution paths
+        if (tok->str() == "return" || tok->str() == "throw")
         {
             ExecutionPath::bailOut(checks);
         }

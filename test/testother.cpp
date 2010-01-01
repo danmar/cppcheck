@@ -1245,6 +1245,17 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int foo()\n"
+                       "{\n"
+                       "    int ret;\n"
+                       "    if (one())\n"
+                       "        ret = 1;\n"
+                       "    else\n"
+                       "        throw 3;\n"
+                       "    return ret;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int f(int a)\n"
                        "{\n"
                        "    int ret;\n"
