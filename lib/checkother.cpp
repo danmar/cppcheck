@@ -1318,7 +1318,7 @@ class CheckUninitVar : public ExecutionPath
 public:
     // Startup constructor
     CheckUninitVar(Check *c)
-            : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), suppress(false)
+            : ExecutionPath(c, 0), pointer(false), array(false), alloc(false)
     {
     }
 
@@ -1333,7 +1333,7 @@ private:
 
     // internal constructor for creating extra checks
     CheckUninitVar(Check *c, unsigned int v, const std::string &name, bool p, bool a)
-            : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), suppress(false)
+            : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false)
     {
     }
 
@@ -1341,7 +1341,6 @@ private:
     const bool pointer;
     const bool array;
     bool  alloc;
-    bool  suppress;     // suppression of errors
 
     // p = malloc ..
     static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid)
@@ -1397,7 +1396,7 @@ private:
             CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
             if (c && c->varId == varid)
             {
-                if (c->pointer && !c->alloc && !c->suppress)
+                if (c->pointer && !c->alloc)
                 {
                     CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
                     if (checkOther)
@@ -1429,7 +1428,7 @@ private:
         for (it = checks.begin(); it != checks.end(); ++it)
         {
             CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
-            if (c && c->varId == varid && !c->suppress)
+            if (c && c->varId == varid)
             {
                 // mode 0 : the variable is used "directly"
                 // example: .. = var;
@@ -1514,15 +1513,19 @@ private:
         // Suppress warnings if variable in inner scope has same name as variable in outer scope
         if (!tok.isStandardType())
         {
-            bool dup = false;
+            std::set<unsigned int> dup;
             for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
             {
                 CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
                 if (c && c->varname == vartok->str() && c->varId != vartok->varId())
-                    c->suppress = dup = true;
+                    dup.insert(c->varId);
             }
-            if (dup)
+            if (!dup.empty())
+            {
+                for (std::set<unsigned int>::const_iterator it = dup.begin(); it != dup.end(); ++it)
+                    bailOutVar(checks, *it);
                 return;
+            }
         }
 
         if (a || p || tok.isStandardType())
