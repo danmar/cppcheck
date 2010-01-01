@@ -1939,6 +1939,11 @@ private:
             ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
         }
 
+        {
+            const char code[] = "module ( a , a , sizeof ( a ) , 0444 ) ;";
+            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+        }
+
         ASSERT_EQUALS("void f ( int x ) { }", tokenizeAndStringify("void f(x) int x; { }", true));
         ASSERT_EQUALS("void f ( int x , char y ) { }", tokenizeAndStringify("void f(x,y) int x; char y; { }", true));
 

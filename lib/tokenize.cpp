@@ -3118,7 +3118,8 @@ void Tokenizer::simplifyFunctionParameters()
                 }
             }
 
-            tok = tok ? tok->link() : 0;
+            if (Token::simpleMatch(tok, "{"))
+                tok = tok->link();
 
             if (tok == NULL)
             {
