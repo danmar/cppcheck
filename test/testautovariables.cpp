@@ -77,8 +77,9 @@ private:
     {
         check("void func1(int **res)\n"
               "{\n"
-              "    int num=2;"
-              "res=&num;}");
+              "    int num = 2;\n"
+              "    *res = &num;\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignment of an auto-variable to an effective parameter of a function\n", errout.str());
 
         check("void func1(int **res)\n"
