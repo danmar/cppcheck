@@ -1576,6 +1576,14 @@ private:
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
+
+        {
+            const char code[] = "void f(int namespace) { }";
+
+            const std::string expected("void f ( int namespace ) { }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 
 
