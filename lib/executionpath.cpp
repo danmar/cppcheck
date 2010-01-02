@@ -66,7 +66,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             return 0;
 
         // todo: handle for/while
-        if (Token::Match(tok, "for|while|switch"))
+        if (Token::Match(tok, "for|while|switch|do"))
         {
             ExecutionPath::bailOut(checks);
             return 0;

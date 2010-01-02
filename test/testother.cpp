@@ -1267,6 +1267,19 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int f(int a, int b)\n"
+                       "{\n"
+                       "   int x;\n"
+                       "   if (a)\n"
+                       "      x = a;\n"
+                       "   else {\n"
+                       "      do { } while (f2());\n"
+                       "      x = b;\n"
+                       "   }\n"
+                       "   return x;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // switch..
         checkUninitVar("char * f()\n"
                        "{\n"
