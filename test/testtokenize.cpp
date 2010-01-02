@@ -2254,7 +2254,7 @@ private:
         const char code[] =
             "class Fred"
             "{\n"
-            "public:\n"
+//            "public:\n"
             "    Fred()\n"
             "    { }\n"
             "};\n";

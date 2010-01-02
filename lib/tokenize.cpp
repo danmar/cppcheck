@@ -4553,18 +4553,13 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const char classnam
     if (indentlevel < 0 || tok == NULL)
         return NULL;
 
-    std::ostringstream classPattern;
-    classPattern << "class " << classname << " :|{";
-
-    std::ostringstream internalPattern;
-    internalPattern << funcname << " (";
-
-    std::ostringstream externalPattern;
-    externalPattern << classname << " :: " << funcname << " (";
+    const std::string classPattern(std::string("class ") + classname + " :|{");
+    const std::string internalPattern(std::string("!!~ ") + funcname + " (");
+    const std::string externalPattern(std::string(classname) + " :: " + funcname + " (");
 
     for (; tok; tok = tok->next())
     {
-        if (indentlevel == 0 && Token::Match(tok, classPattern.str().c_str()))
+        if (indentlevel == 0 && Token::Match(tok, classPattern.c_str()))
         {
             while (tok && tok->str() != "{")
                 tok = tok->next();
@@ -4583,17 +4578,8 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const char classnam
 
             else
             {
-                for (; tok; tok = tok->next())
-                {
-                    if (tok->str() == "{")
-                        ++indentlevel;
-                    else if (tok->str() == "}")
-                    {
-                        --indentlevel;
-                        if (indentlevel <= 0)
-                            break;
-                    }
-                }
+                // skip the block
+                tok = tok->link();
                 if (tok == NULL)
                     return NULL;
 
@@ -4611,17 +4597,17 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const char classnam
         if (indentlevel == 1)
         {
             // Member function implemented in the class declaration?
-            if (tok->str() != "~" && Token::Match(tok->next(), internalPattern.str().c_str()))
+            if (Token::Match(tok->previous(), internalPattern.c_str()))
             {
-                const Token *tok2 = tok->next();
+                const Token *tok2 = tok;
                 while (tok2 && tok2->str() != "{" && tok2->str() != ";")
                     tok2 = tok2->next();
                 if (tok2 && tok2->str() == "{")
-                    return tok->next();
+                    return tok;
             }
         }
 
-        else if (indentlevel == 0 && Token::Match(tok, externalPattern.str().c_str()))
+        else if (indentlevel == 0 && Token::Match(tok, externalPattern.c_str()))
         {
             return tok;
         }
