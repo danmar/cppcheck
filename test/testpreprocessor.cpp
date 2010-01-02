@@ -131,6 +131,7 @@ private:
         TEST_CASE(macro_simple10);
         TEST_CASE(macro_simple11);
         TEST_CASE(macro_simple12);
+        TEST_CASE(macro_simple13);
         TEST_CASE(macroInMacro);
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
@@ -1105,6 +1106,13 @@ private:
         const char filedata[] = "#define AB ab.AB\n"
                                 "AB.CD\n";
         ASSERT_EQUALS("\nab.AB.CD\n", OurPreprocessor::expandMacros(filedata));
+    }
+
+    void macro_simple13()
+    {
+        const char filedata[] = "#define TRACE(x)\n"
+                                "TRACE(;if(a))\n";
+        ASSERT_EQUALS("\n\n", OurPreprocessor::expandMacros(filedata));
     }
 
     void macroInMacro()

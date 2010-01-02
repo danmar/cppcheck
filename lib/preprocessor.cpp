@@ -1624,6 +1624,7 @@ static bool getlines(std::istream &istr, std::string &line)
     if (!istr.good())
         return false;
     line = "";
+    int parlevel = 0;
     for (unsigned char ch = (unsigned char)istr.get(); istr.good(); ch = (unsigned char)istr.get())
     {
         if (ch == '\'' || ch == '\"')
@@ -1649,7 +1650,11 @@ static bool getlines(std::istream &istr, std::string &line)
             }
             continue;
         }
-        if (ch == '\n')
+        if (ch == '(')
+            ++parlevel;
+        else if (ch == ')')
+            --parlevel;
+        else if (ch == '\n')
         {
             if (line.compare(0, 1, "#") == 0)
                 return true;
@@ -1660,7 +1665,7 @@ static bool getlines(std::istream &istr, std::string &line)
                 return true;
             }
         }
-        else if (line.compare(0, 1, "#") != 0 && ch == ';')
+        else if (line.compare(0, 1, "#") != 0 && parlevel <= 0 && ch == ';')
         {
             line += ";";
             return true;
