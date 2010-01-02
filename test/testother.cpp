@@ -1148,6 +1148,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    int c;\n"
+                       "    ab(sizeof(xyz), &c);\n"
+                       "    if (c);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // goto..
         checkUninitVar("void foo(int x)\n"
                        "{\n"

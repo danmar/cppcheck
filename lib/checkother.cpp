@@ -1660,7 +1660,7 @@ private:
 
                 else if (Token::simpleMatch(tok2, "sizeof ("))
                 {
-                    tok2 = tok2->link();
+                    tok2 = tok2->next()->link();
                     if (!tok2)
                         break;
                 }
