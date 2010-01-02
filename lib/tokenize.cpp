@@ -4548,12 +4548,12 @@ std::string Tokenizer::file(const Token *tok) const
 
 //---------------------------------------------------------------------------
 
-const Token * Tokenizer::findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel)
+const Token * Tokenizer::findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel, bool isStruct)
 {
     if (indentlevel < 0 || tok == NULL)
         return NULL;
 
-    const std::string classPattern(std::string("class ") + classname + " :|{");
+    const std::string classPattern(std::string(isStruct ? "struct " : "class ") + classname + " :|{");
     const std::string internalPattern(std::string("!!~ ") + funcname + " (");
     const std::string externalPattern(std::string(classname) + " :: " + funcname + " (");
 

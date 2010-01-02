@@ -110,15 +110,15 @@ private:
         Var *next;
     };
 
-    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack);
+    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack, bool isStruct);
     void initVar(Var *varlist, const char varname[]);
-    Var *getVarList(const Token *tok1, bool withClasses);
+    Var *getVarList(const Token *tok1, bool withClasses, bool isStruct);
 
     // Check constructors for a specified class
-    void checkConstructors(const Token *tok1, const char funcname[], bool hasPrivateConstructor);
+    void checkConstructors(const Token *tok1, const char funcname[], bool hasPrivateConstructor, bool isStruct);
 
     // Reporting errors..
-    void noConstructorError(const Token *tok, const std::string &classname);
+    void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool hasPrivateConstructor);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
@@ -132,7 +132,7 @@ private:
 
     void getErrorMessages()
     {
-        noConstructorError(0, "classname");
+        noConstructorError(0, "classname", false);
         uninitVarError(0, "classname", "varname", false);
         operatorEqVarError(0, "classname", "");
         unusedPrivateFunctionError(0, "classname", "funcname");

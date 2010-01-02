@@ -106,14 +106,15 @@ public:
     std::string file(const Token *tok) const;
 
     /**
-     * Find a class member function
+     * Find a class or struct member function
      * @param tok where to begin the search
      * @param classname name of class
      * @param funcname name of function ("~ Fred" => destructor for fred, "%var%" => any function)
      * @param indentlevel Just an integer that you initialize to 0 before the first call.
+     * @param is it a struct
      * @return First matching token or NULL.
      */
-    static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel);
+    static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentleveal, bool isStruct = false);
 
     /**
      * get error messages

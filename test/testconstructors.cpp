@@ -83,10 +83,30 @@ private:
     {
         check("class Fred\n"
               "{\n"
+              "public:\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
               "private:\n"
               "    int i;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' has no constructor. Member variables not initialized.\n", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "private:\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The struct 'Fred' has no constructor. Member variables not initialized.\n", errout.str());
     }
 
 
@@ -95,10 +115,47 @@ private:
         check("class Fred\n"
               "{\n"
               "public:\n"
+              "    Fred() : i(0) { }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    Fred() { i = 0; }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
               "    Fred() { }\n"
               "    int i;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred() : i(0) { }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred() { i = 0; }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred() { }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
 
@@ -110,9 +167,56 @@ private:
               "    Fred();\n"
               "    int i;\n"
               "};\n"
+              "Fred::Fred() :i(0)\n"
+              "{ }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    Fred();\n"
+              "    int i;\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ i = 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    Fred();\n"
+              "    int i;\n"
+              "};\n"
               "Fred::Fred()\n"
               "{ }\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred();\n"
+              "    int i;\n"
+              "};\n"
+              "Fred::Fred() :i(0)\n"
+              "{ }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred();\n"
+              "    int i;\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ i = 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred();\n"
+              "    int i;\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ }\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
 
@@ -132,6 +236,20 @@ private:
               "    i = _i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred();\n"
+              "    Fred(int _i);\n"
+              "    int i;\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ }\n"
+              "Fred::Fred(int _i)\n"
+              "{\n"
+              "    i = _i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
 
@@ -145,11 +263,33 @@ private:
               "    int i;\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred()\n"
+              "    { this->i = 0; }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_if()
     {
         check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    Fred()\n"
+              "    {\n"
+              "        if (true)\n"
+              "            i = 0;\n"
+              "        else\n"
+              "            i = 1;\n"
+              "    }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
               "{\n"
               "public:\n"
               "    Fred()\n"
@@ -204,6 +344,40 @@ private:
               "int main() {}\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    int i;\n"
+              "\n"
+              "    Fred()\n"
+              "    { i = 0; }\n"
+              "\n"
+              "    Fred(const Fred &fred)\n"
+              "    { *this = fred; }\n"
+              "\n"
+              "    const Fred & operator=(const Fred &fred)\n"
+              "    { i = fred.i; return *this; }\n"
+              "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A\n"
+              "{\n"
+              "  A() : i(0), j(0) {}\n"
+              "\n"
+              "  A &operator=(const int &value)\n"
+              "  {\n"
+              "    i = value;\n"
+              "    return (*this);\n"
+              "  }\n"
+              "\n"
+              "  int i;\n"
+              "  int j;\n"
+              "};\n"
+              "\n"
+              "int main() {}\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -217,6 +391,14 @@ private:
               "    int i;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (possible style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    Fred() { i = 0; }\n"
+              "    void operator=(const Fred &fred) { }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
     }
 
     void initvar_operator_eq3()
@@ -224,6 +406,16 @@ private:
         check("class Fred\n"
               "{\n"
               "public:\n"
+              "    Fred() { Init(); }\n"
+              "    void operator=(const Fred &fred) { Init(); }\n"
+              "private:\n"
+              "    void Init() { i = 0; }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
               "    Fred() { Init(); }\n"
               "    void operator=(const Fred &fred) { Init(); }\n"
               "private:\n"
@@ -256,6 +448,46 @@ private:
               "}\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("void func1()\n"
+              "{\n"
+              "    struct Fred\n"
+              "    {\n"
+              "        int a;\n"
+              "        Fred() { a = 0; }\n"
+              "    };\n"
+              "}\n"
+              "\n"
+              "void func2()\n"
+              "{\n"
+              "    class Fred\n"
+              "    {\n"
+              "        int b;\n"
+              "        Fred() { b = 0; }\n"
+              "    };\n"
+              "}\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        check("void func1()\n"
+              "{\n"
+              "    struct Fred\n"
+              "    {\n"
+              "        int a;\n"
+              "        Fred() { a = 0; }\n"
+              "    };\n"
+              "}\n"
+              "\n"
+              "void func2()\n"
+              "{\n"
+              "    struct Fred\n"
+              "    {\n"
+              "        int b;\n"
+              "        Fred() { b = 0; }\n"
+              "    };\n"
+              "}\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_chained_assign()
@@ -263,6 +495,21 @@ private:
         // Bug 2270433 - Uninitialized variable false positive on chained assigns
 
         check("class c\n"
+              "{\n"
+              "    c();\n"
+              "\n"
+              "    int m_iMyInt1;\n"
+              "    int m_iMyInt2;\n"
+              "}\n"
+              "\n"
+              "c::c()\n"
+              "{\n"
+              "    m_iMyInt1 = m_iMyInt2 = 0;\n"
+              "}\n");
+
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct c\n"
               "{\n"
               "    c();\n"
               "\n"
@@ -310,6 +557,36 @@ private:
               "}\n");
 
         ASSERT_EQUALS("", errout.str());
+
+        check("struct c\n"
+              "{\n"
+              "    c();\n"
+              "    c(bool b);"
+              "\n"
+              "    void InitInt();\n"
+              "\n"
+              "    int m_iMyInt;\n"
+              "    int m_bMyBool;\n"
+              "}\n"
+              "\n"
+              "c::c()\n"
+              "{\n"
+              "    m_bMyBool = false;\n"
+              "    InitInt();"
+              "}\n"
+              "\n"
+              "c::c(bool b)\n"
+              "{\n"
+              "    m_bMyBool = b;\n"
+              "    InitInt();\n"
+              "}\n"
+              "\n"
+              "void c::InitInt()\n"
+              "{\n"
+              "    m_iMyInt = 0;\n"
+              "}\n");
+
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -321,9 +598,56 @@ private:
               "    const char *s;\n"
               "    Fred();\n"
               "};\n"
+              "Fred::Fred() : s(NULL)\n"
+              "{ }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    const char *s;\n"
+              "    Fred();\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ s = NULL; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    const char *s;\n"
+              "    Fred();\n"
+              "};\n"
               "Fred::Fred()\n"
               "{ }");
         ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Fred::s'\n", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    const char *s;\n"
+              "    Fred();\n"
+              "};\n"
+              "Fred::Fred() : s(NULL)\n"
+              "{ }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    const char *s;\n"
+              "    Fred();\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ s = NULL; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    const char *s;\n"
+              "    Fred();\n"
+              "};\n"
+              "Fred::Fred()\n"
+              "{ }");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Member variable not initialized in the constructor 'Fred::s'\n", errout.str());
     }
 
 

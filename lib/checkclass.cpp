@@ -41,12 +41,12 @@ CheckClass instance;
 
 //---------------------------------------------------------------------------
 
-CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses)
+CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, bool isStruct)
 {
     // Get variable list..
     Var *varlist = NULL;
     unsigned int indentlevel = 0;
-    bool priv = true;
+    bool priv = !isStruct;
     for (const Token *tok = tok1; tok; tok = tok->next())
     {
         if (!tok->next())
@@ -189,7 +189,7 @@ void CheckClass::initVar(Var *varlist, const char varname[])
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack)
+void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack, bool isStruct)
 {
     bool Assign = false;
     unsigned int indentlevel = 0;
@@ -285,10 +285,10 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             {
                 callstack.push_back(ftok->str());
                 int i = 0;
-                const Token *ftok2 = Tokenizer::findClassFunction(tok1, classname, ftok->strAt(0), i);
+                const Token *ftok2 = Tokenizer::findClassFunction(tok1, classname, ftok->strAt(0), i, isStruct);
                 if (ftok2)
                 {
-                    initializeVarList(tok1, ftok2, varlist, classname, callstack);
+                    initializeVarList(tok1, ftok2, varlist, classname, callstack, isStruct);
                 }
                 else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
                 {
@@ -340,22 +340,22 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
 
 void CheckClass::constructors()
 {
-    const char pattern_class[] = "class %var% [{:]";
+    const char pattern_class[] = "class|struct %var% [{:]";
 
     // Locate class
     const Token *tok1 = Token::findmatch(_tokenizer->tokens(), pattern_class);
     while (tok1)
     {
-        const char *className[2];
-        className[0] = tok1->strAt(1);
-        className[1] = 0;
+        const char *className;
+        className = tok1->strAt(1);
         const Token *classNameToken = tok1->tokAt(1);
+        bool isStruct = tok1->str() == "struct";
 
         /** @todo handling of private constructors should be improved */
         bool hasPrivateConstructor = false;
         {
             int indentlevel = 0;
-            bool isPrivate = true;
+            bool isPrivate = !isStruct;
             for (const Token *tok = tok1; tok; tok = tok->next())
             {
                 // Indentation
@@ -409,14 +409,14 @@ void CheckClass::constructors()
             if (_settings->_checkCodingStyle)
             {
                 // Get class variables...
-                Var *varlist = getVarList(tok1, false);
+                Var *varlist = getVarList(tok1, false, isStruct);
 
                 // If there is a private variable, there should be a constructor..
                 for (const Var *var = varlist; var; var = var->next)
                 {
                     if (var->priv)
                     {
-                        noConstructorError(tok1, classNameToken->str());
+                        noConstructorError(tok1, classNameToken->str(), isStruct);
                         break;
                     }
                 }
@@ -435,27 +435,27 @@ void CheckClass::constructors()
         }
 
         // Check constructors
-        checkConstructors(tok1, className[0], hasPrivateConstructor);
+        checkConstructors(tok1, className, hasPrivateConstructor, isStruct);
 
         // Check assignment operators
-        checkConstructors(tok1, "operator =", hasPrivateConstructor);
+        checkConstructors(tok1, "operator =", hasPrivateConstructor, isStruct);
 
         tok1 = Token::findmatch(tok1->next(), pattern_class);
     }
 }
 
-void CheckClass::checkConstructors(const Token *tok1, const char funcname[], bool hasPrivateConstructor)
+void CheckClass::checkConstructors(const Token *tok1, const char funcname[], bool hasPrivateConstructor, bool isStruct)
 {
     const char * const className = tok1->strAt(1);
 
     // Check that all member variables are initialized..
     bool withClasses = bool(_settings->_showAll && std::string(funcname) == "operator =");
-    Var *varlist = getVarList(tok1, withClasses);
+    Var *varlist = getVarList(tok1, withClasses, isStruct);
 
     int indentlevel = 0;
-    const Token *constructor_token = Tokenizer::findClassFunction(tok1, className, funcname, indentlevel);
+    const Token *constructor_token = Tokenizer::findClassFunction(tok1, className, funcname, indentlevel, isStruct);
     std::list<std::string> callstack;
-    initializeVarList(tok1, constructor_token, varlist, className, callstack);
+    initializeVarList(tok1, constructor_token, varlist, className, callstack, isStruct);
     while (constructor_token)
     {
         // Check if any variables are uninitialized
@@ -500,9 +500,9 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[], boo
         for (Var *var = varlist; var; var = var->next)
             var->init = false;
 
-        constructor_token = Tokenizer::findClassFunction(constructor_token->next(), className, funcname, indentlevel);
+        constructor_token = Tokenizer::findClassFunction(constructor_token->next(), className, funcname, indentlevel, isStruct);
         callstack.clear();
-        initializeVarList(tok1, constructor_token, varlist, className, callstack);
+        initializeVarList(tok1, constructor_token, varlist, className, callstack, isStruct);
     }
 
     // Delete the varlist..
@@ -522,7 +522,7 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[], boo
 void CheckClass::privateFunctions()
 {
     // Locate some class
-    for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), "class %var% {"); tok1; tok1 = Token::findmatch(tok1->next(), "class %var% {"))
+    for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), "class|struct %var% {"); tok1; tok1 = Token::findmatch(tok1->next(), "class|struct %var% {"))
     {
         /** @todo check that the whole class implementation is seen */
         // until the todo above is fixed we only check classes that are
@@ -535,7 +535,8 @@ void CheckClass::privateFunctions()
         // Get private functions..
         std::list<const Token *> FuncList;
         FuncList.clear();
-        bool priv = false;
+        bool isStruct = tok1->str() == "struct";
+        bool priv = !isStruct;
         unsigned int indent_level = 0;
         for (const Token *tok = tok1; tok; tok = tok->next())
         {
@@ -1214,9 +1215,9 @@ void CheckClass::thisSubtraction()
     }
 }
 
-void CheckClass::noConstructorError(const Token *tok, const std::string &classname)
+void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
-    reportError(tok, Severity::style, "noConstructor", "The class '" + classname + "' has no constructor. Member variables not initialized.");
+    reportError(tok, Severity::style, "noConstructor", "The " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' has no constructor. Member variables not initialized.");
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool hasPrivateConstructor)

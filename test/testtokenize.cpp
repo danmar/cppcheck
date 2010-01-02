@@ -142,6 +142,7 @@ private:
         TEST_CASE(simplify_constants2);
 
         TEST_CASE(findClassFunction1);
+        TEST_CASE(findClassFunction2);
 
         TEST_CASE(vardecl1);
         TEST_CASE(vardecl2);
@@ -2254,7 +2255,7 @@ private:
         const char code[] =
             "class Fred"
             "{\n"
-//            "public:\n"
+            "public:\n"
             "    Fred()\n"
             "    { }\n"
             "};\n";
@@ -2270,6 +2271,29 @@ private:
         const Token *tok = Tokenizer::findClassFunction(tokenizer.tokens(), "Fred", "%var%", i);
         ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
         tok = Tokenizer::findClassFunction(tok->next(), "Fred", "%var%", i);
+        ASSERT_EQUALS(0, tok ? 1 : 0);
+    }
+
+    void findClassFunction2()
+    {
+        const char code[] =
+            "struct Fred"
+            "{\n"
+            "    Fred()\n"
+            "    { }\n"
+            "};\n";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        int i;
+
+        i = 0;
+        const Token *tok = Tokenizer::findClassFunction(tokenizer.tokens(), "Fred", "%var%", i, true);
+        ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
+        tok = Tokenizer::findClassFunction(tok->next(), "Fred", "%var%", i, false);
         ASSERT_EQUALS(0, tok ? 1 : 0);
     }
 
