@@ -294,10 +294,13 @@ Settings MainWindow::GetCppcheckSettings()
         // Format project filename (directory name + .cppcheck) and load
         // the project file if it is found.
         QStringList parts = mCurrentDirectory.split("/");
-        QString projfile = parts[parts.count() - 1] + ".cppcheck";
+        QString projfile = mCurrentDirectory + "/" + parts[parts.count() - 1] + ".cppcheck";
         bool projectRead = false;
         if (QFile::exists(projfile))
-            projectRead = pfile.Read(mCurrentDirectory + "/" + projfile);
+        {
+            qDebug() << "Reading project file " << projfile;
+            projectRead = pfile.Read(projfile);
+        }
 
         if (projectRead)
         {
