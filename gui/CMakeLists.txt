@@ -119,10 +119,15 @@ QT4_WRAP_CPP(CHECK_MOC_SRCS ${CHECK_HEADERS})
 # add translations ...
 QT4_ADD_TRANSLATION(CHECK_QM ${CHECK_TRANS})
 
+# Create folders for Visual Studio IDE
+SOURCE_GROUP("Header Files" FILES ${CHECK_HEADERS})
+SOURCE_GROUP("Ui Files" ".ui$")
+SOURCE_GROUP("Moc Files" "moc_.*cxx$")
+
 # Include binary directory where code from UI files gets created
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-ADD_EXECUTABLE(gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_UIS_H}
-  ${CHECK_RCC_SRCS} ${CHECK_QM})
+ADD_EXECUTABLE(gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_HEADERS} 
+  ${CHECK_UIS_H} ${CHECK_RCC_SRCS})
 TARGET_LINK_LIBRARIES(gui ${CHECK_LIBS} ${QT_LIBRARIES})
 
