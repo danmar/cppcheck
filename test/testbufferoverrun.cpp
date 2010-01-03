@@ -95,6 +95,7 @@ private:
         TEST_CASE(array_index_23);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
+        TEST_CASE(array_index_calculation);
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -819,7 +820,22 @@ private:
               "  };\n"
               " }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
         TODO_ASSERT_EQUALS("[test.cpp:12]: (error) Array index out of bounds\n", errout.str());
+    }
+
+    void array_index_calculation()
+    {
+        // #1193 - false negative: array out of bounds in loop when there is calculation
+        check("void f()\n"
+              "{\n"
+              "    char data[8];\n"
+              "    for (int i = 19; i < 36; ++i) {\n"
+              "        data[(i-0)/2] = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()

@@ -954,6 +954,14 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNullPointer("static void foo()\n"
+                         "{\n"
+                         "    int *p = 0;\n"
+                         "    exit();\n"
+                         "    *p = 0;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkNullPointer("static void foo(int a)\n"
                          "{\n"
                          "    Foo *p = 0;\n"
@@ -1175,6 +1183,28 @@ private:
                        "    if (c);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // +=
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    int c;\n"
+                       "    c += 2;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char *s = malloc(100);\n"
+                       "    *s += 10;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: s\n", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    int a[10];\n"
+                       "    a[0] += 10;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
 
         // goto..
         checkUninitVar("void foo(int x)\n"

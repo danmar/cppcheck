@@ -95,6 +95,12 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             return 0;
         }
 
+        if (Token::Match(tok, "abort|exit ("))
+        {
+            ExecutionPath::bailOut(checks);
+            return 0;
+        }
+
         // don't parse into "struct type { .."
         if (Token::Match(tok, "struct %type% {"))
             tok = tok->tokAt(2)->link();
