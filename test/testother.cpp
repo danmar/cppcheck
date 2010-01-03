@@ -1034,6 +1034,12 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    int x = xyz::x;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("static int foo()\n"
                        "{\n"
                        "    int ret;\n"

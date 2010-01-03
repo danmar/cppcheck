@@ -1568,7 +1568,7 @@ private:
                     if (Token::Match(tok2, "%var% ("))
                         break;
                     if (tok2->varId() &&
-                        !Token::simpleMatch(tok2->previous(), "&") &&
+                        !Token::Match(tok2->previous(), "&|::") &&
                         !Token::simpleMatch(tok2->next(), "="))
                         use(foundError, checks, tok2);
                 }
