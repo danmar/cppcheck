@@ -836,7 +836,8 @@ void CheckClass::operatorEqRetRefThis()
                             // check for return of reference to this
                             if (tok1->str() == "return")
                             {
-                                if (!Token::Match(tok1->tokAt(1), "* this ;"))
+                                if (!(Token::Match(tok1->tokAt(1), "* this ;") ||
+                                      Token::Match(tok1->tokAt(1), "operator = (")))
                                     operatorEqRetRefThisError(tok);
                             }
                         }
@@ -887,7 +888,8 @@ void CheckClass::operatorEqRetRefThis()
                             // check for return of reference to this
                             if (tok1->str() == "return")
                             {
-                                if (!Token::Match(tok1->tokAt(1), "* this ;"))
+                                if (!(Token::Match(tok1->tokAt(1), "* this ;") ||
+                                      Token::Match(tok1->tokAt(1), "operator = (")))
                                     operatorEqRetRefThisError(tok);
                             }
                         }
@@ -905,13 +907,149 @@ void CheckClass::operatorEqRetRefThis()
 
 
 //---------------------------------------------------------------------------
-// ClassCheck: "C& operator=(const C& rhs) { if (this == &rhs) }"
+// ClassCheck: "C& operator=(const C& rhs) { if (this == &rhs) ... }"
 // operator= should check for assignment to self
-// For simple classes, an assignment to self check is only an optimization.
-// For classes that allocate dynamic memory, assignment to self is a real error.
+//
+// For simple classes, an assignment to self check is only a potential optimization.
+//
+// For classes that allocate dynamic memory, assignment to self can be a real error
+// if it is deallocated and allocated again without being checked for.
+//
 // This check is not valid for classes with multiple inheritance because a
-// class can have multiple addresses.  This should be checked for someday.
+// class can have multiple addresses so there is no trivial way to check for
+// assignment to self.
 //---------------------------------------------------------------------------
+
+static bool hasDeallocation(const Token * first, const Token * last)
+{
+    for (const Token * tok = first; tok && tok != last; tok = tok->next())
+    {
+        // check for deallocating memory
+        if (Token::Match(tok, "{|;|, free ( %type%"))
+        {
+            const Token * var = tok->tokAt(3);
+
+            // we should probably check that var is a pointer in this class
+
+            tok = tok->tokAt(4);
+
+            while (tok && tok != last)
+            {
+                if (Token::Match(tok, "%type% ="))
+                {
+                    if (tok->str() == var->str())
+                        return true;
+                }
+
+                tok = tok->next();
+            }
+        }
+        else if (Token::Match(tok, "{|;|, delete [ ] %type%"))
+        {
+            const Token * var = tok->tokAt(4);
+
+            // we should probably check that var is a pointer in this class
+
+            tok = tok->tokAt(5);
+
+            while (tok && tok != last)
+            {
+                if (Token::Match(tok, "%type% = new ["))
+                {
+                    if (tok->str() == var->str())
+                        return true;
+                }
+
+                tok = tok->next();
+            }
+        }
+        else if (Token::Match(tok, "{|;|, delete %type%"))
+        {
+            const Token * var = tok->tokAt(2);
+
+            // we should probably check that var is a pointer in this class
+
+            tok = tok->tokAt(3);
+
+            while (tok && tok != last)
+            {
+                if (Token::Match(tok, "%type% = new"))
+                {
+                    if (tok->str() == var->str())
+                        return true;
+                }
+
+                tok = tok->next();
+            }
+        }
+    }
+
+    return false;
+}
+
+static bool hasAssignSelf(const Token * first, const Token * last, const Token * rhs)
+{
+    for (const Token * tok = first; tok && tok != last; tok = tok->next())
+    {
+        if (Token::Match(tok, "if ( this ==|!= & %var% )"))
+        {
+            if (tok->tokAt(5)->str() == rhs->str())
+                return true;
+        }
+        else if (Token::Match(tok, "if ( & %var% ==|!= this )"))
+        {
+            if (tok->tokAt(3)->str() == rhs->str())
+                return true;
+        }
+    }
+
+    return false;
+}
+
+static bool hasMultipleInheritanceInline(const Token * tok)
+{
+    while (tok && tok->str() != "{")
+    {
+        if (tok->str() == ",")
+            return true;
+
+        tok = tok->next();
+    }
+
+    return false;
+}
+
+static bool hasMultipleInheritanceGlobal(const Token * start, const std::string & name)
+{
+    const Token *tok = start;
+    std::string pattern;
+    std::string className = name;
+
+    // check for nested classes
+    while (className.find("::") != std::string::npos)
+    {
+        std::string tempName;
+
+        // there is probably a better way to do this
+        while (className[0] != ' ')
+        {
+            tempName += className[0];
+            className.erase(0, 1);
+        }
+
+        className.erase(0, 4);
+
+        pattern = "class|struct " + tempName;
+
+        tok = Token::findmatch(tok, pattern.c_str());
+    }
+
+    pattern = "class|struct " + className;
+
+    tok = Token::findmatch(tok, pattern.c_str());
+
+    return hasMultipleInheritanceInline(tok);
+}
 
 void CheckClass::operatorEqToSelf()
 {
@@ -922,9 +1060,9 @@ void CheckClass::operatorEqToSelf()
     {
         const Token *tok1 = tok;
 
+        // make sure this is an assignment operator
         if (tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), " %type% ::"))
         {
-            // make sure this is an assignment operator
             int nameLength = 1;
 
             tok1 = tok1->tokAt(-2);
@@ -941,38 +1079,34 @@ void CheckClass::operatorEqToSelf()
 
             nameStr(name, nameLength, nameString);
 
-            if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
+            if (!hasMultipleInheritanceGlobal(_tokenizer->tokens(), nameString))
             {
-                // check class name
-                if (tok1->tokAt(-(1 + nameLength)) && nameMatch(name, tok1->tokAt(-(1 + nameLength)), nameLength))
+                if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
                 {
-                    // check forward for proper function signature
-                    std::string pattern = "const " + nameString + " & %type% )";
-                    if (Token::Match(tok->tokAt(3), pattern.c_str()))
+                    // check returned class name
+                    if (tok1->tokAt(-(1 + nameLength)) && nameMatch(name, tok1->tokAt(-(1 + nameLength)), nameLength))
                     {
-                        if (nameMatch(name, tok->tokAt(4), nameLength))
+                        // check forward for proper function signature
+                        std::string pattern = "const " + nameString + " & %type% )";
+                        if (Token::Match(tok->tokAt(3), pattern.c_str()))
                         {
-                            tok1 = tok->tokAt(2)->link();
+                            const Token * rhs = tok->tokAt(5 + nameLength);
 
-                            if (tok1 && tok1->next() && tok1->next()->str() == "{")
+                            if (nameMatch(name, tok->tokAt(4), nameLength))
                             {
-                                bool checkAssignSelf = false;
-                                const Token *tok3 = tok->tokAt(2)->link()->next()->next();
-                                const Token *last = tok->tokAt(2)->link()->next()->link();
-                                while (tok3 != last)
+                                tok1 = tok->tokAt(2)->link();
+
+                                if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
                                 {
-                                    if (Token::Match(tok3, "if ( this ==|!= & %var% )") ||
-                                        Token::Match(tok3, "if ( & %var% ==|!= this )"))
+                                    const Token *first = tok1->tokAt(1);
+                                    const Token *last = first->link();
+
+                                    if (!hasAssignSelf(first, last, rhs))
                                     {
-                                        checkAssignSelf = true;
-                                        break;
+                                        if (hasDeallocation(first, last))
+                                            operatorEqToSelfError(tok);
                                     }
-
-                                    tok3 = tok3->next();
                                 }
-
-                                if (!checkAssignSelf)
-                                    operatorEqToSelfError(tok);
                             }
                         }
                     }
@@ -981,62 +1115,44 @@ void CheckClass::operatorEqToSelf()
         }
         else
         {
-            // make sure this is an assignment operator
             tok1 = tok;
 
             // check backwards for proper function signature
             if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
             {
                 const Token *name = 0;
-                bool isPublic = false;
                 while (tok1 && !Token::Match(tok1, "class|struct %var%"))
-                {
-                    if (!isPublic)
-                    {
-                        if (tok1->str() == "public:")
-                            isPublic = true;
-                    }
                     tok1 = tok1->previous();
-                }
 
                 if (tok1 && Token::Match(tok1, "struct %var%"))
-                {
-                    isPublic = true;
                     name = tok1->tokAt(1);
-                }
                 else if (tok1 && Token::Match(tok1, "class %var%"))
-                {
                     name = tok1->tokAt(1);
-                }
 
-                if (tok->tokAt(-2) && tok->tokAt(-2)->str() == name->str())
+                if (!hasMultipleInheritanceInline(tok1))
                 {
-                    // check forward for proper function signature
-                    if (Token::Match(tok->tokAt(3), "const %type% & %type% )"))
+                    if (tok->tokAt(-2) && tok->tokAt(-2)->str() == name->str())
                     {
-                        if (tok->tokAt(4)->str() == name->str())
+                        // check forward for proper function signature
+                        if (Token::Match(tok->tokAt(3), "const %type% & %type% )"))
                         {
-                            tok1 = tok->tokAt(2)->link();
+                            const Token * rhs = tok->tokAt(6);
 
-                            if (tok1 && tok1->next() && tok1->next()->str() == "{")
+                            if (tok->tokAt(4)->str() == name->str())
                             {
-                                bool checkAssignSelf = false;
-                                const Token *tok3 = tok->tokAt(2)->link()->next()->next();
-                                const Token *last = tok->tokAt(2)->link()->next()->link();
-                                while (tok3 != last)
+                                tok1 = tok->tokAt(2)->link();
+
+                                if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
                                 {
-                                    if (Token::Match(tok3, "if ( this ==|!= & %var% )") ||
-                                        Token::Match(tok3, "if ( & %var% ==|!= this )"))
+                                    const Token *first = tok1->tokAt(1);
+                                    const Token *last = first->link();
+
+                                    if (!hasAssignSelf(first, last, rhs))
                                     {
-                                        checkAssignSelf = true;
-                                        break;
+                                        if (hasDeallocation(first, last))
+                                            operatorEqToSelfError(tok);
                                     }
-
-                                    tok3 = tok3->next();
                                 }
-
-                                if (!checkAssignSelf)
-                                    operatorEqToSelfError(tok);
                             }
                         }
                     }

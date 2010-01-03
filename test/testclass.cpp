@@ -67,7 +67,10 @@ private:
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEqRetRefThis);
-        TEST_CASE(operatorEqToSelf);
+        TEST_CASE(operatorEqToSelf1);	// single class
+        TEST_CASE(operatorEqToSelf2);	// nested class
+        TEST_CASE(operatorEqToSelf3);	// multiple inheritance
+        TEST_CASE(operatorEqToSelf4);	// nested class with multiple inheritance
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetOnClass);
 
@@ -289,25 +292,45 @@ private:
         checkClass.operatorEqToSelf();
     }
 
-    void operatorEqToSelf()
+    void operatorEqToSelf1()
     {
+        // this test has an assignment test but it is not needed
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
             "public:\n"
-            "    A & operator=(const A &a) { if (&a == this) return *this; }\n"
+            "    A & operator=(const A &a) { if (&a != this) { } return *this; }\n"
             "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        // this test doesn't have an assignment test but it is not needed
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
             "public:\n"
             "    A & operator=(const A &a) { return *this; }\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
-        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
+        ASSERT_EQUALS("", errout.str());
 
+        // this test needs an assignment test and has it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        if (&a != this)\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this class needs an assignment test but doesn't have it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
@@ -322,24 +345,17 @@ private:
             "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
 
+        // this test has an assignment test but doesn't need it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
             "public:\n"
             "    A & operator=(const A &);\n"
             "};\n"
-            "A & A::operator=(const A &a) { if (&a == this) return *this; }\n");
+            "A & A::operator=(const A &a) { if (&a != this) { } return *this; }\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkOpertorEqToSelf(
-            "class A\n"
-            "{\n"
-            "public:\n"
-            "    A & operator=(const A &a);\n"
-            "};\n"
-            "A & A::operator=(const A &a) { if (&a == this) return *this; }\n");
-        ASSERT_EQUALS("", errout.str());
-
+        // this test doesn't have an assignment test but doesn't need it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
@@ -347,70 +363,303 @@ private:
             "    A & operator=(const A &)\n"
             "};\n"
             "A & A::operator=(const A &a) { return *this; }\n");
-        ASSERT_EQUALS("[test.cpp:6]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
-        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
+        ASSERT_EQUALS("", errout.str());
 
+        // this test needs an assignment test and has it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
             "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & operator=(const A &a)\n"
+            "{\n"
+            "    if (&a != this)\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test needs an assignment test but doesnt have it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & operator=(const A &a)\n"
+            "{\n"
+            "    free(s);\n"
+            "    s = strdup(a.s);\n"
+            "    return *this;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+    }
+
+    void operatorEqToSelf2()
+    {
+        // this test has an assignment test but doesn't need it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &b) { if (&b != this) { } return *this; }\n"
+            "    };\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test doesn't have an assignment test but doesn't need it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &b) { return *this; }\n"
+            "    };\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test needs an assignment test but has it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        char *s;\n"
+            "        B & operator=(const B &b)\n"
+            "        {\n"
+            "            if (&b != this)\n"
+            "            {\n"
+            "            }\n"
+            "            return *this;\n"
+            "        }\n"
+            "    };\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test needs an assignment test but doesn't have it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        char *s;\n"
+            "        B & operator=(const B &b)\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(b.s);\n"
+            "            return *this;\n"
+            "        }\n"
+            "    };\n"
+            "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        // this test has an assignment test but doesn't need it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &);\n"
+            "    };\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B &b) { if (&b != this) { } return *this; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test doesn't have an assignment test but doesn't need it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        B & operator=(const B &);\n"
+            "    };\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B &b) { return *this; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test needs an assignment test and has it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        char * s;\n"
+            "        B & operator=(const B &);\n"
+            "    };\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B &b)\n"
+            "{\n"
+            "    if (&b != this)\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(b.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            " }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test needs an assignment test but doesn't have it
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    class B\n"
+            "    {\n"
+            "    public:\n"
+            "        char * s;\n"
+            "        B & operator=(const B &);\n"
+            "    };\n"
+            "};\n"
+            "A::B & A::B::operator=(const A::B &b)\n"
+            "{\n"
+            "    free(s);\n"
+            "    s = strdup(b.s);\n"
+            "    return *this;\n"
+            " }\n");
+        ASSERT_EQUALS("[test.cpp:11]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+    }
+
+    void operatorEqToSelf3()
+    {
+        // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
+        checkOpertorEqToSelf(
+            "class A : public B, public C\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a) { return *this; }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
+        checkOpertorEqToSelf(
+            "class A : public B, public C\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
             "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "        return *this;\n"
+            "    }\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
+        checkOpertorEqToSelf(
+            "class A : public B, public C\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &);\n"
             "};\n"
             "A & A::operator=(const A &a) { return *this; }\n");
-        ASSERT_EQUALS("[test.cpp:6]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
-        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
+        ASSERT_EQUALS("", errout.str());
 
+        // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
+        checkOpertorEqToSelf(
+            "class A : public B, public C\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    free(s);\n"
+            "    s = strdup(a.s);\n"
+            "    return *this;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqToSelf4()
+    {
+        // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
             "public:\n"
-            "    class B\n"
+            "    class B : public C, public D\n"
             "    {\n"
             "    public:\n"
-            "        B & operator=(const B &b) { if (&b == this) return *this; }\n"
+            "        B & operator=(const B &b) { return *this; }\n"
             "    };\n"
             "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
             "public:\n"
-            "    class B\n"
+            "    class B : public C, public D\n"
             "    {\n"
             "    public:\n"
-            "        B & operator=(const B &b) { return b; }\n"
+            "        char * s;\n"
+            "        B & operator=(const B &b)\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(b.s);\n"
+            "            return *this;\n"
+            "        }\n"
             "    };\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:7]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
-        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
+        ASSERT_EQUALS("", errout.str());
 
+        // this test has multiple inheritance so there is no trivial way to test for self assignment but doesn't need it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
             "public:\n"
-            "    class B\n"
+            "    class B : public C, public D\n"
             "    {\n"
             "    public:\n"
             "        B & operator=(const B &);\n"
             "    };\n"
             "};\n"
-            "A::B & A::B::operator=(const A::B &b) { if (&b == this) return *this; }\n");
+            "A::B & A::B::operator=(const A::B &b) { return *this; }\n");
         ASSERT_EQUALS("", errout.str());
 
+        // this test has multiple inheritance and needs an assignment test but there is no trivial way to test for it
         checkOpertorEqToSelf(
             "class A\n"
             "{\n"
             "public:\n"
-            "    class B\n"
+            "    class B : public C, public D\n"
             "    {\n"
             "    public:\n"
+            "        char * s;\n"
             "        B & operator=(const B &);\n"
             "    };\n"
             "};\n"
-            "A::B & A::B::operator=(const A::B &b) { return b; }\n");
-        ASSERT_EQUALS("[test.cpp:10]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
-        TODO_ASSERT_EQUALS("", errout.str());   // No reason to check for self-assignment in this class
+            "A::B & A::B::operator=(const A::B &b)\n"
+            "{\n"
+            "    free(s);\n"
+            "    s = strdup(b.s);\n"
+            "    return *this;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Check that base classes have virtual destructors
@@ -430,7 +679,6 @@ private:
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.virtualDestructor();
     }
-
 
     void virtualDestructor1()
     {
