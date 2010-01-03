@@ -954,6 +954,14 @@ private:
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNullPointer("static void foo()\n"
+                         "{\n"
+                         "    int *p = 0;\n"
+                         "    exit();\n"
+                         "    *p = 0;\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkNullPointer("static void foo(int a)\n"
                          "{\n"
                          "    Foo *p = 0;\n"
