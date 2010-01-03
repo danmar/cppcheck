@@ -1252,6 +1252,29 @@ private:
             return vartok->next();
         }
 
+        // Template pointer variable..
+        if (Token::Match(tok.previous(), "[;{}] %type% ::|<"))
+        {
+            const Token * vartok = &tok;
+            while (Token::Match(vartok, "%type% ::"))
+                vartok = vartok->tokAt(2);
+            if (Token::Match(vartok, "%type% < %type%"))
+            {
+                vartok = vartok->tokAt(3);
+                while (vartok && (vartok->str() == "*" || vartok->isName()))
+                    vartok = vartok->next();
+                if (Token::Match(vartok, "> * %var% ;|="))
+                {
+                    vartok = vartok->tokAt(2);
+                    checks.push_back(new CheckNullpointer(owner, vartok->varId(), vartok->str()));
+                    if (Token::simpleMatch(vartok->next(), "= 0 ;"))
+                        setnull(checks, vartok->varId());
+                    return vartok->next();
+                }
+            }
+        }
+
+
         if (Token::Match(&tok, "%var% ("))
         {
             // parse usage..
@@ -1554,6 +1577,25 @@ private:
                 declare(checks, vartok, tok, false, true);
                 return vartok->next()->link()->next();
             }
+
+            // Template pointer variable..
+            if (Token::Match(tok.previous(), "[;{}] %type% ::|<"))
+            {
+                const Token * vartok = &tok;
+                while (Token::Match(vartok, "%type% ::"))
+                    vartok = vartok->tokAt(2);
+                if (Token::Match(vartok, "%type% < %type%"))
+                {
+                    vartok = vartok->tokAt(3);
+                    while (vartok && (vartok->str() == "*" || vartok->isName()))
+                        vartok = vartok->next();
+                    if (Token::Match(vartok, "> * %var% ;"))
+                    {
+                        declare(checks, vartok->tokAt(2), tok, true, false);
+                        return vartok->tokAt(2);
+                    }
+                }
+            }
         }
 
         if (tok.varId())
@@ -1646,6 +1688,7 @@ private:
 
             // is the variable passed as a parameter to some function?
             unsigned int parlevel = 0;
+            std::set<unsigned int> bailouts;
             for (const Token *tok2 = tok.next(); tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "(")
@@ -1667,13 +1710,16 @@ private:
 
                 else if (tok2->varId())
                 {
-                    if (Token::Match(tok2->tokAt(-2), "[(,] *"))
+                    if (Token::Match(tok2->tokAt(-2), "[(,] *") || Token::Match(tok2->next(), ". %var%"))
                         use_dead_pointer(foundError, checks, tok2);
 
                     // it is possible that the variable is initialized here
-                    ExecutionPath::bailOutVar(checks, tok2->varId());
+                    bailouts.insert(tok2->varId());
                 }
             }
+
+            for (std::set<unsigned int>::const_iterator it = bailouts.begin(); it != bailouts.end(); ++it)
+                ExecutionPath::bailOutVar(checks, *it);
         }
 
         // function call via function pointer

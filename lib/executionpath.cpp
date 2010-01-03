@@ -65,6 +65,29 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         if (tok->str() == "}")
             return 0;
 
+        if (Token::simpleMatch(tok, "while ("))
+        {
+            // parse condition
+            if (checks.size() > 10 || check->parseCondition(*tok->tokAt(2), checks))
+            {
+                ExecutionPath::bailOut(checks);
+                return 0;
+            }
+
+            // skip "while (fgets()!=NULL)"
+            if (Token::simpleMatch(tok, "while ( fgets ("))
+            {
+                const Token *tok2 = tok->tokAt(3)->link();
+                if (Token::simpleMatch(tok2, ") ) {"))
+                {
+                    tok = tok2->tokAt(2)->link();
+                    if (!tok)
+                        break;
+                    continue;
+                }
+            }
+        }
+
         // todo: handle for/while
         if (Token::Match(tok, "for|while|switch|do"))
         {

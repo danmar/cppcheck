@@ -929,6 +929,13 @@ private:
                          "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
+        checkNullPointer("static void foo(int x)\n"
+                         "{\n"
+                         "    Foo<int> *abc = 0;\n"
+                         "    abc->a();\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: abc\n", errout.str());
+
         // no false positive..
         checkNullPointer("static void foo()\n"
                          "{\n"
@@ -988,6 +995,13 @@ private:
         checkUninitVar("static void foo()\n"
                        "{\n"
                        "    Foo *p;\n"
+                       "    p->abcd();\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+
+        checkUninitVar("static void foo()\n"
+                       "{\n"
+                       "    Foo<int> *p;\n"
                        "    p->abcd();\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
@@ -1308,6 +1322,15 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // while..
+        checkUninitVar("int f()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    while (fgets())\n"
+                       "        i = 1;\n"
+                       "    return i;"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
 
         // member variables..
         checkUninitVar("class Fred\n"
@@ -1364,6 +1387,13 @@ private:
                        "    x = bar(sizeof(*p));\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    Foo *p;\n"
+                       "    x = bar(p->begin());\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
 
         // arrays..
         checkUninitVar("void f()\n"
