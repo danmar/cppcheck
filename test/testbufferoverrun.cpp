@@ -829,14 +829,13 @@ private:
         // #1193 - false negative: array out of bounds in loop when there is calculation
         check("void f()\n"
               "{\n"
-              "    int ar[5];\n"
-              "    for (int i = 10; i < 20; ++i)\n"
-              "    {\n"
-              "        ar[(i - 10) / 2] = 0;\n"
+              "    char data[8];\n"
+              "    for (int i = 19; i < 36; ++i) {\n"
+              "        data[(i-0)/2] = 0;\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array index out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()
