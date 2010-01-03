@@ -1625,6 +1625,26 @@ private:
                 return &tok;
             }
 
+            // += etc
+            if (Token::Match(tok.previous(), "[;{}]") || Token::Match(tok.tokAt(-2), "[;{}] *"))
+            {
+                // goto the equal..
+                const Token *eq = tok.next();
+                if (eq && eq->str() == "[" && eq->link() && eq->link()->next())
+                    eq = eq->link()->next();
+
+                // is it X=
+                if (Token::Match(eq, "+=|-=|*=|/=|&=|^=") || eq->str() == "|=")
+                {
+                    if (tok.previous()->str() == "*")
+                        use_pointer(foundError, checks, &tok);
+                    else if (tok.next()->str() == "[")
+                        use_array(foundError, checks, &tok);
+                    else
+                        use(foundError, checks, &tok);
+                }
+            }
+
             if (Token::Match(tok.next(), "= malloc|kmalloc") || Token::simpleMatch(tok.next(), "= new char ["))
             {
                 alloc_pointer(checks, tok.varId());
