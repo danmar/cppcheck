@@ -154,6 +154,9 @@ private:
         // simplify "while (0)"
         TEST_CASE(while0);
         TEST_CASE(while1);
+
+        TEST_CASE(enum1);
+        TEST_CASE(enum2);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -2303,7 +2306,7 @@ private:
                             "typedef struct s S, * PS\n;"
                             "typedef struct t { int a; } T, *TP;"
                             "typedef enum { a = 0 , b = 1 , c = 2 } abc;"
-                            "typedef enum xyz { a = 0 , b = 1 , c = 2 } ABC;"
+                            "typedef enum xyz { x = 0 , y = 1 , z = 2 } XYZ;"
                             "typedef vector<int> V1;"
                             "typedef std::vector<int> V2;"
                             "typedef std::vector<std::vector<int> > V3;"
@@ -2316,7 +2319,7 @@ private:
                             "T t;\n"
                             "TP tp;\n"
                             "abc e1;\n"
-                            "ABC e2;\n"
+                            "XYZ e2;\n"
                             "V1 v1;\n"
                             "V2 v2;\n"
                             "V3 v3;";
@@ -2329,7 +2332,7 @@ private:
             "typedef struct s S ; typedef struct s * PS ; "
             "struct t { int a ; } ; typedef struct t T ; typedef struct t * TP ; "
             "enum abc { a = 0 , b = 1 , c = 2 } ; typedef enum abc abc ; "
-            "enum xyz { a = 0 , b = 1 , c = 2 } ; typedef enum xyz ABC ; "
+            "enum xyz { x = 0 , y = 1 , z = 2 } ; typedef enum xyz XYZ ; "
             "typedef vector < int > V1 ; "
             "typedef std :: vector < int > V2 ; "
             "typedef std :: vector < std :: vector < int > > V3 ; "
@@ -2559,6 +2562,22 @@ private:
         const char code[] = "void do {} while (0) { }";
         const char expected[] = "void { }";
         ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void enum1()
+    {
+        const char code[] = "enum A { a, b, c };";
+        const char expected[] = "enum A { a = 0 , b = 1 , c = 2 } ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void enum2()
+    {
+        const char code[] = "enum A { a, }; int array[a];";
+        const char expected[] = "enum A { a = 0 , } ; int array [ 0 ] ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
 };

@@ -327,6 +327,11 @@ private:
     void simplifyWhile0();
 
     /**
+     * Replace enum with constant value
+     */
+    void simplifyEnum();
+
+    /**
      * Remove exception specifications. This function calls itself recursively.
      * @param tok First token in scope to cleanup
      */

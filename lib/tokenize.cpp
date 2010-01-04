@@ -721,6 +721,8 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // typedef..
     simplifyTypedef();
 
+    simplifyEnum();
+
     // Remove __asm..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -4392,6 +4394,118 @@ void Tokenizer::simplifyNestedStrcat()
 
 }
 
+
+void Tokenizer::simplifyEnum()
+{
+    std::string className;
+    int classLevel = 0;
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "class|namespace %any%"))
+        {
+            className = tok->next()->str();
+            classLevel = 0;
+            continue;
+        }
+        else if (tok->str() == "}")
+        {
+            --classLevel;
+            if (classLevel < 0)
+                className = "";
+
+            continue;
+        }
+        else if (tok->str() == "{")
+        {
+            ++classLevel;
+            continue;
+        }
+        else if (Token::Match(tok, "enum %type% {"))
+        {
+            Token * tok1;
+            Token * end;
+
+            if (tok->tokAt(1)->str() == "{")
+                tok1 = tok->tokAt(2);
+            else
+                tok1 = tok->tokAt(3);
+
+            end = tok1->tokAt(-1)->link();
+
+            long last_value = -1;
+
+            for (; tok1 && tok1 != end; tok1 = tok1->next())
+            {
+                Token * enumName = 0;
+                Token * enumValue = 0;
+
+                if (Token::Match(tok1, "%type% ,|}"))
+                {
+                    enumName = tok1;
+                    last_value++;
+                    tok1->insertToken("=");
+                    tok1 = tok1->next();
+                    tok1->insertToken(MathLib::toString<long>(last_value).c_str());
+                    enumValue = tok1->next();
+                }
+                else if (Token::Match(tok1, "%type% = %num% ,|}"))
+                {
+                    enumName = tok1;
+                    last_value = atoi(tok1->strAt(2));
+                    enumValue = tok1->tokAt(2);
+                }
+
+                if (enumName && enumValue)
+                {
+                    const std::string pattern(className.empty() ? "" : (className + " :: " + enumName->str()).c_str());
+                    int level = 0;
+                    bool inScope = true;
+
+                    bool exitThisScope = false;
+                    int exitScope = 0;
+                    bool simplifyEnum = false;
+                    for (Token *tok2 = end->next(); tok2; tok2 = tok2->next())
+                    {
+                        if (tok2->str() == "}")
+                        {
+                            --level;
+                            if (level < 0)
+                                inScope = false;
+
+                            if (exitThisScope)
+                            {
+                                if (level < exitScope)
+                                    exitThisScope = false;
+                            }
+                        }
+                        else if (tok2->str() == "{")
+                            ++level;
+                        else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
+                        {
+                            simplifyEnum = true;
+                        }
+                        else if (inScope && !exitThisScope && tok2->str() == enumName->str())
+                        {
+                            if (Token::simpleMatch(tok2->previous(), "::"))
+                            {
+                                // Don't replace this enum if it's preceded by "::"
+                            }
+                            else
+                                simplifyEnum = true;
+                        }
+
+                        if (simplifyEnum)
+                        {
+                            tok2->str(enumValue->strAt(0));
+
+                            simplifyEnum = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 //---------------------------------------------------------------------------
 // Helper functions for handling the tokens list
