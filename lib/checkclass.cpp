@@ -922,7 +922,14 @@ void CheckClass::operatorEqRetRefThis()
 
 static bool hasDeallocation(const Token * first, const Token * last)
 {
-    for (const Token * tok = first; tok && tok != last; tok = tok->next())
+    // This function is called when no simple check was found for assignment
+    // to self.  We are currently looking for a specific sequence of:
+    // deallocate member ; ... member = allocate
+    // This check is far from ideal because it can cause false negatives.
+    // Unfortunately, this is necessary to prevent false positives.
+    // This check needs to do careful analysis someday to get this
+    // correct with a high degree of certainty.
+    for (const Token * tok = first; tok && (tok != last); tok = tok->next())
     {
         // check for deallocating memory
         if (Token::Match(tok, "{|;|, free ( %type%"))
@@ -931,17 +938,17 @@ static bool hasDeallocation(const Token * first, const Token * last)
 
             // we should probably check that var is a pointer in this class
 
-            tok = tok->tokAt(4);
+            const Token * tok1 = tok->tokAt(4);
 
-            while (tok && tok != last)
+            while (tok1 && (tok1 != last))
             {
-                if (Token::Match(tok, "%type% ="))
+                if (Token::Match(tok1, "%type% ="))
                 {
-                    if (tok->str() == var->str())
+                    if (tok1->str() == var->str())
                         return true;
                 }
 
-                tok = tok->next();
+                tok1 = tok1->next();
             }
         }
         else if (Token::Match(tok, "{|;|, delete [ ] %type%"))
@@ -950,17 +957,17 @@ static bool hasDeallocation(const Token * first, const Token * last)
 
             // we should probably check that var is a pointer in this class
 
-            tok = tok->tokAt(5);
+            const Token * tok1 = tok->tokAt(5);
 
-            while (tok && tok != last)
+            while (tok1 && (tok1 != last))
             {
-                if (Token::Match(tok, "%type% = new ["))
+                if (Token::Match(tok1, "%type% = new ["))
                 {
-                    if (tok->str() == var->str())
+                    if (tok1->str() == var->str())
                         return true;
                 }
 
-                tok = tok->next();
+                tok1 = tok1->next();
             }
         }
         else if (Token::Match(tok, "{|;|, delete %type%"))
@@ -969,17 +976,17 @@ static bool hasDeallocation(const Token * first, const Token * last)
 
             // we should probably check that var is a pointer in this class
 
-            tok = tok->tokAt(3);
+            const Token * tok1 = tok->tokAt(3);
 
-            while (tok && tok != last)
+            while (tok1 && (tok1 != last))
             {
-                if (Token::Match(tok, "%type% = new"))
+                if (Token::Match(tok1, "%type% = new"))
                 {
-                    if (tok->str() == var->str())
+                    if (tok1->str() == var->str())
                         return true;
                 }
 
-                tok = tok->next();
+                tok1 = tok1->next();
             }
         }
     }

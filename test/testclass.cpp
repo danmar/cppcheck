@@ -145,7 +145,6 @@ private:
                        "    void operator=(const A&);\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return something\n", errout.str());
-
     }
 
     // Check that operator Equal returns reference to this
@@ -399,6 +398,25 @@ private:
             "    return *this;\n"
             "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        // ticket #1224
+        checkOpertorEqToSelf(
+            "const SubTree &SubTree::operator= (const SubTree &b)\n"
+            "{\n"
+            "    CodeTree *oldtree = tree;\n"
+            "    tree = new CodeTree(*b.tree);\n"
+            "    delete oldtree;\n"
+            "    return *this;\n"
+            "}\n"
+            "const SubTree &SubTree::operator= (const CodeTree &b)\n"
+            "{\n"
+            "    CodeTree *oldtree = tree;\n"
+            "    tree = new CodeTree(b);\n"
+            "    delete oldtree;\n"
+            "    return *this;\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void operatorEqToSelf2()
