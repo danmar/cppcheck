@@ -8,4 +8,7 @@
         <class name="FileViewDialog"/>
         <class name="ThreadHandler"/>
     </autodealloc>
+    <includedir>
+        <dir name="../lib" />
+    </includedir>
 </project>
