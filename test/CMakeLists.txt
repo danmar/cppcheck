@@ -1,5 +1,9 @@
 # Minimal CMake build file to build cppcheck test suite
 
+SET(CHECKTEST_HDRS
+  testsuite.h
+)
+
 SET(CHECKTEST_SRCS
   testmemleak.cpp
   testother.cpp
@@ -49,7 +53,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories (${CPPCHECK_SOURCE_DIR}/lib)
-ADD_EXECUTABLE(test ${CHECKTEST_SRCS})
+ADD_EXECUTABLE(test ${CHECKTEST_SRCS} ${CHECKTEST_HDRS})
 TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
 
 # Add custom 'make check' -target
