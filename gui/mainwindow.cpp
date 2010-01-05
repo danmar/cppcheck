@@ -27,6 +27,7 @@
 #include <QToolBar>
 #include <QKeySequence>
 #include <QFileInfo>
+#include <QDir>
 #include "aboutdialog.h"
 #include "threadhandler.h"
 #include "fileviewdialog.h"
@@ -315,7 +316,12 @@ Settings MainWindow::GetCppcheckSettings()
             QString dir;
             foreach(dir, dirs)
             {
-                result._includePaths.push_back(dir.toStdString());
+                QString incdir;
+                if (!QDir::isAbsolutePath(dir))
+                    incdir = mCurrentDirectory + "/";
+                incdir += dir;
+                incdir = QDir::cleanPath(incdir);
+                result._includePaths.push_back(incdir.toStdString());
             }
         }
     }
