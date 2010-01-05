@@ -5068,9 +5068,10 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
 bool Tokenizer::validate() const
 {
     std::stack<const Token *> linktok;
-
+    const Token *lastTok = 0;
     for (const Token *tok = tokens(); tok; tok = tok->next())
     {
+        lastTok = tok;
         if (Token::Match(tok, "[{([]"))
         {
             if (tok->link() == 0)
@@ -5124,6 +5125,15 @@ bool Tokenizer::validate() const
     {
         cppcheckError(linktok.top());
         return false;
+    }
+
+    if (lastTok != _tokensBack)
+    {
+        // TODO, the two lines below should be uncommented and
+        // problems that appear with testrunner should be fixed
+
+        //cppcheckError(lastTok);
+        //return false;
     }
 
     return true;
