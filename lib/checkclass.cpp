@@ -165,7 +165,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         }
 
         // If the varname was set in one of the two if-block above, create a entry for this variable..
-        if (varname)
+        if (varname && strcmp(varname, "operator"))
         {
             Var *var = new Var(varname, false, priv, varlist);
             varlist  = var;

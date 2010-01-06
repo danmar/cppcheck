@@ -59,6 +59,7 @@ private:
         TEST_CASE(uninitVarHeader2);    // Class is defined in header
         TEST_CASE(uninitVarHeader3);    // Class is defined in header
         TEST_CASE(uninitVarPublished);  // Variables in the published section are auto-initialized
+        TEST_CASE(uninitOperator);      // No FP about uninitialized 'operator[]'
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -67,10 +68,10 @@ private:
 
         TEST_CASE(operatorEq1);
         TEST_CASE(operatorEqRetRefThis);
-        TEST_CASE(operatorEqToSelf1);	// single class
-        TEST_CASE(operatorEqToSelf2);	// nested class
-        TEST_CASE(operatorEqToSelf3);	// multiple inheritance
-        TEST_CASE(operatorEqToSelf4);	// nested class with multiple inheritance
+        TEST_CASE(operatorEqToSelf1);   // single class
+        TEST_CASE(operatorEqToSelf2);   // nested class
+        TEST_CASE(operatorEqToSelf3);   // multiple inheritance
+        TEST_CASE(operatorEqToSelf4);   // nested class with multiple inheritance
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetOnClass);
 
@@ -1213,7 +1214,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
+    void uninitOperator()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { }\n"
+                       "    int *operator [] (int index) { return 0; }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void checkNoConstructor(const char code[])
     {
