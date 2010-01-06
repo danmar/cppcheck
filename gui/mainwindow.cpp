@@ -256,6 +256,11 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
                    mSettings->value(SETTINGS_CHECK_PATH, "").toString());
         if (selected.isEmpty())
             mCurrentDirectory.clear();
+        else
+        {
+            QFileInfo inf(selected[0]);
+            mCurrentDirectory = inf.absolutePath();
+        }
         FormatAndSetTitle();
     }
     else if (mode == QFileDialog::DirectoryOnly)
