@@ -1350,8 +1350,10 @@ void Tokenizer::simplifyTemplates()
                         tok4->str(name2);
                         while (tok4->next()->str() != ">")
                         {
+                            used.remove(tok4->next());
                             tok4->deleteNext();
                         }
+                        used.remove(tok4->next());
                         tok4->deleteNext();
                     }
                 }
