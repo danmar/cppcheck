@@ -142,7 +142,7 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
 
-    if (end->tokensBack && *(end->tokensBack) == replaceThis)
+    if (end->tokensBack && *(end->tokensBack) == end)
     {
         while (end->next())
             end = end->next();

@@ -5126,13 +5126,11 @@ bool Tokenizer::validate() const
         return false;
     }
 
+    // Validate that the Tokenizer::_tokensBack is updated correctly during simplifications
     if (lastTok != _tokensBack)
     {
-        // TODO, the two lines below should be uncommented and
-        // problems that appear with testrunner should be fixed
-
-        //cppcheckError(lastTok);
-        //return false;
+        cppcheckError(lastTok);
+        return false;
     }
 
     return true;
