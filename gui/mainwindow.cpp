@@ -321,6 +321,10 @@ Settings MainWindow::GetCppcheckSettings()
                     incdir = mCurrentDirectory + "/";
                 incdir += dir;
                 incdir = QDir::cleanPath(incdir);
+
+                // include paths must end with '/'
+                if (!incdir.endsWith("/"))
+                    incdir += "/";
                 result._includePaths.push_back(incdir.toStdString());
             }
         }
