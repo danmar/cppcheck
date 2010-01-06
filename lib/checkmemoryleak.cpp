@@ -660,7 +660,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         }                                   \
         else                                \
         {                                   \
-            rethead = new Token;            \
+            rethead = new Token(0);         \
             rettail = rethead;              \
             rettail->str(_str);             \
         }                                   \

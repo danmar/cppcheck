@@ -632,7 +632,7 @@ private:
         std::istringstream istr("");
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
-        Token tok;
+        Token tok(0);
         tok.str(type);
         return tokenizer.sizeOfType(&tok);
     }

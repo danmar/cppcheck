@@ -37,11 +37,13 @@ private:
         TEST_CASE(multiCompare);
         TEST_CASE(getStrLength);
         TEST_CASE(strValue);
+
+        TEST_CASE(deleteLast);
     }
 
     void nextprevious()
     {
-        Token *token = new Token;
+        Token *token = new Token(0);
         token->str("1");
         token->insertToken("2");
         token->next()->insertToken("3");
@@ -84,7 +86,7 @@ private:
 
     void getStrLength()
     {
-        Token tok;
+        Token tok(0);
 
         tok.str("\"\"");
         ASSERT_EQUALS(0, Token::getStrLength(&tok));
@@ -101,12 +103,23 @@ private:
 
     void strValue()
     {
-        Token tok;
+        Token tok(0);
         tok.str("\"\"");
         ASSERT_EQUALS(std::string(""), tok.strValue());
 
         tok.str("\"0\"");
         ASSERT_EQUALS(std::string("0"), tok.strValue());
+    }
+
+
+    void deleteLast()
+    {
+        Token *tokensBack = 0;
+        Token tok(&tokensBack);
+        tok.insertToken("aba");
+        ASSERT_EQUALS((unsigned int)tok.next(), (unsigned int)tokensBack);
+        tok.deleteNext();
+        ASSERT_EQUALS((unsigned int)&tok, (unsigned int)tokensBack);
     }
 };
 

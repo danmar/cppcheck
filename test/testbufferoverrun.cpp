@@ -1385,7 +1385,7 @@ private:
         ASSERT_EQUALS(10, CheckBufferOverrun::countSprintfLength("\\\\\\\\Hello%d \\0Text\\\\\\\\", unknownParameter));
         ASSERT_EQUALS(4, CheckBufferOverrun::countSprintfLength("%%%%%d", unknownParameter));
 
-        Token strTok;
+        Token strTok(0);
         strTok.str("\"12345\"");
         std::list<const Token*> stringAsParameter;
         stringAsParameter.push_back(&strTok);
@@ -1400,7 +1400,7 @@ private:
         ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%6.6s", stringAsParameter));
 
         std::list<const Token*> intAsParameter;
-        Token numTok;
+        Token numTok(0);
         numTok.str("12345");
         intAsParameter.push_back(&numTok);
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%02ld", intAsParameter));
@@ -1416,7 +1416,7 @@ private:
         ASSERT_EQUALS(6, CheckBufferOverrun::countSprintfLength("%5.1x", intAsParameter));
 
         std::list<const Token*> floatAsParameter;
-        Token floatTok;
+        Token floatTok(0);
         floatTok.str("1.12345f");
         floatAsParameter.push_back(&floatTok);
         TODO_ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%.2f", floatAsParameter));
@@ -1424,7 +1424,7 @@ private:
         TODO_ASSERT_EQUALS(5, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter));
 
         std::list<const Token*> floatAsParameter2;
-        Token floatTok2;
+        Token floatTok2(0);
         floatTok2.str("100.12345f");
         floatAsParameter2.push_back(&floatTok2);
         TODO_ASSERT_EQUALS(7, CheckBufferOverrun::countSprintfLength("%2.2f", floatAsParameter2));

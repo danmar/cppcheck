@@ -104,11 +104,10 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     if (_tokensBack)
     {
         _tokensBack->insertToken(str2.str().c_str());
-        _tokensBack = _tokensBack->next();
     }
     else
     {
-        _tokens = new Token;
+        _tokens = new Token(&_tokensBack);
         _tokensBack = _tokens;
         _tokensBack->str(str2.str());
     }
@@ -1929,7 +1928,7 @@ void Tokenizer::simplifySizeof()
             else if (Token::Match(tok->tokAt(-1), "%type% %var% [ %num% ] [,)]") ||
                      Token::Match(tok->tokAt(-2), "%type% * %var% [ %num% ] [,)]"))
             {
-                Token tempTok;
+                Token tempTok(0);
                 tempTok.str("*");
                 sizeOfVar[varId] = MathLib::toString<long>(sizeOfType(&tempTok));
             }

@@ -26,7 +26,8 @@
 #include <sstream>
 #include <map>
 
-Token::Token() :
+Token::Token(Token **t) :
+        tokensBack(t),
         _str(""),
         _isName(false),
         _isNumber(false),
@@ -87,6 +88,8 @@ void Token::deleteNext()
     delete n;
     if (_next)
         _next->previous(this);
+    else if (tokensBack)
+        *tokensBack = this;
 }
 
 void Token::deleteThis()
@@ -138,6 +141,13 @@ void Token::replace(Token *replaceThis, Token *start, Token *end)
 
     start->previous(replaceThis->previous());
     end->next(replaceThis->next());
+
+    if (end->tokensBack && *(end->tokensBack) == replaceThis)
+    {
+        while (end->next())
+            end = end->next();
+        *(end->tokensBack) = end;
+    }
 
     // Delete old token, which is replaced
     delete replaceThis;
@@ -569,7 +579,7 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned i
 
 void Token::insertToken(const char str[])
 {
-    Token *newToken = new Token;
+    Token *newToken = new Token(tokensBack);
     newToken->str(str);
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
@@ -577,6 +587,10 @@ void Token::insertToken(const char str[])
     {
         newToken->next(this->next());
         newToken->next()->previous(newToken);
+    }
+    else if (tokensBack)
+    {
+        *tokensBack = newToken;
     }
 
     this->next(newToken);

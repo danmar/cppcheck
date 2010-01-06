@@ -37,8 +37,14 @@
  */
 class Token
 {
-public:
+private:
+    Token **tokensBack;
+
+    // Not implemented..
     Token();
+
+public:
+    Token(Token **tokensBack);
     ~Token();
 
     void str(const std::string &s);
