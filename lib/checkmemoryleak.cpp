@@ -853,7 +853,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 Token::Match(tok->previous(), "|= %var%"))
             {
                 AllocType dealloc = getDeallocationType(tok, varid);
-                if (dealloc != No)
+
+                if (dealloc != No && tok->str() == "fcloseall" && alloctype != dealloc)
+                    dealloc = No;
+
+                else if (dealloc != No)
                 {
                     addtoken("dealloc");
 

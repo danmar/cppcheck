@@ -498,6 +498,10 @@ private:
         ASSERT_EQUALS(";;alloc;ifv{;}", getcode("int f; f=open(); if(f!=-1 || x);", "f"));
 
         ASSERT_EQUALS(";;dealloc;", getcode("int f; e |= fclose(f);", "f"));
+
+        // fcloseall..
+        ASSERT_EQUALS(";;alloc;;", getcode("char *s; s = malloc(10); fcloseall();", "s"));
+        ASSERT_EQUALS(";;alloc;dealloc;", getcode("FILE *f; f = fopen(a,b); fcloseall();", "f"));
     }
 
 
