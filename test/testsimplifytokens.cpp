@@ -144,6 +144,7 @@ private:
         TEST_CASE(simplifyTypedef7);
         TEST_CASE(simplifyTypedef8);
         TEST_CASE(simplifyTypedef9);
+        TEST_CASE(simplifyTypedef10);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2359,6 +2360,33 @@ private:
         const char code[] = "typedef std::pair<int(*)(void*), void*> Func;"
                             "typedef std::vector<Func> CallQueue;"
                             "int main() {}";
+
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        tokenizer.simplifyTokenList();
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef10()
+    {
+        // ticket # 1232
+        const char code[] = "template <typename F, unsigned int N> struct E"
+                            "{"
+                            "    typedef E<F,(N>0)?(N-1):0> v;"
+                            "    typedef typename add<v,v>::val val;"
+                            "    FP_M(val);"
+                            "};"
+                            "template <typename F> struct E <F,0>"
+                            "{"
+                            "    typedef typename D<1>::val val;"
+                            "    FP_M(val);"
+                            "};";
 
         Tokenizer tokenizer;
         std::istringstream istr(code);

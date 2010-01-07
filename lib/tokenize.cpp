@@ -502,7 +502,7 @@ void Tokenizer::simplifyTypedef()
                         level++;
                 }
 
-                if (Token::Match(end->next(), "%type% ;"))
+                if (end && end->next() && Token::Match(end->next(), "%type% ;"))
                 {
                     typeName = end->strAt(1);
                     tok = end->tokAt(2);
