@@ -58,6 +58,9 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
 
 static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
 {
+    if (!tok || tok->str() == "}" || checks.empty())
+        return 0;
+
     const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
 
     for (; tok; tok = tok->next())

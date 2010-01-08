@@ -1601,6 +1601,17 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "  {\n"
+                       "    for (int i = 0; i < 10; ++i)\n"
+                       "    { }\n"
+                       "  }\n"
+                       "\n"
+                       "  { }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // macro_for..
         checkUninitVar("int foo()\n"
                        "{\n"
