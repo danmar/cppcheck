@@ -1587,6 +1587,34 @@ private:
                        "    strchr(s.c_str(), ',');\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // ; { .. }
+        checkUninitVar("int foo()\n"
+                       "{\n"
+                       "  int retval;\n"
+                       "  if (condition) {\n"
+                       "    { }\n"
+                       "    retval = 1; }\n"
+                       "  else\n"
+                       "    retval = 2;\n"
+                       "  return retval;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // macro_for..
+        checkUninitVar("int foo()\n"
+                       "{\n"
+                       "  int retval;\n"
+                       "  if (condition) {\n"
+                       "    for12(1,2) { }\n"
+                       "    retval = 1;\n"
+                       "  }\n"
+                       "  else\n"
+                       "    retval = 2;\n"
+                       "  return retval;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
 

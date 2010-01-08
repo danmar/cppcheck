@@ -95,6 +95,13 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             return 0;
         }
 
+        // .. ) { ... }  => bail out
+        if (Token::simpleMatch(tok, ") {"))
+        {
+            ExecutionPath::bailOut(checks);
+            return 0;
+        }
+
         if (Token::Match(tok, "abort|exit ("))
         {
             ExecutionPath::bailOut(checks);
@@ -115,6 +122,19 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 ExecutionPath::bailOut(checks);
                 return 0;
             }
+            continue;
+        }
+
+        // ; { ... }
+        if (Token::Match(tok->previous(), "[;{}] {"))
+        {
+            const Token *tokerr = checkExecutionPaths_(tok->next(), checks);
+            if (tokerr)
+            {
+                ExecutionPath::bailOut(checks);
+                return tokerr;
+            }
+            tok = tok->link();
             continue;
         }
 
