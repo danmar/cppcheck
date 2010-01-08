@@ -72,6 +72,7 @@ private:
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
         TEST_CASE(operatorEqToSelf4);   // nested class with multiple inheritance
+        TEST_CASE(operatorEqToSelf5);	// ticket # 1233
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetOnClass);
 
@@ -678,6 +679,78 @@ private:
             "    s = strdup(b.s);\n"
             "    return *this;\n"
             "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqToSelf5()
+    {
+        // ticket # 1233
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        if((&a!=this))\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        if(!(&a==this))\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        if(false==(&a==this))\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        if(true!=(&a==this))\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};");
         ASSERT_EQUALS("", errout.str());
     }
 
