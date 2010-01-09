@@ -104,6 +104,7 @@ private:
         TEST_CASE(if_cond6);
         TEST_CASE(if_cond7);
         TEST_CASE(if_cond8);
+        TEST_CASE(if_cond9);
 
         TEST_CASE(if_or);
 
@@ -868,6 +869,25 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, actual.size());
         ASSERT_EQUALS("\n\n", actual[""]);
+    }
+
+
+    void if_cond9()
+    {
+        const char filedata[] = "#if !defined _A\n"
+                                "abc\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Settings settings;
+        Preprocessor preprocessor(&settings, this);
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, actual.size());
+        ASSERT_EQUALS("\nabc\n\n", actual[""]);
     }
 
 

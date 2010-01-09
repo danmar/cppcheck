@@ -611,7 +611,7 @@ std::string Preprocessor::getdef(std::string line, bool def)
     {
         const unsigned char chprev = (pos > 0) ? line[pos-1] : (unsigned char)0;
         const unsigned char chnext = (pos + 1 < line.length()) ? line[pos+1] : (unsigned char)0;
-        if (std::isalnum(chprev) && std::isalnum(chnext))
+        if ((std::isalnum(chprev) || chprev == '_') && (std::isalnum(chnext) || chnext == '_'))
             ++pos;
         else
             line.erase(pos, 1);
