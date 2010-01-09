@@ -16,7 +16,7 @@ if "%1" == "tests" goto tests
 goto help
 
 :cppcheck
-cd src
+cd cli
 qmake
 nmake
 cd ..
