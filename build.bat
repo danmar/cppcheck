@@ -10,6 +10,13 @@ REM  - build release targets (new switch?)
 REM  - add "all" target
 REM  - run tests too
 
+REM QT prompt sets QMAKESPEC
+if NOT "%QMAKESPEC%" == "" (
+  set MAKE=mingw32-make
+) else (
+  set MAKE=nmake
+)
+
 if "%1" == "cppcheck" goto cppcheck
 if "%1" == "gui" goto gui
 if "%1" == "tests" goto tests
@@ -18,23 +25,22 @@ goto help
 :cppcheck
 cd cli
 qmake
-nmake
+%MAKE%
 cd ..
 goto end
 
 :gui
 cd gui
 qmake
-nmake
+%MAKE%
 lrelease gui.pro
-copy *.qm debug
 cd ..
 goto end
 
 :tests
 cd test
 qmake
-nmake
+%MAKE%
 cd ..
 goto end
 
