@@ -19,6 +19,10 @@ if NOT "%QMAKESPEC%" == "" (
   set MAKE=nmake
 )
 
+if "%2" == "" set TARGET=release
+if "%2" == "release" set TARGET=release
+if "%2" == "debug" set TARGET=debug
+
 if "%1" == "cppcheck" goto cppcheck
 if "%1" == "gui" goto gui
 if "%1" == "tests" goto tests
@@ -26,14 +30,14 @@ goto help
 
 :cppcheck
 cd cli
-qmake -config %2
+qmake -config %TARGET%
 %MAKE%
 cd ..
 goto end
 
 :gui
 cd gui
-qmake -config %2
+qmake -config %TARGET%
 %MAKE%
 lrelease gui.pro
 cd ..
@@ -41,7 +45,7 @@ goto end
 
 :tests
 cd test
-qmake -config %2
+qmake -config %TARGET%
 %MAKE%
 cd ..
 goto end
