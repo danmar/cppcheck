@@ -1,5 +1,5 @@
 
-set QTBASE=c:\Qt\2009.01
+set QTBASE=c:\Qt\2009.05
 set QTDIR=%QTBASE%\qt
 set PATH=%QTDIR%\bin
 set PATH=%PATH%;%QTBASE%\bin;%QTBASE%\mingw\bin
