@@ -1600,6 +1600,13 @@ private:
 
         if (tok.varId())
         {
+            // Used..
+            if (Token::Match(tok.previous(), "[[+-*/] %var% []+-*/]"))
+            {
+                use(foundError, checks, &tok);
+                return &tok;
+            }
+
             if (Token::Match(tok.previous(), "[;{}] %var% ="))
             {
                 // using same variable rhs?
@@ -1663,7 +1670,7 @@ private:
                 const Token *tok2 = tok.next()->link();
                 if (Token::simpleMatch(tok2 ? tok2->next() : 0, "="))
                 {
-                    ExecutionPath::bailOut(checks);
+                    ExecutionPath::bailOutVar(checks, tok.varId());
                     return &tok;
                 }
             }

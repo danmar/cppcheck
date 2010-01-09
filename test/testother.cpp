@@ -1094,6 +1094,14 @@ private:
 
         checkUninitVar("static void foo()\n"
                        "{\n"
+                       "    int ar[10];\n"
+                       "    int i;\n"
+                       "    ar[i] = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar("static void foo()\n"
+                       "{\n"
                        "    int x, y;\n"
                        "    x = (y = 10);\n"
                        "    int z = y * 2;\n"
