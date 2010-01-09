@@ -2,13 +2,15 @@
 REM A simple script to build different cppcheck targets from project root
 REM folder.
 REM
-REM Usage: build <target>
+REM Usage: build <target> [release|debug]
 REM  where <target> is any of cppcheck/gui/tests
+REM        release or debug is the configuration
 REM
 REM TODO:
-REM  - build release targets (new switch?)
 REM  - add "all" target
 REM  - run tests too
+
+if "%1" == "" goto help
 
 REM QT prompt sets QMAKESPEC
 if NOT "%QMAKESPEC%" == "" (
@@ -24,14 +26,14 @@ goto help
 
 :cppcheck
 cd cli
-qmake
+qmake -config %2
 %MAKE%
 cd ..
 goto end
 
 :gui
 cd gui
-qmake
+qmake -config %2
 %MAKE%
 lrelease gui.pro
 cd ..
@@ -39,13 +41,14 @@ goto end
 
 :tests
 cd test
-qmake
+qmake -config %2
 %MAKE%
 cd ..
 goto end
 
 :help
-echo Syntax: build <target>
-echo  where <target> is any of cppcheck/gui/tests
+echo "Syntax: build <target> [debug|release]"
+echo "  where <target> is any of cppcheck/gui/tests"
+echo "        debug or release define used configuration"
 
 :end
