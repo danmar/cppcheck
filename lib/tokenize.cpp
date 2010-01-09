@@ -4452,7 +4452,7 @@ void Tokenizer::simplifyEnum()
                 else if (Token::Match(tok1, "%type% = %num% ,|}"))
                 {
                     enumName = tok1;
-                    last_value = atoi(tok1->strAt(2));
+                    last_value = std::atoi(tok1->strAt(2));
                     enumValue = tok1->tokAt(2);
                 }
 
