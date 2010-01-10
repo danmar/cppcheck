@@ -1528,10 +1528,10 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
-            // Reduce "{ loop ;" => ";"
-            if (Token::Match(tok2, "{ loop ;"))
+            // Reduce "loop|do ;" => ";"
+            if (Token::Match(tok2, "loop|do ;"))
             {
-                tok2->deleteNext();
+                tok2->deleteThis();
                 done = false;
             }
 
@@ -1693,9 +1693,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                         break;
                     }
 
-                    else if (strncmp(_tok->str().c_str(), "if", 2) == 0)
-                        break;
-
                     else if (_tok->str() == "switch")
                         break;
 
@@ -1707,6 +1704,9 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
 
                     else if (Token::Match(_tok, "return !!;"))
                         break;
+
+                    if (Token::Match(_tok, "if return|break use| ;"))
+                        _tok = _tok->tokAt(2);
 
                     incase |= (_tok->str() == "case");
                     incase &= (_tok->str() != "break" && _tok->str() != "return");
@@ -1737,8 +1737,17 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                             tok2->insertToken("else");
                             tok2 = tok2->next();
                         }
-                        while (tok2 && tok2->str() != "}" && ! Token::Match(tok2, "break|return ;"))
-                            tok2 = tok2->next();
+                        while (tok2)
+                        {
+                            if (tok2->str() == "}")
+                                break;
+                            if (Token::Match(tok2, "break|return ;"))
+                                break;
+                            if (Token::Match(tok2, "if return|break use| ;"))
+                                tok2 = tok2->tokAt(2);
+                            else
+                                tok2 = tok2->next();
+                        }
                         if (Token::simpleMatch(tok2, "break ;"))
                         {
                             tok2->str(";");
