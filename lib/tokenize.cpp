@@ -394,64 +394,41 @@ void Tokenizer::simplifyTypedef()
         else if (tok->str() != "typedef")
             continue;
 
-        // pull struct name { ... } out of typedef
-        if (Token::Match(tok->next(), "struct %type% {"))
-        {
-            int structLevel = 1;
-            Token *tok1 = tok->tokAt(4);
-            for (; tok1; tok1 = tok1->next())
-            {
-                if (tok1->str() == "}")
-                {
-                    --structLevel;
-                    if (structLevel == 0)
-                        break;
-                }
-
-                if (tok1->str() == "{")
-                    ++structLevel;
-            }
-
-            tok1->insertToken(";");
-            tok1 = tok1->next();
-            tok1->insertToken("typedef");
-            tok1 = tok1->next();
-            Token * tok2 = tok1;
-            tok1->insertToken("struct");
-            tok1 = tok1->next();
-            tok1->insertToken(tok->strAt(2));
-            tok->deleteThis();
-            tok = tok2;
-        }
-        else if (Token::Match(tok->next(), "enum %type% {") ||
-                 Token::Match(tok->next(), "enum {"))
+        // pull struct or enum definition out of typedef
+        // use typedef name for unnamed struct or enum
+        if (Token::Match(tok->next(), "struct|enum %type% {") ||
+            Token::Match(tok->next(), "struct|enum {"))
         {
             Token *tok1;
-            Token *tok2 = 0;
+            std::string name;
 
-            if (tok->tokAt(2)->str() == "{")
-                tok1 = tok->tokAt(3);
-            else
+            if (tok->tokAt(2)->str() == "{") // unnamed
             {
-                tok1 = tok->tokAt(4);
-                tok2 = tok->tokAt(2);
-            }
+                tok1 = tok->tokAt(2)->link();
 
-            for (; tok1; tok1 = tok1->next())
-            {
-                if (tok1->str() == "}")
-                    break;
-            }
-
-            if (tok2 == 0)
-            {
-                if (Token::Match(tok1->next(), "%type%"))
+                if (tok1 && tok1->next())
                 {
-                    tok2 = tok1->next();
-                    tok->tokAt(1)->insertToken(tok2->strAt(0));
+                    // use typedef name if available
+                    if (Token::Match(tok1->next(), "%type%"))
+                        name = tok1->next()->str();
+                    else // create a unique name
+                    {
+                        static long count = 0;
+                        name = "Unnamed" + MathLib::toString<long>(count++);
+                    }
+                    tok->tokAt(1)->insertToken(name.c_str());
                 }
                 else
                     continue;
+            }
+            else // has a name
+            {
+                tok1 = tok->tokAt(3)->link();
+
+                if (!tok1)
+                    continue;
+
+                name = tok->tokAt(2)->str();
             }
 
             tok1->insertToken(";");
@@ -459,9 +436,9 @@ void Tokenizer::simplifyTypedef()
             tok1->insertToken("typedef");
             tok1 = tok1->next();
             Token * tok3 = tok1;
-            tok1->insertToken("enum");
+            tok1->insertToken(tok->next()->strAt(0)); // struct or enum
             tok1 = tok1->next();
-            tok1->insertToken(tok2->strAt(0));
+            tok1->insertToken(name.c_str());
             tok->deleteThis();
             tok = tok3;
         }

@@ -145,6 +145,9 @@ private:
         TEST_CASE(simplifyTypedef8);
         TEST_CASE(simplifyTypedef9);
         TEST_CASE(simplifyTypedef10);
+        TEST_CASE(simplifyTypedef11);
+        TEST_CASE(simplifyTypedef12);
+        TEST_CASE(simplifyTypedef13);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2304,49 +2307,81 @@ private:
                             "typedef unsigned int UINT;\n"
                             "typedef int * PINT;\n"
                             "typedef unsigned int * PUINT;\n"
-                            "typedef struct s S, * PS\n;"
-                            "typedef struct t { int a; } T, *TP;"
-                            "typedef enum { a = 0 , b = 1 , c = 2 } abc;"
-                            "typedef enum xyz { x = 0 , y = 1 , z = 2 } XYZ;"
-                            "typedef vector<int> V1;"
-                            "typedef std::vector<int> V2;"
-                            "typedef std::vector<std::vector<int> > V3;"
                             "INT ti;\n"
                             "UINT tui;\n"
                             "PINT tpi;\n"
-                            "PUINT tpui;"
-                            "S s;\n"
-                            "PS ps;\n"
-                            "T t;\n"
-                            "TP tp;\n"
-                            "abc e1;\n"
-                            "XYZ e2;\n"
-                            "V1 v1;\n"
-                            "V2 v2;\n"
-                            "V3 v3;";
+                            "PUINT tpui;";
 
         const char expected[] =
             "typedef int INT ; "
             "typedef unsigned int UINT ; "
             "typedef int * PINT ; "
             "typedef unsigned int * PUINT ; "
-            "typedef struct s S ; typedef struct s * PS ; "
-            "struct t { int a ; } ; typedef struct t T ; typedef struct t * TP ; "
-            "enum abc { a = 0 , b = 1 , c = 2 } ; typedef enum abc abc ; "
-            "enum xyz { x = 0 , y = 1 , z = 2 } ; typedef enum xyz XYZ ; "
-            "typedef vector < int > V1 ; "
-            "typedef std :: vector < int > V2 ; "
-            "typedef std :: vector < std :: vector < int > > V3 ; "
             "int ti ; "
             "unsigned int tui ; "
             "int * tpi ; "
-            "unsigned int * tpui ; "
+            "unsigned int * tpui ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef9()
+    {
+        const char code[] = "typedef struct s S, * PS\n;"
+                            "typedef struct t { int a; } T, *TP;\n"
+                            "typedef struct { int a; } U;\n"
+                            "typedef struct { int a; } * V;\n"
+                            "S s;\n"
+                            "PS ps;\n"
+                            "T t;\n"
+                            "TP tp;\n"
+                            "U u;\n"
+                            "V v;";
+
+        const char expected[] =
+            "typedef struct s S ; typedef struct s * PS ; "
+            "struct t { int a ; } ; typedef struct t T ; typedef struct t * TP ; "
+            "struct U { int a ; } ; typedef struct U U ; "
+            "struct Unnamed0 { int a ; } ; typedef struct Unnamed0 * V ; "
             "struct s s ; "
             "struct s * ps ; "
             "struct t t ; "
             "struct t * tp ; "
+            "struct U u ; "
+            "struct Unnamed0 * v ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef10()
+    {
+        const char code[] = "typedef enum { a = 0 , b = 1 , c = 2 } abc;\n"
+                            "typedef enum xyz { x = 0 , y = 1 , z = 2 } XYZ;\n"
+                            "abc e1;\n"
+                            "XYZ e2;";
+
+        const char expected[] =
+            "enum abc { a = 0 , b = 1 , c = 2 } ; typedef enum abc abc ; "
+            "enum xyz { x = 0 , y = 1 , z = 2 } ; typedef enum xyz XYZ ; "
             "enum abc e1 ; "
-            "enum xyz e2 ; "
+            "enum xyz e2 ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef11()
+    {
+        const char code[] = "typedef vector<int> V1;\n"
+                            "typedef std::vector<int> V2;\n"
+                            "typedef std::vector<std::vector<int> > V3;\n"
+                            "V1 v1;\n"
+                            "V2 v2;\n"
+                            "V3 v3;";
+
+        const char expected[] =
+            "typedef vector < int > V1 ; "
+            "typedef std :: vector < int > V2 ; "
+            "typedef std :: vector < std :: vector < int > > V3 ; "
             "vector < int > v1 ; "
             "std :: vector < int > v2 ; "
             "std :: vector < std :: vector < int > > v3 ;";
@@ -2354,7 +2389,7 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef9()
+    void simplifyTypedef12()
     {
         // ticket # 1167
         const char code[] = "typedef std::pair<int(*)(void*), void*> Func;"
@@ -2373,7 +2408,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef10()
+    void simplifyTypedef13()
     {
         // ticket # 1232
         const char code[] = "template <typename F, unsigned int N> struct E"
