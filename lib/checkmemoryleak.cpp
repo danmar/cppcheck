@@ -1241,8 +1241,8 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             // Replace "{ }" with ";"
             if (Token::simpleMatch(tok2->next(), "{ }"))
             {
-                tok2->next()->str(";");
-                Token::eraseTokens(tok2->next(), tok2->tokAt(3));
+                tok2->eraseTokens(tok2, tok2->tokAt(3));
+                tok2->insertToken(";");
                 done = false;
             }
 
