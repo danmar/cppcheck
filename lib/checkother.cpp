@@ -1607,6 +1607,12 @@ private:
                 return &tok;
             }
 
+            if (Token::Match(tok.previous(), "++|--") || Token::Match(tok.next(), "++|--"))
+            {
+                use(foundError, checks, &tok);
+                return &tok;
+            }
+
             if (Token::Match(tok.previous(), "[;{}] %var% ="))
             {
                 // using same variable rhs?
