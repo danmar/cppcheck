@@ -1528,6 +1528,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 done = false;
             }
 
+            // Reduce "{ loop ;" => ";"
+            if (Token::Match(tok2, "{ loop ;"))
+            {
+                tok2->deleteNext();
+                done = false;
+            }
+
             // Reduce "loop if break ; => ";"
             if (Token::Match(tok2->next(), "loop if break|continue ; !!else"))
             {
