@@ -592,6 +592,7 @@ private:
 
         // switch..
         ASSERT_EQUALS("; alloc ; dealloc ;", simplifycode(";alloc;switch{case;break;};dealloc;"));
+        ASSERT_EQUALS("; if return ; else use ; }", simplifycode("; switch { case ; return ; default ; use ; break ; } }"));
 
         // loops..
         ASSERT_EQUALS(";", simplifycode("; loop { break; }"));

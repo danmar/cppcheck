@@ -1698,8 +1698,11 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     else if (incase && _tok->str() == "case")
                         break;
 
+                    else if (Token::Match(_tok, "return !!;"))
+                        break;
+
                     incase |= (_tok->str() == "case");
-                    incase &= (_tok->str() != "break");
+                    incase &= (_tok->str() != "break" && _tok->str() != "return");
                 }
 
                 if (!incase && valid)
@@ -1711,7 +1714,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     bool first = true;
                     while (Token::Match(tok2, "case|default"))
                     {
-                        bool def(tok2->str() == "default");
+                        const bool def(tok2->str() == "default");
                         tok2->str(first ? "if" : "}");
                         if (first)
                         {
@@ -1727,11 +1730,15 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                             tok2->insertToken("else");
                             tok2 = tok2->next();
                         }
-                        while (tok2 && tok2->str() != "}" && ! Token::simpleMatch(tok2, "break ;"))
+                        while (tok2 && tok2->str() != "}" && ! Token::Match(tok2, "break|return ;"))
                             tok2 = tok2->next();
                         if (Token::simpleMatch(tok2, "break ;"))
                         {
                             tok2->str(";");
+                            tok2 = tok2->tokAt(2);
+                        }
+                        else if (tok2 && tok2->str() == "return")
+                        {
                             tok2 = tok2->tokAt(2);
                         }
                     }
