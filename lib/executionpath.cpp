@@ -91,11 +91,36 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             }
         }
 
-        // todo: handle for/while
+        // for/while/switch/do .. bail out
         if (Token::Match(tok, "for|while|switch|do"))
         {
-            ExecutionPath::bailOut(checks);
-            return 0;
+            // goto {
+            const Token *tok2 = tok->next();
+            if (tok2 && tok2->str() == "(")
+                tok2 = tok2->link();
+            if (tok2 && tok2->str() == ")")
+                tok2 = tok2->next();
+            if (!tok2 || tok2->str() != "{")
+            {
+                ExecutionPath::bailOut(checks);
+                return 0;
+            }
+
+            // skip { .. }
+            tok2 = tok2->link();
+
+            // if "do { .. } while ( .." , goto end of while..
+            if (Token::simpleMatch(tok, "do {") && Token::simpleMatch(tok2, "} while ("))
+                tok2 = tok2->tokAt(2)->link();
+
+            // bail out all variables used in this for/while/switch/do
+            for (; tok && tok != tok2; tok = tok->next())
+            {
+                if (tok->varId())
+                    ExecutionPath::bailOutVar(checks, tok->varId());
+            }
+
+            continue;
         }
 
         // .. ) { ... }  => bail out

@@ -1377,6 +1377,15 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
 
+        checkUninitVar("void f(int i)\n"
+                       "{\n"
+                       "    int a;\n"
+                       "    while (i < 10)\n"
+                       "        i++;\n"
+                       "    a++;"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
+
         // member variables..
         checkUninitVar("class Fred\n"
                        "{\n"
