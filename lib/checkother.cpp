@@ -1533,8 +1533,24 @@ private:
         if (vartok->varId() == 0)
             return;
 
-        // Suppress warnings if variable in inner scope has same name as variable in outer scope
+        bool isenum = false;
         if (!tok.isStandardType())
+        {
+            const std::string pattern("enum " + tok.str());
+            for (const Token *tok2 = tok.previous(); tok2; tok2 = tok2->previous())
+            {
+                if (tok2->str() != "{")
+                    continue;
+                if (Token::simpleMatch(tok2->tokAt(-2), pattern.c_str()))
+                {
+                    isenum = true;
+                    break;
+                }
+            }
+        }
+
+        // Suppress warnings if variable in inner scope has same name as variable in outer scope
+        if (!tok.isStandardType() && !isenum)
         {
             std::set<unsigned int> dup;
             for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
@@ -1551,7 +1567,7 @@ private:
             }
         }
 
-        if (a || p || tok.isStandardType())
+        if (a || p || tok.isStandardType() || isenum)
             checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), p, a));
     }
 
@@ -1560,6 +1576,9 @@ private:
         // Variable declaration..
         if (tok.str() != "return")
         {
+            if (Token::Match(&tok, "enum %type% {"))
+                return tok.tokAt(2)->link();
+
             if (Token::Match(tok.previous(), "[;{}] %type% *| %var% ;"))
             {
                 const Token * vartok = tok.next();

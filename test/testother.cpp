@@ -1578,6 +1578,15 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // enum..
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    enum AB { a, b };\n"
+                       "    AB ab;\n"
+                       "    if (ab);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab\n", errout.str());
+
         // references..
         checkUninitVar("void f()\n"
                        "{\n"
