@@ -1150,6 +1150,15 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void a()\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    int *y = &x;\n"
+                       "    *y = 0;\n"
+                       "    x++;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int a()\n"
                        "{\n"
                        "    int ret;\n"

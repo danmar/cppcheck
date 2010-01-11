@@ -1859,6 +1859,11 @@ private:
                 use_pointer(foundError, checks, &tok);
                 return &tok;
             }
+
+            if (Token::simpleMatch(tok.previous(), "&"))
+            {
+                ExecutionPath::bailOutVar(checks, tok.varId());
+            }
         }
         return &tok;
     }
