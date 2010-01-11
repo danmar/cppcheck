@@ -696,7 +696,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // Combine "- %num%" ..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[(+-*/=,] - %num%") && tok->strAt(2)[0] != '-')
+        if (Token::Match(tok, "[([+-*/=,] - %num%") && tok->strAt(2)[0] != '-')
         {
             tok->next()->str(std::string("-") + tok->strAt(2));
             tok->next()->deleteNext();

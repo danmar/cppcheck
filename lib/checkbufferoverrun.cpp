@@ -167,7 +167,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         if (Token::Match(tok, "%varid% [ %num% ]", varid))
         {
             int index = std::strtol(tok->strAt(2), NULL, 10);
-            if (index >= size)
+            if (index < 0 || index >= size)
             {
                 arrayIndexOutOfBounds(tok, size, index);
             }
@@ -176,7 +176,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
     else if (Token::Match(tok, std::string(varnames + " [ %num% ]").c_str()))
     {
         int index = std::strtol(tok->strAt(2 + varc), NULL, 10);
-        if (index >= size)
+        if (index < 0 || index >= size)
         {
             arrayIndexOutOfBounds(tok->tokAt(varc), size, index);
         }
@@ -203,7 +203,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", varid))
             {
                 int index = std::strtol(tok->strAt(3), NULL, 10);
-                if (index >= size)
+                if (index < 0 || index >= size)
                 {
                     if (index > size || !Token::Match(tok->previous(), "& ("))
                     {
@@ -215,7 +215,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), std::string(varnames + " [ %num% ]").c_str()))
         {
             int index = std::strtol(tok->strAt(3 + varc), NULL, 10);
-            if (index >= size)
+            if (index < 0 || index >= size)
             {
                 arrayIndexOutOfBounds(tok->tokAt(1 + varc), size, index);
             }
@@ -267,7 +267,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 else if (tokSz->isNumber())
                 {
                     const char *num  = tok->strAt(6);
-                    if (std::atoi(num) > total_size)
+                    if (std::atoi(num) < 0 || std::atoi(num) > total_size)
                     {
                         bufferOverrun(tok);
                     }
@@ -280,7 +280,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 Token::Match(tok->next(), std::string("( %var% , " + varnames + " , %num% )").c_str()))
             {
                 const char *num  = tok->strAt(varc + 6);
-                if (std::atoi(num) > total_size)
+                if (std::atoi(num) < 0 || std::atoi(num) > total_size)
                 {
                     bufferOverrun(tok);
                 }
