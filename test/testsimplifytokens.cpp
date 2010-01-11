@@ -149,6 +149,7 @@ private:
         TEST_CASE(simplifyTypedef12);
         TEST_CASE(simplifyTypedef13);
         TEST_CASE(simplifyTypedef14);
+        TEST_CASE(simplifyTypedef15);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2356,6 +2357,34 @@ private:
 
     void simplifyTypedef10()
     {
+        const char code[] = "typedef union s S, * PS\n;"
+                            "typedef union t { int a; float b ; } T, *TP;\n"
+                            "typedef union { int a; float b; } U;\n"
+                            "typedef union { int a; float b; } * V;\n"
+                            "S s;\n"
+                            "PS ps;\n"
+                            "T t;\n"
+                            "TP tp;\n"
+                            "U u;\n"
+                            "V v;";
+
+        const char expected[] =
+            "typedef union s S ; typedef union s * PS ; "
+            "union t { int a ; float b ; } ; typedef union t T ; typedef union t * TP ; "
+            "union U { int a ; float b ; } ; typedef union U U ; "
+            "union Unnamed1 { int a ; float b ; } ; typedef union Unnamed1 * V ; "
+            "union s s ; "
+            "union s * ps ; "
+            "union t t ; "
+            "union t * tp ; "
+            "union U u ; "
+            "union Unnamed1 * v ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef11()
+    {
         const char code[] = "typedef enum { a = 0 , b = 1 , c = 2 } abc;\n"
                             "typedef enum xyz { x = 0 , y = 1 , z = 2 } XYZ;\n"
                             "abc e1;\n"
@@ -2370,7 +2399,7 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef11()
+    void simplifyTypedef12()
     {
         const char code[] = "typedef vector<int> V1;\n"
                             "typedef std::vector<int> V2;\n"
@@ -2390,7 +2419,7 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
-    void simplifyTypedef12()
+    void simplifyTypedef13()
     {
         // ticket # 1167
         const char code[] = "typedef std::pair<int(*)(void*), void*> Func;"
@@ -2409,7 +2438,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef13()
+    void simplifyTypedef14()
     {
         // ticket # 1232
         const char code[] = "template <typename F, unsigned int N> struct E"
@@ -2436,7 +2465,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simplifyTypedef14()
+    void simplifyTypedef15()
     {
         {
             const char code[] = "typedef char frame[10];\n"
@@ -2465,7 +2494,6 @@ private:
     {
         ASSERT_EQUALS("a [ 13 ]", tok("13[a]"));
     }
-
 
     void simplify_numeric_condition()
     {

@@ -394,10 +394,10 @@ void Tokenizer::simplifyTypedef()
         else if (tok->str() != "typedef")
             continue;
 
-        // pull struct or enum definition out of typedef
-        // use typedef name for unnamed struct or enum
-        if (Token::Match(tok->next(), "struct|enum %type% {") ||
-            Token::Match(tok->next(), "struct|enum {"))
+        // pull struct, union or enum definition out of typedef
+        // use typedef name for unnamed struct, union or enum
+        if (Token::Match(tok->next(), "struct|enum|union %type% {") ||
+            Token::Match(tok->next(), "struct|enum|union {"))
         {
             Token *tok1;
             std::string name;
@@ -436,7 +436,7 @@ void Tokenizer::simplifyTypedef()
             tok1->insertToken("typedef");
             tok1 = tok1->next();
             Token * tok3 = tok1;
-            tok1->insertToken(tok->next()->strAt(0)); // struct or enum
+            tok1->insertToken(tok->next()->strAt(0)); // struct, union or enum
             tok1 = tok1->next();
             tok1->insertToken(name.c_str());
             tok->deleteThis();
