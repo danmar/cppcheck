@@ -1118,6 +1118,7 @@ void CheckOther::nullPointer()
 }
 
 
+
 /**
  * \brief parse a function call and extract information about variable usage
  * \param tok first token
@@ -1620,7 +1621,7 @@ private:
         if (tok.varId())
         {
             // Used..
-            if (Token::Match(tok.previous(), "[[+-*/] %var% []+-*/]"))
+            if (Token::Match(tok.previous(), "[[(,+-*/] %var% []),+-*/]"))
             {
                 use(foundError, checks, &tok);
                 return &tok;
@@ -1708,7 +1709,7 @@ private:
             }
         }
 
-        if (Token::Match(&tok, "%var% ("))
+        if (Token::Match(&tok, "%var% (") && uvarFunctions.find(tok.str()) == uvarFunctions.end())
         {
             if (Token::simpleMatch(&tok, "sizeof ("))
                 return tok.next()->link();
@@ -1891,7 +1892,60 @@ private:
 
         return ExecutionPath::parseCondition(tok, checks);
     }
+
+public:
+
+    static std::set<std::string> uvarFunctions;
+
+    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func)
+    {
+        for (const Token *tok = tokens; tok; tok = tok->next())
+        {
+            if (tok->str() == "{")
+            {
+                tok = tok->link();
+                continue;
+            }
+            if (tok->str() != "::" && Token::Match(tok->next(), "%var% ( %type%"))
+            {
+                if (!Token::simpleMatch(tok->tokAt(2)->link(), ") {"))
+                    continue;
+                const Token *tok2 = tok->tokAt(3);
+                while (tok2 && tok2->str() != ")")
+                {
+                    if (tok2->str() == ",")
+                        tok2 = tok2->next();
+
+                    if (Token::Match(tok2, "%type% %var% ,|)") && tok2->isStandardType())
+                    {
+                        tok2 = tok2->tokAt(2);
+                        continue;
+                    }
+
+                    if (Token::Match(tok2, "const %type% %var% ,|)") && tok2->next()->isStandardType())
+                    {
+                        tok2 = tok2->tokAt(2);
+                        continue;
+                    }
+
+                    break;
+                }
+
+                // found simple function..
+                if (tok2->link() == tok->tokAt(2))
+                    func.insert(tok->next()->str());
+            }
+        }
+    }
 };
+
+std::set<std::string> CheckUninitVar::uvarFunctions;
+
+
+void CheckOther::analyseFunctions(const Token * const tokens, std::set<std::string> &func)
+{
+    CheckUninitVar::analyseFunctions(tokens, func);
+}
 
 
 
@@ -1905,6 +1959,7 @@ void CheckOther::executionPaths()
 
     // check if variable is accessed uninitialized..
     {
+        CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions);
         CheckUninitVar c(this);
         checkExecutionPaths(_tokenizer->tokens(), &c);
     }

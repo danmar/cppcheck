@@ -70,6 +70,7 @@ private:
         TEST_CASE(nullpointer7);
 
         TEST_CASE(uninitvar1);
+        TEST_CASE(uninitvar_func);  // analyse functions
 
         TEST_CASE(oldStylePointerCast);
 
@@ -1668,6 +1669,39 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+
+        // sub functions..
+        checkUninitVar("int foo(int x) { return x; }\n"
+                       "void f2()\n"
+                       "{\n"
+                       "    int x;\n"
+                       "    foo(x);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
+
+    }
+
+
+    std::string analyseFunctions(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        std::set<std::string> f;
+        CheckOther::analyseFunctions(tokenizer.tokens(), f);
+
+        std::string ret;
+        for (std::set<std::string>::const_iterator it = f.begin(); it != f.end(); ++it)
+            ret += *it + " ";
+        return ret;
+    }
+
+    void uninitvar_func()
+    {
+        ASSERT_EQUALS("foo ", analyseFunctions("void foo(int x) { }"));
+        ASSERT_EQUALS("", analyseFunctions("void foo(s x) { }"));
     }
 
 

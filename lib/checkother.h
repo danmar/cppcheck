@@ -81,6 +81,11 @@ public:
         checkOther.executionPaths();
     }
 
+
+    // TODO move CheckUninitVar?
+    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func);
+
+
     // Casting
     void warningOldStylePointerCast();
 
