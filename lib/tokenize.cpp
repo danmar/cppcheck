@@ -449,11 +449,14 @@ void Tokenizer::simplifyTypedef()
         bool pointer = false;
         Token *start = 0;
         Token *end = 0;
+        Token *num = 0;
 
         if (Token::Match(tok->next(), "%type% <") ||
             Token::Match(tok->next(), "%type% :: %type% <") ||
             Token::Match(tok->next(), "%type% *| %type% ;") ||
-            Token::Match(tok->next(), "%type% %type% *| %type% ;"))
+            Token::Match(tok->next(), "%type% %type% *| %type% ;") ||
+            Token::Match(tok->next(), "%type% *| %type% [ %num% ]") ||
+            Token::Match(tok->next(), "%type% %type% *| %type% [ %num% ]"))
         {
             if ((tok->tokAt(2)->str() == "<") ||
                 (tok->tokAt(4) && (tok->tokAt(4)->str() == "<")))
@@ -486,6 +489,48 @@ void Tokenizer::simplifyTypedef()
                 }
                 else
                     continue;
+            }
+            else if ((tok->tokAt(3) && tok->tokAt(3)->str() == "[") ||
+                     (tok->tokAt(4) && tok->tokAt(4)->str() == "[") ||
+                     (tok->tokAt(5) && tok->tokAt(5)->str() == "["))
+            {
+                type1 = tok->strAt(1);
+
+                if ((tok->tokAt(4) && tok->tokAt(4)->str() == "[" && tok->tokAt(2)->str() != "*") ||
+                    (tok->tokAt(5) && tok->tokAt(5)->str() == "["))
+                {
+                    type2 = tok->strAt(2);
+                    pointer = (tok->tokAt(3)->str() == "*");
+
+                    if (pointer)
+                    {
+                        typeName = tok->strAt(4);
+                        num = tok->tokAt(6);
+                        tok = tok->tokAt(8);
+                    }
+                    else
+                    {
+                        typeName = tok->strAt(3);
+                        num = tok->tokAt(5);
+                        tok = tok->tokAt(7);
+                    }
+                }
+                else
+                {
+                    pointer = (tok->tokAt(2)->str() == "*");
+                    if (pointer)
+                    {
+                        typeName = tok->strAt(3);
+                        num = tok->tokAt(5);
+                        tok = tok->tokAt(7);
+                    }
+                    else
+                    {
+                        typeName = tok->strAt(2);
+                        num = tok->tokAt(4);
+                        tok = tok->tokAt(6);
+                    }
+                }
             }
             else if (tok->tokAt(3)->str() == ";")
             {
@@ -610,6 +655,17 @@ void Tokenizer::simplifyTypedef()
                         if (pointer)
                         {
                             tok2->insertToken("*");
+                            tok2 = tok2->next();
+                        }
+
+                        if (num)
+                        {
+                            tok2 = tok2->next();
+                            tok2->insertToken("[");
+                            tok2 = tok2->next();
+                            tok2->insertToken(num->strAt(0));
+                            tok2 = tok2->next();
+                            tok2->insertToken("]");
                             tok2 = tok2->next();
                         }
                     }

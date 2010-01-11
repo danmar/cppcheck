@@ -148,6 +148,7 @@ private:
         TEST_CASE(simplifyTypedef11);
         TEST_CASE(simplifyTypedef12);
         TEST_CASE(simplifyTypedef13);
+        TEST_CASE(simplifyTypedef14);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2433,6 +2434,31 @@ private:
         tokenizer.simplifyTokenList();
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef14()
+    {
+        {
+            const char code[] = "typedef char frame[10];\n"
+                                "frame f;";
+
+            const char expected[] =
+                "typedef char frame [ 10 ] ; "
+                "char f [ 10 ] ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "typedef unsigned char frame[10];\n"
+                                "frame f;";
+
+            const char expected[] =
+                "typedef unsigned char frame [ 10 ] ; "
+                "unsigned char f [ 10 ] ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void reverseArraySyntax()
