@@ -156,6 +156,22 @@ HTML_FOOTER = """
 </html>
 """
 
+HTML_ERROR = "<span style=\"border-width: 2px;border-color: black;border-style: solid;background: #ffaaaa;padding: 3px;\">&lt;--- %s</span>\n"
+
+class AnnotateCodeFormatter(HtmlFormatter):
+    errors = []
+
+    def wrap(self, source, outfile):
+        line_no = 1
+        for i, t in HtmlFormatter.wrap(self, source, outfile):
+            # If this is a source code line we want to add a span tag at the end.
+            if i == 1:
+                for error in self.errors:
+                    if error["line"] == line_no:
+                        t = t.replace("\n", HTML_ERROR % error["msg"])
+                line_no = line_no + 1
+            yield i, t
+
 class CppCheckHandler(XmlContentHandler):
     """Parses the cppcheck xml file and produces a list of all its errors."""
     errors = []
@@ -245,7 +261,8 @@ if __name__ == '__main__':
         content = stream.read()
         stream.close()
 
-        htmlFormatter = HtmlFormatter(linenos=True, style='colorful', hl_lines=lines, lineanchors="line")
+        htmlFormatter = AnnotateCodeFormatter(linenos=True, style='colorful', hl_lines=lines, lineanchors="line")
+        htmlFormatter.errors = errors
         stream = file(os.path.join(options.report_dir, htmlfile), "w")
         stream.write(HTML_HEAD % htmlFormatter.get_style_defs(".highlight"))
         stream.write(highlight(content, guess_lexer_for_filename(source_file, ""), htmlFormatter))
