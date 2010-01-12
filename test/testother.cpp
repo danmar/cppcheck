@@ -534,7 +534,7 @@ private:
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable i can be limited\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable i can be reduced\n", errout.str());
 
         varScope("void f(int x)\n"
                  "{\n"
@@ -544,7 +544,7 @@ private:
                  "        for ( ; i < 10; ++i) ;\n"
                  "    }\n"
                  "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable i can be limited\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) The scope of the variable i can be reduced\n", errout.str());
     }
 
     void varScope6()

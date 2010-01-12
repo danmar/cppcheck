@@ -2081,7 +2081,7 @@ void CheckOther::charBitOpError(const Token *tok)
 
 void CheckOther::variableScopeError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::style, "variableScope", "The scope of the variable " + varname + " can be limited");
+    reportError(tok, Severity::style, "variableScope", "The scope of the variable " + varname + " can be reduced");
 }
 
 void CheckOther::conditionAlwaysTrueFalse(const Token *tok, const std::string &truefalse)
