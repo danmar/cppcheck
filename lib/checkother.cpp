@@ -1959,7 +1959,10 @@ void CheckOther::executionPaths()
 
     // check if variable is accessed uninitialized..
     {
-        CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions);
+        // no writing if multiple threads are used (TODO: thread safe analysis?)
+        if (_settings->_jobs == 1)
+            CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions);
+
         CheckUninitVar c(this);
         checkExecutionPaths(_tokenizer->tokens(), &c);
     }
