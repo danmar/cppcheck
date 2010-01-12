@@ -22,10 +22,6 @@
 
 #include <cstring>
 
-#ifdef __BORLANDC__
-#include <stdint.h>     // intptr_t
-#endif
-
 extern std::ostringstream errout;
 class TestTOKEN : public TestFixture
 {
@@ -121,9 +117,9 @@ private:
         Token *tokensBack = 0;
         Token tok(&tokensBack);
         tok.insertToken("aba");
-        ASSERT_EQUALS((intptr_t)tok.next(), (intptr_t)tokensBack);
+        ASSERT_EQUALS(true, tokensBack == tok.next());
         tok.deleteNext();
-        ASSERT_EQUALS((intptr_t)&tok, (intptr_t)tokensBack);
+        ASSERT_EQUALS(true, tokensBack == &tok);
     }
 };
 
