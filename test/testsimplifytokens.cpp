@@ -150,6 +150,7 @@ private:
         TEST_CASE(simplifyTypedef13);
         TEST_CASE(simplifyTypedef14);
         TEST_CASE(simplifyTypedef15);
+        TEST_CASE(simplifyTypedef16);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2488,6 +2489,27 @@ private:
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void simplifyTypedef16()
+    {
+        // ticket # 1252
+        const char code[] = "typedef char MOT8;\n"
+                            "typedef  MOT8 CHFOO[4096];\n"
+                            "typedef struct {\n"
+                            "   CHFOO freem;\n"
+                            "} STRFOO;";
+
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        tokenizer.simplifyTokenList();
+
+        ASSERT_EQUALS("", errout.str());
     }
 
     void reverseArraySyntax()

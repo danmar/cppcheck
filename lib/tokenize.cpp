@@ -663,10 +663,12 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                             tok2->insertToken("[");
                             tok2 = tok2->next();
+                            Token *tok3 = tok2;
                             tok2->insertToken(num->strAt(0));
                             tok2 = tok2->next();
                             tok2->insertToken("]");
                             tok2 = tok2->next();
+                            Token::createMutualLinks(tok2, tok3);
                         }
                     }
 
