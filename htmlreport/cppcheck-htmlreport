@@ -116,6 +116,9 @@ HTML_HEAD = """
   <head>
     <title>CppCheck - Html report</title>
     <link href="style.css" rel="stylesheet" />
+    <style type="text/css">
+%s
+    </style>
   </head>
   <body class="body">
     <div id="page-header">
@@ -242,9 +245,9 @@ if __name__ == '__main__':
         content = stream.read()
         stream.close()
 
-        htmlFormatter = HtmlFormatter(linenos=True, style='colorful', full=True, hl_lines=lines, lineanchors="line")
+        htmlFormatter = HtmlFormatter(linenos=True, style='colorful', hl_lines=lines, lineanchors="line")
         stream = file(os.path.join(options.report_dir, htmlfile), "w")
-        stream.write(HTML_HEAD)
+        stream.write(HTML_HEAD % htmlFormatter.get_style_defs(".highlight"))
         stream.write(highlight(content, guess_lexer_for_filename(source_file, ""), htmlFormatter))
         stream.write(HTML_FOOTER)
         stream.close()
@@ -255,7 +258,7 @@ if __name__ == '__main__':
     # all the errors created.
     print("Creating index.html")
     stream = file(os.path.join(options.report_dir, "index.html"), "w")
-    stream.write(HTML_HEAD)
+    stream.write(HTML_HEAD % "")
     stream.write("<table>")
     stream.write("<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>")
     for filename, data in files.iteritems():
