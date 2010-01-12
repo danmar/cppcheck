@@ -1359,10 +1359,17 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     done = false;
                 }
 
-                // Reduce "if return ; if return ;" => "if return ;"
-                else if (Token::simpleMatch(tok2->next(), "if return ; if return ;"))
+                // Reduce "if return ; else|if return|continue ;" => "if return ;"
+                else if (Token::Match(tok2->next(), "if return ; else|if return|continue|break ;"))
                 {
-                    Token::eraseTokens(tok2, tok2->tokAt(4));
+                    Token::eraseTokens(tok2->tokAt(3), tok2->tokAt(6));
+                    done = false;
+                }
+
+                // Reduce "if continue|break ; else|if return ;" => "if return ;"
+                else if (Token::Match(tok2->next(), "if continue|break ; if|else return ;"))
+                {
+                    Token::eraseTokens(tok2->next(), tok2->tokAt(5));
                     done = false;
                 }
 
