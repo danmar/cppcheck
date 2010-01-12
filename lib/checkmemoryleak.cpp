@@ -51,7 +51,7 @@ static const char * const call_func_white_list[] =
     , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
     , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
     , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
-    , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strncat", "strncmp"
+    , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
     , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
     , "sync_file_range", "telldir", "typeid", "while", "write", "writev"
 };
