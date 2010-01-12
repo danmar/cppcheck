@@ -316,6 +316,12 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         }
 
         // Assignment of array item of member variable?
+        else if (Token::Match(ftok, "%var% [ %any% ] [ %any% ] ="))
+        {
+            initVar(varlist, ftok->strAt(0));
+        }
+
+        // Assignment of array item of member variable?
         else if (Token::Match(ftok, "* %var% ="))
         {
             initVar(varlist, ftok->strAt(1));

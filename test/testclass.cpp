@@ -51,6 +51,7 @@ private:
         TEST_CASE(uninitVarTypedef);
         TEST_CASE(uninitVarArray1);
         TEST_CASE(uninitVarArray2);
+        TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitMissingFuncDef);// can't expand function in constructor
         TEST_CASE(privateCtor1);        // If constructor is private..
         TEST_CASE(privateCtor2);        // If constructor is private..
@@ -72,7 +73,7 @@ private:
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
         TEST_CASE(operatorEqToSelf4);   // nested class with multiple inheritance
-        TEST_CASE(operatorEqToSelf5);	// ticket # 1233
+        TEST_CASE(operatorEqToSelf5);   // ticket # 1233
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetOnClass);
 
@@ -1111,6 +1112,19 @@ private:
                        "\n"
                        "private:\n"
                        "    char name[255];\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarArray2D()
+    {
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "public:\n"
+                       "    John() { a[0][0] = 0; }\n"
+                       "\n"
+                       "private:\n"
+                       "    char a[2][2];\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }
