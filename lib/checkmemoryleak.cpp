@@ -44,7 +44,7 @@ static const char * const call_func_white_list[] =
 {
     "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
     , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
-    , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fseek"
+    , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
     , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
     , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
     , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
