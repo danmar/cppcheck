@@ -164,6 +164,9 @@ private:
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
+
+        // remove "std::" on some standard functions
+        TEST_CASE(removestd);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -2717,6 +2720,16 @@ private:
         const char expected[] = "enum A { a = 0 , } ; int array [ 0 ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void removestd()
+    {
+        ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
+        ASSERT_EQUALS("; strcat ( a , b ) ;", tok("; std::strcat(a,b);"));
+        ASSERT_EQUALS("; strncpy ( a , b , 10 ) ;", tok("; std::strncpy(a,b,10);"));
+        ASSERT_EQUALS("; strncat ( a , b , 10 ) ;", tok("; std::strncat(a,b,10);"));
+        ASSERT_EQUALS("; free ( p ) ;", tok("; std::free(p);"));
+        ASSERT_EQUALS("; malloc ( 10 ) ;", tok("; std::malloc(10);"));
     }
 
 };

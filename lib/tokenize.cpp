@@ -2160,6 +2160,8 @@ bool Tokenizer::simplifyTokenList()
             tok->deleteNext();
     }
 
+    simplifyStd();
+
     simplifyNamespaces();
 
     simplifyGoto();
@@ -4539,6 +4541,32 @@ void Tokenizer::simplifyEnum()
                     }
                 }
             }
+        }
+    }
+}
+
+
+void Tokenizer::simplifyStd()
+{
+    std::set<std::string> f;
+    f.insert("strcat");
+    f.insert("strcpy");
+    f.insert("strncat");
+    f.insert("strncpy");
+    f.insert("free");
+    f.insert("malloc");
+    f.insert("strdup");
+
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() != "std")
+            continue;
+
+        if (Token::Match(tok->previous(), "[(,{};] std :: %var% (") &&
+            f.find(tok->strAt(2)) != f.end())
+        {
+            tok->deleteNext();
+            tok->deleteThis();
         }
     }
 }

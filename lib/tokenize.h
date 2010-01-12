@@ -332,6 +332,11 @@ private:
     void simplifyEnum();
 
     /**
+     * Remove "std::" before some function names
+     */
+    void simplifyStd();
+
+    /**
      * Remove exception specifications. This function calls itself recursively.
      * @param tok First token in scope to cleanup
      */
