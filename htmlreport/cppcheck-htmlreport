@@ -112,10 +112,11 @@ body.body {
 """
 
 HTML_HEAD = """
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
     <title>CppCheck - Html report</title>
-    <link href="style.css" rel="stylesheet" />
+    <link href="style.css" rel="stylesheet" type="text/css" />
     <style type="text/css">
 %s
     </style>
