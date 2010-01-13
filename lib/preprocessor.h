@@ -93,6 +93,14 @@ public:
 
 protected:
 
+    /**
+     * report error
+     * @param fileName name of file that the error was found in
+     * @param linenr linenr in file
+     * @param errorLogger Error logger to write error to
+     * @param errorType id string for error
+     * @param errorText Plain text
+     */
     static void writeError(const std::string &fileName, const int linenr, ErrorLogger *errorLogger, const std::string &errorType, const std::string &errorText);
 
     /**
@@ -103,6 +111,13 @@ protected:
      */
     static std::string replaceIfDefined(const std::string &str);
 
+    /**
+     * expand macros in code. #ifdefs etc are ignored so the code must be a single configuration
+     * @param code The input code
+     * @param filename filename of source file
+     * @param errorLogger Error logger to write errors to (if any)
+     * @return the expanded string
+     */
     static std::string expandMacros(const std::string &code, std::string filename, ErrorLogger *errorLogger);
 
     /**

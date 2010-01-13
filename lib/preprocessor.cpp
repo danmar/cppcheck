@@ -1316,11 +1316,22 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
 class PreprocessorMacro
 {
 private:
+    /** tokens of this macro */
     Tokenizer tokenizer;
+
+    /** macro parameters */
     std::vector<std::string> _params;
+
+    /** name of macro */
     std::string _name;
-    std::string _macro;
+
+    /** macro definition in plain text */
+    const std::string _macro;
+
+    /** does this macro take a variable number of parameters? */
     bool _variadic;
+
+    /** prefix that is used by cppcheck to separate macro parameters. Always "__cppcheck__" */
     const std::string _prefix;
 
     /** The macro has parantheses but no parameters.. "AAA()" */
@@ -1344,6 +1355,7 @@ public:
         if (tokens() && tokens()->isName())
             _name = tokens()->str();
 
+        // initialize parameters to default values
         _variadic = _nopar = false;
 
         std::string::size_type pos = macro.find_first_of(" (");
@@ -1440,31 +1452,42 @@ public:
         return true;
     }
 
+    /** return tokens of this macro */
     const Token *tokens() const
     {
         return tokenizer.tokens();
     }
 
+    /** read parameters of this macro */
     const std::vector<std::string> &params() const
     {
         return _params;
     }
 
+    /** check if this is macro has a variable number of parameters */
     bool variadic() const
     {
         return _variadic;
     }
 
+    /** Check if this macro has parantheses but no parameters */
     bool nopar() const
     {
         return _nopar;
     }
 
+    /** name of macro */
     const std::string &name() const
     {
         return _name;
     }
 
+    /**
+     * get expanded code for this macro
+     * @param params2 macro parameters
+     * @param macrocode output string
+     * @return true if the expanding was successful
+     */
     bool code(const std::vector<std::string> &params2, std::string &macrocode) const
     {
         if (_nopar)
@@ -1605,6 +1628,11 @@ public:
 };
 
 
+/**
+ * Skip string in line. A string begins and ends with either a " or a '
+ * @param line the string
+ * @param pos in=start position of string, out=end position of string
+ */
 static void skipstring(const std::string &line, std::string::size_type &pos)
 {
     const unsigned char ch = line[pos];
@@ -1619,6 +1647,16 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
 }
 
 
+/**
+ * Get data from a input string. This is an extended version of std::getline.
+ * The std::getline only get a single line at a time. It can therefore happen that it
+ * contains a partial statement. This function ensures that the returned data
+ * doesn't end in the middle of a statement. The "getlines" name indicate that
+ * this function will return multiple lines if needed.
+ * @param istr input stream
+ * @param line output data
+ * @return success
+ */
 static bool getlines(std::istream &istr, std::string &line)
 {
     if (!istr.good())
@@ -1679,19 +1717,26 @@ static bool getlines(std::istream &istr, std::string &line)
 std::string Preprocessor::expandMacros(const std::string &code, std::string filename, ErrorLogger *errorLogger)
 {
     // Search for macros and expand them..
+    // --------------------------------------------
 
+    // Available macros (key=macroname, value=macro).
     std::map<std::string, PreprocessorMacro *> macros;
 
+    // Current line number
     unsigned int linenr = 1;
 
     // linenr, filename
     std::stack< std::pair<unsigned int, std::string> > fileinfo;
 
+    // output stream
     std::ostringstream ostr;
+
+    // read code..
     std::istringstream istr(code.c_str());
     std::string line;
     while (getlines(istr, line))
     {
+        // defining a macro..
         if (line.compare(0, 8, "#define ") == 0)
         {
             PreprocessorMacro *macro = new PreprocessorMacro(line.substr(8));
@@ -1708,6 +1753,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             line = "\n";
         }
 
+        // undefining a macro..
         else if (line.compare(0, 7, "#undef ") == 0)
         {
             std::map<std::string, PreprocessorMacro *>::iterator it;
@@ -1720,6 +1766,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             line = "\n";
         }
 
+        // entering a file, update position..
         else if (line.compare(0, 7, "#file \"") == 0)
         {
             fileinfo.push(std::pair<unsigned int, std::string>(linenr, filename));
@@ -1728,6 +1775,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             line += "\n";
         }
 
+        // leaving a file, update position..
         else if (line == "#endfile")
         {
             if (fileinfo.size())
@@ -1739,6 +1787,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             line += "\n";
         }
 
+        // all other preprocessor directives are just replaced with a newline
         else if (line.compare(0, 1, "#") == 0)
         {
             line += "\n";
@@ -1761,11 +1810,13 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             //   without updating the limit is safe.
             // * when pos goes beyond a limit the limit needs to be
             //   deleted because it is unsafe to insert/delete text
-            //   after the limit
+            //   after the limit otherwise
             std::map<const PreprocessorMacro *, unsigned int> limits;
 
             // pos is the current position in line
             std::string::size_type pos = 0;
+
+            // scan line to see if there are any macros to expand..
             while (pos < line.size())
             {
                 if (line[pos] == '\n')
@@ -1801,23 +1852,28 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     ++pos;
 
                 // found an identifier..
+                // the "while" is used in case the expanded macro will immediately call another macro
                 while (pos < line.length() && (std::isalpha(line[pos]) || line[pos] == '_'))
                 {
+                    // pos1 = start position of macro
                     const std::string::size_type pos1 = pos++;
+
+                    // find the end of the identifier
                     while (pos < line.size() && (std::isalnum(line[pos]) || line[pos] == '_'))
                         ++pos;
 
+                    // get identifier
                     const std::string id = line.substr(pos1, pos - pos1);
 
                     // is there a macro with this name?
                     std::map<std::string, PreprocessorMacro *>::const_iterator it;
                     it = macros.find(id);
                     if (it == macros.end())
-                        break;
+                        break;  // no macro with this name exist
 
                     const PreprocessorMacro * const macro = it->second;
 
-                    // check if pos is within allowed limits for this
+                    // check that pos is within allowed limits for this
                     // macro
                     {
                         const std::map<const PreprocessorMacro *, unsigned int>::const_iterator it2 = limits.find(macro);
@@ -1825,13 +1881,16 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                             break;
                     }
 
+                    // get parameters from line..
                     std::vector<std::string> params;
                     std::string::size_type pos2 = pos;
                     if (macro->params().size() && pos2 >= line.length())
                         break;
 
+                    // number of newlines within macro use
                     unsigned int numberOfNewlines = 0;
 
+                    // if the macro has parantheses, get parameters
                     if (macro->variadic() || macro->nopar() || macro->params().size())
                     {
                         if (line[pos2] == ' ')
@@ -1840,17 +1899,27 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         if (line[pos2] != '(')
                             break;
 
+                        // parantheses level
                         int parlevel = 0;
+
+                        // current parameter
                         std::string par;
+
+                        // is the end paranthesis found?
                         bool endFound = false;
+
+                        // scan for parameters..
                         for (; pos2 < line.length(); ++pos2)
                         {
+                            // increase paranthesis level
                             if (line[pos2] == '(')
                             {
                                 ++parlevel;
                                 if (parlevel == 1)
                                     continue;
                             }
+
+                            // decrease paranthesis level
                             else if (line[pos2] == ')')
                             {
                                 --parlevel;
@@ -1861,6 +1930,8 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                     break;
                                 }
                             }
+
+                            // string
                             else if (line[pos2] == '\"' || line[pos2] == '\'')
                             {
                                 const std::string::size_type p = pos2;
@@ -1870,17 +1941,22 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                 par += line.substr(p, pos2 + 1 - p);
                                 continue;
                             }
+
+                            // count newlines. the expanded macro must have the same number of newlines
                             else if (line[pos2] == '\n')
                             {
                                 ++numberOfNewlines;
                                 continue;
                             }
 
+                            // new parameter
                             if (parlevel == 1 && line[pos2] == ',')
                             {
                                 params.push_back(par);
                                 par = "";
                             }
+
+                            // spaces are only added if needed
                             else if (line[pos2] == ' ')
                             {
                                 // Add space only if it is needed
@@ -1889,20 +1965,24 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                     par += ' ';
                                 }
                             }
+
+                            // add character to current parameter
                             else if (parlevel >= 1)
                             {
                                 par.append(1, line[pos2]);
                             }
                         }
 
+                        // something went wrong so bail out
                         if (!endFound)
                             break;
                     }
 
+                    // Just an empty parameter => clear
                     if (params.size() == 1 && params[0] == "")
                         params.clear();
 
-                    // Same number of parameters..
+                    // Check that it's the same number of parameters..
                     if (!macro->variadic() && params.size() != macro->params().size())
                         break;
 
@@ -1924,6 +2004,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                         return "";
                     }
 
+                    // make sure number of newlines remain the same..
                     const std::string macrocode(std::string(numberOfNewlines, '\n') + tempMacro);
 
                     // Insert macro code..
@@ -1960,7 +2041,10 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             }
         }
 
+        // the line has been processed in various ways. Now add it to the output stream
         ostr << line;
+
+        // update linenr
         for (std::string::size_type p = 0; p < line.length(); ++p)
         {
             if (line[p] == '\n')
