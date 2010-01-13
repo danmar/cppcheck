@@ -2408,17 +2408,21 @@ private:
         const char code[] = "typedef vector<int> V1;\n"
                             "typedef std::vector<int> V2;\n"
                             "typedef std::vector<std::vector<int> > V3;\n"
+                            "typedef std::list<int>::iterator IntListIterator;\n"
                             "V1 v1;\n"
                             "V2 v2;\n"
-                            "V3 v3;";
+                            "V3 v3;\n"
+                            "IntListIterator iter;";
 
         const char expected[] =
             "typedef vector < int > V1 ; "
             "typedef std :: vector < int > V2 ; "
             "typedef std :: vector < std :: vector < int > > V3 ; "
+            "typedef std :: list < int > :: iterator IntListIterator ; "
             "vector < int > v1 ; "
             "std :: vector < int > v2 ; "
-            "std :: vector < std :: vector < int > > v3 ;";
+            "std :: vector < std :: vector < int > > v3 ; "
+            "std :: list < int > :: iterator iter ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }

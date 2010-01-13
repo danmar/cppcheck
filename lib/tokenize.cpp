@@ -455,8 +455,8 @@ void Tokenizer::simplifyTypedef()
             Token::Match(tok->next(), "%type% :: %type% <") ||
             Token::Match(tok->next(), "%type% *| %type% ;") ||
             Token::Match(tok->next(), "%type% %type% *| %type% ;") ||
-            Token::Match(tok->next(), "%type% *| %type% [ %num% ]") ||
-            Token::Match(tok->next(), "%type% %type% *| %type% [ %num% ]"))
+            Token::Match(tok->next(), "%type% *| %type% [ %num% ] ;") ||
+            Token::Match(tok->next(), "%type% %type% *| %type% [ %num% ] ;"))
         {
             if ((tok->tokAt(2)->str() == "<") ||
                 (tok->tokAt(4) && (tok->tokAt(4)->str() == "<")))
@@ -481,6 +481,9 @@ void Tokenizer::simplifyTypedef()
                     if (end->str() == "<")
                         level++;
                 }
+
+                while (end && end->next() && Token::Match(end->next(), ":: %type%"))
+                    end = end->tokAt(2);
 
                 if (end && end->next() && Token::Match(end->next(), "%type% ;"))
                 {
