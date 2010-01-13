@@ -140,11 +140,9 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         if (Token::Match(tok, "struct %type% {"))
             tok = tok->tokAt(2)->link();
 
-        if (Token::Match(tok, "= {") || Token::Match(tok, "= ( %type% !!="))
+        if (Token::Match(tok, "= {"))
         {
             tok = tok->next()->link();
-            if (Token::simpleMatch(tok, ") {"))
-                tok = tok->next()->link();
             if (!tok)
             {
                 ExecutionPath::bailOut(checks);

@@ -1209,6 +1209,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    int c;\n"
+                       "    a = (f2(&c));\n"
+                       "    c++;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // +=
         checkUninitVar("void f()\n"
                        "{\n"
