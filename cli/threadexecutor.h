@@ -45,7 +45,7 @@ private:
     ErrorLogger &_errorLogger;
     unsigned int _fileCount;
 
-#if defined(__GNUC__) && !defined(__MINGW32__)
+#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 private:
     bool handleRead(unsigned int &result);
     void writeToPipe(char type, const std::string &data);

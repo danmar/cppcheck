@@ -20,7 +20,7 @@
 #include "cppcheck.h"
 #include <iostream>
 #include <algorithm>
-#if defined(__GNUC__) && !defined(__MINGW32__)
+#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -41,10 +41,10 @@ ThreadExecutor::~ThreadExecutor()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-////// This code is for __GNUC__ only /////////////////////////////////////////
+////// This code is for __GNUC__ and __sun only ///////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-#if defined(__GNUC__) && !defined(__MINGW32__)
+#if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 
 bool ThreadExecutor::handleRead(unsigned int &result)
 {
