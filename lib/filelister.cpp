@@ -87,7 +87,11 @@ std::string FileLister::simplifyPath(const char *originalPath)
     return oss.str();
 }
 
-
+// This wrapper exists because Sun's CC does not allow a static_cast
+// from extern "C" int(*)(int) to int(*)(int).
+static int tolowerWrapper(int c) {
+    return std::tolower(c);
+}
 
 bool FileLister::acceptFile(const std::string &filename)
 {
@@ -96,7 +100,7 @@ bool FileLister::acceptFile(const std::string &filename)
         return false;
 
     std::string extension = filename.substr(dotLocation);
-    std::transform(extension.begin(), extension.end(), extension.begin(), static_cast < int(*)(int) > (std::tolower));
+    std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
 
     if (extension == ".cpp" ||
         extension == ".cxx" ||
@@ -306,7 +310,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const st
 
 bool FileLister::sameFileName(const char fname1[], const char fname2[])
 {
-#ifdef __linux__
+#if defined(__linux__) || defined(__sun)
     return bool(strcmp(fname1, fname2) == 0);
 #endif
 #ifdef __GNUC__

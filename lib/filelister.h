@@ -26,19 +26,6 @@
 /// @{
 
 
-// Check that the compiler are supported
-// This program should be compiled with either GCC/BORLAND/MSC to work..
-#ifndef __GNUC__
-#ifndef  __BORLANDC__
-#ifndef _MSC_VER
-#error "Cppcheck must be compiled by either GCC/BORLAND/MSC to work fully.\n"
-#error "Please report that you couldn't compile cppcheck through the web page:\n"
-#error "      https://sourceforge.net/projects/cppcheck/"
-#endif
-#endif
-#endif
-
-
 class FileLister
 {
 public:

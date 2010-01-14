@@ -1207,6 +1207,14 @@ int Preprocessor::getHeaderFileName(std::string &str)
         return 2;
 }
 
+
+// This wrapper exists because Sun's CC does not allow a static_cast
+// from extern "C" int(*)(int) to int(*)(int).
+static int tolowerWrapper(int c) {
+    return std::tolower(c);
+}
+
+
 void Preprocessor::handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths)
 {
     std::list<std::string> paths;
@@ -1247,7 +1255,7 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             continue;
 
         std::string tempFile = filename;
-        std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), static_cast < int(*)(int) > (std::tolower));
+        std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), tolowerWrapper);
         if (handledFiles.find(tempFile) != handledFiles.end())
         {
             // We have processed this file already once, skip
