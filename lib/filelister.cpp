@@ -89,7 +89,8 @@ std::string FileLister::simplifyPath(const char *originalPath)
 
 // This wrapper exists because Sun's CC does not allow a static_cast
 // from extern "C" int(*)(int) to int(*)(int).
-static int tolowerWrapper(int c) {
+static int tolowerWrapper(int c)
+{
     return std::tolower(c);
 }
 
