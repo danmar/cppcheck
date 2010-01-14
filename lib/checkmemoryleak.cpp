@@ -1222,12 +1222,52 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             tok2->str("return");
     }
 
+    // reduce "if callfunc {" => "if {"
+    for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+    {
+        if (Token::Match(tok2, "if|ifv callfunc {"))
+            tok2->deleteNext();
+    }
+
     // reduce the code..
     bool done = false;
     while (! done)
     {
         //tok->printOut("simplifycode loop..");
         done = true;
+
+        // simplify "while1" contents..
+        for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+        {
+            if (Token::simpleMatch(tok2, "while1 {"))
+            {
+                unsigned int indentlevel = 0;
+                for (Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next())
+                {
+                    if (tok3->str() == "{")
+                        ++indentlevel;
+                    else if (tok3->str() == "}")
+                    {
+                        if (indentlevel == 0)
+                            break;
+                        --indentlevel;
+                    }
+                    while (indentlevel == 0 && Token::Match(tok3, "[{};] if|ifv|else { continue ; }"))
+                    {
+                        Token::eraseTokens(tok3, tok3->tokAt(6));
+                        if (Token::simpleMatch(tok3->next(), "else"))
+                            tok3->deleteNext();
+                    }
+                }
+
+                if (Token::Match(tok2, "while1 { if { dealloc ; return ; } }"))
+                {
+                    tok2->str(";");
+                    Token::eraseTokens(tok2, tok2->tokAt(4));
+                    Token::eraseTokens(tok2->tokAt(4), tok2->tokAt(7));
+                }
+            }
+        }
 
         for (Token *tok2 = tok; tok2; tok2 = tok2 ? tok2->next() : NULL)
         {
@@ -1471,6 +1511,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::simpleMatch(tok2, "while1 ;"))
             {
                 tok2->str("use");
+                done = false;
+            }
+
+            // Reduce "while1 if break ;" => ";"
+            if (Token::simpleMatch(tok2, "while1 if break ;"))
+            {
+                tok2->str(";");
+                Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
 

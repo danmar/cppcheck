@@ -580,7 +580,7 @@ private:
         ASSERT_EQUALS("; alloc ; dealloc ;\n; alloc ;", simplifycode("; alloc ; if(!var) { return ; } if { dealloc ; }"));
         ASSERT_EQUALS("; if alloc ; else assign ; return use ;", simplifycode("; callfunc ; if callfunc { alloc ; } else { assign ; } return use ;"));
 
-        ASSERT_EQUALS("; while1 continue ;", simplifycode("; while1 { if callfunc { dealloc ; return ; } else { continue ; } }"));
+        ASSERT_EQUALS("; dealloc ; return ;", simplifycode("; while1 { if callfunc { dealloc ; return ; } else { continue ; } }"));
 
         // "if ; .."
         ASSERT_EQUALS("; if xxx ;", simplifycode("; if ; else xxx ;"));
@@ -607,7 +607,9 @@ private:
         ASSERT_EQUALS("; alloc ; alloc ;", simplifycode("; alloc ; do { alloc ; } loop ;"));
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc ; do { } loop ; exit ;"));
 
-        ASSERT_EQUALS("; alloc ; use ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } }"));
+        ASSERT_EQUALS("; alloc ; dealloc ; return ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } }"));
+        ASSERT_EQUALS("; alloc ; dealloc ; return ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } if { continue ; } }"));
+        ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } if { break ; } }"));
 
         // callfunc..
         ASSERT_EQUALS("; callfunc ;\n;", simplifycode(";callfunc;"));
