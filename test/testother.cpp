@@ -970,6 +970,12 @@ private:
                          "        p->do_something();\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "    int sz = sizeof((*(struct dummy *)0).x);\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer7()

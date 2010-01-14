@@ -1278,6 +1278,9 @@ private:
 
         if (Token::Match(&tok, "%var% ("))
         {
+            if (tok.str() == "sizeof")
+                return tok.next()->link();
+
             // parse usage..
             std::list<const Token *> var;
             parseFunctionCall(tok, var, 0);
