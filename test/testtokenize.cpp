@@ -89,6 +89,7 @@ private:
         TEST_CASE(simplifyKnownVariables15);
         TEST_CASE(simplifyKnownVariables16);
         TEST_CASE(simplifyKnownVariables17);
+        TEST_CASE(simplifyKnownVariables18);
 
         TEST_CASE(match1);
 
@@ -954,6 +955,14 @@ private:
         const char code[] = "void f ( ) { char *s = malloc(100);mp_ptr p = s; p++; }";
         ASSERT_EQUALS(
             "void f ( ) { char * s ; s = malloc ( 100 ) ; mp_ptr p ; p = s ; p ++ ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables18()
+    {
+        const char code[] = "void f ( ) { char *s = malloc(100);mp_ptr p = s; ++p; }";
+        ASSERT_EQUALS(
+            "void f ( ) { char * s ; s = malloc ( 100 ) ; mp_ptr p ; p = s ; ++ p ; }",
             simplifyKnownVariables(code));
     }
 

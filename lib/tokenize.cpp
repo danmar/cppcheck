@@ -3966,7 +3966,7 @@ bool Tokenizer::simplifyKnownVariables()
                         ret = true;
                     }
 
-                    if (Token::Match(tok3->next(), "++|-- %varid%", varid) &&
+                    if (Token::Match(tok3->next(), "++|-- %varid%", varid) && MathLib::isInt(value) &&
                         !Token::Match(tok3->tokAt(3), "[.[]"))
                     {
                         incdec(value, tok3->strAt(1));
