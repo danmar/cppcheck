@@ -85,5 +85,7 @@
     <UIRef Id="WixUI_InstallDir"/>
 
     <Icon Id='gui.exe' SourceFile='gui.exe' />
+
+    <WixVariable Id="WixUILicenseRtf" Value="GPLv3.rtf" />
   </Product>
 </Wix>
