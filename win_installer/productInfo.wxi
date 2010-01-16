@@ -14,5 +14,6 @@
 
   <?define CliBuildDir = "..\cli\release" ?>
   <?define GuiBuildDir = "..\gui\release" ?>
+  <?define QtDllDir = "..\..\runtimes" ?>
   <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC90_CRT_x86.msm" ?>
 </Include>

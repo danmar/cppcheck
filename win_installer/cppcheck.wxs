@@ -24,9 +24,9 @@
                   WorkingDirectory='INSTALLDIR' Icon="gui.exe" IconIndex="0" Advertise="yes" />
             </File>
             <!-- <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' /> -->
-            <File Id='qtcore4dll' Name='qtcore4.dll' Source='qtcore4.dll' />
-            <File Id='qtgui4dll' Name='qtgui4.dll' Source='qtgui4.dll' />
-            <File Id='qtxml4dll' Name='qtxml4.dll' Source='qtxml4.dll' />
+            <File Id='qtcore4dll' Name='qtcore4.dll' Source='$(var.QtDllDir)\qtcore4.dll' />
+            <File Id='qtgui4dll' Name='qtgui4.dll' Source='$(var.QtDllDir)\qtgui4.dll' />
+            <File Id='qtxml4dll' Name='qtxml4.dll' Source='$(var.QtDllDir)\qtxml4.dll' />
           </Component>
           <Component Id='authors.txt' Guid='*'>
             <File Id='authors.txt' Name='authors.txt' DiskId='1' Source='..\authors' KeyPath='yes' />
