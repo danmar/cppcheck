@@ -1,7 +1,6 @@
 <?xml version='1.0' encoding='windows-1252'?>
-<?define ProductName = "Cppcheck 1.39" ?>
-<?define ProductVersion = "1.39" ?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <?include productInfo.wxi ?>
   <Product Name='$(var.ProductName)' Id='88DE59C3-7640-47A2-A047-7289807AE3BA' UpgradeCode='DDB850E4-F8DE-4290-BDF1-AC12475DEE80'
     Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='The Cppcheck team'>
 
@@ -16,7 +15,7 @@
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
         <Directory Id='INSTALLDIR' Name='$(var.ProductName)'>
           <Component Id='Executable' Guid='E1435616-5041-4079-BC4B-C4805BEEDAF9'>
-            <File Id='cppcheckexe' Name='cppcheck.exe' DiskId='1' Source='cppcheck.exe' KeyPath='yes' />
+            <File Id='cppcheckexe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
           </Component>
           <Component Id='Authors' Guid='DA54245B-7A5D-481B-A930-D2C9FDD95E19'>
             <File Id='authorstxt' Name='authors.txt' DiskId='1' Source='..\authors' KeyPath='yes' />

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='windows-1252'?>
-<?include productInfo.wxi ?> 
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+  <?include productInfo.wxi ?>
   <Product Name='$(var.ProductName)' Id='*' UpgradeCode='$(var.ProductUpgradeCode)'
     Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='The Cppcheck team'>
 
@@ -15,11 +15,11 @@
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
         <Directory Id='INSTALLDIR' Name='$(var.ProductNameShort)'>
           <Component Id='cppcheck.exe' Guid='$(var.cppcheckGUID)'>
-            <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='cppcheck.exe' KeyPath='yes' />
+            <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
             <Environment Id='UpdatePath' Name='PATH' Action='set' System='yes' Part='last' Value='[INSTALLDIR]' />
           </Component>
           <Component Id='gui.exe' DiskId='1' Guid='$(var.guiGUID)'>
-            <File Id='gui.exe' Name='gui.exe' Source='gui.exe' KeyPath='yes'>
+            <File Id='gui.exe' Name='gui.exe' Source='$(var.GuiBuildDir)\gui.exe' KeyPath='yes'>
               <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name="Cppcheck"
                   WorkingDirectory='INSTALLDIR' Icon="gui.exe" IconIndex="0" Advertise="yes" />
             </File>
@@ -36,7 +36,7 @@
           </Component>
           <Component Id='manual.pdf' Guid='*'>
             <File Id='manual.pdf' Name='manual.pdf' DiskId='1' Source='manual.pdf' KeyPath='yes'>
-              <Shortcut Id='startmenuManual' Directory="ProgramMenuDir" Name="manual.pdf" Advertise="no" />
+              <Shortcut Id='startmenuManual' Directory="ProgramMenuDir" Name="Manual" Advertise="yes" />
             </File>
           </Component>
         </Directory>
