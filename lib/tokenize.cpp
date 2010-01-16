@@ -2213,6 +2213,9 @@ void Tokenizer::simplifySizeof()
 
 bool Tokenizer::simplifyTokenList()
 {
+    // clear the _functionList so it can't contain dead pointers
+    _functionList.clear();
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "* const"))
@@ -4655,17 +4658,13 @@ void Tokenizer::fillFunctionList()
 {
     _functionList.clear();
 
-    int indentlevel = 0;
     for (const Token *tok = _tokens; tok; tok = tok->next())
     {
         if (tok->str() == "{")
-            ++indentlevel;
-
-        else if (tok->str() == "}")
-            --indentlevel;
-
-        if (indentlevel > 0)
         {
+            tok = tok->link();
+            if (!tok)
+                break;
             continue;
         }
 
@@ -4695,7 +4694,7 @@ void Tokenizer::fillFunctionList()
                     else
                     {
                         tok = tok2;
-                        while (tok->next() && !strchr(";{", tok->strAt(1)[0]))
+                        while (tok->next() && !Token::Match(tok->next(), "[;{]"))
                             tok = tok->next();
                     }
                     break;

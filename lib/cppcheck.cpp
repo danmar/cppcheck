@@ -555,6 +555,11 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
             return;
     }
 
+    {
+        TIMER_START();
+        _tokenizer.fillFunctionList();
+        TIMER_END("Tokenizer::fillFunctionList");
+    }
 
     if (_settings.isEnabled("unusedFunctions") && _settings._jobs == 1)
         _checkUnusedFunctions.parseTokens(_tokenizer);
