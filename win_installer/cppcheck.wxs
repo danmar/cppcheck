@@ -6,7 +6,7 @@
 
     <Package Id='*' Keywords='Installer' Description="$(var.ProductName) Setup"
       Comments='Cppcheck is a tool for static analysis of C/C++ code' Manufacturer='The Cppcheck team'
-      InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252'/>
+      InstallerVersion='300' Languages='1033' Compressed='yes' SummaryCodepage='1252'/>
 
     <Media Id='1' Cabinet='Cppcheck.cab' EmbedCab='yes' DiskPrompt='CD-ROM 1' />
     <Property Id='DiskPrompt' Value='Cppcheck installation [1]' />
