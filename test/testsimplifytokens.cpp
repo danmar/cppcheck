@@ -151,6 +151,7 @@ private:
         TEST_CASE(simplifyTypedef14);
         TEST_CASE(simplifyTypedef15);
         TEST_CASE(simplifyTypedef16);
+        TEST_CASE(simplifyTypedef17);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -1241,7 +1242,7 @@ private:
                             "\n"
                             "template<typename T> inline B<T> h() { return B<T>(); }\n";
 
-        ASSERT_EQUALS("; ; typedef A < int > x ; typedef B < int > y ; ; ; ;", sizeof_(code));
+        ASSERT_EQUALS("; ; ; ; ; ; ;", sizeof_(code));
 
         ASSERT_EQUALS("class A { ; } ;", sizeof_("class A{ template<typename T> int foo(T d);};"));
     }
@@ -2172,10 +2173,10 @@ private:
             "class A "
             "{ "
             "public: "
-            "typedef wchar_t duplicate ; "
+            "; "
             "void foo ( ) { } "
             "} ; "
-            "typedef A duplicate ; "
+            "; "
             "int main ( ) "
             "{ "
             "A a ; "
@@ -2198,11 +2199,11 @@ private:
 
         const std::string expected =
             "class A ; "
-            "typedef A duplicate ; "
+            "; "
             "class A "
             "{ "
             "public: "
-            "typedef wchar_t duplicate ; "
+            "; "
             "wchar_t foo ( ) { wchar_t b ; return b ; } "
             "} ;";
         ASSERT_EQUALS(expected, tok(code));
@@ -2225,10 +2226,10 @@ private:
 
         const std::string expected =
             "class A { } ; "
-            "typedef A duplicate ; "
+            "; "
             "wchar_t foo ( ) "
             "{ "
-            "typedef wchar_t duplicate ; "
+            "; "
             "wchar_t b ; "
             "return b ; "
             "} "
@@ -2251,8 +2252,8 @@ private:
                             "}\n";
 
         const std::string expected =
-            "typedef int s32 ; "
-            "typedef unsigned int u32 ; "
+            "; "
+            "; "
             "void f ( ) "
             "{ "
             "int ivar ; ivar = -2 ; "
@@ -2273,7 +2274,7 @@ private:
             "}\n";
 
         const char expected[] =
-            "typedef struct yy_buffer_state * YY_BUFFER_STATE ; "
+            "; "
             "void f ( ) "
             "{ "
             "struct yy_buffer_state * state ; "
@@ -2293,7 +2294,7 @@ private:
 
         const char expected[] =
             "namespace VL { "
-            "typedef float float_t ; "
+            "; "
             "inline float fast_atan2 ( float y , float x ) { } "
             "}";
 
@@ -2304,7 +2305,10 @@ private:
     {
         const char code[] = "typedef int abc ; "
                             "Fred :: abc f ;";
-        ASSERT_EQUALS(code, tok(code, false));
+        const char expected[] =
+            "; "
+            "Fred :: abc f ;";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void simplifyTypedef8()
@@ -2319,10 +2323,10 @@ private:
                             "PUINT tpui;";
 
         const char expected[] =
-            "typedef int INT ; "
-            "typedef unsigned int UINT ; "
-            "typedef int * PINT ; "
-            "typedef unsigned int * PUINT ; "
+            "; "
+            "; "
+            "; "
+            "; "
             "int ti ; "
             "unsigned int tui ; "
             "int * tpi ; "
@@ -2333,7 +2337,7 @@ private:
 
     void simplifyTypedef9()
     {
-        const char code[] = "typedef struct s S, * PS\n;"
+        const char code[] = "typedef struct s S, * PS;\n"
                             "typedef struct t { int a; } T, *TP;\n"
                             "typedef struct { int a; } U;\n"
                             "typedef struct { int a; } * V;\n"
@@ -2345,10 +2349,10 @@ private:
                             "V v;";
 
         const char expected[] =
-            "typedef struct s S ; typedef struct s * PS ; "
-            "struct t { int a ; } ; typedef struct t T ; typedef struct t * TP ; "
-            "struct U { int a ; } ; typedef struct U U ; "
-            "struct Unnamed0 { int a ; } ; typedef struct Unnamed0 * V ; "
+            "; "
+            "struct t { int a ; } ; ; "
+            "struct U { int a ; } ; ; "
+            "struct Unnamed0 { int a ; } ; ; "
             "struct s s ; "
             "struct s * ps ; "
             "struct t t ; "
@@ -2361,7 +2365,7 @@ private:
 
     void simplifyTypedef10()
     {
-        const char code[] = "typedef union s S, * PS\n;"
+        const char code[] = "typedef union s S, * PS;\n"
                             "typedef union t { int a; float b ; } T, *TP;\n"
                             "typedef union { int a; float b; } U;\n"
                             "typedef union { int a; float b; } * V;\n"
@@ -2373,10 +2377,10 @@ private:
                             "V v;";
 
         const char expected[] =
-            "typedef union s S ; typedef union s * PS ; "
-            "union t { int a ; float b ; } ; typedef union t T ; typedef union t * TP ; "
-            "union U { int a ; float b ; } ; typedef union U U ; "
-            "union Unnamed1 { int a ; float b ; } ; typedef union Unnamed1 * V ; "
+            "; "
+            "union t { int a ; float b ; } ; ; "
+            "union U { int a ; float b ; } ; ; "
+            "union Unnamed1 { int a ; float b ; } ; ; "
             "union s s ; "
             "union s * ps ; "
             "union t t ; "
@@ -2395,8 +2399,8 @@ private:
                             "XYZ e2;";
 
         const char expected[] =
-            "enum abc { a = 0 , b = 1 , c = 2 } ; typedef enum abc abc ; "
-            "enum xyz { x = 0 , y = 1 , z = 2 } ; typedef enum xyz XYZ ; "
+            "enum abc { a = 0 , b = 1 , c = 2 } ; ; "
+            "enum xyz { x = 0 , y = 1 , z = 2 } ; ; "
             "enum abc e1 ; "
             "enum xyz e2 ;";
 
@@ -2415,10 +2419,10 @@ private:
                             "IntListIterator iter;";
 
         const char expected[] =
-            "typedef vector < int > V1 ; "
-            "typedef std :: vector < int > V2 ; "
-            "typedef std :: vector < std :: vector < int > > V3 ; "
-            "typedef std :: list < int > :: iterator IntListIterator ; "
+            "; "
+            "; "
+            "; "
+            "; "
             "vector < int > v1 ; "
             "std :: vector < int > v2 ; "
             "std :: vector < std :: vector < int > > v3 ; "
@@ -2480,7 +2484,7 @@ private:
                                 "frame f;";
 
             const char expected[] =
-                "typedef char frame [ 10 ] ; "
+                "; "
                 "char f [ 10 ] ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
@@ -2491,7 +2495,7 @@ private:
                                 "frame f;";
 
             const char expected[] =
-                "typedef unsigned char frame [ 10 ] ; "
+                "; "
                 "unsigned char f [ 10 ] ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
@@ -2517,6 +2521,20 @@ private:
         tokenizer.simplifyTokenList();
 
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef17()
+    {
+        const char code[] = "typedef char * PCHAR, CHAR;\n"
+                            "PCHAR pc;\n"
+                            "CHAR c;";
+
+        const char expected[] =
+            "; "
+            "char * pc ; "
+            "char c ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void reverseArraySyntax()

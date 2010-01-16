@@ -1370,7 +1370,7 @@ private:
         // result..
         const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
-                                   "1: typedef int INT32 ;\n");
+                                   "1: ;\n");
 
         ASSERT_EQUALS(expected, actual);
     }
