@@ -633,23 +633,23 @@ void Tokenizer::simplifyTypedef()
                         {
                             tok2->str(start->str());
                             Token * nextToken;
-                            std::list<Token *> links;
+                            std::stack<Token *> links;
                             for (nextToken = start->next(); nextToken != end->next(); nextToken = nextToken->next())
                             {
                                 tok2->insertToken(nextToken->strAt(0));
                                 tok2 = tok2->next();
 
                                 // Check for links and fix them up
-                                if (tok2->str() == "(")
-                                    links.push_back(tok2);
-                                if (tok2->str() == ")")
+                                if (tok2->str() == "(" || tok2->str() == "[")
+                                    links.push(tok2);
+                                if (tok2->str() == ")" || tok2->str() == "]")
                                 {
-                                    Token * link = links.back();
+                                    Token * link = links.top();
 
                                     tok2->link(link);
                                     link->link(tok2);
 
-                                    links.pop_back();
+                                    links.pop();
                                 }
                             }
                         }

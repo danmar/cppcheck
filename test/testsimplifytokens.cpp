@@ -152,6 +152,7 @@ private:
         TEST_CASE(simplifyTypedef15);
         TEST_CASE(simplifyTypedef16);
         TEST_CASE(simplifyTypedef17);
+        TEST_CASE(simplifyTypedef18);       // typedef vector<int[4]> a;
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2535,6 +2536,23 @@ private:
             "char c ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef18()
+    {
+        const char code[] = "typedef vector<int[4]> a;\n"
+                            "a b;\n";
+
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        tokenizer.simplifyTokenList();
+
+        ASSERT_EQUALS(true, tokenizer.validate());
     }
 
     void reverseArraySyntax()
