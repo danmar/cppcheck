@@ -23,7 +23,7 @@
               <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name="Cppcheck"
                   WorkingDirectory='INSTALLDIR' Icon="gui.exe" IconIndex="0" Advertise="yes" />
             </File>
-            <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' />
+            <!-- <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' /> -->
             <File Id='qtcore4dll' Name='qtcore4.dll' Source='qtcore4.dll' />
             <File Id='qtgui4dll' Name='qtgui4.dll' Source='qtgui4.dll' />
             <File Id='qtxml4dll' Name='qtxml4.dll' Source='qtxml4.dll' />
@@ -40,6 +40,7 @@
             </File>
           </Component>
         </Directory>
+        <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
       </Directory>
 
       <Directory Id='ProgramMenuFolder' Name='Programs' >
@@ -61,6 +62,9 @@
         <ComponentRef Id='readme.txt' />
         <ComponentRef Id='manual.pdf' />
         <ComponentRef Id='ProgramMenuDir' />
+      </Feature>
+      <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2009 Runtime Components ">
+        <MergeRef Id="CRT"/>
       </Feature>
     </Feature>
 

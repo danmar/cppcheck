@@ -15,7 +15,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <!-- <WixExtension Include="$(WixToolPath)WixUIExtension.dll" /> -->
+    <WixExtension Include="$(WixToolPath)WixUIExtension.dll" />
     <Compile Include="cppcheck.wxs"/>
   </ItemGroup>
   
