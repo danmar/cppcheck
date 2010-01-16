@@ -112,10 +112,14 @@ body.body {
 """
 
 HTML_HEAD = """
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
-    <title>CppCheck - Html report</title>
-    <link href="style.css" rel="stylesheet" />
+    <title>CppCheck - Html report - %s</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+%s
+    </style>
   </head>
   <body class="body">
     <div id="page-header">
@@ -123,7 +127,7 @@ HTML_HEAD = """
     </div>
     <div id="page">
       <div id="header">
-        <h1>CppCheck report</h1>
+        <h1>CppCheck report - %s</h1>
       </div>
       <div id="menu">
         <a href="index.html">Defect list</a>
@@ -153,6 +157,22 @@ HTML_FOOTER = """
 </html>
 """
 
+HTML_ERROR = "<span style=\"border-width: 2px;border-color: black;border-style: solid;background: #ffaaaa;padding: 3px;\">&lt;--- %s</span>\n"
+
+class AnnotateCodeFormatter(HtmlFormatter):
+    errors = []
+
+    def wrap(self, source, outfile):
+        line_no = 1
+        for i, t in HtmlFormatter.wrap(self, source, outfile):
+            # If this is a source code line we want to add a span tag at the end.
+            if i == 1:
+                for error in self.errors:
+                    if error["line"] == line_no:
+                        t = t.replace("\n", HTML_ERROR % error["msg"])
+                line_no = line_no + 1
+            yield i, t
+
 class CppCheckHandler(XmlContentHandler):
     """Parses the cppcheck xml file and produces a list of all its errors."""
     errors = []
@@ -175,9 +195,11 @@ class CppCheckHandler(XmlContentHandler):
 if __name__ == '__main__':
     # Configure all the options this little utility is using.
     parser = optparse.OptionParser()
+    parser.add_option("--title", dest="title", help="The title of the project.", default="[project name]")
     parser.add_option("--file", dest="file", help="The cppcheck xml output file to read defects from. Default is reading from stdin.")
     parser.add_option("--report-dir", dest="report_dir", help="The directory where the html report content is written.")
     parser.add_option("--source-dir", dest="source_dir", help="Base directory where source code files can be found.")
+    parser.add_option("--source-encoding", dest="source_encoding", help="Encoding of source code.", default=None)
 
     # Parse options and make sure that we have an output directory set.
     options, args = parser.parse_args()
@@ -227,35 +249,39 @@ if __name__ == '__main__':
     # file that contains one or more errors.
     print("Processing errors")
     for filename, data in files.iteritems():
-        htmlfile = data["htmlfile"]
-        errors = data["errors"]
+        try:
+            htmlfile = data["htmlfile"]
+            errors = data["errors"]
 
-        lines = []
-        for error in errors:
-            lines.append(error["line"])
+            lines = []
+            for error in errors:
+                lines.append(error["line"])
 
-        source_file = os.path.join(source_dir, filename)
-        if not os.path.isfile(source_file):
-            sys.stderr.write("ERROR: Source file '%s' not found.\n" % source_file)
-            continue
-        stream = file(source_file)
-        content = stream.read()
-        stream.close()
+            source_file = os.path.join(source_dir, filename)
+            if not os.path.isfile(source_file):
+                sys.stderr.write("ERROR: Source file '%s' not found.\n" % source_file)
+                continue
+            stream = file(source_file)
+            content = stream.read()
+            stream.close()
 
-        htmlFormatter = HtmlFormatter(linenos=True, style='colorful', full=True, hl_lines=lines, lineanchors="line")
-        stream = file(os.path.join(options.report_dir, htmlfile), "w")
-        stream.write(HTML_HEAD)
-        stream.write(highlight(content, guess_lexer_for_filename(source_file, ""), htmlFormatter))
-        stream.write(HTML_FOOTER)
-        stream.close()
+            htmlFormatter = AnnotateCodeFormatter(linenos=True, style='colorful', hl_lines=lines, lineanchors="line", encoding=options.source_encoding)
+            htmlFormatter.errors = errors
+            stream = file(os.path.join(options.report_dir, htmlfile), "w")
+            stream.write(HTML_HEAD % (options.title, htmlFormatter.get_style_defs(".highlight"), options.title))
+            stream.write(highlight(content, guess_lexer_for_filename(source_file, ""), htmlFormatter))
+            stream.write(HTML_FOOTER)
+            stream.close()
 
-        print("  " + filename)
+            print("  " + filename)
+        except Exception, message:
+            print("ERROR: Filename: %s, %s" % (filename, message))
 
     # Generate a master index.html file that will contain a list of
     # all the errors created.
     print("Creating index.html")
     stream = file(os.path.join(options.report_dir, "index.html"), "w")
-    stream.write(HTML_HEAD)
+    stream.write(HTML_HEAD % (options.title, "", options.title))
     stream.write("<table>")
     stream.write("<tr><th>Line</th><th>Id</th><th>Severity</th><th>Message</th></tr>")
     for filename, data in files.iteritems():
