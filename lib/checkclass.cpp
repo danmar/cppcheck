@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2009 Daniel Marjamäki and Cppcheck team.
  *
@@ -738,9 +738,8 @@ void CheckClass::noMemset()
 void CheckClass::operatorEq()
 {
     const Token *tok2 = _tokenizer->tokens();
-    const Token *tok;
 
-    while ((tok = Token::findmatch(tok2, "void operator = (")))
+    for (const Token *tok = Token::findmatch(tok2, "void operator = ("); tok;)
     {
         const Token *tok1 = tok;
         while (tok1 && !Token::Match(tok1, "class|struct %var%"))
@@ -801,9 +800,8 @@ static void nameStr(const Token * name, int length, std::string & str)
 void CheckClass::operatorEqRetRefThis()
 {
     const Token *tok2 = _tokenizer->tokens();
-    const Token *tok;
 
-    while ((tok = Token::findmatch(tok2, "operator = (")))
+    for  (const Token *tok = Token::findmatch(tok2, "operator = ("); tok;)
     {
         const Token *tok1 = tok;
 
@@ -1079,9 +1077,8 @@ static bool hasMultipleInheritanceGlobal(const Token * start, const std::string 
 void CheckClass::operatorEqToSelf()
 {
     const Token *tok2 = _tokenizer->tokens();
-    const Token *tok;
 
-    while ((tok = Token::findmatch(tok2, "operator = (")))
+    for (const Token *tok = Token::findmatch(tok2, "operator = ("); tok;)
     {
         const Token *tok1 = tok;
 
