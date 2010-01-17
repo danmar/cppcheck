@@ -149,13 +149,13 @@ private:
     std::string classInfo() const
     {
         return "Check for invalid usage of STL:\n"
-               " * out of bounds errors\n"
-               " * misuse of iterators when iterating through a container\n"
-               " * mismatching containers in calls\n"
-               " * dereferencing an erased iterator\n"
-               " * for vectors: using iterator/pointer after push_back has been used\n"
-               " * dangerous usage of find\n"
-               " * optimisation: using empty() instead of size()";
+               "* out of bounds errors\n"
+               "* misuse of iterators when iterating through a container\n"
+               "* mismatching containers in calls\n"
+               "* dereferencing an erased iterator\n"
+               "* for vectors: using iterator/pointer after push_back has been used\n"
+               "* dangerous usage of find\n"
+               "* optimisation: using empty() instead of size()";
     }
 
     bool isStlContainer(const Token *tok);

@@ -104,10 +104,10 @@ private:
     std::string classInfo() const
     {
         return "Checking exception safety\n"
-               " * Throwing exceptions in destructors\n"
-               " * Unsafe use of 'new'\n"
-               " * Unsafe reallocation\n"
-               " * Throwing exception during invalid state";
+               "* Throwing exceptions in destructors\n"
+               "* Unsafe use of 'new'\n"
+               "* Unsafe reallocation\n"
+               "* Throwing exception during invalid state";
     }
 };
 /// @}

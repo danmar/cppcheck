@@ -199,26 +199,26 @@ public:
         return "Other checks\n"
 
                // error
-               " * [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
-               " * division with zero\n"
-               " * null pointer dereferencing\n"
-               " * using uninitialized variables and data\n"
+               "* [[OverlappingData|bad usage of the function 'sprintf' (overlapping data)]]\n"
+               "* division with zero\n"
+               "* null pointer dereferencing\n"
+               "* using uninitialized variables and data\n"
 
                // style
-               " * C-style pointer cast in cpp file\n"
-               " * redundant if\n"
-               " * bad usage of the function 'strtol'\n"
-               " * [[CheckUnsignedDivision|unsigned division]]\n"
-               " * unused struct member\n"
-               " * passing parameter by value\n"
-               " * [[IncompleteStatement|Incomplete statement]]\n"
-               " * [[charvar|check how signed char variables are used]]\n"
-               " * variable scope can be limited\n"
-               " * condition that is always true/false\n"
-               " * unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
+               "* C-style pointer cast in cpp file\n"
+               "* redundant if\n"
+               "* bad usage of the function 'strtol'\n"
+               "* [[CheckUnsignedDivision|unsigned division]]\n"
+               "* unused struct member\n"
+               "* passing parameter by value\n"
+               "* [[IncompleteStatement|Incomplete statement]]\n"
+               "* [[charvar|check how signed char variables are used]]\n"
+               "* variable scope can be limited\n"
+               "* condition that is always true/false\n"
+               "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
 
                // optimisations
-               " * optimisation: detect post increment/decrement\n";
+               "* optimisation: detect post increment/decrement\n";
     }
 
 private:

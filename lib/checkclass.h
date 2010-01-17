@@ -153,12 +153,12 @@ private:
     std::string classInfo() const
     {
         return "Check the code for each class.\n"
-               " * Missing constructors\n"
-               " * Are all variables initialized by the constructors?\n"
-               " * [[CheckMemset|Warn if memset, memcpy etc are used on a class]]\n"
-               " * If it's a base class, check that the destructor is virtual\n"
-               " * The operator= should return a constant reference to itself\n"
-               " * Are there unused private functions\n";
+               "* Missing constructors\n"
+               "* Are all variables initialized by the constructors?\n"
+               "* [[CheckMemset|Warn if memset, memcpy etc are used on a class]]\n"
+               "* If it's a base class, check that the destructor is virtual\n"
+               "* The operator= should return a constant reference to itself\n"
+               "* Are there unused private functions\n";
     }
 };
 /// @}
