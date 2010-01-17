@@ -2780,6 +2780,18 @@ private:
 
             ASSERT_EQUALS(expected, tok(code));
         }
+
+        {
+            const char code[] = "int a[10];\n"
+                                "int *b = a;\n"
+                                "memset(b,0,sizeof(a));";
+
+            const char expected[] = "int a [ 10 ] ; "
+                                    "int * b ; b = a ; "
+                                    "memset ( a , 0 , 40 ) ;";
+
+            TODO_ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
 
