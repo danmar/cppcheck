@@ -78,7 +78,7 @@
        <item>
         <widget class="QLabel" name="mCopyright">
          <property name="text">
-          <string>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</string>
+          <string>Copyright (C) 2007-2010 Daniel Marjamäki and cppcheck team.</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>

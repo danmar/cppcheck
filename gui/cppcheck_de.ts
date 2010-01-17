@@ -18,9 +18,10 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
+    <message utf8="true">
         <location filename="about.ui" line="81"/>
-        <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
+        <source>Copyright (C) 2007-2010 Daniel Marjamäki and cppcheck team.</source>
+        <oldsource>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -47,7 +48,7 @@ of the GNU General Public License version 3</source>
         <source>Here you can add applications that can open error files.
 Specify a name for the application and the application to execute.
 
-The following texts are replaced with appriproate values when application is executed:
+The following texts are replaced with appropriate values when application is executed:
 (file) - Filename containing the error
 (line) - Line number containing the error
 (message) - Error message
@@ -55,6 +56,17 @@ The following texts are replaced with appriproate values when application is exe
 
 Example opening a file with Kate and make Kate scroll to the correct line:
 kate -l(line) (file)</source>
+        <oldsource>Here you can add applications that can open error files.
+Specify a name for the application and the application to execute.
+
+The following texts are replaced with appriproate values when application is executed:
+(file) - Filename containing the error
+(line) - Line number containing the error
+(message) - Error message
+(severity) - Error severity
+
+Example opening a file with Kate and make Kate scroll to the correct line:
+kate -l(line) (file)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -116,10 +128,10 @@ kate -l(line) (file)</source>
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="220"/>
-        <location filename="mainwindow.cpp" line="471"/>
-        <location filename="mainwindow.cpp" line="574"/>
-        <location filename="mainwindow.cpp" line="592"/>
+        <location filename="mainwindow.cpp" line="221"/>
+        <location filename="mainwindow.cpp" line="491"/>
+        <location filename="mainwindow.cpp" line="596"/>
+        <location filename="mainwindow.cpp" line="614"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
@@ -289,64 +301,69 @@ kate -l(line) (file)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="254"/>
+        <location filename="mainwindow.cpp" line="255"/>
         <source>Select files to check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="263"/>
+        <location filename="mainwindow.cpp" line="269"/>
         <source>Select directory to check</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="221"/>
+        <location filename="mainwindow.cpp" line="222"/>
         <source>No suitable files found to check!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="467"/>
+        <location filename="mainwindow.cpp" line="487"/>
         <source>Cannot exit while checking.
 
 Stop the checking before exiting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="513"/>
+        <location filename="mainwindow.cpp" line="526"/>
         <source>License</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="520"/>
+        <location filename="mainwindow.cpp" line="533"/>
         <source>Authors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="528"/>
+        <location filename="mainwindow.cpp" line="541"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="530"/>
+        <location filename="mainwindow.cpp" line="543"/>
         <source>Save the report file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="538"/>
+        <location filename="mainwindow.cpp" line="551"/>
         <source>XML files (*.xml)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="544"/>
+        <location filename="mainwindow.cpp" line="557"/>
         <source>Text files (*.txt)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="576"/>
+        <location filename="mainwindow.cpp" line="563"/>
+        <source>CSV files (*.csv)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="598"/>
         <source>Cppcheck - %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="593"/>
+        <location filename="mainwindow.cpp" line="615"/>
         <source>Failed to change the language:
 
 %1
@@ -358,7 +375,7 @@ Stop the checking before exiting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="32"/>
+        <location filename="translationhandler.cpp" line="33"/>
         <source>Finnish</source>
         <translation type="unfinished"></translation>
     </message>
@@ -368,22 +385,27 @@ Stop the checking before exiting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="33"/>
-        <source>Swedish</source>
+        <location filename="translationhandler.cpp" line="32"/>
+        <source>Dutch</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="34"/>
-        <source>German</source>
+        <source>Swedish</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="35"/>
-        <source>Russian</source>
+        <source>German</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="translationhandler.cpp" line="36"/>
+        <source>Russian</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>Polish</source>
         <translation type="unfinished"></translation>
     </message>
@@ -391,18 +413,18 @@ Stop the checking before exiting.</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="90"/>
+        <location filename="translationhandler.cpp" line="92"/>
         <source>Incorrect language specified!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="100"/>
+        <location filename="translationhandler.cpp" line="102"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="106"/>
+        <location filename="translationhandler.cpp" line="108"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation type="unfinished"></translation>
@@ -411,79 +433,84 @@ Stop the checking before exiting.</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="42"/>
+        <location filename="resultstree.cpp" line="808"/>
         <source>File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="42"/>
+        <location filename="resultstree.cpp" line="808"/>
         <source>Severity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="42"/>
+        <location filename="resultstree.cpp" line="808"/>
         <source>Line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="42"/>
+        <location filename="resultstree.cpp" line="808"/>
         <source>Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="85"/>
+        <location filename="resultstree.cpp" line="88"/>
         <source>Undefined file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="388"/>
+        <location filename="resultstree.cpp" line="423"/>
         <source>Copy filename</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="389"/>
+        <location filename="resultstree.cpp" line="424"/>
         <source>Copy full path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="425"/>
+        <source>Copy message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultstree.cpp" line="463"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="426"/>
+        <location filename="resultstree.cpp" line="464"/>
         <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
         <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="471"/>
+        <location filename="resultstree.cpp" line="501"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="613"/>
+        <location filename="resultstree.cpp" line="665"/>
         <source>possible error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="617"/>
+        <location filename="resultstree.cpp" line="669"/>
         <source>style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="621"/>
+        <location filename="resultstree.cpp" line="673"/>
         <source>possible style</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="625"/>
+        <location filename="resultstree.cpp" line="677"/>
         <source>error</source>
         <translation type="unfinished"></translation>
     </message>

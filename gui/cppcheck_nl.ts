@@ -18,10 +18,11 @@
         <source>Cppcheck - A tool for static C/C++ code analysis.</source>
         <translation>Cppcheck - Een tool voor statische C/C++ code analyse.</translation>
     </message>
-    <message>
+    <message utf8="true">
         <location filename="about.ui" line="81"/>
-        <source>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</source>
-        <translation>Copyright (C) 2007-2009 Daniel Marjamäki en het cppcheck.</translation>
+        <source>Copyright (C) 2007-2010 Daniel Marjamäki and cppcheck team.</source>
+        <oldsource>Copyright (C) 2007-2009 Daniel Marjamäki and cppcheck team.</oldsource>
+        <translation type="unfinished">Copyright (C) 2007-2009 Daniel Marjamäki en het cppcheck.</translation>
     </message>
     <message>
         <location filename="about.ui" line="91"/>
@@ -48,7 +49,7 @@ van de GNU General Public License versie 3</translation>
         <source>Here you can add applications that can open error files.
 Specify a name for the application and the application to execute.
 
-The following texts are replaced with appriproate values when application is executed:
+The following texts are replaced with appropriate values when application is executed:
 (file) - Filename containing the error
 (line) - Line number containing the error
 (message) - Error message
@@ -56,7 +57,18 @@ The following texts are replaced with appriproate values when application is exe
 
 Example opening a file with Kate and make Kate scroll to the correct line:
 kate -l(line) (file)</source>
-        <translation>Hier kan men applicaties toevoegen om bestanden met fouten te openen.
+        <oldsource>Here you can add applications that can open error files.
+Specify a name for the application and the application to execute.
+
+The following texts are replaced with appriproate values when application is executed:
+(file) - Filename containing the error
+(line) - Line number containing the error
+(message) - Error message
+(severity) - Error severity
+
+Example opening a file with Kate and make Kate scroll to the correct line:
+kate -l(line) (file)</oldsource>
+        <translation type="unfinished">Hier kan men applicaties toevoegen om bestanden met fouten te openen.
 Specifieer een naam voor de applicatie en de applicatie om uit te voeren.
 
 De volgende tekst wordt vervangen door geschikte waarden wanneer de applicatie uitgevoerd wordt:
@@ -129,10 +141,10 @@ kate -l(line) (file)</translation>
     <name>MainWindow</name>
     <message>
         <location filename="main.ui" line="26"/>
-        <location filename="mainwindow.cpp" line="220"/>
-        <location filename="mainwindow.cpp" line="471"/>
-        <location filename="mainwindow.cpp" line="574"/>
-        <location filename="mainwindow.cpp" line="592"/>
+        <location filename="mainwindow.cpp" line="221"/>
+        <location filename="mainwindow.cpp" line="491"/>
+        <location filename="mainwindow.cpp" line="596"/>
+        <location filename="mainwindow.cpp" line="614"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -302,22 +314,22 @@ kate -l(line) (file)</translation>
         <translation>&amp;Help</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="254"/>
+        <location filename="mainwindow.cpp" line="255"/>
         <source>Select files to check</source>
         <translation>Selecteer bestanden om te controleren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="263"/>
+        <location filename="mainwindow.cpp" line="269"/>
         <source>Select directory to check</source>
         <translation>Selecteer een map om te controleren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="221"/>
+        <location filename="mainwindow.cpp" line="222"/>
         <source>No suitable files found to check!</source>
         <translation>Geen geschikte bestanden gevonden om te controleren!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="467"/>
+        <location filename="mainwindow.cpp" line="487"/>
         <source>Cannot exit while checking.
 
 Stop the checking before exiting.</source>
@@ -326,42 +338,47 @@ Stop the checking before exiting.</source>
 Stop de controle alvorens te sluiten.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="513"/>
+        <location filename="mainwindow.cpp" line="526"/>
         <source>License</source>
         <translation>Licentie</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="520"/>
+        <location filename="mainwindow.cpp" line="533"/>
         <source>Authors</source>
         <translation>Auteurs</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="528"/>
+        <location filename="mainwindow.cpp" line="541"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML bestanden (*.xml);;Tekst bestanden (*.txt);;CSV bestanden (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="530"/>
+        <location filename="mainwindow.cpp" line="543"/>
         <source>Save the report file</source>
         <translation>Rapport opslaan </translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="538"/>
+        <location filename="mainwindow.cpp" line="551"/>
         <source>XML files (*.xml)</source>
         <translation>XML bestanden (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="544"/>
+        <location filename="mainwindow.cpp" line="557"/>
         <source>Text files (*.txt)</source>
         <translation>Tekst bestanden (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="576"/>
+        <location filename="mainwindow.cpp" line="563"/>
+        <source>CSV files (*.csv)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="598"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="593"/>
+        <location filename="mainwindow.cpp" line="615"/>
         <source>Failed to change the language:
 
 %1
@@ -433,57 +450,62 @@ Stop de controle alvorens te sluiten.</translation>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="42"/>
+        <location filename="resultstree.cpp" line="808"/>
         <source>File</source>
         <translation>Bestand</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="42"/>
+        <location filename="resultstree.cpp" line="808"/>
         <source>Severity</source>
         <translation>Ernst</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="42"/>
+        <location filename="resultstree.cpp" line="808"/>
         <source>Line</source>
         <translation>Regel</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="39"/>
-        <location filename="resultstree.cpp" line="755"/>
+        <location filename="resultstree.cpp" line="42"/>
+        <location filename="resultstree.cpp" line="808"/>
         <source>Message</source>
         <translation>Boodschap</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="85"/>
+        <location filename="resultstree.cpp" line="88"/>
         <source>Undefined file</source>
         <translation>Niet gedefinieerd bestand</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="388"/>
+        <location filename="resultstree.cpp" line="423"/>
         <source>Copy filename</source>
         <translation>Kopier bestandsnaam</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="389"/>
+        <location filename="resultstree.cpp" line="424"/>
         <source>Copy full path</source>
         <translation>Kopieer volledig pad</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="425"/>
+        <source>Copy message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="resultstree.cpp" line="463"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="426"/>
+        <location filename="resultstree.cpp" line="464"/>
         <source>Configure the text file viewer program in Cppcheck preferences/Applications.</source>
         <oldsource>You can open this error by specifying applications in program&apos;s settings.</oldsource>
         <translation>U dient een applicatie te configureren in de instellingen om deze fout in te openen.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="471"/>
+        <location filename="resultstree.cpp" line="501"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -492,22 +514,22 @@ Please check the application path and parameters are correct.</source>
 Gelieve te controleren of de het pad en de parameters correct zijn.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="613"/>
+        <location filename="resultstree.cpp" line="665"/>
         <source>possible error</source>
         <translation>Mogelijke fouten</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="617"/>
+        <location filename="resultstree.cpp" line="669"/>
         <source>style</source>
         <translation>Stijlfouten</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="621"/>
+        <location filename="resultstree.cpp" line="673"/>
         <source>possible style</source>
         <translation>Mogelijke stijlfouten</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="625"/>
+        <location filename="resultstree.cpp" line="677"/>
         <source>error</source>
         <translation>Fouten</translation>
     </message>
