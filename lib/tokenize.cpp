@@ -447,255 +447,294 @@ void Tokenizer::simplifyTypedef()
         const char *type2 = 0;
         const char *typeName = 0;
         bool pointer = false;
+        bool toPointer = false;
         Token *start = 0;
         Token *end = 0;
         Token *num = 0;
         Token *typeDef = tok;
 
         if (Token::Match(tok->next(), "%type% <") ||
+            Token::Match(tok->next(), "%type% %type% <") ||
             Token::Match(tok->next(), "%type% :: %type% <") ||
-            Token::Match(tok->next(), "%type% *| %type% ;|,") ||
-            Token::Match(tok->next(), "%type% %type% *| %type% ;|,") ||
-            Token::Match(tok->next(), "%type% *| %type% [ %num% ] ;|,") ||
-            Token::Match(tok->next(), "%type% %type% *| %type% [ %num% ] ;|,"))
+            Token::Match(tok->next(), "%type% %type% :: %type% <"))
         {
-            if ((tok->tokAt(2)->str() == "<") ||
-                (tok->tokAt(4) && (tok->tokAt(4)->str() == "<")))
+            // template
+            int level = 1;
+            start = tok->next();
+
+            if (tok->tokAt(2)->str() == "<")
+                end = tok->tokAt(3);
+            else if (tok->tokAt(3)->str() == "<")
+                end = tok->tokAt(4);
+            else if (tok->tokAt(4)->str() == "<")
+                end = tok->tokAt(5);
+            else
+                end = tok->tokAt(6);
+
+            int paren = 0;
+            for (; end ; end = end->next())
             {
-                int level = 1;
-                start = tok->next();
-
-                if (tok->tokAt(2)->str() == "<")
-                    end = tok->tokAt(3);
-                else
-                    end = tok->tokAt(5);
-
-                for (; end ; end = end->next())
+                if (end->str() == ">")
                 {
-                    if (end->str() == ">")
+                    if (paren == 0)
                     {
                         level--;
                         if (level == 0)
                             break;
                     }
-
-                    if (end->str() == "<")
+                }
+                else if (end->str() == "<")
+                {
+                    if (paren == 0)
                         level++;
                 }
-
-                while (end && end->next() && Token::Match(end->next(), ":: %type%"))
-                    end = end->tokAt(2);
-
-                if (end && end->next() && Token::Match(end->next(), "%type% ;|,"))
-                {
-                    typeName = end->strAt(1);
-                    tok = end->tokAt(2);
-                }
-                else
-                    continue;
+                else if (end->str() == "(")
+                    paren++;
+                else if (end->str() == ")")
+                    paren--;
             }
-            else if ((tok->tokAt(3) && tok->tokAt(3)->str() == "[") ||
-                     (tok->tokAt(4) && tok->tokAt(4)->str() == "[") ||
-                     (tok->tokAt(5) && tok->tokAt(5)->str() == "["))
-            {
-                type1 = tok->strAt(1);
 
-                if ((tok->tokAt(4) && tok->tokAt(4)->str() == "[" && tok->tokAt(2)->str() != "*") ||
-                    (tok->tokAt(5) && tok->tokAt(5)->str() == "["))
-                {
-                    type2 = tok->strAt(2);
-                    pointer = (tok->tokAt(3)->str() == "*");
+            while (end && end->next() && Token::Match(end->next(), ":: %type%"))
+                end = end->tokAt(2);
 
-                    if (pointer)
-                    {
-                        typeName = tok->strAt(4);
-                        num = tok->tokAt(6);
-                        tok = tok->tokAt(8);
-                    }
-                    else
-                    {
-                        typeName = tok->strAt(3);
-                        num = tok->tokAt(5);
-                        tok = tok->tokAt(7);
-                    }
-                }
-                else
-                {
-                    pointer = (tok->tokAt(2)->str() == "*");
-                    if (pointer)
-                    {
-                        typeName = tok->strAt(3);
-                        num = tok->tokAt(5);
-                        tok = tok->tokAt(7);
-                    }
-                    else
-                    {
-                        typeName = tok->strAt(2);
-                        num = tok->tokAt(4);
-                        tok = tok->tokAt(6);
-                    }
-                }
-            }
-            else if (tok->tokAt(3)->str() == ";" ||
-                     tok->tokAt(3)->str() == ",")
-            {
-                type1 = tok->strAt(1);
-                type2 = 0;
-                typeName = tok->strAt(2);
-                tok = tok->tokAt(3);
-            }
-            else if (tok->tokAt(2)->str() == "*")
+            if (end && end->next() && end->next()->str() == "*")
             {
                 pointer = true;
-                type1 = tok->strAt(1);
-                type2 = 0;
-                typeName = tok->strAt(3);
-                tok = tok->tokAt(4);
+                end = end->next();
+            }
+
+            if (end && end->next() && end->next()->str() == "*")
+            {
+                toPointer = true;
+                end = end->next();
+            }
+
+            if (end && end->next() && (Token::Match(end->next(), "%type% ;|,") || Token::Match(end->next(), "%type% [ %num% ] ;|,")))
+            {
+                typeName = end->strAt(1);
+
+                if (end->tokAt(2)->str() == "[")
+                {
+                    num = end->tokAt(3);
+                    tok = end->tokAt(5);
+                }
+                else
+                    tok = end->tokAt(2);
             }
             else
             {
-                pointer = (tok->tokAt(3)->str() == "*");
+                // unhandled template typedef, skip it and continue
+                continue;
+            }
+        }
+        else if (Token::Match(tok->next(), "%type% *| *| %type% [ %num% ] ;|,") ||
+                 Token::Match(tok->next(), "%type% %type% *| *| %type% [ %num% ] ;|,"))
+        {
+            // array
+            int offset = 2;
+            type1 = tok->strAt(1);
 
-                type1 = tok->strAt(1);
+            if (tok->tokAt(2)->str() != "*" && tok->tokAt(3)->str() != "[")
+            {
                 type2 = tok->strAt(2);
+                offset++;
+            }
 
-                if (pointer)
+            if (tok->tokAt(offset) && (tok->tokAt(offset)->str() == "*"))
+            {
+                pointer = true;
+                offset++;
+            }
+
+            if (tok->tokAt(offset) && (tok->tokAt(offset)->str() == "*"))
+            {
+                toPointer = true;
+                offset++;
+            }
+
+            typeName = tok->strAt(offset);
+            num = tok->tokAt(offset + 2);
+            tok = tok->tokAt(offset + 4);
+        }
+        else if (Token::Match(tok->next(), "%type% *| *| %type% ;|,") ||
+                 Token::Match(tok->next(), "%type% %type% *| *| %type% ;|,"))
+        {
+            int offset = 2;
+            type1 = tok->strAt(1);
+
+            if (tok->tokAt(2)->str() != "*" && (tok->tokAt(3)->str() != ";" && tok->tokAt(3)->str() != ","))
+            {
+                type2 = tok->strAt(2);
+                offset++;
+            }
+
+            if (tok->tokAt(offset) && (tok->tokAt(offset)->str() == "*"))
+            {
+                pointer = true;
+                offset++;
+            }
+
+            if (tok->tokAt(offset) && (tok->tokAt(offset)->str() == "*"))
+            {
+                toPointer = true;
+                offset++;
+            }
+
+            typeName = tok->strAt(offset++);
+            tok = tok->tokAt(offset);
+        }
+        else
+        {
+            // unhandled typedef, skip it and continue
+            continue;
+        }
+
+        bool done = false;
+        bool ok = true;
+
+        while (!done)
+        {
+            const std::string pattern(className.empty() ? "" : (className + " :: " + typeName).c_str());
+            int level = 0;
+            bool inScope = true;
+
+            bool exitThisScope = false;
+            int exitScope = 0;
+            bool simplifyType = false;
+            for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "}")
                 {
-                    typeName = tok->strAt(4);
-                    tok = tok->tokAt(5);
+                    --level;
+                    if (level < 0)
+                        inScope = false;
+
+                    if (exitThisScope)
+                    {
+                        if (level < exitScope)
+                            exitThisScope = false;
+                    }
                 }
-                else
+                else if (tok2->str() == "{")
+                    ++level;
+                else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
                 {
-                    typeName = tok->strAt(3);
-                    tok = tok->tokAt(4);
+                    tok2->deleteNext();
+                    tok2->deleteNext();
+                    simplifyType = true;
+                }
+                else if (inScope && !exitThisScope && tok2->str() == typeName)
+                {
+                    if (Token::simpleMatch(tok2->previous(), "::"))
+                    {
+                        // Don't replace this typename if it's preceded by "::"
+                    }
+                    else if (Token::Match(tok2->tokAt(-2), "!!typedef") &&
+                             Token::Match(tok2->tokAt(-3), "!!typedef"))
+                    {
+                        // Check for enum and typedef with same name.
+                        if (type1 && (tok2->tokAt(-1)->str() != type1))
+                            simplifyType = true;
+                        else if (!type1)
+                            simplifyType = true;
+                    }
+                    else
+                    {
+                        // Typedef with the same name.
+                        exitThisScope = true;
+                        exitScope = level;
+                    }
+                }
+
+                if (simplifyType)
+                {
+                    if (start && end)
+                    {
+                        tok2->str(start->str());
+                        Token * nextToken;
+                        std::stack<Token *> links;
+                        for (nextToken = start->next(); nextToken != end->next(); nextToken = nextToken->next())
+                        {
+                            tok2->insertToken(nextToken->strAt(0));
+                            tok2 = tok2->next();
+
+                            // Check for links and fix them up
+                            if (tok2->str() == "(" || tok2->str() == "[")
+                                links.push(tok2);
+                            if (tok2->str() == ")" || tok2->str() == "]")
+                            {
+                                Token * link = links.top();
+
+                                tok2->link(link);
+                                link->link(tok2);
+
+                                links.pop();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        tok2->str(type1);
+                        if (type2)
+                        {
+                            tok2->insertToken(type2);
+                            tok2 = tok2->next();
+                        }
+                    }
+
+                    if (pointer)
+                    {
+                        tok2->insertToken("*");
+                        tok2 = tok2->next();
+                    }
+                    if (toPointer)
+                    {
+                        tok2->insertToken("*");
+                        tok2 = tok2->next();
+                    }
+                    if (num)
+                    {
+                        tok2 = tok2->next();
+                        tok2->insertToken("[");
+                        tok2 = tok2->next();
+                        Token *tok3 = tok2;
+                        tok2->insertToken(num->strAt(0));
+                        tok2 = tok2->next();
+                        tok2->insertToken("]");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok3);
+                    }
+
+                    simplifyType = false;
                 }
             }
 
-            bool done = false;
-
-            while (!done)
+            if (tok->str() == ";")
+                done = true;
+            else if (tok->str() == ",")
             {
-                const std::string pattern(className.empty() ? "" : (className + " :: " + typeName).c_str());
-                int level = 0;
-                bool inScope = true;
-
-                bool exitThisScope = false;
-                int exitScope = 0;
-                bool simplifyType = false;
-                for (Token *tok2 = tok; tok2; tok2 = tok2->next())
+                if (Token::Match(tok->next(), "*| *| %type% ;|,") ||
+                    Token::Match(tok->next(), "*| *| %type% [ %num% ] ;|,"))
                 {
-                    if (tok2->str() == "}")
-                    {
-                        --level;
-                        if (level < 0)
-                            inScope = false;
+                    num = 0;
+                    pointer = (tok->tokAt(1)->str() == "*");
+                    toPointer = (tok->tokAt(2)->str() == "*");
 
-                        if (exitThisScope)
-                        {
-                            if (level < exitScope)
-                                exitThisScope = false;
-                        }
-                    }
-                    else if (tok2->str() == "{")
-                        ++level;
-                    else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
+                    if (pointer)
                     {
-                        tok2->deleteNext();
-                        tok2->deleteNext();
-                        simplifyType = true;
-                    }
-                    else if (inScope && !exitThisScope && tok2->str() == typeName)
-                    {
-                        if (Token::simpleMatch(tok2->previous(), "::"))
+                        if (toPointer)
                         {
-                            // Don't replace this typename if it's preceded by "::"
-                        }
-                        else if (Token::Match(tok2->tokAt(-2), "!!typedef") &&
-                                 Token::Match(tok2->tokAt(-3), "!!typedef"))
-                        {
-                            // Check for enum and typedef with same name.
-                            if (type1 && (tok2->tokAt(-1)->str() != type1))
-                                simplifyType = true;
-                            else if (!type1)
-                                simplifyType = true;
+                            typeName = tok->strAt(3);
+
+                            if (tok->tokAt(4)->str() == "[")
+                            {
+                                num = tok->tokAt(5);
+                                tok = tok->tokAt(7);
+                            }
+                            else
+                                tok = tok->tokAt(4);
                         }
                         else
-                        {
-                            // Typedef with the same name.
-                            exitThisScope = true;
-                            exitScope = level;
-                        }
-                    }
-
-                    if (simplifyType)
-                    {
-                        if (start && end)
-                        {
-                            tok2->str(start->str());
-                            Token * nextToken;
-                            std::stack<Token *> links;
-                            for (nextToken = start->next(); nextToken != end->next(); nextToken = nextToken->next())
-                            {
-                                tok2->insertToken(nextToken->strAt(0));
-                                tok2 = tok2->next();
-
-                                // Check for links and fix them up
-                                if (tok2->str() == "(" || tok2->str() == "[")
-                                    links.push(tok2);
-                                if (tok2->str() == ")" || tok2->str() == "]")
-                                {
-                                    Token * link = links.top();
-
-                                    tok2->link(link);
-                                    link->link(tok2);
-
-                                    links.pop();
-                                }
-                            }
-                        }
-                        else
-                        {
-                            tok2->str(type1);
-                            if (type2)
-                            {
-                                tok2->insertToken(type2);
-                                tok2 = tok2->next();
-                            }
-                            if (pointer)
-                            {
-                                tok2->insertToken("*");
-                                tok2 = tok2->next();
-                            }
-
-                            if (num)
-                            {
-                                tok2 = tok2->next();
-                                tok2->insertToken("[");
-                                tok2 = tok2->next();
-                                Token *tok3 = tok2;
-                                tok2->insertToken(num->strAt(0));
-                                tok2 = tok2->next();
-                                tok2->insertToken("]");
-                                tok2 = tok2->next();
-                                Token::createMutualLinks(tok2, tok3);
-                            }
-                        }
-
-                        simplifyType = false;
-                    }
-                }
-
-                if (tok->str() == ";")
-                    done = true;
-                else
-                {
-                    if (Token::Match(tok->next(), "*| %type% ;|,") ||
-                        Token::Match(tok->next(), "*| %type% [ %num% ] ;|,"))
-                    {
-                        num = 0;
-                        pointer = (tok->tokAt(1)->str() == "*");
-
-                        if (pointer)
                         {
                             typeName = tok->strAt(2);
 
@@ -707,22 +746,37 @@ void Tokenizer::simplifyTypedef()
                             else
                                 tok = tok->tokAt(3);
                         }
-                        else
-                        {
-                            typeName = tok->strAt(1);
+                    }
+                    else
+                    {
+                        typeName = tok->strAt(1);
 
-                            if (tok->tokAt(2)->str() == "[")
-                            {
-                                num = tok->tokAt(3);
-                                tok = tok->tokAt(5);
-                            }
-                            else
-                                tok = tok->tokAt(2);
+                        if (tok->tokAt(2)->str() == "[")
+                        {
+                            num = tok->tokAt(3);
+                            tok = tok->tokAt(5);
                         }
+                        else
+                            tok = tok->tokAt(2);
                     }
                 }
+                else
+                {
+                    // we encountered a typedef we don't support yet so just continue
+                    done = true;
+                    ok = false;
+                }
             }
+            else
+            {
+                // something is really wrong (internal error)
+                done = true;
+                ok = false;
+            }
+        }
 
+        if (ok)
+        {
             // remove typedef but leave ;
             while (typeDef->next() && typeDef->next() != tok)
                 typeDef->deleteNext();

@@ -153,6 +153,7 @@ private:
         TEST_CASE(simplifyTypedef16);
         TEST_CASE(simplifyTypedef17);
         TEST_CASE(simplifyTypedef18);       // typedef vector<int[4]> a;
+        TEST_CASE(simplifyTypedef19);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2553,6 +2554,62 @@ private:
         tokenizer.simplifyTokenList();
 
         ASSERT_EQUALS(true, tokenizer.validate());
+    }
+
+    void simplifyTypedef19()
+    {
+        {
+            // ticket #1275
+            const char code[] = "typedef struct {} A, *B, **C;\n"
+                                "A a;\n"
+                                "B b;\n"
+                                "C c;";
+
+            const char expected[] =
+                "struct A { } ; ; "
+                "struct A a ; "
+                "struct A * b ; "
+                "struct A * * c ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            // This doesn't work yet.
+            // The first name gets substituted successfully.
+            // The second doesn't so the typedef is left alone.
+            // The variable declaration simplification code then splits the typedef into two.
+            const char code[] = "typedef struct {} A, ***B;\n"
+                                "A a;\n"
+                                "B b;";
+
+            const char expected[] =
+                "struct A { } ; typedef struct A A ; typedef struct A * * * B ; "
+                "struct A a ; "
+                "B b ;";
+
+            const char todo[] =
+                "struct A { } ; ; "
+                "struct A a ; "
+                "struct A * * * b ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+            TODO_ASSERT_EQUALS(todo, tok(code, false));
+        }
+
+        {
+            const char code[] = "typedef struct {} **A, *B, C;\n"
+                                "A a;\n"
+                                "B b;\n"
+                                "C c;";
+
+            const char expected[] =
+                "struct Unnamed2 { } ; ; "
+                "struct Unnamed2 * * a ; "
+                "struct Unnamed2 * b ; "
+                "struct Unnamed2 c ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void reverseArraySyntax()
