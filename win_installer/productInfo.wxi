@@ -8,12 +8,4 @@
   <?define cppcheckGUID = "1c31dd76-07fa-4420-b9b5-5463742d6a48" ?>
   <?define guiGUID = "4102893e-5237-4011-9d70-7d9067623372" ?>
 
-  <?ifndef Platform ?> <!-- if platform NOT defined -->
-    <?define Platform = "x86" ?>
-  <?endif ?>
-
-  <?define CliBuildDir = "..\cli\release" ?>
-  <?define GuiBuildDir = "..\gui\release" ?>
-  <?define QtDllDir = "..\..\runtimes" ?>
-  <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC90_CRT_x86.msm" ?>
 </Include>

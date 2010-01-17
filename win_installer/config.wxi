@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Include>
+  <?ifndef Platform ?> <!-- if platform NOT defined -->
+    <?define Platform = "x86" ?>
+  <?endif ?>
+
+  <?define CliBuildDir = "..\cli\release" ?>
+  <?define GuiBuildDir = "..\gui\release" ?>
+  <?define QtDllDir = "..\..\runtimes" ?>
+  <?define CrtMergeModule = "$(env.CommonProgramFiles)\Merge Modules\Microsoft_VC90_CRT_x86.msm" ?>
+</Include>
