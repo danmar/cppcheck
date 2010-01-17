@@ -36,7 +36,7 @@
             <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
           </Component>
           <Component Id='manual.pdf' Guid='*'>
-            <File Id='manual.pdf' Name='manual.pdf' DiskId='1' Source='manual.pdf' KeyPath='yes'>
+            <File Id='manual.pdf' Name='manual.pdf' DiskId='1' Source='$(var.ManualDir)\manual.pdf' KeyPath='yes'>
               <Shortcut Id='startmenuManual' Directory="ProgramMenuDir" Name="Manual" Advertise="yes" />
             </File>
           </Component>
