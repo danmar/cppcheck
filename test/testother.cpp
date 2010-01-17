@@ -1166,6 +1166,15 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void a()\n"
+                       "{\n"
+                       "    char x[10], y[10];\n"
+                       "    char *z = x;\n"
+                       "    memset(z, 0, sizeof(x));\n"
+                       "    memcpy(y, x, sizeof(x));\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("int a()\n"
                        "{\n"
                        "    int ret;\n"

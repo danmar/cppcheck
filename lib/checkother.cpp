@@ -1439,6 +1439,49 @@ private:
     }
 
     /**
+     * Pointer assignment:  p = x;
+     * if p is a pointer and x is an array/pointer then bail out
+     * \param checks all available checks
+     * \param tok1 the "p" token
+     * \param tok2 the "x" token
+     */
+    static void pointer_assignment(std::list<ExecutionPath *> &checks, const Token *tok1, const Token *tok2)
+    {
+        const unsigned int varid1(tok1->varId());
+        if (varid1 == 0)
+            return;
+
+        const unsigned int varid2(tok2->varId());
+        if (varid2 == 0)
+            return;
+
+        std::list<ExecutionPath *>::const_iterator it;
+
+        // bail out if first variable is a pointer
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+            if (c && c->varId == varid1 && c->pointer)
+            {
+                bailOutVar(checks, varid1);
+                break;
+            }
+        }
+
+        // bail out if second variable is a array/pointer
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+            if (c && c->varId == varid2 && (c->pointer || c->array))
+            {
+                bailOutVar(checks, varid2);
+                break;
+            }
+        }
+    }
+
+
+    /**
      * use - called from the use* functions below.
      * @param foundError this is set to true if an error is found
      * @param checks all available checks
@@ -1649,6 +1692,12 @@ private:
                         !Token::Match(tok2->previous(), "&|::") &&
                         !Token::simpleMatch(tok2->next(), "="))
                         use(foundError, checks, tok2);
+                }
+
+                // pointer aliasing?
+                if (Token::Match(tok.tokAt(2), "%var% ;"))
+                {
+                    pointer_assignment(checks, &tok, tok.tokAt(2));
                 }
             }
 
