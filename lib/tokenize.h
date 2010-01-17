@@ -111,10 +111,10 @@ public:
      * @param classname name of class
      * @param funcname name of function ("~ Fred" => destructor for fred, "%var%" => any function)
      * @param indentlevel Just an integer that you initialize to 0 before the first call.
-     * @param is it a struct
+     * @param isStruct is it a struct
      * @return First matching token or NULL.
      */
-    static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentleveal, bool isStruct = false);
+    static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel, bool isStruct = false);
 
     /**
      * get error messages
@@ -346,7 +346,7 @@ private:
 
     /**
      * Send error message to error logger about internal bug.
-     * @param tok, the token that this bug concerns.
+     * @param tok the token that this bug concerns.
      */
     void cppcheckError(const Token *tok) const;
 
