@@ -206,7 +206,8 @@ private:
         // Check that getcode works correctly..
         TEST_CASE(testgetcode);
 
-        // Todo: check that call_func works correctly..
+        // check that call_func works correctly..
+        TEST_CASE(call_func);
 
         // Check that simplifycode works correctly..
         TEST_CASE(simplifycode);
@@ -504,6 +505,31 @@ private:
         ASSERT_EQUALS(";;alloc;dealloc;", getcode("FILE *f; f = fopen(a,b); fcloseall();", "f"));
     }
 
+
+    void call_func()
+    {
+        // whitelist..
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("qsort"));
+
+        static const char * const call_func_white_list[] =
+        {
+            "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
+            , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
+            , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
+            , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
+            , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
+            , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
+            , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
+            , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
+            , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
+            , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
+            , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
+            , "sync_file_range", "telldir", "typeid", "while", "write", "writev"
+        };
+
+        for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
+            ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list(call_func_white_list[i]));
+    }
 
 
     std::string simplifycode(const char code[], bool &all) const

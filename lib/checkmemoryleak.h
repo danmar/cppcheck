@@ -159,6 +159,9 @@ public:
         checkMemoryLeak.check();
     }
 
+    /** For unit testing the white list */
+    static bool test_white_list(const char funcname[]);
+
     void check();
 
     void localleaks();

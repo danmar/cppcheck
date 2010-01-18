@@ -48,7 +48,7 @@ static const char * const call_func_white_list[] =
     , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
     , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
     , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
-    , "printf", "puts", "pwrite", "read", "readahead", "readdir", "readdir_r", "readv"
+    , "printf", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r", "readv"
     , "realloc", "return", "rewind", "rewinddir", "scandir", "seekdir"
     , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "strcasecmp"
     , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
@@ -517,11 +517,16 @@ static int countParameters(const Token *tok)
     return -1;
 }
 
+bool CheckMemoryLeakInFunction::test_white_list(const char funcname[])
+{
+    return std::bsearch(funcname, call_func_white_list,
+                        sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
+                        sizeof(call_func_white_list[0]), call_func_white_list_compare);
+}
+
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
-    if (std::bsearch(tok->strAt(0), call_func_white_list,
-                     sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
-                     sizeof(call_func_white_list[0]), call_func_white_list_compare))
+    if (test_white_list(tok->strAt(0)))
         return 0;
 
     if (noreturn.find(tok->str()) != noreturn.end())
