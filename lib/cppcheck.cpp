@@ -436,7 +436,10 @@ unsigned int CppCheck::check()
     for (unsigned int c = 0; c < _filenames.size(); c++)
     {
         _errout.str("");
-        std::string fname = _filenames[c];
+        const std::string fname = _filenames[c];
+
+        if (_settings.terminated())
+            break;
 
         if (_settings._errorsOnly == false)
             _errorLogger.reportOut(std::string("Checking ") + fname + std::string("..."));
@@ -519,6 +522,9 @@ unsigned int CppCheck::check()
 
 void CppCheck::checkFile(const std::string &code, const char FileName[])
 {
+    if (_settings.terminated())
+        return;
+
     Tokenizer _tokenizer(&_settings, this);
 
     // Tokenize the file
@@ -542,6 +548,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // call all "runChecks" in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
     {
+        if (_settings.terminated())
+            return;
+
         TIMER_START();
         (*it)->runChecks(&_tokenizer, &_settings, this);
         TIMER_END((*it)->name() << "::runChecks");
@@ -567,6 +576,9 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // call all "runSimplifiedChecks" in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
     {
+        if (_settings.terminated())
+            return;
+
         TIMER_START();
         (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
         TIMER_END((*it)->name() << "::runSimplifiedChecks");

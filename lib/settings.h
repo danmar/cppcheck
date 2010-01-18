@@ -45,6 +45,9 @@ private:
 
     /** enable extra checks by id */
     std::map<std::string, bool> _enabled;
+
+    /** terminate checking */
+    bool _terminate;
 public:
     Settings();
     virtual ~Settings();
@@ -55,6 +58,18 @@ public:
     bool _errorsOnly;
     bool _inlineSuppressions;
     bool _verbose;
+
+    /** Request termination of checking */
+    void terminate()
+    {
+        _terminate = true;
+    }
+
+    /** termination? */
+    bool terminated() const
+    {
+        return _terminate;
+    }
 
     /** Force checking t he files with "too many" configurations. */
     bool _force;

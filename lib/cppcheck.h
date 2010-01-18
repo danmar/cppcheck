@@ -116,6 +116,14 @@ public:
 
     virtual void reportStatus(unsigned int index, unsigned int max);
 
+    /**
+     * Terminate checking. The checking will be terminated ASAP.
+     */
+    void terminate()
+    {
+        _settings.terminate();
+    }
+
 private:
     void checkFile(const std::string &code, const char FileName[]);
 
