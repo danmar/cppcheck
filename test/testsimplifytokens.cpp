@@ -2319,12 +2319,24 @@ private:
                             "typedef unsigned int UINT;\n"
                             "typedef int * PINT;\n"
                             "typedef unsigned int * PUINT;\n"
+                            "typedef int & RINT;\n"
+                            "typedef unsigned int & RUINT;\n"
+                            "typedef const int & RCINT;\n"
+                            "typedef const unsigned int & RCUINT;\n"
                             "INT ti;\n"
                             "UINT tui;\n"
                             "PINT tpi;\n"
-                            "PUINT tpui;";
+                            "PUINT tpui;\n"
+                            "RINT tri;\n"
+                            "RUINT trui;\n"
+                            "RCINT trci;\n"
+                            "RCUINT trcui;";
 
         const char expected[] =
+            "; "
+            "; "
+            "; "
+            "; "
             "; "
             "; "
             "; "
@@ -2332,7 +2344,11 @@ private:
             "int ti ; "
             "unsigned int tui ; "
             "int * tpi ; "
-            "unsigned int * tpui ;";
+            "unsigned int * tpui ; "
+            "int & tri ; "
+            "unsigned int & trui ; "
+            "const int & trci ; "
+            "const unsigned int & trcui ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -2575,36 +2591,27 @@ private:
         }
 
         {
-            // This doesn't work yet.
-            // The first name gets substituted successfully.
-            // The second doesn't so the typedef is left alone.
-            // The variable declaration simplification code then splits the typedef into two.
-            const char code[] = "typedef struct {} A, ***B;\n"
+            const char code[] = "typedef struct {} A, *********B;\n"
                                 "A a;\n"
                                 "B b;";
 
             const char expected[] =
-                "struct A { } ; typedef struct A A ; typedef struct A * * * B ; "
-                "struct A a ; "
-                "B b ;";
-
-            const char todo[] =
                 "struct A { } ; ; "
                 "struct A a ; "
-                "struct A * * * b ;";
+                "struct A * * * * * * * * * b ;";
+
             ASSERT_EQUALS(expected, tok(code, false));
-            TODO_ASSERT_EQUALS(todo, tok(code, false));
         }
 
         {
-            const char code[] = "typedef struct {} **A, *B, C;\n"
+            const char code[] = "typedef struct {} **********A, *B, C;\n"
                                 "A a;\n"
                                 "B b;\n"
                                 "C c;";
 
             const char expected[] =
                 "struct Unnamed2 { } ; ; "
-                "struct Unnamed2 * * a ; "
+                "struct Unnamed2 * * * * * * * * * * a ; "
                 "struct Unnamed2 * b ; "
                 "struct Unnamed2 c ;";
 

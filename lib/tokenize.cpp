@@ -445,13 +445,14 @@ void Tokenizer::simplifyTypedef()
 
         const char *type1 = 0;
         const char *type2 = 0;
+        const char *type3 = 0;
         const char *typeName = 0;
-        bool pointer = false;
-        bool toPointer = false;
+        std::list<std::string> pointers;
         Token *start = 0;
         Token *end = 0;
         Token *num = 0;
         Token *typeDef = tok;
+        int offset = 1;
 
         if (Token::Match(tok->next(), "%type% <") ||
             Token::Match(tok->next(), "%type% %type% <") ||
@@ -497,91 +498,44 @@ void Tokenizer::simplifyTypedef()
             while (end && end->next() && Token::Match(end->next(), ":: %type%"))
                 end = end->tokAt(2);
 
-            if (end && end->next() && end->next()->str() == "*")
+            tok = end;
+        }
+        else if (Token::Match(tok->next(), "%type%"))
+        {
+            type1 = tok->strAt(offset++);
+
+            if (tok->tokAt(offset) && !Token::Match(tok->tokAt(offset), "*|&") && tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+                type2 = tok->strAt(offset++);
+
+            if (tok->tokAt(offset) && !Token::Match(tok->tokAt(offset), "*|&") && tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+                type3 = tok->strAt(offset++);
+        }
+        else
+        {
+            // unhandled typedef, skip it and continue
+            continue;
+        }
+
+        while (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "*|&"))
+            pointers.push_back(tok->tokAt(offset++)->str());
+
+        if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%"))
+        {
+            typeName = tok->strAt(offset++);
+
+            if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "[ %num% ]"))
             {
-                pointer = true;
-                end = end->next();
+                num = tok->tokAt(offset + 1);
+                offset += 3;
             }
 
-            if (end && end->next() && end->next()->str() == "*")
-            {
-                toPointer = true;
-                end = end->next();
-            }
-
-            if (end && end->next() && (Token::Match(end->next(), "%type% ;|,") || Token::Match(end->next(), "%type% [ %num% ] ;|,")))
-            {
-                typeName = end->strAt(1);
-
-                if (end->tokAt(2)->str() == "[")
-                {
-                    num = end->tokAt(3);
-                    tok = end->tokAt(5);
-                }
-                else
-                    tok = end->tokAt(2);
-            }
+            if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
+                tok = tok->tokAt(offset);
             else
             {
-                // unhandled template typedef, skip it and continue
+                // unhandled typedef, skip it and continue
                 continue;
             }
-        }
-        else if (Token::Match(tok->next(), "%type% *| *| %type% [ %num% ] ;|,") ||
-                 Token::Match(tok->next(), "%type% %type% *| *| %type% [ %num% ] ;|,"))
-        {
-            // array
-            int offset = 2;
-            type1 = tok->strAt(1);
-
-            if (tok->tokAt(2)->str() != "*" && tok->tokAt(3)->str() != "[")
-            {
-                type2 = tok->strAt(2);
-                offset++;
-            }
-
-            if (tok->tokAt(offset) && (tok->tokAt(offset)->str() == "*"))
-            {
-                pointer = true;
-                offset++;
-            }
-
-            if (tok->tokAt(offset) && (tok->tokAt(offset)->str() == "*"))
-            {
-                toPointer = true;
-                offset++;
-            }
-
-            typeName = tok->strAt(offset);
-            num = tok->tokAt(offset + 2);
-            tok = tok->tokAt(offset + 4);
-        }
-        else if (Token::Match(tok->next(), "%type% *| *| %type% ;|,") ||
-                 Token::Match(tok->next(), "%type% %type% *| *| %type% ;|,"))
-        {
-            int offset = 2;
-            type1 = tok->strAt(1);
-
-            if (tok->tokAt(2)->str() != "*" && (tok->tokAt(3)->str() != ";" && tok->tokAt(3)->str() != ","))
-            {
-                type2 = tok->strAt(2);
-                offset++;
-            }
-
-            if (tok->tokAt(offset) && (tok->tokAt(offset)->str() == "*"))
-            {
-                pointer = true;
-                offset++;
-            }
-
-            if (tok->tokAt(offset) && (tok->tokAt(offset)->str() == "*"))
-            {
-                toPointer = true;
-                offset++;
-            }
-
-            typeName = tok->strAt(offset++);
-            tok = tok->tokAt(offset);
         }
         else
         {
@@ -680,16 +634,17 @@ void Tokenizer::simplifyTypedef()
                             tok2->insertToken(type2);
                             tok2 = tok2->next();
                         }
+                        if (type3)
+                        {
+                            tok2->insertToken(type3);
+                            tok2 = tok2->next();
+                        }
                     }
 
-                    if (pointer)
+                    while (!pointers.empty())
                     {
-                        tok2->insertToken("*");
-                        tok2 = tok2->next();
-                    }
-                    if (toPointer)
-                    {
-                        tok2->insertToken("*");
+                        tok2->insertToken(pointers.front().c_str());
+                        pointers.pop_front();
                         tok2 = tok2->next();
                     }
                     if (num)
@@ -713,51 +668,29 @@ void Tokenizer::simplifyTypedef()
                 done = true;
             else if (tok->str() == ",")
             {
-                if (Token::Match(tok->next(), "*| *| %type% ;|,") ||
-                    Token::Match(tok->next(), "*| *| %type% [ %num% ] ;|,"))
+                num = 0;
+                offset = 1;
+
+                while (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "*|&"))
+                    pointers.push_back(tok->tokAt(offset++)->str());
+
+                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%"))
                 {
-                    num = 0;
-                    pointer = (tok->tokAt(1)->str() == "*");
-                    toPointer = (tok->tokAt(2)->str() == "*");
+                    typeName = tok->strAt(offset++);
 
-                    if (pointer)
+                    if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "[ %num% ]"))
                     {
-                        if (toPointer)
-                        {
-                            typeName = tok->strAt(3);
-
-                            if (tok->tokAt(4)->str() == "[")
-                            {
-                                num = tok->tokAt(5);
-                                tok = tok->tokAt(7);
-                            }
-                            else
-                                tok = tok->tokAt(4);
-                        }
-                        else
-                        {
-                            typeName = tok->strAt(2);
-
-                            if (tok->tokAt(3)->str() == "[")
-                            {
-                                num = tok->tokAt(4);
-                                tok = tok->tokAt(6);
-                            }
-                            else
-                                tok = tok->tokAt(3);
-                        }
+                        num = tok->tokAt(offset + 1);
+                        offset += 3;
                     }
+
+                    if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
+                        tok = tok->tokAt(offset);
                     else
                     {
-                        typeName = tok->strAt(1);
-
-                        if (tok->tokAt(2)->str() == "[")
-                        {
-                            num = tok->tokAt(3);
-                            tok = tok->tokAt(5);
-                        }
-                        else
-                            tok = tok->tokAt(2);
+                        // we encountered a typedef we don't support yet so just continue
+                        done = true;
+                        ok = false;
                     }
                 }
                 else
