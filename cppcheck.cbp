@@ -52,7 +52,6 @@
 		<Unit filename="gui/mainwindow.h" />
 		<Unit filename="gui/projectfile.cpp" />
 		<Unit filename="gui/projectfile.h" />
-		<Unit filename="gui/qrc_gui.cpp" />
 		<Unit filename="gui/report.cpp" />
 		<Unit filename="gui/report.h" />
 		<Unit filename="gui/resultstree.cpp" />
@@ -81,6 +80,8 @@
 		<Unit filename="lib/checkclass.h" />
 		<Unit filename="lib/checkdangerousfunctions.cpp" />
 		<Unit filename="lib/checkdangerousfunctions.h" />
+		<Unit filename="lib/checkexceptionsafety.cpp" />
+		<Unit filename="lib/checkexceptionsafety.h" />
 		<Unit filename="lib/checkheaders.cpp" />
 		<Unit filename="lib/checkheaders.h" />
 		<Unit filename="lib/checkmemoryleak.cpp" />
@@ -96,6 +97,8 @@
 		<Unit filename="lib/cppcheck.h" />
 		<Unit filename="lib/errorlogger.cpp" />
 		<Unit filename="lib/errorlogger.h" />
+		<Unit filename="lib/executionpath.cpp" />
+		<Unit filename="lib/executionpath.h" />
 		<Unit filename="lib/filelister.cpp" />
 		<Unit filename="lib/filelister.h" />
 		<Unit filename="lib/mathlib.cpp" />
@@ -116,6 +119,7 @@
 		<Unit filename="test/testcppcheck.cpp" />
 		<Unit filename="test/testdangerousfunctions.cpp" />
 		<Unit filename="test/testdivision.cpp" />
+		<Unit filename="test/testexceptionsafety.cpp" />
 		<Unit filename="test/testfilelister.cpp" />
 		<Unit filename="test/testincompletestatement.cpp" />
 		<Unit filename="test/testmathlib.cpp" />
@@ -134,9 +138,8 @@
 		<Unit filename="test/testunusedfunctions.cpp" />
 		<Unit filename="test/testunusedprivfunc.cpp" />
 		<Unit filename="test/testunusedvar.cpp" />
-		<Unit filename="tools/dmake.cpp">
-			<Option target="&lt;{~None~}&gt;" />
-		</Unit>
+		<Unit filename="tools/dmake.cpp" />
+		<Unit filename="tools/extracttests.cpp" />
 		<Extensions>
 			<code_completion />
 			<debugger />
