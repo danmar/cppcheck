@@ -555,6 +555,12 @@ private:
                 Token::eraseTokens(tok, tok->tokAt(5));
                 tok->str("if(!var)");
             }
+
+            else if (Token::simpleMatch(tok, "! var"))
+            {
+                tok->deleteNext();
+                tok->str("!var");
+            }
         }
 
         Settings settings;
@@ -634,6 +640,8 @@ private:
         ASSERT_EQUALS("; loop alloc ;", simplifycode("; loop { alloc ; }"));
         ASSERT_EQUALS("; alloc ; alloc ;", simplifycode("; alloc ; do { alloc ; } loop ;"));
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc ; do { } loop ; exit ;"));
+
+        ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; loop !var alloc ;"));
 
         ASSERT_EQUALS("; alloc ; dealloc ; return ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } }"));
         ASSERT_EQUALS("; alloc ; dealloc ; return ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } if { continue ; } }"));

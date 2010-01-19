@@ -1448,6 +1448,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 continue;
             }
 
+            // Reduce "alloc loop !var alloc ;" => "alloc ;"
+            if (Token::Match(tok2, "[;{}] alloc ; loop !var alloc ;"))
+            {
+                Token::eraseTokens(tok2, tok2->tokAt(5));
+                done = false;
+            }
+
             // Reduce "if(var) dealloc ;" and "if(var) use ;" that is not followed by an else..
             if (Token::Match(tok2, "[;{}] if(var) assign|dealloc|use ; !!else"))
             {
