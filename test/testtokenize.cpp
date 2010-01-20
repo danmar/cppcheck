@@ -176,6 +176,8 @@ private:
         TEST_CASE(simplifyString);
         TEST_CASE(simplifyConst);
         TEST_CASE(switchCase);
+
+        TEST_CASE(functionpointer);
     }
 
 
@@ -2807,6 +2809,26 @@ private:
     {
         ASSERT_EQUALS("void foo ( int i ) { switch ( i ) { case -1 : break ; } }",
                       tokenizeAndStringify("void foo (int i) { switch(i) { case -1: break; } }"));
+    }
+
+    std::string simplifyFunctionPointers(const char code[])
+    {
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyFunctionPointers();
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << (tok->isName() ? " " : "") << tok->str();
+        return ostr.str();
+    }
+
+    void functionpointer()
+    {
+        ASSERT_EQUALS(" void* f;", simplifyFunctionPointers("void (*f)();"));
+        ASSERT_EQUALS(" void** f;", simplifyFunctionPointers("void *(*f)();"));
+        ASSERT_EQUALS(" unsigned int* f;", simplifyFunctionPointers("unsigned int (*f)();"));
+        ASSERT_EQUALS(" unsigned int** f;", simplifyFunctionPointers("unsigned int * (*f)();"));
     }
 };
 

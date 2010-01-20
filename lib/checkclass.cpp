@@ -579,6 +579,7 @@ void CheckClass::privateFunctions()
                     tok = tok->tokAt(2)->link();
 
                 else if (Token::Match(tok, "%var% (") &&
+                         !Token::simpleMatch(tok->next()->link(), ") (") &&
                          !Token::Match(tok, classname.c_str()))
                 {
                     FuncList.push_back(tok);

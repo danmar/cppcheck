@@ -135,7 +135,7 @@ private:
 
         TEST_CASE(simplifyAtol)
         TEST_CASE(simplifyHexInString)
-        TEST_CASE(simplifyTypedef)
+        TEST_CASE(simplifyTypedef1)
         TEST_CASE(simplifyTypedef2)
         TEST_CASE(simplifyTypedef3)
         TEST_CASE(simplifyTypedef4)
@@ -2158,7 +2158,7 @@ private:
         ASSERT_EQUALS("\"a\"", tok("\"\\177\""));
     }
 
-    void simplifyTypedef()
+    void simplifyTypedef1()
     {
         const char code[] = "class A\n"
                             "{\n"
@@ -2652,7 +2652,7 @@ private:
             "void ( * pf ) ( ) ; "
             "void * ( * pfv ) ( void * ) ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(tok(expected), tok(code));
     }
 
     void simplifyTypedef22()

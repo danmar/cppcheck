@@ -941,6 +941,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     // remove exception specifications..
     removeExceptionSpecifications(_tokens);
 
+    // simplify function pointers
+    simplifyFunctionPointers();
+
     setVarId();
     if (!validate())
         return false;
@@ -3287,6 +3290,36 @@ void Tokenizer::simplifyFunctionParameters()
                 continue;
             }
         }
+    }
+}
+
+
+void Tokenizer:: simplifyFunctionPointers()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->previous() && !Token::Match(tok->previous(), "[{};]"))
+            continue;
+
+        if (Token::Match(tok, "%type% *| *| ( * %var% ) ("))
+            ;
+        else if (Token::Match(tok, "%type% %type% *| *| ( * %var% ) ("))
+            tok = tok->next();
+        else
+            continue;
+
+        while (tok->next()->str() == "*")
+            tok = tok->next();
+
+        // check that the declaration ends with ;
+        if (!Token::simpleMatch(tok->tokAt(5)->link(), ") ;"))
+            continue;
+
+        // ok simplify this function pointer to an ordinary pointer
+        tok->deleteNext();
+        tok->tokAt(2)->deleteNext();
+        const Token *tok2 = tok->tokAt(3)->link();
+        Token::eraseTokens(tok->tokAt(2), tok2 ? tok2->next() : 0);
     }
 }
 

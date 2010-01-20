@@ -336,6 +336,9 @@ private:
      */
     void simplifyStd();
 
+    /** Simplify function pointers */
+    void simplifyFunctionPointers();
+
     /**
      * Remove exception specifications. This function calls itself recursively.
      * @param tok First token in scope to cleanup
