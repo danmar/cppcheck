@@ -39,21 +39,26 @@ CheckMemoryLeakInClass instance2;
 CheckMemoryLeakStructMember instance3;
 }
 
+
 // This list needs to be alphabetically sorted so we can run bsearch on it
 static const char * const call_func_white_list[] =
 {
-    "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
+    "asctime", "asctime_r", "asprintf", "atof", "atoi", "atol", "clearerr"
+    , "ctime", "ctime_r", "delete", "fchmod", "fcntl"
     , "fdatasync", "feof", "ferror", "fflush", "fgetc", "fgetpos", "fgets"
     , "flock", "for", "fprintf", "fputc", "fputs", "fread", "free", "fscanf", "fseek"
     , "fseeko", "fsetpos", "fstat", "fsync", "ftell", "ftello", "ftruncate"
-    , "fwrite", "getc", "if", "ioctl", "lockf", "lseek", "memchr", "memcpy"
-    , "memmove", "memset", "posix_fadvise", "posix_fallocate", "pread"
+    , "fwrite", "getc", "gets", "gmtime", "gmtime_r", "if", "ioctl"
+    , "localtime", "localtime_r"
+    , "lockf", "lseek", "memchr", "memcmp", "memcpy", "memmove", "memset"
+    , "posix_fadvise", "posix_fallocate", "pread"
     , "printf", "puts", "pwrite", "qsort", "read", "readahead", "readdir", "readdir_r", "readv"
     , "realloc", "return", "rewind", "rewinddir", "scandir", "scanf", "seekdir"
     , "setbuf", "setbuffer", "setlinebuf", "setvbuf", "snprintf", "sprintf", "sscanf", "strcasecmp"
     , "strcat", "strchr", "strcmp", "strcpy", "stricmp", "strlen", "strncat", "strncmp"
     , "strncpy", "strrchr", "strstr", "strtod", "strtol", "strtoul", "switch"
-    , "sync_file_range", "telldir", "typeid", "while", "write", "writev"
+    , "sync_file_range", "telldir", "time", "typeid", "vfprintf", "vprintf"
+    , "vsnprintf", "vsprintf", "while", "write", "writev"
 };
 
 static int call_func_white_list_compare(const void *a, const void *b)

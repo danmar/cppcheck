@@ -513,6 +513,24 @@ private:
         ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("scanf"));
         ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("sscanf"));
 
+        // #1293
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("time"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("asctime"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("asctime_r"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("ctime"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("ctime_r"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("gmtime"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("gmtime_r"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("localtime"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("localtime_r"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("memcmp"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("gets"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("vprintf"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("vfprintf"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("vsprintf"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("snprintf"));
+        ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list("vsnprintf"));
+
         static const char * const call_func_white_list[] =
         {
             "asprintf", "atof", "atoi", "atol", "clearerr", "delete", "fchmod", "fcntl"
