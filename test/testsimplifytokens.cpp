@@ -154,6 +154,9 @@ private:
         TEST_CASE(simplifyTypedef17);
         TEST_CASE(simplifyTypedef18);       // typedef vector<int[4]> a;
         TEST_CASE(simplifyTypedef19);
+        TEST_CASE(simplifyTypedef20);
+        TEST_CASE(simplifyTypedef21);
+        TEST_CASE(simplifyTypedef22);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2614,6 +2617,93 @@ private:
                 "struct Unnamed2 * * * * * * * * * * a ; "
                 "struct Unnamed2 * b ; "
                 "struct Unnamed2 c ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+    }
+
+    void simplifyTypedef20()
+    {
+        // ticket #1284
+        const char code[] = "typedef jobject invoke_t (jobject, Proxy *, Method *, JArray< jobject > *);";
+
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        tokenizer.simplifyTokenList();
+
+        ASSERT_EQUALS(true, tokenizer.validate());
+    }
+
+    void simplifyTypedef21()
+    {
+        const char code[] = "typedef void (* PF)();\n"
+                            "typedef void * (* PFV)(void *);\n"
+                            "PF pf;\n"
+                            "PFV pfv;";
+
+        const char expected[] =
+            "; "
+            "; "
+            "void ( * pf ) ( ) ; "
+            "void * ( * pfv ) ( void * ) ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef22()
+    {
+        {
+            const char code[] = "class Fred {\n"
+                                "    typedef void (*testfp)();\n"
+                                "    testfp get() { return test; }\n"
+                                "    static void test() { }\n"
+                                "};";
+
+            const char expected[] =
+                "class Fred { "
+                "; "
+                "void ( * get ( ) ) ( ) { return test ; } "
+                "static void test ( ) { } "
+                "} ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class Fred {\n"
+                                "    typedef void * (*testfp)(void *);\n"
+                                "    testfp get() { return test; }\n"
+                                "    static void * test(void * p) { return p; }\n"
+                                "};\n";
+
+            const char expected[] =
+                "class Fred { "
+                "; "
+                "void * ( * get ( ) ) ( void * ) { return test ; } "
+                "static void * test ( void * p ) { return p ; } "
+                "} ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class Fred {\n"
+                                "    typedef void * (*testfp)(void *);\n"
+                                "    testfp get(int i) { return test; }\n"
+                                "    static void * test(void * p) { return p; }\n"
+                                "};\n";
+
+            const char expected[] =
+                "class Fred { "
+                "; "
+                "void * ( * get ( int i ) ) ( void * ) { return test ; } "
+                "static void * test ( void * p ) { return p ; } "
+                "} ;";
 
             ASSERT_EQUALS(expected, tok(code, false));
         }

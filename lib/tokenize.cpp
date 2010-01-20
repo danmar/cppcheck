@@ -453,6 +453,7 @@ void Tokenizer::simplifyTypedef()
         Token *num = 0;
         Token *typeDef = tok;
         int offset = 1;
+        bool functionPtr = false;
 
         if (Token::Match(tok->next(), "%type% <") ||
             Token::Match(tok->next(), "%type% %type% <") ||
@@ -504,11 +505,15 @@ void Tokenizer::simplifyTypedef()
         {
             type1 = tok->strAt(offset++);
 
-            if (tok->tokAt(offset) && !Token::Match(tok->tokAt(offset), "*|&") && tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+            if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
+                tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+            {
                 type2 = tok->strAt(offset++);
 
-            if (tok->tokAt(offset) && !Token::Match(tok->tokAt(offset), "*|&") && tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
-                type3 = tok->strAt(offset++);
+                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
+                    tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+                    type3 = tok->strAt(offset++);
+            }
         }
         else
         {
@@ -536,6 +541,19 @@ void Tokenizer::simplifyTypedef()
                 // unhandled typedef, skip it and continue
                 continue;
             }
+        }
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * %type% ) ("))
+        {
+            if (tok->tokAt(offset + 4)->link()->next())
+            {
+                functionPtr = true;
+                typeName = tok->strAt(offset + 2);
+                start = tok->tokAt(offset + 4);
+                end = tok->tokAt(offset + 4)->link();
+                tok = end->next();
+            }
+            else
+                continue;
         }
         else
         {
@@ -602,7 +620,7 @@ void Tokenizer::simplifyTypedef()
 
                 if (simplifyType)
                 {
-                    if (start && end)
+                    if (start && end && !functionPtr)
                     {
                         tok2->str(start->str());
                         Token * nextToken;
@@ -626,6 +644,10 @@ void Tokenizer::simplifyTypedef()
                             }
                         }
                     }
+                    else if (functionPtr)
+                    {
+                        tok2->str(type1);
+                    }
                     else
                     {
                         tok2->str(type1);
@@ -647,6 +669,51 @@ void Tokenizer::simplifyTypedef()
                         pointers.pop_front();
                         tok2 = tok2->next();
                     }
+
+                    if (functionPtr)
+                    {
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        Token *tok3 = tok2;
+                        tok2->insertToken("*");
+                        tok2 = tok2->next();
+                        tok2 = tok2->next();
+
+                        // skip over typedef parameter
+                        while (!Token::Match(tok2->next(), "=|{|;"))
+                            tok2 = tok2->next();
+
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok3);
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        tok3 = tok2;
+                        Token * nextToken;
+                        std::stack<Token *> links;
+                        for (nextToken = start->next(); nextToken != end; nextToken = nextToken->next())
+                        {
+                            tok2->insertToken(nextToken->strAt(0));
+                            tok2 = tok2->next();
+
+                            // Check for links and fix them up
+                            if (tok2->str() == "(" || tok2->str() == "[")
+                                links.push(tok2);
+                            if (tok2->str() == ")" || tok2->str() == "]")
+                            {
+                                Token * link = links.top();
+
+                                tok2->link(link);
+                                link->link(tok2);
+
+                                links.pop();
+                            }
+                        }
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok3);
+                    }
+
                     if (num)
                     {
                         tok2 = tok2->next();
