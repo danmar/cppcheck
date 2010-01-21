@@ -457,10 +457,11 @@ void CheckOther::lookupVar(const Token *tok1, const char varname[])
         tok = tok->next();
 
     // Check if the variable is used in this indentlevel..
-    bool used = false, used1 = false;
+    bool used1 = false;   // used in one sub-scope -> reducable
+    bool used2 = false;   // used in more sub-scopes -> not reducable
     int indentlevel = 0;
     int parlevel = 0;
-    bool for_or_while = false;
+    bool for_or_while = false;  // is sub-scope a "for/while/etc". anything that is not "if"
     while (tok)
     {
         if (tok->str() == "{")
@@ -475,10 +476,10 @@ void CheckOther::lookupVar(const Token *tok1, const char varname[])
             --indentlevel;
             if (indentlevel == 0)
             {
-                if (for_or_while && used)
+                if (for_or_while && used2)
                     return;
-                used1 |= used;
-                used = false;
+                used2 |= used1;
+                used1 = false;
             }
         }
 
@@ -500,9 +501,13 @@ void CheckOther::lookupVar(const Token *tok1, const char varname[])
 
         else if (tok->str() == varname)
         {
-            if (indentlevel == 0 || used1)
+            if (indentlevel == 0)
                 return;
-            used = true;
+            used1 = true;
+            if (for_or_while && !Token::simpleMatch(tok->next(), "="))
+                used2 = true;
+            if (used1 && used2)
+                return;
         }
 
         else if (indentlevel == 0)
@@ -511,7 +516,7 @@ void CheckOther::lookupVar(const Token *tok1, const char varname[])
             // If %unknown% is anything except if, we assume
             // that it is a for or while loop or a macro hiding either one
             if (Token::simpleMatch(tok->next(), "(") &&
-                Token::simpleMatch(tok->next()->link()->next(), "{"))
+                Token::simpleMatch(tok->next()->link(), ") {"))
             {
                 if (tok->str() != "if")
                     for_or_while = true;
@@ -530,7 +535,7 @@ void CheckOther::lookupVar(const Token *tok1, const char varname[])
     // Warning if this variable:
     // * not used in this indentlevel
     // * used in lower indentlevel
-    if (!used && used1)
+    if (used1 || used2)
         variableScopeError(tok1, varname);
 }
 //---------------------------------------------------------------------------

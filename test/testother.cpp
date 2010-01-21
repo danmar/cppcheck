@@ -60,6 +60,7 @@ private:
         TEST_CASE(varScope5);
         TEST_CASE(varScope6);
         TEST_CASE(varScope7);
+        TEST_CASE(varScope8);
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -600,6 +601,19 @@ private:
                  "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void varScope8()
+    {
+        varScope("void test() {\n"
+                 "    float edgeResistance=1;\n"
+                 "    std::vector<int> edges;\n"
+                 "    BOOST_FOREACH(int edge, edges) {\n"
+                 "        edgeResistance = (edge+1) / 2.0;\n"
+                 "    }\n"
+                 "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable edgeResistance can be reduced\n", errout.str());
+    }
+
 
     void checkNullPointer(const char code[])
     {
