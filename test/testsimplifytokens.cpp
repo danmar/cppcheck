@@ -157,6 +157,7 @@ private:
         TEST_CASE(simplifyTypedef20);
         TEST_CASE(simplifyTypedef21);
         TEST_CASE(simplifyTypedef22);
+        TEST_CASE(simplifyTypedef23);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2708,6 +2709,20 @@ private:
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void simplifyTypedef23()
+    {
+        const char code[] = "typedef bool (*Callback) (int i);\n"
+                            "void    addCallback(Callback callback) { }\n"
+                            "void    addCallback1(Callback callback, int j) { }";
+
+        const char expected[] =
+            "; "
+            "void addCallback ( bool ( * callback ) ( int i ) ) { } "
+            "void addCallback1 ( bool ( * callback ) ( int i ) , int j ) { }";
+
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void reverseArraySyntax()
