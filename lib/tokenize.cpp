@@ -3210,6 +3210,9 @@ void Tokenizer::simplifyFunctionParameters()
         {
             // We have found old style function, now we need to change it
 
+            // backup pointer to the '(' token
+            Token * const tok1 = tok->next();
+
             // Get list of argument names
             std::map<std::string, Token*> argumentNames;
             bool bailOut = false;
@@ -3239,6 +3242,9 @@ void Tokenizer::simplifyFunctionParameters()
 
             if (bailOut)
             {
+                tok = tok1->link();
+                if (!tok)
+                    return;
                 continue;
             }
 

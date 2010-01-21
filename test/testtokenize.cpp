@@ -43,6 +43,9 @@ private:
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize3);
 
+        // don't freak out when the syntax is wrong
+        TEST_CASE(wrong_syntax);
+
         TEST_CASE(minus);
 
         TEST_CASE(longtok);
@@ -252,6 +255,14 @@ private:
                       "int i ;\n"
                       "ABC ( for ( i = 0 ; i < 10 ; i ++ ) x ( ) ) ;\n"
                       "}", tokenizeAndStringify(code.c_str()));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void wrong_syntax()
+    {
+        errout.str("");
+        const std::string code("TR(kvmpio, PROTO(int rw), ARGS(rw), TP_(aa->rw;))");
+        ASSERT_EQUALS("TR ( kvmpio , PROTO ( int rw ) , ARGS ( rw ) , TP_ ( aa . rw ; ) )", tokenizeAndStringify(code.c_str(), true));
         ASSERT_EQUALS("", errout.str());
     }
 
