@@ -2695,6 +2695,41 @@ private:
 
         {
             const char code[] = "class Fred {\n"
+                                "    typedef unsigned int * (*testfp)(unsigned int *);\n"
+                                "    testfp get() { return test; }\n"
+                                "    static unsigned int * test(unsigned int * p) { return p; }\n"
+                                "};\n";
+
+            const char expected[] =
+                "class Fred { "
+                "; "
+                "unsigned int * ( * get ( ) ) ( unsigned int * ) { return test ; } "
+                "static unsigned int * test ( unsigned int * p ) { return p ; } "
+                "} ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class Fred {\n"
+                                "    typedef const unsigned int * (*testfp)(const unsigned int *);\n"
+                                "    testfp get() { return test; }\n"
+                                "    static const unsigned int * test(const unsigned int * p) { return p; }\n"
+                                "};\n";
+
+            // static const gets changed to const static
+            const char expected[] =
+                "class Fred { "
+                "; "
+                "const unsigned int * ( * get ( ) ) ( const unsigned int * ) { return test ; } "
+                "const static unsigned int * test ( const unsigned int * p ) { return p ; } "
+                "} ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "class Fred {\n"
                                 "    typedef void * (*testfp)(void *);\n"
                                 "    testfp get(int i) { return test; }\n"
                                 "    static void * test(void * p) { return p; }\n"

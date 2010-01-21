@@ -644,10 +644,6 @@ void Tokenizer::simplifyTypedef()
                             }
                         }
                     }
-                    else if (functionPtr)
-                    {
-                        tok2->str(type1);
-                    }
                     else
                     {
                         tok2->str(type1);
