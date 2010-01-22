@@ -2543,6 +2543,7 @@ bool Tokenizer::simplifyTokenList()
     simplifyRedundantParanthesis();
     simplifyIfNot();
     simplifyIfNotNull();
+    simplifyIfSameInnerCondition();
     simplifyComparisonOrder();
     simplifyNestedStrcat();
     simplifyWhile0();
@@ -3943,6 +3944,36 @@ void Tokenizer::simplifyIfNotNull()
 }
 
 
+void Tokenizer::simplifyIfSameInnerCondition()
+{
+    // same inner condition
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "if ( %var% ) {"))
+        {
+            const unsigned int varid(tok->tokAt(2)->varId());
+            if (!varid)
+                continue;
+
+            for (Token *tok2 = tok->tokAt(5); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{" || tok2->str() == "}")
+                    break;
+                if (Token::simpleMatch(tok2, "if ("))
+                {
+                    tok2 = tok2->tokAt(2);
+                    if (Token::Match(tok2, "%varid% )", varid))
+                        tok2->str("true");
+                    else if (Token::Match(tok2, "! %varid% )", varid))
+                        tok2->next()->varId(varid);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
 void Tokenizer::simplifyLogicalOperators()
 {
     // "if (not p)" => "if (!p)"
@@ -4491,6 +4522,7 @@ void Tokenizer::simplifyGoto()
                         token->insertToken(tok2->str().c_str());
                         token = token->next();
                         token->linenr(tok2->linenr());
+                        token->varId(tok2->varId());
                         if (token->str() == "(")
                         {
                             links.push_back(token);

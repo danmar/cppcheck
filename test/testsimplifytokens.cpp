@@ -55,6 +55,7 @@ private:
         TEST_CASE(removePreIncrement);
 
         TEST_CASE(elseif1);
+        TEST_CASE(ifa_ifa);     // "if (a) { if (a) .." => "if (a) { if (1) .."
 
         TEST_CASE(sizeof1);
         TEST_CASE(sizeof2);
@@ -614,6 +615,12 @@ private:
         }
     }
 
+
+    void ifa_ifa()
+    {
+        ASSERT_EQUALS("int a ; if ( a ) { { ab } cd }", tok("int a ; if (a) { if (a) { ab } cd }", true));
+        ASSERT_EQUALS("int a ; if ( a ) { { ab } cd }", tok("int a ; if (unlikely(a)) { if (a) { ab } cd }", true));
+    }
 
 
 

@@ -182,6 +182,9 @@ private:
      */
     void simplifyIfNotNull();
 
+    /** @brief simplify if (a) { if (a) .. */
+    void simplifyIfSameInnerCondition();
+
     /**
      * Simplify the "not" and "and" keywords to "!" and "&&"
      * accordingly.
