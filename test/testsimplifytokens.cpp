@@ -158,6 +158,7 @@ private:
         TEST_CASE(simplifyTypedef21);
         TEST_CASE(simplifyTypedef22);
         TEST_CASE(simplifyTypedef23);
+        TEST_CASE(simplifyTypedef24);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2758,6 +2759,53 @@ private:
             "void addCallback1 ( bool ( * callback ) ( int i ) , int j ) { }";
 
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef24()
+    {
+        {
+            const char code[] = "typedef int (*fp)();\n"
+                                "void g( fp f )\n"
+                                "{\n"
+                                "  fp f2 = (fp)f;\n"
+                                "}";
+
+            const char expected[] =
+                "; "
+                "void g ( int ( * f ) ( ) ) "
+                "{ "
+                "int ( * f2 ) ( ) = ( int ( * ) ( ) ) f ; "
+                "}";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+
+            // TODO: the definition and assignment should be split up
+            const char todo[] =
+                "; "
+                "void g ( fp f ) "
+                "{ "
+                "int ( * f2 ) ( ) ; f2 = ( int ( * ) ( ) ) f ; "
+                "}";
+
+            TODO_ASSERT_EQUALS(todo, tok(code, false));
+        }
+
+        {
+            const char code[] = "typedef int (*fp)();\n"
+                                "void g( fp f )\n"
+                                "{\n"
+                                "  fp f2 = static_cast<fp>(f);\n"
+                                "}";
+
+            const char expected[] =
+                "; "
+                "void g ( int ( * f ) ( ) ) "
+                "{ "
+                "int ( * f2 ) ( ) = static_cast < int ( * ) ( ) > ( f ) ; "
+                "}";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void reverseArraySyntax()
