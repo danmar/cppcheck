@@ -30,7 +30,7 @@ class Token;
 /// @{
 
 
-/** @brief %Check STL usage */
+/** @brief %Check STL usage (invalidation of iterators, mismatching containers, etc) */
 class CheckStl : public Check
 {
 public:

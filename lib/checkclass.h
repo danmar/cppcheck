@@ -30,14 +30,15 @@ class Token;
 /// @{
 
 
+/** @brief %Check classes. Uninitialized member variables, non-conforming operators, missing virtual destructor, etc */
 class CheckClass : public Check
 {
 public:
-    /** This constructor is used when registering the CheckClass */
+    /** @brief This constructor is used when registering the CheckClass */
     CheckClass() : Check()
     { }
 
-    /** This constructor is used when running checks.. */
+    /** @brief This constructor is used when running checks.. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
@@ -68,31 +69,36 @@ public:
     }
 
 
-    // Check that all class constructors are ok.
+    /** @brief %Check that all class constructors are ok */
     void constructors();
 
-    // Check that all private functions are called.
+    /** @brief %Check that all private functions are called */
     void privateFunctions();
 
-    // Check that the memsets are valid.
-    // The 'memset' function can do dangerous things if used wrong.
-    // Important: The checking doesn't work on simplified tokens list.
+    /**
+     * @brief %Check that the memsets are valid.
+     * The 'memset' function can do dangerous things if used wrong.
+     * Important: The checking doesn't work on simplified tokens list.
+     */
     void noMemset();
 
-    // 'operator=' should return something..
-    void operatorEq();    // Warning upon "void operator=(.."
+    /** @brief 'operator=' should return something.. */
+    void operatorEq();
 
-    // 'operator=' should return reference to *this
+    /** @brief 'operator=' should return reference to *this */
     void operatorEqRetRefThis();    // Warning upon no "return *this;"
 
-    // 'operator=' should check for assignment to self
+    /** @brief 'operator=' should check for assignment to self */
     void operatorEqToSelf();    // Warning upon no check for assignment to self
 
-    // The destructor in a base class should be virtual
+    /** @brief The destructor in a base class should be virtual */
     void virtualDestructor();
 
+    /** @brief warn for "this-x". The indented code may be "this->x"  */
     void thisSubtraction();
 private:
+
+    /** @brief Information about a member variable. Used when checking for uninitialized variables */
     class Var
     {
     public:
@@ -104,14 +110,39 @@ private:
             this->next = next;
         }
 
+        /** @brief name of variable */
         const char *name;
+
+        /** @brief has this variable been initialized? */
         bool        init;
+
+        /** @brief is this variable declared in the private section? */
         bool        priv;
+
+        /** @brief next Var item */
         Var *next;
     };
 
+    /**
+     * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
+     * @param tok1 pointer to class declaration
+     * @param ftok pointer to the function that should be checked
+     * @param varlist variable list (the "init" flag will be set in these variables)
+     * @param classname name of class
+     * @param callstack the function doesn't look into recursive function calls.
+     * @param isStruct if this is a struct instead of a class
+     */
     void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack, bool isStruct);
+
+    /** @brief initialize a variable in the varlist */
     void initVar(Var *varlist, const char varname[]);
+
+    /**
+     * @brief get varlist from a class definition
+     * @param tok1 pointer to class definition
+     * @param withClasses if class variables should be extracted too.
+     * @param isStruct is this a struct?
+     */
     Var *getVarList(const Token *tok1, bool withClasses, bool isStruct);
 
     // Check constructors for a specified class

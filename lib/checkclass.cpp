@@ -183,7 +183,7 @@ void CheckClass::initVar(Var *varlist, const char varname[])
         if (strcmp(var->name, varname) == 0)
         {
             var->init = true;
-            break;
+            return;
         }
     }
 }
@@ -336,8 +336,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
                         }
                         if (tok->isName())
                         {
-                            for (Var *var = varlist; var; var = var->next)
-                                var->init |= bool(tok->str() == var->name);
+                            initVar(varlist, tok->strAt(0));
                         }
                     }
                     continue;
