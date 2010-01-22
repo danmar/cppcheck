@@ -1142,6 +1142,27 @@ private:
                        "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        // Unknown non-member function (friend class)
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { Init(); }\n"
+                       "private:\n"
+                       "    friend ABC;\n"
+                       "    int i;\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Unknown non-member function (is Init a virtual function?)
+        checkUninitVar("class Fred : private ABC\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { Init(); }\n"
+                       "private:\n"
+                       "    int i;\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+
         // Unknown non-member function
         checkUninitVar("class Fred\n"
                        "{\n"
@@ -1150,7 +1171,7 @@ private:
                        "private:\n"
                        "    int i;\n"
                        "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
     void uninitVarEnum()
