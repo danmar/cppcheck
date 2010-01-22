@@ -683,11 +683,14 @@ void Tokenizer::simplifyTypedef()
 
                         if (!inCast)
                         {
-                            tok2 = tok2->next();
+                            if (tok2->next()->str() != ")" && tok2->next()->str() != ",")
+                            {
+                                tok2 = tok2->next();
 
-                            // skip over typedef parameter
-                            if (tok2->next()->str() == "(")
-                                tok2 = tok2->next()->link();
+                                // skip over typedef parameter
+                                if (tok2->next()->str() == "(")
+                                    tok2 = tok2->next()->link();
+                            }
                         }
 
                         tok2->insertToken(")");
@@ -949,7 +952,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     removeExceptionSpecifications(_tokens);
 
     // simplify function pointers
-    simplifyFunctionPointers();
+//    simplifyFunctionPointers();
 
     setVarId();
     if (!validate())

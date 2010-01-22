@@ -160,6 +160,7 @@ private:
         TEST_CASE(simplifyTypedef22);
         TEST_CASE(simplifyTypedef23);
         TEST_CASE(simplifyTypedef24);
+        TEST_CASE(simplifyTypedef25);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2809,6 +2810,40 @@ private:
                 "void g ( int ( * f ) ( ) ) "
                 "{ "
                 "int ( * f2 ) ( ) = static_cast < int ( * ) ( ) > ( f ) ; "
+                "}";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+    }
+
+    void simplifyTypedef25()
+    {
+        {
+            // ticket #1298
+            const char code[] = "typedef void (*fill_names_f) (const char *);\n"
+                                "struct vfs_class {\n"
+                                "    void (*fill_names) (struct vfs_class *me, fill_names_f);\n"
+                                "}";
+
+            const char expected[] =
+                "; "
+                "struct vfs_class { "
+                "void ( * fill_names ) ( struct vfs_class * me , void ( * ) ( const char * ) ) ; "
+                "}";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "typedef void (*fill_names_f) (const char *);\n"
+                                "struct vfs_class {\n"
+                                "    void (*fill_names) (fill_names_f, struct vfs_class *me);\n"
+                                "}";
+
+            const char expected[] =
+                "; "
+                "struct vfs_class { "
+                "void ( * fill_names ) ( void ( * ) ( const char * ) , struct vfs_class * me ) ; "
                 "}";
 
             ASSERT_EQUALS(expected, tok(code, false));
