@@ -47,6 +47,7 @@ public:
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
+        checkAutoVariables.returnReference();
     }
 
     /** Check auto variables */
@@ -54,6 +55,9 @@ public:
 
     /** Returning pointer to local array */
     void returnPointerToLocalArray();
+
+    /** Returning reference to local/temporary variable */
+    void returnReference();
 
 private:
     std::set<std::string> fp_list;
@@ -67,15 +71,15 @@ private:
 
 
 
-
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok);
-
+    void errorReturnReference(const Token *tok);
 
     void getErrorMessages()
     {
         errorAutoVariableAssignment(0);
         errorReturnPointerToLocalArray(0);
+        errorReturnReference(0);
     }
 
     std::string name() const
@@ -88,7 +92,8 @@ private:
         return "A pointer to a variable is only valid as long as the variable is in scope.\n"
                "Check:\n"
                "* returning a pointer to variable\n"
-               "* assigning address of an variable to an effective parameter of a function\n";
+               "* assigning address of an variable to an effective parameter of a function\n"
+               "* returning reference to local/temporary variable\n";
     }
 };
 /// @}

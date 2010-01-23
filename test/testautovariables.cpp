@@ -57,6 +57,7 @@ private:
         CheckAutoVariables checkAutoVariables(&tokenizer, &settings, this);
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
+        checkAutoVariables.returnReference();
     }
 
     void run()
@@ -69,6 +70,9 @@ private:
 
         TEST_CASE(returnLocalVariable1);
         TEST_CASE(returnLocalVariable2);
+
+        // return reference..
+        TEST_CASE(returnReference);
     }
 
 
@@ -95,7 +99,8 @@ private:
         check("void func1(int* arr[2])\n"
               "{\n"
               "    int num=2;"
-              "arr[0]=&num;}");
+              "    arr[0]=&num;\n"
+              "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Wrong assignment of an auto-variable to an effective parameter of a function\n", errout.str());
     }
 
@@ -158,6 +163,31 @@ private:
               "    return str;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void returnReference()
+    {
+        check("std::string &foo()\n"
+              "{\n"
+              "    std::string s;\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Returning reference to auto variable\n", errout.str());
+
+        check("std::vector<int> &foo()\n"
+              "{\n"
+              "    std::vector<int> v;\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Returning reference to auto variable\n", errout.str());
+
+        check("std::vector<int> &foo()\n"
+              "{\n"
+              "    static std::vector<int> v;\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 

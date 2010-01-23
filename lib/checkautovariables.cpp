@@ -306,3 +306,86 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok)
     reportError(tok, Severity::error, "autoVariables", "Wrong assignment of an auto-variable to an effective parameter of a function");
 }
 
+
+void CheckAutoVariables::returnReference()
+{
+    // locate function that returns a reference..
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // Skip executable scopes..
+        if (Token::Match(tok, ") const| {"))
+        {
+            tok = tok->next();
+            if (tok->str() == "const")
+                tok = tok->next();
+            tok = tok->link();
+            continue;
+        }
+
+        // have we reached a function that returns a reference?
+        if (Token::Match(tok, "%type% & %var% (") ||
+            Token::Match(tok, "> & %var% ("))
+        {
+            // go to the '('
+            const Token *tok2 = tok->tokAt(3);
+
+            // go to the ')'
+            tok2 = tok2->link();
+
+            // is this a function implementation?
+            if (Token::Match(tok2, ") const| {"))
+            {
+                unsigned int indentlevel = 0;
+                std::set<unsigned int> localvar;    // local variables in function
+                while (0 != (tok2 = tok2->next()))
+                {
+                    // indentlevel..
+                    if (tok2->str() == "{")
+                        ++indentlevel;
+                    else if (tok2->str() == "}")
+                    {
+                        if (indentlevel <= 1)
+                            break;
+                        --indentlevel;
+                    }
+
+                    // declare local variable..
+                    if (Token::Match(tok2, "[{};] %type%") && tok2->next()->str() != "return")
+                    {
+                        // goto next token..
+                        tok2 = tok2->next();
+
+                        // skip "std::" if it is seen
+                        if (Token::simpleMatch(tok2, "std ::"))
+                            tok2 = tok2->tokAt(2);
+
+                        // is it a variable declaration?
+                        if (Token::Match(tok2, "%type% %var% ;"))
+                            localvar.insert(tok2->next()->varId());
+                        else if (Token::Match(tok2, "%type% < %any% > %var% ;"))
+                            localvar.insert(tok2->tokAt(4)->varId());
+                    }
+
+                    // return..
+                    else if (Token::Match(tok2, "return %var% ;"))
+                    {
+                        // is the returned variable a local variable?
+                        if ((tok2->next()->varId() > 0) &&
+                            (localvar.find(tok2->next()->varId()) != localvar.end()))
+                        {
+                            // report error..
+                            errorReturnReference(tok2);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+void CheckAutoVariables::errorReturnReference(const Token *tok)
+{
+    reportError(tok, Severity::error, "returnReference", "Returning reference to auto variable");
+}
+
+
