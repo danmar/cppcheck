@@ -805,7 +805,7 @@ void Tokenizer::simplifyTypedef()
     }
 }
 
-bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::string configuration)
+bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::string &configuration)
 {
     _configuration = configuration;
 
@@ -1950,7 +1950,7 @@ bool Tokenizer::createLinks()
         }
         else if (token->str() == "}")
         {
-            if (links.size() == 0)
+            if (links.empty())
             {
                 // Error, { and } don't match.
                 syntaxError(token, '{');
@@ -1973,7 +1973,7 @@ bool Tokenizer::createLinks()
         }
         else if (token->str() == ")")
         {
-            if (links2.size() == 0)
+            if (links2.empty())
             {
                 // Error, ( and ) don't match.
                 syntaxError(token, '(');
@@ -1996,7 +1996,7 @@ bool Tokenizer::createLinks()
         }
         else if (token->str() == "]")
         {
-            if (links3.size() == 0)
+            if (links3.empty())
             {
                 // Error, [ and ] don't match.
                 syntaxError(token, '[');
@@ -2014,21 +2014,21 @@ bool Tokenizer::createLinks()
         }
     }
 
-    if (links.size() > 0)
+    if (!links.empty())
     {
         // Error, { and } don't match.
         syntaxError(links.back(), '{');
         return false;
     }
 
-    if (links2.size() > 0)
+    if (!links2.empty())
     {
         // Error, ( and ) don't match.
         syntaxError(links2.back(), '(');
         return false;
     }
 
-    if (links3.size() > 0)
+    if (!links3.empty())
     {
         // Error, [ and ] don't match.
         syntaxError(links3.back(), '[');
@@ -4534,7 +4534,7 @@ void Tokenizer::simplifyGoto()
                         }
                         else if (token->str() == ")")
                         {
-                            if (links.size() == 0)
+                            if (links.empty())
                             {
                                 // This should never happen at this point
                                 syntaxError(token, ')');
@@ -4550,7 +4550,7 @@ void Tokenizer::simplifyGoto()
                         }
                         else if (token->str() == "}")
                         {
-                            if (links2.size() == 0)
+                            if (links2.empty())
                             {
                                 // This should never happen at this point
                                 syntaxError(token, '}');
@@ -4566,7 +4566,7 @@ void Tokenizer::simplifyGoto()
                         }
                         else if (token->str() == "]")
                         {
-                            if (links3.size() == 0)
+                            if (links3.empty())
                             {
                                 // This should never happen at this point
                                 syntaxError(token, ']');

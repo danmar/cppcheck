@@ -1410,7 +1410,7 @@ public:
     bool renameMacroVariables(std::string &result, const PreprocessorMacro &macro)
     {
         // No variables
-        if (_params.size() == 0)
+        if (_params.empty())
             return false;
 
         // Already renamed
@@ -1787,7 +1787,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
         // leaving a file, update position..
         else if (line == "#endfile")
         {
-            if (fileinfo.size())
+            if (!fileinfo.empty())
             {
                 linenr = fileinfo.top().first;
                 filename = fileinfo.top().second;

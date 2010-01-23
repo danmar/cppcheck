@@ -67,7 +67,7 @@ public:
      * @param configuration E.g. "A" for code where "#ifdef A" is true
      * @return false if Source code contains syntax errors
      */
-    bool tokenize(std::istream &code, const char FileName[], const std::string configuration = "");
+    bool tokenize(std::istream &code, const char FileName[], const std::string &configuration = "");
 
     /**
      * Create tokens from code.
