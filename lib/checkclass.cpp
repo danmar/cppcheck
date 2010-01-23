@@ -1430,6 +1430,8 @@ void CheckClass::checkConst()
                 {
                     // get function name
                     const std::string functionName(tok2->strAt(2));
+                    if (functionName == classname)
+                        continue;
 
                     // goto the ')'
                     tok2 = tok2->tokAt(3)->link();

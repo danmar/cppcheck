@@ -1530,6 +1530,15 @@ private:
                    "    int getA() { return a; }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::getA' can be const\n", errout.str());
+
+        // constructors can't be const..
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "public:\n"
+                   "    Fred() { }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 
