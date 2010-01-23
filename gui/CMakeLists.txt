@@ -1,7 +1,9 @@
 # Minimal CMake build file to build cppcheck Qt GUI
 
 # find and setup Qt4 for this project
-find_package(Qt4 REQUIRED)
+find_package(Qt4)
+
+IF(QT4_FOUND)
 
 # Add needed Qt modules
 set(QT_USE_QTMAIN TRUE)
@@ -131,3 +133,4 @@ ADD_EXECUTABLE(gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_HEADERS}
   ${CHECK_UIS_H} ${CHECK_RCC_SRCS})
 TARGET_LINK_LIBRARIES(gui ${CHECK_LIBS} ${QT_LIBRARIES})
 
+ENDIF(QT4_FOUND)
