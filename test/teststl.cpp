@@ -47,6 +47,7 @@ private:
         TEST_CASE(STLSizeNoErr);
         TEST_CASE(erase);
         TEST_CASE(erase2);
+        TEST_CASE(erase3);
         TEST_CASE(eraseBreak);
         TEST_CASE(eraseReturn);
         TEST_CASE(eraseGoto);
@@ -290,7 +291,6 @@ private:
               "    std::list<int>::iterator i = ints.begin();\n"
               "    i = ints.erase(i);\n"
               "    *i = 0;\n"
-              "    \n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -306,6 +306,17 @@ private:
               "        next++;\n"
               "        foo.erase(it);\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void erase3()
+    {
+        check("static void f(std::list<abc> &foo)\n"
+              "{\n"
+              "    std::list<abc>::iterator it = foo.begin();\n"
+              "    foo.erase(it->a);\n"
+              "    if (it->b);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
