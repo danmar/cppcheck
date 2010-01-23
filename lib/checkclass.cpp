@@ -1406,7 +1406,7 @@ void CheckClass::checkConst()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class %var% :|{"))
+        if (Token::Match(tok, "class|struct %var% :|{"))
         {
             // get class name..
             const std::string classname(tok->strAt(1));
@@ -1426,19 +1426,24 @@ void CheckClass::checkConst()
                     break;
 
                 // member function?
-                if (Token::Match(tok2, "[;}] %type% %var% ("))
+                if (Token::Match(tok2, "[;}] %type% %var% (") ||
+                    Token::Match(tok2, "[;}] %type% operator %any% ("))
                 {
+                    // goto function name..
+                    while (tok2->next()->str() != "(")
+                        tok2 = tok2->next();
+
                     // get function name
-                    const std::string functionName(tok2->strAt(2));
+                    const std::string functionName((tok2->isName() ? "" : "operator") + tok2->str());
                     if (functionName == classname)
                         continue;
 
                     // goto the ')'
-                    tok2 = tok2->tokAt(3)->link();
+                    tok2 = tok2->next()->link();
                     if (!tok2)
                         break;
 
-                    // is this function implemented inline?
+                    // is this a non-const function that is implemented inline?
                     if (Token::simpleMatch(tok2, ") {"))
                     {
                         // if the function doesn't have any assignment nor function call,
@@ -1466,7 +1471,7 @@ void CheckClass::checkConst()
                             }
 
                             // function call..
-                            else if (Token::Match(tok3, "%var% ("))
+                            else if (tok3->str() != "return" && Token::Match(tok3, "%var% ("))
                             {
                                 isconst = false;
                                 break;

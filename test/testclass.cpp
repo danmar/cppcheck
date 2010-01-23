@@ -81,6 +81,7 @@ private:
 
         // can member function be made const
         TEST_CASE(const1);
+        TEST_CASE(const2);
     }
 
     // Check the operator Equal
@@ -1554,6 +1555,16 @@ private:
                    "    void b() { a(); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // operator< can often be const
+    void const2()
+    {
+        checkConst("struct Fred {\n"
+                   "    int a;\n"
+                   "    bool operator<(const Fred &f) { return (a < f.a); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::operator<' can be const\n", errout.str());
     }
 };
 
