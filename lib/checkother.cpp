@@ -1910,6 +1910,8 @@ private:
             {
                 if (!Token::Match(tok.previous(), "[;{}] %var% . %var% ="))
                     use_pointer(foundError, checks, &tok);
+                else
+                    bailOutVar(checks, tok.varId());
                 return &tok;
             }
 

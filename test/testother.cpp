@@ -1609,6 +1609,14 @@ private:
         checkUninitVar("void foo()\n"
                        "{\n"
                        "    ABC *abc = malloc(100);\n"
+                       "    abc->a = 123;\n"
+                       "    abc->a += 123;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    ABC *abc = malloc(100);\n"
                        "    free(abc);\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
