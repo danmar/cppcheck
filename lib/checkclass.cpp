@@ -1398,6 +1398,85 @@ void CheckClass::thisSubtraction()
     }
 }
 
+
+void CheckClass::checkConst()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "class %var% :|{"))
+        {
+            // get class name..
+            const std::string classname(tok->strAt(1));
+
+            // goto initial {'
+            while (tok && tok->str() != "{")
+                tok = tok->next();
+            if (!tok)
+                break;
+
+            // parse in this class definition to see if there are any simple getter functions
+            for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "{")
+                    tok2 = tok2->link();
+                else if (tok2->str() == "}")
+                    break;
+
+                // member function?
+                if (Token::Match(tok2, "[;}] %type% %var% ("))
+                {
+                    // get function name
+                    const std::string functionName(tok2->strAt(2));
+
+                    // goto the ')'
+                    tok2 = tok2->tokAt(3)->link();
+                    if (!tok2)
+                        break;
+
+                    // is this function implemented inline?
+                    if (Token::simpleMatch(tok2, ") {"))
+                    {
+                        // if the function doesn't have any assignment nor function call,
+                        // it can be a const function..
+                        unsigned int indentlevel = 0;
+                        bool isconst = true;
+                        for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
+                        {
+                            if (tok3->str() == "{")
+                                ++indentlevel;
+                            else if (tok3->str() == "}")
+                            {
+                                if (indentlevel <= 1)
+                                    break;
+                                --indentlevel;
+                            }
+                            else if (tok3->str() == "=" ||
+                                     Token::Match(tok, "%var% ("))
+                            {
+                                isconst = false;
+                                break;
+                            }
+                        }
+
+                        // nothing non-const was found. write error..
+                        if (isconst)
+                            checkConstError(tok2, classname, functionName);
+                    }
+                }
+            }
+
+        }
+    }
+
+}
+
+void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
+{
+    reportError(tok, Severity::style, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
+}
+
+
+
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
     reportError(tok, Severity::style, "noConstructor", "The " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' has no constructor. Member variables not initialized.");

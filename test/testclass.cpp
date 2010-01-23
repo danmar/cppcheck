@@ -78,6 +78,9 @@ private:
         TEST_CASE(memsetOnClass);
 
         TEST_CASE(this_subtraction);    // warn about "this-x"
+
+        // can member function be made const
+        TEST_CASE(const1);
     }
 
     // Check the operator Equal
@@ -1500,6 +1503,32 @@ private:
                              "this-x ;\n");
         ASSERT_EQUALS("[test.cpp:2]: (possible style) Suspicious pointer subtraction\n"
                       "[test.cpp:3]: (possible style) Suspicious pointer subtraction\n", errout.str());
+    }
+
+    void checkConst(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error log
+        errout.str("");
+
+        // Check..
+        Settings settings;
+        CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.checkConst();
+    }
+
+    void const1()
+    {
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    int getA() { return a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::getA' can be const\n", errout.str());
     }
 };
 

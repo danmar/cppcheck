@@ -96,6 +96,9 @@ public:
 
     /** @brief warn for "this-x". The indented code may be "this->x"  */
     void thisSubtraction();
+
+    /** @brief can member function be const? */
+    void checkConst();
 private:
 
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
@@ -161,6 +164,8 @@ private:
     void operatorEqRetRefThisError(const Token *tok);
     void operatorEqToSelfError(const Token *tok);
 
+    void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
+
     void getErrorMessages()
     {
         noConstructorError(0, "classname", false);
@@ -174,6 +179,7 @@ private:
         thisSubtractionError(0);
         operatorEqRetRefThisError(0);
         operatorEqToSelfError(0);
+        checkConstError(0, "class", "function");
     }
 
     std::string name() const
@@ -189,7 +195,8 @@ private:
                "* [[CheckMemset|Warn if memset, memcpy etc are used on a class]]\n"
                "* If it's a base class, check that the destructor is virtual\n"
                "* The operator= should return a constant reference to itself\n"
-               "* Are there unused private functions\n";
+               "* Are there unused private functions\n"
+               "* Constness for member functions\n";
     }
 };
 /// @}
