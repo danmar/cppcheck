@@ -1401,6 +1401,9 @@ void CheckClass::thisSubtraction()
 
 void CheckClass::checkConst()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "class %var% :|{"))

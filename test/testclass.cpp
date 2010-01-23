@@ -1518,6 +1518,7 @@ private:
 
         // Check..
         Settings settings;
+        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkConst();
     }

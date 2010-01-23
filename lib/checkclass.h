@@ -66,6 +66,7 @@ public:
             }
         }
         checkClass.virtualDestructor();
+        checkClass.checkConst();
     }
 
 
