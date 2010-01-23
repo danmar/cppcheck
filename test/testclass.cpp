@@ -1546,6 +1546,14 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        // functions with a function call can't be const..
+        checkConst("class foo\n"
+                   "{\n"
+                   "public:\n"
+                   "    int x;\n"
+                   "    void b() { a(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

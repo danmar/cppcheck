@@ -1466,7 +1466,7 @@ void CheckClass::checkConst()
                             }
 
                             // function call..
-                            else if (Token::Match(tok, "%var% ("))
+                            else if (Token::Match(tok3, "%var% ("))
                             {
                                 isconst = false;
                                 break;
