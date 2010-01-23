@@ -1455,8 +1455,18 @@ void CheckClass::checkConst()
                                     break;
                                 --indentlevel;
                             }
+
+                            // assignment.. = += |= ..
                             else if (tok3->str() == "=" ||
-                                     Token::Match(tok, "%var% ("))
+                                     (tok3->str().find("=") == 1 &&
+                                      tok3->str().find_first_of("<>") == std::string::npos))
+                            {
+                                isconst = false;
+                                break;
+                            }
+
+                            // function call..
+                            else if (Token::Match(tok, "%var% ("))
                             {
                                 isconst = false;
                                 break;

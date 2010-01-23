@@ -1539,6 +1539,13 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        // assignment through |=..
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    int setA() { a |= true; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 };
 
