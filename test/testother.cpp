@@ -1716,6 +1716,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
+
+        // using uninitialized function pointer..
+        checkUninitVar("void foo()\n"
+                       "{\n"
+                       "    void (*f)();\n"
+                       "    f();\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: f\n", errout.str());
     }
 
 

@@ -1706,6 +1706,11 @@ private:
                 }
             }
 
+            if (Token::simpleMatch(tok.next(), "("))
+            {
+                use_pointer(foundError, checks, &tok);
+            }
+
             if (Token::Match(tok.tokAt(-2), "[;{}] *"))
             {
                 if (Token::simpleMatch(tok.next(), "="))
