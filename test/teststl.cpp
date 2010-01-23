@@ -585,7 +585,7 @@ private:
         Tokenizer tokenizer(0, this);
         std::istringstream istr(src);
         ASSERT_EQUALS(false, tokenizer.tokenize(istr, "test.cpp"));
-        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character ((). Can't process file.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid number of character (() when these macros are defined: ''.\n", errout.str());
     }
 
 

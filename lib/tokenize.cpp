@@ -805,8 +805,10 @@ void Tokenizer::simplifyTypedef()
     }
 }
 
-bool Tokenizer::tokenize(std::istream &code, const char FileName[])
+bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::string configuration)
 {
+    _configuration = configuration;
+
     // The "_files" vector remembers what files have been tokenized..
     _files.push_back(FileLister::simplifyPath(FileName));
 
@@ -5023,7 +5025,12 @@ void Tokenizer::syntaxError(const Token *tok, char c)
 
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            "error",
-                                           std::string("Invalid number of character (") + c + "). Can't process file.",
+                                           std::string("Invalid number of character (") +
+                                           c +
+                                           ") " +
+                                           "when these macros are defined: '" +
+                                           _configuration +
+                                           "'.",
                                            "syntaxError");
 
     if (_errorLogger)

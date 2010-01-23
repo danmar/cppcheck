@@ -64,9 +64,10 @@ public:
      * \endcode
      *
      * @param FileName The filename
+     * @param configuration E.g. "A" for code where "#ifdef A" is true
      * @return false if Source code contains syntax errors
      */
-    bool tokenize(std::istream &code, const char FileName[]);
+    bool tokenize(std::istream &code, const char FileName[], const std::string configuration = "");
 
     /**
      * Create tokens from code.
@@ -397,6 +398,10 @@ private:
     std::vector<std::string> _files;
     const Settings * const _settings;
     ErrorLogger * const _errorLogger;
+
+    /** E.g. "A" for code where "#ifdef A" is true. This is used to
+        print additional information in error situations. */
+    std::string _configuration;
 };
 
 /// @}

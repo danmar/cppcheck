@@ -531,7 +531,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     {
         std::istringstream istr(code);
         TIMER_START();
-        if (!_tokenizer.tokenize(istr, FileName))
+        if (!_tokenizer.tokenize(istr, FileName, cfg))
         {
             // File had syntax errors, abort
             return;
