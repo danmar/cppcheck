@@ -990,6 +990,15 @@ private:
                          "    int sz = sizeof((*(struct dummy *)0).x);\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // function pointer..
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "    void (*f)();\n"
+                         "    f = 0;\n"
+                         "    f();\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: f\n", errout.str());
     }
 
     void nullpointer7()

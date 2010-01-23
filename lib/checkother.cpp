@@ -1307,6 +1307,8 @@ private:
                 dereference(foundError, checks, &tok);
             else if (Token::Match(tok.previous(), "return %var% [ %any% ]"))
                 dereference(foundError, checks, &tok);
+            else if (Token::Match(&tok, "%var% ("))
+                dereference(foundError, checks, &tok);
             else
                 bailOutVar(checks, tok.varId());
         }
