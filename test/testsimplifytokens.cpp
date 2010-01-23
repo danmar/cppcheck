@@ -2169,6 +2169,33 @@ private:
         ASSERT_EQUALS("\"a\"", tok("\"\\177\""));
     }
 
+
+    std::string simplifyTypedef(const char code[])
+    {
+        errout.str("");
+
+        Settings settings;
+        Tokenizer tokenizer(&settings, this);
+        tokenizer._files.push_back("test.cpp");
+
+        std::istringstream istr(code);
+        tokenizer.createTokens(istr);
+        tokenizer.createLinks();
+        tokenizer.simplifyTypedef();
+
+        std::string ret;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        {
+            if (tok != tokenizer.tokens())
+                ret += " ";
+            ret += tok->str();
+        }
+
+        return ret;
+    }
+
+
+
     void simplifyTypedef1()
     {
         const char code[] = "class A\n"
@@ -2663,7 +2690,7 @@ private:
             "void ( * pf ) ( ) ; "
             "void * ( * pfv ) ( void * ) ;";
 
-        ASSERT_EQUALS(tok(expected), tok(code));
+        ASSERT_EQUALS(expected, simplifyTypedef(code));
     }
 
     void simplifyTypedef22()
@@ -2831,7 +2858,7 @@ private:
                 "void ( * fill_names ) ( struct vfs_class * me , void ( * ) ( const char * ) ) ; "
                 "}";
 
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, simplifyTypedef(code));
         }
 
         {
@@ -2846,7 +2873,7 @@ private:
                 "void ( * fill_names ) ( void ( * ) ( const char * ) , struct vfs_class * me ) ; "
                 "}";
 
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, simplifyTypedef(code));
         }
     }
 

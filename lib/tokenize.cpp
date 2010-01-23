@@ -952,7 +952,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[])
     removeExceptionSpecifications(_tokens);
 
     // simplify function pointers
-//    simplifyFunctionPointers();
+    simplifyFunctionPointers();
 
     setVarId();
     if (!validate())
