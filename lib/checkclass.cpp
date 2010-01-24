@@ -1406,7 +1406,7 @@ void CheckClass::checkConst()
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class|struct %var% :|{"))
+        if (Token::Match(tok, "class|struct %var% {"))
         {
             // get class name..
             const std::string classname(tok->strAt(1));
@@ -1425,9 +1425,17 @@ void CheckClass::checkConst()
                 else if (tok2->str() == "}")
                     break;
 
+                // start of statement?
+                if (!Token::Match(tok2->previous(), "[;{}]"))
+                    continue;
+
+                // skip private: public: etc
+                if (tok2->isName() && tok2->str().find(":") != std::string::npos)
+                    tok2 = tok2->next();
+
                 // member function?
-                if (Token::Match(tok2, "[;}] %type% %var% (") ||
-                    Token::Match(tok2, "[;}] %type% operator %any% ("))
+                if (Token::Match(tok2, "%type% %var% (") ||
+                    Token::Match(tok2, "%type% operator %any% ("))
                 {
                     // goto function name..
                     while (tok2->next()->str() != "(")
