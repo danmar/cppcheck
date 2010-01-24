@@ -1470,6 +1470,13 @@ void CheckClass::checkConst()
                                 break;
                             }
 
+                            // increment/decrement (member variable?)..
+                            else if (Token::Match(tok3, "++|--"))
+                            {
+                                isconst = false;
+                                break;
+                            }
+
                             // function call..
                             else if (tok3->str() != "return" && Token::Match(tok3, "%var% ("))
                             {

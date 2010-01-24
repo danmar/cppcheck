@@ -81,7 +81,8 @@ private:
 
         // can member function be made const
         TEST_CASE(const1);
-        TEST_CASE(const2);
+        TEST_CASE(constoperator);   // operator< can often be const
+        TEST_CASE(constincdec);     // increment/decrement => non-const
     }
 
     // Check the operator Equal
@@ -1558,13 +1559,23 @@ private:
     }
 
     // operator< can often be const
-    void const2()
+    void constoperator()
     {
         checkConst("struct Fred {\n"
                    "    int a;\n"
                    "    bool operator<(const Fred &f) { return (a < f.a); }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::operator<' can be const\n", errout.str());
+    }
+
+    // increment/decrement => not const
+    void constincdec()
+    {
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void nextA() { return ++a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
