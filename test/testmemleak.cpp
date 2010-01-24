@@ -448,12 +448,15 @@ private:
         // loop..
         ASSERT_EQUALS(";;loop{}", getcode("char *s; while (a) { }", "s"));
         ASSERT_EQUALS(";;loopcallfunc{}", getcode("char *s; while (a()) { }", "s"));
-        ASSERT_EQUALS(";;loop{}", getcode("char *s; while (s) { }", "s"));
         ASSERT_EQUALS(";;loop{}", getcode("char *s; for (a;b;c) { }", "s"));
         ASSERT_EQUALS(";;loop{alloc;}", getcode("char *s; for (a;b;c) { s=malloc(10); }", "s"));
         ASSERT_EQUALS(";;do{}loop;", getcode("char *s; do { } while (a);", "s"));
         ASSERT_EQUALS(";;while1{}", getcode("char *s; while(true) { }", "s"));
         ASSERT_EQUALS(";;while1{}", getcode("char *s; for(;;) { }", "s"));
+        ASSERT_EQUALS(";;while(var){}", getcode("char *s; while (s) { }", "s"));
+        ASSERT_EQUALS(";;while(!var){}", getcode("char *s; while (!s) { }", "s"));
+        ASSERT_EQUALS(";;alloc;while(var){}", getcode("int fd = open(); while (fd >= 0) { }", "fd"));
+        ASSERT_EQUALS(";;alloc;while(!var){}", getcode("int fd = open(); while (fd < 0) { }", "fd"));
 
         // asprintf..
         ASSERT_EQUALS(";;alloc;", getcode("char *s; asprintf(&s, \"xyz\");", "s"));
@@ -562,22 +565,16 @@ private:
         // replace "if ( ! var )" => "if(!var)"
         for (Token *tok = tokenizer._tokens; tok; tok = tok->next())
         {
-            if (Token::simpleMatch(tok, "if ( var )"))
+            if (Token::Match(tok, "if|while ( var )"))
             {
                 Token::eraseTokens(tok, tok->tokAt(4));
-                tok->str("if(var)");
+                tok->str(tok->str() + "(var)");
             }
 
-            else if (Token::simpleMatch(tok, "if ( ! var )"))
+            else if (Token::Match(tok, "if|while ( ! var )"))
             {
                 Token::eraseTokens(tok, tok->tokAt(5));
-                tok->str("if(!var)");
-            }
-
-            else if (Token::simpleMatch(tok, "! var"))
-            {
-                tok->deleteNext();
-                tok->str("!var");
+                tok->str(tok->str() + "(!var)");
             }
         }
 
@@ -659,11 +656,13 @@ private:
         ASSERT_EQUALS("; alloc ; alloc ;", simplifycode("; alloc ; do { alloc ; } loop ;"));
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc ; do { } loop ; exit ;"));
 
-        ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; loop !var alloc ;"));
+        ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while(!var) alloc ;"));
 
         ASSERT_EQUALS("; alloc ; dealloc ; return ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } }"));
         ASSERT_EQUALS("; alloc ; dealloc ; return ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } if { continue ; } }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc ; while1 { if { dealloc ; return ; } if { break ; } }"));
+
+        ASSERT_EQUALS(";", simplifycode("; do { dealloc ; alloc ; } while(var) ;"));
 
         // callfunc..
         ASSERT_EQUALS("; callfunc ;\n;", simplifycode(";callfunc;"));

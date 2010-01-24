@@ -988,6 +988,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
         // Loops..
         else if ((tok->str() == "for") || (tok->str() == "while"))
         {
+            isloop = true;
+
             if (Token::simpleMatch(tok, "while ( true )") ||
                 Token::simpleMatch(tok, "for ( ; ; )"))
             {
@@ -995,8 +997,39 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 tok = tok->next()->link();
                 continue;
             }
+
+            else if (alloctype == Fd && varid)
+            {
+                if (Token::Match(tok, "while ( 0 <= %varid% )", varid) ||
+                    Token::Match(tok, "while ( %varid% != -1 )", varid))
+                {
+                    addtoken("while(var)");
+                    tok = tok->next()->link();
+                    continue;
+                }
+                else if (Token::Match(tok, "while ( %varid% == -1 )", varid) ||
+                         Token::Match(tok, "while ( %varid% < 0 )", varid))
+                {
+                    addtoken("while(!var)");
+                    tok = tok->next()->link();
+                    continue;
+                }
+            }
+
+            else if (varid && Token::Match(tok, "while ( %varid% )", varid))
+            {
+                addtoken("while(var)");
+                tok = tok->next()->link();
+                continue;
+            }
+            else if (varid && Token::simpleMatch(tok, "while (") && notvar(tok->tokAt(2), varid, true))
+            {
+                addtoken("while(!var)");
+                tok = tok->next()->link();
+                continue;
+            }
+
             addtoken("loop");
-            isloop = true;
         }
         else if ((tok->str() == "do"))
         {
@@ -1453,10 +1486,10 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 continue;
             }
 
-            // Reduce "alloc loop !var alloc ;" => "alloc ;"
-            if (Token::Match(tok2, "[;{}] alloc ; loop !var alloc ;"))
+            // Reduce "alloc while(!var) alloc ;" => "alloc ;"
+            if (Token::Match(tok2, "[;{}] alloc ; while(!var) alloc ;"))
             {
-                Token::eraseTokens(tok2, tok2->tokAt(5));
+                Token::eraseTokens(tok2, tok2->tokAt(4));
                 done = false;
             }
 
@@ -1581,6 +1614,13 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             {
                 tok2 = tok2->tokAt(3);
                 Token::eraseTokens(tok2, tok2->tokAt(3));
+                done = false;
+            }
+
+            // Reduce "do { dealloc ; alloc ; } while(var) ;" => ";"
+            if (Token::simpleMatch(tok2->next(), "do { dealloc ; alloc ; } while(var) ;"))
+            {
+                Token::eraseTokens(tok2, tok2->tokAt(9));
                 done = false;
             }
 
