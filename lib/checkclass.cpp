@@ -1433,8 +1433,14 @@ void CheckClass::checkConst()
                 if (tok2->isName() && tok2->str().find(":") != std::string::npos)
                     tok2 = tok2->next();
 
+                // static functions can't be const
+                // virtual functions may be non-const for a reason
+                if (Token::Match(tok2, "static|virtual"))
+                    continue;
+
                 // member function?
-                if (Token::Match(tok2, "%type% %var% (") ||
+                if (Token::Match(tok2, "%type% *|&| %var% (") ||
+                    Token::Match(tok2, "%type% %type% *|&| %var% (") ||
                     Token::Match(tok2, "%type% operator %any% ("))
                 {
                     // goto function name..

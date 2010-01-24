@@ -1556,6 +1556,15 @@ private:
                    "    void b() { a(); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // static functions can't be const..
+        checkConst("class foo\n"
+                   "{\n"
+                   "public:\n"
+                   "    static unsigned get()\n"
+                   "    { return 0; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // operator< can often be const
