@@ -685,11 +685,21 @@ void Tokenizer::simplifyTypedef()
                         {
                             if (tok2->next()->str() != ")" && tok2->next()->str() != ",")
                             {
-                                tok2 = tok2->next();
+                                if (Token::Match(tok2->next(), "( * %type% ) ("))
+                                    tok2 = tok2->tokAt(5)->link();
+                                else
+                                {
+                                    tok2 = tok2->next();
 
-                                // skip over typedef parameter
-                                if (tok2->next()->str() == "(")
-                                    tok2 = tok2->next()->link();
+                                    // skip over typedef parameter
+                                    if (tok2->next()->str() == "(")
+                                    {
+                                        tok2 = tok2->next()->link();
+
+                                        if (tok2->next()->str() == "(")
+                                            tok2 = tok2->next()->link();
+                                    }
+                                }
                             }
                         }
 

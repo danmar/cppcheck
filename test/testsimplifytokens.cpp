@@ -162,6 +162,7 @@ private:
         TEST_CASE(simplifyTypedef23);
         TEST_CASE(simplifyTypedef24);
         TEST_CASE(simplifyTypedef25);
+        TEST_CASE(simplifyTypedef26);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2887,6 +2888,34 @@ private:
                 "}";
 
             ASSERT_EQUALS(expected, simplifyTypedef(code));
+        }
+    }
+
+    void simplifyTypedef26()
+    {
+        {
+            const char code[] = "typedef void (*Callback) ();\n"
+                                "void    addCallback(Callback (*callback)());";
+
+            const char expected[] =
+                "; "
+                "void addCallback ( void ( * ( * callback ) ( ) ) ( ) ) ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            // ticket # 1307
+            const char code[] = "typedef void (*pc_video_update_proc)(bitmap_t *bitmap,\n"
+                                "struct mscrtc6845 *crtc);\n"
+                                "\n"
+                                "struct mscrtc6845 *pc_video_start(pc_video_update_proc (*choosevideomode)(running_machine *machine, int *width, int *height, struct mscrtc6845 *crtc));";
+
+            const char expected[] =
+                "; "
+                "struct mscrtc6845 * pc_video_start ( void ( * ( * choosevideomode ) ( running_machine * machine , int * width , int * height , struct mscrtc6845 * crtc ) ) ( bitmap_t * bitmap , struct mscrtc6845 * crtc ) ) ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
         }
     }
 
