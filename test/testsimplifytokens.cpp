@@ -95,6 +95,7 @@ private:
         TEST_CASE(template15);
         TEST_CASE(template16);
         TEST_CASE(template17);
+        TEST_CASE(template18);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
@@ -1457,6 +1458,18 @@ private:
 
         // Assert that there are not segmentation fault..
         sizeof_(code);
+    }
+
+    void template18()
+    {
+        const char code[] = "template <class T> class foo { T a; };\n"
+                            "foo<int> *f;";
+
+        const std::string expected("; ; "
+                                   "foo<int> * f ; "
+                                   "class foo<int> { int a ; }");
+
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
     void template_default_parameter()

@@ -1323,7 +1323,7 @@ void Tokenizer::simplifyTemplates()
                     continue;
 
                 if (Token::Match(tok2->previous(), "[;{}=]") &&
-                    !Token::Match(tok2, (pattern + (isfunc ? "(" : "%var%")).c_str()))
+                    !Token::Match(tok2, (pattern + (isfunc ? "(" : "*| %var%")).c_str()))
                     continue;
 
                 // New type..
