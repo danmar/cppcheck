@@ -26,10 +26,5 @@ ELSE (MSVC_IDE)
   ADD_SUBDIRECTORY(test EXCLUDE_FROM_ALL)
 ENDIF (MSVC_IDE)
 
-# Don't build GUI for Cygwin (most installations don't have QT)
-IF (NOT CYGWIN)
-  ADD_SUBDIRECTORY(gui)
-ENDIF (NOT CYGWIN)
-
+ADD_SUBDIRECTORY(gui)
 ADD_SUBDIRECTORY(man)
-
