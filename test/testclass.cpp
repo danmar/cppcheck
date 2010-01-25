@@ -83,6 +83,7 @@ private:
         TEST_CASE(const1);
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
+        TEST_CASE(constReturnReference);
     }
 
     // Check the operator Equal
@@ -1583,6 +1584,17 @@ private:
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    void nextA() { return ++a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // return pointer/reference => not const
+    void constReturnReference()
+    {
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    int &getR() { return a; }\n"
+                   "    int *getP() { return &a; }"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
