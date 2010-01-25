@@ -4667,7 +4667,8 @@ void Tokenizer::simplifyEnum()
             ++classLevel;
             continue;
         }
-        else if (Token::Match(tok, "enum %type% {"))
+        else if (Token::Match(tok, "enum {") ||
+                 Token::Match(tok, "enum %type% {"))
         {
             Token * tok1;
             Token * end;

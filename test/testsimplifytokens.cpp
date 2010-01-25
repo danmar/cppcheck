@@ -176,6 +176,7 @@ private:
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
+        TEST_CASE(enum3);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -3134,6 +3135,14 @@ private:
     {
         const char code[] = "enum A { a, }; int array[a];";
         const char expected[] = "enum A { a = 0 , } ; int array [ 0 ] ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void enum3()
+    {
+        const char code[] = "enum { a, }; int array[a];";
+        const char expected[] = "enum { a = 0 , } ; int array [ 0 ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
