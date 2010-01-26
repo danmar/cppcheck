@@ -58,6 +58,7 @@ private:
         checkAutoVariables.autoVariables();
         checkAutoVariables.returnPointerToLocalArray();
         checkAutoVariables.returnReference();
+        checkAutoVariables.returncstr();
     }
 
     void run()
@@ -73,6 +74,9 @@ private:
 
         // return reference..
         TEST_CASE(returnReference);
+
+        // return c_str()..
+        TEST_CASE(returncstr);
     }
 
 
@@ -188,7 +192,41 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("std::string hello()\n"
+              "{\n"
+              "     return \"hello\";\n"
+              "}\n"
+              "\n"
+              "std::string &f()\n"
+              "{\n"
+              "    return hello();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Returning reference to temporary\n", errout.str());
     }
+
+    void returncstr()
+    {
+        check("const char *foo()\n"
+              "{\n"
+              "    std::string s;\n"
+              "    return s.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Returning pointer to auto variable\n", errout.str());
+
+        check("std::string hello()\n"
+              "{\n"
+              "     return \"hello\";\n"
+              "}\n"
+              "\n"
+              "const char *f()\n"
+              "{\n"
+              "    return hello().c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Returning pointer to temporary\n", errout.str());
+    }
+
 };
 
 REGISTER_TEST(TestAutoVariables)
