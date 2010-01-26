@@ -122,6 +122,7 @@ private:
     void run()
     {
         TEST_CASE(testFunctionReturnType);
+        TEST_CASE(open);
     }
 
     CheckMemoryLeak::AllocType functionReturnType(const char code[])
@@ -163,6 +164,27 @@ private:
                                 "}";
             ASSERT_EQUALS(CheckMemoryLeak::NewArray, functionReturnType(code));
         }
+    }
+
+    void open()
+    {
+        const char code[] = "class A {\n"
+                            "  static int open() {\n"
+                            "    return 1;\n"
+                            "  }\n"
+                            "\n"
+                            "  A() {\n"
+                            "    int ret = open();\n"
+                            "  }\n"
+                            "};\n";
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // there is no allocation
+        const Token *tok = Token::findmatch(tokenizer.tokens(), "ret =");
+        CheckMemoryLeak check(&tokenizer, 0);
+        ASSERT_EQUALS(CheckMemoryLeak::No, check.getAllocationType(tok->tokAt(2), 1));
     }
 };
 

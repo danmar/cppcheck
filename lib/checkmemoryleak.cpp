@@ -152,7 +152,12 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         return File;
 
     if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp ("))
+    {
+        // is there a user function with this name?
+        if (tokenizer && Token::findmatch(tokenizer->tokens(), ("%type% *|&| " + tok2->str()).c_str()))
+            return No;
         return Fd;
+    }
 
     if (Token::simpleMatch(tok2, "popen ("))
         return Pipe;
