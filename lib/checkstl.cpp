@@ -551,7 +551,7 @@ bool CheckStl::isStlContainer(const Token *tok)
         static const char STL_CONTAINER_LIST[] = "bitset|deque|list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|vector";
 
         // container template string
-        const std::string checkStr = (std::string(STL_CONTAINER_LIST) + " <");
+        const std::string checkStr(std::string(STL_CONTAINER_LIST) + " <");
 
         // check if it's an stl template
         if (Token::Match(type, checkStr.c_str()))
@@ -600,5 +600,6 @@ void CheckStl::size()
 
 void CheckStl::sizeError(const Token *tok)
 {
-    reportError(tok, Severity::possibleStyle, "stlSize", "Replace size() check against 0 with empty(): " + (tok ? tok->str() : std::string("variable name")));
+    const std::string varname(tok ? tok->str() : "list");
+    reportError(tok, Severity::possibleStyle, "stlSize", "Use " + varname + ".empty() instead of " + varname + ".size() to guarantee fast code." + (_settings->_verbose ? " size() can take linear time but empty() is guaranteed to take constant time." : ""));
 }
