@@ -201,8 +201,7 @@ private:
               "{\n"
               "    return hello();\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Returning reference to temporary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Returning reference to temporary\n", errout.str());
     }
 
     void returncstr()
@@ -223,8 +222,7 @@ private:
               "{\n"
               "    return hello().c_str();\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Returning pointer to temporary\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Returning pointer to temporary\n", errout.str());
     }
 
 };

@@ -72,19 +72,28 @@ private:
     void addVD(unsigned int varId);
     void addVDA(unsigned int varId);
 
-
+    /**
+     * Returning a temporary object?
+     * @param tok pointing at the "return" token
+     * @return true if a temporary object is returned
+     */
+    bool returnTemporary(const Token *tok) const;
 
     void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok);
     void errorReturnReference(const Token *tok);
+    void errorReturnTempReference(const Token *tok);
     void errorReturnAutocstr(const Token *tok);
+    void errorReturnTempPointer(const Token *tok);
 
     void getErrorMessages()
     {
         errorAutoVariableAssignment(0);
         errorReturnPointerToLocalArray(0);
         errorReturnReference(0);
+        errorReturnTempReference(0);
         errorReturnAutocstr(0);
+        errorReturnTempPointer(0);
     }
 
     std::string name() const
@@ -96,7 +105,7 @@ private:
     {
         return "A pointer to a variable is only valid as long as the variable is in scope.\n"
                "Check:\n"
-               "* returning a pointer to auto variable\n"
+               "* returning a pointer to auto or temporary variable\n"
                "* assigning address of an variable to an effective parameter of a function\n"
                "* returning reference to local/temporary variable\n";
     }

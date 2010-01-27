@@ -307,6 +307,16 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok)
 }
 
 
+
+// return temporary?
+bool CheckAutoVariables::returnTemporary(const Token *tok) const
+{
+    if (!Token::Match(tok, "return %var% ("))
+        return false;
+    return bool(0 != Token::findmatch(_tokenizer->tokens(), ("std :: string " + tok->next()->str() + " (").c_str()));
+}
+
+
 void CheckAutoVariables::returnReference()
 {
     // locate function that returns a reference..
@@ -381,6 +391,13 @@ void CheckAutoVariables::returnReference()
                             errorReturnReference(tok2);
                         }
                     }
+
+                    // return reference to temporary..
+                    else if (returnTemporary(tok2))
+                    {
+                        // report error..
+                        errorReturnTempReference(tok2);
+                    }
                 }
             }
         }
@@ -390,6 +407,11 @@ void CheckAutoVariables::returnReference()
 void CheckAutoVariables::errorReturnReference(const Token *tok)
 {
     reportError(tok, Severity::error, "returnReference", "Returning reference to auto variable");
+}
+
+void CheckAutoVariables::errorReturnTempReference(const Token *tok)
+{
+    reportError(tok, Severity::error, "returnTempReference", "Returning reference to temporary");
 }
 
 
@@ -465,6 +487,13 @@ void CheckAutoVariables::returncstr()
                             errorReturnAutocstr(tok2);
                         }
                     }
+
+                    // return pointer to temporary..
+                    else if (returnTemporary(tok2))
+                    {
+                        // report error..
+                        errorReturnTempPointer(tok2);
+                    }
                 }
             }
         }
@@ -474,6 +503,11 @@ void CheckAutoVariables::returncstr()
 void CheckAutoVariables::errorReturnAutocstr(const Token *tok)
 {
     reportError(tok, Severity::error, "returnAutocstr", "Returning pointer to auto variable");
+}
+
+void CheckAutoVariables::errorReturnTempPointer(const Token *tok)
+{
+    reportError(tok, Severity::error, "returnTempPointer", "Returning pointer to temporary");
 }
 
 
