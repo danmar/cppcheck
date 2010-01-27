@@ -2727,6 +2727,8 @@ private:
         TEST_CASE(use);
 
         TEST_CASE(free_member_in_sub_func);
+
+        TEST_CASE(mismatch1);
     }
 
 
@@ -2778,7 +2780,7 @@ private:
               "    free(str1);\n"
               "}\n", true);
 
-        ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:17]: (possible error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
     }
 
     void class3()
@@ -3080,6 +3082,34 @@ private:
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
+
+    void mismatch1()
+    {
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "    A(int i);\n"
+              "    ~A();\n"
+              "private:\n"
+              "    char* pkt_buffer;\n"
+              "};\n"
+              "\n"
+              "A::A(int i)\n"
+              "{\n"
+              "    pkt_buffer = new char[8192];\n"
+              "    if (i != 1) {\n"
+              "        delete pkt_buffer;\n"
+              "        pkt_buffer = 0;\n"
+              "    }\n"
+              "}\n"
+              "\n"
+              "A::~A() {\n"
+              "    delete [] pkt_buffer;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:14]: (possible error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
+    }
+
+
 };
 
 static TestMemleakInClass testMemleakInClass;

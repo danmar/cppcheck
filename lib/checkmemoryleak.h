@@ -123,7 +123,7 @@ public:
     void deallocDeallocError(const Token *tok, const std::string &varname);
     void deallocuseError(const Token *tok, const std::string &varname);
     void mismatchSizeError(const Token *tok, const std::string &sz);
-    void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname);
+    void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname, bool all);
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Token *tok) const;
@@ -272,7 +272,7 @@ private:
         deallocuseError(0, "varname");
         mismatchSizeError(0, "sz");
         std::list<const Token *> callstack;
-        mismatchAllocDealloc(callstack, "varname");
+        mismatchAllocDealloc(callstack, "varname", false);
     }
 
     std::string name() const
@@ -314,8 +314,8 @@ public:
     void check();
 
 private:
-    void parseClass(const Token *tok1, std::vector<const char *> &classname);
-    void variable(const char classname[], const Token *tokVarname);
+    void parseClass(const Token *tok1, std::vector<std::string> &classname);
+    void variable(const std::string &classname, const Token *tokVarname);
 
     void getErrorMessages()
     { }

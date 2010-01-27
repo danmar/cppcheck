@@ -360,9 +360,9 @@ void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz)
     reportErr(tok, Severity::error, "mismatchSize", "The given size " + sz + " is mismatching");
 }
 
-void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname)
+void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname, bool all)
 {
-    reportErr(callstack, Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
+    reportErr(callstack, all ? Severity::possibleError : Severity::error, "mismatchAllocDealloc", "Mismatching allocation and deallocation: " + varname);
 }
 
 CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok) const
@@ -831,7 +831,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     if (alloc != Many && dealloctype != No && dealloctype != Many && dealloctype != alloc)
                     {
                         callstack.push_back(tok);
-                        mismatchAllocDealloc(callstack, Token::findmatch(_tokenizer->tokens(), "%varid%", varid)->str());
+                        mismatchAllocDealloc(callstack, Token::findmatch(_tokenizer->tokens(), "%varid%", varid)->str(), false);
                         callstack.pop_back();
                     }
 
@@ -882,7 +882,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     if (dealloc != Many && alloctype != No && alloctype != Many && alloctype != dealloc)
                     {
                         callstack.push_back(tok);
-                        mismatchAllocDealloc(callstack, Token::findmatch(_tokenizer->tokens(), "%varid%", varid)->str());
+                        mismatchAllocDealloc(callstack, Token::findmatch(_tokenizer->tokens(), "%varid%", varid)->str(), false);
                         callstack.pop_back();
                     }
                     dealloctype = dealloc;
@@ -2237,18 +2237,14 @@ void CheckMemoryLeakInFunction::check()
 
 void CheckMemoryLeakInClass::check()
 {
-    int indentlevel = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "{")
-            ++indentlevel;
+            tok = tok->link();
 
-        else if (tok->str() == "}")
-            --indentlevel;
-
-        else if (indentlevel == 0 && Token::Match(tok, "class %var% [{:]"))
+        else if (Token::Match(tok, "class %var% [{:]"))
         {
-            std::vector<const char *> classname;
+            std::vector<std::string> classname;
             classname.push_back(tok->strAt(1));
             parseClass(tok, classname);
         }
@@ -2256,7 +2252,7 @@ void CheckMemoryLeakInClass::check()
 }
 
 
-void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<const char *> &classname)
+void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::string> &classname)
 {
     // Go into class.
     while (tok1 && tok1->str() != "{")
@@ -2311,12 +2307,12 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<const cha
     }
 }
 
-void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVarname)
+void CheckMemoryLeakInClass::variable(const std::string &classname, const Token *tokVarname)
 {
     if (!_settings->_showAll)
         return;
 
-    const char *varname = tokVarname->strAt(0);
+    const std::string varname = tokVarname->strAt(0);
 
     // Check if member variable has been allocated and deallocated..
     CheckMemoryLeak::AllocType Alloc = CheckMemoryLeak::No;
@@ -2327,13 +2323,13 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
 
     // Loop through all tokens. Inspect member functions
     int indent_ = 0;
-    const Token *functionToken = Tokenizer::findClassFunction(_tokenizer->tokens(), classname, "~| %var%", indent_);
+    const Token *functionToken = Tokenizer::findClassFunction(_tokenizer->tokens(), classname.c_str(), "~| %var%", indent_);
     while (functionToken)
     {
-        const bool constructor(Token::Match(functionToken, (classname + std::string(" :: ") + classname + " (").c_str()));
+        const bool constructor(Token::Match(functionToken, (classname + " :: " + classname + " (").c_str()));
         const bool destructor(functionToken->tokAt(2)->str() == "~");
 
-        int indent = 0;
+        unsigned int indent = 0;
         bool initlist = false;
         for (const Token *tok = functionToken; tok; tok = tok->next())
         {
@@ -2341,9 +2337,9 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                 ++indent;
             else if (tok->str() == "}")
             {
-                --indent;
-                if (indent <= 0)
+                if (indent <= 1)
                     break;
+                --indent;
             }
             else if (indent == 0 && Token::simpleMatch(tok, ") :"))
                 initlist = true;
@@ -2351,12 +2347,12 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
             {
                 if (indent == 0)
                 {
-                    if (!Token::Match(tok, (":|, " + std::string(varname) + " (").c_str()))
+                    if (!Token::Match(tok, (":|, " + varname + " (").c_str()))
                         continue;
                 }
 
                 // Allocate..
-                if (indent == 0 || Token::Match(tok, (std::string(varname) + " =").c_str()))
+                if (indent == 0 || Token::Match(tok, (varname + " =").c_str()))
                 {
                     AllocType alloc = getAllocationType(tok->tokAt((indent > 0) ? 2 : 3), 0);
                     if (alloc != CheckMemoryLeak::No)
@@ -2371,7 +2367,7 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                         if (alloc != CheckMemoryLeak::Many && Dealloc != CheckMemoryLeak::No && Dealloc != CheckMemoryLeak::Many && Dealloc != alloc)
                         {
                             callstack.push_back(tok);
-                            mismatchAllocDealloc(callstack, (std::string(classname) + "::" + varname).c_str());
+                            mismatchAllocDealloc(callstack, classname + "::" + varname, true);
                             callstack.pop_back();
                         }
 
@@ -2384,12 +2380,12 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
 
                 // Deallocate..
                 const char *varnames[3] = { "var", 0, 0 };
-                varnames[0] = varname;
+                varnames[0] = varname.c_str();
                 AllocType dealloc = getDeallocationType(tok, varnames);
                 if (dealloc == No)
                 {
                     varnames[0] = "this";
-                    varnames[1] = varname;
+                    varnames[1] = varname.c_str();
                     dealloc = getDeallocationType(tok, varnames);
                 }
                 if (dealloc != CheckMemoryLeak::No)
@@ -2397,6 +2393,7 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                     if (destructor)
                         deallocInDestructor = true;
 
+                    // several types of allocation/deallocation?
                     if (Dealloc != CheckMemoryLeak::No && Dealloc != dealloc)
                         dealloc = CheckMemoryLeak::Many;
 
@@ -2404,7 +2401,7 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
                     if (dealloc != CheckMemoryLeak::Many && Alloc != CheckMemoryLeak::No &&  Alloc != Many && Alloc != dealloc)
                     {
                         callstack.push_back(tok);
-                        mismatchAllocDealloc(callstack, (std::string(classname) + "::" + varname).c_str());
+                        mismatchAllocDealloc(callstack, classname + "::" + varname, true);
                         callstack.pop_back();
                     }
 
@@ -2424,16 +2421,16 @@ void CheckMemoryLeakInClass::variable(const char classname[], const Token *tokVa
             }
         }
 
-        functionToken = Tokenizer::findClassFunction(functionToken->next(), classname, "~| %var%", indent_);
+        functionToken = Tokenizer::findClassFunction(functionToken->next(), classname.c_str(), "~| %var%", indent_);
     }
 
     if (allocInConstructor && !deallocInDestructor)
     {
-        memoryLeak(tokVarname, (std::string(classname) + "::" + varname).c_str(), Alloc, true);
+        memoryLeak(tokVarname, (classname + "::" + varname).c_str(), Alloc, true);
     }
     else if (Alloc != CheckMemoryLeak::No && Dealloc == CheckMemoryLeak::No)
     {
-        memoryLeak(tokVarname, (std::string(classname) + "::" + varname).c_str(), Alloc, true);
+        memoryLeak(tokVarname, (classname + "::" + varname).c_str(), Alloc, true);
     }
 }
 
