@@ -2257,10 +2257,9 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
     // Go into class.
     while (tok1 && tok1->str() != "{")
         tok1 = tok1->next();
-    if (tok1)
-        tok1 = tok1->next();
+    tok1 = tok1 ? tok1->next() : 0;
 
-    int indentlevel = 0;
+    unsigned int indentlevel = 0;
     for (const Token *tok = tok1; tok; tok = tok->next())
     {
         if (tok->str() == "{")
@@ -2268,9 +2267,9 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
 
         else if (tok->str() == "}")
         {
-            --indentlevel;
-            if (indentlevel < 0)
+            if (indentlevel == 0)
                 return;
+            --indentlevel;
         }
 
         // Only parse this particular class.. not subclasses
@@ -2292,17 +2291,14 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
         }
 
         // Declaring member variable.. check allocations and deallocations
-        if (Token::Match(tok->next(), "%type% * %var% ;"))
+        if (Token::Match(tok->previous(), ";|{|}|private:|protected:|public: %type% * %var% ;"))
         {
             // No false positives for auto deallocated classes..
-            if (_settings->isAutoDealloc(tok->strAt(1)))
+            if (_settings->isAutoDealloc(tok->str().c_str()))
                 continue;
 
-            if (tok->isName() || Token::Match(tok, "[;}]"))
-            {
-                if (_settings->_showAll || !isclass(_tokenizer, tok->tokAt(1)))
-                    variable(classname.back(), tok->tokAt(3));
-            }
+            if (_settings->_showAll || !isclass(_tokenizer, tok))
+                variable(classname.back(), tok->tokAt(2));
         }
     }
 }
