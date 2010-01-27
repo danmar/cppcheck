@@ -81,6 +81,32 @@ const char * CppCheck::version()
     return "1.40";
 }
 
+
+static void AddFilesToList(const std::string& FileList, std::vector<std::string>& PathNames)
+{
+    // to keep things initially simple, if the file can't be opened, just be
+    // silent and move on
+    // ideas : we could also require this should be an xml file, with the filenames
+    // specified in an xml structure
+    // we could elaborate this then, to also include the I-paths, ...
+    // basically for everything that makes the command line very long
+    // xml is a bonus then, since we can easily extend it
+    // we need a good parser then -> suggestion : TinyXml
+    // drawback : creates a dependency
+    std::ifstream Files(FileList.c_str());
+    if (Files)
+    {
+        std::string FileName;
+        while (std::getline(Files, FileName)) // next line
+        {
+            if (!FileName.empty())
+            {
+                PathNames.push_back(FileName);
+            }
+        }
+    }
+}
+
 void CppCheck::parseFromArgs(int argc, const char* const argv[])
 {
     std::vector<std::string> pathnames;
@@ -222,6 +248,12 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
             _settings._includePaths.push_back(path);
         }
 
+        // file list specified
+        else if (strncmp(argv[i], "--file-list=", 12) == 0)
+        {
+            // open this file and read every input file (1 file name per line)
+            AddFilesToList(12 + argv[i], pathnames);
+        }
 
         // Output formatter
         else if (strcmp(argv[i], "--template") == 0)
@@ -351,9 +383,8 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    cppcheck [--all] [--append=file] [--auto-dealloc file.lst] [--enable]\n"
         "             [--error-exitcode=[n]] [--exitcode-suppressions file] [--force]\n"
         "             [--help] [-Idir] [-j [jobs]] [--quiet] [--style]\n"
-        "             [--suppressions file.txt] [--inline-suppr] [--verbose]\n"
-        "             [--version] [--xml] [file or path1]\n"
-        "             [file or path] ...\n"
+        "             [--suppressions file.txt] [--inline-suppr] [--file-list=file.txt]\n"
+        "             [--verbose] [--version] [--xml] [file or path1] [file or path] ..\n"
         "\n"
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
@@ -400,6 +431,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
         "                         more comments in the form: // cppcheck-suppress memleak\n"
         "                         on the lines before the warning to suppress.\n"
+        "    --file-list=file     Specify the files to check in a text file. One Filename per line.\n"
         "    --template '[text]'  Format the error messages. E.g.\n"
         "                         '{file}:{line},{severity},{id},{message}' or\n"
         "                         '{file}({line}):({severity}) {message}'\n"
