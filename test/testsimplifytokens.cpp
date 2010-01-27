@@ -163,6 +163,7 @@ private:
         TEST_CASE(simplifyTypedef24);
         TEST_CASE(simplifyTypedef25);
         TEST_CASE(simplifyTypedef26);
+        TEST_CASE(simplifyTypedef27);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2918,6 +2919,25 @@ private:
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void simplifyTypedef27()
+    {
+        // ticket #1316
+        const char code[] = "int main()\n"
+                            "{\n"
+                            "    typedef int (*func_ptr)(float, double);\n"
+                            "    VERIFY((is_same<result_of<func_ptr(char, float)>::type, int>::value));\n"
+                            "}";
+
+        const char expected[] =
+            "int main ( ) "
+            "{ "
+            "; "
+            "VERIFY ( ( is_same < result_of < int ( * ( char , float ) ) ( float , double ) > :: type , int > :: value ) ) ; "
+            "}";
+
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void reverseArraySyntax()

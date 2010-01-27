@@ -446,6 +446,7 @@ void Tokenizer::simplifyTypedef()
         const char *type1 = 0;
         const char *type2 = 0;
         const char *type3 = 0;
+        const char *type4 = 0;
         const char *typeName = 0;
         std::list<std::string> pointers;
         Token *start = 0;
@@ -454,6 +455,7 @@ void Tokenizer::simplifyTypedef()
         Token *typeDef = tok;
         int offset = 1;
         bool functionPtr = false;
+        bool functionRef = false;
 
         if (Token::Match(tok->next(), "%type% <") ||
             Token::Match(tok->next(), "%type% %type% <") ||
@@ -510,9 +512,21 @@ void Tokenizer::simplifyTypedef()
             {
                 type2 = tok->strAt(offset++);
 
-                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
-                    tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "::"))
+                {
                     type3 = tok->strAt(offset++);
+
+                    if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
+                        tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+                    {
+                        type4 = tok->strAt(offset++);
+                    }
+                }
+                else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
+                         tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+                {
+                    type3 = tok->strAt(offset++);
+                }
             }
         }
         else
@@ -542,18 +556,22 @@ void Tokenizer::simplifyTypedef()
                 continue;
             }
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * %type% ) ("))
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( *|& %type% ) ("))
         {
             if (tok->tokAt(offset + 4)->link()->next())
             {
-                functionPtr = true;
+                functionPtr = tok->tokAt(offset + 1)->str() == "*";
+                functionRef = tok->tokAt(offset + 1)->str() == "&";
                 typeName = tok->strAt(offset + 2);
                 start = tok->tokAt(offset + 4);
                 end = tok->tokAt(offset + 4)->link();
                 tok = end->next();
             }
             else
+            {
+                // internal error
                 continue;
+            }
         }
         else
         {
@@ -623,11 +641,11 @@ void Tokenizer::simplifyTypedef()
                     bool inCast = false;
 
                     if ((tok2->previous()->str() == "(" && tok2->next()->str() == ")") ||
-                        (Token::Match(tok2->tokAt(-2), "static_cast <") &&
+                        (Token::Match(tok2->tokAt(-1), "<") &&
                          Token::Match(tok2->next(), "> (")))
                         inCast = true;
 
-                    if (start && end && !functionPtr)
+                    if (start && end && !(functionPtr || functionRef))
                     {
                         tok2->str(start->str());
                         Token * nextToken;
@@ -664,6 +682,11 @@ void Tokenizer::simplifyTypedef()
                             tok2->insertToken(type3);
                             tok2 = tok2->next();
                         }
+                        if (type4)
+                        {
+                            tok2->insertToken(type4);
+                            tok2 = tok2->next();
+                        }
                     }
 
                     while (!pointers.empty())
@@ -673,12 +696,15 @@ void Tokenizer::simplifyTypedef()
                         tok2 = tok2->next();
                     }
 
-                    if (functionPtr)
+                    if (functionPtr || functionRef)
                     {
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         Token *tok3 = tok2;
-                        tok2->insertToken("*");
+                        if (functionPtr)
+                            tok2->insertToken("*");
+                        else
+                            tok2->insertToken("&");
                         tok2 = tok2->next();
 
                         if (!inCast)
@@ -689,15 +715,20 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->tokAt(5)->link();
                                 else
                                 {
-                                    tok2 = tok2->next();
-
-                                    // skip over typedef parameter
                                     if (tok2->next()->str() == "(")
-                                    {
                                         tok2 = tok2->next()->link();
+                                    else
+                                    {
+                                        tok2 = tok2->next();
 
+                                        // skip over typedef parameter
                                         if (tok2->next()->str() == "(")
+                                        {
                                             tok2 = tok2->next()->link();
+
+                                            if (tok2->next()->str() == "(")
+                                                tok2 = tok2->next()->link();
+                                        }
                                     }
                                 }
                             }
