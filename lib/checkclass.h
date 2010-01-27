@@ -195,8 +195,9 @@ private:
                "* Are all variables initialized by the constructors?\n"
                "* [[CheckMemset|Warn if memset, memcpy etc are used on a class]]\n"
                "* If it's a base class, check that the destructor is virtual\n"
-               "* The operator= should return a constant reference to itself\n"
                "* Are there unused private functions\n"
+               "* 'operator=' should return reference to self\n"
+               "* 'operator=' should check for assignment to self\n"
                "* Constness for member functions\n";
     }
 };

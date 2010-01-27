@@ -155,7 +155,7 @@ private:
                "* dereferencing an erased iterator\n"
                "* for vectors: using iterator/pointer after push_back has been used\n"
                "* dangerous usage of find\n"
-               "* optimisation: using empty() instead of size()";
+               "* optimisation: use empty() instead of size() to guarantee fast code\n";
     }
 
     bool isStlContainer(const Token *tok);
