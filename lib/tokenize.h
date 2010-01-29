@@ -115,7 +115,7 @@ public:
      * @param isStruct is it a struct
      * @return First matching token or NULL.
      */
-    static const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel, bool isStruct = false);
+    const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel, bool isStruct = false) const;
 
     /**
      * get error messages
@@ -389,6 +389,16 @@ private:
      * not followed by "{".
      */
     bool simplifyDoWhileAddBracesHelper(Token *tok);
+
+    /**
+     * This will return a short name describing function parameters
+     * e.g. parameters: (int a, char b) should get name "int,char,".
+     * This should help to identify functions with the same name,
+     * but with different parameters.
+     * @param start The "(" token
+     * @return, e.g. "int,char,"
+     */
+    static std::string getNameForFunctionParams(const Token *start);
 
     /** Disable assignment operator */
     void operator=(const Tokenizer &);

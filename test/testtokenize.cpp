@@ -2316,9 +2316,9 @@ private:
         int i;
 
         i = 0;
-        const Token *tok = Tokenizer::findClassFunction(tokenizer.tokens(), "Fred", "%var%", i);
+        const Token *tok = tokenizer.findClassFunction(tokenizer.tokens(), "Fred", "%var%", i);
         ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
-        tok = Tokenizer::findClassFunction(tok->next(), "Fred", "%var%", i);
+        tok = tokenizer.findClassFunction(tok->next(), "Fred", "%var%", i);
         ASSERT_EQUALS(0, tok ? 1 : 0);
     }
 
@@ -2339,9 +2339,9 @@ private:
         int i;
 
         i = 0;
-        const Token *tok = Tokenizer::findClassFunction(tokenizer.tokens(), "Fred", "%var%", i, true);
+        const Token *tok = tokenizer.findClassFunction(tokenizer.tokens(), "Fred", "%var%", i, true);
         ASSERT_EQUALS(true, Token::simpleMatch(tok, "Fred ( ) {"));
-        tok = Tokenizer::findClassFunction(tok->next(), "Fred", "%var%", i, false);
+        tok = tokenizer.findClassFunction(tok->next(), "Fred", "%var%", i, false);
         ASSERT_EQUALS(0, tok ? 1 : 0);
     }
 

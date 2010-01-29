@@ -2319,7 +2319,7 @@ void CheckMemoryLeakInClass::variable(const std::string &classname, const Token 
 
     // Loop through all tokens. Inspect member functions
     int indent_ = 0;
-    const Token *functionToken = Tokenizer::findClassFunction(_tokenizer->tokens(), classname.c_str(), "~| %var%", indent_);
+    const Token *functionToken = _tokenizer->findClassFunction(_tokenizer->tokens(), classname.c_str(), "~| %var%", indent_);
     while (functionToken)
     {
         const bool constructor(Token::Match(functionToken, (classname + " :: " + classname + " (").c_str()));
@@ -2417,7 +2417,7 @@ void CheckMemoryLeakInClass::variable(const std::string &classname, const Token 
             }
         }
 
-        functionToken = Tokenizer::findClassFunction(functionToken->next(), classname.c_str(), "~| %var%", indent_);
+        functionToken = _tokenizer->Tokenizer::findClassFunction(functionToken->next(), classname.c_str(), "~| %var%", indent_);
     }
 
     if (allocInConstructor && !deallocInDestructor)

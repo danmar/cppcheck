@@ -1003,7 +1003,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
     // simplify function pointers
     simplifyFunctionPointers();
-
+//updateClassList();
     setVarId();
     if (!validate())
         return false;
@@ -1576,20 +1576,67 @@ void Tokenizer::simplifyTemplates()
 }
 //---------------------------------------------------------------------------
 
+std::string Tokenizer::getNameForFunctionParams(const Token *start)
+{
+    if (start->next() == start->link())
+        return "";
+
+    std::string result;
+    bool findNextComma = false;
+    for (const Token *tok = start->next(); tok && tok != start->link(); tok = tok->next())
+    {
+        if (findNextComma)
+        {
+            if (tok->str() == ",")
+                findNextComma = false;
+
+            continue;
+        }
+
+        result.append(tok->str() + ",");
+        findNextComma = true;
+    }
+
+    return result;
+}
+
 void Tokenizer::updateClassList()
 {
-    const char pattern_class[] = "class %var% [{:]";
     _classInfoList.clear();
 
     // Locate class
     const Token *tok1 = tokens();
-    while ((tok1 = Token::findmatch(tok1, pattern_class)) != 0)
-    {
-        const char *className;
-        className = tok1->strAt(1);
-        tok1 = tok1->next();
 
+    // Locate implementation
+    tok1 = tokens();
+    std::map<std::string, std::map<std::string, std::map<std::string, const Token*> > > implementations;
+    while ((tok1 = Token::findmatch(tok1, "%var% :: ~| %var% (")) != 0)
+    {
+        if (tok1->tokAt(2)->str() == "~")
+            implementations[tok1->str()]["~ "+tok1->tokAt(3)->str()][getNameForFunctionParams(tok1->tokAt(4))] = tok1;
+        else
+            implementations[tok1->str()][tok1->tokAt(2)->str()][getNameForFunctionParams(tok1->tokAt(3))] = tok1;
+//std::cout <<"1."<< tok1->str() << "," << tok1->tokAt(2)->str() << ","<<getNameForFunctionParams(tok1->tokAt(3));
+        tok1 = tok1->next();
+    }
+
+    tok1 = tokens();
+    while ((tok1 = Token::findmatch(tok1, "%var% :: operator %any% (")) != 0)
+    {
+        implementations[tok1->str()][tok1->tokAt(2)->str()+" "+tok1->tokAt(3)->str()][getNameForFunctionParams(tok1->tokAt(4))] = tok1;
+//std::cout <<"3."<< tok1->str() << "," << tok1->tokAt(2)->str()+" "+tok1->tokAt(3)->str() << ","<<getNameForFunctionParams(tok1->tokAt(4));
+        tok1 = tok1->next();
+    }
+
+    tok1 = tokens();
+    while ((tok1 = Token::findmatch(tok1, "class|struct %var% [{:]")) != 0)
+    {
         ClassInfo::MemberType memberType = ClassInfo::PRIVATE;
+        if (tok1->str() == "struct")
+            memberType = ClassInfo::PUBLIC;
+
+        const char *className = tok1->strAt(1);
+        tok1 = tok1->next();
         int indentlevel = 0;
         for (const Token *tok = tok1; tok; tok = tok->next())
         {
@@ -1627,12 +1674,40 @@ void Tokenizer::updateClassList()
 
                 else if (Token::Match(tok, "%var% ("))
                 {
-                    // member function
+                    ClassInfo::MemberFunctionInfo func;
+                    if (tok->previous()->str() == "~")
+                    {
+                        // destructor
+                        func._declaration = tok->previous();
+                        func._name = "~ " + tok->str();
+                    }
+                    else
+                    {
+                        // member function
+                        func._declaration = tok;
+                        func._name = tok->str();
+                    }
+
+                    func._type = memberType;
+                    if (tok->next()->link()->next()->str() == "{")
+                        func._implementation = tok;
+                    else
+                        func._implementation = implementations[className][func._name][getNameForFunctionParams(tok->next())];
+//std::cout <<"\n2."<< className << "," << func._name << ","<<getNameForFunctionParams(tok->next())<<"\n";
+                    _classInfoList[className]._memberFunctions.push_back(func);
+                }
+                else if (Token::Match(tok, "operator %any% ("))
+                {
                     ClassInfo::MemberFunctionInfo func;
                     func._declaration = tok;
-                    func._name = tok->str();
+                    func._name = tok->str() + " " + tok->next()->str();
                     func._type = memberType;
+                    if (tok->tokAt(2)->link()->next()->str() == "{")
+                        func._implementation = tok;
+                    else
+                        func._implementation = implementations[className][func._name][getNameForFunctionParams(tok->tokAt(2))];
 
+//std::cout <<"\n4."<< className << "," << func._name << ","<<getNameForFunctionParams(tok->tokAt(2))<<"\n";
                     _classInfoList[className]._memberFunctions.push_back(func);
                 }
             }
@@ -5058,11 +5133,40 @@ std::string Tokenizer::file(const Token *tok) const
 
 //---------------------------------------------------------------------------
 
-const Token * Tokenizer::findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel, bool isStruct)
+const Token * Tokenizer::findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel, bool isStruct) const
 {
     if (indentlevel < 0 || tok == NULL)
         return NULL;
+    /*
+    // TODO: This is currently commented out as updateClassList doesn't
+    // fully work yet and call to updateClassList is currently also
+    // commented out.
 
+    //std::cout << tok->str()<<"--\n";
+    if( tok == _tokens || tok->str() == "class" || tok->str() == "struct")
+        tok = 0;
+
+    std::map<std::string, ClassInfo>::const_iterator iter;
+    iter = _classInfoList.find(classname);
+    if( iter == _classInfoList.end() )
+        return NULL;
+
+    for( size_t i = 0; i < iter->second._memberFunctions.size(); i++ )
+        if( Token::Match( iter->second._memberFunctions[i]._declaration, funcname ) )
+        {
+            if( tok != 0 )
+            {
+                if( tok == iter->second._memberFunctions[i]._implementation ||
+                    tok->previous() == iter->second._memberFunctions[i]._implementation)
+                    tok = 0;
+                continue;
+            }
+
+            return iter->second._memberFunctions[i]._implementation;
+        }
+
+        return NULL;
+    */
     const std::string classPattern(std::string(isStruct ? "struct " : "class ") + classname + " :|{");
     const std::string internalPattern(std::string("!!~ ") + funcname + " (");
     const std::string externalPattern(std::string(classname) + " :: " + funcname + " (");

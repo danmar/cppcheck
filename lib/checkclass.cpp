@@ -285,7 +285,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             {
                 callstack.push_back(ftok->str());
                 int i = 0;
-                const Token *ftok2 = Tokenizer::findClassFunction(tok1, classname, ftok->strAt(0), i, isStruct);
+                const Token *ftok2 = _tokenizer->findClassFunction(tok1, classname, ftok->strAt(0), i, isStruct);
                 if (ftok2)
                 {
                     initializeVarList(tok1, ftok2, varlist, classname, callstack, isStruct);
@@ -500,7 +500,11 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[], boo
     Var *varlist = getVarList(tok1, withClasses, isStruct);
 
     int indentlevel = 0;
-    const Token *constructor_token = Tokenizer::findClassFunction(tok1, className, funcname, indentlevel, isStruct);
+    const Token *constructor_token = _tokenizer->findClassFunction(tok1, className, funcname, indentlevel, isStruct);
+    if (constructor_token)
+        std::cout << constructor_token->str() << "\n";
+    else
+        std::cout << "null\n";
     std::list<std::string> callstack;
     initializeVarList(tok1, constructor_token, varlist, className, callstack, isStruct);
     while (constructor_token)
@@ -547,7 +551,7 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[], boo
         for (Var *var = varlist; var; var = var->next)
             var->init = false;
 
-        constructor_token = Tokenizer::findClassFunction(constructor_token->next(), className, funcname, indentlevel, isStruct);
+        constructor_token = _tokenizer->findClassFunction(constructor_token->next(), className, funcname, indentlevel, isStruct);
         callstack.clear();
         initializeVarList(tok1, constructor_token, varlist, className, callstack, isStruct);
     }
