@@ -1878,6 +1878,19 @@ private:
                                 "}\n";
             ASSERT_EQUALS("void f ( ) { int a ; a = b < T < char , 3 > , int > ( ) ; }", sizeof_(code));
         }
+
+        {
+            // ticket #1327
+            const char code[] = "const C<1,2,3> foo ()\n"
+                                "{\n"
+                                "    return C<1,2,3>(x,y);\n"
+                                "}\n";
+            const char expected[]  = "const C < 1 , 2 , 3 > foo ( ) "
+                                     "{"
+                                     " return C < 1 , 2 , 3 > ( x , y ) ; "
+                                     "}";
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 
     void conditionOperator()

@@ -5365,11 +5365,16 @@ void Tokenizer::simplifyComma()
             continue;
         }
 
+        if (tok->str() == "(")
+        {
+            tok = tok->link();
+            continue;
+        }
+
         // Skip unhandled template specifiers..
         if (Token::Match(tok, "%var% <"))
         {
             // Todo.. use the link instead.
-            unsigned int parlevel = 0;
             unsigned int comparelevel = 0;
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
@@ -5383,14 +5388,6 @@ void Tokenizer::simplifyComma()
                         break;
                     }
                     ++comparelevel;
-                }
-                else if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")")
-                {
-                    if (parlevel == 0)
-                        break;
-                    --parlevel;
                 }
                 else if (Token::Match(tok2, "[;{}]"))
                     break;
