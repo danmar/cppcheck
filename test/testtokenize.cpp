@@ -42,6 +42,7 @@ private:
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize3);
+        TEST_CASE(tokenize4);
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -255,6 +256,22 @@ private:
                       "{\n"
                       "int i ;\n"
                       "ABC ( for ( i = 0 ; i < 10 ; i ++ ) x ( ) ) ;\n"
+                      "}", tokenizeAndStringify(code.c_str()));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void tokenize4()
+    {
+        errout.str("");
+        const std::string code("class foo\n"
+                               "{\n"
+                               "public:\n"
+                               "    const int i;\n"
+                               "}");
+        ASSERT_EQUALS("class foo\n"
+                      "{\n"
+                      "public:\n"
+                      "const int i ;\n"
                       "}", tokenizeAndStringify(code.c_str()));
         ASSERT_EQUALS("", errout.str());
     }
