@@ -178,6 +178,7 @@ private:
         TEST_CASE(enum1);
         TEST_CASE(enum2);
         TEST_CASE(enum3);
+        TEST_CASE(enum4);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -2474,10 +2475,10 @@ private:
                             "XYZ e2;";
 
         const char expected[] =
-            "enum abc { a = 0 , b = 1 , c = 2 } ; ; "
-            "enum xyz { x = 0 , y = 1 , z = 2 } ; ; "
-            "enum abc e1 ; "
-            "enum xyz e2 ;";
+            "; ; "
+            "; ; "
+            "int e1 ; "
+            "int e2 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -3145,8 +3146,8 @@ private:
 
     void enum1()
     {
-        const char code[] = "enum A { a, b, c };";
-        const char expected[] = "enum A { a = 0 , b = 1 , c = 2 } ;";
+        const char code[] = "enum A { a, b, c }; A c1 = c;";
+        const char expected[] = "; int c1 ; c1 = 2 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -3154,7 +3155,7 @@ private:
     void enum2()
     {
         const char code[] = "enum A { a, }; int array[a];";
-        const char expected[] = "enum A { a = 0 , } ; int array [ 0 ] ;";
+        const char expected[] = "; int array [ 0 ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -3162,7 +3163,34 @@ private:
     void enum3()
     {
         const char code[] = "enum { a, }; int array[a];";
-        const char expected[] = "enum { a = 0 , } ; int array [ 0 ] ;";
+        const char expected[] = "; int array [ 0 ] ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void enum4()
+    {
+        const char code[] = "class A {\n"
+                            "public:\n"
+                            "    enum EA { a1, a2, a3 };\n"
+                            "    EA get() const;\n"
+                            "    void put(EA a) { ea = a; ea = a1; }\n"
+                            "private:\n"
+                            "    EA ea;\n"
+                            "};\n"
+                            "A::EA A::get() const { return ea; }\n"
+                            "A::EA e = A::a1;";
+
+        const char expected[] = "class A { "
+                                "public: "
+                                "; "
+                                "int get ( ) const ; "
+                                "void put ( int a ) { ea = a ; ea = 0 ; } "
+                                "private: "
+                                "int ea ; "
+                                "} ; "
+                                "int A :: get ( ) const { return ea ; } "
+                                "int e ; e = 0 ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }

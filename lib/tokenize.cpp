@@ -924,6 +924,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // typedef..
     simplifyTypedef();
 
+    // enum..
     simplifyEnum();
 
     // Remove __asm..
@@ -4702,12 +4703,17 @@ void Tokenizer::simplifyEnum()
                  Token::Match(tok, "enum %type% {"))
         {
             Token * tok1;
+            Token * start = tok;
             Token * end;
+            Token * enumType = 0;
 
             if (tok->tokAt(1)->str() == "{")
                 tok1 = tok->tokAt(2);
             else
+            {
+                enumType = tok->tokAt(1);
                 tok1 = tok->tokAt(3);
+            }
 
             end = tok1->tokAt(-1)->link();
 
@@ -4743,6 +4749,7 @@ void Tokenizer::simplifyEnum()
                     bool exitThisScope = false;
                     int exitScope = 0;
                     bool simplifyEnum = false;
+                    bool hasClass = false;
                     for (Token *tok2 = end->next(); tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "}")
@@ -4762,6 +4769,7 @@ void Tokenizer::simplifyEnum()
                         else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
                         {
                             simplifyEnum = true;
+                            hasClass = true;
                         }
                         else if (inScope && !exitThisScope && tok2->str() == enumName->str())
                         {
@@ -4770,18 +4778,99 @@ void Tokenizer::simplifyEnum()
                                 // Don't replace this enum if it's preceded by "::"
                             }
                             else
+                            {
                                 simplifyEnum = true;
+                                hasClass = false;
+                            }
                         }
 
                         if (simplifyEnum)
                         {
                             tok2->str(enumValue->strAt(0));
 
+                            if (hasClass)
+                            {
+                                tok2->deleteNext();
+                                tok2->deleteNext();
+                            }
+
                             simplifyEnum = false;
                         }
                     }
                 }
             }
+
+            if (enumType)
+            {
+                const std::string pattern(className.empty() ? "" : (className + " :: " + enumType->str()).c_str());
+                int level = 0;
+                bool inScope = true;
+
+                bool exitThisScope = false;
+                int exitScope = 0;
+                bool simplifyEnum = false;
+                bool hasClass = false;
+                for (Token *tok2 = end->next(); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "}")
+                    {
+                        --level;
+                        if (level < 0)
+                            inScope = false;
+
+                        if (exitThisScope)
+                        {
+                            if (level < exitScope)
+                                exitThisScope = false;
+                        }
+                    }
+                    else if (tok2->str() == "{")
+                        ++level;
+                    else if (!pattern.empty() && ((Token::Match(tok2, "enum") && Token::Match(tok2->next(), pattern.c_str())) || Token::Match(tok2, pattern.c_str())))
+                    {
+                        simplifyEnum = true;
+                        hasClass = true;
+                    }
+                    else if (inScope && !exitThisScope && (tok2->str() == enumType->str() || (tok2->str() == "enum" && tok2->next()->str() == enumType->str())))
+                    {
+                        if (Token::simpleMatch(tok2->previous(), "::"))
+                        {
+                            // Don't replace this enum if it's preceded by "::"
+                        }
+                        else
+                        {
+                            simplifyEnum = true;
+                            hasClass = false;
+                        }
+                    }
+
+                    if (simplifyEnum)
+                    {
+                        if (tok2->str() == "enum")
+                            tok2->deleteNext();
+                        tok2->str("int");
+
+                        if (hasClass)
+                        {
+                            tok2->deleteNext();
+                            tok2->deleteNext();
+                        }
+
+                        simplifyEnum = false;
+                    }
+                }
+            }
+
+            tok1 = start;
+            while (tok1->next() && tok1->next() != end->next())
+                tok1->deleteNext();
+            if (start != _tokens)
+            {
+                tok1 = start->previous();
+                tok1->deleteNext();
+            }
+            else
+                _tokens->deleteThis();
         }
     }
 }
