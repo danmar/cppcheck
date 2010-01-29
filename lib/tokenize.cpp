@@ -501,6 +501,12 @@ void Tokenizer::simplifyTypedef()
             while (end && end->next() && Token::Match(end->next(), ":: %type%"))
                 end = end->tokAt(2);
 
+            if (!end)
+            {
+                // internal error
+                return;
+            }
+
             tok = end;
         }
         else if (Token::Match(tok->next(), "%type%"))

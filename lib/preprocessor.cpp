@@ -1626,7 +1626,8 @@ public:
                     }
                     optcomma = false;
                     macrocode += str;
-                    if (Token::Match(tok, "%var% %var%"))
+                    if (Token::Match(tok, "%var% %var%") ||
+                        Token::Match(tok, "> >"))
                         macrocode += " ";
                 }
             }
