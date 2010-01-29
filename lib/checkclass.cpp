@@ -1441,6 +1441,8 @@ void CheckClass::checkConst()
                 // member function?
                 if (Token::Match(tok2, "%type% %var% (") ||
                     Token::Match(tok2, "%type% %type% %var% (") ||
+                    Token::Match(tok2, "const %type% &|* %var% (") ||
+                    Token::Match(tok2, "const std :: %type% &|*| %var% (") ||
                     Token::Match(tok2, "%type% operator %any% ("))
                 {
                     // goto function name..

@@ -1546,6 +1546,17 @@ private:
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::getA' can be const\n", errout.str());
 
+        checkConst("class Fred {\n"
+                   "    const std::string foo() { return ""; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'Fred::foo' can be const\n", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    const std::string & foo() { return ""; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::foo' can be const\n", errout.str());
+
         // constructors can't be const..
         checkConst("class Fred {\n"
                    "    int a;\n"
