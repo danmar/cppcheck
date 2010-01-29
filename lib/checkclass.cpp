@@ -501,10 +501,6 @@ void CheckClass::checkConstructors(const Token *tok1, const char funcname[], boo
 
     int indentlevel = 0;
     const Token *constructor_token = _tokenizer->findClassFunction(tok1, className, funcname, indentlevel, isStruct);
-    if (constructor_token)
-        std::cout << constructor_token->str() << "\n";
-    else
-        std::cout << "null\n";
     std::list<std::string> callstack;
     initializeVarList(tok1, constructor_token, varlist, className, callstack, isStruct);
     while (constructor_token)
