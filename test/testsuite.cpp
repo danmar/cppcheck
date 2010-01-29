@@ -65,6 +65,7 @@ std::ostringstream TestFixture::errmsg;
 unsigned int       TestFixture::countTests;
 
 size_t TestFixture::fails_counter = 0;
+size_t TestFixture::todos_counter = 0;
 
 TestFixture::TestFixture(const std::string &_name) : classname(_name)
 {
@@ -126,6 +127,23 @@ void TestFixture::assertEquals(const char *filename, int linenr, unsigned int ex
     assertEquals(filename, linenr, ostr1.str(), ostr2.str());
 }
 
+void TestFixture::todoAssertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual)
+{
+    if (expected == actual)
+        assertEquals(filename, linenr, "TODO assertion", "The assertion succeeded");
+    else
+        ++todos_counter;
+}
+
+void TestFixture::todoAssertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual)
+{
+    std::ostringstream ostr1;
+    ostr1 << expected;
+    std::ostringstream ostr2;
+    ostr2 << actual;
+    todoAssertEquals(filename, linenr, ostr1.str(), ostr2.str());
+}
+
 void TestFixture::assertThrowFail(const char *filename, int linenr)
 {
     ++fails_counter;
@@ -174,6 +192,7 @@ size_t TestFixture::runTests(const char cmd[])
     }
 
     std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << "\n";
+    std::cout << "Number of todos: " << todos_counter << "\n";
 
     std::cerr << errmsg.str();
 
