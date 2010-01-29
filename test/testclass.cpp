@@ -68,7 +68,8 @@ private:
         TEST_CASE(noConstructor4);
 
         TEST_CASE(operatorEq1);
-        TEST_CASE(operatorEqRetRefThis);
+        TEST_CASE(operatorEqRetRefThis1);
+        TEST_CASE(operatorEqRetRefThis2); // ticket #1323
         TEST_CASE(operatorEqToSelf1);   // single class
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
@@ -175,7 +176,7 @@ private:
         checkClass.operatorEqRetRefThis();
     }
 
-    void operatorEqRetRefThis()
+    void operatorEqRetRefThis1()
     {
         checkOpertorEqRetRefThis(
             "class A\n"
@@ -278,6 +279,17 @@ private:
             "};\n"
             "A::B & A::B::operator=(const A::B &b) { return b; }\n");
         ASSERT_EQUALS("[test.cpp:10]: (style) 'operator=' should return reference to self\n", errout.str());
+    }
+
+    void operatorEqRetRefThis2()
+    {
+        // ticket # 1323
+        checkOpertorEqRetRefThis(
+            "class szp\n"
+            "{\n"
+            "  szp &operator =(int *other) {};\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Check that operator Equal checks for assignment to self

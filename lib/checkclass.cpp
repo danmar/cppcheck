@@ -878,8 +878,8 @@ void CheckClass::operatorEqRetRefThis()
 
                     if (tok1 && tok1->next() && tok1->next()->str() == "{")
                     {
-                        const Token *last = tok1->next()->link()->tokAt(-2);
-                        for (tok1 = tok1->tokAt(2); tok1 != last; tok1 = tok1->next())
+                        const Token *last = tok1->next()->link();
+                        for (tok1 = tok1->tokAt(2); tok1 && tok1 != last; tok1 = tok1->next())
                         {
                             // check for return of reference to this
                             if (tok1->str() == "return")
@@ -930,8 +930,8 @@ void CheckClass::operatorEqRetRefThis()
 
                     if (tok1 && tok1->next() && tok1->next()->str() == "{")
                     {
-                        const Token *last = tok1->next()->link()->tokAt(-2);
-                        for (tok1 = tok1->tokAt(2); tok1 != last; tok1 = tok1->next())
+                        const Token *last = tok1->next()->link();
+                        for (tok1 = tok1->tokAt(2); tok1 && tok1 != last; tok1 = tok1->next())
                         {
                             // check for return of reference to this
                             if (tok1->str() == "return")
