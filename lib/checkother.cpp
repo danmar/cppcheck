@@ -1316,7 +1316,7 @@ private:
         if (Token::simpleMatch(&tok, "* 0"))
         {
             if (Token::Match(tok.previous(), "[;{}=+-/(,]") ||
-                Token::simpleMatch(tok.previous(), "return"))
+                Token::Match(tok.previous(), "return|<<"))
             {
                 CheckOther *checkOther = dynamic_cast<CheckOther *>(owner);
                 if (checkOther)
