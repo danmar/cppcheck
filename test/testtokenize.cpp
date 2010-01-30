@@ -2494,7 +2494,6 @@ private:
     {
         // ticket #732
         const char code[] = "char a [ 2 ] = { '-' } ; memset ( a , '-' , sizeof ( a ) ) ;";
-
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
     }
 

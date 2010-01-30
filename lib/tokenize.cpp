@@ -972,6 +972,12 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // Split up variable declarations.
     simplifyVarDecl();
 
+    // Change initialisation of variable to assignment
+    simplifyInitVar();
+
+    // Remove redundant parantheses
+    simplifyRedundantParanthesis();
+
     // Handle templates..
     simplifyTemplates();
 
@@ -2394,6 +2400,23 @@ bool Tokenizer::simplifyTokenList()
             tok->deleteNext();
     }
 
+
+    // Replace NULL with 0..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "NULL" || tok->str() == "'\\0'")
+        {
+            tok->str("0");
+        }
+        else if (tok->isNumber() &&
+                 MathLib::isInt(tok->str()) &&
+                 MathLib::toLongNumber(tok->str()) == 0)
+        {
+            tok->str("0");
+        }
+    }
+
+
     simplifyStd();
 
     simplifyNamespaces();
@@ -2617,24 +2640,6 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
-    // Simplify variable declarations
-    simplifyVarDecl();
-
-    // Replace NULL with 0..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (tok->str() == "NULL" || tok->str() == "'\\0'")
-        {
-            tok->str("0");
-        }
-        else if (tok->isNumber() &&
-                 MathLib::isInt(tok->str()) &&
-                 MathLib::toLongNumber(tok->str()) == 0)
-        {
-            tok->str("0");
-        }
-    }
-
     // Replace pointer casts of 0.. "(char *)0" => "0"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
@@ -2644,6 +2649,12 @@ bool Tokenizer::simplifyTokenList()
             Token::eraseTokens(tok, tok->next()->link()->next());
         }
     }
+
+    // Change initialisation of variable to assignment
+    simplifyInitVar();
+
+    // Simplify variable declarations
+    simplifyVarDecl();
 
     simplifyFunctionParameters();
     elseif();
@@ -4110,6 +4121,28 @@ void Tokenizer::simplifyLogicalOperators()
     }
 }
 
+
+void Tokenizer::simplifyInitVar()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[{};] %type% *| %var% ( %num% ) ;") &&
+            tok->next()->isStandardType())
+        {
+            // goto variable name..
+            tok = tok->tokAt(2);
+            if (tok->str() == "*")
+                tok = tok->next();
+
+            // insert '='
+            tok->insertToken("=");
+
+            // remove parantheses..
+            tok->next()->deleteNext();
+            tok->next()->next()->deleteNext();
+        }
+    }
+}
 
 
 bool Tokenizer::simplifyKnownVariables()

@@ -145,9 +145,17 @@ private:
     void simplifySizeof();
 
     /**
-     * Simplify variable declarations
+     * Simplify variable declarations (split up)
      */
     void simplifyVarDecl();
+
+    /**
+     * Simplify variable initialization
+     * ; int *p(0);
+     * =>
+     * ; int *p = 0;
+     */
+    void simplifyInitVar();
 
     /**
      * insert an "int" after "unsigned" if needed:

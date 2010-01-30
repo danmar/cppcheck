@@ -183,6 +183,9 @@ private:
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
+
+        // Tokenizer::simplifyInitVar
+        TEST_CASE(simplifyInitVar);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -1654,7 +1657,7 @@ private:
     void ifassign1()
     {
         ASSERT_EQUALS("; a = b ; if ( a ) { ; }", simplifyIfAssign(";if(a=b);"));
-        ASSERT_EQUALS("; a = b ( ) ; if ( ( a ) ) { ; }", simplifyIfAssign(";if((a=b()));"));
+        ASSERT_EQUALS("; a = b ( ) ; if ( a ) { ; }", simplifyIfAssign(";if((a=b()));"));
         ASSERT_EQUALS("; a = b ( ) ; if ( ! ( a ) ) { ; }", simplifyIfAssign(";if(!(a=b()));"));
         ASSERT_EQUALS("; a . x = b ( ) ; if ( ! ( a . x ) ) { ; }", simplifyIfAssign(";if(!(a->x=b()));"));
         ASSERT_EQUALS("A ( ) a = b ; if ( a ) { ; }", simplifyIfAssign("A() if(a=b);"));
@@ -1703,7 +1706,7 @@ private:
         ASSERT_EQUALS("if ( b ( ) && ! a )", simplifyIfNot("if( b() && 0 == a )"));
         ASSERT_EQUALS("if ( ! ( a = b ) )", simplifyIfNot("if((a=b)==0)"));
         ASSERT_EQUALS("if ( ! x . y )", simplifyIfNot("if(x.y==0)"));
-        ASSERT_EQUALS("if ( ( ! x ) )", simplifyIfNot("if((x==0))"));
+        ASSERT_EQUALS("if ( ! x )", simplifyIfNot("if((x==0))"));
         ASSERT_EQUALS("if ( ( ! x ) && ! y )", simplifyIfNot("if((x==0) && y==0)"));
         ASSERT_EQUALS("if ( ! ( ! fclose ( fd ) ) )", simplifyIfNot("if(!(fclose(fd) == 0))"));
     }
@@ -2949,7 +2952,7 @@ private:
             "int main ( ) "
             "{ "
             "; "
-            "VERIFY ( ( is_same < result_of < int ( * ( char , float ) ) ( float , double ) > :: type , int > :: value ) ) ; "
+            "VERIFY ( is_same < result_of < int ( * ( char , float ) ) ( float , double ) > :: type , int > :: value ) ; "
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -3231,6 +3234,12 @@ private:
         ASSERT_EQUALS("; malloc ( 10 ) ;", tok("; std::malloc(10);"));
     }
 
+    void simplifyInitVar()
+    {
+        // ticket #1005 - int *p(0); => int *p = 0;
+        const char code[] = "void foo() { int *p(0); }";
+        ASSERT_EQUALS("void foo ( ) { int * p ; p = 0 ; }", tok(code));
+    }
 };
 
 REGISTER_TEST(TestSimplifyTokens)
