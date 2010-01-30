@@ -443,19 +443,18 @@ void Tokenizer::simplifyTypedef()
             tok = tok3;
         }
 
-        const char *type1 = 0;
-        const char *type2 = 0;
-        const char *type3 = 0;
-        const char *type4 = 0;
         const char *typeName = 0;
         std::list<std::string> pointers;
-        Token *start = 0;
-        Token *end = 0;
+        Token *typeStart = 0;
+        Token *typeEnd = 0;
+        Token *argStart = 0;
+        Token *argEnd = 0;
         Token *num = 0;
         Token *typeDef = tok;
         int offset = 1;
         bool functionPtr = false;
         bool functionRef = false;
+        bool hasTemplate = false;
 
         if (Token::Match(tok->next(), "%type% <") ||
             Token::Match(tok->next(), "%type% %type% <") ||
@@ -463,22 +462,23 @@ void Tokenizer::simplifyTypedef()
             Token::Match(tok->next(), "%type% %type% :: %type% <"))
         {
             // template
+            hasTemplate = true;
             int level = 1;
-            start = tok->next();
+            typeStart = tok->next();
 
             if (tok->tokAt(2)->str() == "<")
-                end = tok->tokAt(3);
+                typeEnd = tok->tokAt(3);
             else if (tok->tokAt(3)->str() == "<")
-                end = tok->tokAt(4);
+                typeEnd = tok->tokAt(4);
             else if (tok->tokAt(4)->str() == "<")
-                end = tok->tokAt(5);
+                typeEnd = tok->tokAt(5);
             else
-                end = tok->tokAt(6);
+                typeEnd = tok->tokAt(6);
 
             int paren = 0;
-            for (; end ; end = end->next())
+            for (; typeEnd ; typeEnd = typeEnd->next())
             {
-                if (end->str() == ">")
+                if (typeEnd->str() == ">")
                 {
                     if (paren == 0)
                     {
@@ -487,51 +487,53 @@ void Tokenizer::simplifyTypedef()
                             break;
                     }
                 }
-                else if (end->str() == "<")
+                else if (typeEnd->str() == "<")
                 {
                     if (paren == 0)
                         level++;
                 }
-                else if (end->str() == "(")
+                else if (typeEnd->str() == "(")
                     paren++;
-                else if (end->str() == ")")
+                else if (typeEnd->str() == ")")
                     paren--;
             }
 
-            while (end && end->next() && Token::Match(end->next(), ":: %type%"))
-                end = end->tokAt(2);
+            while (typeEnd && typeEnd->next() && Token::Match(typeEnd->next(), ":: %type%"))
+                typeEnd = typeEnd->tokAt(2);
 
-            if (!end)
+            if (!typeEnd)
             {
                 // internal error
                 return;
             }
 
-            tok = end;
+            tok = typeEnd;
         }
         else if (Token::Match(tok->next(), "%type%"))
         {
-            type1 = tok->strAt(offset++);
+            typeStart = tok->next();
+
+            typeEnd = tok->tokAt(offset++);
 
             if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
                 tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
             {
-                type2 = tok->strAt(offset++);
+                typeEnd = tok->tokAt(offset++);
 
                 if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "::"))
                 {
-                    type3 = tok->strAt(offset++);
+                    typeEnd = tok->tokAt(offset++);
 
                     if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
                         tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
                     {
-                        type4 = tok->strAt(offset++);
+                        typeEnd = tok->tokAt(offset++);
                     }
                 }
                 else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
                          tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
                 {
-                    type3 = tok->strAt(offset++);
+                    typeEnd = tok->tokAt(offset++);
                 }
             }
         }
@@ -569,9 +571,9 @@ void Tokenizer::simplifyTypedef()
                 functionPtr = tok->tokAt(offset + 1)->str() == "*";
                 functionRef = tok->tokAt(offset + 1)->str() == "&";
                 typeName = tok->strAt(offset + 2);
-                start = tok->tokAt(offset + 4);
-                end = tok->tokAt(offset + 4)->link();
-                tok = end->next();
+                argStart = tok->tokAt(offset + 4);
+                argEnd = tok->tokAt(offset + 4)->link();
+                tok = argEnd->next();
             }
             else
             {
@@ -629,9 +631,9 @@ void Tokenizer::simplifyTypedef()
                              Token::Match(tok2->tokAt(-3), "!!typedef"))
                     {
                         // Check for enum and typedef with same name.
-                        if (type1 && (tok2->tokAt(-1)->str() != type1))
+                        if (!hasTemplate && tok2->tokAt(-1)->str() != typeStart->str())
                             simplifyType = true;
-                        else if (!type1)
+                        else if (hasTemplate)
                             simplifyType = true;
                     }
                     else
@@ -651,47 +653,25 @@ void Tokenizer::simplifyTypedef()
                          Token::Match(tok2->next(), "> (")))
                         inCast = true;
 
-                    if (start && end && !(functionPtr || functionRef))
+                    tok2->str(typeStart->str());
+                    Token * nextToken;
+                    std::stack<Token *> links;
+                    for (nextToken = typeStart->next(); nextToken != typeEnd->next(); nextToken = nextToken->next())
                     {
-                        tok2->str(start->str());
-                        Token * nextToken;
-                        std::stack<Token *> links;
-                        for (nextToken = start->next(); nextToken != end->next(); nextToken = nextToken->next())
-                        {
-                            tok2->insertToken(nextToken->strAt(0));
-                            tok2 = tok2->next();
+                        tok2->insertToken(nextToken->strAt(0));
+                        tok2 = tok2->next();
 
-                            // Check for links and fix them up
-                            if (tok2->str() == "(" || tok2->str() == "[")
-                                links.push(tok2);
-                            if (tok2->str() == ")" || tok2->str() == "]")
-                            {
-                                Token * link = links.top();
+                        // Check for links and fix them up
+                        if (tok2->str() == "(" || tok2->str() == "[")
+                            links.push(tok2);
+                        if (tok2->str() == ")" || tok2->str() == "]")
+                        {
+                            Token * link = links.top();
 
-                                tok2->link(link);
-                                link->link(tok2);
+                            tok2->link(link);
+                            link->link(tok2);
 
-                                links.pop();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        tok2->str(type1);
-                        if (type2)
-                        {
-                            tok2->insertToken(type2);
-                            tok2 = tok2->next();
-                        }
-                        if (type3)
-                        {
-                            tok2->insertToken(type3);
-                            tok2 = tok2->next();
-                        }
-                        if (type4)
-                        {
-                            tok2->insertToken(type4);
-                            tok2 = tok2->next();
+                            links.pop();
                         }
                     }
 
@@ -748,7 +728,7 @@ void Tokenizer::simplifyTypedef()
                         tok3 = tok2;
                         Token * nextToken;
                         std::stack<Token *> links;
-                        for (nextToken = start->next(); nextToken != end; nextToken = nextToken->next())
+                        for (nextToken = argStart->next(); nextToken != argEnd; nextToken = nextToken->next())
                         {
                             tok2->insertToken(nextToken->strAt(0));
                             tok2 = tok2->next();

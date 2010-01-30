@@ -164,6 +164,7 @@ private:
         TEST_CASE(simplifyTypedef25);
         TEST_CASE(simplifyTypedef26);
         TEST_CASE(simplifyTypedef27);
+        TEST_CASE(simplifyTypedef28);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2950,6 +2951,18 @@ private:
             "; "
             "VERIFY ( ( is_same < result_of < int ( * ( char , float ) ) ( float , double ) > :: type , int > :: value ) ) ; "
             "}";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef28()
+    {
+        const char code[] = "typedef std::pair<double, double> (*F)(double);\n"
+                            "F f;";
+
+        const char expected[] =
+            "; "
+            "std :: pair < double , double > ( * f ) ( double ) ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
