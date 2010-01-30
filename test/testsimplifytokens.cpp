@@ -165,6 +165,7 @@ private:
         TEST_CASE(simplifyTypedef26);
         TEST_CASE(simplifyTypedef27);
         TEST_CASE(simplifyTypedef28);
+        TEST_CASE(simplifyTypedef29);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2966,6 +2967,26 @@ private:
         const char expected[] =
             "; "
             "std :: pair < double , double > ( * f ) ( double ) ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef29()
+    {
+        const char code[] = "typedef int array [ice_or<is_int<int>::value, is_int<UDT>::value>::value ? 1 : -1];\n"
+                            "typedef int array1 [N];\n"
+                            "typedef int array2 [N][M];\n"
+                            "array a;\n"
+                            "array1 a1;\n"
+                            "array2 a2;";
+
+        const char expected[] =
+            "; "
+            "; "
+            "; "
+            "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : - 1 ] ; "
+            "int a1 [ N ] ; "
+            "int a2 [ N ] [ M ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }

@@ -449,7 +449,8 @@ void Tokenizer::simplifyTypedef()
         Token *typeEnd = 0;
         Token *argStart = 0;
         Token *argEnd = 0;
-        Token *num = 0;
+        Token *arrayStart = 0;
+        Token *arrayEnd = 0;
         Token *typeDef = tok;
         int offset = 1;
         bool functionPtr = false;
@@ -550,10 +551,27 @@ void Tokenizer::simplifyTypedef()
         {
             typeName = tok->strAt(offset++);
 
-            if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "[ %num% ]"))
+            if (tok->tokAt(offset) && tok->tokAt(offset)->str() == "[")
             {
-                num = tok->tokAt(offset + 1);
-                offset += 3;
+                arrayStart = tok->tokAt(offset);
+
+                bool atEnd = false;
+                while (!atEnd)
+                {
+                    while (tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), ";|,"))
+                        offset++;
+
+                    if (!tok->tokAt(offset + 1))
+                        return; // invalid input
+                    else if (tok->tokAt(offset + 1)->str() == ";")
+                        atEnd = true;
+                    else if (tok->tokAt(offset)->str() == "]")
+                        atEnd = true;
+                    else
+                        offset++;
+                }
+
+                arrayEnd = tok->tokAt(offset++);
             }
 
             if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
@@ -751,17 +769,30 @@ void Tokenizer::simplifyTypedef()
                         Token::createMutualLinks(tok2, tok3);
                     }
 
-                    if (num)
+                    if (arrayStart && arrayEnd)
                     {
                         tok2 = tok2->next();
-                        tok2->insertToken("[");
+                        Token * nextToken;
+                        std::stack<Token *> links;
+                        for (nextToken = arrayStart; nextToken != arrayEnd->next(); nextToken = nextToken->next())
+                        {
+                            tok2->insertToken(nextToken->strAt(0));
+                            tok2 = tok2->next();
+
+                            // Check for links and fix them up
+                            if (tok2->str() == "(" || tok2->str() == "[")
+                                links.push(tok2);
+                            if (tok2->str() == ")" || tok2->str() == "]")
+                            {
+                                Token * link = links.top();
+
+                                tok2->link(link);
+                                link->link(tok2);
+
+                                links.pop();
+                            }
+                        }
                         tok2 = tok2->next();
-                        Token *tok3 = tok2;
-                        tok2->insertToken(num->strAt(0));
-                        tok2 = tok2->next();
-                        tok2->insertToken("]");
-                        tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok3);
                     }
 
                     simplifyType = false;
@@ -772,7 +803,8 @@ void Tokenizer::simplifyTypedef()
                 done = true;
             else if (tok->str() == ",")
             {
-                num = 0;
+                arrayStart = 0;
+                arrayEnd = 0;
                 offset = 1;
 
                 while (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "*|&"))
@@ -782,10 +814,23 @@ void Tokenizer::simplifyTypedef()
                 {
                     typeName = tok->strAt(offset++);
 
-                    if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "[ %num% ]"))
+                    if (tok->tokAt(offset) && tok->tokAt(offset)->str() == "[")
                     {
-                        num = tok->tokAt(offset + 1);
-                        offset += 3;
+                        bool atEnd = false;
+                        while (!atEnd)
+                        {
+                            while (tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), ";|,"))
+                                offset++;
+
+                            if (!tok->tokAt(offset + 1))
+                                return; // invalid input
+                            else if (tok->tokAt(offset + 1)->str() == ";")
+                                atEnd = true;
+                            else if (tok->tokAt(offset)->str() == "]")
+                                atEnd = true;
+                            else
+                                offset++;
+                        }
                     }
 
                     if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
