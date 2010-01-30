@@ -3237,8 +3237,20 @@ private:
     void simplifyInitVar()
     {
         // ticket #1005 - int *p(0); => int *p = 0;
-        const char code[] = "void foo() { int *p(0); }";
-        ASSERT_EQUALS("void foo ( ) { int * p ; p = 0 ; }", tok(code));
+        {
+            const char code[] = "void foo() { int *p(0); }";
+            ASSERT_EQUALS("void foo ( ) { int * p ; p = 0 ; }", tok(code));
+        }
+
+        {
+            const char code[] = "void foo() { int p(0); }";
+            ASSERT_EQUALS("void foo ( ) { int p ; p = 0 ; }", tok(code));
+        }
+
+        {
+            const char code[] = "void a() { foo *p(0); }";
+            ASSERT_EQUALS("void a ( ) { foo * p ; p = 0 ; }", tok(code));
+        }
     }
 };
 

@@ -4126,9 +4126,12 @@ void Tokenizer::simplifyInitVar()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[{};] %type% *| %var% ( %num% ) ;") &&
-            tok->next()->isStandardType())
+        if (Token::Match(tok, "[{};] %type% *| %var% ( %num% ) ;"))
         {
+            // call constructor of class => no simplification
+            if (!tok->next()->isStandardType() && tok->tokAt(2)->str() != "*")
+                continue;
+
             // goto variable name..
             tok = tok->tokAt(2);
             if (tok->str() == "*")
