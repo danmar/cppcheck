@@ -97,6 +97,7 @@ private:
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
         TEST_CASE(array_index_negative);
+        TEST_CASE(array_index_for_decr);
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -848,6 +849,18 @@ private:
               "    data[-1] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'data[8]' index -1 out of bounds\n", errout.str());
+    }
+
+    void array_index_for_decr()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char data[8];\n"
+              "    for (int i = 10; i > 0; --i) {\n"
+              "        data[i] = 0;\n"
+              "    }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()
