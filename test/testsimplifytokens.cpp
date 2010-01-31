@@ -293,7 +293,7 @@ private:
 
         {
             const char code1[] = "void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; }";
-            const char code2[] = "void f ( ) { int a ; ; ; { a = 0 ; } int c ; c = 1 ; }";
+            const char code2[] = "void f ( ) { ; ; ; { ; } ; ; }";
             ASSERT_EQUALS(code2, tok(code1));
         }
 
@@ -485,7 +485,7 @@ private:
         ASSERT_EQUALS("return p ;", tok("return (p);"));
         ASSERT_EQUALS("void f ( ) { int * p ; if ( ! * p ) { } }", tok("void f(){int *p; if (*(p) == 0) {}}"));
         ASSERT_EQUALS("void f ( ) { int * p ; if ( ! * p ) { } }", tok("void f(){int *p; if (*p == 0) {}}"));
-        ASSERT_EQUALS("void f ( ) { int p ; p = 1 ; }", tok("void f(){int p; (p) = 1;}"));
+        ASSERT_EQUALS("void f ( int & p ) { p = 1 ; }", tok("void f(int &p) {(p) = 1;}"));
         ASSERT_EQUALS("void f ( ) { int p [ 10 ] ; p [ 0 ] = 1 ; }", tok("void f(){int p[10]; (p)[0] = 1;}"));
         ASSERT_EQUALS("void f ( ) { int p ; if ( ! p ) { } }", tok("void f(){int p; if ((p) == 0) {}}"));
         ASSERT_EQUALS("void f ( ) { int * p ; * p = 1 ; }", tok("void f(){int *p; *(p) = 1;}"));
@@ -542,28 +542,28 @@ private:
 
     void removePostIncrement()
     {
-        const char code[] = "void f()\n"
+        const char code[] = "void f(int &c)\n"
                             "{\n"
-                            "    unsigned int c = 0;\n"
+                            "    c = 0;\n"
                             "    c++;\n"
                             "    if (c>0) { c++; }\n"
                             "    c++;\n"
                             "}\n";
-        ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; }", tok(code));
+        ASSERT_EQUALS("void f ( int & c ) { c = 3 ; ; { ; } ; }", tok(code));
     }
 
 
     void removePreIncrement()
     {
         {
-            const char code[] = "void f()\n"
+            const char code[] = "void f(int &c)\n"
                                 "{\n"
-                                "    unsigned int c = 0;\n"
+                                "    c = 0;\n"
                                 "    ++c;\n"
                                 "    if (c>0) { ++c; }\n"
                                 "    ++c;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { int c ; c = 3 ; ; { ; } ; }", tok(code));
+            ASSERT_EQUALS("void f ( int & c ) { c = 3 ; ; { ; } ; }", tok(code));
         }
 
         {
@@ -752,22 +752,22 @@ private:
             const char code[] = "void f()\n"
                                 "{\n"
                                 "  char* ptrs[2];\n"
-                                "  int a = sizeof( ptrs );\n"
+                                "  a = sizeof( ptrs );\n"
                                 "}\n";
             std::ostringstream oss;
             oss << (sizeofFromTokenizer("*") * 2);
-            ASSERT_EQUALS("void f ( ) { char * ptrs [ 2 ] ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { char * ptrs [ 2 ] ; a = " + oss.str() + " ; }", sizeof_(code));
         }
 
         {
             const char code[] = "void f()\n"
                                 "{\n"
                                 "  char* ptrs[55];\n"
-                                "  int a = sizeof( ptrs );\n"
+                                "  a = sizeof( ptrs );\n"
                                 "}\n";
             std::ostringstream oss;
             oss << (sizeofFromTokenizer("*") * 55);
-            ASSERT_EQUALS("void f ( ) { char * ptrs [ 55 ] ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { char * ptrs [ 55 ] ; a = " + oss.str() + " ; }", sizeof_(code));
         }
 
 
@@ -775,11 +775,11 @@ private:
             const char code[] = "void f()\n"
                                 "{\n"
                                 "  char* ptrs;\n"
-                                "  int a = sizeof( ptrs );\n"
+                                "  a = sizeof( ptrs );\n"
                                 "}\n";
             std::ostringstream oss;
             oss << sizeofFromTokenizer("*");
-            ASSERT_EQUALS("void f ( ) { ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { ; a = " + oss.str() + " ; }", sizeof_(code));
         }
     }
 
@@ -1941,7 +1941,7 @@ private:
                                 "  bool x = false;\n"
                                 "  int b = x ? 44 : 3;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { ; ; int b ; b = 3 ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; ; ; ; }", tok(code));
         }
 
         {
@@ -3014,7 +3014,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { int x ; x = 0 ; { g ( ) ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; ; { g ( ) ; } }", tok(code));
         }
 
         {
@@ -3027,7 +3027,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { int x ; x = 1 ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; ; }", tok(code));
         }
 
         {
@@ -3266,17 +3266,17 @@ private:
         // ticket #1005 - int *p(0); => int *p = 0;
         {
             const char code[] = "void foo() { int *p(0); }";
-            ASSERT_EQUALS("void foo ( ) { int * p ; p = 0 ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { ; ; }", tok(code));
         }
 
         {
             const char code[] = "void foo() { int p(0); }";
-            ASSERT_EQUALS("void foo ( ) { int p ; p = 0 ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { ; ; }", tok(code));
         }
 
         {
             const char code[] = "void a() { foo *p(0); }";
-            ASSERT_EQUALS("void a ( ) { foo * p ; p = 0 ; }", tok(code));
+            ASSERT_EQUALS("void a ( ) { ; ; }", tok(code));
         }
     }
 };

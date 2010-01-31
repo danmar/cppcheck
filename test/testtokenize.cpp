@@ -2269,7 +2269,7 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
-        ASSERT_EQUALS(" void f ( ) { const int a = 45 ; { int b ; b = 45 ; } } void g ( ) { int a ; a = 2 ; }", ostr.str());
+        ASSERT_EQUALS(" void f ( ) { const int a = 45 ; { ; ; } } void g ( ) { ; ; }", ostr.str());
     }
 
     void simplify_constants2()
@@ -2872,6 +2872,7 @@ private:
     void removeRedundantAssignment()
     {
         ASSERT_EQUALS("void f ( ) { ; int * q ; ; }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
+        ASSERT_EQUALS("void f ( ) { ; ; int * q ; ; }", tokenizeAndStringify("void f() { int *p = 0, *q; p = q; }", true));
     }
 };
 

@@ -2796,7 +2796,9 @@ void Tokenizer::removeRedundantAssignment()
                     tok2 = tok2->tokAt(2);
                     localvars.insert(tok2->varId());
                 }
-                else if (tok2->varId() && !Token::Match(tok2->previous(), "[;{}] %var% = %var% ;"))
+                else if (tok2->varId() &&
+                         !Token::Match(tok2->previous(), "[;{}] %var% = %var% ;") &&
+                         !Token::Match(tok2->previous(), "[;{}] %var% = %num% ;"))
                 {
                     localvars.erase(tok2->varId());
                 }
@@ -2814,7 +2816,7 @@ void Tokenizer::removeRedundantAssignment()
                     {
                         Token::eraseTokens(tok2, tok2->tokAt(4));
                     }
-                    else if (Token::Match(tok2, "[;{}] %var% = %var% ;") && localvars.find(tok2->next()->varId()) != localvars.end())
+                    else if (Token::Match(tok2, "[;{}] %var% = %any% ;") && localvars.find(tok2->next()->varId()) != localvars.end())
                     {
                         Token::eraseTokens(tok2, tok2->tokAt(4));
                     }
@@ -4515,7 +4517,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "[(!*;}] ( %var% )") && tok->next()->varId() != 0)
+        if (Token::Match(tok->previous(), "[(!*;{}] ( %var% )") && tok->next()->varId() != 0)
         {
             // We have "( var )", remove the paranthesis
             tok->deleteThis();
