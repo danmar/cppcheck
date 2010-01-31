@@ -49,9 +49,10 @@ private:
         TEST_CASE(sprintf3);
         TEST_CASE(sprintf4);        // struct member
 
-        TEST_CASE(strPlusChar1);     // "/usr" + '/'
-        TEST_CASE(strPlusChar2);     // "/usr" + ch
-        TEST_CASE(strPlusChar3);     // ok: path + "/sub" + '/'
+        TEST_CASE(strPlusChar1);    // "/usr" + '/'
+        TEST_CASE(strPlusChar2);    // "/usr" + ch
+        TEST_CASE(strPlusChar3);    // ok : path + "/sub" + '/'; err: '/' + path + "/sub"
+        TEST_CASE(strPlusChar4);	// ok : <const char *> + <number>
 
         TEST_CASE(varScope1);
         TEST_CASE(varScope2);
@@ -423,6 +424,12 @@ private:
                     "    const char *p = \"/usr\" + '/';\n"
                     "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Unusual pointer arithmetic\n", errout.str());
+
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    const char *p = '/' + \"/usr\";\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Unusual pointer arithmetic\n", errout.str());
     }
 
     void strPlusChar2()
@@ -430,10 +437,23 @@ private:
         // Strange looking pointer arithmetic..
         strPlusChar("void foo()\n"
                     "{\n"
-                    "    char ch = '/';\n"
-                    "    const char *p = \"/usr\" + ch;\n"
+                    "    int x = 1;\n"
+                    "    const char *p = \"/usr\" + x;\n"
                     "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Unusual pointer arithmetic\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    const char *p = \"/usr\" + 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    char ch = '/';\n"
+                    "    const char *p = ch + \"/usr\";\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void strPlusChar3()
@@ -445,9 +465,31 @@ private:
                     "    std::string path = temp + '/' + \"sub\" + '/';\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    std::string path = '/' + \"sub\" + '/';\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Unusual pointer arithmetic\n", errout.str());
     }
 
+    void strPlusChar4()
+    {
+        // Strange looking pointer arithmetic..
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    const char *p = \"abcd\" + 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
 
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    char ch = 1;\n"
+                    "    const char *p = \"abcd\";\n"
+                    "	 const char *s = ch + p;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void varScope(const char code[])
     {

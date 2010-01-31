@@ -538,7 +538,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
             int n = std::atoi(tok->strAt(6));
-            if (n >= (total_size - 1))
+            if (n >= total_size)
                 strncatUsage(tok);
         }
 

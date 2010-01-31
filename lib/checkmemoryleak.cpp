@@ -937,7 +937,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             if (parlevel <= 0)
                                 break;
                         }
-                        if (Token::Match(tok2, "close|fclose|closedir ( %varid% )", varid))
+                        if (Token::Match(tok2, "close|pclose|fclose|closedir ( %varid% )", varid))
                         {
                             addtoken("dealloc");
                             addtoken(";");
