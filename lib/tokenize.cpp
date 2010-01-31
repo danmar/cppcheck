@@ -457,26 +457,37 @@ void Tokenizer::simplifyTypedef()
         bool functionRef = false;
         bool hasTemplate = false;
 
-        if (Token::Match(tok->next(), "%type% <") ||
-            Token::Match(tok->next(), "%type% %type% <") ||
-            Token::Match(tok->next(), "%type% :: %type% <") ||
-            Token::Match(tok->next(), "%type% %type% :: %type% <"))
+        if (Token::Match(tok->next(), "::") ||
+            Token::Match(tok->next(), "%type%"))
         {
-            // template
-            hasTemplate = true;
-            int level = 1;
             typeStart = tok->next();
+            offset = 1;
 
-            if (tok->tokAt(2)->str() == "<")
-                typeEnd = tok->tokAt(3);
-            else if (tok->tokAt(3)->str() == "<")
-                typeEnd = tok->tokAt(4);
-            else if (tok->tokAt(4)->str() == "<")
-                typeEnd = tok->tokAt(5);
-            else
-                typeEnd = tok->tokAt(6);
+            typeEnd = tok->tokAt(offset++);
 
+            bool atEnd = false;
+            while (!atEnd)
+            {
+                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "::"))
+                    typeEnd = tok->tokAt(offset++);
+
+                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
+                    tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+                    typeEnd = tok->tokAt(offset++);
+                else
+                    atEnd = true;
+            }
+        }
+        else
+            continue; // invalid input
+
+        // check for template
+        if (tok->tokAt(offset)->str() == "<")
+        {
+            int level = 1;
             int paren = 0;
+            hasTemplate = true;
+            typeEnd = tok->tokAt(offset + 1);
             for (; typeEnd ; typeEnd = typeEnd->next())
             {
                 if (typeEnd->str() == ">")
@@ -509,48 +520,19 @@ void Tokenizer::simplifyTypedef()
             }
 
             tok = typeEnd;
-        }
-        else if (Token::Match(tok->next(), "%type%"))
-        {
-            typeStart = tok->next();
-
-            typeEnd = tok->tokAt(offset++);
-
-            if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
-                tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
-            {
-                typeEnd = tok->tokAt(offset++);
-
-                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "::"))
-                {
-                    typeEnd = tok->tokAt(offset++);
-
-                    if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
-                        tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
-                    {
-                        typeEnd = tok->tokAt(offset++);
-                    }
-                }
-                else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
-                         tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
-                {
-                    typeEnd = tok->tokAt(offset++);
-                }
-            }
-        }
-        else
-        {
-            // unhandled typedef, skip it and continue
-            continue;
+            offset = 1;
         }
 
+        // check for pointers and references
         while (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "*|&"))
             pointers.push_back(tok->tokAt(offset++)->str());
 
         if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%"))
         {
+            // found the type name
             typeName = tok->strAt(offset++);
 
+            // check for array
             if (tok->tokAt(offset) && tok->tokAt(offset)->str() == "[")
             {
                 arrayStart = tok->tokAt(offset);
@@ -574,6 +556,7 @@ void Tokenizer::simplifyTypedef()
                 arrayEnd = tok->tokAt(offset++);
             }
 
+            // check for end or another
             if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
                 tok = tok->tokAt(offset);
             else

@@ -166,6 +166,7 @@ private:
         TEST_CASE(simplifyTypedef27);
         TEST_CASE(simplifyTypedef28);
         TEST_CASE(simplifyTypedef29);
+        TEST_CASE(simplifyTypedef30);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -2997,6 +2998,26 @@ private:
             "int a2 [ N ] [ M ] ; "
             "int t ; "
             "int ia [ N ] ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef30()
+    {
+        const char code[] = "typedef ::std::list<int> int_list;\n"
+                            "typedef ::std::list<int>::iterator int_list_iterator;\n"
+                            "typedef ::std::list<int> int_list_array[10];\n"
+                            "int_list il;\n"
+                            "int_list_iterator ili;\n"
+                            "int_list_array ila;";
+
+        const char expected[] =
+            "; "
+            "; "
+            "; "
+            ":: std :: list < int > il ; "
+            ":: std :: list < int > :: iterator ili ; "
+            ":: std :: list < int > ila [ 10 ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
