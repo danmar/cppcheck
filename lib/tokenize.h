@@ -295,6 +295,9 @@ private:
      */
     bool simplifyRedundantParanthesis();
 
+    /** Simplify references */
+    void simplifyReference();
+
     /**
      * Simplify functions like "void f(x) int x; {"
      * into "void f(int x) {"

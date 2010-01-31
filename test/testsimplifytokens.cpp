@@ -169,7 +169,8 @@ private:
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
-        TEST_CASE(pointeralias);
+        TEST_CASE(pointeralias1);
+        TEST_CASE(pointeralias2);
 
         TEST_CASE(reduceConstness);
 
@@ -187,6 +188,9 @@ private:
 
         // Tokenizer::simplifyInitVar
         TEST_CASE(simplifyInitVar);
+
+        // Tokenizer::simplifyReference
+        TEST_CASE(simplifyReference);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -3094,7 +3098,7 @@ private:
     }
 
 
-    void pointeralias()
+    void pointeralias1()
     {
         {
             const char code[] = "void f()\n"
@@ -3177,6 +3181,23 @@ private:
 
             TODO_ASSERT_EQUALS(expected, tok(code));
         }
+    }
+
+    void pointeralias2()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int i;\n"
+                            "    int *p = &i;\n"
+                            "    return *p;\n"
+                            "}\n";
+        const char expected[] = "void f ( ) "
+                                "{ "
+                                "int i ; "
+                                "; ; "
+                                "return i ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
 
@@ -3278,6 +3299,14 @@ private:
             const char code[] = "void a() { foo *p(0); }";
             ASSERT_EQUALS("void a ( ) { ; ; }", tok(code));
         }
+    }
+
+    void simplifyReference()
+    {
+        ASSERT_EQUALS("void f ( ) { int a ; ; a ++ ; }",
+                      tok("void f() { int a; int &b(a); b++; }"));
+        ASSERT_EQUALS("void f ( ) { int a ; a ++ ; }",
+                      tok("void f() { int a; int &b = a; b++; }"));
     }
 };
 

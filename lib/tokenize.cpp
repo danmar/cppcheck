@@ -2466,6 +2466,9 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
+    // simplify references
+    simplifyReference();
+
     simplifyStd();
 
     simplifyNamespaces();
@@ -4285,7 +4288,8 @@ bool Tokenizer::simplifyKnownVariables()
                       Token::Match(tok2, "%var% = %str% ;") ||
                       Token::Match(tok2, "%var% [ ] = %str% ;") ||
                       Token::Match(tok2, "%var% = %bool% ;") ||
-                      Token::Match(tok2, "%var% = %var% ;")))
+                      Token::Match(tok2, "%var% = %var% ;") ||
+                      Token::Match(tok2, "%var% = & %var% ;")))
             {
                 const unsigned int varid = tok2->varId();
                 if (varid == 0)
@@ -4294,12 +4298,16 @@ bool Tokenizer::simplifyKnownVariables()
                 if (tok2->str() == tok2->strAt(2))
                     continue;
 
-                const bool pointeralias(tok2->tokAt(2)->isName());
+                const bool pointeralias(tok2->tokAt(2)->isName() || tok2->tokAt(2)->str() == "&");
 
                 std::string value(tok2->strAt(2));
                 if (value == "]")
                     value = tok2->strAt(4);
+                else if (value == "&")
+                    value = tok2->strAt(3);
                 Token* bailOutFromLoop = 0;
+                if (Token::simpleMatch(tok2->next(), "= &"))
+                    tok2 = tok2->tokAt(3);
                 int indentlevel3 = indentlevel;     // indentlevel for tok3
                 for (Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
                 {
@@ -4311,7 +4319,14 @@ bool Tokenizer::simplifyKnownVariables()
                     {
                         --indentlevel3;
                         if (indentlevel3 < indentlevel)
+                        {
+                            if (Token::Match(tok2->tokAt(-3), "%var% = & %var% ;"))
+                            {
+                                tok2 = tok2->tokAt(-4);
+                                Token::eraseTokens(tok2, tok2->tokAt(5));
+                            }
                             break;
+                        }
                     }
 
                     if (pointeralias && Token::Match(tok3, ("!!= " + value).c_str()))
@@ -4430,6 +4445,12 @@ bool Tokenizer::simplifyKnownVariables()
                     {
                         tok3->next()->str(value);
                     }
+
+                    else if (pointeralias && Token::Match(tok3, "return * %varid% ;", varid))
+                    {
+                        tok3->deleteNext();
+                        tok3->next()->str(value);
+                    }
                 }
             }
         }
@@ -4545,6 +4566,43 @@ bool Tokenizer::simplifyRedundantParanthesis()
         }
     }
     return ret;
+}
+
+void Tokenizer::simplifyReference()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        // starting executable scope..
+        if (Token::Match(tok, ") const| {"))
+        {
+            // replace references in this scope..
+            if (tok->next()->str() != "{")
+                tok = tok->next();
+            Token * const end = tok->next()->link();
+            for (Token *tok2 = tok; tok2 && tok2 != end; tok2 = tok2->next())
+            {
+                // found a reference..
+                if (Token::Match(tok2, "[;{}] %type% & %var% (|= %var% )| ;"))
+                {
+                    const unsigned int ref_id = tok2->tokAt(3)->varId();
+                    if (!ref_id)
+                        continue;
+
+                    // replace reference in the code..
+                    for (Token *tok3 = tok2->tokAt(7); tok3 && tok3 != end; tok3 = tok3->next())
+                    {
+                        if (tok3->varId() == ref_id)
+                        {
+                            tok3->str(tok2->strAt(5));
+                            tok3->varId(tok2->tokAt(5)->varId());
+                        }
+                    }
+
+                    Token::eraseTokens(tok2, tok2->tokAt(7));
+                }
+            }
+        }
+    }
 }
 
 bool Tokenizer::simplifyCalculations()
