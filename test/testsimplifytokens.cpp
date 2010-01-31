@@ -2976,17 +2976,23 @@ private:
         const char code[] = "typedef int array [ice_or<is_int<int>::value, is_int<UDT>::value>::value ? 1 : -1];\n"
                             "typedef int array1 [N];\n"
                             "typedef int array2 [N][M];\n"
+                            "typedef int int_t, int_array[N];\n"
                             "array a;\n"
                             "array1 a1;\n"
-                            "array2 a2;";
+                            "array2 a2;\n"
+                            "int_t t;\n"
+                            "int_array ia;";
 
         const char expected[] =
             "; "
             "; "
             "; "
+            "; "
             "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : - 1 ] ; "
             "int a1 [ N ] ; "
-            "int a2 [ N ] [ M ] ;";
+            "int a2 [ N ] [ M ] ; "
+            "int t ; "
+            "int ia [ N ] ;";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }

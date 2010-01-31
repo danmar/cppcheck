@@ -579,6 +579,7 @@ void Tokenizer::simplifyTypedef()
             else
             {
                 // unhandled typedef, skip it and continue
+                tok = tok->tokAt(offset);
                 continue;
             }
         }
@@ -816,6 +817,8 @@ void Tokenizer::simplifyTypedef()
 
                     if (tok->tokAt(offset) && tok->tokAt(offset)->str() == "[")
                     {
+                        arrayStart = tok->tokAt(offset);
+
                         bool atEnd = false;
                         while (!atEnd)
                         {
@@ -831,6 +834,8 @@ void Tokenizer::simplifyTypedef()
                             else
                                 offset++;
                         }
+
+                        arrayEnd = tok->tokAt(offset++);
                     }
 
                     if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
