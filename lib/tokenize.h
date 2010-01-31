@@ -139,6 +139,9 @@ public:
 private:
 #endif
 
+    /** Remove redundant assignment */
+    void removeRedundantAssignment();
+
     /**
      * Replace sizeof() to appropriate size.
      */

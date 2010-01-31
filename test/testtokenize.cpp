@@ -183,6 +183,8 @@ private:
         TEST_CASE(switchCase);
 
         TEST_CASE(functionpointer);
+
+        TEST_CASE(removeRedundantAssignment);
     }
 
 
@@ -1284,7 +1286,7 @@ private:
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
-                                   "3: int a@1 ; int b@2 ;\n"
+                                   "3: ; ;\n"
                                    "4: }\n");
 
         ASSERT_EQUALS(expected, actual);
@@ -1498,7 +1500,7 @@ private:
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
-                                   "3: int a@1 ; int b@2 ;\n"
+                                   "3: int a@1 ; ;\n"
                                    "4: a@1 = a@1 ;\n"
                                    "5: }\n");
 
@@ -2007,7 +2009,7 @@ private:
                                 "        int x;"
                                 "    { }"
                                 "}";
-            ASSERT_EQUALS("void foo ( ) { if ( x ) { int x ; } { } }", tokenizeAndStringify(code, true));
+            ASSERT_EQUALS("void foo ( ) { if ( x ) { ; } { } }", tokenizeAndStringify(code, true));
         }
     }
 
@@ -2865,6 +2867,11 @@ private:
         ASSERT_EQUALS(" void** f;", simplifyFunctionPointers("void *(*f)();"));
         ASSERT_EQUALS(" unsigned int* f;", simplifyFunctionPointers("unsigned int (*f)();"));
         ASSERT_EQUALS(" unsigned int** f;", simplifyFunctionPointers("unsigned int * (*f)();"));
+    }
+
+    void removeRedundantAssignment()
+    {
+        ASSERT_EQUALS("void f ( ) { ; int * q ; ; }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
     }
 };
 

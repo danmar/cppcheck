@@ -2466,7 +2466,6 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
-
     simplifyStd();
 
     simplifyNamespaces();
@@ -2759,6 +2758,8 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
+    removeRedundantAssignment();
+
     simplifyComma();
     if (_settings && _settings->_debug)
     {
@@ -2768,6 +2769,60 @@ bool Tokenizer::simplifyTokenList()
     return validate();
 }
 //---------------------------------------------------------------------------
+
+void Tokenizer::removeRedundantAssignment()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+            tok = tok->link();
+
+        if (Token::Match(tok, ") const| {"))
+        {
+            // parse in this function..
+            std::set<unsigned int> localvars;
+            if (tok->next()->str() == "const")
+                tok = tok->next();
+            const Token * const end = tok->next()->link();
+            for (Token *tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next())
+            {
+                if (Token::Match(tok2, "[;{}] %type% * %var% ;"))
+                {
+                    tok2 = tok2->tokAt(3);
+                    localvars.insert(tok2->varId());
+                }
+                else if (Token::Match(tok2, "[;{}] %type% %var% ;") && tok2->next()->isStandardType())
+                {
+                    tok2 = tok2->tokAt(2);
+                    localvars.insert(tok2->varId());
+                }
+                else if (tok2->varId() && !Token::Match(tok2->previous(), "[;{}] %var% = %var% ;"))
+                {
+                    localvars.erase(tok2->varId());
+                }
+            }
+            localvars.erase(0);
+            if (!localvars.empty())
+            {
+                for (Token *tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next())
+                {
+                    if (Token::Match(tok2, "[;{}] %type% %var% ;") && localvars.find(tok2->tokAt(2)->varId()) != localvars.end())
+                    {
+                        Token::eraseTokens(tok2, tok2->tokAt(3));
+                    }
+                    else if (Token::Match(tok2, "[;{}] %type% * %var% ;") && localvars.find(tok2->tokAt(3)->varId()) != localvars.end())
+                    {
+                        Token::eraseTokens(tok2, tok2->tokAt(4));
+                    }
+                    else if (Token::Match(tok2, "[;{}] %var% = %var% ;") && localvars.find(tok2->next()->varId()) != localvars.end())
+                    {
+                        Token::eraseTokens(tok2, tok2->tokAt(4));
+                    }
+                }
+            }
+        }
+    }
+}
 
 bool Tokenizer::removeReduntantConditions()
 {

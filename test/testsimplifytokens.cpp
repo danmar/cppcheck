@@ -292,9 +292,9 @@ private:
         }
 
         {
-            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; }";
-            const char code2[] = " void f() { int a; bool use = true; { a=0; }int c=1; }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
+            const char code1[] = "void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; else if( cc ) a=33; else { gg = 0; } int c=1; }";
+            const char code2[] = "void f ( ) { int a ; ; ; { a = 0 ; } int c ; c = 1 ; }";
+            ASSERT_EQUALS(code2, tok(code1));
         }
 
         {
@@ -779,7 +779,7 @@ private:
                                 "}\n";
             std::ostringstream oss;
             oss << sizeofFromTokenizer("*");
-            ASSERT_EQUALS("void f ( ) { char * ptrs ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
+            ASSERT_EQUALS("void f ( ) { ; int a ; a = " + oss.str() + " ; }", sizeof_(code));
         }
     }
 
@@ -956,7 +956,7 @@ private:
 
         const char expected[] = "void f ( ) "
                                 "{"
-                                " int * p ;"
+                                " ;"
                                 " 4 ; "
                                 "}";
 
@@ -1122,7 +1122,7 @@ private:
                             "f<int>(10);";
 
         const std::string expected("; f<int> ( 10 ) ; "
-                                   "void f<int> ( int val ) { int a ; }");
+                                   "void f<int> ( int val ) { ; }");
 
         ASSERT_EQUALS(expected, sizeof_(code));
     }
@@ -1941,7 +1941,7 @@ private:
                                 "  bool x = false;\n"
                                 "  int b = x ? 44 : 3;\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { bool x ; x = false ; int b ; b = 3 ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; ; int b ; b = 3 ; }", tok(code));
         }
 
         {
@@ -3040,7 +3040,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { bool x ; x = true ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; ; }", tok(code));
         }
 
         {
@@ -3053,7 +3053,7 @@ private:
                 "}\n"
                 "}";
 
-            ASSERT_EQUALS("void f ( ) { bool x ; x = false ; { g ( ) ; } }", tok(code));
+            ASSERT_EQUALS("void f ( ) { ; ; { g ( ) ; } }", tok(code));
         }
 
         {
@@ -3107,7 +3107,7 @@ private:
             const char expected[] = "void f ( ) "
                                     "{ "
                                     "char buf [ 100 ] ; "
-                                    "char * p ; p = buf ; "
+                                    "; ; "
                                     "x ( buf ) ; "
                                     "}";
 
@@ -3159,7 +3159,7 @@ private:
             const char expected[] = "int * foo ( ) "
                                     "{ "
                                     "int a [ 10 ] ; "
-                                    "int * b ; b = a ; "
+                                    "; ; "
                                     "return a ; "
                                     "}";
 
