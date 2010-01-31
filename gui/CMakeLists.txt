@@ -89,10 +89,12 @@ SET(CHECK_TRANS
 
 SET(CHECK_RCCS gui.qrc)
 
+aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
+
 # Libraries to link
-set(CHECK_LIBS
-  checklib
-)
+#set(CHECK_LIBS
+#  checklib
+#)
 
 # Windows needs additional shlwapi library
 if (WIN32 AND NOT CYGWIN)
@@ -130,7 +132,7 @@ SOURCE_GROUP("Moc Files" "moc_.*cxx$")
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_EXECUTABLE(gui WIN32 ${CHECKGUI_SRCS} ${CHECK_MOC_SRCS} ${CHECK_HEADERS} 
-  ${CHECK_UIS_H} ${CHECK_RCC_SRCS})
+  ${CHECK_UIS_H} ${CHECK_RCC_SRCS} ${LIB_SRCS})
 TARGET_LINK_LIBRARIES(gui ${CHECK_LIBS} ${QT_LIBRARIES})
 
 ELSE(QT4_FOUND)

@@ -14,7 +14,12 @@ cmake_minimum_required (VERSION 2.6)
 
 PROJECT(CPPCHECK)
 
-ADD_SUBDIRECTORY(lib)
+# Building lib as static library is disabled due to bug
+# #1299 CMake: The CheckClass is not used
+# https://sourceforge.net/apps/trac/cppcheck/ticket/1299
+# Instead lib code is included directly into cli and gui targets
+# ADD_SUBDIRECTORY(lib)
+
 ADD_SUBDIRECTORY(cli)
 
 # Exclude tests from command line targets but include them to VS IDE targets.

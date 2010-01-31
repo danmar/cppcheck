@@ -25,9 +25,11 @@ if (WIN32)
 endif (WIN32)
 
 # Libraries to link
-set(CHECK_LIBS
-  checklib
-)
+#set(CHECK_LIBS
+#  checklib
+#)
+
+aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
 
 # Windows needs additional shlwapi library
 if (WIN32 AND NOT CYGWIN)
@@ -45,6 +47,6 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories (${CPPCHECK_SOURCE_DIR}/lib)
-ADD_EXECUTABLE(cppcheck ${CHECKCLI_SRCS} ${CHECKCLI_HDRS})
+ADD_EXECUTABLE(cppcheck ${CHECKCLI_SRCS} ${CHECKCLI_HDRS} ${LIB_SRCS})
 TARGET_LINK_LIBRARIES(cppcheck ${CHECK_LIBS})
 
