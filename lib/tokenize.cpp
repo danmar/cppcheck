@@ -5004,12 +5004,14 @@ void Tokenizer::simplifyEnum()
             }
 
             tok1 = start;
-            while (tok1->next() && tok1->next() != end->next())
+            while (tok1->next() && tok1->next() != end)
                 tok1->deleteNext();
+            tok1->deleteNext();
             if (start != _tokens)
             {
                 tok1 = start->previous();
                 tok1->deleteNext();
+                tok = tok1;
             }
             else
                 _tokens->deleteThis();
