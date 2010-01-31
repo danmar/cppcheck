@@ -2373,7 +2373,7 @@ private:
         const char expected[] =
             "namespace VL { "
             "; "
-            "inline float fast_atan2 ( float y , float x ) { } "
+            "float fast_atan2 ( float y , float x ) { } "
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
