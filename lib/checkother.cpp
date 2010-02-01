@@ -811,70 +811,24 @@ void CheckOther::checkIncompleteStatement()
 
 //---------------------------------------------------------------------------
 // str plus char
-//
-// What is checked:
-// string = string + "xxx" + 'x';	OK
-// string = const char * + %any%;	ERR
-// string = 'x' + %any%;			ERR
-// string = char + %any%;			ERR
-// const char * = "xxx"	+ %number%;	OK
-//
-// where:
-// string - variable of type string
-// const char * - variable of type const char *
-// 'x' - a character literal
-// "xxx" - a string literal
-// %any% - anything (variable or literal)
-// %number% - a number (literal or variable)
 //---------------------------------------------------------------------------
 
 void CheckOther::strPlusChar()
 {
-    char strVars[10000] = {0};  // 1 - string, 2 - const char *, 3 - number (char,int,short), 0 - other
-    char assignToConstChar = 0; // 1 - assigning to const char *, 2 - 'const char*'-part assigned
+    bool charVars[10000] = {0};
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (assignToConstChar)
-        {
-            if (Token::Match(tok, "%var%"))
-            {
-                unsigned int varid = tok->varId();
-
-                if (strVars[varid] == 2)
-                {
-                    assignToConstChar = 2;
-                }
-                else if (!(tok->isNumber() || (strVars[varid] == 3)))
-                {
-                    strPlusChar(tok);
-                }
-            }
-            else if (Token::Match(tok, "%str%"))
-            {
-                assignToConstChar = 2;
-            }
-            else if (Token::Match(tok, ";"))
-            {
-                // 'const char *'-part was not found
-                if (assignToConstChar != 2)
-                {
-                    strPlusChar(tok);
-                }
-                assignToConstChar = 0;
-            }
-            else if (!(Token::Match(tok, "[+=]") || tok->isNumber()))
-            {
-                strPlusChar(tok);
-            }
-        }
-        else if (Token::Match(tok, "string %var% [;=]"))
+        // Declaring char variable..
+        if (Token::Match(tok, "char %var% [;=]"))
         {
             unsigned int varid = tok->next()->varId();
             if (varid > 0 && varid < 10000)
-                strVars[varid] = 1;
+                charVars[varid] = true;
         }
-        else if (Token::Match(tok, "const char * %var% [;=]"))
+
+        //
+        else if (Token::Match(tok, "[=(] %str% + %any%"))
         {
             // char constant..
             const char *s = tok->strAt(3);
@@ -883,29 +837,8 @@ void CheckOther::strPlusChar()
 
             // char variable..
             unsigned int varid = tok->tokAt(3)->varId();
-            if (varid > 0 && varid < 10000)
-                strVars[varid] = 2;
-        }
-        else if (Token::Match(tok, "char|int|short %var% [;=]"))
-        {
-            unsigned int varid = tok->next()->varId();
-            if (varid > 0 && varid < 10000)
-                strVars[varid] = 3;
-        }
-        else if (Token::Match(tok, "%var% = %any% + %any%") &&
-                 (strVars[tok->varId()] == 1))
-        {
-            // string =
-            unsigned int varidAny = tok->tokAt(2)->varId();
-            // first %any% has to be a variable of type string
-            if (!strVars[varidAny])
-                strPlusChar(tok->tokAt(3));
-        }
-        else if (Token::Match(tok, "%var% = %any%") &&
-                 (strVars[tok->varId()] == 2))
-        {
-            // const char * =
-            assignToConstChar = 1;
+            if (varid > 0 && varid < 10000 && charVars[varid])
+                strPlusChar(tok->next());
         }
     }
 }
