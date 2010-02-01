@@ -67,4 +67,5 @@ void CheckThread::run()
 void CheckThread::stop()
 {
     mState = Stopping;
+    mCppcheck.terminate();
 }
