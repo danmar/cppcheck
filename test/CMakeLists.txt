@@ -32,10 +32,12 @@ SET(CHECKTEST_SRCS
   testmathlib.cpp
 )
 
+aux_source_directory(${CPPCHECK_SOURCE_DIR}/lib LIB_SRCS)
+
 # Libraries to link
-set(CHECK_LIBS
-  checklib
-)
+#set(CHECK_LIBS
+#  checklib
+#)
 
 # Windows needs additional shlwapi library
 if (WIN32 AND NOT CYGWIN)
@@ -53,11 +55,11 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 include_directories (${CPPCHECK_SOURCE_DIR}/lib)
-ADD_EXECUTABLE(test ${CHECKTEST_SRCS} ${CHECKTEST_HDRS})
+ADD_EXECUTABLE(test ${CHECKTEST_SRCS} ${CHECKTEST_HDRS} ${LIB_SRCS})
 TARGET_LINK_LIBRARIES(test ${CHECK_LIBS})
 
 # Add custom 'make check' -target
 # It compiles and runs tests
 add_custom_target(check COMMAND test)
-add_dependencies(check test checklib)
+add_dependencies(check test)
 
