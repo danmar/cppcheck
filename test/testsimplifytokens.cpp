@@ -167,6 +167,7 @@ private:
         TEST_CASE(simplifyTypedef28);
         TEST_CASE(simplifyTypedef29);
         TEST_CASE(simplifyTypedef30);
+        TEST_CASE(simplifyTypedef31);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -3022,6 +3023,55 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
+    void simplifyTypedef31()
+    {
+        {
+            const char code[] = "class A {\n"
+                                "public:\n"
+                                "    typedef int INT;\n"
+                                "    INT get() const;\n"
+                                "    void put(INT x) { a = x; }\n"
+                                "    INT a;\n"
+                                "};\n"
+                                "A::INT A::get() const { return a; }\n"
+                                "A::INT i = A::a;";
+
+            const char expected[] = "class A { "
+                                    "public: "
+                                    "; "
+                                    "int get ( ) const ; "
+                                    "void put ( int x ) { a = x ; } "
+                                    "int a ; "
+                                    "} ; "
+                                    "int A :: get ( ) const { return a ; } "
+                                    "int i ; i = A :: a ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct A {\n"
+                                "    typedef int INT;\n"
+                                "    INT get() const;\n"
+                                "    void put(INT x) { a = x; }\n"
+                                "    INT a;\n"
+                                "};\n"
+                                "A::INT A::get() const { return a; }\n"
+                                "A::INT i = A::a;";
+
+            const char expected[] = "struct A { "
+                                    "; "
+                                    "int get ( ) const ; "
+                                    "void put ( int x ) { a = x ; } "
+                                    "int a ; "
+                                    "} ; "
+                                    "int A :: get ( ) const { return a ; } "
+                                    "int i ; i = A :: a ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+    }
+
     void reverseArraySyntax()
     {
         ASSERT_EQUALS("a [ 13 ]", tok("13[a]"));
@@ -3268,29 +3318,53 @@ private:
 
     void enum4()
     {
-        const char code[] = "class A {\n"
-                            "public:\n"
-                            "    enum EA { a1, a2, a3 };\n"
-                            "    EA get() const;\n"
-                            "    void put(EA a) { ea = a; ea = a1; }\n"
-                            "private:\n"
-                            "    EA ea;\n"
-                            "};\n"
-                            "A::EA A::get() const { return ea; }\n"
-                            "A::EA e = A::a1;";
+        {
+            const char code[] = "class A {\n"
+                                "public:\n"
+                                "    enum EA { a1, a2, a3 };\n"
+                                "    EA get() const;\n"
+                                "    void put(EA a) { ea = a; ea = a1; }\n"
+                                "private:\n"
+                                "    EA ea;\n"
+                                "};\n"
+                                "A::EA A::get() const { return ea; }\n"
+                                "A::EA e = A::a1;";
 
-        const char expected[] = "class A { "
-                                "public: "
-                                "; "
-                                "int get ( ) const ; "
-                                "void put ( int a ) { ea = a ; ea = 0 ; } "
-                                "private: "
-                                "int ea ; "
-                                "} ; "
-                                "int A :: get ( ) const { return ea ; } "
-                                "int e ; e = 0 ;";
+            const char expected[] = "class A { "
+                                    "public: "
+                                    "; "
+                                    "int get ( ) const ; "
+                                    "void put ( int a ) { ea = a ; ea = 0 ; } "
+                                    "private: "
+                                    "int ea ; "
+                                    "} ; "
+                                    "int A :: get ( ) const { return ea ; } "
+                                    "int e ; e = 0 ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct A {\n"
+                                "    enum EA { a1, a2, a3 };\n"
+                                "    EA get() const;\n"
+                                "    void put(EA a) { ea = a; ea = a1; }\n"
+                                "    EA ea;\n"
+                                "};\n"
+                                "A::EA A::get() const { return ea; }\n"
+                                "A::EA e = A::a1;";
+
+            const char expected[] = "struct A { "
+                                    "; "
+                                    "int get ( ) const ; "
+                                    "void put ( int a ) { ea = a ; ea = 0 ; } "
+                                    "int ea ; "
+                                    "} ; "
+                                    "int A :: get ( ) const { return ea ; } "
+                                    "int e ; e = 0 ;";
+
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void removestd()

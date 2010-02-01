@@ -372,7 +372,7 @@ void Tokenizer::simplifyTypedef()
     int classLevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class|namespace %any%"))
+        if (Token::Match(tok, "class|struct|namespace %any%"))
         {
             className = tok->next()->str();
             classLevel = 0;
@@ -4925,7 +4925,7 @@ void Tokenizer::simplifyEnum()
     int classLevel = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class|namespace %any%"))
+        if (Token::Match(tok, "class|struct|namespace %any%"))
         {
             className = tok->next()->str();
             classLevel = 0;
