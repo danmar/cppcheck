@@ -174,7 +174,8 @@ private:
         TEST_CASE(createLinks);
         TEST_CASE(signed1);
 
-        TEST_CASE(removeExceptionSpecification);
+        TEST_CASE(removeExceptionSpecification1);
+        TEST_CASE(removeExceptionSpecification2);
 
         TEST_CASE(gt);      // use "<" comparisons instead of ">"
 
@@ -2783,7 +2784,7 @@ private:
         }
     }
 
-    void removeExceptionSpecification()
+    void removeExceptionSpecification1()
     {
         const char code[] = "class A\n"
                             "{\n"
@@ -2800,6 +2801,31 @@ private:
                                 "} ;\n"
                                 "void A :: f ( )\n"
                                 "{ }";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    void removeExceptionSpecification2()
+    {
+        const char code[] = "class A\n"
+                            "{\n"
+                            "private:\n"
+                            "    int value;\n"
+                            "public:\n"
+                            "    A::A() throw ()\n"
+                            "      : value(0)\n"
+                            "    { }\n"
+                            "};\n";
+
+        const char expected[] = "class A\n"
+                                "{\n"
+                                "private:\n"
+                                "int value ;\n"
+                                "public:\n"
+                                "A :: A ( )\n"
+                                ": value ( 0 )\n"
+                                "{ }\n"
+                                "} ;";
 
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }

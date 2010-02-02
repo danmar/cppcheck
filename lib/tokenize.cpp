@@ -5710,10 +5710,10 @@ void Tokenizer::removeExceptionSpecifications(Token *tok) const
         else if (tok->str() == "}")
             break;
 
-        else if (Token::Match(tok, ") throw ("))
+        else if (Token::simpleMatch(tok, ") throw ("))
         {
-            while (tok->next() && !Token::Match(tok->next(), "[;{]"))
-                tok->deleteNext();
+            Token::eraseTokens(tok, tok->tokAt(2)->link());
+            tok->deleteNext();
         }
 
         else if (Token::Match(tok, "class %type%"))
