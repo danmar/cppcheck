@@ -186,6 +186,7 @@ private:
         TEST_CASE(enum2);
         TEST_CASE(enum3);
         TEST_CASE(enum4);
+        TEST_CASE(enum5);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -3449,6 +3450,17 @@ private:
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void enum5()
+    {
+        const char code[] = "enum ABC {\n"
+                            "    a = sizeof(int),\n"
+                            "    b = 1 + a,\n"
+                            "    c = b + 100\n"
+                            "}; a b c";
+        ASSERT_EQUALS("; a b c", tok(code, false));
+        TODO_ASSERT_EQUALS("; 4 5 105", tok(code, false));
     }
 
     void removestd()

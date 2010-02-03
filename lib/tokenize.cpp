@@ -5048,7 +5048,7 @@ void Tokenizer::simplifyEnum()
                 Token * enumName = 0;
                 Token * enumValue = 0;
 
-                if (Token::Match(tok1, "%type% ,|}"))
+                if (Token::Match(tok1->previous(), ",|{ %type% ,|}"))
                 {
                     enumName = tok1;
                     last_value++;
@@ -5057,7 +5057,7 @@ void Tokenizer::simplifyEnum()
                     tok1->insertToken(MathLib::toString<long>(last_value).c_str());
                     enumValue = tok1->next();
                 }
-                else if (Token::Match(tok1, "%type% = %num% ,|}"))
+                else if (Token::Match(tok1->previous(), ",|{ %type% = %num% ,|}"))
                 {
                     enumName = tok1;
                     last_value = std::atoi(tok1->strAt(2));
