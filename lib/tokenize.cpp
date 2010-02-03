@@ -366,29 +366,65 @@ void Tokenizer::createTokens(std::istream &code)
     }
 }
 
+// check if this statement is a typedef definition
+static bool duplicateTypedef(const Token * tok)
+{
+    // check for a typedef end of definition
+    if (tok && tok->next() && Token::Match(tok->next(), ";|,|["))
+    {
+        // scan backwards for the end of the previous statement
+        while (tok && tok->previous() && !Token::Match(tok->previous(), ";|{"))
+        {
+            if (tok->str() == "typedef")
+                return true;
+
+            tok = tok->previous();
+        }
+    }
+    return false;
+}
+
+struct SpaceInfo
+{
+    bool isNamespace;
+    std::string className;
+    const Token * classEnd;
+};
+
 void Tokenizer::simplifyTypedef()
 {
+    std::vector<SpaceInfo> spaceInfo;
+    bool isNamespace = false;
     std::string className;
-    int classLevel = 0;
+    bool hasClass = false;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "class|struct|namespace %any%"))
         {
+            isNamespace = (tok->str() == "namespace");
+            hasClass = true;
             className = tok->next()->str();
-            classLevel = 0;
             continue;
         }
-        else if (tok->str() == "}")
+        else if (hasClass && tok->str() == ";")
         {
-            --classLevel;
-            if (classLevel < 0)
-                className = "";
+            hasClass = false;
+            continue;
+        }
+        else if (hasClass && tok->str() == "{")
+        {
+            SpaceInfo info;
+            info.isNamespace = isNamespace;
+            info.className = className;
+            info.classEnd = tok->link();
+            spaceInfo.push_back(info);
 
+            hasClass = false;
             continue;
         }
-        else if (tok->str() == "{")
+        else if (!spaceInfo.empty() && tok->str() == "}" && spaceInfo.back().classEnd == tok)
         {
-            ++classLevel;
+            spaceInfo.pop_back();
             continue;
         }
         else if (tok->str() != "typedef")
@@ -594,55 +630,88 @@ void Tokenizer::simplifyTypedef()
 
         while (!done)
         {
-            const std::string pattern(className.empty() ? "" : (className + " :: " + typeName).c_str());
-            int level = 0;
+            std::string pattern;
+            int scope = 0;
             bool inScope = true;
 
             bool exitThisScope = false;
             int exitScope = 0;
             bool simplifyType = false;
+            unsigned int classLevel = spaceInfo.size();
+
+            for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
+                pattern += (spaceInfo[i].className + " :: ");
+
+            pattern += typeName;
+
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "}")
                 {
-                    --level;
-                    if (level < 0)
-                        inScope = false;
+                    if (classLevel > 0 && tok2 == spaceInfo[classLevel - 1].classEnd)
+                    {
+                        --classLevel;
+                        pattern.clear();
 
-                    if (exitThisScope)
-                    {
-                        if (level < exitScope)
-                            exitThisScope = false;
-                    }
-                }
-                else if (tok2->str() == "{")
-                    ++level;
-                else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
-                {
-                    tok2->deleteNext();
-                    tok2->deleteNext();
-                    simplifyType = true;
-                }
-                else if (inScope && !exitThisScope && tok2->str() == typeName)
-                {
-                    if (Token::simpleMatch(tok2->previous(), "::"))
-                    {
-                        // Don't replace this typename if it's preceded by "::"
-                    }
-                    else if (Token::Match(tok2->tokAt(-2), "!!typedef") &&
-                             Token::Match(tok2->tokAt(-3), "!!typedef"))
-                    {
-                        // Check for enum and typedef with same name.
-                        if (!hasTemplate && tok2->tokAt(-1)->str() != typeStart->str())
-                            simplifyType = true;
-                        else if (hasTemplate)
-                            simplifyType = true;
+                        for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
+                            pattern += (spaceInfo[i].className + " :: ");
+
+                        pattern += typeName;
                     }
                     else
                     {
-                        // Typedef with the same name.
-                        exitThisScope = true;
-                        exitScope = level;
+                        scope--;
+                        if (scope < 0)
+                            inScope = false;
+
+                        if (exitThisScope)
+                        {
+                            if (scope < exitScope)
+                                exitScope = false;
+                        }
+                    }
+                }
+                else if (tok2->str() == "{")
+                    scope++;
+                else if (Token::Match(tok2, pattern.c_str()))
+                {
+                    if (pattern != typeName) // has a "something ::"
+                    {
+                        for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
+                        {
+                            tok2->deleteNext();
+                            tok2->deleteNext();
+                        }
+                        simplifyType = true;
+                    }
+                    else if (inScope && !exitThisScope)
+                    {
+                        if (Token::simpleMatch(tok2->previous(), "::"))
+                        {
+                            // Don't replace this typename if it's preceded by "::" unless it's a namespace
+                            if (!spaceInfo.empty() && (tok2->tokAt(-2)->str() == spaceInfo[0].className) && spaceInfo[0].isNamespace)
+                            {
+                                tok2 = tok2->tokAt(-3);
+                                tok2->deleteNext();
+                                tok2->deleteNext();
+                                tok2 = tok2->next();
+                                simplifyType = true;
+                            }
+                        }
+                        else if (!duplicateTypedef(tok2))
+                        {
+                            // Check for enum and typedef with same name.
+                            if (!hasTemplate && tok2->tokAt(-1)->str() != typeStart->str())
+                                simplifyType = true;
+                            else if (hasTemplate)
+                                simplifyType = true;
+                        }
+                        else
+                        {
+                            // Typedef with the same name.
+                            exitThisScope = true;
+                            exitScope = scope;
+                        }
                     }
                 }
 

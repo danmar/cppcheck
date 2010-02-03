@@ -168,6 +168,8 @@ private:
         TEST_CASE(simplifyTypedef29);
         TEST_CASE(simplifyTypedef30);
         TEST_CASE(simplifyTypedef31);
+        TEST_CASE(simplifyTypedef32);
+        TEST_CASE(simplifyTypedef33);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -3070,6 +3072,88 @@ private:
 
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void simplifyTypedef32()
+    {
+        const char code[] = "typedef char CHAR;\n"
+                            "typedef CHAR * LPSTR;\n"
+                            "typedef const CHAR * LPCSTR;\n"
+                            "CHAR c;\n"
+                            "LPSTR cp;\n"
+                            "LPCSTR ccp;";
+
+        const char expected[] =
+            "; "
+            "; "
+            "; "
+            "char c ; "
+            "char * cp ; "
+            "const char * ccp ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef33()
+    {
+        const char code[] = "class A {\n"
+                            "public:\n"
+                            "    typedef char CHAR_A;\n"
+                            "    CHAR_A funA();\n"
+                            "    class B {\n"
+                            "    public:\n"
+                            "        typedef short SHRT_B;\n"
+                            "        SHRT_B funB();\n"
+                            "        class C {\n"
+                            "        public:\n"
+                            "            typedef int INT_C;\n"
+                            "            INT_C funC();\n"
+                            "            struct D {\n"
+                            "                typedef long LONG_D;\n"
+                            "                LONG_D funD();\n"
+                            "                LONG_D d;\n"
+                            "            };\n"
+                            "            INT_C c;\n"
+                            "        };\n"
+                            "        SHRT_B b;\n"
+                            "    };\n"
+                            "    CHAR_A a;\n"
+                            "};\n"
+                            "A::CHAR_A A::funA() { return a; }\n"
+                            "A::B::SHRT_B A::B::funB() { return b; }\n"
+                            "A::B::C::INT_C A::B::C::funC() { return c; }"
+                            "A::B::C::D::LONG_D A::B::C::D::funD() { return d; }";
+
+        const char expected[] =
+            "class A { "
+            "public: "
+            "; "
+            "char funA ( ) ; "
+            "class B { "
+            "public: "
+            "; "
+            "short funB ( ) ; "
+            "class C { "
+            "public: "
+            "; "
+            "int funC ( ) ; "
+            "struct D { "
+            "; "
+            "long funD ( ) ; "
+            "long d ; "
+            "} ; "
+            "int c ; "
+            "} ; "
+            "short b ; "
+            "} ; "
+            "char a ; "
+            "} ; "
+            "char A :: funA ( ) { return a ; } "
+            "short A :: B :: funB ( ) { return b ; } "
+            "int A :: B :: C :: funC ( ) { return c ; } "
+            "long A :: B :: C :: D :: funD ( ) { return d ; }";
+
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void reverseArraySyntax()
