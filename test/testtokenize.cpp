@@ -186,6 +186,8 @@ private:
         TEST_CASE(functionpointer);
 
         TEST_CASE(removeRedundantAssignment);
+
+        TEST_CASE(removedeclspec);
     }
 
 
@@ -2899,6 +2901,11 @@ private:
     {
         ASSERT_EQUALS("void f ( ) { ; int * q ; ; }", tokenizeAndStringify("void f() { int *p, *q; p = q; }", true));
         ASSERT_EQUALS("void f ( ) { ; ; int * q ; ; }", tokenizeAndStringify("void f() { int *p = 0, *q; p = q; }", true));
+    }
+
+    void removedeclspec()
+    {
+        ASSERT_EQUALS("a b", tokenizeAndStringify("a __declspec ( dllexport ) b"));
     }
 };
 

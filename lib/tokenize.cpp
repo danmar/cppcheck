@@ -1009,6 +1009,16 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         }
     }
 
+    // Remove __declspec(dllexport)
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "__declspec ( dllexport )"))
+        {
+            Token::eraseTokens(tok, tok->tokAt(4));
+            tok->deleteThis();
+        }
+    }
+
     // typedef..
     simplifyTypedef();
 
