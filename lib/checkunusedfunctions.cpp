@@ -53,8 +53,15 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
         if (tok->fileIndex() != 0)
             continue;
 
+        // token contains a ':' => skip to next ; or {
         if (tok->str().find(":") != std::string::npos)
-            continue;
+        {
+            while (tok && tok->str().find_first_of(";{"))
+                tok = tok->next();
+            if (tok)
+                continue;
+            break;
+        }
 
         // If this is a template function, skip it
         if (tok->previous() && tok->previous()->str() == ">")

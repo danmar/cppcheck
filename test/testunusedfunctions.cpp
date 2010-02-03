@@ -44,6 +44,7 @@ private:
         TEST_CASE(template1);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
+        TEST_CASE(initializationIsNotAFunction);
     }
 
     void check(const char code[])
@@ -169,6 +170,14 @@ private:
         check("void foo() throw() {}\n"
               "int main()\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used\n", errout.str());
+    }
+
+    void initializationIsNotAFunction()
+    {
+        check("struct B: N::A {\n"
+              "  B(): N::A() {};\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
