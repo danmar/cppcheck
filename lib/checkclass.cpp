@@ -745,22 +745,20 @@ void CheckClass::noMemset()
         if (!(type && type[0]))
             continue;
 
-        // Warn if type is a class..
-        const std::string pattern1(std::string("class ") + type);
-        if (Token::findmatch(_tokenizer->tokens(), pattern1.c_str()))
-        {
-            memsetClassError(tok, tok->str());
-            continue;
-        }
-
-        // Warn if type is a struct that contains any std::*
-        const std::string pattern2(std::string("struct ") + type + " {");
+        // Warn if type is a class or struct that contains any std::* variables
+        const std::string pattern2(std::string("struct|class ") + type + " {");
         for (const Token *tstruct = Token::findmatch(_tokenizer->tokens(), pattern2.c_str()); tstruct; tstruct = tstruct->next())
         {
             if (tstruct->str() == "}")
                 break;
 
             if (Token::Match(tstruct, "std :: %type% %var% ;"))
+            {
+                memsetStructError(tok, tok->str(), tstruct->strAt(2));
+                break;
+            }
+
+            if (Token::Match(tstruct, "std :: %type% < %type% > %var% ;"))
             {
                 memsetStructError(tok, tok->str(), tstruct->strAt(2));
                 break;
