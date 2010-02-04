@@ -752,16 +752,51 @@ void CheckClass::noMemset()
             if (tstruct->str() == "}")
                 break;
 
-            if (Token::Match(tstruct, "std :: %type% %var% ;"))
+            // struct with function? skip function body..
+            if (Token::simpleMatch(tstruct, ") {"))
             {
-                memsetStructError(tok, tok->str(), tstruct->strAt(2));
-                break;
+                tstruct = tstruct->next()->link();
+                if (!tstruct)
+                    break;
             }
 
-            if (Token::Match(tstruct, "std :: %type% < %type% *| > %var% ;"))
+            // before a statement there must be either:
+            // * private:|protected:|public:
+            // * { } ;
+            if (Token::Match(tstruct, "[;{}]") ||
+                tstruct->str().find(":") != std::string::npos)
             {
-                memsetStructError(tok, tok->str(), tstruct->strAt(2));
-                break;
+                if (Token::Match(tstruct->next(), "std :: %type% %var% ;"))
+                    memsetStructError(tok, tok->str(), tstruct->strAt(3));
+
+                else if (Token::Match(tstruct->next(), "std :: %type% < "))
+                {
+                    // backup the type
+                    const std::string typestr(tstruct->strAt(3));
+
+                    // check if it's a pointer variable..
+                    unsigned int level = 0;
+                    while (0 != (tstruct = tstruct->next()))
+                    {
+                        if (tstruct->str() == "<")
+                            ++level;
+                        else if (tstruct->str() == ">")
+                        {
+                            if (level <= 1)
+                                break;
+                            --level;
+                        }
+                        else if (tstruct->str() == "(")
+                            tstruct = tstruct->link();
+                    }
+
+                    if (!tstruct)
+                        break;
+
+                    // found error => report
+                    if (Token::Match(tstruct, "> %var% ;"))
+                        memsetStructError(tok, tok->str(), typestr);
+                }
             }
         }
     }
