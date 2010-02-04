@@ -758,7 +758,7 @@ void CheckClass::noMemset()
                 break;
             }
 
-            if (Token::Match(tstruct, "std :: %type% < %type% > %var% ;"))
+            if (Token::Match(tstruct, "std :: %type% < %type% *| > %var% ;"))
             {
                 memsetStructError(tok, tok->str(), tstruct->strAt(2));
                 break;
