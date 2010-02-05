@@ -114,6 +114,7 @@ private:
         TEST_CASE(varid11);
         TEST_CASE(varid12);
         TEST_CASE(varid13);
+        TEST_CASE(varid14);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -1508,6 +1509,34 @@ private:
                                    "5: }\n");
 
         ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid14()
+    {
+        // Overloaded operator*
+        const std::string code("void foo()\n"
+                               "{\n"
+                               "A a;\n"
+                               "B b;\n"
+                               "b * a;\n"
+                               "}");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void foo ( )\n"
+                                   "2: {\n"
+                                   "3: A a@1 ;\n"
+                                   "4: B b@2 ;\n"
+                                   "4: b@2 * a@1 ;\n"
+                                   "5: }\n");
+
+        TODO_ASSERT_EQUALS(expected, actual);
     }
 
     void varidStl()
