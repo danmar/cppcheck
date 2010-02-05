@@ -155,6 +155,7 @@ public:
     void nullPointerError(const Token *tok);  // variable name unknown / doesn't exist
     void nullPointerError(const Token *tok, const std::string &varname);
     void nullPointerError(const Token *tok, const std::string &varname, const int line);
+    void uninitstringError(const Token *tok, const std::string &varname);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
     void zerodivError(const Token *tok);
@@ -166,6 +167,7 @@ public:
         sprintfOverlappingDataError(0, "varname");
         udivError(0);
         nullPointerError(0, "pointer");
+        uninitstringError(0, "varname");
         uninitdataError(0, "varname");
         uninitvarError(0, "varname");
         zerodivError(0);

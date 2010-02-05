@@ -77,6 +77,7 @@ private:
         TEST_CASE(uninitvar_enum);      // enum variables
         TEST_CASE(uninitvar_if);        // handling if/while/switch
         TEST_CASE(uninitvar_references); // references
+        TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always 0-terminate
         TEST_CASE(uninitvar_func);      // analyse functions
 
         TEST_CASE(oldStylePointerCast);
@@ -1540,14 +1541,6 @@ private:
                        "    strchr(s, ' ');\n"
                        "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
-
-        checkUninitVar("void f()\n"
-                       "{\n"
-                       "    char s[20];\n"
-                       "    strncpy(s, \"abcde\", 2);\n"
-                       "    strcat(s, \"abc\");\n"
-                       "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: s\n", errout.str());
     }
 
     // alloc..
@@ -1696,6 +1689,18 @@ private:
                        "    strchr(s.c_str(), ',');\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // strncpy doesn't always 0-terminate..
+    void uninitvar_strncpy()
+    {
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    char a[100];\n"
+                       "    strncpy(a, s, 20);\n"
+                       "    strncat(a, s, 20);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dangerous usage of 'a' (strncpy doesn't always 0-terminate it)\n", errout.str());
     }
 
 

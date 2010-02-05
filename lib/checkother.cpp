@@ -1352,7 +1352,7 @@ class CheckUninitVar : public ExecutionPath
 public:
     // Startup constructor
     CheckUninitVar(Check *c)
-            : ExecutionPath(c, 0), pointer(false), array(false), alloc(false)
+            : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), strncpy_(false)
     {
     }
 
@@ -1367,7 +1367,7 @@ private:
 
     // internal constructor for creating extra checks
     CheckUninitVar(Check *c, unsigned int v, const std::string &name, bool p, bool a)
-            : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false)
+            : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), strncpy_(false)
     {
     }
 
@@ -1375,6 +1375,7 @@ private:
     const bool pointer;
     const bool array;
     bool  alloc;
+    bool  strncpy_;
 
     // p = malloc ..
     static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid)
@@ -1488,6 +1489,26 @@ private:
     }
 
 
+    /** Initialize an array with strncpy.. */
+    static void init_strncpy(std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        const unsigned int varid(tok->varId());
+        if (!varid)
+            return;
+
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
+            if (c && c->varId == varid)
+            {
+                c->strncpy_ = true;
+            }
+        }
+    }
+
+
+
     /**
      * use - called from the use* functions below.
      * @param foundError this is set to true if an error is found
@@ -1526,7 +1547,9 @@ private:
                 CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
                 if (checkOther)
                 {
-                    if (c->pointer && c->alloc)
+                    if (c->strncpy_)
+                        checkOther->uninitstringError(tok, c->varname);
+                    else if (c->pointer && c->alloc)
                         checkOther->uninitdataError(tok, c->varname);
                     else
                         checkOther->uninitvarError(tok, c->varname);
@@ -1794,8 +1817,11 @@ private:
             }
 
             // strncpy doesn't 0-terminate first parameter
-            if (Token::Match(&tok, "strncpy ("))
+            if (Token::Match(&tok, "strncpy ( %var% ,"))
+            {
+                init_strncpy(checks, tok.tokAt(2));
                 return tok.next()->link();
+            }
 
             if (Token::Match(&tok, "asm ( )"))
             {
@@ -2176,6 +2202,11 @@ void CheckOther::nullPointerError(const Token *tok, const std::string &varname)
 void CheckOther::nullPointerError(const Token *tok, const std::string &varname, const int line)
 {
     reportError(tok, Severity::error, "nullPointer", "Possible null pointer dereference: " + varname + " - otherwise it is redundant to check if " + varname + " is null at line " + MathLib::toString<long>(line));
+}
+
+void CheckOther::uninitstringError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::error, "uninitstring", "Dangerous usage of '" + varname + "' (strncpy doesn't always 0-terminate it)");
 }
 
 void CheckOther::uninitdataError(const Token *tok, const std::string &varname)
