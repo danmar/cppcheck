@@ -264,6 +264,13 @@ private:
               "    str[16] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[16]' index 16 out of bounds\n", errout.str());
+
+        check("char f()\n"
+              "{\n"
+              "    char str[16];\n"
+              "    return str[16];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'str[16]' index 16 out of bounds\n", errout.str());
     }
 
 
@@ -524,6 +531,19 @@ private:
               "Fred::Fred()\n"
               "{\n"
               "    str[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
+
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    char str[10];\n"
+              "public:\n"
+              "    char c();\n"
+              "};\n"
+              "char Fred::c()\n"
+              "{\n"
+              "    return str[10];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (error) Array 'str[10]' index 10 out of bounds\n", errout.str());
     }

@@ -160,6 +160,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         varc = 1;
 
     varc = 2 * (varc - 1);
+    if (Token::Match(tok, "return"))
+    {
+        tok = tok->next();
+        if (!tok)
+            return;
+    }
 
     // Array index..
     if (varid > 0)
