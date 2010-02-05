@@ -5041,40 +5041,92 @@ void Tokenizer::simplifyEnum()
 
             end = tok1->tokAt(-1)->link();
 
-            long last_value = -1;
+            long lastValue = -1;
+            Token * lastEnumValueStart = 0;
+            Token * lastEnumValueEnd = 0;
 
             for (; tok1 && tok1 != end; tok1 = tok1->next())
             {
                 Token * enumName = 0;
                 Token * enumValue = 0;
+                Token * enumValueStart = 0;
+                Token * enumValueEnd = 0;
 
                 if (Token::Match(tok1->previous(), ",|{ %type% ,|}"))
                 {
                     enumName = tok1;
-                    last_value++;
+                    lastValue++;
                     tok1->insertToken("=");
                     tok1 = tok1->next();
-                    tok1->insertToken(MathLib::toString<long>(last_value).c_str());
-                    enumValue = tok1->next();
+
+                    if (lastEnumValueStart && lastEnumValueEnd)
+                    {
+                        Token * valueStart = tok1;
+                        std::stack<Token *> links;
+                        for (Token *tok2 = lastEnumValueStart; tok2 != lastEnumValueEnd->next(); tok2 = tok2->next())
+                        {
+                            tok1->insertToken(tok2->strAt(0));
+                            tok1 = tok1->next();
+
+                            // Check for links and fix them up
+                            if (tok1->str() == "(" || tok1->str() == "[")
+                                links.push(tok1);
+                            else if (tok1->str() == ")" || tok1->str() == "]")
+                            {
+                                Token * link = links.top();
+
+                                tok1->link(link);
+                                link->link(tok1);
+
+                                links.pop();
+                            }
+                        }
+
+                        tok1->insertToken("+");
+                        tok1 = tok1->next();
+                        tok1->insertToken(MathLib::toString<long>(lastValue).c_str());
+                        enumValue = 0;
+                        enumValueStart = valueStart->next();
+                        enumValueEnd = tok1->next();
+                    }
+                    else
+                    {
+                        tok1->insertToken(MathLib::toString<long>(lastValue).c_str());
+                        enumValue = tok1->next();
+                    }
                 }
                 else if (Token::Match(tok1->previous(), ",|{ %type% = %num% ,|}"))
                 {
                     enumName = tok1;
-                    last_value = std::atoi(tok1->strAt(2));
+                    lastValue = std::atoi(tok1->strAt(2));
                     enumValue = tok1->tokAt(2);
+                    lastEnumValueStart = 0;
+                    lastEnumValueEnd = 0;
+                }
+                else if (Token::Match(tok1->previous(), ",|{ %type% = "))
+                {
+                    enumName = tok1;
+                    lastValue = 0;
+                    tok1 = tok1->tokAt(2);
+                    enumValueStart = tok1;
+                    enumValueEnd = tok1;
+                    while (!Token::Match(enumValueEnd->next(), ",|}"))
+                        enumValueEnd = enumValueEnd->next();
+                    lastEnumValueStart = enumValueStart;
+                    lastEnumValueEnd = enumValueEnd;
                 }
 
-                if (enumName && enumValue)
+                if (enumName && (enumValue || (enumValueStart && enumValueEnd)))
                 {
                     const std::string pattern(className.empty() ? "" : (className + " :: " + enumName->str()).c_str());
-                    int level = 0;
+                    int level = 1;
                     bool inScope = true;
 
                     bool exitThisScope = false;
                     int exitScope = 0;
                     bool simplifyEnum = false;
                     bool hasClass = false;
-                    for (Token *tok2 = end->next(); tok2; tok2 = tok2->next())
+                    for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "}")
                         {
@@ -5110,7 +5162,34 @@ void Tokenizer::simplifyEnum()
 
                         if (simplifyEnum)
                         {
-                            tok2->str(enumValue->strAt(0));
+                            if (enumValue)
+                                tok2->str(enumValue->strAt(0));
+                            else
+                            {
+                                std::stack<Token *> links;
+                                tok2->str(enumValueStart->strAt(0));
+                                if (tok2->str() == "(" || tok2->str() == "[")
+                                    links.push(tok2);
+                                Token * nextToken = enumValueStart->next();
+                                for (; nextToken != enumValueEnd->next(); nextToken = nextToken->next())
+                                {
+                                    tok2->insertToken(nextToken->strAt(0));
+                                    tok2 = tok2->next();
+
+                                    // Check for links and fix them up
+                                    if (tok2->str() == "(" || tok2->str() == "[")
+                                        links.push(tok2);
+                                    else if (tok2->str() == ")" || tok2->str() == "]")
+                                    {
+                                        Token * link = links.top();
+
+                                        tok2->link(link);
+                                        link->link(tok2);
+
+                                        links.pop();
+                                    }
+                                }
+                            }
 
                             if (hasClass)
                             {

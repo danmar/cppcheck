@@ -3457,10 +3457,25 @@ private:
         const char code[] = "enum ABC {\n"
                             "    a = sizeof(int),\n"
                             "    b = 1 + a,\n"
-                            "    c = b + 100\n"
-                            "}; a b c";
-        ASSERT_EQUALS("; a b c", tok(code, false));
-        TODO_ASSERT_EQUALS("; 4 5 105", tok(code, false));
+                            "    c = b + 100,\n"
+                            "    d,\n"
+                            "    e,\n"
+                            "    f = 90,\n"
+                            "    g\n"
+                            "};\n"
+                            "int sum =  a + b + c + d + e + f + g;";
+        const char expected[] = "; "
+                                "int sum ; sum = "
+                                "sizeof ( int ) + "
+                                "1 + sizeof ( int ) + "
+                                "1 + sizeof ( int ) + 100 + "
+                                "1 + sizeof ( int ) + 100 + 1 + "
+                                "1 + sizeof ( int ) + 100 + 2 + "
+                                "90 + "
+                                "91 ;";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS("; int sum ; sum = 508 ;", tok(code, true));
     }
 
     void removestd()
