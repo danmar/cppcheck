@@ -1533,8 +1533,8 @@ private:
                                    "2: {\n"
                                    "3: A a@1 ;\n"
                                    "4: B b@2 ;\n"
-                                   "4: b@2 * a@1 ;\n"
-                                   "5: }\n");
+                                   "5: b@2 * a@1 ;\n"
+                                   "6: }\n");
 
         TODO_ASSERT_EQUALS(expected, actual);
     }
