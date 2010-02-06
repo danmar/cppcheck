@@ -295,6 +295,7 @@ private:
         TEST_CASE(func14);
         TEST_CASE(func15);
         TEST_CASE(func16);
+        TEST_CASE(func17);
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -1575,6 +1576,32 @@ private:
               "        a(box);\n"
               "    }\n"
               "    return box;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void func17()
+    {
+        // The "bar" function must be reduced to "use"
+
+        check("bool bar(char **parent, char *res, bool a)\n"
+              "{\n"
+              "    if( a )\n"
+              "    {\n"
+              "        *parent = res;\n"
+              "        return false;\n"
+              "    }\n"
+              "    return true;\n"
+              "}\n"
+              "\n"
+              "void foo(char **parent, bool a)\n"
+              "{\n"
+              "    if (a)\n"
+              "    {\n"
+              "        char *res = malloc(65);\n"
+              "        bar(parent, res, a);\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

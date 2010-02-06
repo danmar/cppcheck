@@ -639,7 +639,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                 while (ftok && (ftok->str() != "{"))
                     ftok = ftok->next();
                 Token *func = getcode(ftok->tokAt(1), callstack, parameterVarid, alloctype, dealloctype, false, all, sz);
-                simplifycode(func, all);
+                //simplifycode(func, all);
                 const Token *func_ = func;
                 while (func_ && func_->str() == ";")
                     func_ = func_->next();
