@@ -82,7 +82,8 @@ private:
         TEST_CASE(error2);
 
         // Handling include guards (don't create extra configuration for it)
-        TEST_CASE(includeguard);
+        TEST_CASE(includeguard1);
+        TEST_CASE(includeguard2);
 
         TEST_CASE(newlines);
 
@@ -436,7 +437,7 @@ private:
     }
 
 
-    void includeguard()
+    void includeguard1()
     {
         // Handling include guards..
         const char filedata[] = "#file \"abc.h\"\n"
@@ -456,6 +457,29 @@ private:
         // Expected configurations: "" and "ABC"
         ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
     }
+
+    void includeguard2()
+    {
+        // Handling include guards..
+        const char filedata[] = "#file \"abc.h\"\n"
+                                "foo\n"
+                                "#ifdef ABC\n"
+                                "\n"
+                                "#endif\n"
+                                "#endfile\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Expected configurations: "" and "ABC"
+        ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS(true, actual.find("") != actual.end());
+        ASSERT_EQUALS(true, actual.find("ABC") != actual.end());
+    }
+
 
     void ifdefwithfile()
     {

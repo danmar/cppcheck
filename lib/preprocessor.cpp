@@ -637,6 +637,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     // 0=>Source file, 1=>Included by source file, 2=>included by header that was included by source file, etc
     int filelevel = 0;
 
+    bool includeguard = false;
+
     unsigned int linenr = 0;
     std::istringstream istr(filedata);
     std::string line;
@@ -646,18 +648,20 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
 
         if (line.compare(0, 6, "#file ") == 0)
         {
+            includeguard = true;
             ++filelevel;
             continue;
         }
 
         else if (line == "#endfile")
         {
+            includeguard = false;
             if (filelevel > 0)
                 --filelevel;
             continue;
         }
 
-        else if (line.compare(0, 8, "#define ") == 0 && line.find("(", 8) == std::string::npos)
+        if (line.compare(0, 8, "#define ") == 0 && line.find("(", 8) == std::string::npos)
         {
             if (line.find(" ", 8) == std::string::npos)
                 defines.insert(line.substr(8));
@@ -669,7 +673,10 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
         }
 
-        if (filelevel > 0)
+        if (!line.empty() && line.compare(0, 3, "#if") != 0)
+            includeguard = false;
+
+        if (includeguard)
             continue;
 
         std::string def = getdef(line, true) + getdef(line, false);
