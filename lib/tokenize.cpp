@@ -5110,10 +5110,20 @@ void Tokenizer::simplifyEnum()
                     tok1 = tok1->tokAt(2);
                     enumValueStart = tok1;
                     enumValueEnd = tok1;
-                    while (!Token::Match(enumValueEnd->next(), ",|}"))
+                    int level = 0;
+                    while (enumValueEnd->next() && (enumValueEnd->next()->str() != "}") &&
+                           ((enumValueEnd->next()->str() != ",") || level))
+                    {
+                        if (enumValueEnd->next()->str() == "(" || enumValueEnd->next()->str() == "[")
+                            level++;
+                        else if (enumValueEnd->next()->str() == ")" || enumValueEnd->next()->str() == "]")
+                            level--;
+
                         enumValueEnd = enumValueEnd->next();
+                    }
                     lastEnumValueStart = enumValueStart;
                     lastEnumValueEnd = enumValueEnd;
+                    tok1 = enumValueEnd;
                 }
 
                 if (enumName && (enumValue || (enumValueStart && enumValueEnd)))

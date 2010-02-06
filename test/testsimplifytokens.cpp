@@ -187,6 +187,7 @@ private:
         TEST_CASE(enum3);
         TEST_CASE(enum4);
         TEST_CASE(enum5);
+        TEST_CASE(enum6);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -3476,6 +3477,13 @@ private:
 
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("; int sum ; sum = 508 ;", tok(code, true));
+    }
+
+    void enum6()
+    {
+        const char code[] = "enum { a = MAC(A, B, C) }; void f(a) { }";
+        const char expected[] = "; void f ( MAC ( A , B , C ) ) { }";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void removestd()
