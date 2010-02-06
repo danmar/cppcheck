@@ -4382,7 +4382,8 @@ bool Tokenizer::simplifyKnownVariables()
                         --indentlevel3;
                         if (indentlevel3 < indentlevel)
                         {
-                            if (Token::Match(tok2->tokAt(-3), "%var% = & %var% ;"))
+                            if (Token::Match(tok2->tokAt(-7), "%type% * %var% ; %var% = & %var% ;") && 
+                                tok2->tokAt(-5)->str() == tok2->tokAt(-3)->str())
                             {
                                 tok2 = tok2->tokAt(-4);
                                 Token::eraseTokens(tok2, tok2->tokAt(5));
