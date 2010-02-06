@@ -600,6 +600,6 @@ void CheckStl::size()
 
 void CheckStl::sizeError(const Token *tok)
 {
-    const std::string varname(tok ? tok->str() : "list");
+    const std::string varname(tok ? tok->str().c_str() : "list");
     reportError(tok, Severity::possibleStyle, "stlSize", "Use " + varname + ".empty() instead of " + varname + ".size() to guarantee fast code." + (_settings->_verbose ? " size() can take linear time but empty() is guaranteed to take constant time." : ""));
 }
