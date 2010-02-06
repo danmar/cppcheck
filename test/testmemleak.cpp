@@ -495,6 +495,7 @@ private:
         ASSERT_EQUALS(";;use;", getcode("char *s; abc.a(s);", "s"));
         ASSERT_EQUALS(";;use;", getcode("char *s; s2 = s;", "s"));
         ASSERT_EQUALS(";;use;", getcode("char *s; s2 = s + 10;", "s"));
+        ASSERT_EQUALS(";;use;", getcode("char *s; s2 = x + s;", "s"));
 
         // return..
         ASSERT_EQUALS(";;return;", getcode("char *s; return;", "s"));
