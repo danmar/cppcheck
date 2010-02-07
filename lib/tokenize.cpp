@@ -3406,9 +3406,27 @@ bool Tokenizer::simplifyQuestionMark()
         // The condition is true. Delete the operator after the ":"..
         else
         {
+            const Token *end = 0;
+
+            // check the operator after the :
+            if (Token::simpleMatch(semicolon, ": ("))
+            {
+                end = semicolon->next()->link();
+                if (!Token::Match(end, ") !!."))
+                    continue;
+            }
+
             // delete the condition token and the "?"
             tok = tok->tokAt(-2);
             Token::eraseTokens(tok, tok->tokAt(3));
+
+            // delete operator after the :
+            if (end)
+            {
+                Token::eraseTokens(semicolon->previous(), end->next());
+                continue;
+            }
+
             int ind = 0;
             for (const Token *end = semicolon; end; end = end->next())
             {

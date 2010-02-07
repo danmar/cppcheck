@@ -1964,6 +1964,11 @@ private:
             const char code[] = "int vals[] = { 0x13, 0?0x01:0x00 };";
             ASSERT_EQUALS("int * vals ; vals = { 19 , 0 } ;", tok(code));
         }
+
+        {
+            const char code[] = "= 1 ? 0 : ({ 0; });";
+            ASSERT_EQUALS("= 0 ;", tok(code));
+        }
     }
 
     void calculations()
