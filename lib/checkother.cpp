@@ -820,7 +820,7 @@ void CheckOther::strPlusChar()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring char variable..
-        if (Token::Match(tok, "char %var% [;=]"))
+        if (Token::Match(tok, "char|int|short %var% [;=]"))
         {
             unsigned int varid = tok->next()->varId();
             if (varid > 0 && varid < 10000)

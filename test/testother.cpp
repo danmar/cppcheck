@@ -431,11 +431,20 @@ private:
         // Strange looking pointer arithmetic..
         strPlusChar("void foo()\n"
                     "{\n"
-                    "    char ch = '/';\n"
-                    "    const char *p = \"/usr\" + ch;\n"
+                    "    char ch = 1;\n"
+                    "    const char *p = ch + \"/usr\";\n"
                     "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Unusual pointer arithmetic\n", errout.str());
-    }
+        ASSERT_EQUALS("", errout.str());
+    
+		// Strange looking pointer arithmetic..
+        strPlusChar("void foo()\n"
+                    "{\n"
+                    "    int i = 1;\n"
+					"	 const char* psz = \"Bla\";\n"
+                    "    const std::string str = i + psz;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+	}
 
     void strPlusChar3()
     {
