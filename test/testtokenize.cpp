@@ -70,6 +70,7 @@ private:
         TEST_CASE(ifAddBraces6);
         TEST_CASE(ifAddBraces7);
         TEST_CASE(ifAddBraces9);
+        TEST_CASE(ifAddBraces10);
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -620,6 +621,14 @@ private:
             "LOG_OUT ( ID_Vector [ k ] ) "
             "} "
             "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void ifAddBraces10()
+    {
+        // ticket #1361
+        const char code[] = "{ DEBUG(if (x) y; else z); }";
+        const char expected[] = "{ DEBUG ( if ( x ) y ; else z ) ; }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 

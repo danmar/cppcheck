@@ -3102,7 +3102,15 @@ void Tokenizer::simplifyIfAddBraces()
                 ++parlevel;
 
             else if (tempToken->str() == ")")
+            {
+                if (parlevel == 0)
+                {
+                    tok->deleteThis();
+                    tempToken = 0;
+                    break;
+                }
                 --parlevel;
+            }
 
             else if (indentlevel == 0 && parlevel == 0 && tempToken->str() == ";")
                 break;
