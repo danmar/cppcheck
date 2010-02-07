@@ -1901,12 +1901,12 @@ void Tokenizer::setVarId()
         }
 
         // Determine name of declared variable..
-        const char *varname = 0;
+        std::string varname;
         Token *tok2 = tok->tokAt(1);
         while (tok2)
         {
             if (tok2->isName())
-                varname = tok2->strAt(0);
+                varname = tok2->str();
             else if (tok2->str() != "*" && tok2->str() != "&")
                 break;
             tok2 = tok2->next();
@@ -1915,6 +1915,9 @@ void Tokenizer::setVarId()
         // End of tokens reached..
         if (!tok2)
             break;
+
+        if (varname == "operator" && Token::Match(tok2, "=|+|-|*|/|[| ]| ("))
+            continue;
 
         // Is it a function?
         if (tok2->str() == "(")
@@ -1938,7 +1941,7 @@ void Tokenizer::setVarId()
         }
 
         // Variable declaration found => Set variable ids
-        if (Token::Match(tok2, "[,();[=]") && varname)
+        if (Token::Match(tok2, "[,();[=]") && !varname.empty())
         {
             ++_varId;
             int indentlevel = 0;
