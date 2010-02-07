@@ -126,6 +126,7 @@ private:
         TEST_CASE(varidclass2);
         TEST_CASE(varidclass3);
         TEST_CASE(varidclass4);
+        TEST_CASE(varidclass5);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -1537,7 +1538,7 @@ private:
                                    "5: b@2 * a@1 ;\n"
                                    "6: }\n");
 
-        TODO_ASSERT_EQUALS(expected, actual);
+        ASSERT_EQUALS(expected, actual);
     }
 
     void varidStl()
@@ -1928,6 +1929,36 @@ private:
                                    "6: if ( i@1 ) { }\n"
                                    "7: i@1 = 0 ;\n"
                                    "8: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varidclass5()
+    {
+        const std::string code("class A { };\n"
+                               "class B\n"
+                               "{\n"
+                               "    A *a;\n"
+                               "    B() : a(new A)\n"
+                               "    { }\n"
+                               "};\n");
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.setVarId();
+
+        // result..
+        const std::string actual(tokenizer.tokens()->stringifyList(true));
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class A { } ;\n"
+                                   "2: class B\n"
+                                   "3: {\n"
+                                   "4: A * a@1 ;\n"
+                                   "5: B ( ) : a@1 ( new A )\n"
+                                   "6: { }\n"
+                                   "7: } ;\n");
 
         ASSERT_EQUALS(expected, actual);
     }

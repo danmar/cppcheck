@@ -1013,7 +1013,7 @@ static bool hasDeallocation(const Token * first, const Token * last)
     for (const Token * tok = first; tok && (tok != last); tok = tok->next())
     {
         // check for deallocating memory
-        if (Token::Match(tok, "{|;|, free ( %type%"))
+        if (Token::Match(tok, "{|;|, free ( %var%"))
         {
             const Token * var = tok->tokAt(3);
 
@@ -1023,7 +1023,7 @@ static bool hasDeallocation(const Token * first, const Token * last)
 
             while (tok1 && (tok1 != last))
             {
-                if (Token::Match(tok1, "%type% ="))
+                if (Token::Match(tok1, "%var% ="))
                 {
                     if (tok1->str() == var->str())
                         return true;
@@ -1032,7 +1032,7 @@ static bool hasDeallocation(const Token * first, const Token * last)
                 tok1 = tok1->next();
             }
         }
-        else if (Token::Match(tok, "{|;|, delete [ ] %type%"))
+        else if (Token::Match(tok, "{|;|, delete [ ] %var%"))
         {
             const Token * var = tok->tokAt(4);
 
@@ -1042,7 +1042,7 @@ static bool hasDeallocation(const Token * first, const Token * last)
 
             while (tok1 && (tok1 != last))
             {
-                if (Token::Match(tok1, "%type% = new ["))
+                if (Token::Match(tok1, "%var% = new ["))
                 {
                     if (tok1->str() == var->str())
                         return true;
@@ -1051,7 +1051,7 @@ static bool hasDeallocation(const Token * first, const Token * last)
                 tok1 = tok1->next();
             }
         }
-        else if (Token::Match(tok, "{|;|, delete %type%"))
+        else if (Token::Match(tok, "{|;|, delete %var%"))
         {
             const Token * var = tok->tokAt(2);
 
@@ -1061,7 +1061,7 @@ static bool hasDeallocation(const Token * first, const Token * last)
 
             while (tok1 && (tok1 != last))
             {
-                if (Token::Match(tok1, "%type% = new"))
+                if (Token::Match(tok1, "%var% = new"))
                 {
                     if (tok1->str() == var->str())
                         return true;
@@ -1187,7 +1187,7 @@ void CheckClass::operatorEqToSelf()
                     if (tok1->tokAt(-(1 + nameLength)) && nameMatch(name, tok1->tokAt(-(1 + nameLength)), nameLength))
                     {
                         // check forward for proper function signature
-                        std::string pattern = "const " + nameString + " & %type% )";
+                        std::string pattern = "const " + nameString + " & %var% )";
                         if (Token::Match(tok->tokAt(3), pattern.c_str()))
                         {
                             const Token * rhs = tok->tokAt(5 + nameLength);
@@ -1224,17 +1224,15 @@ void CheckClass::operatorEqToSelf()
                 while (tok1 && !Token::Match(tok1, "class|struct %var%"))
                     tok1 = tok1->previous();
 
-                if (tok1 && Token::Match(tok1, "struct %var%"))
-                    name = tok1->tokAt(1);
-                else if (tok1 && Token::Match(tok1, "class %var%"))
+                if (Token::Match(tok1, "struct|class %var%"))
                     name = tok1->tokAt(1);
 
                 if (!hasMultipleInheritanceInline(tok1))
                 {
-                    if (tok->tokAt(-2) && tok->tokAt(-2)->str() == name->str())
+                    if (Token::simpleMatch(tok->tokAt(-2), name->str().c_str()))
                     {
                         // check forward for proper function signature
-                        if (Token::Match(tok->tokAt(3), "const %type% & %type% )"))
+                        if (Token::Match(tok->tokAt(3), "const %type% & %var% )"))
                         {
                             const Token * rhs = tok->tokAt(6);
 
@@ -1242,9 +1240,9 @@ void CheckClass::operatorEqToSelf()
                             {
                                 tok1 = tok->tokAt(2)->link();
 
-                                if (tok1 && tok1->tokAt(1) && tok1->tokAt(1)->str() == "{" && tok1->tokAt(1)->link())
+                                if (tok1 && Token::simpleMatch(tok1->next(), "{"))
                                 {
-                                    const Token *first = tok1->tokAt(1);
+                                    const Token *first = tok1->next();
                                     const Token *last = first->link();
 
                                     if (!hasAssignSelf(first, last, rhs))

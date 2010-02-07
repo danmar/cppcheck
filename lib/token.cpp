@@ -390,6 +390,9 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 if (!tok->isName())
                     return false;
 
+                if (tok->varId() != 0)
+                    return false;
+
                 if (tok->str() == "delete")
                     return false;
 
