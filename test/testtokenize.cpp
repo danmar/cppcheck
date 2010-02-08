@@ -786,8 +786,9 @@ private:
                             "    if ( g(a));\n"
                             "}\n";
 
+        // TODO: if a is passed by value is is ok to simplify..
         ASSERT_EQUALS(
-            "void f ( ) { int a ; a = 4 ; if ( g ( 4 ) ) { ; } }",
+            "void f ( ) { int a ; a = 4 ; if ( g ( a ) ) { ; } }",
             simplifyKnownVariables(code));
     }
 
@@ -911,11 +912,11 @@ private:
                                 "  {\n"
                                 "  }\n"
                                 "\n"
-                                "  a(b);\n"
+                                "  return b;\n"
                                 "}\n";
 
             ASSERT_EQUALS(
-                "void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } a ( 1 ) ; }",
+                "void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } return 1 ; }",
                 simplifyKnownVariables(code));
         }
     }

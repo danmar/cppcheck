@@ -3268,14 +3268,14 @@ private:
                                 "{\n"
                                 "    char buf[100];\n"
                                 "    char *p = buf;\n"
-                                "    x(p);\n"
+                                "    free(p);\n"
                                 "}\n";
 
             const char expected[] = "void f ( ) "
                                     "{ "
                                     "char buf [ 100 ] ; "
                                     "; ; "
-                                    "x ( buf ) ; "
+                                    "free ( buf ) ; "
                                     "}";
 
             ASSERT_EQUALS(expected, tok(code));

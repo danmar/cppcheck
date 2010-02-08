@@ -4482,7 +4482,10 @@ bool Tokenizer::simplifyKnownVariables()
                         break;
 
                     // Using the variable in condition..
-                    if (Token::Match(tok3, "(|!|==|!=|<|<=|>|>= %varid% )|==|!=|<|<=|>|>=", varid))
+                    if (Token::Match(tok3->previous(), "if ( %varid% ==|!=|<|<=|>|>=|)", varid) ||
+                        Token::Match(tok3, "( %varid% ==|!=|<|<=|>|>=", varid) ||
+                        Token::Match(tok3, "!|==|!=|<|<=|>|>= %varid% ==|!=|<|<=|>|>=|)", varid) ||
+                        Token::Match(tok3->previous(), "strlen|free ( %varid% )", varid))
                     {
                         tok3 = tok3->next();
                         tok3->str(value);
