@@ -435,16 +435,16 @@ private:
                     "    const char *p = ch + \"/usr\";\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
-    
-		// Strange looking pointer arithmetic..
+
+        // Strange looking pointer arithmetic..
         strPlusChar("void foo()\n"
                     "{\n"
                     "    int i = 1;\n"
-					"	 const char* psz = \"Bla\";\n"
+                    "	 const char* psz = \"Bla\";\n"
                     "    const std::string str = i + psz;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
-	}
+    }
 
     void strPlusChar3()
     {
