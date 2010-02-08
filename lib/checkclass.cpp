@@ -1429,6 +1429,20 @@ void CheckClass::thisSubtraction()
     }
 }
 
+const Token * findParameter(const Token *var, const Token *start, const Token * end)
+{
+    const Token * param = start->next();
+    for (; param && param != end; param = param->next())
+    {
+        if (param->varId()) // a function parameter
+        {
+            // check if the variable and the parameter name are the same
+            if (var->str() == param->str())
+                return param;
+        }
+    }
+    return 0;
+}
 
 void CheckClass::checkConst()
 {
@@ -1490,6 +1504,9 @@ void CheckClass::checkConst()
                     if (!tok2)
                         break;
 
+                    const Token *paramEnd = tok2;
+                    const Token *paramStart = tok2->link();
+
                     // is this a non-const function that is implemented inline?
                     if (Token::simpleMatch(tok2, ") {"))
                     {
@@ -1513,6 +1530,24 @@ void CheckClass::checkConst()
                                      (tok3->str().find("=") == 1 &&
                                       tok3->str().find_first_of("<>") == std::string::npos))
                             {
+                                if (tok3->str() == "=") // assignment.. =
+                                {
+                                    const Token * param = findParameter(tok3->previous(), paramStart, paramEnd);
+                                    if (param)
+                                    {
+                                        // assignment to function argument reference can be const
+                                        // f(type & x) { x = something; }
+                                        if (param->tokAt(-1)->str() == "&")
+                                            continue;
+
+                                        // assignment to function argument pointer can be const
+                                        // f(type * x) { *x = something; }
+                                        else if ((param->tokAt(-1)->str() == "*") &&
+                                                 (tok3->tokAt(-2)->str() == "*"))
+                                            continue;
+                                    }
+                                }
+
                                 isconst = false;
                                 break;
                             }

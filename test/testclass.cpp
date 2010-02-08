@@ -82,6 +82,8 @@ private:
 
         // can member function be made const
         TEST_CASE(const1);
+        TEST_CASE(const2);
+        TEST_CASE(const3);
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -1620,6 +1622,104 @@ private:
                    "public:\n"
                    "    static unsigned get()\n"
                    "    { return 0; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const2()
+    {
+        // ticket 1344
+        // assignment to variable can't be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo() { s = ""; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // assignment to function argument reference can be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string & a) { a = s; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::foo' can be const\n", errout.str());
+
+        // assignment to variable can't be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string & a) { s = a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // assignment to function argument references can be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string & a, std::string & b) { a = s; b = s; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::foo' can be const\n", errout.str());
+
+        // assignment to variable, can't be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string & a, std::string & b) { s = a; s = b; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // assignment to variable, can't be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string & a, std::string & b) { s = a; b = s; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // assignment to variable, can't be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string & a, std::string & b) { a = s; s = b; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const3()
+    {
+        // assignment to function argument pointer can be const
+        checkConst("class Fred {\n"
+                   "    int s;\n"
+                   "    void foo(int * a) { *a = s; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::foo' can be const\n", errout.str());
+
+        // assignment to variable, can't be const
+        checkConst("class Fred {\n"
+                   "    int s;\n"
+                   "    void foo(int * a) { s = *a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // assignment to function argument pointers can be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string * a, std::string * b) { *a = s; *b = s; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::foo' can be const\n", errout.str());
+
+        // assignment to variable, can't be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string * a, std::string * b) { s = *a; s = *b; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // assignment to variable, can't be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string * a, std::string * b) { s = *a; *b = s; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // assignment to variable, can't be const
+        checkConst("class Fred {\n"
+                   "    std::string s;\n"
+                   "    void foo(std::string * a, std::string * b) { *a = s; s = b; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
