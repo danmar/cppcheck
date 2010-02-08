@@ -1560,7 +1560,7 @@ void Tokenizer::simplifyTemplates()
 
                             else if (tok3->str() == "}")
                             {
-                                if (indentlevel <= 1)
+                                if (indentlevel <= 1 && brackets.empty() && brackets2.empty())
                                 {
                                     // there is a bug if indentlevel is 0
                                     // the "}" token should only be added if indentlevel is 1 but I add it always intentionally

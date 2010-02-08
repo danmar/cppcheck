@@ -192,6 +192,7 @@ private:
         TEST_CASE(removeRedundantAssignment);
 
         TEST_CASE(removedeclspec);
+        TEST_CASE(cpp0xtemplate);
     }
 
 
@@ -3003,6 +3004,18 @@ private:
     void removedeclspec()
     {
         ASSERT_EQUALS("a b", tokenizeAndStringify("a __declspec ( dllexport ) b"));
+    }
+
+    void cpp0xtemplate()
+    {
+        const char *code = "template <class T>\n"
+                           "void fn2 (T t = []{return 1;}())\n"
+                           "{}\n"
+                           "int main()\n"
+                           "{\n"
+                           "  fn2<int>();\n"
+                           "}\n";
+        ASSERT_EQUALS(";\n\n\nint main ( )\n{\nfn2<int> ( ) ;\n}void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n{ }", tokenizeAndStringify(code));
     }
 };
 
