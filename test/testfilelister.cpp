@@ -45,6 +45,8 @@ private:
         ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/path/../other/../index.h"));
         ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/path/../other///././../index.h"));
         ASSERT_EQUALS("../path/index.h", FileLister::simplifyPath("../path/other/../index.h"));
+        ASSERT_EQUALS("a/index.h", FileLister::simplifyPath("a/../a/index.h"));
+        ASSERT_EQUALS("a/..", FileLister::simplifyPath("a/.."));
     }
 
 

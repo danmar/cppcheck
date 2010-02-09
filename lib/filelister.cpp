@@ -59,8 +59,9 @@ std::string FileLister::simplifyPath(const char *originalPath)
 
     for (std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i)
     {
-        if (pathParts[i] == ".." && i > 1)
+        if (pathParts[i] == ".." && i > 1 && pathParts.size() > i + 1)
         {
+            pathParts.erase(pathParts.begin() + i + 1);
             pathParts.erase(pathParts.begin() + i);
             pathParts.erase(pathParts.begin() + i - 1);
             pathParts.erase(pathParts.begin() + i - 2);

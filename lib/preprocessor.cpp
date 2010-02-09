@@ -1262,28 +1262,16 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
         if (headerType == 0)
             continue;
 
-        std::string tempFile = filename;
-        std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), tolowerWrapper);
-        if (handledFiles.find(tempFile) != handledFiles.end())
-        {
-            // We have processed this file already once, skip
-            // it this time to avoid ethernal loop.
-            continue;
-        }
-
-        handledFiles.insert(tempFile);
-
         // filename contains now a file name e.g. "menu.h"
         std::string processedFile;
         bool fileOpened = false;
+        std::ifstream fin;
         for (std::list<std::string>::const_iterator iter = includePaths.begin(); iter != includePaths.end(); ++iter)
         {
-            std::ifstream fin;
             fin.open((*iter + filename).c_str());
             if (fin.is_open())
             {
                 filename = *iter + filename;
-                processedFile = Preprocessor::read(fin, filename, _settings);
                 fileOpened = true;
                 break;
             }
@@ -1292,12 +1280,28 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
         if (headerType == 1 && !fileOpened)
         {
             filename = paths.back() + filename;
-            std::ifstream fin(filename.c_str());
+            fin.open(filename.c_str());
             if (fin.is_open())
             {
-                processedFile = Preprocessor::read(fin, filename, _settings);
                 fileOpened = true;
             }
+        }
+
+        if (fileOpened)
+        {
+            std::string tempFile = FileLister::simplifyPath(filename.c_str());
+            std::transform(tempFile.begin(), tempFile.end(), tempFile.begin(), tolowerWrapper);
+            if (handledFiles.find(tempFile) != handledFiles.end())
+            {
+                // We have processed this file already once, skip
+                // it this time to avoid ethernal loop.
+                continue;
+            }
+
+            handledFiles.insert(tempFile);
+            std::ifstream fin(filename.c_str());
+            processedFile = Preprocessor::read(fin, filename, _settings);
+            fin.close();
         }
 
         if (processedFile.length() > 0)
