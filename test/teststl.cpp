@@ -84,7 +84,7 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code.c_str());
         tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
+        tokenizer.simplifyTokenList();
 
         // Clear the error buffer..
         errout.str("");
