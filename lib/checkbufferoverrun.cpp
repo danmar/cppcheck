@@ -203,6 +203,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 return;
         }
 
+        if (varid != 0 && Token::Match(tok, "%varid% = new|malloc|realloc", varid))
+        {
+            // Abort
+            break;
+        }
+
         // Array index..
         if (varid > 0)
         {
