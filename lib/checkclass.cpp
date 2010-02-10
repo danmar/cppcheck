@@ -277,6 +277,14 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             break;
         }
 
+        // Clearing array..
+        else if (Token::Match(ftok, "memset ( %var% ,"))
+        {
+            initVar(varlist, ftok->strAt(2));
+            ftok = ftok->next()->link();
+            continue;
+        }
+
         // Calling member function?
         else if (Token::Match(ftok, "%var% ("))
         {

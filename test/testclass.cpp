@@ -51,6 +51,7 @@ private:
         TEST_CASE(uninitVarTypedef);
         TEST_CASE(uninitVarArray1);
         TEST_CASE(uninitVarArray2);
+        TEST_CASE(uninitVarArray3);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitMissingFuncDef);// can't expand function in constructor
         TEST_CASE(privateCtor1);        // If constructor is private..
@@ -1132,6 +1133,24 @@ private:
                        "\n"
                        "private:\n"
                        "    char name[255];\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarArray3()
+    {
+        checkUninitVar("class John\n"
+                       "{\n"
+                       "private:\n"
+                       "    int a[100];\n"
+                       "    int b[100];\n"
+                       "\n"
+                       "public:\n"
+                       "    John()\n"
+                       "    {\n"
+                       "        memset(a,0,sizeof(a));\n"
+                       "        memset(b,0,sizeof(b));\n"
+                       "    }\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }
