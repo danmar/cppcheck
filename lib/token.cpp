@@ -375,8 +375,20 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
         bool patternIdentified = false;
         if (p[0] == '%')
         {
+            // TODO: %var% should match only for
+            // variables that have varId != 0, but that needs a lot of
+            // work, before that change can be made.
             // Any symbolname..
             if (firstWordEquals(p, "%var%") == 0)
+            {
+                if (!tok->isName())
+                    return false;
+
+                patternIdentified = true;
+            }
+
+            // Any symbolname..
+            if (firstWordEquals(p, "%name%") == 0)
             {
                 if (!tok->isName())
                     return false;
