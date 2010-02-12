@@ -415,7 +415,7 @@ private:
     static std::string getNameForFunctionParams(const Token *start);
 
     /** Disable assignment operator */
-    void operator=(const Tokenizer &);
+    Tokenizer &operator=(const Tokenizer &);
 
     Token *_tokens, *_tokensBack;
     std::map<std::string, unsigned int> _typeSize;
