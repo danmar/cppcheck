@@ -1830,8 +1830,11 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "[,;{}(] %type%"))
             tok = tok->next();
 
-        if (tok->str() == "new" || tok->str() == "unsigned")
+        if (tok->str() == "new")
             continue;
+
+        if (tok->str() == "unsigned")
+            tok = tok->next();
 
         if (Token::Match(tok, "class|struct %type% :|{|;"))
             continue;

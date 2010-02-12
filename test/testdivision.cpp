@@ -115,6 +115,17 @@ private:
               "    result = i2 / i1;}\n"
              );
         ASSERT_EQUALS("", errout.str());
+
+        check("void f1()\n"
+              "{\n"
+              "    unsigned int num = 0;\n"
+              "}\n"
+              "\n"
+              "void f2(int X)\n"
+              "{\n"
+              "    X = X / z;}\n"
+             );
+        ASSERT_EQUALS("", errout.str());
     }
 
     void division5()

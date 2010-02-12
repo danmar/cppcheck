@@ -323,7 +323,10 @@ void CheckOther::checkUnsignedDivision()
         else if (Token::Match(tok, "[{};(,] unsigned %type% %var% [;=,)]"))
             varsign[tok->tokAt(3)->varId()] = 'u';
 
-        else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %var%"))
+        else if (!Token::Match(tok, "[).]") &&
+                 Token::Match(tok->next(), "%var% / %var%") &&
+                 tok->tokAt(1)->varId() != 0 &&
+                 tok->tokAt(3)->varId() != 0)
         {
             if (ErrorLogger::udivWarning(*_settings))
             {
