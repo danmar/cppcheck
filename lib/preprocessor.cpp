@@ -1081,15 +1081,31 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             bool found_end = false;
             while (getline(istr, line))
             {
-                ret << "\n";
                 if (line.compare(0, 14, "#pragma endasm") == 0)
                 {
                     found_end = true;
                     break;
                 }
+
+                ret << "\n";
             }
             if (!found_end)
                 break;
+
+            if (line.find("=") != std::string::npos)
+            {
+                Tokenizer tokenizer;
+                line.erase(0, sizeof("#pragma endasm"));
+                std::istringstream istr(line.c_str());
+                tokenizer.tokenize(istr, "");
+                if (Token::Match(tokenizer.tokens(), "( %var% = %any% )"))
+                {
+                    ret << "asm(" << tokenizer.tokens()->strAt(1) << ");";
+                }
+            }
+
+            ret << "\n";
+
             continue;
         }
 

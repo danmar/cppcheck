@@ -157,7 +157,8 @@ private:
         TEST_CASE(stringify5);
         TEST_CASE(ifdefwithfile);
         TEST_CASE(pragma);
-        TEST_CASE(pragma_asm);
+        TEST_CASE(pragma_asm_1);
+        TEST_CASE(pragma_asm_2);
         TEST_CASE(endifsemicolon);
         TEST_CASE(missing_doublequote);
         TEST_CASE(handle_error);
@@ -1518,7 +1519,7 @@ private:
         ASSERT_EQUALS("\nvoid f()\n{\n}\n", actual[""]);
     }
 
-    void pragma_asm()
+    void pragma_asm_1()
     {
         const char filedata[] = "#pragma asm\n"
                                 "    mov r1, 11\n"
@@ -1538,6 +1539,24 @@ private:
         // Compare results..
         ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
         ASSERT_EQUALS("\n\n\naaa\n\n\n\nbbb\n", actual[""]);
+    }
+
+    void pragma_asm_2()
+    {
+        const char filedata[] = "#pragma asm\n"
+                                "    mov @w1, 11\n"
+                                "#pragma endasm ( temp=@w1 )\n"
+                                "bbb";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n\nasm(temp);\nbbb\n", actual[""]);
     }
 
     void endifsemicolon()
