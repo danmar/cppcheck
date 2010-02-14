@@ -107,7 +107,7 @@ private:
     {
     public:
         Var(const std::string &name_, bool init = false, bool priv = false, Var *next = 0)
-            : name(name_)
+                : name(name_)
         {
             this->init = init;
             this->priv = priv;

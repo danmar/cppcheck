@@ -145,7 +145,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 {
     std::string varnames;
     for (unsigned int i = 0; i < varname.size(); ++i)
-        varnames += (i==0?"":" . ") + varname[i];
+        varnames += (i == 0 ? "" : " . ") + varname[i];
 
     unsigned int varc = varname.size();
     if (varc == 0)
