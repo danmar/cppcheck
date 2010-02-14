@@ -141,21 +141,13 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok)
 // Check array usage..
 //---------------------------------------------------------------------------
 
-void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], const int size, const int total_size, unsigned int varid)
+void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid)
 {
-    unsigned int varc = 0;
-
     std::string varnames;
-    while (varname && varname[varc])
-    {
-        if (varc > 0)
-            varnames += " . ";
+    for (unsigned int i = 0; i < varname.size(); ++i)
+        varnames += (i==0?"":" . ") + varname[i];
 
-        varnames += varname[varc];
-
-        ++varc;
-    }
-
+    unsigned int varc = varname.size();
     if (varc == 0)
         varc = 1;
 
@@ -172,7 +164,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
     {
         if (Token::Match(tok, "%varid% [ %num% ]", varid))
         {
-            int index = std::strtol(tok->strAt(2), NULL, 10);
+            int index = MathLib::toLongNumber(tok->strAt(2));
             if (index < 0 || index >= size)
             {
                 arrayIndexOutOfBounds(tok, size, index);
@@ -181,7 +173,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
     }
     else if (Token::Match(tok, std::string(varnames + " [ %num% ]").c_str()))
     {
-        int index = std::strtol(tok->strAt(2 + varc), NULL, 10);
+        int index = MathLib::toLongNumber(tok->strAt(2 + varc));
         if (index < 0 || index >= size)
         {
             arrayIndexOutOfBounds(tok->tokAt(varc), size, index);
@@ -214,7 +206,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         {
             if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), "%varid% [ %num% ]", varid))
             {
-                int index = std::strtol(tok->strAt(3), NULL, 10);
+                int index = MathLib::toLongNumber(tok->strAt(3));
                 if (index < 0 || index >= size)
                 {
                     if (index > size || !Token::Match(tok->previous(), "& ("))
@@ -226,7 +218,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         }
         else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), std::string(varnames + " [ %num% ]").c_str()))
         {
-            int index = std::strtol(tok->strAt(3 + varc), NULL, 10);
+            int index = MathLib::toLongNumber(tok->strAt(3 + varc));
             if (index < 0 || index >= size)
             {
                 arrayIndexOutOfBounds(tok->tokAt(1 + varc), size, index);
@@ -248,8 +240,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     if (tokSz->isNumber())
                     {
                         // strncpy takes entire variable length as input size
-                        const char *num  = tok->strAt(6);
-                        if (std::atoi(num) == total_size)
+                        const std::string num = tok->strAt(6);
+                        if (MathLib::toLongNumber(num) == total_size)
                         {
                             const Token *tok2 = tok->next()->link()->next()->next();
                             for (; tok2; tok2 = tok2->next())
@@ -278,8 +270,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     sizeArgumentAsChar(tok);
                 else if (tokSz->isNumber())
                 {
-                    const char *num  = tok->strAt(6);
-                    if (std::atoi(num) < 0 || std::atoi(num) > total_size)
+                    const std::string num = tok->strAt(6);
+                    if (MathLib::toLongNumber(num) < 0 || MathLib::toLongNumber(num) > total_size)
                     {
                         bufferOverrun(tok);
                     }
@@ -291,8 +283,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
             if (Token::Match(tok->next(), std::string("( " + varnames + " , %num% , %num% )").c_str()) ||
                 Token::Match(tok->next(), std::string("( %var% , " + varnames + " , %num% )").c_str()))
             {
-                const char *num  = tok->strAt(varc + 6);
-                if (std::atoi(num) < 0 || std::atoi(num) > total_size)
+                const std::string num  = tok->strAt(varc + 6);
+                if (MathLib::toLongNumber(num) < 0 || MathLib::toLongNumber(num) > total_size)
                 {
                     bufferOverrun(tok);
                 }
@@ -350,12 +342,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
 
             if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
             {
-                value = std::atoi(tok2->strAt(2));
+                value = MathLib::toLongNumber(tok2->strAt(2));
                 max_counter_value = MathLib::toString<long>(value - 1);
             }
             else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
             {
-                value = std::atoi(tok2->strAt(2)) + 1;
+                value = MathLib::toLongNumber(tok2->strAt(2)) + 1;
                 max_counter_value = tok2->strAt(2);
             }
 
@@ -373,7 +365,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 if (!MathLib::isInt(tok3->strAt(2)))
                     continue;
 
-                const int num = std::atoi(tok3->strAt(2));
+                const int num = MathLib::toLongNumber(tok3->strAt(2));
 
                 // We have for example code: "for(i=2;i<22;i+=6)
                 // We can calculate that max value for i is 20, not 21
@@ -392,7 +384,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 if (!MathLib::isInt(tok3->strAt(4)))
                     continue;
 
-                const int num = std::atoi(tok3->strAt(4));
+                const int num = MathLib::toLongNumber(tok3->strAt(4));
                 long max = MathLib::toLongNumber(max_counter_value);
                 long min = MathLib::toLongNumber(min_counter_value);
                 max = ((max - min) / num) * num + min;
@@ -474,7 +466,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     if (Token::Match(tok2, "%varid% [ %var% +|-|*|/ %num% ]", varid) &&
                         tok2->tokAt(2)->varId() == counter_varid)
                     {
-                        char action = *(tok2->strAt(3));
+                        const char action = tok2->strAt(3)[0];
                         const std::string &second(tok2->tokAt(4)->str());
 
                         //printf("min_index: %s %c %s\n", min_counter_value.c_str(), action, second.c_str());
@@ -486,7 +478,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                     else if (Token::Match(tok2, "%varid% [ %num% +|-|*|/ %var% ]", varid) &&
                              tok2->tokAt(4)->varId() == counter_varid)
                     {
-                        char action = *(tok2->strAt(3));
+                        const char action = tok2->strAt(3)[0];
                         const std::string &first(tok2->tokAt(2)->str());
 
                         //printf("min_index: %s %c %s\n", first.c_str(), action, min_counter_value.c_str());
@@ -549,7 +541,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // Dangerous usage of strncat..
         if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
-            int n = std::atoi(tok->strAt(6));
+            int n = MathLib::toLongNumber(tok->strAt(6));
             if (n >= total_size)
                 strncatUsage(tok);
         }
@@ -558,7 +550,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // Dangerous usage of strncpy + strncat..
         if (varid > 0 && Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% ) ; strncat ( %varid% , %any% , %num% )", varid))
         {
-            int n = std::atoi(tok->strAt(6)) + std::atoi(tok->strAt(15));
+            int n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
             if (n > total_size)
                 strncatUsage(tok->tokAt(9));
         }
@@ -590,7 +582,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
         // snprintf..
         if (varid > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", varid))
         {
-            int n = std::atoi(tok->strAt(4));
+            int n = MathLib::toLongNumber(tok->strAt(4));
             if (n > total_size)
                 outOfBounds(tok->tokAt(4), "snprintf size");
         }
@@ -676,9 +668,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
                 else if (par == 1 && parlevel == 1 && Token::Match(ftok, "%var% [,)]"))
                 {
                     // Parameter name..
-                    const char *parname[2];
-                    parname[0] = ftok->str().c_str();
-                    parname[1] = 0;
+                    std::vector<std::string> parname;
+                    parname.push_back(ftok->str());
+
+                    const unsigned int parId = ftok->varId();
 
                     // Goto function body..
                     while (ftok && (ftok->str() != "{"))
@@ -691,7 +684,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const char *varname[], con
 
                     // Check variable usage in the function..
                     _callStack.push_back(tok1);
-                    checkScope(ftok, parname, size, total_size, 0);
+                    checkScope(ftok, parname, size, total_size, parId);
                     _callStack.pop_back();
 
                     // break out..
@@ -721,7 +714,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             --indentlevel;
 
         unsigned int size = 0;
-        const char *type = 0;
+        std::string type;
         unsigned int varid = 0;
         int nextTok = 0;
 
@@ -734,14 +727,14 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             unsigned int varpos = 1;
             if (tok->next()->str() == "*")
                 ++varpos;
-            size = std::strtoul(tok->strAt(varpos + 2), NULL, 10);
+            size = MathLib::toLongNumber(tok->strAt(varpos + 2));
             type = tok->strAt(varpos - 1);
             varid = tok->tokAt(varpos)->varId();
             nextTok = varpos + 5;
         }
         else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = new %type% [ %num% ]"))
         {
-            size = std::strtoul(tok->strAt(6), NULL, 10);
+            size = MathLib::toLongNumber(tok->strAt(6));
             type = tok->strAt(4);
             varid = tok->tokAt(1)->varId();
             nextTok = 8;
@@ -755,7 +748,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         }
         else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc ( %num% ) ;"))
         {
-            size = std::strtoul(tok->strAt(5), NULL, 10);
+            size = MathLib::toLongNumber(tok->strAt(5));
             type = "char";
             varid = tok->tokAt(1)->varId();
             nextTok = 7;
@@ -789,7 +782,8 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
         // The callstack is empty
         _callStack.clear();
-        checkScope(tok->tokAt(nextTok), 0, size, total_size, varid);
+        std::vector<std::string> v;
+        checkScope(tok->tokAt(nextTok), v, size, total_size, varid);
     }
 }
 //---------------------------------------------------------------------------
@@ -825,10 +819,10 @@ void CheckBufferOverrun::checkStructVariable()
             else
                 continue;
 
-            const char *varname[3] = {0, 0, 0};
+            std::vector<std::string> varname(2, "");
             const unsigned int varId = tok2->tokAt(ivar)->varId();
             varname[1] = tok2->strAt(ivar);
-            int arrsize = std::atoi(tok2->strAt(ivar + 2));
+            int arrsize = MathLib::toLongNumber(tok2->strAt(ivar + 2));
             int total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(1));
             if (tok2->tokAt(2)->str() == "*")
                 total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(2));
@@ -850,7 +844,8 @@ void CheckBufferOverrun::checkStructVariable()
 
                         if (Token::simpleMatch(tok4, ") {"))
                         {
-                            checkScope(tok4->tokAt(2), 0, arrsize, total_size, varId);
+                            std::vector<std::string> v;
+                            checkScope(tok4->tokAt(2), v, arrsize, total_size, varId);
                             break;
                         }
                     }

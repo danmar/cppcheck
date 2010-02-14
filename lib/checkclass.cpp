@@ -87,7 +87,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         }
 
         // "private:" "public:" "protected:" etc
-        const bool b((*tok->strAt(0) != ':') && strchr(tok->strAt(0), ':') != 0);
+        const bool b((tok->str()[0] != ':') && tok->str().find(":") != std::string::npos);
 
         if (b)
             priv = bool(tok->str() == "private:");
@@ -98,7 +98,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
 
         // This is the start of a statement
         const Token *next = tok->next();
-        const char *varname = 0;
+        std::string varname;
 
         // If next token contains a ":".. it is not part of a variable declaration
         if (next->str().find(":") != std::string::npos)
@@ -165,7 +165,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         }
 
         // If the varname was set in one of the two if-block above, create a entry for this variable..
-        if (varname && strcmp(varname, "operator"))
+        if (!varname.empty() && varname != "operator")
         {
             Var *var = new Var(varname, false, priv, varlist);
             varlist  = var;
@@ -176,11 +176,11 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::initVar(Var *varlist, const char varname[])
+void CheckClass::initVar(Var *varlist, const std::string &varname)
 {
     for (Var *var = varlist; var; var = var->next)
     {
-        if (strcmp(var->name, varname) == 0)
+        if (var->name == varname)
         {
             var->init = true;
             return;
@@ -189,7 +189,7 @@ void CheckClass::initVar(Var *varlist, const char varname[])
 }
 //---------------------------------------------------------------------------
 
-void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack, bool isStruct)
+void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const std::string &classname, std::list<std::string> &callstack, bool isStruct)
 {
     bool Assign = false;
     unsigned int indentlevel = 0;
@@ -401,8 +401,7 @@ void CheckClass::constructors()
     const Token *tok1 = Token::findmatch(_tokenizer->tokens(), pattern_class);
     while (tok1)
     {
-        const char *className;
-        className = tok1->strAt(1);
+        const std::string className = tok1->strAt(1);
         const Token *classNameToken = tok1->tokAt(1);
         bool isStruct = tok1->str() == "struct";
 
@@ -499,12 +498,12 @@ void CheckClass::constructors()
     }
 }
 
-void CheckClass::checkConstructors(const Token *tok1, const char funcname[], bool hasPrivateConstructor, bool isStruct)
+void CheckClass::checkConstructors(const Token *tok1, const std::string &funcname, bool hasPrivateConstructor, bool isStruct)
 {
-    const char * const className = tok1->strAt(1);
+    const std::string className = tok1->strAt(1);
 
     // Check that all member variables are initialized..
-    bool withClasses = bool(_settings->_showAll && std::string(funcname) == "operator =");
+    bool withClasses = bool(_settings->_showAll && funcname == "operator =");
     Var *varlist = getVarList(tok1, withClasses, isStruct);
 
     int indentlevel = 0;
@@ -737,7 +736,7 @@ void CheckClass::noMemset()
         if (!Token::Match(tok, "memset|memcpy|memmove"))
             continue;
 
-        const char *type = NULL;
+        std::string type;
         if (Token::Match(tok, "memset ( %var% , %num% , sizeof ( %type% ) )"))
             type = tok->strAt(8);
         else if (Token::Match(tok, "memset ( & %var% , %num% , sizeof ( %type% ) )"))
@@ -750,7 +749,7 @@ void CheckClass::noMemset()
             type = tok->strAt(8);
 
         // No type defined => The tokens didn't match
-        if (!(type && type[0]))
+        if (type.empty())
             continue;
 
         // Warn if type is a class or struct that contains any std::* variables
@@ -1319,9 +1318,7 @@ void CheckClass::virtualDestructor()
                 derived = derived->next();
 
             // Name of base class..
-            const char *baseName[2];
-            baseName[0] = derived->strAt(0);
-            baseName[1] = 0;
+            const std::string baseName = derived->strAt(0);
 
             // Update derived so it's ready for the next loop.
             do
@@ -1344,9 +1341,9 @@ void CheckClass::virtualDestructor()
                 continue;
 
             // Find the destructor declaration for the base class.
-            const Token *base = Token::findmatch(_tokenizer->tokens(), (std::string("%any% ~ ") + baseName[0] + " (").c_str());
+            const Token *base = Token::findmatch(_tokenizer->tokens(), (std::string("%any% ~ ") + baseName + " (").c_str());
             while (base && base->str() == "::")
-                base = Token::findmatch(base->next(), (std::string("%any% ~ ") + baseName[0] + " (").c_str());
+                base = Token::findmatch(base->next(), (std::string("%any% ~ ") + baseName + " (").c_str());
 
             const Token *reverseTok = base;
             while (Token::Match(base, "%var%") && base->str() != "virtual")
@@ -1356,10 +1353,10 @@ void CheckClass::virtualDestructor()
             if (! base)
             {
                 // Is the class declaration available?
-                base = Token::findmatch(_tokenizer->tokens(), (std::string("class ") + baseName[0] + " {").c_str());
+                base = Token::findmatch(_tokenizer->tokens(), (std::string("class ") + baseName + " {").c_str());
                 if (base)
                 {
-                    virtualDestructorError(base, baseName[0], derivedClass->str());
+                    virtualDestructorError(base, baseName, derivedClass->str());
                 }
 
                 continue;
@@ -1375,7 +1372,7 @@ void CheckClass::virtualDestructor()
             // Proper solution is to check all of the base classes. If base class is not
             // found or if one of the base classes has virtual destructor, error should not
             // be printed. See TODO test case "virtualDestructorInherited"
-            if (!Token::findmatch(_tokenizer->tokens(), (std::string("class ") + baseName[0] + " {").c_str()))
+            if (!Token::findmatch(_tokenizer->tokens(), (std::string("class ") + baseName + " {").c_str()))
                 continue;
 
             // Make sure that the destructor is public (protected or private
@@ -1386,7 +1383,7 @@ void CheckClass::virtualDestructor()
             {
                 if (reverseTok->str() == "public:")
                 {
-                    virtualDestructorError(base, baseName[0], derivedClass->str());
+                    virtualDestructorError(base, baseName, derivedClass->str());
                     break;
                 }
                 else if (reverseTok->str() == "protected:" ||

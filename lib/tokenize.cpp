@@ -125,7 +125,7 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
 
 unsigned int Tokenizer::sizeOfType(const Token *type) const
 {
-    if (!type || !type->strAt(0))
+    if (!type || type->str().empty())
         return 0;
 
     if (type->str()[0] == '"')
@@ -479,7 +479,7 @@ void Tokenizer::simplifyTypedef()
             tok = tok3;
         }
 
-        const char *typeName = 0;
+        std::string typeName;
         std::list<std::string> pointers;
         Token *typeStart = 0;
         Token *typeEnd = 0;
@@ -1733,7 +1733,7 @@ void Tokenizer::updateClassList()
         if (tok1->str() == "struct")
             memberType = ClassInfo::PUBLIC;
 
-        const char *className = tok1->strAt(1);
+        const std::string className = tok1->strAt(1);
         tok1 = tok1->next();
         int indentlevel = 0;
         for (const Token *tok = tok1; tok; tok = tok->next())
@@ -2703,7 +2703,7 @@ bool Tokenizer::simplifyTokenList()
                 continue;
             }
 
-            const char *num = tok->strAt(4);
+            const std::string num = tok->strAt(4);
             int indent = 1;
             for (Token *tok2 = tok->tokAt(6); tok2; tok2 = tok2->next())
             {
@@ -2746,15 +2746,21 @@ bool Tokenizer::simplifyTokenList()
 
         if (Token::Match(next, "* ( %var% + %num% )"))
         {
-            const char *str[4] = {"var", "[", "num", "]"};
-            str[0] = tok->strAt(3);
-            str[2] = tok->strAt(5);
+            // var
+            tok = tok->next();
+            tok->str(tok->strAt(2));
 
-            for (int i = 0; i < 4; i++)
-            {
-                tok = tok->next();
-                tok->str(str[i]);
-            }
+            // [
+            tok = tok->next();
+            tok->str("[");
+
+            // num
+            tok = tok->next();
+            tok->str(tok->strAt(2));
+
+            // ]
+            tok = tok->next();
+            tok->str("]");
 
             tok->deleteNext();
             tok->deleteNext();
@@ -3311,8 +3317,8 @@ bool Tokenizer::simplifyConditions()
             if (Token::Match(tok->tokAt(1), "%num%"))
             {
                 // Compare numbers
-                double op1 = (strstr(tok->strAt(1), "0x")) ? std::strtol(tok->strAt(1), 0, 16) : std::atof(tok->strAt(1));
-                double op2 = (strstr(tok->strAt(3), "0x")) ? std::strtol(tok->strAt(3), 0, 16) : std::atof(tok->strAt(3));
+                double op1 = MathLib::toDoubleNumber(tok->strAt(1));
+                double op2 = MathLib::toDoubleNumber(tok->strAt(3));
 
                 if (cmp == "==")
                     result = (op1 == op2);
@@ -4743,7 +4749,7 @@ bool Tokenizer::simplifyCalculations()
             else if (Token::Match(tok->previous(), "- %num% + %num%"))
                 tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), '-'));
             else
-                tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), *(tok->strAt(1))));
+                tok->str(MathLib::calculate(tok->str(), tok->tokAt(2)->str(), tok->strAt(1)[0]));
 
             Token::eraseTokens(tok, tok->tokAt(3));
 
@@ -5130,14 +5136,14 @@ void Tokenizer::simplifyEnum()
                     }
                     else
                     {
-                        tok1->insertToken(MathLib::toString<long>(lastValue).c_str());
+                        tok1->insertToken(MathLib::toString<long>(lastValue));
                         enumValue = tok1->next();
                     }
                 }
                 else if (Token::Match(tok1->previous(), ",|{ %type% = %num% ,|}"))
                 {
                     enumName = tok1;
-                    lastValue = std::atoi(tok1->strAt(2));
+                    lastValue = MathLib::toLongNumber(tok1->strAt(2));
                     enumValue = tok1->tokAt(2);
                     lastEnumValueStart = 0;
                     lastEnumValueEnd = 0;
@@ -5506,7 +5512,7 @@ std::string Tokenizer::file(const Token *tok) const
 
 //---------------------------------------------------------------------------
 
-const Token * Tokenizer::findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel, bool isStruct) const
+const Token * Tokenizer::findClassFunction(const Token *tok, const std::string &classname, const std::string &funcname, int &indentlevel, bool isStruct) const
 {
     if (indentlevel < 0 || tok == NULL)
         return NULL;

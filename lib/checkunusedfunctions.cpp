@@ -73,7 +73,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer)
             funcname = tok->tokAt(1);
         else if (Token::Match(tok, "%type% * %var% ("))
             funcname = tok->tokAt(2);
-        else if (Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2)))
+        else if (Token::Match(tok, "%type% :: %var% (") && !Token::Match(tok, tok->strAt(2).c_str()))
             funcname = tok->tokAt(2);
 
         // Don't assume throw as a function name: void foo() throw () {}

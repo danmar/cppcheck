@@ -97,10 +97,10 @@ void CheckHeaders::warningIncludeHeader()
 
         // Get fileindex of included file..
         unsigned int hfile = 0;
-        const char *includefile = includetok->strAt(1);
+        const std::string includefile = includetok->strAt(1);
         while (hfile < _tokenizer->getFiles()->size())
         {
-            if (FileLister::sameFileName(_tokenizer->getFiles()->at(hfile).c_str(), includefile))
+            if (FileLister::sameFileName(_tokenizer->getFiles()->at(hfile), includefile))
                 break;
             ++hfile;
         }
@@ -184,7 +184,7 @@ void CheckHeaders::warningIncludeHeader()
             // --------------------------------------
             else if (tok1->str() == "typedef")
             {
-                if (strcmp(tok1->strAt(1), "enum") == 0)
+                if (tok1->strAt(1) == "enum")
                     continue;
                 int parlevel = 0;
                 while (tok1->next())
@@ -220,7 +220,7 @@ void CheckHeaders::warningIncludeHeader()
 
             if (Token::Match(tok1, ": %var% {") || Token::Match(tok1, ": %type% %var% {"))
             {
-                std::string classname = tok1->strAt((strcmp(tok1->strAt(2), "{")) ? 2 : 1);
+                const std::string classname = tok1->strAt(((tok1->strAt(2) != "{")) ? 2 : 1);
                 if (std::find(classlist.begin(), classlist.end(), classname) != classlist.end())
                 {
                     Needed = true;

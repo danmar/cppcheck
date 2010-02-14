@@ -160,7 +160,7 @@ public:
     }
 
     /** For unit testing the white list */
-    static bool test_white_list(const char funcname[]);
+    static bool test_white_list(const std::string &funcname);
 
     void check();
 

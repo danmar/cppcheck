@@ -69,7 +69,7 @@ public:
     const Token *tokAt(int index) const;
     Token *tokAt(int index);
 
-    const char *strAt(int index) const;
+    std::string strAt(int index) const;
 
     /**
      * Match given token (or list of tokens) to a pattern list.
@@ -202,7 +202,7 @@ public:
      * relations between next and previous token also.
      * @param str String for the new token.
      */
-    void insertToken(const char str[]);
+    void insertToken(const std::string &str);
 
     Token *previous() const
     {

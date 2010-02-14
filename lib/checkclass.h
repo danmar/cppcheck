@@ -106,16 +106,16 @@ private:
     class Var
     {
     public:
-        Var(const char *name = 0, bool init = false, bool priv = false, Var *next = 0)
+        Var(const std::string &name_, bool init = false, bool priv = false, Var *next = 0)
+            : name(name_)
         {
-            this->name = name;
             this->init = init;
             this->priv = priv;
             this->next = next;
         }
 
         /** @brief name of variable */
-        const char *name;
+        const std::string name;
 
         /** @brief has this variable been initialized? */
         bool        init;
@@ -136,10 +136,10 @@ private:
      * @param callstack the function doesn't look into recursive function calls.
      * @param isStruct if this is a struct instead of a class
      */
-    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const char classname[], std::list<std::string> &callstack, bool isStruct);
+    void initializeVarList(const Token *tok1, const Token *ftok, Var *varlist, const std::string &classname, std::list<std::string> &callstack, bool isStruct);
 
     /** @brief initialize a variable in the varlist */
-    void initVar(Var *varlist, const char varname[]);
+    void initVar(Var *varlist, const std::string &varname);
 
     /**
      * @brief get varlist from a class definition
@@ -150,7 +150,7 @@ private:
     Var *getVarList(const Token *tok1, bool withClasses, bool isStruct);
 
     // Check constructors for a specified class
-    void checkConstructors(const Token *tok1, const char funcname[], bool hasPrivateConstructor, bool isStruct);
+    void checkConstructors(const Token *tok1, const std::string &funcname, bool hasPrivateConstructor, bool isStruct);
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);

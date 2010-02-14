@@ -183,7 +183,7 @@ Token *Token::tokAt(int index)
     return tok;
 }
 
-const char *Token::strAt(int index) const
+std::string Token::strAt(int index) const
 {
     const Token *tok = this->tokAt(index);
     return tok ? tok->_str.c_str() : "";
@@ -592,7 +592,7 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned i
     return 0;
 }
 
-void Token::insertToken(const char str[])
+void Token::insertToken(const std::string &str)
 {
     Token *newToken = new Token(tokensBack);
     newToken->str(str);

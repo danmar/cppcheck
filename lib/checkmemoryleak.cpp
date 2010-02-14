@@ -527,16 +527,16 @@ static int countParameters(const Token *tok)
     return -1;
 }
 
-bool CheckMemoryLeakInFunction::test_white_list(const char funcname[])
+bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname)
 {
-    return std::bsearch(funcname, call_func_white_list,
+    return std::bsearch(funcname.c_str(), call_func_white_list,
                         sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
                         sizeof(call_func_white_list[0]), call_func_white_list_compare);
 }
 
 const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz)
 {
-    if (test_white_list(tok->strAt(0)))
+    if (test_white_list(tok->str()))
         return 0;
 
     if (noreturn.find(tok->str()) != noreturn.end())
@@ -2408,7 +2408,7 @@ void CheckMemoryLeakInClass::variable(const std::string &classname, const Token 
                 // Function call in destructor .. possible deallocation
                 else if (destructor && Token::Match(tok->previous(), "[{};] %var% ("))
                 {
-                    if (!std::bsearch(tok->strAt(0), call_func_white_list,
+                    if (!std::bsearch(tok->str().c_str(), call_func_white_list,
                                       sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),
                                       sizeof(call_func_white_list[0]), call_func_white_list_compare))
                     {

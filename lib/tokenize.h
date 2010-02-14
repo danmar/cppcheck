@@ -115,7 +115,7 @@ public:
      * @param isStruct is it a struct
      * @return First matching token or NULL.
      */
-    const Token *findClassFunction(const Token *tok, const char classname[], const char funcname[], int &indentlevel, bool isStruct = false) const;
+    const Token *findClassFunction(const Token *tok, const std::string &classname, const std::string &funcname, int &indentlevel, bool isStruct = false) const;
 
     /**
      * get error messages

@@ -315,8 +315,8 @@ void CheckOther::checkUnsignedDivision()
     {
         if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]"))
         {
-            const char *type = tok->strAt(1);
-            if (strcmp(type, "char") == 0 || strcmp(type, "short") == 0 || strcmp(type, "int") == 0)
+            const std::string type = tok->strAt(1);
+            if (type == "char" || type == "short" || type == "int")
                 varsign[tok->tokAt(2)->varId()] = 's';
         }
 
@@ -451,7 +451,7 @@ void CheckOther::checkVariableScope()
 }
 //---------------------------------------------------------------------------
 
-void CheckOther::lookupVar(const Token *tok1, const char varname[])
+void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
 {
     const Token *tok = tok1;
 
@@ -607,7 +607,7 @@ void CheckOther::checkConstantFunctionParameter()
 
 void CheckOther::checkStructMemberUsage()
 {
-    const char *structname = 0;
+    std::string structname;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->fileIndex() != 0)
@@ -622,7 +622,7 @@ void CheckOther::checkStructMemberUsage()
             {
                 if (tok2->str() == "(")
                 {
-                    structname = 0;
+                    structname = "";
                     break;
                 }
 
@@ -633,15 +633,15 @@ void CheckOther::checkStructMemberUsage()
             // Bail out if some data is casted to struct..
             const std::string s("( struct| " + tok->next()->str() + " * ) & %var% [");
             if (Token::findmatch(tok, s.c_str()))
-                structname = 0;
+                structname = "";
         }
 
         if (tok->str() == "}")
-            structname = 0;
+            structname = "";
 
-        if (structname && Token::Match(tok, "[{;]"))
+        if (!structname.empty() && Token::Match(tok, "[{;]"))
         {
-            const char *varname = 0;
+            std::string varname;
             if (Token::Match(tok->next(), "%type% %var% [;[]"))
                 varname = tok->strAt(2);
             else if (Token::Match(tok->next(), "%type% %type% %var% [;[]"))
@@ -653,7 +653,7 @@ void CheckOther::checkStructMemberUsage()
             else
                 continue;
 
-            const std::string usagePattern(". " + std::string(varname));
+            const std::string usagePattern(". " + varname);
             bool used = false;
             for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
             {
@@ -834,8 +834,8 @@ void CheckOther::strPlusChar()
         else if (Token::Match(tok, "[=(] %str% + %any%"))
         {
             // char constant..
-            const char *s = tok->strAt(3);
-            if (*s == '\'')
+            const std::string s = tok->strAt(3);
+            if (s[0] == '\'')
                 strPlusChar(tok->next());
 
             // char variable..

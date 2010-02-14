@@ -180,7 +180,7 @@ void Settings::addAutoAllocClass(const std::string &name)
     _autoDealloc.insert(name);
 }
 
-bool Settings::isAutoDealloc(const char classname[]) const
+bool Settings::isAutoDealloc(const std::string &classname) const
 {
     return (_autoDealloc.find(classname) != _autoDealloc.end());
 }

@@ -128,7 +128,7 @@ public:
     /** Check for post increment/decrement in for loop*/
     void postIncrement();
 
-    void lookupVar(const Token *tok1, const char varname[]);
+    void lookupVar(const Token *tok1, const std::string &varname);
 
     // Redundant condition
     // if (haystack.find(needle) != haystack.end())

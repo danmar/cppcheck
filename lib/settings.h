@@ -103,7 +103,7 @@ public:
     void addAutoAllocClass(const std::string &name);
 
     /** is a class automaticly deallocated? */
-    bool isAutoDealloc(const char classname[]) const;
+    bool isAutoDealloc(const std::string &classname) const;
 
     /** assign append code */
     void append(const std::string &filename);
