@@ -868,7 +868,7 @@ private:
               "        data[i] = 0;\n"
               "    }\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
     }
 
     void buffer_overrun_1()

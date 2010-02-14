@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2009 Daniel Marjam√§ki and Cppcheck team.
+ * Copyright (C) 2007-2009 Daniel Marjamäki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -340,19 +340,36 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             if (counter_varid == 0)
                 continue;
 
+            const Token *strindextoken;
             if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
             {
                 value = MathLib::toLongNumber(tok2->strAt(2));
                 max_counter_value = MathLib::toString<long>(value - 1);
+                strindextoken = tok2;
             }
             else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
             {
                 value = MathLib::toLongNumber(tok2->strAt(2)) + 1;
                 max_counter_value = tok2->strAt(2);
+                strindextoken = tok2;
+            }
+            else if (Token::Match(tok2, " %num% < %varid% ;", counter_varid))
+            {
+                max_counter_value = min_counter_value;
+                min_counter_value = MathLib::toString<long>(value + 1);
+                value = MathLib::toLongNumber(max_counter_value.c_str());
+                strindextoken = tok2->tokAt(2);
+            }
+            else if (Token::Match(tok2, "%num% <= %varid% ;", counter_varid))
+            {
+                max_counter_value = min_counter_value;
+                min_counter_value = tok2->str();
+                value = MathLib::toLongNumber(max_counter_value.c_str());
+                strindextoken = tok2->tokAt(2);
             }
 
             // Get index variable and stopsize.
-            const char *strindex = tok2->str().c_str();
+            const char *strindex = strindextoken->str().c_str();
             bool condition_out_of_bounds = true;
             if (value <= size)
                 condition_out_of_bounds = false;
@@ -392,7 +409,35 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 if (max <= size)
                     condition_out_of_bounds = false;
             }
-            else if (! Token::Match(tok3, "++| %varid% ++| )", counter_varid))
+            else if (Token::Match(tok3, "%varid% -= %num% )", counter_varid) ||
+                     Token::Match(tok3, "%varid%  = %num% - %varid% )", counter_varid))
+            {
+                if (!MathLib::isInt(tok3->strAt(2)))
+                    continue;
+
+                const int num = MathLib::toLongNumber(tok3->strAt(2));
+
+                long max = MathLib::toLongNumber(max_counter_value);
+                long min = MathLib::toLongNumber(min_counter_value);
+                max = ((max - min) / num) * num + min;
+                max_counter_value = MathLib::toString<long>(max);
+                if (max <= size)
+                    condition_out_of_bounds = false;
+            }
+            else if (Token::Match(tok3, "%varid% = %varid% - %num% )", counter_varid))
+            {
+                if (!MathLib::isInt(tok3->strAt(4)))
+                    continue;
+
+                const int num = MathLib::toLongNumber(tok3->strAt(4));
+                long max = MathLib::toLongNumber(max_counter_value);
+                long min = MathLib::toLongNumber(min_counter_value);
+                max = ((max - min) / num) * num + min;
+                max_counter_value = MathLib::toString<long>(max);
+                if (max <= size)
+                    condition_out_of_bounds = false;
+            }
+            else if (! Token::Match(tok3, "++|--| %varid% ++|--| )", counter_varid))
             {
                 continue;
             }
