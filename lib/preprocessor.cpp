@@ -1311,11 +1311,11 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
             {
                 // We have processed this file already once, skip
                 // it this time to avoid ethernal loop.
+                fin.close();
                 continue;
             }
 
             handledFiles.insert(tempFile);
-            std::ifstream fin(filename.c_str());
             processedFile = Preprocessor::read(fin, filename, _settings);
             fin.close();
         }
