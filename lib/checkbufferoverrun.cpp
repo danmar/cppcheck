@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2009 Daniel Marjamäki and Cppcheck team.
+ * Copyright (C) 2007-2009 Daniel Marjam√§ki and Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -340,7 +340,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             if (counter_varid == 0)
                 continue;
 
-            const Token *strindextoken;
+            const Token *strindextoken = 0;
             if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
             {
                 value = MathLib::toLongNumber(tok2->strAt(2));
@@ -366,6 +366,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 min_counter_value = tok2->str();
                 value = MathLib::toLongNumber(max_counter_value.c_str());
                 strindextoken = tok2->tokAt(2);
+            }
+            else
+            {
+                continue;
             }
 
             // Get index variable and stopsize.

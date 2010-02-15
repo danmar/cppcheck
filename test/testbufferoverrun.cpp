@@ -332,8 +332,18 @@ private:
                   "}\n");
             ASSERT_EQUALS("", errout.str());
         }
-    }
 
+        {
+            check("void foo(int argc)\n"
+                  "{\n"
+                  "  char a[2];\n"
+                  "  for (int i = 4; i < argc; i++)\n"
+                  "  {\n"
+                  "  }\n"
+                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
 
     void array_index_4()
     {
