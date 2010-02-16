@@ -189,6 +189,8 @@ private:
         TEST_CASE(enum4);
         TEST_CASE(enum5);
         TEST_CASE(enum6);
+        TEST_CASE(enum7);
+        TEST_CASE(enum8);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -3509,6 +3511,89 @@ private:
         const char code[] = "enum { a = MAC(A, B, C) }; void f(a) { }";
         const char expected[] = "; void f ( MAC ( A , B , C ) ) { }";
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void enum7()
+    {
+        {
+            // ticket 1388
+            const char code[] = "enum FOO {A,B,C};\n"
+                                "int main()\n"
+                                "{\n"
+                                "  int A = B;\n"
+                                "  { float A = C; }\n"
+                                "}";
+            const char expected[] = "; "
+                                    "int main ( ) "
+                                    "{ "
+                                    "int A ; A = 1 ; "
+                                    "{ float A ; A = 2 ; } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "enum FOO {A,B,C};\n"
+                                "void f(int A, float B, char C) { }";
+            const char expected[] = "; "
+                                    "void f ( int A , float B , char C ) { }";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+    }
+
+    // Check simplifyEnum
+    void checkSimplifyEnum(const char code[])
+    {
+        // Tokenize..
+        Settings settings;
+        settings._showAll = true;
+        settings._checkCodingStyle = true;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        errout.str("");
+        tokenizer.tokenize(istr, "test.cpp");
+    }
+
+    void enum8()
+    {
+        // ticket 1388
+        checkSimplifyEnum("enum Direction {N=100,E,S,W,ALL};\n"
+                          "template<class T,int S> class EF_Vector{\n"
+                          "  T v_v[S];\n"
+                          "\n"
+                          "public:\n"
+                          "  EF_Vector();\n"
+                          "  explicit EF_Vector(const T &);\n"
+                          "  explicit EF_Vector(const T arr[S]);\n"
+                          "};\n"
+                          "\n"
+                          "template<class T,int S>\n"
+                          "EF_Vector<T,S>::EF_Vector()\n"
+                          "{\n"
+                          "}\n"
+                          "\n"
+                          "template<class T,int S>\n"
+                          "EF_Vector<T,S>::EF_Vector(const T &t)\n"
+                          "{\n"
+                          "  for(int i=0;i<S;i++)\n"
+                          "    v_v[i]=t;\n"
+                          "}\n"
+                          "\n"
+                          "template<class T,int S>\n"
+                          "EF_Vector<T,S>::EF_Vector(const T arr[S])\n"
+                          "{\n"
+                          "  for(int i=0;i<S;i++)\n"
+                          "    v_v[i]=arr[i];\n"
+                          "}\n"
+                          "\n"
+                          "void initialize()\n"
+                          "{\n"
+                          "   EF_Vector<float,6> d;\n"
+                          "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n"
+                      "[test.cpp:11] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n"
+                      "[test.cpp:16] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n"
+                      "[test.cpp:23] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n", errout.str());
     }
 
     void removestd()

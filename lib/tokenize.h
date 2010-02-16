@@ -414,6 +414,16 @@ private:
      */
     static std::string getNameForFunctionParams(const Token *start);
 
+    /**
+     * check for duplicate enum definition
+     */
+    bool duplicateDefinition(Token **tokPtr, const Token *name);
+
+    /**
+     * duplicate enum definition error
+     */
+    void duplicateEnumError(const Token *tok1, const Token *tok2, const std::string & type);
+
     /** Disable assignment operator */
     Tokenizer &operator=(const Tokenizer &);
 

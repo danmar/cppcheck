@@ -5042,6 +5042,111 @@ void Tokenizer::simplifyNestedStrcat()
 
 }
 
+void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const std::string & type)
+{
+    if (!(_settings && _settings->_checkCodingStyle))
+        return;
+
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    ErrorLogger::ErrorMessage::FileLocation loc;
+    loc.line = tok1->linenr();
+    loc.file = file(tok1);
+    locationList.push_back(loc);
+    loc.line = tok2->linenr();
+    loc.file = file(tok2);
+    locationList.push_back(loc);
+
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           "style",
+                                           std::string(type + " '" + tok2->str() +
+                                                       "' hides enumerator of same name"),
+                                           "variableHidingEnum");
+
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
+}
+
+// Check if this statement is a duplicate definition.  A duplicate
+// definition will hide the enumerator within it's scope so just
+// skip the entire scope of the duplicate.
+bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
+{
+    // check for an end of definition
+    const Token * tok = *tokPtr;
+    if (tok && tok->next() && Token::Match(tok->next(), ";|,|[|=|)|>"))
+    {
+        const Token * end = tok->next();
+
+        if (end->str() == "[")
+        {
+            end = end->link()->next();
+        }
+        else if (end->str() == ",")
+        {
+            // find end of definition
+            int level = 0;
+            while (end && end->next() && (!Token::Match(end->next(), ";|)|>") ||
+                                          (end->next()->str() == ")" && level == 0)))
+            {
+                if (end->next()->str() == "(")
+                    level++;
+                else if (end->next()->str() == ")")
+                    level--;
+
+                end = end->next();
+            }
+        }
+
+        if (end)
+        {
+            if (Token::Match(end, ") {")) // function parameter ?
+            {
+                // look backwards
+                if (tok->previous()->str() == "enum" ||
+                    (Token::Match(tok->previous(), "%type%") &&
+                     tok->previous()->str() != "return"))
+                {
+                    duplicateEnumError(*tokPtr, name, "Function parameter");
+                    // duplicate definition so skip entire function
+                    *tokPtr = end->next()->link();
+                    return true;
+                }
+            }
+            else if (end->str() == ">") // template parameter ?
+            {
+                // look backwards
+                if (tok->previous()->str() == "enum" ||
+                    (Token::Match(tok->previous(), "%type%") &&
+                     tok->previous()->str() != "return"))
+                {
+                    // duplicate definition so skip entire template
+                    while (end && end->str() != "{")
+                        end = end->next();
+                    if (end)
+                    {
+                        duplicateEnumError(*tokPtr, name, "Template parameter");
+                        *tokPtr = end->link();
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                // look backwards
+                if (tok->previous()->str() == "enum" ||
+                    (Token::Match(tok->previous(), "%type%") &&
+                     tok->previous()->str() != "return"))
+                {
+                    duplicateEnumError(*tokPtr, name, "Variable");
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
 
 void Tokenizer::simplifyEnum()
 {
@@ -5090,6 +5195,9 @@ void Tokenizer::simplifyEnum()
             Token * lastEnumValueStart = 0;
             Token * lastEnumValueEnd = 0;
 
+            // iterate over all enumerators between { and }
+            // Give each enumerator the const value specified or if not specified, 1 + the
+            // previous value or 0 if it is the first one.
             for (; tok1 && tok1 != end; tok1 = tok1->next())
             {
                 Token * enumName = 0;
@@ -5099,6 +5207,7 @@ void Tokenizer::simplifyEnum()
 
                 if (Token::Match(tok1->previous(), ",|{ %type% ,|}"))
                 {
+                    // no value specified
                     enumName = tok1;
                     lastValue++;
                     tok1->insertToken("=");
@@ -5106,11 +5215,12 @@ void Tokenizer::simplifyEnum()
 
                     if (lastEnumValueStart && lastEnumValueEnd)
                     {
+                        // previous value was an expression
                         Token * valueStart = tok1;
                         std::stack<Token *> links;
                         for (Token *tok2 = lastEnumValueStart; tok2 != lastEnumValueEnd->next(); tok2 = tok2->next())
                         {
-                            tok1->insertToken(tok2->strAt(0));
+                            tok1->insertToken(tok2->str());
                             tok1 = tok1->next();
 
                             // Check for links and fix them up
@@ -5127,21 +5237,24 @@ void Tokenizer::simplifyEnum()
                             }
                         }
 
+                        // value is previous expression + 1
                         tok1->insertToken("+");
                         tok1 = tok1->next();
-                        tok1->insertToken(MathLib::toString<long>(lastValue).c_str());
+                        tok1->insertToken(MathLib::toString<long>(lastValue));
                         enumValue = 0;
                         enumValueStart = valueStart->next();
                         enumValueEnd = tok1->next();
                     }
                     else
                     {
+                        // value is previous numeric value + 1
                         tok1->insertToken(MathLib::toString<long>(lastValue));
                         enumValue = tok1->next();
                     }
                 }
                 else if (Token::Match(tok1->previous(), ",|{ %type% = %num% ,|}"))
                 {
+                    // value is specified numeric value
                     enumName = tok1;
                     lastValue = MathLib::toLongNumber(tok1->strAt(2));
                     enumValue = tok1->tokAt(2);
@@ -5150,6 +5263,7 @@ void Tokenizer::simplifyEnum()
                 }
                 else if (Token::Match(tok1->previous(), ",|{ %type% = "))
                 {
+                    // value is specified expression
                     enumName = tok1;
                     lastValue = 0;
                     tok1 = tok1->tokAt(2);
@@ -5166,11 +5280,14 @@ void Tokenizer::simplifyEnum()
 
                         enumValueEnd = enumValueEnd->next();
                     }
+                    // remember this expression in case it needs to be incremented
                     lastEnumValueStart = enumValueStart;
                     lastEnumValueEnd = enumValueEnd;
+                    // skip over expression
                     tok1 = enumValueEnd;
                 }
 
+                // find all uses of this enumerator and substitute it's value for it's name
                 if (enumName && (enumValue || (enumValueStart && enumValueEnd)))
                 {
                     const std::string pattern(className.empty() ? "" : (className + " :: " + enumName->str()).c_str());
@@ -5196,7 +5313,9 @@ void Tokenizer::simplifyEnum()
                             }
                         }
                         else if (tok2->str() == "{")
+                        {
                             ++level;
+                        }
                         else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
                         {
                             simplifyEnum = true;
@@ -5208,10 +5327,15 @@ void Tokenizer::simplifyEnum()
                             {
                                 // Don't replace this enum if it's preceded by "::"
                             }
-                            else
+                            else if (!duplicateDefinition(&tok2, enumName))
                             {
                                 simplifyEnum = true;
                                 hasClass = false;
+                            }
+                            else
+                            {
+                                // something with the same name.
+                                exitScope = level;
                             }
                         }
 
@@ -5228,7 +5352,7 @@ void Tokenizer::simplifyEnum()
                                 Token * nextToken = enumValueStart->next();
                                 for (; nextToken != enumValueEnd->next(); nextToken = nextToken->next())
                                 {
-                                    tok2->insertToken(nextToken->strAt(0));
+                                    tok2->insertToken(nextToken->str());
                                     tok2 = tok2->next();
 
                                     // Check for links and fix them up
