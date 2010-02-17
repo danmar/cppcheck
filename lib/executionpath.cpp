@@ -113,9 +113,12 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             if (Token::simpleMatch(tok, "do {") && Token::simpleMatch(tok2, "} while ("))
                 tok2 = tok2->tokAt(2)->link();
 
+            // bail out all variables if the scope contains a "return"
             // bail out all variables used in this for/while/switch/do
             for (; tok && tok != tok2; tok = tok->next())
             {
+                if (tok->str() == "return")
+                    ExecutionPath::bailOut(checks);
                 if (tok->varId())
                     ExecutionPath::bailOutVar(checks, tok->varId());
             }

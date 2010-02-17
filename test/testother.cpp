@@ -1462,6 +1462,30 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("int foo(const int iVar, unsigned int slot, unsigned int pin)\n"
+                       "{\n"
+                       "    int i;\n"
+                       "\n"
+                       "    if (iVar == 0)\n"
+                       "    {\n"
+                       "        switch (slot)\n"
+                       "        {\n"
+                       "            case 4:  return 5;\n"
+                       "            default: return -1;\n"
+                       "        }\n"
+                       "    }\n"
+                       "    else\n"
+                       "    {\n"
+                       "        switch (pin)\n"
+                       "        {\n"
+                       "            case 0:   i =  2; break;\n"
+                       "            default:  i = -1; break;\n"
+                       "        }\n"
+                       "    }\n"
+                       "    return i;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // while..
         checkUninitVar("int f()\n"
                        "{\n"
