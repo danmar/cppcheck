@@ -5323,9 +5323,10 @@ void Tokenizer::simplifyEnum()
                         }
                         else if (inScope && !exitThisScope && tok2->str() == enumName->str())
                         {
-                            if (Token::simpleMatch(tok2->previous(), "::"))
+                            if (Token::simpleMatch(tok2->previous(), "::") ||
+                                (tok2->next() && Token::simpleMatch(tok2->next(), "::")))
                             {
-                                // Don't replace this enum if it's preceded by "::"
+                                // Don't replace this enum if it's preceded or followed by "::"
                             }
                             else if (!duplicateDefinition(&tok2, enumName))
                             {

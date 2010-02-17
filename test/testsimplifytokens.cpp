@@ -191,6 +191,7 @@ private:
         TEST_CASE(enum6);
         TEST_CASE(enum7);
         TEST_CASE(enum8);
+        TEST_CASE(enum9); // ticket 1404
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -3594,6 +3595,22 @@ private:
                       "[test.cpp:11] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n"
                       "[test.cpp:16] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n"
                       "[test.cpp:23] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n", errout.str());
+    }
+
+    void enum9()
+    {
+        // ticket 1404
+        checkSimplifyEnum("class XX {\n"
+                          "public:\n"
+                          "static void Set(const int &p){m_p=p;}\n"
+                          "static int m_p;\n"
+                          "};\n"
+                          "int XX::m_p=0;\n"
+                          "int main() {\n"
+                          "  enum { XX };\n"
+                          "  XX::Set(std::numeric_limits<X>::digits());\n"
+                          "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void removestd()
