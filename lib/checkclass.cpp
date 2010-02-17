@@ -924,7 +924,7 @@ void CheckClass::operatorEqRetRefThis()
                             // check for return of reference to this
                             if (tok1->str() == "return")
                             {
-                                if (!(Token::Match(tok1->tokAt(1), "* this ;") ||
+                                if (!(Token::Match(tok1->tokAt(1), "(| * this ;|=") ||
                                       Token::Match(tok1->tokAt(1), "operator = (")))
                                     operatorEqRetRefThisError(tok);
                             }
@@ -976,7 +976,7 @@ void CheckClass::operatorEqRetRefThis()
                             // check for return of reference to this
                             if (tok1->str() == "return")
                             {
-                                if (!(Token::Match(tok1->tokAt(1), "* this ;") ||
+                                if (!(Token::Match(tok1->tokAt(1), "(| * this ;|=") ||
                                       Token::Match(tok1->tokAt(1), "operator = (")))
                                     operatorEqRetRefThisError(tok);
                             }
