@@ -58,7 +58,7 @@ private:
         TEST_CASE(structmember4);
         TEST_CASE(structmember5);
         TEST_CASE(structmember6);
-        
+
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
         TEST_CASE(localvar3);
@@ -77,7 +77,7 @@ private:
         TEST_CASE(localvarIfElse);      // return tmp1 ? tmp2 : tmp3;
         TEST_CASE(localvarOpAssign);    // a |= b;
         TEST_CASE(localvarFor);         // for ( ; var; )
-        TEST_CASE(localvarShift);       // 1 >> var        
+        TEST_CASE(localvarShift);       // 1 >> var
     }
 
     void structmember1()
@@ -197,10 +197,10 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
-    
-    
-    
-    
+
+
+
+
 
 
 
@@ -397,8 +397,8 @@ private:
                               "    return 1 >> var;\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
-    }    
-   
+    }
+
 };
 
 REGISTER_TEST(TestUnusedVar)

@@ -394,11 +394,11 @@ void CheckOther::unreachableCode()
             break;
 
         // If there is a statement below the return it is unreachable
-/* original:
-        if (!Token::Match(tok, "; case|default|}|#") && 
-            !Token::Match(tok, "; %var% :") &&
-            !Token::simpleMatch(tok, "; break"))
-*/
+        /* original:
+                if (!Token::Match(tok, "; case|default|}|#") &&
+                    !Token::Match(tok, "; %var% :") &&
+                    !Token::simpleMatch(tok, "; break"))
+        */
         if (Token::simpleMatch(tok, "; break"))
         {
             unreachableCodeError(tok->next());

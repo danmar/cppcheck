@@ -103,7 +103,7 @@ public:
     /** Check for unreachable code */
     void unreachableCode();
     void unreachableCodeError(const Token *tok);
-    
+
     /** Check for unused function variables */
     void functionVariableUsage();
     void unusedVariableError(const Token *tok, const std::string &varname);
