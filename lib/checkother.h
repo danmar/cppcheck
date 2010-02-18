@@ -53,6 +53,7 @@ public:
             checkOther.warningOldStylePointerCast();
             checkOther.checkUnsignedDivision();
             checkOther.checkCharVariable();
+            checkOther.functionVariableUsage();
             checkOther.checkVariableScope();
             checkOther.checkStructMemberUsage();
         }
@@ -67,6 +68,7 @@ public:
             checkOther.warningRedundantCode();
             checkOther.checkConstantFunctionParameter();
             checkOther.checkIncompleteStatement();
+            checkOther.unreachableCode();
             if (settings->_showAll)
             {
                 checkOther.postIncrement();
@@ -97,6 +99,16 @@ public:
 
     // Check for unsigned division that might create bad results
     void checkUnsignedDivision();
+
+    /** Check for unreachable code */
+    void unreachableCode();
+    void unreachableCodeError(const Token *tok);
+    
+    /** Check for unused function variables */
+    void functionVariableUsage();
+    void unusedVariableError(const Token *tok, const std::string &varname);
+    void unreadVariableError(const Token *tok, const std::string &varname);
+    void unassignedVariableError(const Token *tok, const std::string &varname);
 
     // Check scope of variables
     void checkVariableScope();

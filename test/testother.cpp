@@ -108,6 +108,7 @@ private:
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.warningRedundantCode();
         checkOther.checkZeroDivision();
+        checkOther.unreachableCode();
     }
 
 
@@ -324,7 +325,7 @@ private:
               "        break;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Unreachable code below a 'return'\n", errout.str());
     }
 
 

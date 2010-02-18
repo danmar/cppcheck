@@ -370,6 +370,203 @@ void CheckOther::checkUnsignedDivision()
 
 
 
+
+
+//---------------------------------------------------------------------------
+// Unreachable code below a 'return'
+//---------------------------------------------------------------------------
+
+void CheckOther::unreachableCode()
+{
+    const Token *tok = _tokenizer->tokens();
+    while ((tok = Token::findmatch(tok, "[;{}] return")))
+    {
+        // Goto the 'return' token
+        tok = tok->next();
+
+        // Locate the end of the 'return' statement
+        while (tok && tok->str() != ";")
+            tok = tok->next();
+        while (tok && tok->next() && tok->next()->str() == ";")
+            tok = tok->next();
+
+        if (!tok)
+            break;
+
+        // If there is a statement below the return it is unreachable
+/* original:
+        if (!Token::Match(tok, "; case|default|}|#") && 
+            !Token::Match(tok, "; %var% :") &&
+            !Token::simpleMatch(tok, "; break"))
+*/
+        if (Token::simpleMatch(tok, "; break"))
+        {
+            unreachableCodeError(tok->next());
+        }
+    }
+}
+
+void CheckOther::unreachableCodeError(const Token *tok)
+{
+    reportError(tok, Severity::style, "unreachableCode", "Unreachable code below a 'return'");
+}
+
+//---------------------------------------------------------------------------
+
+
+
+
+//---------------------------------------------------------------------------
+// Usage of function variables
+//---------------------------------------------------------------------------
+
+static bool isOp(const Token *tok)
+{
+    return bool(tok &&
+                (tok->str() == "&&" ||
+                 tok->str() == "||" ||
+                 tok->str() == "==" ||
+                 tok->str() == "!=" ||
+                 tok->str() == "<" ||
+                 tok->str() == "<=" ||
+                 tok->str() == ">" ||
+                 tok->str() == ">=" ||
+                 tok->str() == "<<" ||
+                 Token::Match(tok, "[+-*/%&!~|^,[])?:]")));
+}
+
+void CheckOther::functionVariableUsage()
+{
+    // Parse all executing scopes..
+    const Token *tok1 = _tokenizer->tokens();
+    if (!tok1)
+        return;
+
+    while ((tok1 = Token::findmatch(tok1->next(), ") const| {")) != NULL)
+    {
+        // Varname, usage {1=declare, 2=read, 4=write}
+        std::map<std::string, unsigned int> varUsage;
+        static const unsigned int USAGE_DECLARE = 1;
+        static const unsigned int USAGE_READ    = 2;
+        static const unsigned int USAGE_WRITE   = 4;
+
+        int indentlevel = 0;
+        for (const Token *tok = tok1->next(); tok; tok = tok->next())
+        {
+            if (tok->str() == "{")
+                ++indentlevel;
+            else if (tok->str() == "}")
+            {
+                --indentlevel;
+                if (indentlevel <= 0)
+                    break;
+            }
+            else if (Token::Match(tok, "struct|union|class {") ||
+                     Token::Match(tok, "struct|union|class %type% {"))
+            {
+                int indentlevel0 = indentlevel;
+
+                while (tok->str() != "{")
+                    tok = tok->next();
+
+                do
+                {
+                    if (tok->str() == "{")
+                        indentlevel++;
+                    else if (tok->str() == "}")
+                        indentlevel--;
+                    tok = tok->next();
+                }
+                while (tok && indentlevel > indentlevel0);
+
+                if (! tok)
+                    break;
+            }
+
+            if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|="))
+                varUsage[ tok->strAt(2)] = USAGE_DECLARE;
+
+            else if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|="))
+                varUsage[ tok->strAt(3)] = USAGE_DECLARE;
+
+            else if (Token::Match(tok, "delete|return %var%"))
+                varUsage[ tok->strAt(1)] |= USAGE_READ;
+
+            else if (Token::Match(tok, "%var% ="))
+                varUsage[ tok->str()] |= USAGE_WRITE;
+
+            else if (Token::Match(tok, "else %var% ="))
+                varUsage[ tok->strAt(1)] |= USAGE_WRITE;
+
+            else if (Token::Match(tok, ">>|& %var%"))
+                varUsage[ tok->strAt(1)] |= (USAGE_WRITE | USAGE_READ);
+
+            else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
+                varUsage[ tok->strAt(1)] |= USAGE_READ;
+
+            else if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
+                varUsage[ tok->strAt(1)] |= USAGE_READ;
+
+            else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
+                varUsage[ tok->str()] |= USAGE_READ;
+
+            else if (Token::Match(tok, "[(,] %var% [,)]"))
+                varUsage[ tok->strAt(1)] |= (USAGE_WRITE | USAGE_READ);
+
+            else if (Token::Match(tok, "; %var% ;"))
+                varUsage[ tok->strAt(1)] |= USAGE_READ;
+        }
+
+        // Check usage of all variables in the current scope..
+        for (std::map<std::string, unsigned int>::const_iterator it = varUsage.begin(); it != varUsage.end(); ++it)
+        {
+            std::string varname = it->first;
+            unsigned int usage = it->second;
+
+            if (!std::isalpha(varname[0]))
+                continue;
+
+            if (!(usage & USAGE_DECLARE))
+                continue;
+
+            if (usage == USAGE_DECLARE)
+            {
+                unusedVariableError(tok1->next(), varname);
+            }
+
+            else if (!(usage & USAGE_READ))
+            {
+                unreadVariableError(tok1->next(), varname);
+            }
+
+            else if (!(usage & USAGE_WRITE))
+            {
+                unassignedVariableError(tok1->next(), varname);
+            }
+        }
+    }
+}
+
+void CheckOther::unusedVariableError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "unusedVariable", "Unused variable: " + varname);
+}
+
+void CheckOther::unreadVariableError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "unreadVariable", "Variable '" + varname + "' is assigned a value that is never used");
+}
+
+void CheckOther::unassignedVariableError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "unassignedVariable", "Variable '" + varname + "' is not assigned a value");
+}
+//---------------------------------------------------------------------------
+
+
+
+
+
 //---------------------------------------------------------------------------
 // Check scope of variables..
 //---------------------------------------------------------------------------
