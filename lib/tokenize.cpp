@@ -774,9 +774,12 @@ void Tokenizer::simplifyTypedef()
                                 {
                                     if (tok2->next()->str() == "(")
                                         tok2 = tok2->next()->link();
-                                    else
+                                    else if (tok2->next()->str() != "[")
                                     {
                                         tok2 = tok2->next();
+
+                                        while (Token::Match(tok2, "*|&"))
+                                            tok2 = tok2->next();
 
                                         // skip over typedef parameter
                                         if (tok2->next()->str() == "(")

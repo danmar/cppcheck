@@ -170,6 +170,7 @@ private:
         TEST_CASE(simplifyTypedef31);
         TEST_CASE(simplifyTypedef32);
         TEST_CASE(simplifyTypedef33);
+        TEST_CASE(simplifyTypedef34); // ticket #1411
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -3163,6 +3164,26 @@ private:
             "short A :: B :: funB ( ) { return b ; } "
             "int A :: B :: C :: funC ( ) { return c ; } "
             "long A :: B :: C :: D :: funD ( ) { return d ; }";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef34()
+    {
+        // ticket #1411
+        const char code[] = "class X { };\n"
+                            "typedef X (*foofunc)(const X&);\n"
+                            "int main()\n"
+                            "{\n"
+                            "    foofunc *Foo = new foofunc[2];\n"
+                            "}";
+        const char expected[] =
+            "class X { } ; "
+            "; "
+            "int main ( ) "
+            "{ "
+            "X ( * * Foo ) ( const X & ) = new X ( * ) ( const X & ) [ 2 ] ; "
+            "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
