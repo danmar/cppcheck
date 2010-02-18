@@ -171,7 +171,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             }
         }
     }
-    else if (Token::Match(tok, std::string(varnames + " [ %num% ]").c_str()))
+    else if (Token::Match(tok, (varnames + " [ %num% ]").c_str()))
     {
         int index = MathLib::toLongNumber(tok->strAt(2 + varc));
         if (index < 0 || index >= size)
@@ -216,7 +216,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                 }
             }
         }
-        else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), std::string(varnames + " [ %num% ]").c_str()))
+        else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), (varnames + " [ %num% ]").c_str()))
         {
             int index = MathLib::toLongNumber(tok->strAt(3 + varc));
             if (index < 0 || index >= size)
@@ -280,8 +280,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         }
         else if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets"))
         {
-            if (Token::Match(tok->next(), std::string("( " + varnames + " , %num% , %num% )").c_str()) ||
-                Token::Match(tok->next(), std::string("( %var% , " + varnames + " , %num% )").c_str()))
+            if (Token::Match(tok->next(), ("( " + varnames + " , %num% , %num% )").c_str()) ||
+                Token::Match(tok->next(), ("( %var% , " + varnames + " , %num% )").c_str()))
             {
                 const std::string num  = tok->strAt(varc + 6);
                 if (MathLib::toLongNumber(num) < 0 || MathLib::toLongNumber(num) > total_size)
@@ -357,14 +357,14 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             {
                 max_counter_value = min_counter_value;
                 min_counter_value = MathLib::toString<long>(value + 1);
-                value = MathLib::toLongNumber(max_counter_value.c_str());
+                value = MathLib::toLongNumber(max_counter_value);
                 strindextoken = tok2->tokAt(2);
             }
             else if (Token::Match(tok2, "%num% <= %varid% ;", counter_varid))
             {
                 max_counter_value = min_counter_value;
                 min_counter_value = tok2->str();
-                value = MathLib::toLongNumber(max_counter_value.c_str());
+                value = MathLib::toLongNumber(max_counter_value);
                 strindextoken = tok2->tokAt(2);
             }
             else
@@ -373,7 +373,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             }
 
             // Get index variable and stopsize.
-            const char *strindex = strindextoken->str().c_str();
+            const std::string strindex = strindextoken->str();
             bool condition_out_of_bounds = true;
             if (value <= size)
                 condition_out_of_bounds = false;
@@ -677,13 +677,13 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
                 if (parlevel == 1)
                 {
-                    if (varid > 0 && Token::Match(tok2, std::string("[(,] %varid% [,)]").c_str(), varid))
+                    if (varid > 0 && Token::Match(tok2, "[(,] %varid% [,)]", varid))
                     {
                         ++par;
                         tok1 = tok2->next();
                         break;
                     }
-                    else if (varid == 0 &&  Token::Match(tok2, std::string("[(,] " + varnames + " [,)]").c_str()))
+                    else if (varid == 0 &&  Token::Match(tok2, ("[(,] " + varnames + " [,)]").c_str()))
                     {
                         ++par;
                         tok1 = tok2->tokAt(varc + 1);
