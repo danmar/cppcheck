@@ -73,3 +73,17 @@ Alias('coverage',[test],[
 	'rm test/*.gcda',
 	'rm test/*.gcno',
 	'rm lcov.info'])
+
+Help("""
+       Type: 'scons'             - cppcheck (cli)
+             'scons cppcheck'    - cppcheck (cli)
+             'scons gui'         - gui_cppcheck
+             'scons testrunner'  - testrunner
+             'scons test'        - testrunner + execute tests
+             'scons all'         - gui+cppcheck+testrunner
+             'scons release'     - cppcheck release version
+             'scons release gui' - cppcheck+gui release versions
+             'scons coverage'    - coverage report
+             'scons -c all'      - clean all
+       """)
+
