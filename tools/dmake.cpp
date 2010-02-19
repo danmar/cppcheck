@@ -80,28 +80,37 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
     }
 }
 
+static void getCppFiles(std::vector<std::string> &files, const std::string &path)
+{
+    FileLister::recursiveAddFiles(files, path, true);
+
+    // only get *.cpp files..
+    for (std::vector<std::string>::iterator it = files.begin(); it != files.end();)
+    {
+        if (it->find(".cpp") == std::string::npos)
+            it = files.erase(it);
+        else
+            ++it;
+    }
+}
+
 int main()
 {
     // Get files..
     std::vector<std::string> libfiles;
-    FileLister::recursiveAddFiles(libfiles, "lib/", true);
+    getCppFiles(libfiles, "lib/");
 
     std::vector<std::string> clifiles;
-    FileLister::recursiveAddFiles(clifiles, "cli/", true);
+    getCppFiles(clifiles, "cli/");
 
     std::vector<std::string> testfiles;
-    FileLister::recursiveAddFiles(testfiles, "test/", true);
+    getCppFiles(testfiles, "test/");
 
     std::ofstream fout("Makefile");
 
     // more warnings.. -Wfloat-equal -Wcast-qual -Wsign-conversion -Wlogical-op
     fout << "CXXFLAGS=-Wall -Wextra -pedantic -g\n";
     fout << "CXX=g++\n";
-    fout << "BIN=${DESTDIR}/usr/bin\n\n";
-    fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml\n";
-    fout << "DB2MAN=/usr/share/sgml/docbook/stylesheet/xsl/nwalsh/manpages/docbook.xsl\n";
-    fout << "XP=xsltproc -''-nonet -''-param man.charmap.use.subset \"0\"\n";
-    fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
     fout << "\n###### Object Files\n\n";
     fout << "LIBOBJ =     " << objfile(libfiles[0]);
@@ -126,16 +135,15 @@ int main()
     fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
-    fout << "tools:\ttools/dmake\n\n";
-    fout << "tools/dmake:\ttools/dmake.cpp\tlib/filelister.cpp\tlib/filelister.h\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o tools/dmake tools/dmake.cpp lib/filelister.cpp $(LDFLAGS)\n\n";
     fout << "clean:\n";
-    fout << "\trm -f lib/*.o cli/*.o test/*.o testrunner cppcheck tools/dmake\n\n";
-    fout << "man:\t$(MAN_SOURCE)\n";
-    fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
-    fout << "install:\tcppcheck\n";
-    fout << "\tinstall -d ${BIN}\n";
-    fout << "\tinstall cppcheck ${BIN}\n\n";
+#ifdef _WIN32
+    fout << "\tdel lib\*.o\n"
+         << "\tdel cli\*.o\n"
+         << "\tdel test\*.o\n"
+         << "\tdel *.exe\n";
+#else
+    fout << "\trm -f lib/*.o cli/*.o test/*.o testrunner cppcheck\n\n";
+#endif
 
     fout << "\n###### Build\n\n";
 
