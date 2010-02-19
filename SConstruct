@@ -12,6 +12,10 @@ if "gcc" in libEnv["TOOLS"]:
 	elif 'coverage' in COMMAND_LINE_TARGETS:
 		libEnv.Append(CCFLAGS = ['-g', '-fprofile-arcs', '-ftest-coverage'])
 		libEnv.Append(LINKFLAGS = ['-g', '-fprofile-arcs', '-ftest-coverage'])
+	elif 'ccwin32' in COMMAND_LINE_TARGETS:
+		libEnv.Replace(CXX = 'i586-mingw32msvc-g++')
+		libEnv.Replace(CCFLAGS = ['-O3'])
+		libEnv.Replace(LIBS = ['shlwapi'])
 	else:
 		libEnv.Append(CCFLAGS = ['-g','-O0'])
 
@@ -62,6 +66,10 @@ Alias('all',[testrunner,cppcheck,gui])
 # Release
 Alias('release',[cppcheck])
 
+# ccwin32 (Cross compile win32 in Linux)
+ccwin32 = Alias('ccwin32',[cppcheck],Move('cppcheck.exe','cppcheck'))
+Clean(ccwin32,'cppcheck.exe')
+
 # Coverage
 Alias('coverage',[test],[
 	'rm -r coverage_report',
@@ -84,6 +92,7 @@ Help("""
              'scons release'     - cppcheck release version
              'scons release gui' - cppcheck+gui release versions
              'scons coverage'    - coverage report
+             'scons ccwin32'     - Cross compile win32 (cli) in Linux
              'scons -c all'      - clean all
        """)
 
