@@ -4801,8 +4801,8 @@ bool Tokenizer::simplifyCalculations()
             MathLib::isInt(tok->str()) &&
             MathLib::isInt(tok->tokAt(2)->str()))
         {
-            const std::string prev(tok->previous() ? tok->strAt(-1) : "");
-            const std::string after(tok->tokAt(3) ? tok->strAt(3) : "");
+            const std::string prev(tok->previous() ? tok->strAt(-1).c_str() : "");
+            const std::string after(tok->tokAt(3) ? tok->strAt(3).c_str() : "");
             if ((prev == "(" || prev == "&&" || prev == "||") && (after == ")" || after == "&&" || after == "||"))
             {
                 const int op1(MathLib::toLongNumber(tok->str()));

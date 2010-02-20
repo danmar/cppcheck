@@ -455,7 +455,7 @@ void CheckMemoryLeakInFunction::parse_noreturn()
             tok = tok->link();
         if (tok->str() == "(")
         {
-            const std::string function_name((tok->previous() && tok->previous()->isName()) ? tok->strAt(-1) : "");
+            const std::string function_name((tok->previous() && tok->previous()->isName()) ? tok->strAt(-1).c_str() : "");
 
             tok = tok->link();
 
