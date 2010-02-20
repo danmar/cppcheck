@@ -71,6 +71,7 @@ private:
         TEST_CASE(ifAddBraces7);
         TEST_CASE(ifAddBraces9);
         TEST_CASE(ifAddBraces10);
+        TEST_CASE(ifAddBraces11);
 
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
@@ -630,6 +631,14 @@ private:
         // ticket #1361
         const char code[] = "{ DEBUG(if (x) y; else z); }";
         const char expected[] = "{ DEBUG ( if ( x ) y ; else z ) ; }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void ifAddBraces11()
+    {
+        // ticket #1361
+        const char code[] = "{ if (x) if (y) ; else ; }";
+        const char expected[] = "{ if ( x ) { if ( y ) { ; } else { ; } } }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 

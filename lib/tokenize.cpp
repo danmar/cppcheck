@@ -3194,11 +3194,14 @@ void Tokenizer::simplifyIfAddBraces()
         tok = tok->next();
         Token *tempToken = tok;
 
+        bool innerIf = Token::simpleMatch(tempToken->next(), "if");
+
         // insert close brace..
         // In most cases it would work to just search for the next ';' and insert a closing brace after it.
         // But here are special cases..
         // * if (cond) for (;;) break;
         // * if (cond1) if (cond2) { }
+        // * if (cond1) if (cond2) ; else ;
         int parlevel = 0;
         int indentlevel = 0;
         while ((tempToken = tempToken->next()) != NULL)
@@ -3235,7 +3238,17 @@ void Tokenizer::simplifyIfAddBraces()
             }
 
             else if (indentlevel == 0 && parlevel == 0 && tempToken->str() == ";")
-                break;
+            {
+                if (!innerIf)
+                    break;
+
+                if (Token::Match(tempToken, "; else if"))
+                    ;
+                else if (Token::Match(tempToken, "; else"))
+                    innerIf = false;
+                else
+                    break;
+            }
         }
 
         if (tempToken)
