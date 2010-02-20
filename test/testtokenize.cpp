@@ -196,6 +196,8 @@ private:
 
         TEST_CASE(removedeclspec);
         TEST_CASE(cpp0xtemplate);
+
+        TEST_CASE(arraySize);
     }
 
 
@@ -3049,6 +3051,29 @@ private:
                            "  fn2<int>();\n"
                            "}\n";
         ASSERT_EQUALS(";\n\n\nint main ( )\n{\nfn2<int> ( ) ;\n}void fn2<int> ( int t = [ ] { return 1 ; } ( ) )\n{ }", tokenizeAndStringify(code));
+    }
+
+    std::string arraySize_(const std::string &code)
+    {
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code.c_str());
+        tokenizer.tokenize(istr, "test.cpp");
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        {
+            if (tok->isName())
+                ostr << " ";
+            ostr << tok->str();
+        }
+
+        return ostr.str();
+    }
+
+    void arraySize()
+    {
+        ASSERT_EQUALS("; int a[3]={1,2,3};", arraySize_(";int a[]={1,2,3};"));
     }
 };
 

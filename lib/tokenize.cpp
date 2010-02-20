@@ -1062,6 +1062,8 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         return false;
     }
 
+    arraySize();
+
     simplifyDoWhileAddBraces();
     simplifyIfAddBraces();
 
@@ -1222,6 +1224,29 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     return true;
 }
 //---------------------------------------------------------------------------
+
+/** Specify array size if it hasn't been given.. */
+
+void Tokenizer::arraySize()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var% [ ] = {"))
+        {
+            unsigned int sz = 1;
+            const Token *tok2 = tok->tokAt(5);
+            while (Token::Match(tok2, "%any% ,"))
+            {
+                sz++;
+                tok2 = tok2->tokAt(2);
+            }
+
+            if (Token::Match(tok2, "%any% } ;"))
+                tok->next()->insertToken(MathLib::toString<long>(sz));
+        }
+    }
+}
+
 
 /**
  * is the token pointing at a template parameters block..
@@ -3144,6 +3169,7 @@ bool Tokenizer::removeReduntantConditions()
 
     return ret;
 }
+
 
 void Tokenizer::simplifyIfAddBraces()
 {
