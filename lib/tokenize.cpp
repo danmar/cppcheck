@@ -4606,7 +4606,9 @@ bool Tokenizer::simplifyKnownVariables()
                     else if (tok3->str() == "{" && tok3->previous()->str() == ")")
                     {
                         // There is a possible loop after the assignment. Try to skip it.
-                        bailOutFromLoop = tok3->link();
+                        if (tok3->previous()->link() &&
+                            !Token::simpleMatch(tok3->previous()->link()->previous(), "if"))
+                            bailOutFromLoop = tok3->link();
                         continue;
                     }
                     else if (tok3->str() == "}" && tok3->link() && tok3->link()->previous()->str() == ")")
