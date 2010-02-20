@@ -424,6 +424,9 @@ private:
      */
     void duplicateEnumError(const Token *tok1, const Token *tok2, const std::string & type);
 
+    bool duplicateTypedef(Token **tokPtr, const Token *name);
+    void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type);
+
     /** Disable assignment operator */
     Tokenizer &operator=(const Tokenizer &);
 

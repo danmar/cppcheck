@@ -366,21 +366,126 @@ void Tokenizer::createTokens(std::istream &code)
     }
 }
 
-// check if this statement is a typedef definition
-static bool duplicateTypedef(const Token * tok)
+void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type)
 {
-    // check for a typedef end of definition
-    if (tok && tok->next() && Token::Match(tok->next(), ";|,|["))
-    {
-        // scan backwards for the end of the previous statement
-        while (tok && tok->previous() && !Token::Match(tok->previous(), ";|{"))
-        {
-            if (tok->str() == "typedef")
-                return true;
+    if (!(_settings && _settings->_checkCodingStyle))
+        return;
 
-            tok = tok->previous();
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    ErrorLogger::ErrorMessage::FileLocation loc;
+    loc.line = tok1->linenr();
+    loc.file = file(tok1);
+    locationList.push_back(loc);
+    loc.line = tok2->linenr();
+    loc.file = file(tok2);
+    locationList.push_back(loc);
+
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           "style",
+                                           std::string(type + " '" + tok2->str() +
+                                                       "' hides typedef with same name"),
+                                           "variableHidingTypedef");
+
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
+}
+
+// check if this statement is a duplicate definition
+bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
+{
+    // check for an end of definition
+    const Token * tok = *tokPtr;
+    if (tok && tok->next() && Token::Match(tok->next(), ";|,|[|=|)|>"))
+    {
+        const Token * end = tok->next();
+
+        if (end->str() == "[")
+        {
+            end = end->link()->next();
+        }
+        else if (end->str() == ",")
+        {
+            // find end of definition
+            int level = 0;
+            while (end && end->next() && (!Token::Match(end->next(), ";|)|>") ||
+                                          (end->next()->str() == ")" && level == 0)))
+            {
+                if (end->next()->str() == "(")
+                    level++;
+                else if (end->next()->str() == ")")
+                    level--;
+
+                end = end->next();
+            }
+        }
+
+        if (end)
+        {
+            if (Token::Match(end, ") {")) // function parameter ?
+            {
+                // look backwards
+                if (Token::Match(tok->previous(), "%type%") &&
+                    !Token::Match(tok->previous(), "return|new|const"))
+                {
+                    duplicateTypedefError(*tokPtr, name, "Function parameter");
+                    // duplicate definition so skip entire function
+                    *tokPtr = end->next()->link();
+                    return true;
+                }
+            }
+            else if (end->str() == ">") // template parameter ?
+            {
+                // look backwards
+                if (Token::Match(tok->previous(), "%type%") &&
+                    !Token::Match(tok->previous(), "return|new|const"))
+                {
+                    // duplicate definition so skip entire template
+                    while (end && end->str() != "{")
+                        end = end->next();
+                    if (end)
+                    {
+                        duplicateTypedefError(*tokPtr, name, "Template parameter");
+                        *tokPtr = end->link();
+                        return true;
+                    }
+                }
+            }
+            else
+            {
+                // look backwards
+                if (Token::Match(tok->previous(), "typedef|}") ||
+                    (Token::Match(tok->previous(), "%type%") &&
+                     !Token::Match(tok->previous(), "return|new|const")))
+                {
+                    // scan backwards for the end of the previous statement
+                    int level = (tok->previous()->str() == "}") ? 1 : 0;
+                    while (tok && tok->previous() && (!Token::Match(tok->previous(), ";|{") || (level != 0)))
+                    {
+                        if (tok->previous()->str() == "typedef")
+                        {
+                            duplicateTypedefError(*tokPtr, name, "Typedef");
+                            return true;
+                        }
+                        else if (tok->previous()->str() == "enum")
+                        {
+                            duplicateTypedefError(*tokPtr, name, "Enum");
+                            return true;
+                        }
+                        else if (tok->previous()->str() == "{")
+                            level--;
+
+                        tok = tok->previous();
+                    }
+
+                    duplicateTypedefError(*tokPtr, name, "Variable");
+                    return true;
+                }
+            }
         }
     }
+
     return false;
 }
 
@@ -479,7 +584,7 @@ void Tokenizer::simplifyTypedef()
             tok = tok3;
         }
 
-        std::string typeName;
+        Token *typeName;
         std::list<std::string> pointers;
         Token *typeStart = 0;
         Token *typeEnd = 0;
@@ -566,7 +671,7 @@ void Tokenizer::simplifyTypedef()
         if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%"))
         {
             // found the type name
-            typeName = tok->strAt(offset++);
+            typeName = tok->tokAt(offset++);
 
             // check for array
             if (tok->tokAt(offset) && tok->tokAt(offset)->str() == "[")
@@ -608,7 +713,7 @@ void Tokenizer::simplifyTypedef()
             {
                 functionPtr = tok->tokAt(offset + 1)->str() == "*";
                 functionRef = tok->tokAt(offset + 1)->str() == "&";
-                typeName = tok->strAt(offset + 2);
+                typeName = tok->tokAt(offset + 2);
                 argStart = tok->tokAt(offset + 4);
                 argEnd = tok->tokAt(offset + 4)->link();
                 tok = argEnd->next();
@@ -642,7 +747,7 @@ void Tokenizer::simplifyTypedef()
             for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
                 pattern += (spaceInfo[i].className + " :: ");
 
-            pattern += typeName;
+            pattern += typeName->str();
 
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
@@ -656,7 +761,7 @@ void Tokenizer::simplifyTypedef()
                         for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
                             pattern += (spaceInfo[i].className + " :: ");
 
-                        pattern += typeName;
+                        pattern += typeName->str();
                     }
                     else
                     {
@@ -667,15 +772,17 @@ void Tokenizer::simplifyTypedef()
                         if (exitThisScope)
                         {
                             if (scope < exitScope)
-                                exitScope = false;
+                                exitThisScope = false;
                         }
                     }
                 }
                 else if (tok2->str() == "{")
+                {
                     scope++;
+                }
                 else if (Token::Match(tok2, pattern.c_str()))
                 {
-                    if (pattern != typeName) // has a "something ::"
+                    if (pattern != typeName->str()) // has a "something ::"
                     {
                         for (unsigned int i = classLevel; i < spaceInfo.size(); i++)
                         {
@@ -698,19 +805,22 @@ void Tokenizer::simplifyTypedef()
                                 simplifyType = true;
                             }
                         }
-                        else if (!duplicateTypedef(tok2))
+                        else if (duplicateTypedef(&tok2, typeName))
                         {
-                            // Check for enum and typedef with same name.
-                            if (!hasTemplate && tok2->tokAt(-1)->str() != typeStart->str())
-                                simplifyType = true;
-                            else if (hasTemplate)
-                                simplifyType = true;
+                            exitScope = scope;
+
+                            // skip to end of scope if not already there
+                            if (tok2->str() != "}")
+                            {
+                                while (tok2 && tok2->next()->str() != "}")
+                                {
+                                    tok2 = tok2->next();
+                                }
+                            }
                         }
                         else
                         {
-                            // Typedef with the same name.
-                            exitThisScope = true;
-                            exitScope = scope;
+                            simplifyType = true;
                         }
                     }
                 }
@@ -868,7 +978,7 @@ void Tokenizer::simplifyTypedef()
 
                 if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%"))
                 {
-                    typeName = tok->strAt(offset++);
+                    typeName = tok->tokAt(offset++);
 
                     if (tok->tokAt(offset) && tok->tokAt(offset)->str() == "[")
                     {
@@ -5062,7 +5172,7 @@ void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            "style",
                                            std::string(type + " '" + tok2->str() +
-                                                       "' hides enumerator of same name"),
+                                                       "' hides enumerator with same name"),
                                            "variableHidingEnum");
 
     if (_errorLogger)

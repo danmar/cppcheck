@@ -171,6 +171,7 @@ private:
         TEST_CASE(simplifyTypedef32);
         TEST_CASE(simplifyTypedef33);
         TEST_CASE(simplifyTypedef34); // ticket #1411
+        TEST_CASE(simplifyTypedef35);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -3188,6 +3189,98 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
     }
 
+    // Check simplifyTypedef
+    void checkSimplifyTypedef(const char code[])
+    {
+        // Tokenize..
+        Settings settings;
+        settings._showAll = true;
+        settings._checkCodingStyle = true;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        errout.str("");
+        tokenizer.tokenize(istr, "test.cpp");
+    }
+
+    void simplifyTypedef35()
+    {
+        const char code[] = "typedef int A;\n"
+                            "class S\n"
+                            "{\n"
+                            "public:\n"
+                            "    typedef float A;\n"
+                            "    A a;\n"
+                            "    virtual void fun(A x);\n"
+                            "};\n"
+                            "void S::fun(S::A) { };\n"
+                            "class S1 : public S\n"
+                            "{\n"
+                            "public:\n"
+                            "    void fun(S::A) { }\n"
+                            "};\n"
+                            "struct T\n"
+                            "{\n"
+                            "    typedef A B;\n"
+                            "    B b;\n"
+                            "};\n"
+                            "float fun1(float A) { return A; }\n"
+                            "float fun2(float a) { float A = a++; return A; }\n"
+                            "float fun3(int a)\n"
+                            "{\n"
+                            "    typedef struct { int a; } A;\n"
+                            "    A s; s.a = a;\n"
+                            "    return s.a;\n"
+                            "}\n"
+                            "int main()\n"
+                            "{\n"
+                            "    A a = 0;\n"
+                            "    S::A s = fun1(a) + fun2(a) - fun3(a);\n"
+                            "    return a + s;\n"
+                            "}";
+
+        const char expected[] = "; "
+                                "class S "
+                                "{ "
+                                "public: "
+                                "; "
+                                "float a ; "
+                                "virtual void fun ( float x ) ; "
+                                "} ; "
+                                "void S :: fun ( float ) { } ; "
+                                "class S1 : public S "
+                                "{ "
+                                "public: "
+                                "void fun ( float ) { } "
+                                "} ; "
+                                "struct T "
+                                "{ "
+                                "; "
+                                "int b ; "
+                                "} ; "
+                                "float fun1 ( float A ) { return A ; } "
+                                "float fun2 ( float a ) { float A ; A = a ++ ; return A ; } "
+                                "float fun3 ( int a ) "
+                                "{ "
+                                "struct A { int a ; } ; ; "
+                                "struct A s ; s . a = a ; "
+                                "return s . a ; "
+                                "} "
+                                "int main ( ) "
+                                "{ "
+                                "int a ; a = 0 ; "
+                                "float s ; s = fun1 ( a ) + fun2 ( a ) - fun3 ( a ) ; "
+                                "return a + s ; "
+                                "}";
+
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n"
+                      "[test.cpp:20] -> [test.cpp:1]: (style) Function parameter 'A' hides typedef with same name\n"
+                      "[test.cpp:21] -> [test.cpp:1]: (style) Variable 'A' hides typedef with same name\n"
+                      "[test.cpp:24] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n", errout.str());
+    }
+
     void reverseArraySyntax()
     {
         ASSERT_EQUALS("a [ 13 ]", tok("13[a]"));
@@ -3612,10 +3705,10 @@ private:
                           "{\n"
                           "   EF_Vector<float,6> d;\n"
                           "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n"
-                      "[test.cpp:11] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n"
-                      "[test.cpp:16] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n"
-                      "[test.cpp:23] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator of same name\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator with same name\n"
+                      "[test.cpp:11] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator with same name\n"
+                      "[test.cpp:16] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator with same name\n"
+                      "[test.cpp:23] -> [test.cpp:1]: (style) Template parameter 'S' hides enumerator with same name\n", errout.str());
     }
 
     void enum9()
