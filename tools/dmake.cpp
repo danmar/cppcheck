@@ -138,9 +138,9 @@ int main()
     fout << "clean:\n";
 #ifdef _WIN32
     fout << "\tdel lib\*.o\n"
-         << "\tdel cli\*.o\n"
-         << "\tdel test\*.o\n"
-         << "\tdel *.exe\n";
+    << "\tdel cli\*.o\n"
+    << "\tdel test\*.o\n"
+    << "\tdel *.exe\n";
 #else
     fout << "\trm -f lib/*.o cli/*.o test/*.o testrunner cppcheck\n\n";
 #endif
