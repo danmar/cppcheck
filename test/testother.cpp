@@ -1683,6 +1683,19 @@ private:
                        "    } = { 0, 0 };\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    {\n"
+                       "        union ab {\n"
+                       "            int a,b;\n"
+                       "        }\n"
+                       "        i = 0;\n"
+                       "    }\n"
+                       "    return i;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // enum..
