@@ -3196,6 +3196,9 @@ void Tokenizer::simplifyIfAddBraces()
 
         bool innerIf = Token::simpleMatch(tempToken->next(), "if");
 
+        if (Token::simpleMatch(tempToken->next(), "do {"))
+            tempToken = tempToken->tokAt(2)->link();
+
         // insert close brace..
         // In most cases it would work to just search for the next ';' and insert a closing brace after it.
         // But here are special cases..
