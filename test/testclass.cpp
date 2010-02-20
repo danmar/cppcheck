@@ -89,6 +89,7 @@ private:
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
+        TEST_CASE(constDelete);     // delete member variable => not const
     }
 
     // Check the operator Equal
@@ -1783,6 +1784,16 @@ private:
                    "    int a;\n"
                    "    int &getR() { return a; }\n"
                    "    int *getP() { return &a; }"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // delete member variable => not const (but technically it can, it compiles without errors)
+    void constDelete()
+    {
+        checkConst("class Fred {\n"
+                   "    int *a;\n"
+                   "    void clean() { delete a; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }

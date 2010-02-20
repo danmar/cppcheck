@@ -1449,6 +1449,7 @@ const Token * findParameter(const Token *var, const Token *start, const Token * 
     return 0;
 }
 
+// Can a function be const?
 void CheckClass::checkConst()
 {
     if (!_settings->_checkCodingStyle)
@@ -1566,6 +1567,13 @@ void CheckClass::checkConst()
 
                             // function call..
                             else if (tok3->str() != "return" && Token::Match(tok3, "%var% ("))
+                            {
+                                isconst = false;
+                                break;
+                            }
+
+                            // delete..
+                            else if (tok3->str() == "delete")
                             {
                                 isconst = false;
                                 break;
