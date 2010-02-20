@@ -1586,9 +1586,9 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             }
 
             // Reduce "alloc|dealloc|use|callfunc ; exit ;" => "; exit ;"
-            if (Token::Match(tok2, "alloc|dealloc|use|callfunc ; exit ;"))
+            if (Token::Match(tok2, "[;{}] alloc|dealloc|use|callfunc ; exit ;"))
             {
-                tok2->deleteThis();
+                tok2->deleteNext();
                 done = false;
             }
 
