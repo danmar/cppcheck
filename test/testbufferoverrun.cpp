@@ -953,7 +953,7 @@ private:
               "{\n"
               "    strcpy( abc->str, \"abcdef\" );\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Buffer access out-of-bounds: abc.str\n", errout.str());
     }
 
 
@@ -1574,6 +1574,13 @@ private:
               " strncpy(c,\"hello!\",sizeof(c)+1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("struct AB { char a[10]; };\n"
+              "void foo(AB *ab)\n"
+              "{\n"
+              "    strncpy(x, ab->a, 100);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void unknownType()

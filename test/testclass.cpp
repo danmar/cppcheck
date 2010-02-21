@@ -1798,7 +1798,7 @@ private:
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     // A function that returns LPVOID can't be const
     void constLPVOID()
     {

@@ -81,7 +81,7 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(int size, int index)
         reportError(_callStack, severity, "arrayIndexOutOfBounds", "Array index out of bounds");
 }
 
-void CheckBufferOverrun::bufferOverrun(const Token *tok)
+void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varnames)
 {
     Severity::e severity;
     if (_callStack.size() > 0)
@@ -95,7 +95,15 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok)
         severity = Severity::error;
     }
 
-    reportError(tok, severity, "bufferAccessOutOfBounds", "Buffer access out-of-bounds");
+    std::string v = varnames;
+    while (v.find(" ") != std::string::npos)
+        v.erase(v.find(" "), 1);
+
+    std::string errmsg("Buffer access out-of-bounds");
+    if (!v.empty())
+        errmsg += ": " + v;
+
+    reportError(tok, severity, "bufferAccessOutOfBounds",  errmsg);
 }
 
 void CheckBufferOverrun::dangerousStdCin(const Token *tok)
@@ -273,25 +281,21 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     const std::string num = tok->strAt(6);
                     if (MathLib::toLongNumber(num) < 0 || MathLib::toLongNumber(num) > total_size)
                     {
-                        bufferOverrun(tok);
+                        bufferOverrun(tok, varnames);
                     }
                 }
             }
         }
-        else if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets"))
+        else if (Token::Match(tok, ("memset|memcpy|memmove|memcmp|strncpy|fgets ( " + varnames + " , %num% , %num% )").c_str()) ||
+                 Token::Match(tok, ("memcpy|memcmp ( %var% , " + varnames + " , %num% )").c_str()))
         {
-            if (Token::Match(tok->next(), ("( " + varnames + " , %num% , %num% )").c_str()) ||
-                Token::Match(tok->next(), ("( %var% , " + varnames + " , %num% )").c_str()))
+            const std::string num  = tok->strAt(varc + 6);
+            if (MathLib::toLongNumber(num) < 0 || MathLib::toLongNumber(num) > total_size)
             {
-                const std::string num  = tok->strAt(varc + 6);
-                if (MathLib::toLongNumber(num) < 0 || MathLib::toLongNumber(num) > total_size)
-                {
-                    bufferOverrun(tok);
-                }
+                bufferOverrun(tok, varnames);
             }
             continue;
         }
-
 
         // Loop..
         if (Token::simpleMatch(tok, "for ("))
@@ -503,7 +507,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
                 if (condition_out_of_bounds && Token::Match(tok2, pattern.str().c_str(), varid))
                 {
-                    bufferOverrun(tok2);
+                    bufferOverrun(tok2, varid > 0 ? "" : varnames.c_str());
                     break;
                 }
 
@@ -556,7 +560,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             size_t len = Token::getStrLength(tok->tokAt(varc + 4));
             if (len >= static_cast<size_t>(total_size))
             {
-                bufferOverrun(tok);
+                bufferOverrun(tok, varid > 0 ? "" : varnames.c_str());
                 continue;
             }
         }

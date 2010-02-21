@@ -1490,7 +1490,7 @@ void CheckClass::checkConst()
                     continue;
 
                 // don't warn if type is LP..
-                if (tok2->str().compare(0,2,"LP") == 0)
+                if (tok2->str().compare(0, 2, "LP") == 0)
                     continue;
 
                 // member function?
