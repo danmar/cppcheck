@@ -142,6 +142,9 @@ private:
     /** Insert array size where it isn't given */
     void arraySize();
 
+    /** Simplify labels */
+    void labels();
+
     /** Remove redundant assignment */
     void removeRedundantAssignment();
 

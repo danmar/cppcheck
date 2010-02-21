@@ -1062,7 +1062,11 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         return false;
     }
 
+    // specify array size..
     arraySize();
+
+    // simplify labels..
+    labels();
 
     simplifyDoWhileAddBraces();
     simplifyIfAddBraces();
@@ -1243,6 +1247,36 @@ void Tokenizer::arraySize()
 
             if (Token::Match(tok2, "%any% } ;"))
                 tok->next()->insertToken(MathLib::toString<long>(sz));
+        }
+    }
+}
+
+/** simplify labels in the code.. add an ";" */
+
+void Tokenizer::labels()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, ") const| {"))
+        {
+            // Simplify labels in the executable scope..
+            unsigned int indentlevel = 0;
+            while (0 != (tok = tok->next()))
+            {
+                // indentations..
+                if (tok->str() == "{")
+                    ++indentlevel;
+                else if (tok->str() == "}")
+                {
+                    if (indentlevel <= 1)
+                        break;
+                    --indentlevel;
+                }
+
+                // simplify label..
+                if (Token::Match(tok, "[;{}] %var% : %var%"))
+                    tok->tokAt(2)->insertToken(";");
+            }
         }
     }
 }
@@ -5059,6 +5093,8 @@ void Tokenizer::simplifyGoto()
 
             tok->deleteThis();
             tok->deleteThis();
+            if (Token::Match(tok, "; %any%"))
+                tok->deleteThis();
 
             // This label is at the end of the function.. replace all matching goto statements..
             for (std::list<Token *>::iterator it = gotos.begin(); it != gotos.end(); ++it)

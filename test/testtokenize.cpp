@@ -198,6 +198,8 @@ private:
         TEST_CASE(cpp0xtemplate);
 
         TEST_CASE(arraySize);
+
+        TEST_CASE(labels);
     }
 
 
@@ -3074,6 +3076,17 @@ private:
     void arraySize()
     {
         ASSERT_EQUALS("; int a[3]={1,2,3};", arraySize_(";int a[]={1,2,3};"));
+    }
+
+    std::string labels_(const std::string &code)
+    {
+        // the arraySize_ does what we want currently..
+        return arraySize_(code);
+    }
+
+    void labels()
+    {
+        ASSERT_EQUALS(" void f(){ ab:; a=0;}", labels_("void f() { ab: a=0; }"));
     }
 };
 
