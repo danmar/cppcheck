@@ -467,44 +467,38 @@ public:
 void CheckOther::functionVariableUsage()
 {
     // Parse all executing scopes..
-    const Token *tok1 = _tokenizer->tokens();
-    if (!tok1)
-        return;
-
-    while ((tok1 = Token::findmatch(tok1->next(), ") const| {")) != NULL)
+    for (const Token *token = Token::findmatch(_tokenizer->tokens(), ") const| {"); token;)
     {
+        // goto "{"
+        while (token->str() != "{")
+            token = token->next();
+
+        // First token for the current scope..
+        const Token * const tok1 = token;
+
+        // Find next scope that will be checked next time..
+        token = Token::findmatch(token->link(), ") const| {");
+
         // Varname, usage {1=declare, 2=read, 4=write}
         std::map<std::string, VariableUsage> varUsage;
 
-        int indentlevel = 0;
-        for (const Token *tok = tok1->next(); tok; tok = tok->next())
+        unsigned int indentlevel = 0;
+        for (const Token *tok = tok1; tok; tok = tok->next())
         {
             if (tok->str() == "{")
                 ++indentlevel;
             else if (tok->str() == "}")
             {
-                --indentlevel;
-                if (indentlevel <= 0)
+                if (indentlevel <= 1)
                     break;
+                --indentlevel;
             }
             else if (Token::Match(tok, "struct|union|class {") ||
                      Token::Match(tok, "struct|union|class %type% {"))
             {
-                int indentlevel0 = indentlevel;
-
                 while (tok->str() != "{")
                     tok = tok->next();
-
-                do
-                {
-                    if (tok->str() == "{")
-                        indentlevel++;
-                    else if (tok->str() == "}")
-                        indentlevel--;
-                    tok = tok->next();
-                }
-                while (tok && indentlevel > indentlevel0);
-
+                tok = tok->link();
                 if (! tok)
                     break;
             }
@@ -527,6 +521,9 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, ">>|& %var%"))
                 varUsage[ tok->strAt(1)].use();    // use = read + write
 
+            else if (Token::Match(tok, "[(,] %var% [,)]"))
+                varUsage[ tok->strAt(1)].use();   // use = read + write
+
             else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
                 varUsage[ tok->strAt(1)].read = true;
 
@@ -535,9 +532,6 @@ void CheckOther::functionVariableUsage()
 
             else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
                 varUsage[ tok->str()].read = true;
-
-            else if (Token::Match(tok, "[(,] %var% [,)]"))
-                varUsage[ tok->strAt(1)].use();   // use = read + write
 
             else if (Token::Match(tok, "; %var% ;"))
                 varUsage[ tok->strAt(1)].read = true;
@@ -557,17 +551,17 @@ void CheckOther::functionVariableUsage()
 
             if (usage.unused())
             {
-                unusedVariableError(tok1->next(), varname);
+                unusedVariableError(tok1, varname);
             }
 
             else if (!(usage.read))
             {
-                unreadVariableError(tok1->next(), varname);
+                unreadVariableError(tok1, varname);
             }
 
             else if (!(usage.write))
             {
-                unassignedVariableError(tok1->next(), varname);
+                unassignedVariableError(tok1, varname);
             }
         }
     }
