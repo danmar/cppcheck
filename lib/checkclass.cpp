@@ -1489,6 +1489,10 @@ void CheckClass::checkConst()
                 if (Token::Match(tok2, "static|virtual"))
                     continue;
 
+                // don't warn if type is LP..
+                if (tok2->str().compare(0,2,"LP") == 0)
+                    continue;
+
                 // member function?
                 if (Token::Match(tok2, "%type% %var% (") ||
                     Token::Match(tok2, "%type% %type% %var% (") ||

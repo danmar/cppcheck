@@ -90,6 +90,7 @@ private:
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
         TEST_CASE(constDelete);     // delete member variable => not const
+        TEST_CASE(constLPVOID);     // a function that returns LPVOID can't be const
     }
 
     // Check the operator Equal
@@ -1794,6 +1795,15 @@ private:
         checkConst("class Fred {\n"
                    "    int *a;\n"
                    "    void clean() { delete a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+    
+    // A function that returns LPVOID can't be const
+    void constLPVOID()
+    {
+        checkConst("class Fred {\n"
+                   "    LPVOID a() { return 0; };\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
