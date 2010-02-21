@@ -435,6 +435,35 @@ static bool isOp(const Token *tok)
                  Token::Match(tok, "[+-*/%&!~|^,[])?:]")));
 }
 
+/** Store information about variable usage */
+class VariableUsage
+{
+public:
+    VariableUsage()
+    {
+        declare = false;
+        read = false;
+        write = false;
+    }
+
+    /** variable is used.. set both read+write */
+    void use()
+    {
+        read = true;
+        write = true;
+    }
+
+    /** is variable unused? */
+    bool unused() const
+    {
+        return (read == false && write == false);
+    }
+
+    bool declare;
+    bool read;
+    bool write;
+};
+
 void CheckOther::functionVariableUsage()
 {
     // Parse all executing scopes..
@@ -445,10 +474,7 @@ void CheckOther::functionVariableUsage()
     while ((tok1 = Token::findmatch(tok1->next(), ") const| {")) != NULL)
     {
         // Varname, usage {1=declare, 2=read, 4=write}
-        std::map<std::string, unsigned int> varUsage;
-        static const unsigned int USAGE_DECLARE = 1;
-        static const unsigned int USAGE_READ    = 2;
-        static const unsigned int USAGE_WRITE   = 4;
+        std::map<std::string, VariableUsage> varUsage;
 
         int indentlevel = 0;
         for (const Token *tok = tok1->next(); tok; tok = tok->next())
@@ -483,63 +509,63 @@ void CheckOther::functionVariableUsage()
                     break;
             }
 
-            if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double %var% ;|="))
-                varUsage[ tok->strAt(2)] = USAGE_DECLARE;
+            if (Token::Match(tok, "[;{}] %type% %var% ;|=") && tok->next()->isStandardType())
+                varUsage[tok->strAt(2)].declare = true;
 
-            else if (Token::Match(tok, "[;{}] bool|char|short|int|long|float|double * %var% ;|="))
-                varUsage[ tok->strAt(3)] = USAGE_DECLARE;
+            else if (Token::Match(tok, "[;{}] %type% * %var% ;|=") && tok->next()->isStandardType())
+                varUsage[tok->strAt(3)].declare = true;
 
             else if (Token::Match(tok, "delete|return %var%"))
-                varUsage[ tok->strAt(1)] |= USAGE_READ;
+                varUsage[tok->strAt(1)].read = true;
 
             else if (Token::Match(tok, "%var% ="))
-                varUsage[ tok->str()] |= USAGE_WRITE;
+                varUsage[tok->str()].write = true;
 
             else if (Token::Match(tok, "else %var% ="))
-                varUsage[ tok->strAt(1)] |= USAGE_WRITE;
+                varUsage[ tok->strAt(1)].write = true;
 
             else if (Token::Match(tok, ">>|& %var%"))
-                varUsage[ tok->strAt(1)] |= (USAGE_WRITE | USAGE_READ);
+                varUsage[ tok->strAt(1)].use();    // use = read + write
 
             else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
-                varUsage[ tok->strAt(1)] |= USAGE_READ;
+                varUsage[ tok->strAt(1)].read = true;
 
             else if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
-                varUsage[ tok->strAt(1)] |= USAGE_READ;
+                varUsage[ tok->strAt(1)].read = true;
 
             else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
-                varUsage[ tok->str()] |= USAGE_READ;
+                varUsage[ tok->str()].read = true;
 
             else if (Token::Match(tok, "[(,] %var% [,)]"))
-                varUsage[ tok->strAt(1)] |= (USAGE_WRITE | USAGE_READ);
+                varUsage[ tok->strAt(1)].use();   // use = read + write
 
             else if (Token::Match(tok, "; %var% ;"))
-                varUsage[ tok->strAt(1)] |= USAGE_READ;
+                varUsage[ tok->strAt(1)].read = true;
         }
 
         // Check usage of all variables in the current scope..
-        for (std::map<std::string, unsigned int>::const_iterator it = varUsage.begin(); it != varUsage.end(); ++it)
+        for (std::map<std::string, VariableUsage>::const_iterator it = varUsage.begin(); it != varUsage.end(); ++it)
         {
-            std::string varname = it->first;
-            unsigned int usage = it->second;
+            const std::string &varname = it->first;
+            const VariableUsage &usage = it->second;
 
             if (!std::isalpha(varname[0]))
                 continue;
 
-            if (!(usage & USAGE_DECLARE))
+            if (!(usage.declare))
                 continue;
 
-            if (usage == USAGE_DECLARE)
+            if (usage.unused())
             {
                 unusedVariableError(tok1->next(), varname);
             }
 
-            else if (!(usage & USAGE_READ))
+            else if (!(usage.read))
             {
                 unreadVariableError(tok1->next(), varname);
             }
 
-            else if (!(usage & USAGE_WRITE))
+            else if (!(usage.write))
             {
                 unassignedVariableError(tok1->next(), varname);
             }
