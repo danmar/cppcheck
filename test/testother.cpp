@@ -441,7 +441,7 @@ private:
         strPlusChar("void foo()\n"
                     "{\n"
                     "    int i = 1;\n"
-                    "	 const char* psz = \"Bla\";\n"
+                    "    const char* psz = \"Bla\";\n"
                     "    const std::string str = i + psz;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -1012,6 +1012,13 @@ private:
         checkNullPointer("void foo()\n"
                          "{\n"
                          "    int sz = sizeof((*(struct dummy *)0).x);\n"
+                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNullPointer("void get_offset(long &offset)\n"
+                         "{\n"
+                         "    mystruct * temp; temp = 0;\n"
+                         "    offset = (long)(&(temp->z));\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
 

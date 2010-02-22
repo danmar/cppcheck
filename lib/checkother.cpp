@@ -1521,7 +1521,7 @@ private:
                 dereference(foundError, checks, &tok);
             else if (Token::Match(tok.tokAt(-2), "return * %var%"))
                 dereference(foundError, checks, &tok);
-            else if (Token::Match(tok.next(), ". %var%"))
+            else if (!Token::simpleMatch(tok.tokAt(-2), "& (") && Token::Match(tok.next(), ". %var%"))
                 dereference(foundError, checks, &tok);
             else if (Token::Match(tok.previous(), "[;{}=+-/(,] %var% [ %any% ]"))
                 dereference(foundError, checks, &tok);
