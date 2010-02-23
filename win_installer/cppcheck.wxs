@@ -35,8 +35,8 @@
           <Component Id='readme.txt' Guid='*'>
             <File Id='readme.txt' Name='readme.txt' DiskId='1' Source='..\readme.txt' KeyPath='yes' />
           </Component>
-          <Component Id='manual.pdf' Guid='*'>
-            <File Id='manual.pdf' Name='manual.pdf' DiskId='1' Source='$(var.ManualDir)\manual.pdf' KeyPath='yes'>
+          <Component Id='HtmlHelp' Guid='*'>
+            <File Id='cppcheck.chm' Name='cppcheck.chm' DiskId='1' Source='$(var.ManualDir)\cppcheck.chm' KeyPath='yes'>
               <Shortcut Id='startmenuManual' Directory="ProgramMenuDir" Name="Manual" Advertise="yes" />
             </File>
           </Component>
@@ -61,7 +61,7 @@
         <ComponentRef Id='gui.exe' />
         <ComponentRef Id='authors.txt' />
         <ComponentRef Id='readme.txt' />
-        <ComponentRef Id='manual.pdf' />
+        <ComponentRef Id='HtmlHelp' />
         <ComponentRef Id='ProgramMenuDir' />
       </Feature>
       <Feature Id="CRT" AllowAdvertise="no" Display="hidden" Level="1" Title="Microsoft Visual C++ 2009 Runtime Components ">
