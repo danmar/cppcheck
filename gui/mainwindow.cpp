@@ -84,7 +84,7 @@ MainWindow::MainWindow() :
     connect(mUI.mActionHelpContents, SIGNAL(triggered()), this, SLOT(OpenHelpContents()));
 #else
     // Hide if not Windows
-    mUI.mActionHelpContents.setVisible(false);
+    mUI.mActionHelpContents->setVisible(false);
 #endif
 
     CreateLanguageMenuItems();
