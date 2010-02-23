@@ -1291,6 +1291,8 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filename
                 fileOpened = true;
                 break;
             }
+
+            fin.clear();
         }
 
         if (headerType == 1 && !fileOpened)
