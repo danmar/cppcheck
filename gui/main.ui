@@ -66,7 +66,7 @@
      <x>0</x>
      <y>0</y>
      <width>640</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="mMenuFile">
@@ -101,8 +101,10 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="mActionHelpContents"/>
     <addaction name="mActionLicense"/>
     <addaction name="mActionAuthors"/>
+    <addaction name="separator"/>
     <addaction name="mActionAbout"/>
    </widget>
    <widget class="QMenu" name="mMenuCheck">
@@ -310,6 +312,17 @@
    </property>
    <property name="text">
     <string>&amp;Toolbar</string>
+   </property>
+  </action>
+  <action name="mActionHelpContents">
+   <property name="text">
+    <string>&amp;Contents</string>
+   </property>
+   <property name="statusTip">
+    <string>Open the help contents</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
    </property>
   </action>
  </widget>

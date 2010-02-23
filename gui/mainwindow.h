@@ -179,6 +179,12 @@ protected slots:
     */
     void StopChecking();
 
+    /**
+    * @brief Open help file contents
+    *
+    */
+    void OpenHelpContents();
+
 protected:
 
     /**
@@ -267,6 +273,11 @@ protected:
     * @param text Text added to end of the title.
     */
     void FormatAndSetTitle(const QString &text = QString());
+
+    /**
+    * @brief Show help contents
+    */
+    void OpenHtmlHelpContents();
 
     /**
     * @brief Program settings
