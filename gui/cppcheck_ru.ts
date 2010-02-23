@@ -132,184 +132,199 @@ kate -l(line) (file)</oldsource>
     <message>
         <location filename="main.ui" line="26"/>
         <location filename="mainwindow.cpp" line="221"/>
-        <location filename="mainwindow.cpp" line="491"/>
-        <location filename="mainwindow.cpp" line="596"/>
-        <location filename="mainwindow.cpp" line="614"/>
+        <location filename="mainwindow.cpp" line="487"/>
+        <location filename="mainwindow.cpp" line="590"/>
+        <location filename="mainwindow.cpp" line="608"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="main.ui" line="136"/>
+        <location filename="main.ui" line="135"/>
         <source>Standard</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="255"/>
+        <location filename="main.ui" line="254"/>
         <source>Show possible false positives</source>
         <translation>Показывать возможные ложные срабатывания</translation>
     </message>
     <message>
-        <location filename="main.ui" line="77"/>
+        <location filename="main.ui" line="74"/>
         <source>&amp;File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="main.ui" line="84"/>
+        <location filename="main.ui" line="81"/>
         <source>&amp;View</source>
         <translation>Вид</translation>
     </message>
     <message>
-        <location filename="main.ui" line="113"/>
+        <location filename="main.ui" line="112"/>
         <source>&amp;Check</source>
         <translation>Проверить</translation>
     </message>
     <message>
-        <location filename="main.ui" line="122"/>
+        <location filename="main.ui" line="121"/>
         <source>&amp;Edit</source>
         <translation>Правка</translation>
     </message>
     <message>
-        <location filename="main.ui" line="154"/>
+        <location filename="main.ui" line="153"/>
         <source>&amp;License...</source>
         <translation>Лицензия...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="159"/>
+        <location filename="main.ui" line="158"/>
         <source>A&amp;uthors...</source>
         <translation>Авторы...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="168"/>
+        <location filename="main.ui" line="167"/>
         <source>&amp;About...</source>
         <translation>О программе...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="173"/>
+        <location filename="main.ui" line="172"/>
         <source>&amp;Files...</source>
         <translation>Файлы...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="176"/>
+        <location filename="main.ui" line="175"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="main.ui" line="185"/>
+        <location filename="main.ui" line="184"/>
         <source>&amp;Directory...</source>
         <translation>Каталог...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="188"/>
+        <location filename="main.ui" line="187"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="main.ui" line="197"/>
+        <location filename="main.ui" line="196"/>
         <source>&amp;Recheck files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="200"/>
+        <location filename="main.ui" line="199"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="main.ui" line="209"/>
+        <location filename="main.ui" line="208"/>
         <source>&amp;Stop</source>
         <translation>Остановить</translation>
     </message>
     <message>
-        <location filename="main.ui" line="212"/>
+        <location filename="main.ui" line="211"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="main.ui" line="221"/>
+        <location filename="main.ui" line="220"/>
         <source>&amp;Save results to file...</source>
         <translation>Сохранить отчёт в файл...</translation>
     </message>
     <message>
-        <location filename="main.ui" line="224"/>
+        <location filename="main.ui" line="223"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="main.ui" line="229"/>
+        <location filename="main.ui" line="228"/>
         <source>&amp;Quit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="main.ui" line="238"/>
+        <location filename="main.ui" line="237"/>
         <source>&amp;Clear results</source>
         <translation>Очистить отчёт</translation>
     </message>
     <message>
-        <location filename="main.ui" line="247"/>
+        <location filename="main.ui" line="246"/>
         <source>&amp;Preferences</source>
         <translation>Параметры</translation>
     </message>
     <message>
-        <location filename="main.ui" line="263"/>
+        <location filename="main.ui" line="262"/>
         <source>Show security errors</source>
         <translation>Показывать ошибки безопасности</translation>
     </message>
     <message>
-        <location filename="main.ui" line="271"/>
+        <location filename="main.ui" line="270"/>
         <source>Show style errors</source>
         <translation>Показывать ошибки стиля</translation>
     </message>
     <message>
-        <location filename="main.ui" line="279"/>
+        <location filename="main.ui" line="278"/>
         <source>Show possible style errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.ui" line="287"/>
+        <location filename="main.ui" line="286"/>
         <source>Show common errors</source>
         <translation>Показывать общие ошибки</translation>
     </message>
     <message>
-        <location filename="main.ui" line="292"/>
+        <location filename="main.ui" line="291"/>
         <source>&amp;Check all</source>
         <translation>Отметить все</translation>
     </message>
     <message>
-        <location filename="main.ui" line="297"/>
+        <location filename="main.ui" line="296"/>
         <source>&amp;Uncheck all</source>
         <translation>Сбросить все</translation>
     </message>
     <message>
-        <location filename="main.ui" line="302"/>
+        <location filename="main.ui" line="301"/>
         <source>Collapse &amp;all</source>
         <translation>Свернуть все</translation>
     </message>
     <message>
-        <location filename="main.ui" line="307"/>
+        <location filename="main.ui" line="306"/>
         <source>&amp;Expand all</source>
         <translation>Развернуть все</translation>
     </message>
     <message>
-        <location filename="main.ui" line="315"/>
+        <location filename="main.ui" line="314"/>
         <source>&amp;Toolbar</source>
         <translation>Панель инструментов</translation>
     </message>
     <message>
-        <location filename="main.ui" line="100"/>
+        <location filename="main.ui" line="319"/>
+        <source>&amp;Contents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="322"/>
+        <source>Open the help contents</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="325"/>
+        <source>F1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="main.ui" line="97"/>
         <source>&amp;Language</source>
         <translation>Язык</translation>
     </message>
     <message>
-        <location filename="main.ui" line="105"/>
+        <location filename="main.ui" line="102"/>
         <source>&amp;Help</source>
         <translation>Помощь</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="255"/>
+        <location filename="mainwindow.cpp" line="254"/>
         <source>Select files to check</source>
         <translation>Выберите файлы для проверки</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="269"/>
+        <location filename="mainwindow.cpp" line="268"/>
         <source>Select directory to check</source>
         <translation>Выберите каталог для проверки</translation>
     </message>
@@ -319,54 +334,54 @@ kate -l(line) (file)</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="487"/>
+        <location filename="mainwindow.cpp" line="483"/>
         <source>Cannot exit while checking.
 
 Stop the checking before exiting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="526"/>
+        <location filename="mainwindow.cpp" line="520"/>
         <source>License</source>
         <translation>Лицензия</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="533"/>
+        <location filename="mainwindow.cpp" line="527"/>
         <source>Authors</source>
         <translation>Авторы</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="541"/>
+        <location filename="mainwindow.cpp" line="535"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="543"/>
+        <location filename="mainwindow.cpp" line="537"/>
         <source>Save the report file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="551"/>
+        <location filename="mainwindow.cpp" line="545"/>
         <source>XML files (*.xml)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="557"/>
+        <location filename="mainwindow.cpp" line="551"/>
         <source>Text files (*.txt)</source>
         <translation>Текстовые файлы (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="563"/>
+        <location filename="mainwindow.cpp" line="557"/>
         <source>CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="598"/>
+        <location filename="mainwindow.cpp" line="592"/>
         <source>Cppcheck - %1</source>
         <translation>Cppcheck - %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="615"/>
+        <location filename="mainwindow.cpp" line="609"/>
         <source>Failed to change the language:
 
 %1
