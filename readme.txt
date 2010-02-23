@@ -15,24 +15,10 @@ Compiling
     To build the GUI, you need Qt. The command line tool doesn't have any dependencies.
 
     There are multiple compilation choices:
-      * SCons - cross platform build tool
-      * CMake - cross platform build tool
       * qmake - cross platform build tool - but only the GUI can be built
       * Visual Studio - Windows
-      * g++ (for experts)
-
-
-    Scons
-    =====
-        Scons is a multi platform build tool. Python is required to run it.
-            scons
-
-
-    CMake
-    =====
-        CMake is a multi platform build tool with no dependencies.
-            cmake .
-            make
+      * gnu make
+      * g++
 
 
     qmake
@@ -46,6 +32,11 @@ Compiling
     Visual Studio
     =============
         Use the cppcheck.sln file.
+
+
+    gnu make
+    ========
+            make
 
 
     g++ (for experts)
