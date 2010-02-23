@@ -101,6 +101,7 @@ if (WIN32 AND NOT CYGWIN)
 set(CHECK_LIBS
   ${CHECK_LIBS}
   shlwapi
+  htmlhelp
 )
 endif (WIN32 AND NOT CYGWIN)
 
