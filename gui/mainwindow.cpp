@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDebug>
@@ -44,10 +43,7 @@ MainWindow::MainWindow() :
     mUI.setupUi(this);
     mUI.mResults->Initialize(mSettings, mApplications);
 
-
     mThread = new ThreadHandler(this);
-
-
 
     connect(mUI.mActionQuit, SIGNAL(triggered()), this, SLOT(close()));
     connect(mUI.mActionCheckFiles, SIGNAL(triggered()), this, SLOT(CheckFiles()));
@@ -78,7 +74,6 @@ MainWindow::MainWindow() :
     connect(mUI.mResults, SIGNAL(GotResults()), this, SLOT(ResultsAdded()));
     connect(mUI.mMenuView, SIGNAL(aboutToShow()), this, SLOT(AboutToShowViewMenu()));
 
-
     CreateLanguageMenuItems();
     LoadSettings();
 
@@ -90,8 +85,6 @@ MainWindow::MainWindow() :
     mUI.mActionClearResults->setEnabled(false);
     mUI.mActionSave->setEnabled(false);
     mUI.mActionRecheck->setEnabled(false);
-
-
 
     QStringList args = QCoreApplication::arguments();
     //Remove the application itself
@@ -139,11 +132,8 @@ void MainWindow::CreateLanguageMenuItems()
             this, SLOT(MapLanguage(QAction *)));
 }
 
-
-
 void MainWindow::LoadSettings()
 {
-
     if (mSettings->value(SETTINGS_WINDOW_MAXIMIZED, false).toBool())
     {
         showMaximized();
@@ -154,12 +144,10 @@ void MainWindow::LoadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-
     mUI.mActionShowAll->setChecked(mSettings->value(SETTINGS_SHOW_ALL, true).toBool());
     mUI.mActionShowStyle->setChecked(mSettings->value(SETTINGS_SHOW_STYLE, true).toBool());
     mUI.mActionShowAllStyle->setChecked(mSettings->value(SETTINGS_SHOW_ALL_STYLE, true).toBool());
     mUI.mActionShowErrors->setChecked(mSettings->value(SETTINGS_SHOW_ERRORS, true).toBool());
-
 
     mUI.mResults->ShowResults(SHOW_ALL, mUI.mActionShowAll->isChecked());
     mUI.mResults->ShowResults(SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
@@ -182,7 +170,6 @@ void MainWindow::SaveSettings()
     mSettings->setValue(SETTINGS_WINDOW_WIDTH, size().width());
     mSettings->setValue(SETTINGS_WINDOW_HEIGHT, size().height());
     mSettings->setValue(SETTINGS_WINDOW_MAXIMIZED, isMaximized());
-
 
     mSettings->setValue(SETTINGS_SHOW_ALL, mUI.mActionShowAll->isChecked());
     mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
@@ -240,7 +227,6 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     Settings checkSettings = GetCppcheckSettings();
     mThread->Check(checkSettings, false);
 }
-
 
 QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
 {
@@ -399,8 +385,6 @@ void MainWindow::CheckDone()
         mUI.mActionSave->setEnabled(true);
     }
 
-
-
     // Notify user - if the window is not active - that check is ready
     QApplication::alert(this, 3000);
 }
@@ -442,7 +426,6 @@ void MainWindow::EnableCheckButtons(bool enable)
 
     mUI.mActionCheckDirectory->setEnabled(enable);
 }
-
 
 void MainWindow::ShowAll(bool checked)
 {
@@ -494,8 +477,6 @@ void MainWindow::closeEvent(QCloseEvent *event)
                         this);
 
         msg.exec();
-
-
         event->ignore();
     }
 }
@@ -635,7 +616,6 @@ void MainWindow::SetLanguage(int index)
         }
     }
 }
-
 
 void MainWindow::MapLanguage(QAction *action)
 {
