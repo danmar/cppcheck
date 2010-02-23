@@ -888,7 +888,7 @@ void Tokenizer::simplifyTypedef()
                                     {
                                         tok2 = tok2->next();
 
-                                        while (Token::Match(tok2, "*|&"))
+                                        while (Token::Match(tok2, "*|&") && tok2->next()->str() != ")")
                                             tok2 = tok2->next();
 
                                         // skip over typedef parameter

@@ -172,6 +172,7 @@ private:
         TEST_CASE(simplifyTypedef33);
         TEST_CASE(simplifyTypedef34); // ticket #1411
         TEST_CASE(simplifyTypedef35);
+        TEST_CASE(simplifyTypedef36); // ticket #1434
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -3279,6 +3280,22 @@ private:
                       "[test.cpp:20] -> [test.cpp:1]: (style) Function parameter 'A' hides typedef with same name\n"
                       "[test.cpp:21] -> [test.cpp:1]: (style) Variable 'A' hides typedef with same name\n"
                       "[test.cpp:24] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n", errout.str());
+    }
+
+    void simplifyTypedef36()
+    {
+        // ticket #1434
+        const char code[] = "typedef void (*TIFFFaxFillFunc)();\n"
+                            "void f(va_list ap)\n"
+                            "{\n"
+                            "    *va_arg(ap, TIFFFaxFillFunc*) = 0;\n"
+                            "}";
+        const char expected[] = "; "
+                                "void f ( va_list ap ) "
+                                "{ "
+                                "* va_arg ( ap , void ( * * ) ( ) ) = 0 ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code, false));
     }
 
     void reverseArraySyntax()
