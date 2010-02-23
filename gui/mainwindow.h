@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -34,10 +33,8 @@
 #include "ui_main.h"
 class ThreadHandler;
 
-
 /// @addtogroup GUI
 /// @{
-
 
 /**
 * @brief Main window for cppcheck-gui
@@ -51,8 +48,6 @@ public:
     virtual ~MainWindow();
 
 public slots:
-
-
 
     /**
     * @brief Slot for check files menu item
@@ -155,7 +150,6 @@ protected slots:
     *
     */
     void ResultsAdded();
-
 
     /**
     * @brief Slot for changing the program's language
@@ -284,15 +278,6 @@ protected:
     *
     */
     QSettings *mSettings;
-
-
-
-
-    /**
-    * @brief Results for checking
-    *
-    */
-//    ResultsView mResults;
 
     /**
     * @brief Thread to check files
