@@ -455,7 +455,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
             else
             {
                 // look backwards
-                if (Token::Match(tok->previous(), "typedef|}") ||
+                if (Token::Match(tok->previous(), "typedef|}|>") ||
                     (Token::Match(tok->previous(), "%type%") &&
                      !Token::Match(tok->previous(), "return|new|const")))
                 {
@@ -812,8 +812,14 @@ void Tokenizer::simplifyTypedef()
                             // skip to end of scope if not already there
                             if (tok2->str() != "}")
                             {
-                                while (tok2 && tok2->next()->str() != "}")
+                                int level = 0;
+                                while (tok2 && tok2->next() && (tok2->next()->str() != "}" || level))
                                 {
+                                    if (tok2->next()->str() == "{")
+                                        level++;
+                                    else if (tok2->next()->str() == "}")
+                                        level--;
+
                                     tok2 = tok2->next();
                                 }
                             }

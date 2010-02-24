@@ -173,6 +173,7 @@ private:
         TEST_CASE(simplifyTypedef34); // ticket #1411
         TEST_CASE(simplifyTypedef35);
         TEST_CASE(simplifyTypedef36); // ticket #1434
+        TEST_CASE(simplifyTypedef37); // ticket #1449
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -3296,6 +3297,36 @@ private:
                                 "* va_arg ( ap , void ( * * ) ( ) ) = 0 ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void simplifyTypedef37()
+    {
+        {
+            // ticket #1449
+            const char code[] = "template <class T> class V {};\n"
+                                "typedef V<int> A;\n"
+                                "typedef int B;\n"
+                                "typedef V<int> A;\n"
+                                "typedef int B;";
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:2]: (style) Typedef 'A' hides typedef with same name\n"
+                          "[test.cpp:5] -> [test.cpp:3]: (style) Typedef 'B' hides typedef with same name\n", errout.str());
+        }
+
+        {
+            const char code[] = "typedef int INT;\n"
+                                "void f()\n"
+                                "{\n"
+                                "    INT i; { }\n"
+                                "}";
+            const char expected[] = "; "
+                                    "void f ( ) "
+                                    "{ "
+                                    "int i ; { } "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 
     void reverseArraySyntax()
