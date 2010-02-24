@@ -120,7 +120,7 @@ int main()
                 if (fname.find(".cpp") == std::string::npos)
                     continue;   // shouldn't happen
                 fname.erase(fname.find(".cpp"));
-                fout1 << std::string(11,' ') << "$$PWD/" << fname << ".h";
+                fout1 << std::string(11, ' ') << "$$PWD/" << fname << ".h";
                 if (i < libfiles.size() - 1)
                     fout1 << " \\\n";
             }

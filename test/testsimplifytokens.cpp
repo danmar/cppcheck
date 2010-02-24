@@ -2151,6 +2151,69 @@ private:
             const char code[] = "void foo ( ) { int var ; var = x < y ? y : z ; } ;";
             ASSERT_EQUALS(code, tok(code));
         }
+
+        {
+            const char code[] = "void foo(int x)\n"
+                                "{\n"
+                                " goto A;\n"
+                                "A:\n"
+                                " fooA();\n"
+                                " goto B;\n"
+                                " fooNever();\n"
+                                "B:\n"
+                                " fooB();\n"
+                                " return 3;\n"
+                                "}";
+
+            const char expect[] =   "void foo ( int x ) "
+                                    "{ "
+                                    "fooA ( ) ; "
+                                    "fooB ( ) ; "
+                                    "return 3; "
+                                    "fooA ( ) ; "
+                                    "fooB ( ) ; "
+                                    "return 3 ; "
+                                    "fooNever ( ) ; "
+                                    "fooB ( ) ; "
+                                    "return 3 ; "
+                                    "}";
+
+            TODO_ASSERT_EQUALS(expect, tok(code));
+        }
+
+        {
+            const char code[] = "void foo(int x)\n"
+                                "{\n"
+                                " goto A;\n"
+                                "A:\n"
+                                " fooA();\n"
+                                " if( x ) { goto B; }\n"
+                                " fooNever();\n"
+                                "B:\n"
+                                " fooB();\n"
+                                " return 3;\n"
+                                "}";
+
+            const char expect[] =   "void foo ( int x ) "
+                                    "{ "
+                                    "fooA ( ) ; "
+                                    "if ( x ) { "
+                                    "fooB ( ) ; "
+                                    "return 3 ; } "
+                                    "fooNever ( ) ; "
+                                    "fooB ( ) ; "
+                                    "return 3 ; "
+                                    "fooA ( ) ; "
+                                    "if ( x ) { "
+                                    "fooB ( ) ; "
+                                    "return 3 ; } "
+                                    "fooNever ( ) ; "
+                                    "fooB ( ) ; "
+                                    "return 3 ; "
+                                    "}";
+
+            ASSERT_EQUALS(expect, tok(code));
+        }
     }
 
 
