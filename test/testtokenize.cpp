@@ -1177,25 +1177,32 @@ private:
         }
     }
 
+    std::string tokenizeDebugListing(const std::string &code, bool simplify = false)
+    {
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        if (simplify)
+            tokenizer.simplifyTokenList();
+
+        // result..
+        return tokenizer.tokens()->stringifyList(true);
+    }
+
     void varid1()
     {
         {
-            const std::string code("static int i = 1;\n"
-                                   "void f()\n"
-                                   "{\n"
-                                   "    int i = 2;\n"
-                                   "    for (int i = 0; i < 10; ++i)\n"
-                                   "        i = 3;\n"
-                                   "    i = 4;\n"
-                                   "}\n");
+            const std::string actual = tokenizeDebugListing(
+                                           "static int i = 1;\n"
+                                           "void f()\n"
+                                           "{\n"
+                                           "    int i = 2;\n"
+                                           "    for (int i = 0; i < 10; ++i)\n"
+                                           "        i = 3;\n"
+                                           "    i = 4;\n"
+                                           "}\n");
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // result..
-            const std::string actual(tokenizer.tokens()->stringifyList(true));
             const std::string expected("\n\n##file 0\n"
                                        "1: static int i@1 = 1 ;\n"
                                        "2: void f ( )\n"
@@ -1210,24 +1217,18 @@ private:
         }
 
         {
-            const std::string code("static int i = 1;\n"
-                                   "void f()\n"
-                                   "{\n"
-                                   "    int i = 2;\n"
-                                   "    for (int i = 0; i < 10; ++i)\n"
-                                   "    {\n"
-                                   "      i = 3;\n"
-                                   "    }\n"
-                                   "    i = 4;\n"
-                                   "}\n");
+            const std::string actual = tokenizeDebugListing(
+                                           "static int i = 1;\n"
+                                           "void f()\n"
+                                           "{\n"
+                                           "    int i = 2;\n"
+                                           "    for (int i = 0; i < 10; ++i)\n"
+                                           "    {\n"
+                                           "      i = 3;\n"
+                                           "    }\n"
+                                           "    i = 4;\n"
+                                           "}\n");
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-
-            // result..
-            const std::string actual(tokenizer.tokens()->stringifyList(true));
             const std::string expected("\n\n##file 0\n"
                                        "1: static int i@1 = 1 ;\n"
                                        "2: void f ( )\n"
@@ -1246,20 +1247,14 @@ private:
 
     void varid2()
     {
-        const std::string code("void f()\n"
-                               "{\n"
-                               "    struct ABC abc;\n"
-                               "    abc.a = 3;\n"
-                               "    i = abc.a;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "void f()\n"
+                                       "{\n"
+                                       "    struct ABC abc;\n"
+                                       "    abc.a = 3;\n"
+                                       "    i = abc.a;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
@@ -1273,20 +1268,14 @@ private:
 
     void varid3()
     {
-        const std::string code("static char str[4];\n"
-                               "void f()\n"
-                               "{\n"
-                               "    char str[10];\n"
-                               "    str[0] = 0;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "static char str[4];\n"
+                                       "void f()\n"
+                                       "{\n"
+                                       "    char str[10];\n"
+                                       "    str[0] = 0;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: static char str@1 [ 4 ] ;\n"
                                    "2: void f ( )\n"
@@ -1300,19 +1289,12 @@ private:
 
     void varid4()
     {
-        const std::string code("void f(const unsigned int a[])\n"
-                               "{\n"
-                               "    int i = *(a+10);\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "void f(const unsigned int a[])\n"
+                                       "{\n"
+                                       "    int i = *(a+10);\n"
+                                       "}\n", true);
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( const int a@1 [ ] )\n"
                                    "2: {\n"
@@ -1324,19 +1306,12 @@ private:
 
     void varid5()
     {
-        const std::string code("void f()\n"
-                               "{\n"
-                               "    int a,b;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "void f()\n"
+                                       "{\n"
+                                       "    int a,b;\n"
+                                       "}\n", true);
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
@@ -1349,19 +1324,12 @@ private:
 
     void varid6()
     {
-        const std::string code("int f(int a, int b)\n"
-                               "{\n"
-                               "    return a+b;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "int f(int a, int b)\n"
+                                       "{\n"
+                                       "    return a+b;\n"
+                                       "}\n", true);
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: int f ( int a@1 , int b@2 )\n"
                                    "2: {\n"
@@ -1374,21 +1342,15 @@ private:
 
     void varid7()
     {
-        const std::string code("void func()\n"
-                               "{\n"
-                               "char a[256] = \"test\";\n"
-                               "{\n"
-                               "char b[256] = \"test\";\n"
-                               "}\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "void func()\n"
+                                       "{\n"
+                                       "char a[256] = \"test\";\n"
+                                       "{\n"
+                                       "char b[256] = \"test\";\n"
+                                       "}\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void func ( )\n"
                                    "2: {\n"
@@ -1404,20 +1366,13 @@ private:
 
     void varidReturn()
     {
-        const std::string code("int f()\n"
-                               "{\n"
-                               "    int a;\n"
-                               "    return a;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "int f()\n"
+                                       "{\n"
+                                       "    int a;\n"
+                                       "    return a;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: int f ( )\n"
                                    "2: {\n"
@@ -1430,19 +1385,13 @@ private:
 
     void varid8()
     {
-        const std::string code("void func()\n"
-                               "{\n"
-                               "    std::string str(\"test\");\n"
-                               "    str.clear();\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "void func()\n"
+                                       "{\n"
+                                       "    std::string str(\"test\");\n"
+                                       "    str.clear();\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void func ( )\n"
                                    "2: {\n"
@@ -1455,15 +1404,9 @@ private:
 
     void varid9()
     {
-        const std::string code("typedef int INT32;\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "typedef int INT32;\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: ;\n");
 
@@ -1472,19 +1415,13 @@ private:
 
     void varid10()
     {
-        const std::string code("void foo()\n"
-                               "{\n"
-                               "    int abc;\n"
-                               "    struct abc abc1;\n"
-                               "}");
+        const std::string actual = tokenizeDebugListing(
+                                       "void foo()\n"
+                                       "{\n"
+                                       "    int abc;\n"
+                                       "    struct abc abc1;\n"
+                                       "}");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void foo ( )\n"
                                    "2: {\n"
@@ -1497,15 +1434,9 @@ private:
 
     void varid11()
     {
-        const std::string code("class Foo;\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "class Foo;\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Foo ;\n");
 
@@ -1514,18 +1445,12 @@ private:
 
     void varid12()
     {
-        const std::string code("static void a()\n"
-                               "{\n"
-                               "    class Foo *foo;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "static void a()\n"
+                                       "{\n"
+                                       "    class Foo *foo;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: static void a ( )\n"
                                    "2: {\n"
@@ -1537,20 +1462,13 @@ private:
 
     void varid13()
     {
-        const std::string code("void f()\n"
-                               "{\n"
-                               "    int a; int b;\n"
-                               "    a = a;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "void f()\n"
+                                       "{\n"
+                                       "    int a; int b;\n"
+                                       "    a = a;\n"
+                                       "}\n", true);
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
@@ -1564,20 +1482,14 @@ private:
     void varid14()
     {
         // Overloaded operator*
-        const std::string code("void foo()\n"
-                               "{\n"
-                               "A a;\n"
-                               "B b;\n"
-                               "b * a;\n"
-                               "}");
+        const std::string actual = tokenizeDebugListing(
+                                       "void foo()\n"
+                                       "{\n"
+                                       "A a;\n"
+                                       "B b;\n"
+                                       "b * a;\n"
+                                       "}");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void foo ( )\n"
                                    "2: {\n"
@@ -1591,25 +1503,18 @@ private:
 
     void varidStl()
     {
-        const std::string code("list<int> ints;\n"
-                               "list<int>::iterator it;\n"
-                               "std::vector<std::string> dirs;\n"
-                               "std::map<int, int> coords;\n"
-                               "std::tr1::unordered_map<int, int> xy;\n"
-                               "std::list<boost::wave::token_id> tokens;\n"
-                               "static std::vector<CvsProcess*> ex1;\n"
-                               "extern std::vector<CvsProcess*> ex2;\n"
-                               "std::map<int, 1> m;\n"
-                              );
+        const std::string actual = tokenizeDebugListing(
+                                       "list<int> ints;\n"
+                                       "list<int>::iterator it;\n"
+                                       "std::vector<std::string> dirs;\n"
+                                       "std::map<int, int> coords;\n"
+                                       "std::tr1::unordered_map<int, int> xy;\n"
+                                       "std::list<boost::wave::token_id> tokens;\n"
+                                       "static std::vector<CvsProcess*> ex1;\n"
+                                       "extern std::vector<CvsProcess*> ex2;\n"
+                                       "std::map<int, 1> m;\n"
+                                   );
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: list < int > ints@1 ;\n"
                                    "2: list < int > :: iterator it@2 ;\n"
@@ -1627,20 +1532,13 @@ private:
 
     void varid_delete()
     {
-        const std::string code("void f()\n"
-                               "{\n"
-                               "  int *a;\n"
-                               "  delete a;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "void f()\n"
+                                       "{\n"
+                                       "  int *a;\n"
+                                       "  delete a;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
@@ -1654,17 +1552,10 @@ private:
     void varid_functions()
     {
         {
-            const std::string code("void f();\n"
-                                   "void f(){}\n");
+            const std::string actual = tokenizeDebugListing(
+                                           "void f();\n"
+                                           "void f(){}\n");
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.setVarId();
-
-            // result..
-            const std::string actual(tokenizer.tokens()->stringifyList(true));
             const std::string expected("\n\n##file 0\n"
                                        "1: void f ( ) ;\n"
                                        "2: void f ( ) { }\n");
@@ -1673,19 +1564,12 @@ private:
         }
 
         {
-            const std::string code("A f(3);\n"
-                                   "A f2(true);\n"
-                                   "A g();\n"
-                                   "A e(int c);\n");
+            const std::string actual = tokenizeDebugListing(
+                                           "A f(3);\n"
+                                           "A f2(true);\n"
+                                           "A g();\n"
+                                           "A e(int c);\n");
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.setVarId();
-
-            // result..
-            const std::string actual(tokenizer.tokens()->stringifyList(true));
             const std::string expected("\n\n##file 0\n"
                                        "1: A f@1 ( 3 ) ;\n"
                                        "2: A f2@2 ( true ) ;\n"
@@ -1696,27 +1580,20 @@ private:
         }
 
         {
-            const std::string code("void f1(int &p)\n"
-                                   "{\n"
-                                   "    p = 0;\n"
-                                   "}\n"
-                                   "void f2(std::string &str)\n"
-                                   "{\n"
-                                   "   str.clear();\n"
-                                   "}\n"
-                                   "void f3(const std::string &s)\n"
-                                   "{\n"
-                                   "    s.size();\n"
-                                   "}\n");
+            const std::string actual = tokenizeDebugListing(
+                                           "void f1(int &p)\n"
+                                           "{\n"
+                                           "    p = 0;\n"
+                                           "}\n"
+                                           "void f2(std::string &str)\n"
+                                           "{\n"
+                                           "   str.clear();\n"
+                                           "}\n"
+                                           "void f3(const std::string &s)\n"
+                                           "{\n"
+                                           "    s.size();\n"
+                                           "}\n");
 
-            // tokenize..
-            Tokenizer tokenizer;
-            std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
-            tokenizer.setVarId();
-
-            // result..
-            const std::string actual(tokenizer.tokens()->stringifyList(true));
             const std::string expected("\n\n##file 0\n"
                                        "1: void f1 ( int & p@1 )\n"
                                        "2: {\n"
@@ -1738,21 +1615,14 @@ private:
 
     void varid_reference_to_containers()
     {
-        const std::string code("void f()\n"
-                               "{\n"
-                               "    std::vector<int> b;\n"
-                               "    std::vector<int> &a = b;\n"
-                               "    std::vector<int> *c = &b;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "void f()\n"
+                                       "{\n"
+                                       "    std::vector<int> b;\n"
+                                       "    std::vector<int> &a = b;\n"
+                                       "    std::vector<int> *c = &b;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: void f ( )\n"
                                    "2: {\n"
@@ -1766,21 +1636,14 @@ private:
 
     void varid_in_class()
     {
-        const std::string code("class Foo\n"
-                               "{\n"
-                               "public:\n"
-                               "    std::string name1;\n"
-                               "    std::string name2;\n"
-                               "};\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "class Foo\n"
+                                       "{\n"
+                                       "public:\n"
+                                       "    std::string name1;\n"
+                                       "    std::string name2;\n"
+                                       "};\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Foo\n"
                                    "2: {\n"
@@ -1794,20 +1657,13 @@ private:
 
     void varid_operator()
     {
-        const std::string code("class Foo\n"
-                               "{\n"
-                               "public:\n"
-                               "    void operator=(const Foo &);\n"
-                               "};\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "class Foo\n"
+                                       "{\n"
+                                       "public:\n"
+                                       "    void operator=(const Foo &);\n"
+                                       "};\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Foo\n"
                                    "2: {\n"
@@ -1820,31 +1676,24 @@ private:
 
     void varidclass1()
     {
-        const std::string code("class Fred\n"
-                               "{\n"
-                               "private:\n"
-                               "    int i;\n"
-                               "\n"
-                               "    void foo1();\n"
-                               "    void foo2()\n"
-                               "    {\n"
-                               "        ++i;\n"
-                               "    }\n"
-                               "}\n"
-                               "\n"
-                               "Fred::foo1()\n"
-                               "{\n"
-                               "    i = 0;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "class Fred\n"
+                                       "{\n"
+                                       "private:\n"
+                                       "    int i;\n"
+                                       "\n"
+                                       "    void foo1();\n"
+                                       "    void foo2()\n"
+                                       "    {\n"
+                                       "        ++i;\n"
+                                       "    }\n"
+                                       "}\n"
+                                       "\n"
+                                       "Fred::foo1()\n"
+                                       "{\n"
+                                       "    i = 0;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Fred\n"
                                    "2: {\n"
@@ -1869,27 +1718,20 @@ private:
 
     void varidclass2()
     {
-        const std::string code("class Fred\n"
-                               "{ void f(); };\n"
-                               "\n"
-                               "void A::foo1()\n"
-                               "{\n"
-                               "    int i = 0;\n"
-                               "}\n"
-                               "\n"
-                               "void Fred::f()\n"
-                               "{\n"
-                               "    i = 0;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "class Fred\n"
+                                       "{ void f(); };\n"
+                                       "\n"
+                                       "void A::foo1()\n"
+                                       "{\n"
+                                       "    int i = 0;\n"
+                                       "}\n"
+                                       "\n"
+                                       "void Fred::f()\n"
+                                       "{\n"
+                                       "    i = 0;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Fred\n"
                                    "2: { void f ( ) ; } ;\n"
@@ -1910,27 +1752,20 @@ private:
 
     void varidclass3()
     {
-        const std::string code("class Fred\n"
-                               "{ int i; void f(); };\n"
-                               "\n"
-                               "void Fred::f()\n"
-                               "{\n"
-                               "    i = 0;\n"
-                               "}\n"
-                               "\n"
-                               "void A::f()\n"
-                               "{\n"
-                               "    i = 0;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "class Fred\n"
+                                       "{ int i; void f(); };\n"
+                                       "\n"
+                                       "void Fred::f()\n"
+                                       "{\n"
+                                       "    i = 0;\n"
+                                       "}\n"
+                                       "\n"
+                                       "void A::f()\n"
+                                       "{\n"
+                                       "    i = 0;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Fred\n"
                                    "2: { int i@1 ; void f ( ) ; } ;\n"
@@ -1951,23 +1786,16 @@ private:
 
     void varidclass4()
     {
-        const std::string code("class Fred\n"
-                               "{ int i; void f(); };\n"
-                               "\n"
-                               "void Fred::f()\n"
-                               "{\n"
-                               "    if (i) { }\n"
-                               "    i = 0;\n"
-                               "}\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "class Fred\n"
+                                       "{ int i; void f(); };\n"
+                                       "\n"
+                                       "void Fred::f()\n"
+                                       "{\n"
+                                       "    if (i) { }\n"
+                                       "    i = 0;\n"
+                                       "}\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class Fred\n"
                                    "2: { int i@1 ; void f ( ) ; } ;\n"
@@ -1983,22 +1811,15 @@ private:
 
     void varidclass5()
     {
-        const std::string code("class A { };\n"
-                               "class B\n"
-                               "{\n"
-                               "    A *a;\n"
-                               "    B() : a(new A)\n"
-                               "    { }\n"
-                               "};\n");
+        const std::string actual = tokenizeDebugListing(
+                                       "class A { };\n"
+                                       "class B\n"
+                                       "{\n"
+                                       "    A *a;\n"
+                                       "    B() : a(new A)\n"
+                                       "    { }\n"
+                                       "};\n");
 
-        // tokenize..
-        Tokenizer tokenizer;
-        std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
-
-        // result..
-        const std::string actual(tokenizer.tokens()->stringifyList(true));
         const std::string expected("\n\n##file 0\n"
                                    "1: class A { } ;\n"
                                    "2: class B\n"
@@ -2010,8 +1831,6 @@ private:
 
         ASSERT_EQUALS(expected, actual);
     }
-
-
 
     void file1()
     {
