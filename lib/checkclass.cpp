@@ -924,7 +924,12 @@ void CheckClass::operatorEqRetRefThis()
                             // check for return of reference to this
                             if (tok1->str() == "return")
                             {
+                                std::string cast("( " + name->str() + " & )");
+                                if (Token::Match(tok1->next(), cast.c_str()))
+                                    tok1 = tok1->tokAt(4);
+
                                 if (!(Token::Match(tok1->tokAt(1), "(| * this ;|=") ||
+                                      Token::Match(tok1->tokAt(1), "(| * this +=") ||
                                       Token::Match(tok1->tokAt(1), "operator = (")))
                                     operatorEqRetRefThisError(tok);
                             }
@@ -976,7 +981,12 @@ void CheckClass::operatorEqRetRefThis()
                             // check for return of reference to this
                             if (tok1->str() == "return")
                             {
+                                std::string cast("( " + name->str() + " & )");
+                                if (Token::Match(tok1->next(), cast.c_str()))
+                                    tok1 = tok1->tokAt(4);
+
                                 if (!(Token::Match(tok1->tokAt(1), "(| * this ;|=") ||
+                                      Token::Match(tok1->tokAt(1), "(| * this +=") ||
                                       Token::Match(tok1->tokAt(1), "operator = (")))
                                     operatorEqRetRefThisError(tok);
                             }

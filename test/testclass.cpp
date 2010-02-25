@@ -72,6 +72,7 @@ private:
         TEST_CASE(operatorEqRetRefThis1);
         TEST_CASE(operatorEqRetRefThis2); // ticket #1323
         TEST_CASE(operatorEqRetRefThis3); // ticket #1405
+        TEST_CASE(operatorEqRetRefThis4); // ticket #1451
         TEST_CASE(operatorEqToSelf1);   // single class
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
@@ -307,6 +308,17 @@ private:
             "  inline A &operator =(int *other) { return (*this;) };\n"
             "  inline A &operator =(long *other) { return (*this = 0;) };\n"
             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqRetRefThis4()
+    {
+        // ticket # 1451
+        checkOpertorEqRetRefThis(
+            "P& P::operator = (const P& pc)\n"
+            "{\n"
+            "  return (P&)(*this += pc);\n"
+            "}");
         ASSERT_EQUALS("", errout.str());
     }
 
