@@ -131,6 +131,8 @@ private:
         TEST_CASE(varidclass3);
         TEST_CASE(varidclass4);
         TEST_CASE(varidclass5);
+        TEST_CASE(varidclass6);
+        TEST_CASE(varidclass7);
 
         TEST_CASE(file1);
         TEST_CASE(file2);
@@ -1830,6 +1832,56 @@ private:
                                    "7: } ;\n");
 
         ASSERT_EQUALS(expected, actual);
+    }
+
+    void varidclass6()
+    {
+        const std::string actual = tokenizeDebugListing(
+                                       "class A\n"
+                                       "{\n"
+                                       "  public:\n"
+                                       "  static char buf[20];\n"
+                                       "};\n"
+                                       "char A::buf[20];\n"
+                                       "int main()\n"
+                                       "{\n"
+                                       "  char buf[2];\n"
+                                       "  A::buf[10] = 0;\n"
+                                       "}");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: class A\n"
+                                   "2: {\n"
+                                   "3: public:\n"
+                                   "4: static char buf@1 [ 20 ] ;\n"
+                                   "5: } ;\n"
+                                   "6: char A :: buf [ 20 ] ;\n"
+                                   "7: int main ( )\n"
+                                   "8: {\n"
+                                   "9: char buf@2 [ 2 ] ;\n"
+                                   "10: A :: buf@1 [ 10 ] = 0 ;\n"
+                                   "11: }\n");
+
+        TODO_ASSERT_EQUALS(expected, actual);
+    }
+
+    void varidclass7()
+    {
+        const std::string actual = tokenizeDebugListing(
+                                       "int main()\n"
+                                       "{\n"
+                                       "  char buf[2];\n"
+                                       "  A::buf[10] = 0;\n"
+                                       "}");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: int main ( )\n"
+                                   "2: {\n"
+                                   "3: char buf@1 [ 2 ] ;\n"
+                                   "4: A :: buf [ 10 ] = 0 ;\n"
+                                   "5: }\n");
+
+        TODO_ASSERT_EQUALS(expected, actual);
     }
 
     void file1()
