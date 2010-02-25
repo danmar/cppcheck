@@ -1030,6 +1030,17 @@ private:
                          "    f();\n"
                          "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Possible null pointer dereference: f\n", errout.str());
+
+        checkNullPointer("static void foo()\n"
+                         "{\n"
+                         "    int *p = 0;\n"
+                         "    int *p2 = 0;\n"
+                         "    int r = *p;\n"
+                         "    int r2 = *p2;\n"
+                         "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n"
+                           "[test.cpp:6]: (error) Null pointer dereference\n", errout.str());
+
     }
 
     void nullpointer7()
