@@ -196,6 +196,7 @@ private:
         TEST_CASE(enum7);
         TEST_CASE(enum8);
         TEST_CASE(enum9); // ticket 1404
+        TEST_CASE(enum10); // ticket 1445
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -3778,6 +3779,7 @@ private:
         std::istringstream istr(code);
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
     }
 
     void enum8()
@@ -3835,6 +3837,19 @@ private:
                           "  enum { XX };\n"
                           "  XX::Set(std::numeric_limits<X>::digits());\n"
                           "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum10()
+    {
+        // ticket 1445
+        const char code[] = "enum {\n"
+                            "SHELL_SIZE = sizeof(union { int i; char *cp; double d; }) - 1, \n"
+                            "} e = SHELL_SIZE;";
+        const char expected[] = "; int e ; e = sizeof ( union { int i ; char * cp ; double d ; } ) - 1 ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyEnum(code);
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -5423,9 +5423,9 @@ void Tokenizer::simplifyEnum()
                             tok1 = tok1->next();
 
                             // Check for links and fix them up
-                            if (tok1->str() == "(" || tok1->str() == "[")
+                            if (tok1->str() == "(" || tok1->str() == "[" || tok1->str() == "{")
                                 links.push(tok1);
-                            else if (tok1->str() == ")" || tok1->str() == "]")
+                            else if (tok1->str() == ")" || tok1->str() == "]" || tok1->str() == "}")
                             {
                                 Token * link = links.top();
 
@@ -5469,12 +5469,20 @@ void Tokenizer::simplifyEnum()
                     enumValueStart = tok1;
                     enumValueEnd = tok1;
                     int level = 0;
-                    while (enumValueEnd->next() && (enumValueEnd->next()->str() != "}") &&
-                           ((enumValueEnd->next()->str() != ",") || level))
+                    if (enumValueEnd->str() == "(" ||
+                        enumValueEnd->str() == "[" ||
+                        enumValueEnd->str() == "{")
+                        level++;
+                    while (enumValueEnd->next() &&
+                           (!Token::Match(enumValueEnd->next(), "}|,") || level))
                     {
-                        if (enumValueEnd->next()->str() == "(" || enumValueEnd->next()->str() == "[")
+                        if (enumValueEnd->next()->str() == "(" ||
+                            enumValueEnd->next()->str() == "[" ||
+                            enumValueEnd->next()->str() == "{")
                             level++;
-                        else if (enumValueEnd->next()->str() == ")" || enumValueEnd->next()->str() == "]")
+                        else if (enumValueEnd->next()->str() == ")" ||
+                                 enumValueEnd->next()->str() == "]" ||
+                                 enumValueEnd->next()->str() == "}")
                             level--;
 
                         enumValueEnd = enumValueEnd->next();
@@ -5547,7 +5555,7 @@ void Tokenizer::simplifyEnum()
                             {
                                 std::stack<Token *> links;
                                 tok2->str(enumValueStart->strAt(0));
-                                if (tok2->str() == "(" || tok2->str() == "[")
+                                if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")
                                     links.push(tok2);
                                 Token * nextToken = enumValueStart->next();
                                 for (; nextToken != enumValueEnd->next(); nextToken = nextToken->next())
@@ -5556,9 +5564,9 @@ void Tokenizer::simplifyEnum()
                                     tok2 = tok2->next();
 
                                     // Check for links and fix them up
-                                    if (tok2->str() == "(" || tok2->str() == "[")
+                                    if (tok2->str() == "(" || tok2->str() == "[" || tok2->str() == "{")
                                         links.push(tok2);
-                                    else if (tok2->str() == ")" || tok2->str() == "]")
+                                    else if (tok2->str() == ")" || tok2->str() == "]" || tok2->str() == "}")
                                     {
                                         Token * link = links.top();
 
@@ -5580,6 +5588,16 @@ void Tokenizer::simplifyEnum()
                         }
                     }
                 }
+            }
+
+            // check for a variable definition: enum {} x;
+            if (end->next()->str() != ";")
+            {
+                Token * tok = end;
+
+                tok->insertToken(";");
+                tok = tok->next();
+                tok->insertToken("int");
             }
 
             if (enumType)
