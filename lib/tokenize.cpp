@@ -5087,7 +5087,7 @@ void Tokenizer::simplifyGoto()
                     ++lev;
                 }
 
-                if (Token::Match(tok2, "%var% :"))
+                if (Token::Match(tok2, "%var% :") || tok2->str() == "goto")
                 {
                     break;
                 }
@@ -5115,7 +5115,8 @@ void Tokenizer::simplifyGoto()
                     token->deleteNext();
 
                     // Insert the statements..
-                    bool ret = false;
+                    bool ret = false;	// is there return
+                    bool ret2 = false;  // is there return in indentlevel 0
                     std::list<Token*> links;
                     std::list<Token*> links2;
                     std::list<Token*> links3;
@@ -5133,11 +5134,19 @@ void Tokenizer::simplifyGoto()
                             ++lev;
                         }
                         else if (tok2->str() == "return")
+                        {
                             ret = true;
+                            if (indentlevel == 1 && lev == 0)
+                                ret2 = true;
+                        }
                         token->insertToken(tok2->str().c_str());
                         token = token->next();
                         token->linenr(tok2->linenr());
                         token->varId(tok2->varId());
+                        if (ret2 && tok2->str() == ";")
+                        {
+                            break;
+                        }
                         if (token->str() == "(")
                         {
                             links.push_back(token);

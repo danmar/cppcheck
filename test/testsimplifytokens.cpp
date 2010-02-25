@@ -2156,21 +2156,21 @@ private:
         {
             const char code[] = "void foo(int x)\n"
                                 "{\n"
-                                " goto A;\n"
+                                "    goto A;\n"
                                 "A:\n"
-                                " fooA();\n"
-                                " goto B;\n"
-                                " fooNever();\n"
+                                "    fooA();\n"
+                                "    goto B;\n"
+                                "    fooNever();\n"
                                 "B:\n"
-                                " fooB();\n"
-                                " return 3;\n"
+                                "    fooB();\n"
+                                "    return 3;\n"
                                 "}";
 
             const char expect[] =   "void foo ( int x ) "
                                     "{ "
                                     "fooA ( ) ; "
                                     "fooB ( ) ; "
-                                    "return 3; "
+                                    "return 3 ; "
                                     "fooA ( ) ; "
                                     "fooB ( ) ; "
                                     "return 3 ; "
@@ -2179,7 +2179,7 @@ private:
                                     "return 3 ; "
                                     "}";
 
-            TODO_ASSERT_EQUALS(expect, tok(code));
+            ASSERT_EQUALS(expect, tok(code));
         }
 
         {
