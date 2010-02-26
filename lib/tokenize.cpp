@@ -5293,6 +5293,10 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
         }
         else if (end->str() == ",")
         {
+            // check for function argument
+            if (Token::Match(tok->previous(), "(|,"))
+                return false;
+
             // find end of definition
             int level = 0;
             while (end && end->next() && (!Token::Match(end->next(), ";|)|>") ||
@@ -5305,6 +5309,12 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
 
                 end = end->next();
             }
+        }
+        else if (end->str() == ")")
+        {
+            // check of function argument
+            if (tok->previous()->str() == ",")
+                return false;
         }
 
         if (end)
@@ -5343,7 +5353,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
             else
             {
                 // look backwards
-                if (tok->previous()->str() == "enum" ||
+                if (Token::Match(tok->previous(), "enum|,") ||
                     (Token::Match(tok->previous(), "%type%") &&
                      tok->previous()->str() != "return"))
                 {

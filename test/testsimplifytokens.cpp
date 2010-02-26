@@ -197,6 +197,7 @@ private:
         TEST_CASE(enum8);
         TEST_CASE(enum9); // ticket 1404
         TEST_CASE(enum10); // ticket 1445
+        TEST_CASE(enum11);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -3851,6 +3852,25 @@ private:
 
         checkSimplifyEnum(code);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum11()
+    {
+        const char code[] = "int main()\n"
+                            "{\n"
+                            "  enum { u, v };\n"
+                            "  A u = 1, v = 2;\n"
+                            "}";
+        const char expected[] = "int main ( ) "
+                                "{ "
+                                "; "
+                                "A u ; u = 1 ; A v ; v = 2 ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyEnum(code);
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) Variable 'u' hides enumerator with same name\n"
+                      "[test.cpp:4] -> [test.cpp:3]: (style) Variable 'v' hides enumerator with same name\n", errout.str());
     }
 
     void removestd()
