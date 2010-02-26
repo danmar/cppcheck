@@ -270,7 +270,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
                 _settings._outputFormat = "{file}({line}): {severity}: {message}";
         }
 
-        // Include paths
+        // Checking threads
         else if (strcmp(argv[i], "-j") == 0 ||
                  strncmp(argv[i], "-j", 2) == 0)
         {
