@@ -174,6 +174,8 @@ private:
         TEST_CASE(simplifyTypedef35);
         TEST_CASE(simplifyTypedef36); // ticket #1434
         TEST_CASE(simplifyTypedef37); // ticket #1449
+        TEST_CASE(simplifyTypedef38);
+        TEST_CASE(simplifyTypedef39);
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -3392,6 +3394,28 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void simplifyTypedef38()
+    {
+        const char code[] = "typedef C A;\n"
+                            "struct AB : public A, public B { };";
+        const char expected[] = "; struct AB : public C , public B { } ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef39()
+    {
+        const char code[] = "typedef int A;\n"
+                            "template <const A, volatile A>::value;";
+        const char expected[] = "; ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void reverseArraySyntax()

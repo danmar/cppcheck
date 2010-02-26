@@ -407,6 +407,10 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
         }
         else if (end->str() == ",")
         {
+            // check for derived class
+            if (Token::Match(tok->previous(), "public|private|protected"))
+                return false;
+
             // find end of definition
             int level = 0;
             while (end && end->next() && (!Token::Match(end->next(), ";|)|>") ||
@@ -439,7 +443,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
             {
                 // look backwards
                 if (Token::Match(tok->previous(), "%type%") &&
-                    !Token::Match(tok->previous(), "return|new|const"))
+                    !Token::Match(tok->previous(), "return|new|const|volatile"))
                 {
                     // duplicate definition so skip entire template
                     while (end && end->str() != "{")
