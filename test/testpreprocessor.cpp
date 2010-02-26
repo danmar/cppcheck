@@ -1667,6 +1667,23 @@ private:
             ASSERT_EQUALS("\n\nint a = 1;\n", actual);
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            const char filedata[] = "void foo()\n"
+                                    "{\n"
+                                    "\n"
+                                    "\n"
+                                    "\n"
+                                    "int a = 0;\n"
+                                    "printf(Text\");\n"
+                                    "}\n";
+
+            // expand macros..
+            errout.str("");
+            const std::string actual(OurPreprocessor::expandMacros(filedata, this));
+
+            ASSERT_EQUALS("[file.cpp:7]: (error) No pair for character (\"). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
+        }
     }
 
     void unicodeInCode()

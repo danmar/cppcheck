@@ -1856,10 +1856,11 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
             std::string::size_type pos = 0;
 
             // scan line to see if there are any macros to expand..
+            unsigned int tmpLinenr = 0;
             while (pos < line.size())
             {
                 if (line[pos] == '\n')
-                    ++linenr;
+                    ++tmpLinenr;
 
                 // skip strings..
                 if (line[pos] == '\"' || line[pos] == '\'')
@@ -1872,7 +1873,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     if (pos >= line.size())
                     {
                         writeError(filename,
-                                   linenr,
+                                   linenr + tmpLinenr,
                                    errorLogger,
                                    "noQuoteCharPair",
                                    std::string("No pair for character (") + ch + "). Can't process file. File is either invalid or unicode, which is currently not supported.");
@@ -2031,7 +2032,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     {
                         // Syntax error in code
                         writeError(filename,
-                                   linenr,
+                                   linenr + tmpLinenr,
                                    errorLogger,
                                    "syntaxError",
                                    std::string("Syntax error. Not enough parameters for macro '") + macro->name() + "'.");
