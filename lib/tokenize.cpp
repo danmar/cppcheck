@@ -2978,6 +2978,8 @@ bool Tokenizer::simplifyTokenList()
     simplifyNestedStrcat();
     simplifyWhile0();
 
+    simplifyIfAssign();    // could be affected by simplifyIfNot
+
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "case %any% : %var%"))

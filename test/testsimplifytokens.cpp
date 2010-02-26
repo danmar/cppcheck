@@ -1700,6 +1700,8 @@ private:
                       tok("struct hfs_bnode *node;"
                           "struct hfs_btree *tree;"
                           "while ((node = tree->node_hash[i++])) { }"));
+        ASSERT_EQUALS("char * s ; s = new char [ 10 ] ; while ( ! s ) { s = new char [ 10 ] ; }",
+                      tok("char *s; while (0 == (s=new char[10])) { }"));
     }
 
 
