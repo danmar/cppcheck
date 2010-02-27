@@ -21,19 +21,19 @@ win32 {
 
 RESOURCES = gui.qrc
 FORMS = main.ui \
-	resultsview.ui \
-	application.ui \
-	settings.ui \
-	file.ui	\
-	about.ui
-	
+    resultsview.ui \
+    application.ui \
+    settings.ui \
+    file.ui \
+    about.ui
+
 TRANSLATIONS =  cppcheck_fi.ts \
                 cppcheck_nl.ts \
-		cppcheck_en.ts \
-		cppcheck_se.ts \
-		cppcheck_de.ts \
-		cppcheck_pl.ts \
-		cppcheck_ru.ts 
+                cppcheck_en.ts \
+                cppcheck_se.ts \
+                cppcheck_de.ts \
+                cppcheck_pl.ts \
+                cppcheck_ru.ts 
 
 # Windows-specific options
 CONFIG += embed_manifest_exe
@@ -77,9 +77,9 @@ SOURCES += main.cpp \
            csvreport.cpp
 
 win32 {
-	RC_FILE = cppcheck-gui.rc
-	HEADERS += ../cli/resource.h
-	LIBS += -lshlwapi -lhtmlhelp
+    RC_FILE = cppcheck-gui.rc
+    HEADERS += ../cli/resource.h
+    LIBS += -lshlwapi -lhtmlhelp
 }
 
 # run lrelease before build
