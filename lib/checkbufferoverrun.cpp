@@ -149,6 +149,33 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok)
 // Check array usage..
 //---------------------------------------------------------------------------
 
+/**
+ * @brief This is a helper class to be used with std::find_if
+ */
+class TokenStrEquals
+{
+public:
+    /**
+     * @param str Token::str() is compared against this.
+     */
+    TokenStrEquals(const std::string &str)
+            : value(str)
+    {
+    }
+
+    /**
+     * Called automatically by std::find_if
+     * @param tok Token inside the list
+     */
+    bool operator()(const Token *tok) const
+    {
+        return value == tok->str();
+    }
+
+private:
+    const std::string value;
+};
+
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid)
 {
     std::string varnames;
@@ -732,7 +759,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
                     ftok = ftok ? ftok->next() : 0;
 
                     // Don't make recursive checking..
-                    if (std::find(_callStack.begin(), _callStack.end(), tok1) != _callStack.end())
+                    if (std::find_if(_callStack.begin(), _callStack.end(), TokenStrEquals(tok1->str())) != _callStack.end())
                         continue;
 
                     // Check variable usage in the function..

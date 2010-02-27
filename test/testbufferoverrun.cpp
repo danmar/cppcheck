@@ -143,6 +143,7 @@ private:
 
         TEST_CASE(terminateStrncpy1);
         TEST_CASE(terminateStrncpy2);
+        TEST_CASE(recursive_long_time);
     }
 
 
@@ -1622,8 +1623,34 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) After a strncpy() the buffer should be zero-terminated\n", errout.str());
     }
 
-
-
+    void recursive_long_time()
+    {
+        // Just test that recursive check doesn't take long time
+        check("char *f2 ( char *b )\n"
+              "{\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "    f2( b );\n"
+              "}\n"
+              "void f()\n"
+              "{\n"
+              "    char a[10];\n"
+              "    f2(a);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestBufferOverrun)
