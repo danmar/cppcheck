@@ -181,7 +181,13 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
     {
         unsigned char ch = str[i];
         if (ch & 0x80)
-            throw std::runtime_error("The code contains characters that are unhandled");
+        {
+			std::ostringstream errmsg;
+			errmsg << "The code contains characters that are unhandled. "
+			       << "Neither unicode nor extended ascii are supported. "
+			       << "(line=" << lineno << ", character code=" << std::hex << (int(ch) & 0xff) << ")";
+            throw std::runtime_error(errmsg.str());
+        }
 
         if (str.compare(i, 6, "#error") == 0 || str.compare(i, 8, "#warning") == 0)
         {
