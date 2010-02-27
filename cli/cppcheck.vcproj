@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="cppcheck"
 	ProjectGUID="{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}"
+	RootNamespace="cppcheck"
 	Keyword="Qt4VSv1.0"
 	TargetFrameworkVersion="0"
 	>
@@ -17,8 +18,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="."
-			IntermediateDirectory="temp\"
+			OutputDirectory="..\Build\$(ConfigurationName)"
+			IntermediateDirectory="..\BuildTmp\$(TargetName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -56,6 +57,7 @@
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
+				XMLDocumentationFileName="$(IntDir)\"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -66,6 +68,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_DEBUG"
+				ResourceOutputFileName="$(IntDir)/$(InputName).res"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -106,8 +109,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="."
-			IntermediateDirectory="temp\"
+			OutputDirectory="..\Build\$(ConfigurationName)"
+			IntermediateDirectory="..\BuildTmp\$(TargetName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
@@ -146,6 +149,7 @@
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
+				XMLDocumentationFileName="$(IntDir)\"
 				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
@@ -392,16 +396,6 @@
 			</File>
 			<File
 				RelativePath="..\lib\tokenize.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Generated Files"
-			Filter="cpp;c;cxx;moc;h;def;odl;idl;res;"
-			UniqueIdentifier="{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}"
-			>
-			<File
-				RelativePath="temp\cppcheck.res"
 				>
 			</File>
 		</Filter>
