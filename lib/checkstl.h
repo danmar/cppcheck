@@ -54,6 +54,7 @@ public:
         checkStl.pushback();
         checkStl.stlBoundries();
         checkStl.find();
+        checkStl.if_find();
 
         if (settings->_checkCodingStyle)
         {
@@ -99,8 +100,11 @@ public:
      */
     void stlBoundries();
 
-    /** usage of std::find */
+    /** usage of std::find - proper handling of return iterator*/
     void find();
+
+    /** if (a.find(x)) - possibly incorrect condition */
+    void if_find();
 
     /**
      * Suggest using empty() instead of checking size() against zero for containers.
@@ -125,6 +129,7 @@ private:
     void invalidPointerError(const Token *tok, const std::string &pointer_name);
     void stlBoundriesError(const Token *tok, const std::string &container_name);
     void findError(const Token *tok);
+    void if_findError(const Token *tok, bool str);
     void sizeError(const Token *tok);
 
     void getErrorMessages()
@@ -138,6 +143,8 @@ private:
         invalidPointerError(0, "pointer");
         stlBoundriesError(0, "container");
         findError(0);
+        if_findError(0, false);
+        if_findError(0, true);
         sizeError(0);
     }
 
@@ -155,7 +162,8 @@ private:
                "* dereferencing an erased iterator\n"
                "* for vectors: using iterator/pointer after push_back has been used\n"
                "* dangerous usage of find\n"
-               "* optimisation: use empty() instead of size() to guarantee fast code\n";
+               "* optimisation: use empty() instead of size() to guarantee fast code\n"
+               "* suspicious condition when using find\n";
     }
 
     bool isStlContainer(const Token *tok);

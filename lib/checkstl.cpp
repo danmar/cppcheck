@@ -531,6 +531,44 @@ void CheckStl::findError(const Token *tok)
     reportError(tok, Severity::error, "stlfind", "dangerous usage of find result");
 }
 
+
+
+void CheckStl::if_find()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "if ( !| %var% . find ( %any% ) )"))
+        {
+            // goto %var%
+            tok = tok->tokAt(2);
+            if (!tok->isName())
+                tok = tok->next();
+
+            const unsigned int varid = tok->varId();
+            if (varid > 0)
+            {
+                // Locate variable declaration..
+                const Token * const decl = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
+                if (Token::Match(decl->tokAt(-4), ",|;|( std :: string"))
+                    if_findError(tok, true);
+                else if (Token::Match(decl->tokAt(-7), ",|;|( std :: %type% < %type% >"))
+                    if_findError(tok, false);
+            }
+        }
+    }
+}
+
+
+void CheckStl::if_findError(const Token *tok, bool str)
+{
+    if (str)
+        reportError(tok, Severity::possibleStyle, "stlIfStrFind", "Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.");
+    else
+        reportError(tok, Severity::style, "stlIfFind", "Suspicious condition. The result of find is an iterator, but it is not properly checked.");
+}
+
+
+
 bool CheckStl::isStlContainer(const Token *tok)
 {
     // check if this token is defined

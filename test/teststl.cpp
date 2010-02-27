@@ -72,6 +72,9 @@ private:
         TEST_CASE(stlBoundries2);
         TEST_CASE(stlBoundries3);
 
+        // if (str.find("ab"))
+        TEST_CASE(if_find);
+
         // find
         TEST_CASE(find1);
 
@@ -638,6 +641,24 @@ private:
 
         ASSERT_EQUALS("", errout.str());
     }
+
+
+
+    void if_find()
+    {
+        check("void f(std::string s)\n"
+              "{\n"
+              "    if (s.find(\"ab\")) { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (possible style) Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.\n", errout.str());
+
+        check("void f(std::set<int> s)\n"
+              "{\n"
+              "    if (s.find(12)) { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Suspicious condition. The result of find is an iterator, but it is not properly checked.\n", errout.str());
+    }
+
 
 
     void find1()
