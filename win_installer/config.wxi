@@ -4,7 +4,7 @@
     <?define Platform = "x86" ?>
   <?endif ?>
 
-  <?define CliBuildDir = "..\cli\release" ?>
+  <?define CliBuildDir = "..\Build\release" ?>
   <?define GuiBuildDir = "..\gui\release" ?>
   <?define ManualDir = "..\man" ?>
   <?define QtDllDir = "..\..\runtimes" ?>
