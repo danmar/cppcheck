@@ -1,14 +1,24 @@
 TEMPLATE = app
-TARGET = 
+TARGET = gui
 QT += xml
+CONFIG += warn_on
 DEPENDPATH += .
 INCLUDEPATH += .
+
+DESTDIR = .
 RCC_DIR = temp
 MOC_DIR = temp
 OBJECTS_DIR = temp
 UI_DIR = temp
-CONFIG += warn_on
-DEFINES += NDEBUG
+
+win32 {
+   DESTDIR = ..\Build\gui
+   RCC_DIR = ..\BuildTmp\gui
+   MOC_DIR = ..\BuildTmp\gui
+   OBJECTS_DIR = ..\BuildTmp\gui
+   UI_DIR = ..\BuildTmp\gui
+}
+
 RESOURCES = gui.qrc
 FORMS = main.ui \
 	resultsview.ui \
