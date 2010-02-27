@@ -211,6 +211,9 @@ private:
 
         // Tokenizer::simplifyReference
         TEST_CASE(simplifyReference);
+
+        // x = realloc(y,0);  =>  free(y);x=0;
+        TEST_CASE(simplifyRealloc);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -3992,6 +3995,12 @@ private:
                       tok("void f() { int a; int &b(a); b++; }"));
         ASSERT_EQUALS("void f ( ) { int a ; a ++ ; }",
                       tok("void f() { int a; int &b = a; b++; }"));
+    }
+
+    void simplifyRealloc()
+    {
+        ASSERT_EQUALS("; free ( p ) ; p = 0 ;",
+                      tok("; p = realloc(p,0);"));
     }
 };
 
