@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="UNICODE,WIN32,QT_LARGEFILE_SUPPORT,_DEBUG"
+				PreprocessorDefinitions="WIN32,_DEBUG"
 				ResourceOutputFileName="$(IntDir)/$(InputName).res"
 			/>
 			<Tool
@@ -159,7 +159,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="QT_NO_DEBUG,NDEBUG,UNICODE,WIN32,QT_LARGEFILE_SUPPORT,NDEBUG"
+				PreprocessorDefinitions="NDEBUG,WIN32"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
