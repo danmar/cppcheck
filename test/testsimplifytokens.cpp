@@ -176,6 +176,8 @@ private:
         TEST_CASE(simplifyTypedef37); // ticket #1449
         TEST_CASE(simplifyTypedef38);
         TEST_CASE(simplifyTypedef39);
+        TEST_CASE(simplifyTypedef40);
+
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
 
@@ -3417,6 +3419,62 @@ private:
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef40()
+    {
+        const char code[] = "typedef int A;\n"
+                            "typedef int B;\n"
+                            "template <class A, class B> class C { };";
+        const char expected[] = "; ; ; ;";
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style) Template parameter 'A' hides typedef with same name\n"
+                      "[test.cpp:3] -> [test.cpp:2]: (style) Template parameter 'B' hides typedef with same name\n", errout.str());
+
+        checkSimplifyTypedef("typedef tuple<double&, const double&, const double, double*, const double*> t2;\n"
+                             "void ordering_test()\n"
+                             "{\n"
+                             "  tuple<short, float> t2(5, 3.3f);\n"
+                             "  BOOST_CHECK(t3 > t2);\n"
+                             "}");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (style) Template instantiation 't2' hides typedef with same name\n", errout.str());
+
+        checkSimplifyTypedef("class MyOverflowingUnsigned\n"
+                             "{\n"
+                             "public:\n"
+                             "    typedef unsigned self_type::*  bool_type;\n"
+                             "    operator bool_type() const  { return this->v_ ? &self_type::v_ : 0; }\n"
+                             "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkSimplifyTypedef("typedef int (*fptr_type)(int, int);\n"
+                             "struct which_one {\n"
+                             "  typedef fptr_type (*result_type)(bool x);\n"
+                             "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkSimplifyTypedef("class my_configuration\n"
+                             "{\n"
+                             "public:\n"
+                             "    template < typename T >\n"
+                             "    class hook\n"
+                             "    {\n"
+                             "    public:\n"
+                             "        typedef ::boost::rational<T>  rational_type;\n"
+                             "    public:\n"
+                             "        rational_type  ( &r_ )[ 9 ];\n"
+                             "    };\n"
+                             "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkSimplifyTypedef("class A\n"
+                             "{\n"
+                             "    typedef B b;\n"
+                             "    friend b;\n"
+                             "};");
         ASSERT_EQUALS("", errout.str());
     }
 

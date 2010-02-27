@@ -397,7 +397,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
-    if (tok && tok->next() && Token::Match(tok->next(), ";|,|[|=|)|>"))
+    if (tok && tok->next() && Token::Match(tok->next(), ";|,|[|=|)|>|("))
     {
         const Token * end = tok->next();
 
@@ -422,6 +422,39 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                     level--;
 
                 end = end->next();
+            }
+            end = end->next();
+        }
+        else if (end->str() == "(")
+        {
+            if (tok->previous()->str() == "operator")
+            {
+                // conversion operator
+                return false;
+            }
+            else if (tok->previous()->str() == "typedef")
+            {
+                // typedef of function returning this type
+                return false;
+            }
+            else if (Token::Match(tok->previous(), "public:|private:|protected:"))
+            {
+                return false;
+            }
+            else if (tok->previous()->str() == ">")
+            {
+                duplicateTypedefError(*tokPtr, name, "Template instantiation");
+                *tokPtr = end->link();
+                return true;
+            }
+            else if (Token::Match(tok->previous(), "%type%"))
+            {
+                if (end->link()->next()->str() == "{")
+                {
+                    duplicateTypedefError(*tokPtr, name, "Function");
+                    *tokPtr = end->link()->next()->link();
+                    return true;
+                }
             }
         }
 
@@ -461,7 +494,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                 // look backwards
                 if (Token::Match(tok->previous(), "typedef|}|>") ||
                     (Token::Match(tok->previous(), "%type%") &&
-                     !Token::Match(tok->previous(), "return|new|const")))
+                     !Token::Match(tok->previous(), "return|new|const|friend")))
                 {
                     // scan backwards for the end of the previous statement
                     int level = (tok->previous()->str() == "}") ? 1 : 0;
