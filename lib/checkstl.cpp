@@ -549,11 +549,19 @@ void CheckStl::if_find()
             const unsigned int varid = tok->varId();
             if (varid > 0)
             {
-                // Locate variable declaration..
-                const Token * const decl = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
-                if (_settings->_showAll && Token::Match(decl->tokAt(-4), ",|;|( std :: string"))
+                // Is the variable a std::string or STL container?
+                const Token * decl = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
+                while (decl && !Token::Match(decl, "[;{}(,]"))
+                    decl = decl->previous();
+
+                decl = decl->next();
+
+                // string..
+                if (_settings->_showAll && Token::Match(decl, "const| std :: string &|*| %varid%", varid))
                     if_findError(tok, true);
-                else if (Token::Match(decl->tokAt(-7), ",|;|( std :: %type% < %type% >"))
+
+                // stl container
+                else if (Token::Match(decl, "const| std :: %var% < %type% > &|*| %varid%", varid))
                     if_findError(tok, false);
             }
         }
@@ -594,11 +602,15 @@ bool CheckStl::isStlContainer(const Token *tok)
         const Token *type = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->varId());
 
         // find where this tokens type starts
-        while (type->previous() && !Token::Match(type->previous(), "[;{]"))
+        while (type->previous() && !Token::Match(type->previous(), "[;{,(]"))
             type = type->previous();
 
+        // ignore "const"
+        if (type->str() == "const")
+            type = type->next();
+
         // discard namespace if supplied
-        if (Token::Match(type, "std ::"))
+        if (Token::simpleMatch(type, "std ::"))
             type = type->next()->next();
 
         // all possible stl containers
