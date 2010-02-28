@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "filelister.h"
 #include "filelister_win32.h"
 #include <sstream>
 #include <vector>
@@ -171,7 +172,7 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
         else if (recursive)
         {
             // Directory
-            FileLister::recursiveAddFiles(filenames, fname.str().c_str(), recursive);
+            getFileLister()->recursiveAddFiles(filenames, fname.str().c_str(), recursive);
         }
 #if defined(UNICODE)
         delete [] ansiFfd;
