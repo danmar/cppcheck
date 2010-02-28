@@ -15,16 +15,14 @@ HEADERS += $$PWD/check.h \
            $$PWD/errorlogger.h \
            $$PWD/executionpath.h \
            $$PWD/filelister.h \
+           $$PWD/filelister_unix.h \
+           $$PWD/filelister_win32.h \
            $$PWD/mathlib.h \
            $$PWD/preprocessor.h \
            $$PWD/settings.h \
            $$PWD/token.h \
            $$PWD/tokenize.h
 
-win32 {
-HEADERS += $$PWD/filelister_win32.h
-}           
-           
 SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkbufferoverrun.cpp \
            $$PWD/checkclass.cpp \
@@ -39,12 +37,10 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/errorlogger.cpp \
            $$PWD/executionpath.cpp \
            $$PWD/filelister.cpp \
+           $$PWD/filelister_unix.cpp \
+           $$PWD/filelister_win32.cpp \
            $$PWD/mathlib.cpp \
            $$PWD/preprocessor.cpp \
            $$PWD/settings.cpp \
            $$PWD/token.cpp \
            $$PWD/tokenize.cpp
-
-win32 {
-SOURCES += $$PWD/filelister_win32.cpp
-}           

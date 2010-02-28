@@ -83,7 +83,7 @@ static BOOL MyIsDirectory(std::string path)
     return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
 #else
 // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-return PathIsDirectory(path.c_str());
+    return PathIsDirectory(path.c_str());
 #endif
 }
 

@@ -24,6 +24,8 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/errorlogger.o \
               lib/executionpath.o \
               lib/filelister.o \
+              lib/filelister_unix.o \
+              lib/filelister_win32.o \
               lib/mathlib.o \
               lib/preprocessor.o \
               lib/settings.o \
@@ -126,8 +128,14 @@ lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/settings.h lib/toke
 lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/executionpath.o lib/executionpath.cpp
 
-lib/filelister.o: lib/filelister.cpp lib/filelister.h
+lib/filelister.o: lib/filelister.cpp lib/filelister.h lib/filelister_unix.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/filelister.o lib/filelister.cpp
+
+lib/filelister_unix.o: lib/filelister_unix.cpp lib/filelister.h lib/filelister_unix.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/filelister_unix.o lib/filelister_unix.cpp
+
+lib/filelister_win32.o: lib/filelister_win32.cpp lib/filelister.h lib/filelister_win32.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/filelister_win32.o lib/filelister_win32.cpp
 
 lib/mathlib.o: lib/mathlib.cpp lib/mathlib.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/mathlib.o lib/mathlib.cpp

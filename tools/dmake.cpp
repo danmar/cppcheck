@@ -23,7 +23,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../lib/filelister.h"
+#include "../lib/filelister_unix.h"
 
 std::string objfile(std::string cppfile)
 {
@@ -82,8 +82,8 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
 
 static void getCppFiles(std::vector<std::string> &files, const std::string &path)
 {
-    FileLister::recursiveAddFiles(files, path, true);
-
+    FileListerUnix lister;
+    lister.recursiveAddFiles(files, path, true);
     // only get *.cpp files..
     for (std::vector<std::string>::iterator it = files.begin(); it != files.end();)
     {

@@ -37,7 +37,7 @@
 ////// This code is POSIX-style systems ///////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
+void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
 {
     std::ostringstream oss;
     oss << path;
@@ -63,7 +63,7 @@ void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const st
         else if (recursive)
         {
             // Directory
-            FileLister::recursiveAddFiles(filenames, filename, recursive);
+            getFileLister()->recursiveAddFiles(filenames, filename, recursive);
         }
     }
     globfree(&glob_results);
