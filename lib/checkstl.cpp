@@ -535,6 +535,8 @@ void CheckStl::findError(const Token *tok)
 
 void CheckStl::if_find()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "if ( !| %var% . find ( %any% ) )"))
@@ -549,7 +551,7 @@ void CheckStl::if_find()
             {
                 // Locate variable declaration..
                 const Token * const decl = Token::findmatch(_tokenizer->tokens(), "%varid%", varid);
-                if (Token::Match(decl->tokAt(-4), ",|;|( std :: string"))
+                if (_settings->_showAll && Token::Match(decl->tokAt(-4), ",|;|( std :: string"))
                     if_findError(tok, true);
                 else if (Token::Match(decl->tokAt(-7), ",|;|( std :: %type% < %type% >"))
                     if_findError(tok, false);
