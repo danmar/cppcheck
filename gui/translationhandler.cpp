@@ -21,6 +21,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QDebug>
+#include <QLocale>
 
 TranslationHandler::TranslationHandler(QObject *parent) :
         QObject(parent),
