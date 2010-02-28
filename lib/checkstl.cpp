@@ -557,6 +557,20 @@ void CheckStl::if_find()
                     if_findError(tok, false);
             }
         }
+
+        if (Token::Match(tok, "if ( !| std :: find|find_if ("))
+        {
+            // goto '(' for the find
+            tok = tok->tokAt(4);
+            if (tok->isName())
+                tok = tok->next();
+
+            // check that result is checked properly
+            if (Token::simpleMatch(tok->link(), ") )"))
+            {
+                if_findError(tok, false);
+            }
+        }
     }
 }
 

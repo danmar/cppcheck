@@ -682,6 +682,25 @@ private:
               "    if (s.find(123) != s.end()) { }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+
+        // ---------------------------
+        // std::find
+        // ---------------------------
+
+        // error
+        check("void f()\n"
+              "{\n"
+              "    if (std::find(a,b,c)) { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Suspicious condition. The result of find is an iterator, but it is not properly checked.\n", errout.str());
+
+        // ok
+        check("void f()\n"
+              "{\n"
+              "    if (std::find(a,b,c) != c) { }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
