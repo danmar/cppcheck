@@ -78,9 +78,6 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     // need space.. #if( => #if (
     bool needSpace = false;
 
-    // For the error report
-    int lineno = 1;
-
     // handling <backspace><newline>
     // when this is encountered the <backspace><newline> will be "skipped".
     // on the next <newline>, extra newlines will be added
@@ -89,9 +86,6 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
     std::ostringstream code;
     for (unsigned char ch = readChar(istr); istr.good(); ch = readChar(istr))
     {
-        if (ch == '\n')
-            ++lineno;
-
         // Replace assorted special chars with spaces..
         if (((ch & 0x80) == 0) && (ch != '\n') && (std::isspace(ch) || std::iscntrl(ch)))
             ch = ' ';

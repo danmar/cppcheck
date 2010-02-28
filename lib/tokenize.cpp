@@ -633,7 +633,6 @@ void Tokenizer::simplifyTypedef()
         int offset = 1;
         bool functionPtr = false;
         bool functionRef = false;
-        bool hasTemplate = false;
 
         if (Token::Match(tok->next(), "::") ||
             Token::Match(tok->next(), "%type%"))
@@ -664,7 +663,6 @@ void Tokenizer::simplifyTypedef()
         {
             int level = 1;
             int paren = 0;
-            hasTemplate = true;
             typeEnd = tok->tokAt(offset + 1);
             for (; typeEnd ; typeEnd = typeEnd->next())
             {
