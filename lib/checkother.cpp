@@ -1187,7 +1187,7 @@ void CheckOther::nullPointerLinkedList()
                                     // Is this variable a pointer?
                                     const Token *tempTok = Token::findmatch(_tokenizer->tokens(), "%type% * %varid% [;)=]", varid);
                                     if (tempTok)
-                                        nullPointerError(tok1, varname);
+                                        nullPointerError(tok1, varname, tok3->linenr());
 
                                     break;
                                 }

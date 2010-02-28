@@ -670,7 +670,7 @@ private:
                          "            tok = tok->next();\n"
                          "    }\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: tok\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Possible null pointer dereference: tok - otherwise it is redundant to check if tok is null at line 5\n", errout.str());
 
         checkNullPointer("void foo(Token &tok)\n"
                          "{\n"

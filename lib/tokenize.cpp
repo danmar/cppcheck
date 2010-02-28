@@ -850,7 +850,7 @@ void Tokenizer::simplifyTypedef()
                             if (tok2->str() != "}")
                             {
                                 int level = 0;
-                                while (tok2 && tok2->next() && (tok2->next()->str() != "}" || level))
+                                while (tok2->next() && (tok2->next()->str() != "}" || level))
                                 {
                                     if (tok2->next()->str() == "{")
                                         level++;
