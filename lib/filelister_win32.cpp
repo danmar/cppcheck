@@ -33,13 +33,6 @@
 #endif
 
 
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-////// This code is for Microsoft Windows /////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
 #if defined(_WIN32)
 
 // Here is the catch: cppcheck core is Ansi code (using char type).
@@ -193,6 +186,9 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
 
 bool FileListerWin32::sameFileName(const std::string &fname1, const std::string &fname2)
 {
+#ifdef __GNUC__
+    return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
+#endif
 #ifdef __BORLANDC__
     return bool(stricmp(fname1.c_str(), fname2.c_str()) == 0);
 #endif

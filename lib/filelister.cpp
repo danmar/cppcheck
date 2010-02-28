@@ -16,35 +16,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "filelister.h"
-#include "fileLister_win32.h"
 #include <sstream>
 #include <vector>
 #include <cstring>
 #include <string>
 #include <cctype>
 #include <algorithm>
+#include "filelister.h"
 
 #if defined(_WIN32)
-#include <windows.h>
-#ifndef __BORLANDC__
-#include <shlwapi.h>
-#endif
+#include "fileLister_win32.h"
 #else // POSIX-style system
-#include <glob.h>
-#include <unistd.h>
+#include "filelister_unix.h"
 #endif
+
+// We have one singleton FileLister.
 
 static FileLister *fileLister;
 
 FileLister * getFileLister()
 {
-	if (fileLister == NULL)
-	{
-		fileLister = new FileListerWin32;
-		return fileLister;
-	}
-	return fileLister;
+    if (fileLister == NULL)
+    {
+#if defined(_WIN32)
+        fileLister = new FileListerWin32;
+#else // POSIX-style system
+        fileLister = new FileListerUnix;
+#endif
+        return fileLister;
+    }
+    return fileLister;
 }
 
 std::string FileLister::simplifyPath(const char *originalPath)
@@ -128,68 +129,4 @@ bool FileLister::acceptFile(const std::string &filename)
     }
 
     return false;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-////// This code is for Microsoft Windows /////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-#if defined(_WIN32)
-
-#else // other than _WIN32
-
-///////////////////////////////////////////////////////////////////////////////
-////// This code is POSIX-style systems ///////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-void FileLister::recursiveAddFiles(std::vector<std::string> &filenames, const std::string &path, bool recursive)
-{
-    std::ostringstream oss;
-    oss << path;
-    if (path.length() > 0 && path[path.length()-1] == '/')
-        oss << "*";
-
-    glob_t glob_results;
-    glob(oss.str().c_str(), GLOB_MARK, 0, &glob_results);
-    for (unsigned int i = 0; i < glob_results.gl_pathc; i++)
-    {
-        std::string filename = glob_results.gl_pathv[i];
-        if (filename == "." || filename == ".." || filename.length() == 0)
-            continue;
-
-        if (filename[filename.length()-1] != '/')
-        {
-            // File
-
-            // If recursive is not used, accept all files given by user
-            if (!recursive || FileLister::acceptFile(filename))
-                filenames.push_back(filename);
-        }
-        else if (recursive)
-        {
-            // Directory
-            FileLister::recursiveAddFiles(filenames, filename, recursive);
-        }
-    }
-    globfree(&glob_results);
-}
-#endif
-
-//---------------------------------------------------------------------------
-
-bool FileLister::sameFileName(const std::string &fname1, const std::string &fname2)
-{
-#if defined(__linux__) || defined(__sun)
-    return bool(fname1 == fname2);
-#endif
-#ifdef __GNUC__
-    return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
-#ifdef __BORLANDC__
-    return bool(stricmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
-#ifdef _MSC_VER
-    return bool(_stricmp(fname1.c_str(), fname2.c_str()) == 0);
-#endif
 }
