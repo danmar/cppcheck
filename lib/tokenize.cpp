@@ -1642,6 +1642,23 @@ void Tokenizer::simplifyTemplates()
             if (pos > 0 && tok->tokAt(pos)->str() == "*")
                 ++pos;
 
+            if (_settings && _settings->_debug)
+            {
+                int tempPos = pos;
+                if (tempPos == 0)
+                    tempPos = 2;
+                if (!Token::Match(tok->tokAt(tempPos), "%var%"))
+                {
+                    std::cout << "simplifyTemplates error: "
+                              << file(tok->tokAt(tempPos))
+                              << ": "
+                              << tok->tokAt(tempPos)->linenr()
+                              << ": "
+                              << tok->tokAt(tempPos)->str()
+                              << std::endl;
+                }
+            }
+
             // name of template function/class..
             const std::string name(tok->strAt(pos > 0 ? pos : 2));
 
