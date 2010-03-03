@@ -556,12 +556,8 @@ void CheckStl::if_find()
 
                 decl = decl->next();
 
-                // string..
-                if (_settings->_showAll && Token::Match(decl, "const| std :: string &|*| %varid%", varid))
-                    if_findError(tok, true);
-
                 // stl container
-                else if (Token::Match(decl, "const| std :: %var% < %type% > &|*| %varid%", varid))
+                if (Token::Match(decl, "const| std :: %var% < %type% > &|*| %varid%", varid))
                     if_findError(tok, false);
             }
         }

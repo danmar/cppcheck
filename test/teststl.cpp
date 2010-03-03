@@ -647,25 +647,6 @@ private:
     void if_find()
     {
         // ---------------------------
-        // string::find
-        // ---------------------------
-
-        // error
-        check("void f(std::string s)\n"
-              "{\n"
-              "    if (s.find(\"ab\")) { }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (possible style) Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.\n", errout.str());
-
-        // ok
-        check("void f(std::string s)\n"
-              "{\n"
-              "    if (s.find(\"ab\") != std::string::npos) { }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-
-        // ---------------------------
         // set::find
         // ---------------------------
 
