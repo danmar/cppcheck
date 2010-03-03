@@ -96,6 +96,7 @@ private:
         TEST_CASE(template16);
         TEST_CASE(template17);
         TEST_CASE(template18);
+        TEST_CASE(template19);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
@@ -1505,6 +1506,26 @@ private:
                                    "foo<int> * f ; "
                                    "class foo<int> { int a ; }");
 
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template19()
+    {
+        const char code[] = "template <typename T> T & foo()\n"
+                            "{ static T temp; return temp; }\n"
+                            "\n"
+                            "void f ( )\n"
+                            "{\n"
+                            "    char p = foo<char>();\n"
+                            "}\n";
+
+        // The expected result..
+        const std::string expected("; "
+                                   "void f ( ) "
+                                   "{"
+                                   " char p ; p = foo<char> ( ) ; "
+                                   "} "
+                                   "char & foo<char> ( ) { static char temp ; return temp ; }");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 

@@ -1621,7 +1621,6 @@ void Tokenizer::simplifyTemplates()
         for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
         {
             Token *tok = *iter1;
-
             std::vector<std::string> type;
             for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next())
             {
@@ -1635,11 +1634,11 @@ void Tokenizer::simplifyTemplates()
 
             // if this is a template function, get the position of the function name
             unsigned int pos = 0;
-            if (Token::Match(tok, "> %type% *| %var% ("))
+            if (Token::Match(tok, "> %type% *|&| %var% ("))
                 pos = 2;
-            else if (Token::Match(tok, "> %type% %type% *| %var% ("))
+            else if (Token::Match(tok, "> %type% %type% *|&| %var% ("))
                 pos = 3;
-            if (pos > 0 && tok->tokAt(pos)->str() == "*")
+            if (pos > 0 && (tok->tokAt(pos)->str() == "*" || tok->tokAt(pos)->str() == "&"))
                 ++pos;
 
             if (_settings && _settings->_debug)
