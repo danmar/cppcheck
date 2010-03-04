@@ -1632,36 +1632,37 @@ void Tokenizer::simplifyTemplates()
             if (!tok)
                 break;
 
-            // if this is a template function, get the position of the function name
-            unsigned int pos = 0;
-            if (Token::Match(tok, "> %type% *|&| %var% ("))
-                pos = 2;
-            else if (Token::Match(tok, "> %type% %type% *|&| %var% ("))
-                pos = 3;
-            if (pos > 0 && (tok->tokAt(pos)->str() == "*" || tok->tokAt(pos)->str() == "&"))
-                ++pos;
+            // get the position of the template name
+            unsigned int namepos = 0;
+            if (Token::Match(tok, "> class %type% {|:"))
+                namepos = 2;
+            else if (Token::Match(tok, "> %type% *|&| %type% ("))
+                namepos = 2;
+            else if (Token::Match(tok, "> %type% %type% *|&| %type% ("))
+                namepos = 3;
+            else
+                continue;
+            if ((tok->tokAt(namepos)->str() == "*" || tok->tokAt(namepos)->str() == "&"))
+                ++namepos;
 
             if (_settings && _settings->_debug)
             {
-                int tempPos = pos;
-                if (tempPos == 0)
-                    tempPos = 2;
-                if (!Token::Match(tok->tokAt(tempPos), "%var%"))
+                if (!Token::Match(tok->tokAt(namepos), "%var%"))
                 {
                     std::cout << "simplifyTemplates error: "
-                              << file(tok->tokAt(tempPos))
+                              << file(tok->tokAt(namepos))
                               << ": "
-                              << tok->tokAt(tempPos)->linenr()
+                              << tok->tokAt(namepos)->linenr()
                               << ": "
-                              << tok->tokAt(tempPos)->str()
+                              << tok->tokAt(namepos)->str()
                               << std::endl;
                 }
             }
 
             // name of template function/class..
-            const std::string name(tok->strAt(pos > 0 ? pos : 2));
+            const std::string name(tok->strAt(namepos));
 
-            const bool isfunc(pos > 0);
+            const bool isfunc(tok->strAt(namepos + 1) == "(");
 
             // locate template usage..
 
