@@ -1641,15 +1641,12 @@ void Tokenizer::simplifyTemplates()
             else if (Token::Match(tok, "> %type% %type% *|&| %type% ("))
                 namepos = 3;
             else
-                continue;
-            if ((tok->tokAt(namepos)->str() == "*" || tok->tokAt(namepos)->str() == "&"))
-                ++namepos;
-
-            if (_settings && _settings->_debug)
             {
-                if (!Token::Match(tok->tokAt(namepos), "%var%"))
+#ifndef NDEBUG
+                // debug message that we bail out..
+                if (_settings && _settings->_debug)
                 {
-                    std::cout << "simplifyTemplates error: "
+                    std::cout << "simplifyTemplates debug-information: bailing out: "
                               << file(tok->tokAt(namepos))
                               << ": "
                               << tok->tokAt(namepos)->linenr()
@@ -1657,7 +1654,11 @@ void Tokenizer::simplifyTemplates()
                               << tok->tokAt(namepos)->str()
                               << std::endl;
                 }
+#endif
+                continue;
             }
+            if ((tok->tokAt(namepos)->str() == "*" || tok->tokAt(namepos)->str() == "&"))
+                ++namepos;
 
             // name of template function/class..
             const std::string name(tok->strAt(namepos));
