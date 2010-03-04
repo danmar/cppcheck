@@ -816,6 +816,23 @@ private:
             ASSERT_EQUALS("\n\n\n", actual[""]);
             ASSERT_EQUALS("\nfoo();\n\n", actual["A"]);
         }
+
+        {
+            const char filedata[] = "#if! A\n"
+                                    "foo();\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS(1, static_cast<unsigned int>(actual.size()));
+            TODO_ASSERT_EQUALS(2, static_cast<unsigned int>(actual.size()));
+            ASSERT_EQUALS("\nfoo();\n\n", actual[""]);
+        }
     }
 
     void if_cond5()

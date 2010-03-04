@@ -97,7 +97,7 @@ std::string Preprocessor::read(std::istream &istr, const std::string &filename, 
 
         if (needSpace)
         {
-            if (ch == '(')
+            if (ch == '(' || ch == '!')
                 code << " ";
             else if (!std::isalpha(ch))
                 needSpace = false;
@@ -942,6 +942,24 @@ void Preprocessor::simplifyCondition(const std::map<std::string, std::string> &v
     Tokenizer tokenizer;
     std::istringstream istr(("(" + condition + ")").c_str());
     tokenizer.tokenize(istr, "");
+
+    if (Token::Match(tokenizer.tokens(), "( %var% )"))
+    {
+        if (variables.find(tokenizer.tokens()->strAt(1)) != variables.end())
+            condition = "1";
+        else if (match)
+            condition = "0";
+        return;
+    }
+
+    if (Token::Match(tokenizer.tokens(), "( ! %var% )"))
+    {
+        if (variables.find(tokenizer.tokens()->strAt(2)) == variables.end())
+            condition = "1";
+        else if (match)
+            condition = "0";
+        return;
+    }
 
     // replace variable names with values..
     for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
