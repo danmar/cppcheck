@@ -152,6 +152,9 @@ private:
     // Check constructors for a specified class
     void checkConstructors(const Token *tok1, const std::string &funcname, bool hasPrivateConstructor, bool isStruct);
 
+    bool sameFunc(int nest, const Token *firstEnd, const Token *secondEnd);
+    bool checkConstFunc(const Token *paramStart, const Token *paramEnd);
+
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool hasPrivateConstructor);
@@ -166,6 +169,7 @@ private:
     void operatorEqToSelfError(const Token *tok);
 
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
+    void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
 
     void getErrorMessages()
     {
@@ -181,6 +185,7 @@ private:
         operatorEqRetRefThisError(0);
         operatorEqToSelfError(0);
         checkConstError(0, "class", "function");
+        checkConstError2(0, 0, "class", "function");
     }
 
     std::string name() const

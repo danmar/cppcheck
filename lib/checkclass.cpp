@@ -1443,6 +1443,7 @@ void CheckClass::thisSubtraction()
         tok = tok->next();
     }
 }
+//---------------------------------------------------------------------------
 
 const Token * findParameter(const Token *var, const Token *start, const Token * end)
 {
@@ -1459,24 +1460,49 @@ const Token * findParameter(const Token *var, const Token *start, const Token * 
     return 0;
 }
 
+struct NestInfo
+{
+    std::string className;
+    const Token * classEnd;
+    int levelEnd;
+};
+
 // Can a function be const?
 void CheckClass::checkConst()
 {
     if (!_settings->_checkCodingStyle)
         return;
 
+    std::vector<NestInfo> nestInfo;
+    int level = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class|struct %var% {"))
+        if (tok->str() == "{" && !nestInfo.empty())
+            level++;
+        else if (tok->str() == "}" && !nestInfo.empty())
+        {
+            level--;
+            if (level == nestInfo.back().levelEnd)
+                nestInfo.pop_back();
+        }
+        else if (Token::Match(tok, "class|struct %var% {"))
         {
             // get class name..
-            const std::string classname(tok->strAt(1));
+            std::string classname(tok->strAt(1));
 
             // goto initial {'
             while (tok && tok->str() != "{")
                 tok = tok->next();
             if (!tok)
                 break;
+
+            const Token *classEnd = tok->link();
+
+            NestInfo info;
+            info.className = classname;
+            info.classEnd = classEnd;
+            info.levelEnd = level++;
+            nestInfo.push_back(info);
 
             // parse in this class definition to see if there are any simple getter functions
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
@@ -1516,6 +1542,8 @@ void CheckClass::checkConst()
 
                     // get function name
                     const std::string functionName((tok2->isName() ? "" : "operator") + tok2->str());
+
+                    // skip constructor
                     if (functionName == classname)
                         continue;
 
@@ -1524,86 +1552,232 @@ void CheckClass::checkConst()
                     if (!tok2)
                         break;
 
-                    const Token *paramEnd = tok2;
-                    const Token *paramStart = tok2->link();
-
                     // is this a non-const function that is implemented inline?
                     if (Token::simpleMatch(tok2, ") {"))
                     {
-                        // if the function doesn't have any assignment nor function call,
-                        // it can be a const function..
-                        unsigned int indentlevel = 0;
-                        bool isconst = true;
-                        for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
+                        const Token *paramEnd = tok2;
+                        const Token *paramStart = tok2->link();
+
+                        // if nothing non-const was found. write error..
+                        if (checkConstFunc(paramStart, paramEnd))
                         {
-                            if (tok3->str() == "{")
-                                ++indentlevel;
-                            else if (tok3->str() == "}")
+                            for (int i = nestInfo.size() - 2; i >= 0; i--)
+                                classname = std::string(nestInfo[i].className + "::" + classname);
+
+                            checkConstError(tok2, classname, functionName);
+                        }
+                    }
+                    else if (Token::simpleMatch(tok2, ") ;")) // not inline
+                    {
+                        for (int i = nestInfo.size() - 1; i >= 0; i--)
+                        {
+                            const Token *found = nestInfo[i].classEnd;
+                            std::string pattern(functionName + " (");
+                            int level = 0;
+                            for (int j = nestInfo.size() - 1; j >= i; j--, level++)
+                                pattern = std::string(nestInfo[j].className + " :: " + pattern);
+                            while ((found = Token::findmatch(found->next(), pattern.c_str())))
                             {
-                                if (indentlevel <= 1)
+                                const Token *paramStart = found->tokAt(1 + (2 * level));
+                                const Token *paramEnd = paramStart->link();
+                                if (!paramEnd)
                                     break;
-                                --indentlevel;
-                            }
+                                if (paramEnd->next()->str() != "{")
+                                    break;
 
-                            // assignment.. = += |= ..
-                            else if (tok3->str() == "=" ||
-                                     (tok3->str().find("=") == 1 &&
-                                      tok3->str().find_first_of("<>") == std::string::npos))
-                            {
-                                if (tok3->str() == "=") // assignment.. =
+                                if (sameFunc(level, tok2, paramEnd))
                                 {
-                                    const Token * param = findParameter(tok3->previous(), paramStart, paramEnd);
-                                    if (param)
+                                    // if nothing non-const was found. write error..
+                                    if (checkConstFunc(paramStart, paramEnd))
                                     {
-                                        // assignment to function argument reference can be const
-                                        // f(type & x) { x = something; }
-                                        if (param->tokAt(-1)->str() == "&")
-                                            continue;
+                                        for (int k = nestInfo.size() - 2; k >= 0; k--)
+                                            classname = std::string(nestInfo[k].className + "::" + classname);
 
-                                        // assignment to function argument pointer can be const
-                                        // f(type * x) { *x = something; }
-                                        else if ((param->tokAt(-1)->str() == "*") &&
-                                                 (tok3->tokAt(-2)->str() == "*"))
-                                            continue;
+                                        checkConstError2(found, tok2, classname, functionName);
                                     }
                                 }
-
-                                isconst = false;
-                                break;
-                            }
-
-                            // increment/decrement (member variable?)..
-                            else if (Token::Match(tok3, "++|--"))
-                            {
-                                isconst = false;
-                                break;
-                            }
-
-                            // function call..
-                            else if (tok3->str() != "return" && Token::Match(tok3, "%var% ("))
-                            {
-                                isconst = false;
-                                break;
-                            }
-
-                            // delete..
-                            else if (tok3->str() == "delete")
-                            {
-                                isconst = false;
-                                break;
                             }
                         }
-
-                        // nothing non-const was found. write error..
-                        if (isconst)
-                            checkConstError(tok2, classname, functionName);
                     }
                 }
             }
+        }
+    }
+}
 
+bool CheckClass::sameFunc(int nest, const Token *firstEnd, const Token *secondEnd)
+{
+    // check return type (search backwards until previous statement)
+    const Token * firstStart = firstEnd->link()->tokAt(-2);
+    const Token * secondStart = secondEnd->link()->tokAt((-2 * nest) - 2);
+
+    bool firstDone = false;
+    bool secondDone = false;
+
+    while (true)
+    {
+        firstDone = false;
+        secondDone = false;
+
+        if (!firstStart || Token::Match(firstStart, ";|}|{|public:|protected:|private:"))
+            firstDone = true;
+
+        if (!secondStart || Token::Match(secondStart, ";|}|{|public:|protected:|private:"))
+            secondDone = true;
+
+        if (firstDone != secondDone)
+            return false;
+
+        // both done and match
+        if (firstDone)
+            break;
+
+        if (secondStart->str() != firstStart->str())
+            return false;
+
+        firstStart = firstStart->previous();
+        secondStart = secondStart->previous();
+    }
+
+    // check parameter types (names can be different or missing)
+    firstStart = firstEnd->link()->next();
+    secondStart = secondEnd->link()->next();
+
+    while (true)
+    {
+        firstDone = false;
+        secondDone = false;
+        bool again = true;
+
+        while (again)
+        {
+            again = false;
+
+            if (firstStart == firstEnd)
+                firstDone = true;
+
+            if (secondStart == secondEnd)
+                secondDone = true;
+
+            // possible difference in number of parameters
+            if (firstDone != secondDone)
+            {
+                // check for missing names
+                if (firstDone)
+                {
+                    if (secondStart->varId() != 0)
+                        again = true;
+                }
+                else
+                {
+                    if (firstStart->varId() != 0)
+                        again = true;
+                }
+
+                if (!again)
+                    return false;
+            }
+
+            // both done and match
+            if (firstDone && !again)
+                return true;
+
+            if (firstStart->varId() != 0)
+            {
+                // skip variable name
+                firstStart = firstStart->next();
+                again = true;
+            }
+
+            if (secondStart->varId() != 0)
+            {
+                // skip variable name
+                secondStart = secondStart->next();
+                again = true;
+            }
+        }
+
+        if (firstStart->str() != secondStart->str())
+            return false;
+
+        // retry after skipped variable names
+        if (!again)
+        {
+            firstStart = firstStart->next();
+            secondStart = secondStart->next();
         }
     }
 
+    return true;
+}
+
+bool CheckClass::checkConstFunc(const Token *paramStart, const Token *paramEnd)
+{
+    // if the function doesn't have any assignment nor function call,
+    // it can be a const function..
+    unsigned int indentlevel = 0;
+    bool isconst = true;
+    for (const Token *tok3 = paramEnd; tok3; tok3 = tok3->next())
+    {
+        if (tok3->str() == "{")
+            ++indentlevel;
+        else if (tok3->str() == "}")
+        {
+            if (indentlevel <= 1)
+                break;
+            --indentlevel;
+        }
+
+        // assignment.. = += |= ..
+        else if (tok3->str() == "=" ||
+                 (tok3->str().find("=") == 1 &&
+                  tok3->str().find_first_of("<>") == std::string::npos))
+        {
+            if (tok3->str() == "=") // assignment.. =
+            {
+                const Token * param = findParameter(tok3->previous(), paramStart, paramEnd);
+                if (param)
+                {
+                    // assignment to function argument reference can be const
+                    // f(type & x) { x = something; }
+                    if (param->tokAt(-1)->str() == "&")
+                        continue;
+
+                    // assignment to function argument pointer can be const
+                    // f(type * x) { *x = something; }
+                    else if ((param->tokAt(-1)->str() == "*") &&
+                             (tok3->tokAt(-2)->str() == "*"))
+                        continue;
+                }
+            }
+
+            isconst = false;
+            break;
+        }
+
+        // increment/decrement (member variable?)..
+        else if (Token::Match(tok3, "++|--"))
+        {
+            isconst = false;
+            break;
+        }
+
+        // function call..
+        else if (tok3->str() != "return" && Token::Match(tok3, "%var% ("))
+        {
+            isconst = false;
+            break;
+        }
+
+        // delete..
+        else if (tok3->str() == "delete")
+        {
+            isconst = false;
+            break;
+        }
+    }
+
+    return isconst;
 }
 
 void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname)
@@ -1611,7 +1785,13 @@ void CheckClass::checkConstError(const Token *tok, const std::string &classname,
     reportError(tok, Severity::style, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
 }
 
-
+void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname)
+{
+    std::list<const Token *> toks;
+    toks.push_back(tok1);
+    toks.push_back(tok2);
+    reportError(toks, Severity::style, "functionConst", "The function '" + classname + "::" + funcname + "' can be const");
+}
 
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
@@ -1662,4 +1842,3 @@ void CheckClass::operatorEqToSelfError(const Token *tok)
 {
     reportError(tok, Severity::possibleStyle, "operatorEqToSelf", "'operator=' should check for assignment to self");
 }
-
