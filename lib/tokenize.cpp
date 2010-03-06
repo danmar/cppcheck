@@ -2238,16 +2238,18 @@ void Tokenizer::setVarId()
         }
     }
 
-    // Member functions in this source
+    // Member functions and variables in this source
     std::list<Token *> allMemberFunctions;
+    std::list<Token *> allMemberVars;
     {
-        const std::string funcpattern("%var% :: %var% (");
         for (Token *tok2 = _tokens; tok2; tok2 = tok2->next())
         {
-            // Found a class function..
-            if (Token::Match(tok2, funcpattern.c_str()))
+            if (Token::Match(tok2, "%var% :: %var%"))
             {
-                allMemberFunctions.push_back(tok2);
+                if (Token::simpleMatch(tok2->tokAt(3), "("))
+                    allMemberFunctions.push_back(tok2);
+                else if (tok2->tokAt(2)->varId() != 0)
+                    allMemberVars.push_back(tok2);
             }
         }
     }
@@ -2286,6 +2288,16 @@ void Tokenizer::setVarId()
             if (varlist.empty())
                 continue;
 
+            // Member variables
+            for (std::list<Token *>::iterator func = allMemberVars.begin(); func != allMemberVars.end(); ++func)
+            {
+                if (!Token::simpleMatch(*func, classname.c_str()))
+                    continue;
+
+                Token *tok2 = *func;
+                tok2 = tok2->tokAt(2);
+                tok2->varId(varlist[tok2->str()]);
+            }
 
             // Member functions for this class..
             std::list<Token *> funclist;
@@ -2309,10 +2321,6 @@ void Tokenizer::setVarId()
                     }
                 }
             }
-
-            // Are there any member functions for this class?
-            if (funclist.empty())
-                continue;
 
             // Update the variable ids..
             // Parse each function..

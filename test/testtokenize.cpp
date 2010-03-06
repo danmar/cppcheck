@@ -1862,7 +1862,7 @@ private:
                                    "10: A :: buf@1 [ 10 ] = 0 ;\n"
                                    "11: }\n");
 
-        TODO_ASSERT_EQUALS(expected, actual);
+        ASSERT_EQUALS(expected, actual);
     }
 
     void varidclass7()
