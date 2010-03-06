@@ -3064,6 +3064,7 @@ bool Tokenizer::simplifyTokenList()
     simplifyComparisonOrder();
     simplifyNestedStrcat();
     simplifyWhile0();
+    simplifyFuncInWhile();
 
     simplifyIfAssign();    // could be affected by simplifyIfNot
 
@@ -6625,5 +6626,39 @@ void Tokenizer::simplifyWhile0()
             }
         }
 
+    }
+}
+
+void Tokenizer::simplifyFuncInWhile()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (!Token::Match(tok, "while ( %var% ( %var% ) ) {"))
+            continue;
+
+        Token *func = tok->tokAt(2);
+        Token *var = tok->tokAt(4);
+        Token *end = tok->tokAt(7)->link();
+        if (!end)
+            break;
+
+        tok->str("int");
+        tok->insertToken("cppcheck:r");
+        tok->tokAt(1)->insertToken("=");
+        tok->tokAt(2)->insertToken(func->str());
+        tok->tokAt(3)->insertToken("(");
+        tok->tokAt(4)->insertToken(var->str());
+        tok->tokAt(5)->varId(var->varId());
+        tok->tokAt(5)->insertToken(")");
+        tok->tokAt(6)->insertToken(";");
+        tok->tokAt(7)->insertToken("while");
+        tok->tokAt(9)->insertToken("cppcheck:r");
+        Token::createMutualLinks(tok->tokAt(4), tok->tokAt(6));
+        end->previous()->insertToken("cppcheck:r");
+        end->previous()->insertToken("=");
+        Token::move(func, func->tokAt(3), end->previous());
+        end->previous()->insertToken(";");
+
+        tok = end;
     }
 }

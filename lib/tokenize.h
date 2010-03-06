@@ -351,6 +351,11 @@ private:
     void simplifyWhile0();
 
     /**
+     * Simplify while(func(f))
+     */
+    void simplifyFuncInWhile();
+
+    /**
      * Replace enum with constant value
      */
     void simplifyEnum();

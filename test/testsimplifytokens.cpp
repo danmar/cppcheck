@@ -216,6 +216,9 @@ private:
 
         // x = realloc(y,0);  =>  free(y);x=0;
         TEST_CASE(simplifyRealloc);
+
+        // while(fclose(f)); => r = fclose(f); while(r){r=fclose(f);}
+        TEST_CASE(simplifyFuncInWhile);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -4034,6 +4037,36 @@ private:
     {
         ASSERT_EQUALS("; free ( p ) ; p = 0 ;",
                       tok("; p = realloc(p,0);"));
+    }
+
+    void simplifyFuncInWhile()
+    {
+        ASSERT_EQUALS("int cppcheck:r = fclose ( f ) ; "
+                      "while ( cppcheck:r ) "
+                      "{ "
+                      "foo ( ) ; "
+                      "cppcheck:r = fclose ( f ) ; "
+                      "}",
+                      tok("while(fclose(f))foo();"));
+
+        ASSERT_EQUALS("int cppcheck:r = fclose ( f ) ; "
+                      "while ( cppcheck:r ) "
+                      "{ "
+                      "; cppcheck:r = fclose ( f ) ; "
+                      "}",
+                      tok("while(fclose(f));"));
+
+        ASSERT_EQUALS("int cppcheck:r = fclose ( f ) ; "
+                      "while ( cppcheck:r ) "
+                      "{ "
+                      "; cppcheck:r = fclose ( f ) ; "
+                      "} "
+                      "int cppcheck:r = fclose ( g ) ; "
+                      "while ( cppcheck:r ) "
+                      "{ "
+                      "; cppcheck:r = fclose ( g ) ; "
+                      "}",
+                      tok("while(fclose(f)); while(fclose(g));"));
     }
 };
 
