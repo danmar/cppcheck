@@ -5208,7 +5208,7 @@ void Tokenizer::simplifyGoto()
                     token->deleteNext();
 
                     // Insert the statements..
-                    bool ret = false;	// is there return
+                    bool ret = false;   // is there return
                     bool ret2 = false;  // is there return in indentlevel 0
                     std::list<Token*> links;
                     std::list<Token*> links2;
@@ -5749,7 +5749,7 @@ void Tokenizer::simplifyEnum()
                         {
                             // Don't replace this enum if it's preceded by "::"
                         }
-                        else
+                        else if (tok2->next()->isName())
                         {
                             simplifyEnum = true;
                             hasClass = false;
