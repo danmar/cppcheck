@@ -205,6 +205,7 @@ private:
         TEST_CASE(enum11);
         TEST_CASE(enum12);
         TEST_CASE(enum13);
+        TEST_CASE(enum14);
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -4005,6 +4006,14 @@ private:
                             "    unsigned int fred = a;\n"
                             "}";
         const char expected[] = "; void foo ( ) { unsigned int fred ; fred = a ; }";
+        ASSERT_EQUALS(expected, tok(code, false));
+    }
+
+    void enum14()
+    {
+        const char code[] = "enum ab { a };\n"
+                            "ab";
+        const char expected[] = "; ab";
         ASSERT_EQUALS(expected, tok(code, false));
     }
 

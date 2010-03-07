@@ -5756,7 +5756,7 @@ void Tokenizer::simplifyEnum()
                         {
                             // Don't replace this enum if it's preceded by "::"
                         }
-                        else if (tok2->next()->isName())
+                        else if (tok2->next() && tok2->next()->isName())
                         {
                             simplifyEnum = true;
                             hasClass = false;
