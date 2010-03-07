@@ -2154,7 +2154,10 @@ private:
 
             if (Token::simpleMatch(tok.next(), "."))
             {
-                if (!Token::Match(tok.previous(), "[;{}] %var% . %var% ="))
+                const Token *tok2 = tok.next();
+                while (Token::Match(tok2, ". %var%"))
+                    tok2 = tok2->tokAt(2);
+                if (tok2 && tok2->str() != "=")
                     use_pointer(foundError, checks, &tok);
                 else
                     bailOutVar(checks, tok.varId());
