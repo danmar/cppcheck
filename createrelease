@@ -4,11 +4,10 @@
 # Archive files are created in user's home directory.
 #
 # Remember to update version number in:
-# - src/main.cpp
-# - src/cppcheck.cpp
-# - src/cppcheck.rc
-# - win_installer/cppcheck.wxs
-# - win_installer/gui.wxs
+# - lib/cppcheck.cpp
+# - cli/main.cpp
+# - cli/cppcheck.rc
+# - win_installer/productInfo.wxs
 
 # Tag to use
 tag=1.41
