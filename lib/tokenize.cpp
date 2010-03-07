@@ -5517,6 +5517,12 @@ void Tokenizer::simplifyEnum()
                 Token * enumValueStart = 0;
                 Token * enumValueEnd = 0;
 
+                if (tok1->str() == "(")
+                {
+                    tok1 = tok1->link();
+                    continue;
+                }
+
                 if (Token::Match(tok1->previous(), ",|{ %type% ,|}"))
                 {
                     // no value specified
