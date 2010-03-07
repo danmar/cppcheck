@@ -11,7 +11,7 @@
 # - win_installer/gui.wxs
 
 # Tag to use
-tag=1.40
+tag=1.41
 
 # Name of release
 releasename=cppcheck-$tag
