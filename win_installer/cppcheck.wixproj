@@ -9,8 +9,8 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     
     <OutputName Condition=" '$(ProductVersion)' != '' ">cppcheck-$(ProductVersion)-$(Platform)-Setup</OutputName>
-    <OutputPath>$(Configuration)\$(Platform)\</OutputPath>
-    <IntermediateOutputPath>Tmp\$(Configuration)\$(Platform)\</IntermediateOutputPath>
+    <OutputPath>..\Build\</OutputPath>
+    <IntermediateOutputPath>..\BuildTmp\Wix\$(Platform)\</IntermediateOutputPath>
     <OutputType>package</OutputType>
   </PropertyGroup>
   

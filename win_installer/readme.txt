@@ -39,3 +39,5 @@ vcvars32.bat in DOS prompt first to setup environment):
 
 For example:
 > msbuild cppcheck.wixproj /p:Platform=x86,ProductVersion=1.40
+
+Installer is created to Build -folder.
