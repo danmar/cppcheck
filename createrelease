@@ -17,7 +17,7 @@ releasename=cppcheck-$tag
 
 # wget http://josefsson.org/git2cl/git2cl
 echo Update Changelog..
-./git2cl > ChangeLog
+./git2cl > Changelog
 
 echo Update Makefile..
 git tag -d $tag
