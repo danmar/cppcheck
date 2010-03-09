@@ -118,6 +118,10 @@ protected:
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
         for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
         {
+            // --errorlist can provide null values here
+            if (!(*it))
+                continue;
+
             ErrorLogger::ErrorMessage::FileLocation loc;
             loc.line = (*it)->linenr();
             loc.file = _tokenizer->file(*it);

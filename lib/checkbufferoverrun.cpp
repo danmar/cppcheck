@@ -182,11 +182,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     for (unsigned int i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
 
-    unsigned int varc = varname.size();
-    if (varc == 0)
-        varc = 1;
+    const unsigned int varc(varname.empty() ? 0 : (varname.size() - 1) * 2);
 
-    varc = 2 * (varc - 1);
     if (Token::Match(tok, "return"))
     {
         tok = tok->next();
@@ -584,8 +581,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if ((varid > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", varid)) ||
             (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str())))
         {
-            size_t len = Token::getStrLength(tok->tokAt(varc + 4));
-            if (len >= static_cast<size_t>(total_size))
+            long len = Token::getStrLength(tok->tokAt(varc + 4));
+            if (len < 0 || len >= total_size)
             {
                 bufferOverrun(tok, varid > 0 ? "" : varnames.c_str());
                 continue;
@@ -597,8 +594,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             Token::Match(tok, "read|write ( %any% , %varid% , %num% )", varid) &&
             MathLib::isInt(tok->strAt(6)))
         {
-            size_t len = MathLib::toLongNumber(tok->strAt(6));
-            if (len > static_cast<size_t>(total_size))
+            long len = MathLib::toLongNumber(tok->strAt(6));
+            if (len < 0 || len > total_size)
             {
                 bufferOverrun(tok);
                 continue;
@@ -610,8 +607,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             Token::Match(tok, "fgets ( %varid% , %num% , %any% )", varid) &&
             MathLib::isInt(tok->strAt(4)))
         {
-            size_t len = MathLib::toLongNumber(tok->strAt(4));
-            if (len > static_cast<size_t>(total_size))
+            long len = MathLib::toLongNumber(tok->strAt(4));
+            if (len < 0 || len > total_size)
             {
                 bufferOverrun(tok);
                 continue;
@@ -622,7 +619,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
             int n = MathLib::toLongNumber(tok->strAt(6));
-            if (n >= total_size)
+            if (n < 0 || n >= total_size)
                 strncatUsage(tok);
         }
 

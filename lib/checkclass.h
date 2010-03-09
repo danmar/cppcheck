@@ -169,7 +169,6 @@ private:
     void operatorEqToSelfError(const Token *tok);
 
     void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname);
-    void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname);
 
     void getErrorMessages()
     {
@@ -185,7 +184,6 @@ private:
         operatorEqRetRefThisError(0);
         operatorEqToSelfError(0);
         checkConstError(0, "class", "function");
-        checkConstError2(0, 0, "class", "function");
     }
 
     std::string name() const

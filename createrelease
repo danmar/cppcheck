@@ -10,14 +10,29 @@
 # - win_installer/productInfo.wxs
 
 # Tag to use
-tag=1.41
+tag=$1
 
 # Name of release
 releasename=cppcheck-$tag
 
 # wget http://josefsson.org/git2cl/git2cl
+echo Update Changelog..
 ./git2cl > ChangeLog
 
+echo Update Makefile..
+git tag -d $tag
+g++ -o dmake tools/dmake.cpp lib/filelister.cpp
+./dmake --release
+git commit -a -m "Makefile: Set release mode"
+git tag $tag
+
+echo Create archives..
 git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar.gz
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
+
+echo Restoring repository..
+git tag -d $tag
+git reset --hard HEAD^1
+git pull
+
