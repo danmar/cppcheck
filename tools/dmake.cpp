@@ -141,7 +141,8 @@ int main(int argc, char **argv)
     std::ofstream fout("Makefile");
 
     // Makefile settings..
-    fout << "CXXFLAGS=-Wall -Wextra -pedantic -Wfloat-equal -Wcast-qual -Wsign-conversion -Wlogical-op ";
+    // TODO: add more compiler warnings. For example -Wsign-conversion
+    fout << "CXXFLAGS=-Wall -Wextra -pedantic -Wfloat-equal -Wcast-qual -Wlogical-op ";
     fout << (release ? "-O2 -DNDEBUG" : "-g -D_GLIBCXX_DEBUG") << "\n";
     fout << "CXX=g++\n";
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
