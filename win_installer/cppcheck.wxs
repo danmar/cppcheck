@@ -88,6 +88,7 @@
     <Icon Id='gui.exe' SourceFile='$(var.GuiBuildDir)\gui.exe' />
 
     <WixVariable Id="WixUILicenseRtf" Value="GPLv3.rtf" />
-    <WixVariable Id="WixUIBannerBmp" Value="Bitmaps\banner.bmp" /> 
+    <WixVariable Id="WixUIBannerBmp" Value="Bitmaps\banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="Bitmaps\dialog.bmp" />
   </Product>
 </Wix>
