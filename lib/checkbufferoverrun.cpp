@@ -182,11 +182,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     for (unsigned int i = 0; i < varname.size(); ++i)
         varnames += (i == 0 ? "" : " . ") + varname[i];
 
-    unsigned int varc = varname.size();
-    if (varc == 0)
-        varc = 1;
+    const int varc(varname.empty() ? 0 : int(varname.size() - 1) * 2);
 
-    varc = 2 * (varc - 1);
     if (Token::Match(tok, "return"))
     {
         tok = tok->next();
@@ -597,8 +594,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             Token::Match(tok, "read|write ( %any% , %varid% , %num% )", varid) &&
             MathLib::isInt(tok->strAt(6)))
         {
-            size_t len = MathLib::toLongNumber(tok->strAt(6));
-            if (len > static_cast<size_t>(total_size))
+            long len = MathLib::toLongNumber(tok->strAt(6));
+            if (len < 0 || len > total_size)
             {
                 bufferOverrun(tok);
                 continue;
@@ -610,8 +607,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             Token::Match(tok, "fgets ( %varid% , %num% , %any% )", varid) &&
             MathLib::isInt(tok->strAt(4)))
         {
-            size_t len = MathLib::toLongNumber(tok->strAt(4));
-            if (len > static_cast<size_t>(total_size))
+            long len = MathLib::toLongNumber(tok->strAt(4));
+            if (len < 0 || len > total_size)
             {
                 bufferOverrun(tok);
                 continue;
@@ -621,8 +618,8 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // Dangerous usage of strncat..
         if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
         {
-            int n = MathLib::toLongNumber(tok->strAt(6));
-            if (n >= total_size)
+            long n = MathLib::toLongNumber(tok->strAt(6));
+            if (n < 0 || n >= total_size)
                 strncatUsage(tok);
         }
 
@@ -630,7 +627,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // Dangerous usage of strncpy + strncat..
         if (varid > 0 && Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% ) ; strncat ( %varid% , %any% , %num% )", varid))
         {
-            int n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
+            long n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
             if (n > total_size)
                 strncatUsage(tok->tokAt(9));
         }
@@ -793,7 +790,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         else if (tok->str() == "}")
             --indentlevel;
 
-        unsigned int size = 0;
+        long size = 0;
         std::string type;
         unsigned int varid = 0;
         int nextTok = 0;
@@ -804,7 +801,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
         if (Token::Match(tok, "%type% *| %var% [ %num% ] [;=]"))
         {
-            unsigned int varpos = 1;
+            int varpos = 1;
             if (tok->next()->str() == "*")
                 ++varpos;
             size = MathLib::toLongNumber(tok->strAt(varpos + 2));
@@ -841,7 +838,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 // malloc() gets count of bytes and not count of
                 // elements, so we should calculate count of elements
                 // manually
-                unsigned int sizeOfType = _tokenizer->sizeOfType(declTok);
+                int sizeOfType = (int)_tokenizer->sizeOfType(declTok);
                 if (sizeOfType > 0)
                     size /= sizeOfType;
             }
@@ -856,7 +853,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
         Token sizeTok(0);
         sizeTok.str(type);
-        int total_size = size * _tokenizer->sizeOfType(&sizeTok);
+        int total_size = size * (int)_tokenizer->sizeOfType(&sizeTok);
         if (total_size == 0)
             continue;
 
@@ -903,9 +900,9 @@ void CheckBufferOverrun::checkStructVariable()
             const unsigned int varId = tok2->tokAt(ivar)->varId();
             varname[1] = tok2->strAt(ivar);
             int arrsize = MathLib::toLongNumber(tok2->strAt(ivar + 2));
-            int total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(1));
+            int total_size = arrsize * (int)_tokenizer->sizeOfType(tok2->tokAt(1));
             if (tok2->tokAt(2)->str() == "*")
-                total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(2));
+                total_size = arrsize * (int)_tokenizer->sizeOfType(tok2->tokAt(2));
             if (total_size == 0)
                 continue;
 
@@ -1005,7 +1002,7 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
     std::string digits_string = "";
     bool i_d_x_f_found = false;
     std::list<const Token*>::const_iterator paramIter = parameters.begin();
-    unsigned int parameterLength = 0;
+    int parameterLength = 0;
     for (std::string::size_type i = 0; i < input_string.length(); ++i)
     {
         if (input_string[i] == '\\')
@@ -1040,13 +1037,13 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
             case 'd':
                 i_d_x_f_found = true;
                 if (paramIter != parameters.end() && *paramIter && (*paramIter)->str()[0] != '"')
-                    parameterLength = (*paramIter)->str().length();
+                    parameterLength = (int)(*paramIter)->str().length();
 
                 handleNextParameter = true;
                 break;
             case 's':
                 if (paramIter != parameters.end() && *paramIter && (*paramIter)->str()[0] == '"')
-                    parameterLength = Token::getStrLength(*paramIter);
+                    parameterLength = (int)Token::getStrLength(*paramIter);
 
                 handleNextParameter = true;
                 break;
@@ -1065,14 +1062,14 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
 
         if (handleNextParameter)
         {
-            unsigned int tempDigits = std::abs(std::atoi(digits_string.c_str()));
+            int tempDigits = std::abs(MathLib::toLongNumber(digits_string));
             if (i_d_x_f_found)
                 tempDigits = std::max(static_cast<int>(tempDigits), 1);
 
             if (digits_string.find('.') != std::string::npos)
             {
                 const std::string endStr = digits_string.substr(digits_string.find('.') + 1);
-                unsigned int maxLen = std::max(std::abs(std::atoi(endStr.c_str())), 1);
+                int maxLen = std::max((int)std::abs(MathLib::toLongNumber(endStr)), 1);
 
                 if (input_string[i] == 's')
                 {
