@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 
     // Makefile settings..
     fout << "CXXFLAGS=-Wall -Wextra -pedantic -Wfloat-equal -Wcast-qual -Wsign-conversion -Wlogical-op ";
-    fout << (release ? "-O2 -DNDEBUG" : "-g") << "\n";
+    fout << (release ? "-O2 -DNDEBUG" : "-g -D_GLIBCXX_DEBUG") << "\n";
     fout << "CXX=g++\n";
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml\n";
