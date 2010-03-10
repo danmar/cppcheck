@@ -494,7 +494,8 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                 // look backwards
                 if (Token::Match(tok->previous(), "typedef|}|>") ||
                     (Token::Match(tok->previous(), "%type%") &&
-                     !Token::Match(tok->previous(), "return|new|const|friend")))
+                     (!Token::Match(tok->previous(), "return|new|const|friend") &&
+                      !Token::Match(tok->tokAt(-2), "friend class"))))
                 {
                     // scan backwards for the end of the previous statement
                     int level = (tok->previous()->str() == "}") ? 1 : 0;

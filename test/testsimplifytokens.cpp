@@ -178,6 +178,7 @@ private:
         TEST_CASE(simplifyTypedef38);
         TEST_CASE(simplifyTypedef39);
         TEST_CASE(simplifyTypedef40);
+        TEST_CASE(simplifyTypedef41); // ticket #1488
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -3504,6 +3505,18 @@ private:
                              "{\n"
                              "    typedef B b;\n"
                              "    friend b;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef41()
+    {
+        // ticket #1488
+        checkSimplifyTypedef("class Y;\n"
+                             "class X\n"
+                             "{\n"
+                             "    typedef Y type;\n"
+                             "    friend class type;\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
     }
