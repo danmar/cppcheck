@@ -188,12 +188,24 @@
 				RelativePath="..\lib\filelister.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\lib\filelister_win32.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\lib\filelister.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\filelister_win32.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
