@@ -100,7 +100,7 @@ void CheckHeaders::warningIncludeHeader()
         const std::string includefile = includetok->strAt(1);
         while (hfile < _tokenizer->getFiles()->size())
         {
-            if (FileLister::sameFileName(_tokenizer->getFiles()->at(hfile), includefile))
+            if (getFileLister()->sameFileName(_tokenizer->getFiles()->at(hfile), includefile))
                 break;
             ++hfile;
         }

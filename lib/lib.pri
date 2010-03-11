@@ -21,6 +21,10 @@ HEADERS += $$PWD/check.h \
            $$PWD/token.h \
            $$PWD/tokenize.h
 
+win32 {
+HEADERS += $$PWD/filelister_win32.h
+}           
+           
 SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkbufferoverrun.cpp \
            $$PWD/checkclass.cpp \
@@ -40,3 +44,7 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/settings.cpp \
            $$PWD/token.cpp \
            $$PWD/tokenize.cpp
+
+win32 {
+SOURCES += $$PWD/filelister_win32.cpp
+}           
