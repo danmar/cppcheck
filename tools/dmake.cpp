@@ -25,9 +25,9 @@
 #include <vector>
 
 #if defined(_WIN32)
-#include "fileLister_win32.h"
+#include "../lib/fileLister_win32.h"
 #else // POSIX-style system
-#include "filelister_unix.h"
+#include "../lib/filelister_unix.h"
 #endif
 
 std::string objfile(std::string cppfile)
