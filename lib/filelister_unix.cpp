@@ -68,8 +68,6 @@ void FileListerUnix::recursiveAddFiles(std::vector<std::string> &filenames, cons
     }
     globfree(&glob_results);
 }
-#endif
-
 
 bool FileListerUnix::sameFileName(const std::string &fname1, const std::string &fname2)
 {
@@ -80,3 +78,5 @@ bool FileListerUnix::sameFileName(const std::string &fname1, const std::string &
     return bool(strcasecmp(fname1.c_str(), fname2.c_str()) == 0);
 #endif
 }
+
+#endif // _WIN32
