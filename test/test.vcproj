@@ -263,6 +263,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\lib\filelister_win32.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\lib\mathlib.cpp"
 				>
 			</File>
@@ -450,6 +454,10 @@
 			</File>
 			<File
 				RelativePath="..\lib\filelister.h"
+				>
+			</File>
+			<File
+				RelativePath="..\lib\filelister_win32.h"
 				>
 			</File>
 			<File

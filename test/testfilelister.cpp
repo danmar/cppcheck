@@ -18,7 +18,12 @@
 
 #include <string>
 #include "testsuite.h"
-#include "filelister.h"
+
+#if defined(_WIN32)
+#include "../lib/fileLister_win32.h"
+#else // POSIX-style system
+#include "../lib/filelister_unix.h"
+#endif
 
 class TestFileLister : public TestFixture
 {
@@ -35,21 +40,19 @@ private:
 
     void simplify_path()
     {
-        ASSERT_EQUALS("index.h", FileLister::simplifyPath("index.h"));
-        ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/index.h"));
-        ASSERT_EQUALS("/path/", FileLister::simplifyPath("/path/"));
-        ASSERT_EQUALS("/", FileLister::simplifyPath("/"));
-        ASSERT_EQUALS("./index.h", FileLister::simplifyPath("./index.h"));
-        ASSERT_EQUALS("../index.h", FileLister::simplifyPath("../index.h"));
-        ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/path/../index.h"));
-        ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/path/../other/../index.h"));
-        ASSERT_EQUALS("/index.h", FileLister::simplifyPath("/path/../other///././../index.h"));
-        ASSERT_EQUALS("../path/index.h", FileLister::simplifyPath("../path/other/../index.h"));
-        ASSERT_EQUALS("a/index.h", FileLister::simplifyPath("a/../a/index.h"));
-        ASSERT_EQUALS("a/..", FileLister::simplifyPath("a/.."));
+        ASSERT_EQUALS("index.h", getFileLister()->simplifyPath("index.h"));
+        ASSERT_EQUALS("/index.h", getFileLister()->simplifyPath("/index.h"));
+        ASSERT_EQUALS("/path/", getFileLister()->simplifyPath("/path/"));
+        ASSERT_EQUALS("/", getFileLister()->simplifyPath("/"));
+        ASSERT_EQUALS("./index.h", getFileLister()->simplifyPath("./index.h"));
+        ASSERT_EQUALS("../index.h", getFileLister()->simplifyPath("../index.h"));
+        ASSERT_EQUALS("/index.h", getFileLister()->simplifyPath("/path/../index.h"));
+        ASSERT_EQUALS("/index.h", getFileLister()->simplifyPath("/path/../other/../index.h"));
+        ASSERT_EQUALS("/index.h", getFileLister()->simplifyPath("/path/../other///././../index.h"));
+        ASSERT_EQUALS("../path/index.h", getFileLister()->simplifyPath("../path/other/../index.h"));
+        ASSERT_EQUALS("a/index.h", getFileLister()->simplifyPath("a/../a/index.h"));
+        ASSERT_EQUALS("a/..", getFileLister()->simplifyPath("a/.."));
     }
-
-
 };
 
 REGISTER_TEST(TestFileLister)
