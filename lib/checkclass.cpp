@@ -1475,6 +1475,7 @@ void CheckClass::checkConst()
 
     std::vector<NestInfo> nestInfo;
     int level = 0;
+    Var *varlist = 0;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (tok->str() == "{" && !nestInfo.empty())
@@ -1487,6 +1488,8 @@ void CheckClass::checkConst()
         }
         else if (Token::Match(tok, "class|struct %var% {"))
         {
+            const Token *classTok = tok;
+
             // get class name..
             std::string classname(tok->strAt(1));
 
@@ -1503,6 +1506,17 @@ void CheckClass::checkConst()
             info.classEnd = classEnd;
             info.levelEnd = level++;
             nestInfo.push_back(info);
+
+            // Delete the varlist..
+            while (varlist)
+            {
+                Var *nextvar = varlist->next;
+                delete varlist;
+                varlist = nextvar;
+            }
+
+            // Get class variables...
+            varlist = getVarList(classTok, true, classTok->str() == "struct");
 
             // parse in this class definition to see if there are any simple getter functions
             for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
@@ -1556,10 +1570,9 @@ void CheckClass::checkConst()
                     if (Token::simpleMatch(tok2, ") {"))
                     {
                         const Token *paramEnd = tok2;
-                        const Token *paramStart = tok2->link();
 
                         // if nothing non-const was found. write error..
-                        if (checkConstFunc(paramStart, paramEnd))
+                        if (checkConstFunc(varlist, paramEnd))
                         {
                             for (int i = nestInfo.size() - 2; i >= 0; i--)
                                 classname = std::string(nestInfo[i].className + "::" + classname);
@@ -1578,8 +1591,7 @@ void CheckClass::checkConst()
                                 pattern = std::string(nestInfo[j].className + " :: " + pattern);
                             while ((found = Token::findmatch(found->next(), pattern.c_str())))
                             {
-                                const Token *paramStart = found->tokAt(1 + (2 * level));
-                                const Token *paramEnd = paramStart->link();
+                                const Token *paramEnd = found->tokAt(1 + (2 * level))->link();
                                 if (!paramEnd)
                                     break;
                                 if (paramEnd->next()->str() != "{")
@@ -1588,7 +1600,7 @@ void CheckClass::checkConst()
                                 if (sameFunc(level, tok2, paramEnd))
                                 {
                                     // if nothing non-const was found. write error..
-                                    if (checkConstFunc(paramStart, paramEnd))
+                                    if (checkConstFunc(varlist, paramEnd))
                                     {
                                         for (int k = nestInfo.size() - 2; k >= 0; k--)
                                             classname = std::string(nestInfo[k].className + "::" + classname);
@@ -1602,6 +1614,14 @@ void CheckClass::checkConst()
                 }
             }
         }
+    }
+
+    // Delete the varlist..
+    while (varlist)
+    {
+        Var *nextvar = varlist->next;
+        delete varlist;
+        varlist = nextvar;
     }
 }
 
@@ -1711,17 +1731,39 @@ bool CheckClass::sameFunc(int nest, const Token *firstEnd, const Token *secondEn
     return true;
 }
 
-bool CheckClass::checkConstFunc(const Token *paramStart, const Token *paramEnd)
+bool CheckClass::isMemberVar(const Var *varlist, const Token *tok)
+{
+    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:"))
+    {
+        if (tok->previous()->str() == "this" && tok->tokAt(-2)->str() == "*")
+            return true;
+
+        tok = tok->previous();
+    }
+
+    if (tok->str() == "this")
+        return true;
+
+    for (const Var *var = varlist; var; var = var->next)
+    {
+        if (var->name == tok->str())
+            return true;
+    }
+
+    return false;
+}
+
+bool CheckClass::checkConstFunc(const Var *varlist, const Token *tok)
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
     unsigned int indentlevel = 0;
     bool isconst = true;
-    for (const Token *tok3 = paramEnd; tok3; tok3 = tok3->next())
+    for (const Token *tok1 = tok; tok1; tok1 = tok1->next())
     {
-        if (tok3->str() == "{")
+        if (tok1->str() == "{")
             ++indentlevel;
-        else if (tok3->str() == "}")
+        else if (tok1->str() == "}")
         {
             if (indentlevel <= 1)
                 break;
@@ -1729,48 +1771,33 @@ bool CheckClass::checkConstFunc(const Token *paramStart, const Token *paramEnd)
         }
 
         // assignment.. = += |= ..
-        else if (tok3->str() == "=" ||
-                 (tok3->str().find("=") == 1 &&
-                  tok3->str().find_first_of("<>") == std::string::npos))
+        else if (tok1->str() == "=" ||
+                 (tok1->str().find("=") == 1 &&
+                  tok1->str().find_first_of("<!>") == std::string::npos))
         {
-            if (tok3->str() == "=") // assignment.. =
+            if (isMemberVar(varlist, tok1->previous()))
             {
-                const Token * param = findParameter(tok3->previous(), paramStart, paramEnd);
-                if (param)
-                {
-                    // assignment to function argument reference can be const
-                    // f(type & x) { x = something; }
-                    if (param->tokAt(-1)->str() == "&")
-                        continue;
-
-                    // assignment to function argument pointer can be const
-                    // f(type * x) { *x = something; }
-                    else if ((param->tokAt(-1)->str() == "*") &&
-                             (tok3->tokAt(-2)->str() == "*"))
-                        continue;
-                }
+                isconst = false;
+                break;
             }
-
-            isconst = false;
-            break;
         }
 
         // increment/decrement (member variable?)..
-        else if (Token::Match(tok3, "++|--"))
+        else if (Token::Match(tok1, "++|--"))
         {
             isconst = false;
             break;
         }
 
         // function call..
-        else if (tok3->str() != "return" && Token::Match(tok3, "%var% ("))
+        else if (tok1->str() != "return" && Token::Match(tok1, "%var% ("))
         {
             isconst = false;
             break;
         }
 
         // delete..
-        else if (tok3->str() == "delete")
+        else if (tok1->str() == "delete")
         {
             isconst = false;
             break;

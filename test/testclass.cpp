@@ -88,6 +88,7 @@ private:
         TEST_CASE(const2);
         TEST_CASE(const3);
         TEST_CASE(const4);
+        TEST_CASE(const5); // ticket #1482
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2046,6 +2047,21 @@ private:
                    "    bool operator<(const Fred &f) { return (a < f.a); }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::operator<' can be const\n", errout.str());
+    }
+
+    void const5()
+    {
+        // ticket #1482
+        checkConst("class A {\n"
+                   "    int a;\n"
+                   "    bool foo(int i)\n"
+                   "    {\n"
+                   "        bool same;\n"
+                   "        same = (i == a);\n"
+                   "        return same;\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'A::foo' can be const\n", errout.str());
     }
 
     // increment/decrement => not const

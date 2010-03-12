@@ -153,7 +153,8 @@ private:
     void checkConstructors(const Token *tok1, const std::string &funcname, bool hasPrivateConstructor, bool isStruct);
 
     bool sameFunc(int nest, const Token *firstEnd, const Token *secondEnd);
-    bool checkConstFunc(const Token *paramStart, const Token *paramEnd);
+    bool isMemberVar(const Var *varlist, const Token *tok);
+    bool checkConstFunc(const Var *varlist, const Token *tok);
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
