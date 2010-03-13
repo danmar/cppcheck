@@ -35,7 +35,15 @@ class Tokenizer;
 /// @addtogroup Checks
 /// @{
 
-
+/**
+ * @brief buffer overruns and array index out of bounds
+ *
+ * Buffer overrun and array index out of bounds are pretty much the same.
+ * But I generally use 'array index' if the code contains []. And the given
+ * index is out of bounds.
+ * I generally use 'buffer overrun' if you for example call a strcpy or
+ * other function and pass a buffer and reads or writes too much data.
+ */
 class CheckBufferOverrun : public Check
 {
 public:
@@ -55,14 +63,21 @@ public:
         checkBufferOverrun.bufferOverrun();
     }
 
-    /** Check for buffer overruns */
+    /** @brief %Check for buffer overruns */
     void bufferOverrun();
+
+    /**
+     * @brief Get minimum length of format string result
+     * @param input_string format string
+     * @param parameters given parameters to sprintf
+     * @return minimum length of resulting string
+     */
     static int countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
 
 private:
 
     /**
-     * Check code that matches: "sprintf ( %varid% , %str% [,)]" when varid is not 0,
+     * @brief %Check code that matches: "sprintf ( %varid% , %str% [,)]" when varid is not 0,
      * and report found errors.
      * @param tok The "sprintf" token.
      * @param size The size of the buffer where sprintf is writing.

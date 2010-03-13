@@ -2683,15 +2683,16 @@ void CheckMemoryLeakStructMember::check()
 
 
 
-
+/** @brief Experimental class for detecting memory leaks. The ExecutionPath functionality is used */
 class CheckLocalLeaks : public ExecutionPath
 {
 public:
-    // Startup constructor
+    /** Startup constructor */
     CheckLocalLeaks(Check *c) : ExecutionPath(c, 0), allocated(false)
     {
     }
 
+    /** Debugging : print checks */
     static void printOut(const std::list<ExecutionPath *> &checks)
     {
         std::ostringstream ostr;
@@ -2718,12 +2719,16 @@ private:
     {
     }
 
+    /** Is variable allocated? */
     bool allocated;
+
+    /** Name of variable */
     const std::string varname;
 
-    /* no implementation */
+    /** no implementation => compiler error if used */
     void operator=(const CheckLocalLeaks &);
 
+    /** Allocation is detected */
     static void alloc(std::list<ExecutionPath *> &checks, const unsigned int varid)
     {
         if (varid == 0)
@@ -2738,6 +2743,7 @@ private:
         }
     }
 
+    /** Deallocation is detected */
     static void dealloc(std::list<ExecutionPath *> &checks, const Token *tok)
     {
         if (tok->varId() == 0)
@@ -2752,6 +2758,7 @@ private:
         }
     }
 
+    /** return */
     static void ret(const std::list<ExecutionPath *> &checks, const Token *tok, bool &foundError)
     {
         std::list<ExecutionPath *>::const_iterator it;
@@ -2771,6 +2778,7 @@ private:
         }
     }
 
+    /** parse the tokens */
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
     {
         //std::cout << "CheckLocalLeaks::parse " << tok.str() << std::endl;

@@ -27,6 +27,10 @@
 /// @addtogroup Checks
 /// @{
 
+/**
+ * @brief Using dangerous functions that are always insecure to use.
+ */
+
 class CheckDangerousFunctions : public Check
 {
 public:
@@ -52,9 +56,11 @@ public:
     void dangerousFunctions();
 
 private:
-    /** Error Messages.. */
+    /** Report Error : Using dangerous function 'mktemp' */
     void dangerousFunctionmktemp(const Token *tok);
+    /** Report Error : Using dangerous function 'gets' */
     void dangerousFunctiongets(const Token *tok);
+    /** Report Error : Using dangerous function 'scanf' */
     void dangerousFunctionscanf(const Token *tok);
 
     void getErrorMessages()

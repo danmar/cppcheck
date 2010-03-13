@@ -43,12 +43,16 @@ public:
             : Check(tokenizer, settings, errorLogger)
     { }
 
+    /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckClass checkClass(tokenizer, settings, errorLogger);
+
+        // can't be a simplified check .. the 'sizeof' is used.
         checkClass.noMemset();
     }
 
+    /** @brief Run checks on the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckClass checkClass(tokenizer, settings, errorLogger);
@@ -78,7 +82,10 @@ public:
 
     /**
      * @brief %Check that the memsets are valid.
-     * The 'memset' function can do dangerous things if used wrong.
+     * The 'memset' function can do dangerous things if used wrong. If it
+     * is used on STL containers for instance it will clear all its data
+     * and then the STL container may leak memory or worse have an invalid state.
+     * It can also overwrite the virtual table.
      * Important: The checking doesn't work on simplified tokens list.
      */
     void noMemset();

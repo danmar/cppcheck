@@ -1408,16 +1408,24 @@ static void parseFunctionCall(const Token &tok, std::list<const Token *> &var, u
 }
 
 
+/// @addtogroup Checks
+/// @{
+
+
+/**
+ * @brief %Check for null pointer usage (using ExecutionPath)
+ */
+
 class CheckNullpointer : public ExecutionPath
 {
 public:
-    // Startup constructor
+    /** Startup constructor */
     CheckNullpointer(Check *c) : ExecutionPath(c, 0), null(false)
     {
     }
 
 private:
-    // Create checking of specific variable:
+    /** Create checking of specific variable: */
     CheckNullpointer(Check *c, const unsigned int id, const std::string &name)
             : ExecutionPath(c, id),
             varname(name),
@@ -1425,17 +1433,22 @@ private:
     {
     }
 
+    /** Copy this check */
     ExecutionPath *copy()
     {
         return new CheckNullpointer(*this);
     }
 
-    /* no implementation */
+    /** no implementation => compiler error if used by accident */
     void operator=(const CheckNullpointer &);
 
+    /** variable name for this check (empty => dummy check) */
     const std::string varname;
+
+    /** is this variable null? */
     bool null;
 
+    /** variable is set to null */
     static void setnull(std::list<ExecutionPath *> &checks, const unsigned int varid)
     {
         std::list<ExecutionPath *>::iterator it;
@@ -1447,6 +1460,7 @@ private:
         }
     }
 
+    /** variable is dereferenced. If the variable is null there's an error */
     static void dereference(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());
@@ -1468,6 +1482,7 @@ private:
         }
     }
 
+    /** parse tokens */
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
     {
         if (Token::Match(tok.previous(), "[;{}] %type% * %var% ;"))
@@ -1550,6 +1565,7 @@ private:
         return &tok;
     }
 
+    /** parse condition. @sa ExecutionPath::parseCondition */
     bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
     {
         if (Token::Match(&tok, "!| %var% ("))
@@ -1566,38 +1582,50 @@ private:
 };
 
 
-
+/**
+ * @brief %Check that uninitialized variables aren't used (using ExecutionPath)
+ * */
 class CheckUninitVar : public ExecutionPath
 {
 public:
-    // Startup constructor
+    /** Startup constructor */
     CheckUninitVar(Check *c)
             : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), strncpy_(false)
     {
     }
 
 private:
+    /** Create a copy of this check */
     ExecutionPath *copy()
     {
         return new CheckUninitVar(*this);
     }
 
-    /* no implementation */
+    /** no implementation => compiler error if used */
     void operator=(const CheckUninitVar &);
 
-    // internal constructor for creating extra checks
+    /** internal constructor for creating extra checks */
     CheckUninitVar(Check *c, unsigned int v, const std::string &name, bool p, bool a)
             : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), strncpy_(false)
     {
     }
 
+    /** variable name for this check */
     const std::string varname;
+
+    /** is this variable a pointer? */
     const bool pointer;
+
+    /** is this variable an array? */
     const bool array;
+
+    /** is this variable allocated? */
     bool  alloc;
+
+    /** is this variable initialized with strncpy (not always zero-terminated) */
     bool  strncpy_;
 
-    // p = malloc ..
+    /** allocating pointer. For example : p = malloc(10); */
     static void alloc_pointer(std::list<ExecutionPath *> &checks, unsigned int varid)
     {
         std::list<ExecutionPath *>::const_iterator it;
@@ -1609,7 +1637,7 @@ private:
         }
     }
 
-    // *p = ..
+    /** Initializing a pointer value. For example: *p = 0; */
     static void init_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());
@@ -1638,7 +1666,7 @@ private:
         }
     }
 
-    // free p;
+    /** Deallocate a pointer. For example: free(p); */
     static void dealloc_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());
@@ -1825,6 +1853,7 @@ private:
         use(foundError, checks, tok, 3);
     }
 
+    /** declaring a variable */
     void declare(std::list<ExecutionPath *> &checks, const Token *vartok, const Token &tok, const bool p, const bool a) const
     {
         if (vartok->varId() == 0)
@@ -1868,6 +1897,7 @@ private:
             checks.push_back(new CheckUninitVar(owner, vartok->varId(), vartok->str(), p, a));
     }
 
+    /** parse tokens. @sa ExecutionPath::parse */
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
     {
         // Variable declaration..
@@ -2210,6 +2240,7 @@ private:
 
 public:
 
+    /** Functions that don't handle uninitialized variables well */
     static std::set<std::string> uvarFunctions;
 
     static void analyseFunctions(const Token * const tokens, std::set<std::string> &func)
@@ -2254,7 +2285,11 @@ public:
     }
 };
 
+/** Functions that don't handle uninitialized variables well */
 std::set<std::string> CheckUninitVar::uvarFunctions;
+
+
+/// @}
 
 
 void CheckOther::analyseFunctions(const Token * const tokens, std::set<std::string> &func)
