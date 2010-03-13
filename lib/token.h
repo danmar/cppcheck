@@ -96,19 +96,19 @@ public:
      * Match given token (or list of tokens) to a pattern list.
      *
      * Possible patterns
-     * "%any%" any token
-     * "%var%" any token which is a name or type e.g. "hello" or "int"
-     * "%name%" any token which is a name or type e.g. "hello" or "int"
-     * "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
-     * "%num%" Any numeric token, e.g. "23"
-     * "%bool%" true or false
-     * "%str%" Any token starting with "-character (C-string).
-     * "%varid%" Match with parameter varid
-     * "[abc]" Any of the characters 'a' or 'b' or 'c'
-     * "int|void|char" Any of the strings, int, void or char
-     * "int|void|char|" Any of the strings, int, void or char or empty string
-     * "!!else" No tokens or any token that is not "else".
-     * "someRandomText" If token contains "someRandomText".
+     * - "%any%" any token
+     * - "%var%" any token which is a name or type e.g. "hello" or "int"
+     * - "%name%" any token which is a name or type e.g. "hello" or "int"
+     * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
+     * - "%num%" Any numeric token, e.g. "23"
+     * - "%bool%" true or false
+     * - "%str%" Any token starting with &quot;-character (C-string).
+     * - "%varid%" Match with parameter varid
+     * - "[abc]" Any of the characters 'a' or 'b' or 'c'
+     * - "int|void|char" Any of the strings, int, void or char
+     * - "int|void|char|" Any of the strings, int, void or char or empty string
+     * - "!!else" No tokens or any token that is not "else".
+     * - "someRandomText" If token contains "someRandomText".
      *
      * The patterns can be also combined to compare to multiple tokens at once
      * by separating tokens with a space, e.g.
@@ -119,6 +119,7 @@ public:
      * @param tok List of tokens to be compared to the pattern
      * @param pattern The pattern against which the tokens are compared,
      * e.g. "const" or ") const|volatile| {".
+     * @param varid if %varid% is given in the pattern the Token::varId will be matched against this argument
      * @return true if given token matches with given pattern
      *         false if given token does not match with given pattern
      */
@@ -313,22 +314,22 @@ private:
 
     /**
      * Works almost like strcmp() except returns only 0 or 1 and
-     * if str has empty space ' ' character, that character is handled
-     * as if it were '\0'
+     * if str has empty space &apos; &apos; character, that character is handled
+     * as if it were &apos;\\0&apos;
      */
     static int firstWordEquals(const char *str, const char *word);
 
     /**
      * Works almost like strchr() except
-     * if str has empty space ' ' character, that character is handled
-     * as if it were '\0'
+     * if str has empty space &apos; &apos; character, that character is handled
+     * as if it were &apos;\\0&apos;
      */
     static const char *chrInFirstWord(const char *str, char c);
 
     /**
      * Works almost like strlen() except
-     * if str has empty space ' ' character, that character is handled
-     * as if it were '\0'
+     * if str has empty space &apos; &apos; character, that character is handled
+     * as if it were &apos;\\0&apos;
      */
     static int firstWordLen(const char *str);
 

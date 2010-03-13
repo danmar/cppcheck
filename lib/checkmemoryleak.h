@@ -24,7 +24,9 @@
 //---------------------------------------------------------------------------
 
 /**
- * \file Check for memory leaks
+ * @file
+ *
+ * %Check for memory leaks
  *
  * The checking is split up into two specialized classes.
  * - CheckMemoryLeakInFunction can detect when a function variable is allocated but not deallocated properly.
@@ -152,7 +154,7 @@ public:
 
 
 /**
- * @brief @CheckMemoryLeakInFunction detects when a function variable is allocated but not deallocated properly.
+ * @brief %CheckMemoryLeakInFunction detects when a function variable is allocated but not deallocated properly.
  *
  * The checking is done by looking at each function variable separately. By repeating these 4 steps over and over:
  * -# locate a function variable
@@ -194,21 +196,21 @@ private:
 #endif
 
     /**
-     * @brief @Check all variables in function scope
+     * @brief %Check all variables in function scope
      * @param tok The first '{' token of the function scope
      * @param classmember Is this function a class member?
      */
     void parseFunctionScope(const Token *tok, const bool classmember);
 
     /**
-     * @brief @Check if there is a "p = foo(p, .." and foo returns the argument (p)
+     * @brief %Check if there is a "p = foo(p, .." and foo returns the argument (p)
      * @param tok token to the ";" before the statement
      * @param varid varid to check
      */
     bool matchFunctionsThatReturnArg(const Token *tok, unsigned int varid) const;
 
     /**
-     * @brief @Check if there is a "!var" match inside a condition
+     * @brief %Check if there is a "!var" match inside a condition
      * @param tok      first token to match
      * @param varid    variabla id
      * @param endpar   if this is true the "!var" must be followed by ")"

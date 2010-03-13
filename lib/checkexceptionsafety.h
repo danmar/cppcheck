@@ -32,7 +32,7 @@ class Token;
 
 
 /**
- * @brief @Check exception safety (exceptions shouldn't cause leaks nor corrupt data)
+ * @brief %Check exception safety (exceptions shouldn't cause leaks nor corrupt data)
  *
  * The problem with these checks is that Cppcheck can't determine what the valid
  * values are for variables. But in some cases (dead pointers) it can be determined

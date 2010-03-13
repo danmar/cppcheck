@@ -112,7 +112,7 @@ protected:
     static std::string replaceIfDefined(const std::string &str);
 
     /**
-     * expand macros in code. #ifdefs etc are ignored so the code must be a single configuration
+     * expand macros in code. ifdefs etc are ignored so the code must be a single configuration
      * @param code The input code
      * @param filename filename of source file
      * @param errorLogger Error logger to write errors to (if any)

@@ -1620,7 +1620,7 @@ public:
 
 
 /**
- * Skip string in line. A string begins and ends with either a " or a '
+ * Skip string in line. A string begins and ends with either a &quot; or a &apos;
  * @param line the string
  * @param pos in=start position of string, out=end position of string
  */
