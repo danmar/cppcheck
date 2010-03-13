@@ -89,6 +89,7 @@ private:
         TEST_CASE(const3);
         TEST_CASE(const4);
         TEST_CASE(const5); // ticket #1482
+        TEST_CASE(const6); // ticket #1491
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2062,6 +2063,16 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'A::foo' can be const\n", errout.str());
+    }
+
+    void const6()
+    {
+        // ticket # 1491
+        checkConst("class foo {\n"
+                   "public:\n"
+                   "};\n"
+                   "void bar() {}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const
