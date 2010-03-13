@@ -18,15 +18,15 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <OutputExt>exe</OutputExt>
     <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
-    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+    <OutputExt>exe</OutputExt>
     <Defines>NO_STRICT</Defines>
+    <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
     <DynamicRTL>true</DynamicRTL>
-    <ILINK_ObjectSearchPath>C:\cppcheck;test;src;lib</ILINK_ObjectSearchPath>
     <UsePackages>true</UsePackages>
-    <NoVCL>true</NoVCL>
+    <ILINK_ObjectSearchPath>C:\cppcheck;test;src;lib</ILINK_ObjectSearchPath>
     <ProjectType>CppConsoleApplication</ProjectType>
+    <NoVCL>true</NoVCL>
     <FinalOutputDir>.</FinalOutputDir>
     <PackageImports>vclx.bpi;vcl.bpi;rtl.bpi;vclactnband.bpi</PackageImports>
     <BCC_wpar>false</BCC_wpar>
@@ -34,10 +34,10 @@
     <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;test;src;lib</ILINK_LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
     <DCC_Optimize>false</DCC_Optimize>
-    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+    <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
     <Defines>_DEBUG;_HAS_ITERATOR_DEBUGGING=1;$(Defines)</Defines>
+    <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
@@ -48,8 +48,8 @@
     <IntermediateOutputDir>bcb_Debug</IntermediateOutputDir>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
     <BCC_StackFrames>true</BCC_StackFrames>
-    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+    <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
   </PropertyGroup>
@@ -119,106 +119,112 @@
     </CppCompile>
     <CppCompile Include="lib\executionpath.cpp">
       <DependentOn>lib\executionpath.h</DependentOn>
-      <BuildOrder>18</BuildOrder>
+      <BuildOrder>12</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\filelister.cpp">
       <DependentOn>lib\filelister.h</DependentOn>
-      <BuildOrder>12</BuildOrder>
+      <BuildOrder>13</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="lib\filelister_unix.cpp">
+      <BuildOrder>14</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="lib\filelister_win32.cpp">
+      <BuildOrder>15</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\mathlib.cpp">
       <DependentOn>lib\mathlib.h</DependentOn>
-      <BuildOrder>13</BuildOrder>
+      <BuildOrder>16</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\preprocessor.cpp">
       <DependentOn>lib\preprocessor.h</DependentOn>
-      <BuildOrder>14</BuildOrder>
+      <BuildOrder>17</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\settings.cpp">
-      <BuildOrder>15</BuildOrder>
+      <BuildOrder>18</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\token.cpp">
       <DependentOn>lib\token.h</DependentOn>
-      <BuildOrder>16</BuildOrder>
+      <BuildOrder>19</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\tokenize.cpp">
       <DependentOn>lib\tokenize.h</DependentOn>
-      <BuildOrder>17</BuildOrder>
-    </CppCompile>
-    <CppCompile Include="test\testautovariables.cpp">
       <BuildOrder>20</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testbufferoverrun.cpp">
-      <BuildOrder>21</BuildOrder>
-    </CppCompile>
-    <CppCompile Include="test\testcharvar.cpp">
+    <CppCompile Include="test\testautovariables.cpp">
       <BuildOrder>22</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testclass.cpp">
+    <CppCompile Include="test\testbufferoverrun.cpp">
       <BuildOrder>23</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testconstructors.cpp">
+    <CppCompile Include="test\testcharvar.cpp">
       <BuildOrder>24</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testcppcheck.cpp">
+    <CppCompile Include="test\testclass.cpp">
       <BuildOrder>25</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testdangerousfunctions.cpp">
+    <CppCompile Include="test\testconstructors.cpp">
       <BuildOrder>26</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testdivision.cpp">
+    <CppCompile Include="test\testcppcheck.cpp">
       <BuildOrder>27</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testexceptionsafety.cpp">
+    <CppCompile Include="test\testdangerousfunctions.cpp">
       <BuildOrder>28</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testfilelister.cpp">
+    <CppCompile Include="test\testdivision.cpp">
       <BuildOrder>29</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testincompletestatement.cpp">
+    <CppCompile Include="test\testexceptionsafety.cpp">
       <BuildOrder>30</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testmathlib.cpp">
+    <CppCompile Include="test\testfilelister.cpp">
       <BuildOrder>31</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testmemleak.cpp">
+    <CppCompile Include="test\testincompletestatement.cpp">
       <BuildOrder>32</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testother.cpp">
+    <CppCompile Include="test\testmathlib.cpp">
       <BuildOrder>33</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testpreprocessor.cpp">
+    <CppCompile Include="test\testmemleak.cpp">
       <BuildOrder>34</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testredundantif.cpp">
+    <CppCompile Include="test\testother.cpp">
       <BuildOrder>35</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testrunner.cpp">
+    <CppCompile Include="test\testpreprocessor.cpp">
       <BuildOrder>36</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testsimplifytokens.cpp">
+    <CppCompile Include="test\testredundantif.cpp">
       <BuildOrder>37</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\teststl.cpp">
+    <CppCompile Include="test\testrunner.cpp">
       <BuildOrder>38</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\testsimplifytokens.cpp">
+      <BuildOrder>39</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\teststl.cpp">
+      <BuildOrder>40</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testsuite.cpp">
       <DependentOn>test\testsuite.h</DependentOn>
-      <BuildOrder>39</BuildOrder>
-    </CppCompile>
-    <CppCompile Include="test\testtoken.cpp">
-      <BuildOrder>40</BuildOrder>
-    </CppCompile>
-    <CppCompile Include="test\testtokenize.cpp">
       <BuildOrder>41</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testunusedfunctions.cpp">
+    <CppCompile Include="test\testtoken.cpp">
       <BuildOrder>42</BuildOrder>
     </CppCompile>
-    <CppCompile Include="test\testunusedprivfunc.cpp">
+    <CppCompile Include="test\testtokenize.cpp">
       <BuildOrder>43</BuildOrder>
     </CppCompile>
+    <CppCompile Include="test\testunusedfunctions.cpp">
+      <BuildOrder>44</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\testunusedprivfunc.cpp">
+      <BuildOrder>45</BuildOrder>
+    </CppCompile>
     <CppCompile Include="test\testunusedvar.cpp">
-      <BuildOrder>19</BuildOrder>
+      <BuildOrder>21</BuildOrder>
     </CppCompile>
     <BuildConfiguration Include="Debug">
       <Key>Cfg_1</Key>
