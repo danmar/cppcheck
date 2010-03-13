@@ -953,6 +953,11 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         {
                             dep = true;
                         }
+                        if (parlevel > 0 && Token::Match(tok2, "! %varid%", varid))
+                        {
+                            dep = true;
+                            break;
+                        }
                     }
 
                     if (Token::Match(tok, "if ( ! %varid% &&", varid))
@@ -969,6 +974,8 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     {
                         addtoken((dep ? "ifv" : "if"));
                     }
+
+                    tok = tok->next()->link();
                 }
             }
         }
@@ -1496,6 +1503,14 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             if (Token::Match(tok2, "[;{}] alloc ; while(!var) alloc ;"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(4));
+                done = false;
+            }
+
+            // Reduce "ifv return;" => "if return use;"
+            if (Token::simpleMatch(tok2, "ifv return ;"))
+            {
+                tok2->str("if");
+                tok2->next()->insertToken("use");
                 done = false;
             }
 
