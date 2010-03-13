@@ -30,7 +30,7 @@ class Tokenizer;
 /// @{
 
 /**
- * This is an interface, which the class responsible of error logging
+ * @brief This is an interface, which the class responsible of error logging
  * should implement.
  */
 class ErrorLogger
@@ -352,7 +352,7 @@ private:
     void _writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id);
 };
 
-/** enum class for severity */
+/** @brief enum class for severity. Used when reporting errors. */
 class Severity
 {
 public:

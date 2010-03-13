@@ -25,6 +25,7 @@
 /// @addtogroup Core
 /// @{
 
+/** @brief simple math functions that uses operands stored in std::string. useful when performing math on tokens. */
 
 class MathLib
 {
