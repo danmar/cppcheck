@@ -23,16 +23,13 @@
 #define checkmemoryleakH
 //---------------------------------------------------------------------------
 
-/// @addtogroup Checks
-/// @{
-
-
 /**
- * Check for memory leaks
+ * \file Check for memory leaks
  *
  * The checking is split up into two specialized classes.
  * - CheckMemoryLeakInFunction can detect when a function variable is allocated but not deallocated properly.
  * - CheckMemoryLeakInClass can detect when a class variable is allocated but not deallocated properly.
+ * - CheckMemoryLeakStructMember checks allocation/deallocation of structs and struct members
  */
 
 #include "check.h"
@@ -43,11 +40,17 @@
 
 class Token;
 
+/// @addtogroup Core
+/// @{
+
 /** @brief Base class for memory leaks checking */
 class CheckMemoryLeak
 {
 private:
+    /** For access to the tokens */
     const Tokenizer * const tokenizer;
+
+    /** ErrorLogger used to report errors */
     ErrorLogger * const errorLogger;
 
     /** Disable the default constructors */
@@ -84,13 +87,13 @@ public:
 
     }
 
-    /** What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
+    /** @brief What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
     enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Fd, Pipe, Dir, Many };
 
     void memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype, bool all);
 
     /**
-     * Get type of deallocation at given position
+     * @brief Get type of deallocation at given position
      * @param tok position
      * @param varnames variable names
      * @return type of deallocation
@@ -98,7 +101,7 @@ public:
     AllocType getDeallocationType(const Token *tok, const char *varnames[]) const;
 
     /**
-     * Get type of deallocation at given position
+     * @brief Get type of deallocation at given position
      * @param tok position
      * @param varid variable id
      * @return type of deallocation
@@ -106,20 +109,31 @@ public:
     AllocType getDeallocationType(const Token *tok, unsigned int varid) const;
 
     /**
-     * Get type of allocation at given position
+     * @brief Get type of allocation at given position
      */
     AllocType getAllocationType(const Token *tok2, unsigned int varid) const;
 
     /**
-     * Get type of reallocation at given position
+     * @brief Get type of reallocation at given position
      */
     AllocType getReallocationType(const Token *tok2, unsigned int varid) const;
 
+    /**
+     * @brief Is a typename the name of a class?
+     * @param _tokenizer tokenizer
+     * @param typestr type name
+     * @return true if the type name is the name of a class
+     */
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
 
     void memleakError(const Token *tok, const std::string &varname, bool all);
     void resourceLeakError(const Token *tok, const std::string &varname, bool all);
 
+    /**
+     * @brief Report error: deallocating a deallocated pointer
+     * @param tok token where error occurs
+     * @param varname name of variable
+     */
     void deallocDeallocError(const Token *tok, const std::string &varname);
     void deallocuseError(const Token *tok, const std::string &varname);
     void mismatchSizeError(const Token *tok, const std::string &sz);
@@ -129,10 +143,16 @@ public:
     AllocType functionReturnType(const Token *tok) const;
 };
 
+/// @}
+
+
+
+/// @addtogroup Checks
+/// @{
 
 
 /**
- * @brief CheckMemoryLeakInFunction detects when a function variable is allocated but not deallocated properly.
+ * @brief @CheckMemoryLeakInFunction detects when a function variable is allocated but not deallocated properly.
  *
  * The checking is done by looking at each function variable separately. By repeating these 4 steps over and over:
  * -# locate a function variable
@@ -144,44 +164,51 @@ public:
 class CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak
 {
 public:
-    /** This constructor is used when registering this class */
+    /** @brief This constructor is used when registering this class */
     CheckMemoryLeakInFunction() : Check(), CheckMemoryLeak(0, 0)
     { }
 
-    /** This constructor is used when running checks */
+    /** @brief This constructor is used when running checks */
     CheckMemoryLeakInFunction(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
     { }
 
+    /** @brief run all simplified checks */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckMemoryLeakInFunction checkMemoryLeak(tokenizer, settings, errorLogger);
         checkMemoryLeak.check();
     }
 
-    /** For unit testing the white list */
+    /** @brief Unit testing : testing the white list */
     static bool test_white_list(const std::string &funcname);
 
+    /** @brief Perform checking */
     void check();
 
+    /** @brief experimental: checking via ExecutionPath */
     void localleaks();
 
 #ifndef _MSC_VER
 private:
 #endif
 
-
     /**
-     * Check all variables in function scope
+     * @brief @Check all variables in function scope
      * @param tok The first '{' token of the function scope
      * @param classmember Is this function a class member?
      */
     void parseFunctionScope(const Token *tok, const bool classmember);
 
+    /**
+     * @brief @Check if there is a "p = foo(p, .." and foo returns the argument (p)
+     * @param tok token to the ";" before the statement
+     * @param varid varid to check
+     */
     bool matchFunctionsThatReturnArg(const Token *tok, unsigned int varid) const;
 
     /**
-     * Check if there is a "!var" match inside a condition
+     * @brief @Check if there is a "!var" match inside a condition
      * @param tok      first token to match
      * @param varid    variabla id
      * @param endpar   if this is true the "!var" must be followed by ")"
@@ -205,7 +232,7 @@ private:
      * - "dealloc" : the function deallocates the variable
      * - "dealloc_"
      * - "use" : the variable is used (unknown usage of the variable => the checking bails out)
-     * - "callfunc"
+     * - "callfunc" : a function call with unknown side effects
      * - "&use"
      */
     const char * call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz);
@@ -226,21 +253,22 @@ private:
      * memory by calling Tokenizer::deleteTokens(returnValue);
      * Returned tokens:
      * - alloc : the variable is allocated
-     * - dealloc : the variable is deallocated
-     * - realloc : the variable is reallocated
-     * - use : unknown usage -> bail out checking of this execution path
-     * - &use : the address of the variable is taken
-     * - ::use : calling member function of class
      * - assign : the variable is assigned a new value
+     * - break : corresponds to "break"
+     * - callfunc : a function call with unknown side effects
+     * - continue : corresponds to "continue"
+     * - dealloc : the variable is deallocated
+     * - goto : corresponds to a "goto"
      * - if : there is an "if"
      * - if(var) : corresponds with "if ( var != 0 )"
      * - if(!var) : corresponds with "if ( var == 0 )"
      * - ifv : the variable is used in some way in a "if"
      * - loop : corresponds to either a "for" or a "while"
-     * - continue : corresponds to "continue"
-     * - break : corresponds to "break"
-     * - goto : corresponds to a "goto"
+     * - realloc : the variable is reallocated
      * - return : corresponds to a "return"
+     * - use : unknown usage -> bail out checking of this execution path
+     * - &use : the address of the variable is taken
+     * - ::use : calling member function of class
      */
     Token *getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz);
 
@@ -263,6 +291,7 @@ private:
      */
     void checkScope(const Token *Tok1, const std::string &varname, unsigned int varid, bool classmember, unsigned int sz);
 
+    /** Report all possible errors (for the --errorlist) */
     void getErrorMessages()
     {
         memleakError(0, "varname", false);
@@ -275,17 +304,28 @@ private:
         mismatchAllocDealloc(callstack, "varname", false);
     }
 
+    /**
+     * Get name of class (--doc)
+     * @return name of class
+     */
     std::string name() const
     {
         return "Memory leaks (function variables)";
     }
 
+    /**
+     * Get class information (--doc)
+     * @return Wiki formatted information about this class
+     */
     std::string classInfo() const
     {
         return "Is there any allocated memory when a function goes out of scope";
     }
 
+    /** parse tokens to see what functions are "noreturn" */
     void parse_noreturn();
+
+    /** Function names for functions that are "noreturn" */
     std::set<std::string> noreturn;
 };
 

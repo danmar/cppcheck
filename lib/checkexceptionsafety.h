@@ -30,6 +30,15 @@ class Token;
 /// @{
 
 
+
+/**
+ * @brief @Check exception safety (exceptions shouldn't cause leaks nor corrupt data)
+ *
+ * The problem with these checks is that Cppcheck can't determine what the valid
+ * values are for variables. But in some cases (dead pointers) it can be determined
+ * that certain variable values are corrupt.
+ */
+
 class CheckExceptionSafety : public Check
 {
 public:
@@ -88,6 +97,7 @@ private:
         reportError(tok, Severity::error, "exceptDeallocThrow", "Throwing exception in invalid state, " + varname + " points at deallocated memory");
     }
 
+    /** Generate all possible errors (for --errorlist) */
     void getErrorMessages()
     {
         destructorsError(0);
@@ -96,11 +106,13 @@ private:
         deallocThrowError(0, "p");
     }
 
+    /** Short description of class (for --doc) */
     std::string name() const
     {
         return "Exception Safety";
     }
 
+    /** wiki formatted description of the class (for --doc) */
     std::string classInfo() const
     {
         return "Checking exception safety\n"
