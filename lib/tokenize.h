@@ -290,6 +290,9 @@ private:
      */
     bool simplifyFunctionReturn();
 
+    /** Struct initialization */
+    void simplifyStructInit();
+
     /**
      * Remove redundant paranthesis:
      * - "((x))" => "(x)"

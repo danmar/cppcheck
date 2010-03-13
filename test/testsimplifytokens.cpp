@@ -222,6 +222,9 @@ private:
 
         // while(fclose(f)); => r = fclose(f); while(r){r=fclose(f);}
         TEST_CASE(simplifyFuncInWhile);
+
+        // struct ABC abc = { .a = 3 };  =>  struct ABC abc; abc.a = 3;
+        TEST_CASE(initstruct);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -4101,6 +4104,14 @@ private:
                       "; cppcheck:r = fclose ( g ) ; "
                       "}",
                       tok("while(fclose(f)); while(fclose(g));"));
+    }
+
+    void initstruct()
+    {
+        ASSERT_EQUALS("; struct A a ; a . buf = 3 ;", tok("; struct A a = { .buf = 3 };"));
+        ASSERT_EQUALS("; struct A a ; a . buf = x ;", tok("; struct A a = { .buf = x };"));
+        ASSERT_EQUALS("; struct A a ; a . buf = & key ;", tok("; struct A a = { .buf = &key };"));
+        ASSERT_EQUALS("; struct ABC abc ; abc . a = 3 ; abc . b = x ; abc . c = & key ;", tok("; struct ABC abc = { .a = 3, .b = x, .c = &key };"));
     }
 };
 
