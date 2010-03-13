@@ -235,7 +235,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         }
 
         // Before a new statement there is "[{};)=]" or "else"
-        if (! Token::Match(ftok, "[{};)=]") && ftok->str() != "else")
+        if (! Token::Match(ftok, "[{};()=]") && ftok->str() != "else")
             continue;
 
         // Using the operator= function to initialize all variables..
@@ -285,18 +285,22 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             continue;
         }
 
+        else if (ftok->str() == "if")
+            continue;
+
         // Calling member function?
         else if (Token::Match(ftok, "%var% ("))
         {
             // No recursive calls!
             if (std::find(callstack.begin(), callstack.end(), ftok->str()) == callstack.end())
             {
-                callstack.push_back(ftok->str());
                 int i = 0;
                 const Token *ftok2 = _tokenizer->findClassFunction(tok1, classname, ftok->strAt(0), i, isStruct);
                 if (ftok2)
                 {
+                    callstack.push_back(ftok->str());
                     initializeVarList(tok1, ftok2, varlist, classname, callstack, isStruct);
+                    callstack.pop_back();
                 }
                 else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
                 {
@@ -331,16 +335,16 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
 
                     // the function is external and it's neither friend nor inherited virtual function.
                     // assume all variables that are passed to it are initialized..
-                    unsigned int indentlevel = 0;
+                    unsigned int indentlevel2 = 0;
                     for (tok = ftok->tokAt(2); tok; tok = tok->next())
                     {
                         if (tok->str() == "(")
-                            ++indentlevel;
+                            ++indentlevel2;
                         else if (tok->str() == ")")
                         {
-                            if (indentlevel == 0)
+                            if (indentlevel2 == 0)
                                 break;
-                            --indentlevel;
+                            --indentlevel2;
                         }
                         if (tok->isName())
                         {
