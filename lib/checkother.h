@@ -30,19 +30,22 @@ class Token;
 /// @addtogroup Checks
 /// @{
 
+
+/** @brief Various small checks */
+
 class CheckOther : public Check
 {
 public:
-    /** This constructor is used when registering the CheckClass */
+    /** @brief This constructor is used when registering the CheckClass */
     CheckOther() : Check()
     { }
 
-    /** This constructor is used when running checks.. */
+    /** @brief This constructor is used when running checks.. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
 
-
+    /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
@@ -59,6 +62,7 @@ public:
         }
     }
 
+    /** @brief Run checks against the simplified token list */
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
@@ -84,11 +88,14 @@ public:
     }
 
 
-    // TODO move CheckUninitVar?
+    /**
+     * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables
+     * @param tokens [in] the token list
+     * @param func [out] names of functions that don't handle uninitialized variables well. the function names are added to the set. No clearing is made.
+     */
     static void analyseFunctions(const Token * const tokens, std::set<std::string> &func);
 
-
-    // Casting
+    /** @brief %Check: Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
 
     // Redundant code

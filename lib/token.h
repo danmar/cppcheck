@@ -116,6 +116,9 @@ public:
      * "const" or "void" and token after that is '{'. If even one of the tokens does not
      * match its pattern, false is returned.
      *
+     * @todo pattern "%type%|%num%" should mean either a type or a num.
+     * @todo pattern "%OR%|%OROR%" should mean either a "|" or a "||"
+     *
      * @param tok List of tokens to be compared to the pattern
      * @param pattern The pattern against which the tokens are compared,
      * e.g. "const" or ") const|volatile| {".
