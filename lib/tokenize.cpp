@@ -4807,6 +4807,48 @@ bool Tokenizer::simplifyKnownVariables()
                         ret = true;
                     }
 
+                    // Using the variable in for-condition..
+                    if (Token::simpleMatch(tok3, "for ("))
+                    {
+                        for (Token *tok4 = tok3->tokAt(2); tok4; tok4 = tok4->next())
+                        {
+                            if (tok4->str() == "(" || tok4->str() == ")")
+                                break;
+
+                            // Replace variable used in condition..
+                            if (Token::Match(tok4, "; %var% <|<=|!= %var% ; ++| %var% ++| )"))
+                            {
+                                const Token *inctok = tok4->tokAt(5);
+                                if (inctok->str() == "++")
+                                    inctok = inctok->next();
+                                if (inctok->varId() == varid)
+                                    break;
+
+                                if (tok4->next()->varId() == varid)
+                                {
+                                    tok4->next()->str(value);
+                                    ret = true;
+                                }
+                                if (tok4->tokAt(3)->varId() == varid)
+                                {
+                                    tok4->tokAt(3)->str(value);
+                                    ret = true;
+                                }
+                            }
+                        }
+
+                        if (tok3->next()->varId() == varid)
+                        {
+                            tok3->next()->str(value);
+                            ret = true;
+                        }
+                        else if (tok3->tokAt(3)->varId() == varid)
+                        {
+                            tok3->tokAt(3)->str(value);
+                            ret = true;
+                        }
+                    }
+
                     if (Token::Match(tok3->next(), "%varid% ++|--", varid) && MathLib::isInt(value))
                     {
                         const std::string op(tok3->strAt(2));

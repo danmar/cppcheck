@@ -99,6 +99,7 @@ private:
         TEST_CASE(simplifyKnownVariables18);
         TEST_CASE(simplifyKnownVariables19);
         TEST_CASE(simplifyKnownVariables20);
+        TEST_CASE(simplifyKnownVariables21);
 
         TEST_CASE(match1);
 
@@ -1060,6 +1061,15 @@ private:
 
         ASSERT_EQUALS(
             "void f ( ) { int i ; i = 0 ; if ( x ) { if ( 0 ) { i = 0 ; } } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables21()
+    {
+        const char code[] = "void foo() { int n = 10; for (int i = 0; i < n; ++i) { } }";
+
+        ASSERT_EQUALS(
+            "void foo ( ) { int n ; n = 10 ; for ( int i = 0 ; i < 10 ; ++ i ) { } }",
             simplifyKnownVariables(code));
     }
 
