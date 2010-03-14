@@ -93,6 +93,7 @@ signals:
     * @param message error message
     * @param files list of files affected by the error
     * @param lines list of file line numers affected by the error
+    * @param id error id
     */
     void Error(const QString &file,
                const QString &severity,

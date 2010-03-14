@@ -50,7 +50,7 @@ public:
     * Refreshes the tree.
     *
     * @param type Type of error to show/hide
-    * @param Should specified errors be shown (true) or hidden (false)
+    * @param show Should specified errors be shown (true) or hidden (false)
     */
     void ShowResults(ShowTypes type, bool show);
 
@@ -74,6 +74,7 @@ public:
     * @param showFullPath Show full path of files in the tree
     * @param saveFullPath Save full path of files in reports
     * @param saveAllErrors Save all visible errors
+    * @param showNoErrorsMessage Show "no errors"?
     */
     void UpdateSettings(bool showFullPath,
                         bool saveFullPath,
@@ -149,13 +150,14 @@ public slots:
     * @param message error message
     * @param files list of files affected by the error
     * @param lines list of file line numers affected by the error
+    * @param id error id
     */
     void Error(const QString &file,
                const QString &severity,
                const QString &message,
                const QStringList &files,
                const QVariantList &lines,
-               const QString &error);
+               const QString &id);
 
     /**
     * @brief Collapse all results in the result list.

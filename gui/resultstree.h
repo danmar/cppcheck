@@ -55,6 +55,7 @@ public:
     * @param message error message
     * @param files list of files affected by the error
     * @param lines list of file line numers affected by the error
+    * @param id error id
     */
     void AddErrorItem(const QString &file,
                       const QString &severity,
@@ -183,8 +184,8 @@ protected:
 
 
     /**
-    * @brief Save all errors under spesified item
-    *
+    * @brief Save all errors under specified item
+    * @param report Report that errors are saved to
     * @param item Item whose errors to save
     */
     void SaveErrors(Report *report, QStandardItem *item);
