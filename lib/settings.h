@@ -30,118 +30,129 @@
 
 
 /**
- * This is just a container for general settings so that we don't need
+ * @brief This is just a container for general settings so that we don't need
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
 class Settings
 {
 private:
-    /** classes that are automaticly deallocated */
+    /** @brief classes that are automaticly deallocated */
     std::set<std::string> _autoDealloc;
 
-    /** Code to append in the checks */
+    /** @brief Code to append in the checks */
     std::string _append;
 
-    /** enable extra checks by id */
+    /** @brief enable extra checks by id */
     std::map<std::string, bool> _enabled;
 
-    /** terminate checking */
+    /** @brief terminate checking */
     bool _terminate;
 public:
     Settings();
     virtual ~Settings();
 
+    /** @brief Is --debug given? */
     bool _debug;
+
+    /** @brief Is --all given? */
     bool _showAll;
+
+    /** @brief Is --style given? */
     bool _checkCodingStyle;
+
+    /** @brief Is --quiet given? */
     bool _errorsOnly;
+
+    /** @brief Is --inline-suppr given? */
     bool _inlineSuppressions;
+
+    /** @brief Is --verbose given? */
     bool _verbose;
 
-    /** Request termination of checking */
+    /** @brief Request termination of checking */
     void terminate()
     {
         _terminate = true;
     }
 
-    /** termination? */
+    /** @brief termination requested? */
     bool terminated() const
     {
         return _terminate;
     }
 
-    /** Force checking t he files with "too many" configurations. */
+    /** @brief Force checking the files with "too many" configurations (--force). */
     bool _force;
 
-    /** write xml results */
+    /** @brief write xml results (--xml) */
     bool _xml;
 
-    /** How many processes/threads should do checking at the same
-        time. Default is 1. */
+    /** @brief How many processes/threads should do checking at the same
+        time. Default is 1. (-j N) */
     unsigned int _jobs;
 
-    /** If errors are found, this value is returned from main().
+    /** @brief If errors are found, this value is returned from main().
         Default value is 0. */
     int _exitCode;
 
-    /** The output format in which the errors are printed in text mode,
+    /** @brief The output format in which the errors are printed in text mode,
         e.g. "{severity} {file}:{line} {message} {id}" */
     std::string _outputFormat;
 
-    /** show timing information */
+    /** @brief show timing information (--showtime) */
     bool _showtime;
 
-    /** List of include paths, e.g. "my/includes/" which should be used
-        for finding include files inside source files. */
+    /** @brief List of include paths, e.g. "my/includes/" which should be used
+        for finding include files inside source files. (-I) */
     std::list<std::string> _includePaths;
 
-    /** Fill list of automaticly deallocated classes */
+    /** @brief Fill list of automaticly deallocated classes (--auto-dealloc) */
     void autoDealloc(std::istream &istr);
 
-    /** Add class to list of automatically deallocated classes */
+    /** @brief Add class to list of automatically deallocated classes */
     void addAutoAllocClass(const std::string &name);
 
-    /** is a class automaticly deallocated? */
+    /** @brief is a class automaticly deallocated? */
     bool isAutoDealloc(const std::string &classname) const;
 
-    /** assign append code */
+    /** @brief assign append code (--append) */
     void append(const std::string &filename);
 
-    /** get append code */
+    /** @brief get append code (--append) */
     std::string append() const;
 
     /**
-     * Returns true if given id is in the list of
-     * enabled extra checks. See addEnabled()
+     * @brief Returns true if given id is in the list of
+     * enabled extra checks (--enable)
      * @param str id for the extra check, e.g. "style"
      * @return true if the check is enabled.
      */
     bool isEnabled(const std::string &str) const;
 
     /**
-     * Enable extra checks by id. See isEnabled()
+     * @brief Enable extra checks by id. See isEnabled()
      * @param str single id or list of id values to be enabled
      * or empty string to enable all. e.g. "style,possibleError"
      */
     void addEnabled(const std::string &str);
 
-    /** class for handling suppressions */
+    /** @brief class for handling suppressions */
     class Suppressions
     {
     private:
-        /** List of error which the user doesn't want to see. */
+        /** @brief List of error which the user doesn't want to see. */
         std::map<std::string, std::map<std::string, std::list<int> > > _suppressions;
     public:
         /**
-         * Don't show errors listed in the file.
+         * @brief Don't show errors listed in the file.
          * @param istr Open file stream where errors can be read.
          * @return true on success, false in syntax error is noticed.
          */
         bool parseFile(std::istream &istr);
 
         /**
-         * Don't show this error. If file and/or line are optional. In which case
+         * @brief Don't show this error. If file and/or line are optional. In which case
          * the errorId alone is used for filtering.
          * @param errorId the id for the error, e.g. "arrayIndexOutOfBounds"
          * @param file File name with the path, e.g. "src/main.cpp"
@@ -160,10 +171,10 @@ public:
 
     };
 
-    /** suppress message */
+    /** @brief suppress message (--suppressions) */
     Suppressions nomsg;
 
-    /** suppress exitcode */
+    /** @brief suppress exitcode */
     Suppressions nofail;
 };
 

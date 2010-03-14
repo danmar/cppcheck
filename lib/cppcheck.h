@@ -32,7 +32,7 @@
 /// @{
 
 /**
- * This is the base class which will use other classes to do
+ * @brief This is the base class which will use other classes to do
  * static code analysis for C and C++ code to find possible
  * errors or places that could be improved.
  * Usage: See check() for more info.
@@ -41,24 +41,24 @@ class CppCheck : public ErrorLogger
 {
 public:
     /**
-     * Constructor.
+     * @brief Constructor.
      */
     CppCheck(ErrorLogger &errorLogger);
 
     /**
-     * Destructor.
+     * @brief Destructor.
      */
     virtual ~CppCheck();
 
     /**
-     * This starts the actual checking. Note that you must call
+     * @brief This starts the actual checking. Note that you must call
      * parseFromArgs() or settings() and addFile() before calling this.
      * @return amount of errors found or 0 if none were found.
      */
     unsigned int check();
 
     /**
-     * Adjust the settings before doing the check. E.g. show only
+     * @brief Adjust the settings before doing the check. E.g. show only
      * actual bugs or also coding style issues.
      *
      * @param settings New settings which will overwrite the old.
@@ -66,13 +66,13 @@ public:
     void settings(const Settings &settings);
 
     /**
-     * Get copy of current settings.
+     * @brief Get copy of current settings.
      * @return a copy of current settings
      */
     Settings settings() const;
 
     /**
-     * Add new file to be checked.
+     * @brief Add new file to be checked.
      *
      * @param path Relative or absolute path to the file to be checked,
      * e.g. "cppcheck.cpp". Note that only source files (.c, .cc or .cpp)
@@ -83,7 +83,7 @@ public:
     void addFile(const std::string &path);
 
     /**
-     * Add new unreal file to be checked.
+     * @brief Add new unreal file to be checked.
      *
      * @param path File name (used for error reporting).
      * @param content If the file would be a real file, this should be
@@ -92,12 +92,12 @@ public:
     void addFile(const std::string &path, const std::string &content);
 
     /**
-     * Remove all files added with addFile() and parseFromArgs().
+     * @brief Remove all files added with addFile() and parseFromArgs().
      */
     void clearFiles();
 
     /**
-     * Parse command line args and get settings and file lists
+     * @brief Parse command line args and get settings and file lists
      * from there.
      *
      * @param argc argc from main()
@@ -107,7 +107,7 @@ public:
     void parseFromArgs(int argc, const char* const argv[]);
 
     /**
-     * Returns current version number as a string.
+     * @brief Returns current version number as a string.
      * @return version, e.g. "1.38"
      */
     static const char * version();
@@ -117,7 +117,7 @@ public:
     virtual void reportStatus(unsigned int index, unsigned int max);
 
     /**
-     * Terminate checking. The checking will be terminated ASAP.
+     * @brief Terminate checking. The checking will be terminated as soon as possible.
      */
     void terminate()
     {
@@ -128,7 +128,7 @@ private:
     void checkFile(const std::string &code, const char FileName[]);
 
     /**
-     * Errors and warnings are directed here.
+     * @brief Errors and warnings are directed here.
      *
      * @param msg Errors messages are normally in format
      * "[filepath:line number] Message", e.g.
@@ -137,7 +137,7 @@ private:
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
 
     /**
-     * Information about progress is directed here.
+     * @brief Information about progress is directed here.
      *
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
@@ -148,12 +148,14 @@ private:
     std::ostringstream _errout;
     Settings _settings;
     std::vector<std::string> _filenames;
-    /** Key is file name, and value is the content of the file */
+
+    /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> _fileContents;
+
     CheckUnusedFunctions _checkUnusedFunctions;
     ErrorLogger &_errorLogger;
 
-    /** Current configuration */
+    /** @brief Current preprocessor configuration */
     std::string     cfg;
 
     std::list<std::string> _xmllist;
