@@ -1397,7 +1397,9 @@ private:
     void operator=(const PreprocessorMacro &);
 public:
     /**
-     * @param macro The code after #define, until end of line,
+     * @brief Constructor for PreprocessorMacro. This is the "setter"
+     * for this class - everything is setup here.
+     * @param macro The code after define, until end of line,
      * e.g. "A(x) foo(x);"
      */
     PreprocessorMacro(const std::string &macro)

@@ -150,8 +150,8 @@ public:
         void addSuppression(const std::string &errorId, const std::string &file = "", unsigned int line = 0);
 
         /**
-         * Returns true if this message should not be shown to the user.
-         * @param errorId, the id for the error, e.g. "arrayIndexOutOfBounds"
+         * @brief Returns true if this message should not be shown to the user.
+         * @param errorId the id for the error, e.g. "arrayIndexOutOfBounds"
          * @param file File name with the path, e.g. "src/main.cpp"
          * @param line number, e.g. "123"
          * @return true if this error is suppressed.
