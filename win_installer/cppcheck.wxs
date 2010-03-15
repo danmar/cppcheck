@@ -3,10 +3,10 @@
   <?include productInfo.wxi ?>
   <?include config.wxi ?>
   <Product Name='$(var.ProductName)' Id='*' UpgradeCode='$(var.ProductUpgradeCode)'
-    Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='The Cppcheck team'>
+    Language='1033' Codepage='1252' Version='$(var.ProductVersion)' Manufacturer='$(var.ProductManufacturer)'>
 
     <Package Id='*' Keywords='Installer' Description="$(var.ProductName) Setup"
-      Comments='Cppcheck is a tool for static analysis of C/C++ code' Manufacturer='The Cppcheck team'
+      Comments='$(var.ProductDescription)' Manufacturer='$(var.ProductManufacturer)'
       InstallerVersion='300' Languages='1033' Compressed='yes' SummaryCodepage='1252'/>
 
     <Media Id='1' Cabinet='Cppcheck.cab' EmbedCab='yes' DiskPrompt='CD-ROM 1' />
