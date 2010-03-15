@@ -21,7 +21,7 @@
           </Component>
           <Component Id='gui.exe' DiskId='1' Guid='$(var.guiGUID)'>
             <File Id='gui.exe' Name='gui.exe' Source='$(var.GuiBuildDir)\gui.exe' KeyPath='yes'>
-              <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name="Cppcheck"
+              <Shortcut Id='startmenuGui' Directory="ProgramMenuDir" Name='$(var.ProductNameShort)'
                   WorkingDirectory='INSTALLDIR' Icon="gui.exe" IconIndex="0" Advertise="yes" />
             </File>
             <!-- <File Id='mingwm10dll' Name='mingwm10.dll' Source='mingwm10.dll' /> -->
