@@ -64,6 +64,7 @@ private:
         TEST_CASE(localvar3);
         TEST_CASE(localvar4);
         TEST_CASE(localvar5);
+        TEST_CASE(localvar6);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -269,6 +270,18 @@ private:
                               "{\n"
                               "    int a = 0;\n"
                               "    b = (char)a;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvar6()
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int a = 0;\n"
+                              "    int b[10];\n"
+                              "    for (int i=0;i<10;++i)\n"
+                              "        b[i] = ++a;\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

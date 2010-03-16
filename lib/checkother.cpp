@@ -535,6 +535,10 @@ void CheckOther::functionVariableUsage()
 
             else if (Token::Match(tok, "; %var% ;"))
                 varUsage[ tok->strAt(1)].read = true;
+
+            else if (Token::Match(tok, "++|-- %var%") ||
+                     Token::Match(tok, "%var% ++|--"))
+                varUsage[tok->strAt(1)].use();
         }
 
         // Check usage of all variables in the current scope..
