@@ -1739,7 +1739,7 @@ bool CheckClass::isMemberVar(const Var *varlist, const Token *tok)
 {
     while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:"))
     {
-        if (tok->previous()->str() == "this" && tok->tokAt(-2)->str() == "*")
+        if (Token::Match(tok->previous(),  "* this"))
             return true;
 
         tok = tok->previous();

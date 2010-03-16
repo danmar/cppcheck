@@ -91,6 +91,7 @@ private:
         TEST_CASE(const4);
         TEST_CASE(const5); // ticket #1482
         TEST_CASE(const6); // ticket #1491
+        TEST_CASE(const7);
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2089,6 +2090,18 @@ private:
         // ticket # 1491
         checkConst("class foo {\n"
                    "public:\n"
+                   "};\n"
+                   "void bar() {}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const7()
+    {
+        checkConst("class foo {\n"
+                   "    int a;\n"
+                   "public:\n"
+                   "    void set(int i) { a = i; }\n"
+                   "    void set(const foo & f) { *this = f; }\n"
                    "};\n"
                    "void bar() {}");
         ASSERT_EQUALS("", errout.str());
