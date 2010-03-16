@@ -1650,7 +1650,7 @@ private:
             CheckUninitVar *c = dynamic_cast<CheckUninitVar *>(*it);
             if (c && c->varId == varid)
             {
-                if (c->alloc)
+                if (c->alloc || c->array)
                 {
                     delete c;
                     checks.erase(it++);

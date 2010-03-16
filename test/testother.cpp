@@ -1552,6 +1552,14 @@ private:
     // arrays..
     void uninitvar_arrays()
     {
+        checkUninitVar("int f()\n"
+                       "{\n"
+                       "    char a[10];\n"
+                       "    *a = '\\0';\n"
+                       "    int i = strlen(a);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void f()\n"
                        "{\n"
                        "    char a[10], b[10];\n"
