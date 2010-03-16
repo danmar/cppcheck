@@ -1257,6 +1257,12 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // Handle templates..
     simplifyTemplates();
 
+    // Simplify templates.. sometimes the "simplifyTemplates" fail and
+    // then unsimplified function calls etc remain. These have the
+    // "wrong" syntax. So this function will just fix so that the
+    // syntax is corrected.
+    simplifyTemplates2();
+
     // Simplify the operator "?:"
     simplifyConditionOperator();
 
@@ -1907,6 +1913,25 @@ void Tokenizer::simplifyTemplates()
     }
 
     removeTemplates(_tokens);
+}
+//---------------------------------------------------------------------------
+
+void Tokenizer::simplifyTemplates2()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->str() == "(")
+            tok = tok->link();
+
+        else if (Token::Match(tok, "; %type% < %type% > ("))
+        {
+            tok = tok->next();
+            tok->str(tok->str() + "<" + tok->strAt(2) + ">");
+            tok->deleteNext();
+            tok->deleteNext();
+            tok->deleteNext();
+        }
+    }
 }
 //---------------------------------------------------------------------------
 

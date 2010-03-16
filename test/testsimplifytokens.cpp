@@ -97,6 +97,7 @@ private:
         TEST_CASE(template17);
         TEST_CASE(template18);
         TEST_CASE(template19);
+        TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
         TEST_CASE(template_typename);
@@ -1537,6 +1538,12 @@ private:
                                    "} "
                                    "char & foo<char> ( ) { static char temp ; return temp ; }");
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template_unhandled()
+    {
+        // An unhandled template usage should be simplified..
+        ASSERT_EQUALS("; x<int> ( ) ;", sizeof_(";x<int>();"));
     }
 
     void template_default_parameter()
