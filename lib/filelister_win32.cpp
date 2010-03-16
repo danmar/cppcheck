@@ -180,10 +180,6 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
     }
 }
 
-#endif
-
-//---------------------------------------------------------------------------
-
 bool FileListerWin32::sameFileName(const std::string &fname1, const std::string &fname2)
 {
 #ifdef __GNUC__
@@ -196,3 +192,5 @@ bool FileListerWin32::sameFileName(const std::string &fname1, const std::string 
     return bool(_stricmp(fname1.c_str(), fname2.c_str()) == 0);
 #endif
 }
+
+#endif // _WIN32
