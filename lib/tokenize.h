@@ -135,10 +135,6 @@ public:
      */
     bool simplifyCalculations();
 
-#ifndef _MSC_VER
-private:
-#endif
-
     /** Insert array size where it isn't given */
     void arraySize();
 
@@ -408,9 +404,6 @@ private:
      */
     void updateClassList();
 
-    /** Disable assignments.. */
-    Tokenizer(const Tokenizer &);
-
     /**
      * assert that tokens are ok - used during debugging for example
      * to catch problems in simplifyTokenList.
@@ -448,7 +441,12 @@ private:
     bool duplicateTypedef(Token **tokPtr, const Token *name);
     void duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string & type);
 
-    /** Disable assignment operator */
+
+private:
+    /** Disable copy constructor, no implementation */
+    Tokenizer(const Tokenizer &);
+
+    /** Disable assignment operator, no implementation */
     Tokenizer &operator=(const Tokenizer &);
 
     Token *_tokens, *_tokensBack;

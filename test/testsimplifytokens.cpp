@@ -19,9 +19,7 @@
 
 
 #include "testsuite.h"
-#define private public
 #include "tokenize.h"
-#undef private
 #include "token.h"
 #include <sstream>
 
@@ -2347,7 +2345,6 @@ private:
 
         Settings settings;
         Tokenizer tokenizer(&settings, this);
-        tokenizer._files.push_back("test.cpp");
 
         std::istringstream istr(code);
         tokenizer.createTokens(istr);

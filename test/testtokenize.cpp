@@ -23,9 +23,7 @@
 
 #include <cstring>
 #include "testsuite.h"
-#define private public
 #include "tokenize.h"
-#undef private
 #include "token.h"
 
 extern std::ostringstream errout;
