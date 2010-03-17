@@ -18,10 +18,8 @@
 
 
 
-#define private public
 #include "tokenize.h"
 #include "checkmemoryleak.h"
-#undef private
 #include "testsuite.h"
 
 #include <sstream>
@@ -585,9 +583,10 @@ private:
         Tokenizer tokenizer;
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
+        Token *tokens = const_cast<Token *>(tokenizer.tokens());
 
         // replace "if ( ! var )" => "if(!var)"
-        for (Token *tok = tokenizer._tokens; tok; tok = tok->next())
+        for (Token *tok = tokens; tok; tok = tok->next())
         {
             if (Token::Match(tok, "if|while ( var )"))
             {
@@ -606,7 +605,7 @@ private:
         settings._showAll = all;
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
         all = false;
-        checkMemoryLeak.simplifycode(tokenizer._tokens, all);
+        checkMemoryLeak.simplifycode(tokens, all);
 
         std::ostringstream ret;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
@@ -721,7 +720,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // replace "if ( ! var )" => "if(!var)"
-        for (Token *tok = tokenizer._tokens; tok; tok = tok->next())
+        for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
         {
             if (tok->str() == "if_var")
             {
