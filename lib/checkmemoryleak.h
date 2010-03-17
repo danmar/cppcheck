@@ -191,10 +191,6 @@ public:
     /** @brief experimental: checking via ExecutionPath */
     void localleaks();
 
-#ifndef _MSC_VER
-private:
-#endif
-
     /**
      * @brief %Check all variables in function scope
      * @param tok The first '{' token of the function scope
