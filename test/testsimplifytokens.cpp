@@ -180,6 +180,7 @@ private:
         TEST_CASE(simplifyTypedef39);
         TEST_CASE(simplifyTypedef40);
         TEST_CASE(simplifyTypedef41); // ticket #1488
+        TEST_CASE(simplifyTypedef42); // ticket #1506
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -3528,6 +3529,14 @@ private:
                              "    typedef Y type;\n"
                              "    friend class type;\n"
                              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef42()
+    {
+        // ticket #1506
+        checkSimplifyTypedef("typedef struct A { } A;\n"
+                             "struct A;");
         ASSERT_EQUALS("", errout.str());
     }
 
