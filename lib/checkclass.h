@@ -38,7 +38,7 @@ public:
     CheckClass() : Check()
     { }
 
-    /** @brief This constructor is used when running checks.. */
+    /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
@@ -90,7 +90,7 @@ public:
      */
     void noMemset();
 
-    /** @brief 'operator=' should return something.. */
+    /** @brief 'operator=' should return something. */
     void operatorEq();
 
     /** @brief 'operator=' should return reference to *this */

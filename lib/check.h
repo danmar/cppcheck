@@ -45,7 +45,7 @@ public:
         instances().sort();
     }
 
-    /** This constructor is used when running checks.. */
+    /** This constructor is used when running checks. */
     Check(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
     { }

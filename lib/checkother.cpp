@@ -1741,7 +1741,7 @@ private:
     }
 
 
-    /** Initialize an array with strncpy.. */
+    /** Initialize an array with strncpy. */
     static void init_strncpy(std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());

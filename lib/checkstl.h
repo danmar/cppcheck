@@ -38,7 +38,7 @@ public:
     CheckStl() : Check()
     { }
 
-    /** This constructor is used when running checks.. */
+    /** This constructor is used when running checks. */
     CheckStl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }

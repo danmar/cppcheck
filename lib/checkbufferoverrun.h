@@ -52,7 +52,7 @@ public:
     CheckBufferOverrun() : Check()
     { }
 
-    /** This constructor is used when running checks.. */
+    /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }

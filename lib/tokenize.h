@@ -38,7 +38,7 @@ class Settings;
 class Tokenizer
 {
 private:
-    /** Deallocate lists.. */
+    /** Deallocate lists */
     void deallocateTokens();
 
 public:
@@ -179,40 +179,40 @@ public:
     bool simplifyQuestionMark();
 
     /**
-     * simplify if-assignments..
+     * simplify if-assignments
      * Example: "if(a=b);" => "a=b;if(a);"
      */
     void simplifyIfAssign();
 
     /**
-     * simplify if-not..
+     * simplify if-not
      * Example: "if(0==x);" => "if(!x);"
      */
     void simplifyIfNot();
 
     /**
-     * simplify if-not NULL..
-     * Example: "if(0!=x);" => "if(x);"
+     * simplify if-not NULL
+     * - "if(0!=x);" => "if(x);"
      */
     void simplifyIfNotNull();
 
-    /** @brief simplify if (a) { if (a) .. */
+    /** @brief simplify if (a) { if (a) */
     void simplifyIfSameInnerCondition();
 
     /**
      * Simplify the "not" and "and" keywords to "!" and "&&"
      * accordingly.
      * Examples:
-     *     "if (not p)" => "if (!p)"
-     *     "if (p and q)" => "if (p && q)"
+     * - "if (not p)" => "if (!p)"
+     * - "if (p and q)" => "if (p && q)"
      */
     void simplifyLogicalOperators();
 
     /**
-     * Simplify comma into a semicolon when possible
-     * Example: "delete a, delete b" => "delete a; delete b;"
-     * Example: "a = 0, b = 0;" => "a = 0; b = 0;"
-     * Example: "return a(), b;" => "a(); return b;"
+     * Simplify comma into a semicolon when possible:
+     * - "delete a, delete b" => "delete a; delete b;"
+     * - "a = 0, b = 0;" => "a = 0; b = 0;"
+     * - "return a(), b;" => "a(); return b;"
      */
     void simplifyComma();
 

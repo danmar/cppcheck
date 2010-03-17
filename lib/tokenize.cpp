@@ -1281,7 +1281,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 }
 //---------------------------------------------------------------------------
 
-/** Specify array size if it hasn't been given.. */
+/** Specify array size if it hasn't been given */
 
 void Tokenizer::arraySize()
 {
@@ -1335,7 +1335,7 @@ void Tokenizer::labels()
 
 
 /**
- * is the token pointing at a template parameters block..
+ * is the token pointing at a template parameters block
  * < int , 3 > => yes
  * \param tok start token that must point at "<"
  * \return true if the tokens look like template parameters

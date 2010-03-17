@@ -40,7 +40,7 @@ public:
     CheckOther() : Check()
     { }
 
-    /** @brief This constructor is used when running checks.. */
+    /** @brief This constructor is used when running checks. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
             : Check(tokenizer, settings, errorLogger)
     { }
