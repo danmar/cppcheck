@@ -95,56 +95,62 @@ public:
      */
     static void analyseFunctions(const Token * const tokens, std::set<std::string> &func);
 
-    /** @brief %Check: Are there C-style pointer casts in a c++ file? */
+    /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();
 
-    // Redundant code
+    /** @brief Redundant code: if (p) delete p; */
     void warningRedundantCode();
 
-    // Invalid function usage..
+    /** 
+     * @brief Invalid function usage (invalid radix / overlapping data)
+     * 
+     * %Check that given function parameters are valid according to the standard
+     * - wrong radix given for strtol/strtoul
+     * - overlapping data when using sprintf/snprintf  
+     */
     void invalidFunctionUsage();
 
-    // Check for unsigned division that might create bad results
+    /** @brief %Check for unsigned division */
     void checkUnsignedDivision();
 
-    /** Check for unreachable code */
+    /** @brief %Check for unreachable code */
     void unreachableCode();
     void unreachableCodeError(const Token *tok);
 
-    /** Check for unused function variables */
+    /** @brief %Check for unused function variables */
     void functionVariableUsage();
     void unusedVariableError(const Token *tok, const std::string &varname);
     void unreadVariableError(const Token *tok, const std::string &varname);
     void unassignedVariableError(const Token *tok, const std::string &varname);
 
-    // Check scope of variables
+    /** @brief %Check scope of variables */
     void checkVariableScope();
 
-    // Check for constant function parameter
+    /** @brief %Check for constant function parameter */
     void checkConstantFunctionParameter();
 
-    // Check that all struct members are used
+    /** @brief %Check that all struct members are used */
     void checkStructMemberUsage();
 
-    // Using char variable as array index / as operand in bit operation
+    /** @brief Using char variable as array index / as operand in bit operation */
     void checkCharVariable();
 
-    // Incomplete statement. A statement that only contains a constant or variable
+    /** @brief Incomplete statement. A statement that only contains a constant or variable */
     void checkIncompleteStatement();
 
-    /** str plus char */
+    /** @brief str plus char (unusual pointer arithmetic) */
     void strPlusChar();
 
-    /** possible null pointer dereference */
+    /** @brief possible null pointer dereference */
     void nullPointer();
 
-    /** new type of check: check execution paths */
+    /** @brief new type of check: check execution paths */
     void executionPaths();
 
-    /** Check zero division*/
+    /** @brief %Check zero division*/
     void checkZeroDivision();
 
-    /** Check for post increment/decrement in for loop*/
+    /** @brief %Check for post increment/decrement in for loop*/
     void postIncrement();
 
     void lookupVar(const Token *tok1, const std::string &varname);
@@ -245,34 +251,34 @@ public:
 private:
 
     /**
-     * Does one part of the check for nullPointer().
+     * @brief Does one part of the check for nullPointer().
      * Locate insufficient null-pointer handling after loop
      */
     void nullPointerAfterLoop();
 
     /**
-     * Does one part of the check for nullPointer().
+     * @brief Does one part of the check for nullPointer().
      * looping through items in a linked list in a inner loop..
      */
     void nullPointerLinkedList();
 
     /**
-     * Does one part of the check for nullPointer().
+     * @brief Does one part of the check for nullPointer().
      * Dereferencing a struct pointer and then checking if it's NULL..
      */
     void nullPointerStructByDeRefAndChec();
 
     /**
-     * Does one part of the check for nullPointer().
+     * @brief Does one part of the check for nullPointer().
      * Dereferencing a pointer and then checking if it's NULL..
      */
     void nullPointerByDeRefAndChec();
 
     /**
-     * Does one part of the check for nullPointer().
-     * 1. initialize pointer to 0
-     * 2. conditionally assign pointer
-     * 3. dereference pointer
+     * @brief Does one part of the check for nullPointer().
+     * -# initialize pointer to 0
+     * -# conditionally assign pointer
+     * -# dereference pointer
      */
     void nullPointerConditionalAssignment();
 };
