@@ -1926,13 +1926,22 @@ void Tokenizer::simplifyTemplates2()
         if (tok->str() == "(")
             tok = tok->link();
 
-        else if (Token::Match(tok, "; %type% < %type% > ("))
+        else if (Token::Match(tok, "; %type% <"))
         {
-            tok = tok->next();
-            tok->str(tok->str() + "<" + tok->strAt(2) + ">");
-            tok->deleteNext();
-            tok->deleteNext();
-            tok->deleteNext();
+			const Token *tok2 = tok->tokAt(3);
+			std::string type;
+			while (Token::Match(tok2, "%type% ,") || Token::Match(tok2, "%num% ,"))
+			{
+				type += tok2->str() + ",";
+				tok2 = tok2->tokAt(2);
+			}
+			if (Token::Match(tok2, "%type% > (") || Token::Match(tok2, "%num% > ("))
+			{
+				type += tok2->str();
+				tok = tok->next();
+				tok->str(tok->str() + "<" + type + ">");
+				Token::eraseTokens(tok, tok2->tokAt(2));
+			}
         }
     }
 }
