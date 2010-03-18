@@ -289,6 +289,12 @@ public:
     /** Struct initialization */
     void simplifyStructInit();
 
+    /** Struct simplification
+     * "struct S { } s;" => "struct S { }; S s;"
+     */
+
+    void simplifyStructDecl();
+
     /**
      * Remove redundant paranthesis:
      * - "((x))" => "(x)"

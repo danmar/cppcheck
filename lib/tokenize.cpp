@@ -1242,6 +1242,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
     simplifyConst();
 
+    // struct simplification "struct S {} s; => struct S { } ; S s ;
+    simplifyStructDecl();
+
     // struct initialization (must be used before simplifyVarDecl)
     simplifyStructInit();
 
@@ -6791,5 +6794,53 @@ void Tokenizer::simplifyFuncInWhile()
         end->previous()->insertToken(";");
 
         tok = end;
+    }
+}
+
+void Tokenizer::simplifyStructDecl()
+{
+    unsigned int count = 0;
+
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        // check for named struct/union
+        if (Token::Match(tok, "struct|union %type% {"))
+        {
+            Token *type = tok->next();
+            Token *next = tok->tokAt(2);
+
+            tok = tok->tokAt(2)->link();
+
+            // check for named type
+            if (Token::Match(tok->next(), "*|&| %type% ,|;|["))
+            {
+                tok->insertToken(";");
+                tok = tok->next();
+                tok->insertToken(type->str().c_str());
+                tok = next;
+            }
+        }
+
+        // check for anonymous struct/union
+        else if (Token::Match(tok, "struct|union {"))
+        {
+            Token *tok1 = tok;
+
+            tok = tok->next()->link();
+
+            if (Token::Match(tok->next(), "*|&| %type% ,|;|["))
+            {
+                std::string name;
+
+                name = "Anonymous" + MathLib::toString<long>(count++);
+
+                tok1->insertToken(name.c_str());
+
+                tok->insertToken(";");
+                tok = tok->next();
+                tok->insertToken(name.c_str());
+                tok = tok1->next();
+            }
+        }
     }
 }

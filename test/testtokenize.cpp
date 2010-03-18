@@ -118,6 +118,7 @@ private:
         TEST_CASE(varid12);
         TEST_CASE(varid13);
         TEST_CASE(varid14);
+        TEST_CASE(varid15);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -1507,6 +1508,23 @@ private:
                                    "4: B b@2 ;\n"
                                    "5: b@2 * a@1 ;\n"
                                    "6: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid15()
+    {
+        const std::string actual = tokenizeDebugListing(
+                                       "struct S {\n"
+                                       "    struct T {\n"
+                                       "    } t;\n"
+                                       "} s;");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: struct S {\n"
+                                   "2: struct T {\n"
+                                   "3: } ; T t@1 ;\n"
+                                   "4: } ; S s@2 ;\n");
 
         ASSERT_EQUALS(expected, actual);
     }

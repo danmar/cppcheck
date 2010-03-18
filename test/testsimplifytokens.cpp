@@ -225,6 +225,9 @@ private:
 
         // struct ABC abc = { .a = 3 };  =>  struct ABC abc; abc.a = 3;
         TEST_CASE(initstruct);
+
+        // struct ABC { } abc; => struct ABC { }; ABC abc;
+        TEST_CASE(simplifyStructDecl);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -4125,6 +4128,99 @@ private:
         ASSERT_EQUALS("; struct A a ; a . buf = x ;", tok("; struct A a = { .buf = x };"));
         ASSERT_EQUALS("; struct A a ; a . buf = & key ;", tok("; struct A a = { .buf = &key };"));
         ASSERT_EQUALS("; struct ABC abc ; abc . a = 3 ; abc . b = x ; abc . c = & key ;", tok("; struct ABC abc = { .a = 3, .b = x, .c = &key };"));
+    }
+
+    void simplifyStructDecl()
+    {
+        {
+            const char code[] = "struct ABC { } abc;";
+            const char expected[] = "struct ABC { } ; ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct ABC { } * pabc;";
+            const char expected[] = "struct ABC { } ; ABC * pabc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct ABC { } abc[4];";
+            const char expected[] = "struct ABC { } ; ABC abc [ 4 ] ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct ABC { } abc, def;";
+            const char expected[] = "struct ABC { } ; ABC abc ; ABC def ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct ABC { } abc, * pabc;";
+            const char expected[] = "struct ABC { } ; ABC abc ; ABC * pabc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct ABC { struct DEF {} def; } abc;";
+            const char expected[] = "struct ABC { struct DEF { } ; DEF def ; } ; ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { } abc;";
+            const char expected[] = "struct Anonymous0 { } ; Anonymous0 abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { } * pabc;";
+            const char expected[] = "struct Anonymous0 { } ; Anonymous0 * pabc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { } abc[4];";
+            const char expected[] = "struct Anonymous0 { } ; Anonymous0 abc [ 4 ] ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { } abc, def;";
+            const char expected[] = "struct Anonymous0 { } ; Anonymous0 abc ; Anonymous0 def ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { } abc, * pabc;";
+            const char expected[] = "struct Anonymous0 { } ; Anonymous0 abc ; Anonymous0 * pabc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { struct DEF {} def; } abc;";
+            const char expected[] = "struct Anonymous0 { struct DEF { } ; DEF def ; } ; Anonymous0 abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct ABC { struct {} def; } abc;";
+            const char expected[] = "struct ABC { struct Anonymous0 { } ; Anonymous0 def ; } ; ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { struct {} def; } abc;";
+            const char expected[] = "struct Anonymous0 { struct Anonymous1 { } ; Anonymous1 def ; } ; Anonymous0 abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "union ABC { int i; float f; } abc;";
+            const char expected[] = "union ABC { int i ; float f ; } ; ABC abc ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 };
 
