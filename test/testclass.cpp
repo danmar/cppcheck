@@ -2100,6 +2100,20 @@ private:
                    "    void foo() { }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Fred::foo' can be const\n", errout.str());
+
+        checkConst("struct fast_string\n"
+                   "{\n"
+                   "    union\n"
+                   "    {\n"
+                   "        char buff[100];\n"
+                   "    };\n"
+                   "    void set_type(char t);\n"
+                   "};\n"
+                   "inline void fast_string::set_type(char t)\n"
+                   "{\n"
+                   "    buff[10] = t;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const7()

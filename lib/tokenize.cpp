@@ -6854,6 +6854,16 @@ void Tokenizer::simplifyStructDecl()
                 tok = tok->next();
                 tok->insertToken(name.c_str());
             }
+            else if (tok->next()->str() == ";")
+            {
+                Token *previous = tok1->previous();
+                previous->deleteNext();
+                previous->deleteNext();
+                tok1 = previous->next();
+                previous = tok->previous();
+                previous->deleteNext();
+                previous->deleteNext();
+            }
 
             tok = tok1->next();
         }
