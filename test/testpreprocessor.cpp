@@ -716,6 +716,91 @@ private:
         ASSERT_EQUALS("\n\n\n\n\n\n", actual[""]);
         ASSERT_EQUALS("\na\n\n\n\n\n", actual["A"]);
         ASSERT_EQUALS("\na\n\n\nab\n\n", actual["A;B"]);
+        if_cond2b();
+        if_cond2c();
+        if_cond2d();
+    }
+
+    void if_cond2b()
+    {
+        const char filedata[] = "#ifndef A\n"
+                                "!a\n"
+                                "#ifdef B\n"
+                                "b\n"
+                                "#endif\n"
+                                "#else\n"
+                                "a\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n!a\n\n\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n\na\n\n", actual["A"]);
+        ASSERT_EQUALS("\n!a\n\nb\n\n\n\n\n", actual["B"]);
+    }
+
+    void if_cond2c()
+    {
+        const char filedata[] = "#ifndef A\n"
+                                "!a\n"
+                                "#ifdef B\n"
+                                "b\n"
+                                "#else\n"
+                                "!b\n"
+                                "#endif\n"
+                                "#else\n"
+                                "a\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n!a\n\n\n\n!b\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\n", actual["A"]);
+        ASSERT_EQUALS("\n!a\n\nb\n\n\n\n\n\n\n", actual["B"]);
+    }
+
+    void if_cond2d()
+    {
+        const char filedata[] = "#ifndef A\n"
+                                "!a\n"
+                                "#ifdef B\n"
+                                "b\n"
+                                "#else\n"
+                                "!b\n"
+                                "#endif\n"
+                                "#else\n"
+                                "a\n"
+                                "#ifdef B\n"
+                                "b\n"
+                                "#else\n"
+                                "!b\n"
+                                "#endif\n"
+                                "#endif\n";
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(4, static_cast<unsigned int>(actual.size()));
+        ASSERT_EQUALS("\n!a\n\n\n\n!b\n\n\n\n\n\n\n\n\n\n", actual[""]);
+        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\n\n\n!b\n\n\n", actual["A"]);
+        ASSERT_EQUALS("\n\n\n\n\n\n\n\na\n\nb\n\n\n\n\n", actual["A;B"]);
+        ASSERT_EQUALS("\n!a\n\nb\n\n\n\n\n\n\n\n\n\n\n\n", actual["B"]);
     }
 
     void if_cond3()

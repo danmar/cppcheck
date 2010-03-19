@@ -628,7 +628,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
     std::list<std::string> ret;
     ret.push_back("");
 
-    std::list<std::string> deflist;
+    std::list<std::string> deflist, ndeflist;
 
     // constants defined through "#define" in the code..
     std::set<std::string> defines;
@@ -679,7 +679,17 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         if (includeguard)
             continue;
 
-        std::string def = getdef(line, true) + getdef(line, false);
+        bool from_negation = false;
+
+        std::string def = getdef(line, true);
+        if (def.empty())
+        {
+            def = getdef(line, false);
+            // sub conditionals of ndef blocks need to be
+            // constructed _without_ the negated define
+            if (!def.empty())
+                from_negation = true;
+        }
         if (!def.empty())
         {
             int par = 0;
@@ -736,7 +746,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             {
                 if (*it == "0")
                     break;
-                if (*it == "1")
+                if (*it == "1" || *it == "!")
                     continue;
 
                 // don't add "T;T":
@@ -748,19 +758,42 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                     def += *it;
                 }
             }
+            if (from_negation)
+            {
+                ndeflist.push_back(deflist.back());
+                deflist.pop_back();
+                std::string nmark("!");
+                deflist.push_back(nmark);
+            }
+
             if (std::find(ret.begin(), ret.end(), def) == ret.end())
+            {
                 ret.push_back(def);
+            }
         }
 
         else if (line.find("#else") == 0 && ! deflist.empty())
         {
-            std::string def((deflist.back() == "1") ? "0" : "1");
-            deflist.pop_back();
-            deflist.push_back(def);
+            if (deflist.back() == "!")
+            {
+                deflist.pop_back();
+                deflist.push_back(ndeflist.back());
+                ndeflist.pop_back();
+            }
+            else
+            {
+                std::string def((deflist.back() == "1") ? "0" : "1");
+                deflist.pop_back();
+                deflist.push_back(def);
+            }
         }
 
         else if (line.find("#endif") == 0 && ! deflist.empty())
+        {
+            if (deflist.back() == "!")
+                ndeflist.pop_back();
             deflist.pop_back();
+        }
     }
 
     // Remove defined constants from ifdef configurations..
