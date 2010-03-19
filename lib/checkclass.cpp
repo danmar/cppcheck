@@ -1536,7 +1536,11 @@ void CheckClass::checkConst()
 
                 // skip private: public: etc
                 if (tok2->isName() && tok2->str().find(":") != std::string::npos)
-                    continue;
+                {
+                    if (tok2->next()->str() == "}")
+                        continue;
+                    tok2 = tok2->next();
+                }
 
                 // static functions can't be const
                 // virtual functions may be non-const for a reason

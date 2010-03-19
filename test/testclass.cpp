@@ -2093,6 +2093,13 @@ private:
                    "};\n"
                    "void bar() {}");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred\n"
+                   "{\n"
+                   "public:\n"
+                   "    void foo() { }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Fred::foo' can be const\n", errout.str());
     }
 
     void const7()
