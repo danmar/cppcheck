@@ -101,12 +101,12 @@ public:
     /** @brief Redundant code: if (p) delete p; */
     void warningRedundantCode();
 
-    /** 
+    /**
      * @brief Invalid function usage (invalid radix / overlapping data)
-     * 
+     *
      * %Check that given function parameters are valid according to the standard
      * - wrong radix given for strtol/strtoul
-     * - overlapping data when using sprintf/snprintf  
+     * - overlapping data when using sprintf/snprintf
      */
     void invalidFunctionUsage();
 

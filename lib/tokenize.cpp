@@ -1928,20 +1928,20 @@ void Tokenizer::simplifyTemplates2()
 
         else if (Token::Match(tok, "; %type% <"))
         {
-			const Token *tok2 = tok->tokAt(3);
-			std::string type;
-			while (Token::Match(tok2, "%type% ,") || Token::Match(tok2, "%num% ,"))
-			{
-				type += tok2->str() + ",";
-				tok2 = tok2->tokAt(2);
-			}
-			if (Token::Match(tok2, "%type% > (") || Token::Match(tok2, "%num% > ("))
-			{
-				type += tok2->str();
-				tok = tok->next();
-				tok->str(tok->str() + "<" + type + ">");
-				Token::eraseTokens(tok, tok2->tokAt(2));
-			}
+            const Token *tok2 = tok->tokAt(3);
+            std::string type;
+            while (Token::Match(tok2, "%type% ,") || Token::Match(tok2, "%num% ,"))
+            {
+                type += tok2->str() + ",";
+                tok2 = tok2->tokAt(2);
+            }
+            if (Token::Match(tok2, "%type% > (") || Token::Match(tok2, "%num% > ("))
+            {
+                type += tok2->str();
+                tok = tok->next();
+                tok->str(tok->str() + "<" + type + ">");
+                Token::eraseTokens(tok, tok2->tokAt(2));
+            }
         }
     }
 }
