@@ -2338,8 +2338,8 @@ void CheckMemoryLeakInClass::variable(const std::string &classname, const Token 
     const Token *functionToken = _tokenizer->findClassFunction(_tokenizer->tokens(), classname.c_str(), "~| %var%", indent_);
     while (functionToken)
     {
-        const bool constructor(Token::Match(functionToken, (classname + " :: " + classname + " (").c_str()));
-        const bool destructor(functionToken->tokAt(2)->str() == "~");
+        const bool constructor(Token::Match(functionToken, (classname + " (").c_str()) || Token::Match(functionToken, (classname + " :: " + classname + " (").c_str()));
+        const bool destructor(functionToken->str() == "~" || functionToken->tokAt(2)->str() == "~");
 
         unsigned int indent = 0;
         bool initlist = false;
