@@ -4221,6 +4221,18 @@ private:
             const char expected[] = "union ABC { int i ; float f ; } ; ABC abc ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+
+        {
+            const char code[] = "struct ABC { struct {} def; };";
+            const char expected[] = "struct ABC { struct Anonymous0 { } ; Anonymous0 def ; } ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct ABC : public XYZ { struct {} def; };";
+            const char expected[] = "struct ABC : public XYZ { struct Anonymous0 { } ; Anonymous0 def ; } ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 };
 

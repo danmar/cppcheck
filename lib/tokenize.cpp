@@ -6813,12 +6813,15 @@ void Tokenizer::simplifyStructDecl()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         // check for named struct/union
-        if (Token::Match(tok, "struct|union %type% {"))
+        if (Token::Match(tok, "struct|union %type% :|{"))
         {
             Token *type = tok->next();
             Token *next = tok->tokAt(2);
 
-            tok = tok->tokAt(2)->link();
+            while (next->str() != "{")
+                next = next->next();
+
+            tok = next->link();
 
             // check for named type
             if (Token::Match(tok->next(), "*|&| %type% ,|;|["))
@@ -6826,8 +6829,9 @@ void Tokenizer::simplifyStructDecl()
                 tok->insertToken(";");
                 tok = tok->next();
                 tok->insertToken(type->str().c_str());
-                tok = next;
             }
+
+            tok = next;
         }
 
         // check for anonymous struct/union
@@ -6837,6 +6841,7 @@ void Tokenizer::simplifyStructDecl()
 
             tok = tok->next()->link();
 
+            // check for named type
             if (Token::Match(tok->next(), "*|&| %type% ,|;|["))
             {
                 std::string name;
@@ -6848,8 +6853,9 @@ void Tokenizer::simplifyStructDecl()
                 tok->insertToken(";");
                 tok = tok->next();
                 tok->insertToken(name.c_str());
-                tok = tok1->next();
             }
+
+            tok = tok1->next();
         }
     }
 }

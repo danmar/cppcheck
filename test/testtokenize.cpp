@@ -1514,19 +1514,37 @@ private:
 
     void varid15()
     {
-        const std::string actual = tokenizeDebugListing(
-                                       "struct S {\n"
-                                       "    struct T {\n"
-                                       "    } t;\n"
-                                       "} s;");
+        {
+            const std::string actual = tokenizeDebugListing(
+                                           "struct S {\n"
+                                           "    struct T {\n"
+                                           "    } t;\n"
+                                           "} s;");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: struct S {\n"
-                                   "2: struct T {\n"
-                                   "3: } ; T t@1 ;\n"
-                                   "4: } ; S s@2 ;\n");
+            const std::string expected("\n\n##file 0\n"
+                                       "1: struct S {\n"
+                                       "2: struct T {\n"
+                                       "3: } ; T t@1 ;\n"
+                                       "4: } ; S s@2 ;\n");
 
-        ASSERT_EQUALS(expected, actual);
+            ASSERT_EQUALS(expected, actual);
+        }
+
+        {
+            const std::string actual = tokenizeDebugListing(
+                                           "struct S {\n"
+                                           "    struct T {\n"
+                                           "    } t;\n"
+                                           "};");
+
+            const std::string expected("\n\n##file 0\n"
+                                       "1: struct S {\n"
+                                       "2: struct T {\n"
+                                       "3: } ; T t@1 ;\n"
+                                       "4: } ;\n");
+
+            ASSERT_EQUALS(expected, actual);
+        }
     }
 
     void varidStl()
