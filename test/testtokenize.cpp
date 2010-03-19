@@ -179,6 +179,8 @@ private:
         // unsigned i; => unsigned int i;
         TEST_CASE(unsigned1);
         TEST_CASE(unsigned2);
+        TEST_CASE(unsigned3);	// template arguments
+
         TEST_CASE(testUpdateClassList);
         TEST_CASE(createLinks);
         TEST_CASE(signed1);
@@ -2739,6 +2741,22 @@ private:
         const char code[] = "i = (unsigned)j;";
         const char expected[] = "i = ( unsigned int ) j ;";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+    }
+
+    // simplify "unsigned" when using templates..
+    void unsigned3()
+    {
+        {
+            const char code[] = "; foo<unsigned>();";
+            const char expected[] = "; foo<int> ( ) ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
+
+        {
+            const char code[] = "; foo<unsigned int>();";
+            const char expected[] = "; foo<int> ( ) ;";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        }
     }
 
     void tokenizeAndUpdateClassList(const char code[])

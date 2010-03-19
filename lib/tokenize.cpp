@@ -4373,6 +4373,16 @@ void Tokenizer::unsignedint()
         else
             tok->insertToken("int");
     }
+
+    // simplify template arguments..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "< unsigned >"))
+            tok->next()->str("int");
+        else if (Token::Match(tok, "< unsigned %type% >") &&
+                 tok->tokAt(2)->isStandardType())
+            tok->deleteNext();
+    }
 }
 
 
