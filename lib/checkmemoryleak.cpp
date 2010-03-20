@@ -2186,33 +2186,28 @@ void CheckMemoryLeakInFunction::check()
     parse_noreturn();
 
     bool classmember = false;
-    bool beforeParameters = false;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
+        if (tok->str() == "(")
+        {
+            tok = tok->link();
+        }
+
         // Found a function scope
         if (Token::Match(tok, ") const| {"))
         {
-            tok = tok->next();
-            if (tok->str() != "{")
+            while (tok->str() != "{")
                 tok = tok->next();
             parseFunctionScope(tok, classmember);
             tok = tok->link();
             continue;
         }
 
-        else if (tok->str() == "(")
-            beforeParameters = false;
-
-        else if (tok->str() == "::" && beforeParameters)
+        if (tok->str() == "::")
             classmember = true;
 
-        else if (Token::Match(tok, "[;}]"))
-        {
+        if (Token::Match(tok, "[;}]"))
             classmember = false;
-            beforeParameters = true;
-        }
-
-
     }
 }
 //---------------------------------------------------------------------------
