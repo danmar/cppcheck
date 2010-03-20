@@ -4333,6 +4333,12 @@ void Tokenizer::unsignedint()
             continue;
         }
 
+        if (Token::Match(tok->previous(), "extern unsigned|signed *| %var% [;[]"))
+        {
+            tok->str("int");
+            continue;
+        }
+
         // signed int a; -> int a;
         if (Token::Match(tok, "signed %type% %var% [;,=)]"))
         {

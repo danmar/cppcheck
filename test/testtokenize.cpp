@@ -2734,6 +2734,12 @@ private:
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
 
+        // "extern unsigned x;" => "extern int x;"
+        {
+            const char code1[] = "; extern unsigned x;";
+            const char code2[] = "; extern int x ;";
+            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+        }
     }
 
     void unsigned2()
