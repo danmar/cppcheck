@@ -92,6 +92,7 @@ private:
         TEST_CASE(const5); // ticket #1482
         TEST_CASE(const6); // ticket #1491
         TEST_CASE(const7);
+        TEST_CASE(const8); // ticket #1517
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2126,6 +2127,19 @@ private:
                    "};\n"
                    "void bar() {}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const8()
+    {
+        // ticket #1517
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A():m_strValue(""){}\n"
+                   "    std::string strGetString() { return m_strValue; }\n"
+                   "private:\n"
+                   "    std::string m_strValue;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString' can be const\n", errout.str());
     }
 
     // increment/decrement => not const
