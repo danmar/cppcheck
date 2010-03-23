@@ -93,6 +93,7 @@ private:
         TEST_CASE(const6); // ticket #1491
         TEST_CASE(const7);
         TEST_CASE(const8); // ticket #1517
+        TEST_CASE(const9); // ticket #1515
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2140,6 +2141,18 @@ private:
                    "    std::string m_strValue;\n"
                    "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString' can be const\n", errout.str());
+    }
+
+    void const9()
+    {
+        // ticket #1515
+        checkConst("class wxThreadInternal {\n"
+                   "public:\n"
+                   "    void SetExitCode(wxThread::ExitCode exitcode) { m_exitcode = exitcode; }\n"
+                   "private:\n"
+                   "    wxThread::ExitCode m_exitcode;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const

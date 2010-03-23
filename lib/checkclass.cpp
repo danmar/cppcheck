@@ -150,13 +150,14 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         }
 
         // std::string..
-        else if (withClasses && Token::Match(next, "std :: string %var% ;"))
+        else if (withClasses && Token::Match(next, "%type% :: %type% %var% ;"))
         {
             varname = next->strAt(3);
         }
 
         // Container..
-        else if (withClasses && Token::Match(next, "std :: %type% <"))
+        else if (withClasses && (Token::Match(next, "%type% :: %type% <") ||
+                                 Token::Match(next, "%type% <")))
         {
             while (next && next->str() != ">")
                 next = next->next();
