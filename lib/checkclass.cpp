@@ -1743,7 +1743,7 @@ bool CheckClass::sameFunc(int nest, const Token *firstEnd, const Token *secondEn
 
 bool CheckClass::isMemberVar(const Var *varlist, const Token *tok)
 {
-    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:"))
+    while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return"))
     {
         if (Token::Match(tok->previous(),  "* this"))
             return true;

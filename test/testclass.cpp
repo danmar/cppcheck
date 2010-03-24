@@ -94,6 +94,7 @@ private:
         TEST_CASE(const7);
         TEST_CASE(const8); // ticket #1517
         TEST_CASE(const9); // ticket #1515
+        TEST_CASE(const10);
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2151,6 +2152,17 @@ private:
                    "    void SetExitCode(wxThread::ExitCode exitcode) { m_exitcode = exitcode; }\n"
                    "private:\n"
                    "    wxThread::ExitCode m_exitcode;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const10()
+    {
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    int foo() { return x = 0; }\n"
+                   "private:\n"
+                   "    int x;\n"
                    "}");
         ASSERT_EQUALS("", errout.str());
     }
