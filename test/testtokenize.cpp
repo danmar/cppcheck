@@ -448,76 +448,40 @@ private:
 
     void pointers_condition()
     {
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    if (p != NULL);\n"
-                            "    if (NULL != p);\n"
-                            "    if (this->p != NULL);\n"
-                            "    if (NULL != this->p);\n"
-                            "    if (Foo::p != NULL);\n"
-                            "    if (NULL != Foo::p);\n"
-                            "    while (p != NULL);\n"
-                            "    while (NULL != p);\n"
-                            "    while (this->p != NULL);\n"
-                            "    while (NULL != this->p);\n"
-                            "    while (Foo::p != NULL);\n"
-                            "    while (NULL != Foo::p);\n"
-                            "    if (p == NULL);\n"
-                            "    if (NULL == p);\n"
-                            "    if (this->p == NULL);\n"
-                            "    if (NULL == this->p);\n"
-                            "    if (Foo::p == NULL);\n"
-                            "    if (NULL == Foo::p);\n"
-                            "    while (p == NULL);\n"
-                            "    while (NULL == p);\n"
-                            "    while (this->p == NULL);\n"
-                            "    while (NULL == this->p);\n"
-                            "    while (Foo::p == NULL);\n"
-                            "    while (NULL == Foo::p);\n"
-                            "    if (p1 != NULL || p2 == NULL) { ; }\n"
-                            "    if (p1 != NULL && p2 == NULL) { ; }\n"
-                            "    if (p == '\\0');\n"
-                            "    if (p == 0L);\n"
-                            "    if (p == 0UL);\n"
-                            "    if (p == 0ul);\n"
-                            "    if (p == 0l);\n"
-                            "}\n";
+        ASSERT_EQUALS("( p )", tokenizeAndStringify("( p != NULL )", true));
+        ASSERT_EQUALS("( p )", tokenizeAndStringify("( NULL != p )", true));
+        ASSERT_EQUALS("( this . p )", tokenizeAndStringify("( this->p != NULL )", true));
+        ASSERT_EQUALS("( this . p )", tokenizeAndStringify("( NULL != this->p )", true));
+        ASSERT_EQUALS("( Foo :: p )", tokenizeAndStringify("( Foo::p != NULL )", true));
+        ASSERT_EQUALS("( Foo :: p )", tokenizeAndStringify("( NULL != Foo::p )", true));
 
-        ASSERT_EQUALS("void f ( )\n"
-                      "{\n"
-                      "if ( p ) { ; }\n"
-                      "if ( p ) { ; }\n"
-                      "if ( this . p ) { ; }\n"
-                      "if ( this . p ) { ; }\n"
-                      "if ( Foo :: p ) { ; }\n"
-                      "if ( Foo :: p ) { ; }\n"
-                      "while ( p ) { ; }\n"
-                      "while ( p ) { ; }\n"
-                      "while ( this . p ) { ; }\n"
-                      "while ( this . p ) { ; }\n"
-                      "while ( Foo :: p ) { ; }\n"
-                      "while ( Foo :: p ) { ; }\n"
-                      "if ( ! p ) { ; }\n"
-                      "if ( ! p ) { ; }\n"
-                      "if ( ! this . p ) { ; }\n"
-                      "if ( ! this . p ) { ; }\n"
-                      "if ( ! Foo :: p ) { ; }\n"
-                      "if ( ! Foo :: p ) { ; }\n"
-                      "while ( ! p ) { ; }\n"
-                      "while ( ! p ) { ; }\n"
-                      "while ( ! this . p ) { ; }\n"
-                      "while ( ! this . p ) { ; }\n"
-                      "while ( ! Foo :: p ) { ; }\n"
-                      "while ( ! Foo :: p ) { ; }\n"
-                      "if ( p1 || ! p2 ) { ; }\n"
-                      "if ( p1 && ! p2 ) { ; }\n"
-                      "if ( ! p ) { ; }\n"
-                      "if ( ! p ) { ; }\n"
-                      "if ( ! p ) { ; }\n"
-                      "if ( ! p ) { ; }\n"
-                      "if ( ! p ) { ; }\n"
-                      "}", tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == NULL )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( NULL == p )", true));
+        ASSERT_EQUALS("( ! this . p )", tokenizeAndStringify("( this->p == NULL )", true));
+        ASSERT_EQUALS("( ! this . p )", tokenizeAndStringify("( NULL == this->p )", true));
+        ASSERT_EQUALS("( ! Foo :: p )", tokenizeAndStringify("( Foo::p == NULL )", true));
+        ASSERT_EQUALS("( ! Foo :: p )", tokenizeAndStringify("( NULL == Foo::p )", true));
+
+        ASSERT_EQUALS("( p1 || ! p2 )", tokenizeAndStringify("( p1 != NULL || p2 == NULL )", true));
+        ASSERT_EQUALS("( p1 && ! p2 )", tokenizeAndStringify("( p1 != NULL && p2 == NULL )", true));
+
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == false )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0 )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == '\\0' )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0L )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0UL )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0ul )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( p == 0l )", true));
+
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( false == p )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0 == p )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( '\\0' == p )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0L == p )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0UL == p )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0ul == p )", true));
+        ASSERT_EQUALS("( ! p )", tokenizeAndStringify("( 0l == p )", true));
     }
+
 
     void ifAddBraces1()
     {

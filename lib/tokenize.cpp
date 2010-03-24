@@ -4527,21 +4527,21 @@ void Tokenizer::simplifyIfNot()
             if (!tok)
                 break;
 
-            if (Token::simpleMatch(tok, "0 == (") ||
-                Token::Match(tok, "0 == %var%"))
+            if (Token::Match(tok, "0|false == (") ||
+                Token::Match(tok, "0|false == %var%"))
             {
                 tok->deleteNext();
                 tok->str("!");
             }
 
-            else if (Token::Match(tok, "%var% == 0"))
+            else if (Token::Match(tok, "%var% == 0|false"))
             {
                 tok->deleteNext();
                 tok->next()->str(tok->str());
                 tok->str("!");
             }
 
-            else if (Token::Match(tok, "%var% .|:: %var% == 0"))
+            else if (Token::Match(tok, "%var% .|:: %var% == 0|false"))
             {
                 tok = tok->previous();
                 tok->insertToken("!");
@@ -4549,7 +4549,7 @@ void Tokenizer::simplifyIfNot()
                 Token::eraseTokens(tok, tok->tokAt(3));
             }
 
-            else if (Token::Match(tok, "* %var% == 0"))
+            else if (Token::Match(tok, "* %var% == 0|false"))
             {
                 tok = tok->previous();
                 tok->insertToken("!");
@@ -4558,7 +4558,7 @@ void Tokenizer::simplifyIfNot()
             }
         }
 
-        else if (tok->link() && Token::simpleMatch(tok, ") == 0"))
+        else if (tok->link() && Token::Match(tok, ") == 0|false"))
         {
             Token::eraseTokens(tok, tok->tokAt(3));
             if (Token::Match(tok->link()->previous(), "%var%"))
