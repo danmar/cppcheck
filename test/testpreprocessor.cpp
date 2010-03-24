@@ -1293,6 +1293,18 @@ private:
         }
 
         {
+            const char filedata[] = "#define BC(b, c...) 0##b * 0##c\n"
+                                    "#define ABC(a, b...) a + BC(b)\n"
+                                    "\n"
+                                    "ABC(1);\n"
+                                    "ABC(2,3);\n"
+                                    "ABC(4,5,6);\n";
+                                    
+            // When this TODO assertion works, #1475 is probably fixed
+            TODO_ASSERT_EQUALS("\n\n\n1 + 0 * 0\n2 + 03 * 0\n4 + 05 * 06\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
             const char filedata[] = "#define A 4\n"
                                     "#define B(a) a,A\n"
                                     "B(2);\n";
