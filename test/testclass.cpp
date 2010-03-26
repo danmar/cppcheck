@@ -97,6 +97,7 @@ private:
         TEST_CASE(const8); // ticket #1517
         TEST_CASE(const9); // ticket #1515
         TEST_CASE(const10); // ticket #1522
+        TEST_CASE(const11); // ticket #1529
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2212,6 +2213,18 @@ private:
                    "    int foo() { return (x ? x = 0 : x); }\n"
                    "private:\n"
                    "    int x;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const11()
+    {
+        // ticket #1529
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    void set(struct tm time) { m_time = time; }\n"
+                   "private:\n"
+                   "    struct tm m_time;\n"
                    "}");
         ASSERT_EQUALS("", errout.str());
     }

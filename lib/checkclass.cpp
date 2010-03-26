@@ -123,6 +123,12 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
                 varname = next->strAt(1);
         }
 
+        // Structure?
+        else if (Token::Match(next, "struct|union %type% %var% ;"))
+        {
+            varname = next->strAt(2);
+        }
+
         // Pointer?
         else if (Token::Match(next, "%type% * %var% ;"))
         {
