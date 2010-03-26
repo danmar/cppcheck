@@ -275,7 +275,7 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
         {
             for (Var *var = varlist; var; var = var->next)
                 var->init = true;
-            break;
+            return;
         }
 
         // Clearing array..
@@ -286,12 +286,23 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             continue;
         }
 
-        else if (ftok->str() == "if")
-            continue;
-
         // Calling member function?
         else if (Token::Match(ftok, "%var% ("))
         {
+            // Passing "this" => assume that everything is initialized
+            for (const Token * tok2 = ftok->next()->link(); tok2 && tok2 != ftok; tok2 = tok2->previous())
+            {
+                if (tok2->str() == "this")
+                {
+                    for (Var *var = varlist; var; var = var->next)
+                        var->init = true;
+                    return;
+                }
+            }
+
+            if (ftok->str() == "if")
+                continue;
+
             // No recursive calls!
             if (std::find(callstack.begin(), callstack.end(), ftok->str()) == callstack.end())
             {

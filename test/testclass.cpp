@@ -63,6 +63,8 @@ private:
         TEST_CASE(uninitVarHeader3);    // Class is defined in header
         TEST_CASE(uninitVarPublished);  // Variables in the published section are auto-initialized
         TEST_CASE(uninitOperator);      // No FP about uninitialized 'operator[]'
+        TEST_CASE(uninitFunction1);		// No FP when initialized in function
+        TEST_CASE(uninitFunction2);		// No FP when initialized in function
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -1421,6 +1423,36 @@ private:
                        "public:\n"
                        "    Fred() { }\n"
                        "    int *operator [] (int index) { return 0; }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitFunction1()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { init(*this); }\n"
+                       "\n"
+                       "    static void init(Fred &f)\n"
+                       "    { f.d = 0; }\n"
+                       "\n"
+                       "    double d;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitFunction2()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "public:\n"
+                       "    Fred() { if (!init(*this)); }\n"
+                       "\n"
+                       "    static bool init(Fred &f)\n"
+                       "    { f.d = 0; return true; }\n"
+                       "\n"
+                       "    double d;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
