@@ -99,6 +99,7 @@ private:
         TEST_CASE(const10); // ticket #1522
         TEST_CASE(const11); // ticket #1529
         TEST_CASE(const12); // ticket #1552
+        TEST_CASE(const13); // ticket #1519
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2240,6 +2241,34 @@ private:
                    "    mutable int x;\n"
                    "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'A::foo' can be const\n", errout.str());
+    }
+
+    void const13()
+    {
+        // ticket #1519
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::vector<int> GetVec()  {return m_vec;}\n"
+                   "    std::pair<int,double> GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::vector<int> m_vec;\n"
+                   "    std::pair<int,double> m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetVec' can be const\n"
+                      "[test.cpp:5]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const std::vector<int> & GetVec()  {return m_vec;}\n"
+                   "    const std::pair<int,double> & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::vector<int> m_vec;\n"
+                   "    std::pair<int,double> m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetVec' can be const\n"
+                      "[test.cpp:5]: (style) The function 'A::GetPair' can be const\n", errout.str());
     }
 
     // increment/decrement => not const
