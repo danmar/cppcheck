@@ -1371,6 +1371,7 @@ static void parseFunctionCall(const Token &tok, std::list<const Token *> &var, u
         functionNames1.insert("strcmp");
         functionNames1.insert("strncmp");
         functionNames1.insert("strdup");
+        functionNames1.insert("strndup");
         functionNames1.insert("strlen");
         functionNames1.insert("strstr");
     }
@@ -1489,9 +1490,13 @@ private:
     /** parse tokens */
     const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
     {
-        if (Token::Match(tok.previous(), "[;{}] %type% * %var% ;"))
+        if (Token::Match(tok.previous(), "[;{}] const| %type% * %var% ;"))
         {
             const Token * vartok = tok.tokAt(2);
+
+            if (tok.str() == "const")
+                vartok = vartok->next();
+
             if (vartok->varId() != 0)
                 checks.push_back(new CheckNullpointer(owner, vartok->varId(), vartok->str()));
             return vartok->next();

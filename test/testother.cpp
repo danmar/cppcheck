@@ -69,6 +69,7 @@ private:
         TEST_CASE(nullpointer5);    // References should not be checked
         TEST_CASE(nullpointer6);
         TEST_CASE(nullpointer7);
+        TEST_CASE(nullpointer8);
 
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
@@ -1051,6 +1052,22 @@ private:
                          "  int y = x.GetValue();\n"
                          "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer8()
+    {
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "  const char * x = 0;\n"
+                         "  strdup(x);\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "  char const * x = 0;\n"
+                         "  strdup(x);\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
     }
 
     void checkUninitVar(const char code[])
