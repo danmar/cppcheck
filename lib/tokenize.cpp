@@ -1215,14 +1215,14 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         Token::createMutualLinks(tok->tokAt(2), tok->tokAt(3));
     }
 
-    // Remove "volatile", "mutable" and "inline"
-    while (Token::Match(_tokens, "volatile|mutable|inline"))
+    // Remove "volatile" and "inline"
+    while (Token::Match(_tokens, "volatile|inline"))
     {
         _tokens->deleteThis();
     }
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        while (Token::Match(tok->next(), "volatile|mutable|inline"))
+        while (Token::Match(tok->next(), "volatile|inline"))
         {
             tok->deleteNext();
         }

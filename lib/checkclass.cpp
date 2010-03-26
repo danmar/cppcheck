@@ -112,6 +112,14 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         if (next->str() == "typedef")
             continue;
 
+        // Is it a mutable variable?
+        bool isMutable = false;
+        if (next->str() == "mutable")
+        {
+            isMutable = true;
+            next = next->next();
+        }
+
         // Is it a variable declaration?
         if (Token::Match(next, "%type% %var% ;"))
         {
@@ -174,7 +182,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // If the varname was set in one of the two if-block above, create a entry for this variable..
         if (!varname.empty() && varname != "operator")
         {
-            Var *var = new Var(varname, false, priv, varlist);
+            Var *var = new Var(varname, false, priv, isMutable, varlist);
             varlist  = var;
         }
     }
@@ -1774,7 +1782,9 @@ bool CheckClass::isMemberVar(const Var *varlist, const Token *tok)
     for (const Var *var = varlist; var; var = var->next)
     {
         if (var->name == tok->str())
-            return true;
+        {
+            return !var->isMutable;
+        }
     }
 
     return false;

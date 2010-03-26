@@ -113,12 +113,13 @@ private:
     class Var
     {
     public:
-        Var(const std::string &name_, bool init = false, bool priv = false, Var *next = 0)
-                : name(name_)
+        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, Var *next_ = 0)
+                : name(name_),
+                init(init_),
+                priv(priv_),
+                isMutable(mutable_),
+                next(next_)
         {
-            this->init = init;
-            this->priv = priv;
-            this->next = next;
         }
 
         /** @brief name of variable */
@@ -129,6 +130,9 @@ private:
 
         /** @brief is this variable declared in the private section? */
         bool        priv;
+
+        /** @brief is this variable mutable? */
+        bool        isMutable;
 
         /** @brief next Var item */
         Var *next;
