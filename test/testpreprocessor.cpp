@@ -1300,8 +1300,7 @@ private:
                                     "ABC(2,3);\n"
                                     "ABC(4,5,6);\n";
 
-            // When this TODO assertion works, #1475 is probably fixed
-            TODO_ASSERT_EQUALS("\n\n\n1 + 0 * 0\n2 + 03 * 0\n4 + 05 * 06\n", OurPreprocessor::expandMacros(filedata));
+            ASSERT_EQUALS("\n\n\n1+0*0;\n2+03*0;\n4+05*06;\n", OurPreprocessor::expandMacros(filedata));
         }
 
         {

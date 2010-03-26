@@ -1598,7 +1598,9 @@ public:
                         {
                             if (str == _params[i])
                             {
-                                if (_variadic && i == _params.size() - 1)
+                                if (_variadic &&
+                                    (i == _params.size() - 1 ||
+                                     (params2.size() + 2 == _params.size() && i + 1 == _params.size() - 1)))
                                 {
                                     str = "";
                                     for (unsigned int j = (unsigned int)_params.size() - 1; j < params2.size(); ++j)
