@@ -92,6 +92,7 @@ private:
         TEST_CASE(array_index_20);
         TEST_CASE(array_index_21);
         TEST_CASE(array_index_22);
+        TEST_CASE(array_index_23);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -744,6 +745,16 @@ private:
               "  int b = indices[2];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'indices[2]' index 2 out of bounds\n", errout.str());
+    }
+
+    void array_index_23()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char c[10];\n"
+              "    c[1<<23]='a';\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'c[10]' index 8388608 out of bounds\n", errout.str());
     }
 
     void array_index_multidim()

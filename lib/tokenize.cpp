@@ -5217,6 +5217,25 @@ bool Tokenizer::simplifyCalculations()
                 tok->deleteNext();
             }
         }
+
+        if (Token::Match(tok, "%num% <<|>> %num%"))
+        {
+            const int op1(MathLib::toLongNumber(tok->str()));
+            const int op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
+            int result;
+
+            if (tok->next()->str() == "<<")
+                result = op1 << op2;
+            else
+                result = op1 >> op2;
+
+            std::stringstream ss;
+            ss << result;
+
+            tok->str(ss.str());
+            tok->deleteNext();
+            tok->deleteNext();
+        }
     }
     return ret;
 }
