@@ -1580,13 +1580,37 @@ void CheckClass::checkConst()
                 // member function?
                 if (Token::Match(tok2, "%type% %var% (") ||
                     Token::Match(tok2, "%type% %type% %var% (") ||
+                    Token::Match(tok2, "%type% < %type% > %var% (") ||
+                    Token::Match(tok2, "%type% < %type% , %type% > %var% (") ||
                     Token::Match(tok2, "%type% :: %type% %var% (") ||
                     Token::Match(tok2, "%type% :: %type% < %type% > %var% (") ||
                     Token::Match(tok2, "%type% :: %type% < %type% , %type% > %var% (") ||
+                    Token::Match(tok2, "%type% :: %type% < %type% :: %type% < %type% > , %type% > %var% (") ||
+                    Token::Match(tok2, "%type% < %type% < %type% > , %type% > %var% (") ||
+                    Token::Match(tok2, "%type% :: %type% < %type% , %type% :: %type% < %type% > > %var% (") ||
+                    Token::Match(tok2, "%type% < %type% , %type% < %type% > > %var% (") ||
+                    Token::Match(tok2, "%type% :: %type% < %type% :: %type% < %type% > , %type% :: %type% < %type% > > %var% (") ||
+                    Token::Match(tok2, "%type% < %type% < %type% > , %type% < %type% > > %var% (") ||
+                    Token::Match(tok2, "%type% :: %type% < %type% :: %type% < %type% , %type% > , %type% > %var% (") ||
+                    Token::Match(tok2, "%type% < %type% < %type% , %type% > , %type% > %var% (") ||
+                    Token::Match(tok2, "%type% :: %type% < %type% , %type% :: %type% < %type% , %type% > > %var% (") ||
+                    Token::Match(tok2, "%type% < %type% , %type% < %type% , %type% > > %var% (") ||
+                    Token::Match(tok2, "const %type% < %type% > &|* %var% (") ||
+                    Token::Match(tok2, "const %type% < %type% , %type% > &|* %var% (") ||
                     Token::Match(tok2, "const %type% &|* %var% (") ||
                     Token::Match(tok2, "const %type% :: %type% &|*| %var% (") ||
                     Token::Match(tok2, "const %type% :: %type% < %type% > *|& %var% (") ||
                     Token::Match(tok2, "const %type% :: %type% < %type% , %type% > *|&  %var% (") ||
+                    Token::Match(tok2, "const %type% :: %type% < %type% :: %type% < %type% > , %type% > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% < %type% < %type% > , %type% > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% :: %type% < %type% , %type% :: %type% < %type% > > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% < %type% , %type% < %type% > > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% :: %type% < %type% :: %type% < %type% > , %type% :: %type% < %type% > > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% < %type% < %type% > , %type% < %type% > > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% :: %type% < %type% :: %type% < %type% , %type% > , %type% > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% < %type% < %type% , %type% > , %type% > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% :: %type% < %type% , %type% :: %type% < %type% , %type% > > *|& %var% (") ||
+                    Token::Match(tok2, "const %type% < %type% , %type% < %type% , %type% > > *|& %var% (") ||
                     Token::Match(tok2, "%type% operator %any% ("))
                 {
                     // goto function name..

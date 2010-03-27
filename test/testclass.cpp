@@ -100,6 +100,7 @@ private:
         TEST_CASE(const11); // ticket #1529
         TEST_CASE(const12); // ticket #1552
         TEST_CASE(const13); // ticket #1519
+		TEST_CASE(const14);
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2269,6 +2270,367 @@ private:
                    "}");
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetVec' can be const\n"
                       "[test.cpp:5]: (style) The function 'A::GetPair' can be const\n", errout.str());
+    }
+
+    void const14()
+    {
+        // extends ticket 1519 
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair<std::vector<int>,double> GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair<std::vector<int>,double> m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const std::pair<std::vector<int>,double>& GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair<std::vector<int>,double> m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair<std::vector<int>,double>& GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair<std::vector<int>,double> m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair<int ,double> GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair<int ,double> m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const pair<int ,double> & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair<int ,double> m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair<int ,double> & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair<int ,double> m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair< int,std::vector<int> >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< int,std::vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const std::pair< int,std::vector<int> >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< int,std::vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair< int,std::vector<int> >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< int,std::vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< int,vector<int> >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< int,vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const pair< int,vector<int> >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< int,vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< int,vector<int> >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< int,vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< vector<int>, int >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< vector<int>, int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const pair< vector<int>, int >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< vector<int>, int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< vector<int>, int >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< vector<int>, int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair< std::vector<int>,std::vector<int> >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const std::pair< std::vector<int>,std::vector<int> >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair< std::vector<int>,std::vector<int> >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< std::vector<int>,std::vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< vector<int>, vector<int> >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< vector<int>, vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const pair< vector<int>, vector<int> >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< vector<int>, vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< vector<int>, vector<int> >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< vector<int>, vector<int> >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair< std::pair < int, char > , int >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< std::pair < int, char > , int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const std::pair< std::pair < int, char > , int > & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< std::pair < int, char > , int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair< std::pair < int, char > , int > & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< std::pair < int, char > , int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< pair < int, char > , int >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< pair < int, char > , int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const pair< pair < int, char > , int > & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< pair < int, char > , int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< pair < int, char > , int > & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< pair < int, char > , int >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< int , pair < int, char > >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< int , pair < int, char > >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const pair< int , pair < int, char > > & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< int , pair < int, char > >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    pair< int , pair < int, char > > & GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    pair< int , pair < int, char > >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair< int , std::pair < int, char > >  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< int , std::pair < int, char > >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const std::pair< int , std::pair < int, char > >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< int , std::pair < int, char > >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetPair' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    std::pair< int , std::pair < int, char > >&  GetPair() {return m_pair;}\n"
+                   "private:\n"
+                   "    std::pair< int , std::pair < int, char > >  m_pair;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    vector<int>  GetVec() {return m_Vec;}\n"
+                   "private:\n"
+                   "    vector<int>  m_Vec;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetVec' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    const vector<int>&  GetVec() {return m_Vec;}\n"
+                   "private:\n"
+                   "    vector<int>  m_Vec;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::GetVec' can be const\n", errout.str());
+
+        checkConst("using namespace std;"
+				   "class A {\n"
+                   "public:\n"
+                   "    A(){}\n"
+                   "    vector<int>&  GetVec() {return m_Vec;}\n"
+                   "private:\n"
+                   "    vector<int>  m_Vec;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+
     }
 
     // increment/decrement => not const
