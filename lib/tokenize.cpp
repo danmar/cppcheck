@@ -6672,6 +6672,8 @@ void Tokenizer::simplifyStructInit()
                     tok2 = tok2->tokAt(4);
                 else if (Token::Match(tok2, ". %type% = & %var% [,}]"))
                     tok2 = tok2->tokAt(5);
+                else
+                    break;
 
                 if (Token::simpleMatch(tok2, ", ."))
                     tok2 = tok2->next();

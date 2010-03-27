@@ -4128,6 +4128,7 @@ private:
         ASSERT_EQUALS("; struct A a ; a . buf = x ;", tok("; struct A a = { .buf = x };"));
         ASSERT_EQUALS("; struct A a ; a . buf = & key ;", tok("; struct A a = { .buf = &key };"));
         ASSERT_EQUALS("; struct ABC abc ; abc . a = 3 ; abc . b = x ; abc . c = & key ;", tok("; struct ABC abc = { .a = 3, .b = x, .c = &key };"));
+        TODO_ASSERT_EQUALS("; struct A a ; a . buf = { 0 } ;", tok("; struct A a = { .buf = {0} };"));
     }
 
     void simplifyStructDecl()
