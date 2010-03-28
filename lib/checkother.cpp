@@ -315,13 +315,11 @@ void CheckOther::checkUnsignedDivision()
     {
         if (Token::Match(tok, "[{};(,] %type% %var% [;=,)]"))
         {
-            const std::string type = tok->strAt(1);
-            if (type == "char" || type == "short" || type == "int")
+            if (tok->tokAt(1)->isUnsigned())
+                varsign[tok->tokAt(2)->varId()] = 'u';
+            else
                 varsign[tok->tokAt(2)->varId()] = 's';
         }
-
-        else if (Token::Match(tok, "[{};(,] unsigned %type% %var% [;=,)]"))
-            varsign[tok->tokAt(3)->varId()] = 'u';
 
         else if (!Token::Match(tok, "[).]") &&
                  Token::Match(tok->next(), "%var% / %var%") &&
@@ -906,8 +904,12 @@ void CheckOther::checkCharVariable()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring the variable..
-        if (Token::Match(tok, "[{};(,] signed| char %var% [;=,)]"))
+        if (Token::Match(tok, "[{};(,] char %var% [;=,)]"))
         {
+            // Check for unsigned char
+            if (tok->tokAt(1)->isUnsigned())
+                continue;
+
             // Set tok to point to the variable name
             tok = tok->tokAt(2);
             if (tok->str() == "char")

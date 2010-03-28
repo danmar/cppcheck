@@ -93,6 +93,7 @@ private:
         TEST_CASE(array_index_21);
         TEST_CASE(array_index_22);
         TEST_CASE(array_index_23);
+        TEST_CASE(array_index_24); // ticket #1492
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -755,6 +756,42 @@ private:
               "    c[1<<23]='a';\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'c[10]' index 8388608 out of bounds\n", errout.str());
+    }
+
+    void array_index_24()
+    {
+        // ticket #1492
+        check("void f(signed char n) {\n"
+              "    int a[n];\n"     // n <= SCHAR_MAX
+              "    a[-1] = 0;\n"    // negative index
+              "    a[128] = 0;\n" // 128 > SCHAR_MAX
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[128]' index -1 out of bounds\n"
+                      "[test.cpp:4]: (error) Array 'a[128]' index 128 out of bounds\n", errout.str());
+
+        check("void f(unsigned char n) {\n"
+              "    int a[n];\n"     // n <= UCHAR
+              "    a[-1] = 0;\n"    // negative index
+              "    a[256] = 0;\n" // 256 > UCHAR_MAX
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[256]' index -1 out of bounds\n"
+                      "[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n", errout.str());
+
+        check("void f(short n) {\n"
+              "    int a[n];\n"     // n <= SHRT_MAX
+              "    a[-1] = 0;\n"    // negative index
+              "    a[32768] = 0;\n" // 32768 > SHRT_MAX
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[32768]' index -1 out of bounds\n"
+                      "[test.cpp:4]: (error) Array 'a[32768]' index 32768 out of bounds\n", errout.str());
+
+        check("void f(unsigned short n) {\n"
+              "    int a[n];\n"     // n <= USHRT_MAX
+              "    a[-1] = 0;\n"    // negative index
+              "    a[65536] = 0;\n" // 65536 > USHRT_MAX
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[65536]' index -1 out of bounds\n"
+                      "[test.cpp:4]: (error) Array 'a[65536]' index 65536 out of bounds\n", errout.str());
     }
 
     void array_index_multidim()

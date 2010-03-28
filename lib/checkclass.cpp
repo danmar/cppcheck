@@ -1791,8 +1791,6 @@ bool CheckClass::isMemberFunc(const Token *tok)
             return true;
         else if (Token::Match(tok, "operator %any% ("))
             return true;
-        else if (Token::Match(tok, "%type%"))
-            tok = tok->next();
 
         while (Token::Match(tok, ":: %type%"))
             tok = tok->tokAt(2);

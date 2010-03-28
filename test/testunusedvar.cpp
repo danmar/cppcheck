@@ -318,7 +318,7 @@ private:
                               "        func();\n"
                               "    } while(a--);\n"
                               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Unused variable: z\n"), errout.str());
     }
 
     void localvarStruct4()

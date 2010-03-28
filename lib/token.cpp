@@ -32,6 +32,9 @@ Token::Token(Token **t) :
         _isName(false),
         _isNumber(false),
         _isBoolean(false),
+        _isUnsigned(false),
+        _isSigned(false),
+        _isLong(false),
         _varId(0),
         _next(0),
         _previous(0),
@@ -557,7 +560,7 @@ size_t Token::getStrLength(const Token *tok)
 bool Token::isStandardType() const
 {
     bool ret = false;
-    const char *type[] = {"bool", "char", "short", "int", "long", "float", "double", "size_t", 0};
+    const char *type[] = {"bool", "char", "short", "int", "long", "float", "double", "size_t", "__int64", 0};
     for (int i = 0; type[i]; i++)
         ret |= (_str == type[i]);
     return ret;

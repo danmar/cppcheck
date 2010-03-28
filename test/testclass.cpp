@@ -102,6 +102,7 @@ private:
         TEST_CASE(const12); // ticket #1552
         TEST_CASE(const13); // ticket #1519
         TEST_CASE(const14);
+        TEST_CASE(const15);
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2669,6 +2670,48 @@ private:
                    "    const int * x;\n"
                    "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'A::foo' can be const\n", errout.str());
+    }
+
+    void const15()
+    {
+        checkConst("class Fred {\n"
+                   "    unsigned long long int a;\n"
+                   "    unsigned long long int getA() { return a; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::getA' can be const\n", errout.str());
+
+        // constructors can't be const..
+        checkConst("class Fred {\n"
+                   "    unsigned long long int a;\n"
+                   "public:\n"
+                   "    Fred() { }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // assignment through |=..
+        checkConst("class Fred {\n"
+                   "    unsigned long long int a;\n"
+                   "    unsigned long long int setA() { a |= true; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // functions with a function call can't be const..
+        checkConst("class foo\n"
+                   "{\n"
+                   "public:\n"
+                   "    unsigned long long int x;\n"
+                   "    void b() { a(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // static functions can't be const..
+        checkConst("class foo\n"
+                   "{\n"
+                   "public:\n"
+                   "    static unsigned long long int get()\n"
+                   "    { return 0; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const

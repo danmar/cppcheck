@@ -171,6 +171,12 @@ public:
     void unsignedint();
 
     /**
+     * Colapse compound standard types into a single token.
+     * unsigned long long int => long _isUnsigned=true,_isLong=true
+     */
+    void simplifyStdType();
+
+    /**
      * Simplify question mark - colon operator
      * Example: 0 ? (2/0) : 0 => 0
      * @return true if something is modified

@@ -72,6 +72,7 @@ private:
         TEST_CASE(sizeof15);
         TEST_CASE(sizeof16);
         TEST_CASE(sizeof17);
+        TEST_CASE(sizeof18);
         TEST_CASE(casting);
 
         TEST_CASE(strlen1);
@@ -249,6 +250,15 @@ private:
         {
             if (tok != tokenizer.tokens())
                 ret += " ";
+            if (!simplify)
+            {
+                if (tok->isUnsigned())
+                    ret += "unsigned ";
+                else if (tok->isSigned())
+                    ret += "signed ";
+            }
+            if (tok->isLong())
+                ret += "long ";
             ret += tok->str();
         }
 
@@ -1078,6 +1088,123 @@ private:
                             "}\n";
         ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; }", tok(code));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void sizeof18()
+    {
+        if (sizeof(short int) == 2)
+        {
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(short int);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 2 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(unsigned short int);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 2 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(short unsigned int);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 2 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(signed short int);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 2 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+        }
+
+        if (sizeof(long long) == 8)
+        {
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(long long);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(signed long long);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(unsigned long long);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(long unsigned long);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(long long int);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(signed long long int);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(unsigned long long int);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+
+            {
+                const char code[] = "void f()\n"
+                                    "{\n"
+                                    "    sizeof(long unsigned long int);\n"
+                                    "}\n";
+                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("", errout.str());
+            }
+        }
     }
 
     void casting()

@@ -31,6 +31,7 @@
 #include <list>
 #include <cstring>
 #include <cctype>
+#include <climits>
 
 #include <cassert>     // <- assert
 #include <cstdlib>     // <- strtoul
@@ -805,6 +806,63 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (tok->next()->str() == "*")
                 ++varpos;
             size = MathLib::toLongNumber(tok->strAt(varpos + 2));
+            type = tok->strAt(varpos - 1);
+            varid = tok->tokAt(varpos)->varId();
+            nextTok = varpos + 5;
+        }
+        else if (Token::Match(tok, "%type% *| %var% [ %var% ] [;=]"))
+        {
+            unsigned int varpos = 1;
+            if (tok->next()->str() == "*")
+                ++varpos;
+
+            // get maximum size from type
+            // find where this token is defined
+            const Token *index_type = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(varpos + 2)->varId());
+
+            index_type = index_type->previous();
+
+            if (index_type->str() == "char")
+            {
+                if (index_type->isUnsigned())
+                    size = UCHAR_MAX + 1;
+                else if (index_type->isSigned())
+                    size = SCHAR_MAX + 1;
+                else
+                    size = CHAR_MAX + 1;
+            }
+            else if (index_type->str() == "short")
+            {
+                if (index_type->isUnsigned())
+                    size = USHRT_MAX + 1;
+                else
+                    size = SHRT_MAX + 1;
+            }
+            else if (index_type->str() == "int")
+            {
+                if (index_type->isUnsigned())
+                    size = UINT_MAX; // really UINT_MAX + 1;
+                else
+                    size = INT_MAX + 1U;
+            }
+            else if (index_type->str() == "long")
+            {
+                if (index_type->isUnsigned())
+                {
+                    if (index_type->isLong())
+                        size = ULONG_MAX; // really ULLONG_MAX + 1;
+                    else
+                        size = ULONG_MAX; // really ULONG_MAX + 1;
+                }
+                else
+                {
+                    if (index_type->isLong())
+                        size = ULONG_MAX; // really LLONG_MAX + 1;
+                    else
+                        size = LONG_MAX + 1U;
+                }
+            }
+
             type = tok->strAt(varpos - 1);
             varid = tok->tokAt(varpos)->varId();
             nextTok = varpos + 5;

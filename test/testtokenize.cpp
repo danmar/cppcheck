@@ -231,6 +231,15 @@ private:
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
+            if (!simplify)
+            {
+                if (tok->isUnsigned())
+                    ostr << "unsigned ";
+                else if (tok->isSigned())
+                    ostr << "signed ";
+            }
+            if (tok->isLong())
+                ostr << "long ";
             ostr << tok->str();
 
             // Append newlines
@@ -2923,7 +2932,15 @@ private:
         tokenizer.simplifyFunctionPointers();
         std::ostringstream ostr;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        {
+            if (tok->isUnsigned())
+                ostr << " unsigned";
+            else if (tok->isSigned())
+                ostr << " signed";
+            if (tok->isLong())
+                ostr << " long";
             ostr << (tok->isName() ? " " : "") << tok->str();
+        }
         return ostr.str();
     }
 

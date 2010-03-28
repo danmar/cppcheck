@@ -149,6 +149,30 @@ public:
     {
         return _isBoolean;
     }
+    bool isUnsigned() const
+    {
+        return _isUnsigned;
+    }
+    void isUnsigned(bool sign)
+    {
+        _isUnsigned = sign;
+    }
+    bool isSigned() const
+    {
+        return _isSigned;
+    }
+    void isSigned(bool sign)
+    {
+        _isSigned = sign;
+    }
+    bool isLong() const
+    {
+        return _isLong;
+    }
+    void isLong(bool size)
+    {
+        _isLong = size;
+    }
     bool isStandardType() const;
 
     static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
@@ -341,6 +365,9 @@ private:
     bool _isName;
     bool _isNumber;
     bool _isBoolean;
+    bool _isUnsigned;
+    bool _isSigned;
+    bool _isLong;
     unsigned int _varId;
     Token *_next;
     Token *_previous;

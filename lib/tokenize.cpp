@@ -134,6 +134,13 @@ unsigned int Tokenizer::sizeOfType(const Token *type) const
     std::map<std::string, unsigned int>::const_iterator it = _typeSize.find(type->strAt(0));
     if (it == _typeSize.end())
         return 0;
+    else if (type->isLong())
+    {
+        if (type->str() == "double")
+            return sizeof(long double);
+        else if (type->str() == "long")
+            return sizeof(long long);
+    }
 
     return it->second;
 }
@@ -152,6 +159,9 @@ void Tokenizer::insertTokens(Token *dest, const Token *src, unsigned int n)
         dest->fileIndex(src->fileIndex());
         dest->linenr(src->linenr());
         dest->varId(src->varId());
+        dest->isUnsigned(src->isUnsigned());
+        dest->isSigned(src->isSigned());
+        dest->isLong(src->isLong());
         src  = src->next();
         --n;
     }
@@ -1230,6 +1240,10 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
     // replace "unsigned i" with "unsigned int i"
     unsignedint();
+
+    // colapse compound standard types into a single token
+    // unsigned long long int => long _isUnsigned=true,_isLong=true
+    simplifyStdType();
 
     // Use "<" comparison instead of ">"
     simplifyComparisonOrder();
@@ -4305,6 +4319,59 @@ void Tokenizer::simplifyVarDecl()
     }
 }
 
+void Tokenizer::simplifyStdType()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        // long unsigned => unsigned long
+        if (Token::Match(tok, "long|short unsigned|signed"))
+        {
+            std::string temp = tok->str();
+            tok->str(tok->next()->str());
+            tok->next()->str(temp);
+        }
+
+        if (!Token::Match(tok, "unsigned|signed|long|char|short|int|__int64"))
+            continue;
+
+        // check if signed or unsigned specified
+        if (Token::Match(tok, "unsigned|signed"))
+        {
+            bool isUnsigned = tok->str() == "unsigned";
+            tok->deleteThis();
+            tok->isUnsigned(isUnsigned);
+            tok->isSigned(!isUnsigned);
+        }
+
+        if (Token::Match(tok, "__int64"))
+        {
+            tok->str("long");
+            tok->isLong(true);
+        }
+        else if (Token::Match(tok, "long"))
+        {
+            if (Token::Match(tok->next(), "long"))
+            {
+                tok->isLong(true);
+                tok->deleteNext();
+            }
+
+            if (Token::Match(tok->next(), "int"))
+                tok->deleteNext();
+            else if (Token::Match(tok->next(), "double"))
+            {
+                tok->str("double");
+                tok->isLong(true);
+                tok->deleteNext();
+            }
+        }
+        else if (Token::Match(tok, "short"))
+        {
+            if (Token::Match(tok->next(), "int"))
+                tok->deleteNext();
+        }
+    }
+}
 
 void Tokenizer::unsignedint()
 {
