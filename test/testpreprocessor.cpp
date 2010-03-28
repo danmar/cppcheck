@@ -616,23 +616,47 @@ private:
 
     void elif()
     {
-        const char filedata[] = "#if DEF1\n"
-                                "ABC\n"
-                                "#elif DEF2\n"
-                                "DEF\n"
-                                "#endif\n";
+        {
+            const char filedata[] = "#if DEF1\n"
+                                    "ABC\n"
+                                    "#elif DEF2\n"
+                                    "DEF\n"
+                                    "#endif\n";
 
-        // Preprocess => actual result..
-        std::istringstream istr(filedata);
-        std::map<std::string, std::string> actual;
-        Preprocessor preprocessor;
-        preprocessor.preprocess(istr, actual, "file.c");
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
 
-        // Compare results..
-        ASSERT_EQUALS("\n\n\n\n\n", actual[""]);
-        ASSERT_EQUALS("\nABC\n\n\n\n", actual["DEF1"]);
-        ASSERT_EQUALS("\n\n\nDEF\n\n", actual["DEF2"]);
-        ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+            // Compare results..
+            ASSERT_EQUALS("\n\n\n\n\n", actual[""]);
+            ASSERT_EQUALS("\nABC\n\n\n\n", actual["DEF1"]);
+            ASSERT_EQUALS("\n\n\nDEF\n\n", actual["DEF2"]);
+            ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+        }
+
+        {
+            const char filedata[] = "#if(defined DEF1)\n"
+                                    "ABC\n"
+                                    "#elif(defined DEF2)\n"
+                                    "DEF\n"
+                                    "#else\n"
+                                    "GHI\n"
+                                    "#endif\n";
+
+            // Preprocess => actual result..
+            std::istringstream istr(filedata);
+            std::map<std::string, std::string> actual;
+            Preprocessor preprocessor;
+            preprocessor.preprocess(istr, actual, "file.c");
+
+            // Compare results..
+            ASSERT_EQUALS("\n\n\n\n\nGHI\n\n", actual[""]);
+            ASSERT_EQUALS("\nABC\n\n\n\n\n\n", actual["DEF1"]);
+            ASSERT_EQUALS("\n\n\nDEF\n\n\n\n", actual["DEF2"]);
+            ASSERT_EQUALS(3, static_cast<unsigned int>(actual.size()));
+        }
     }
 
 
