@@ -1578,40 +1578,7 @@ void CheckClass::checkConst()
                     continue;
 
                 // member function?
-                if (Token::Match(tok2, "%type% %var% (") ||
-                    Token::Match(tok2, "%type% %type% %var% (") ||
-                    Token::Match(tok2, "%type% < %type% > %var% (") ||
-                    Token::Match(tok2, "%type% < %type% , %type% > %var% (") ||
-                    Token::Match(tok2, "%type% :: %type% %var% (") ||
-                    Token::Match(tok2, "%type% :: %type% < %type% > %var% (") ||
-                    Token::Match(tok2, "%type% :: %type% < %type% , %type% > %var% (") ||
-                    Token::Match(tok2, "%type% :: %type% < %type% :: %type% < %type% > , %type% > %var% (") ||
-                    Token::Match(tok2, "%type% < %type% < %type% > , %type% > %var% (") ||
-                    Token::Match(tok2, "%type% :: %type% < %type% , %type% :: %type% < %type% > > %var% (") ||
-                    Token::Match(tok2, "%type% < %type% , %type% < %type% > > %var% (") ||
-                    Token::Match(tok2, "%type% :: %type% < %type% :: %type% < %type% > , %type% :: %type% < %type% > > %var% (") ||
-                    Token::Match(tok2, "%type% < %type% < %type% > , %type% < %type% > > %var% (") ||
-                    Token::Match(tok2, "%type% :: %type% < %type% :: %type% < %type% , %type% > , %type% > %var% (") ||
-                    Token::Match(tok2, "%type% < %type% < %type% , %type% > , %type% > %var% (") ||
-                    Token::Match(tok2, "%type% :: %type% < %type% , %type% :: %type% < %type% , %type% > > %var% (") ||
-                    Token::Match(tok2, "%type% < %type% , %type% < %type% , %type% > > %var% (") ||
-                    Token::Match(tok2, "const %type% < %type% > &|* %var% (") ||
-                    Token::Match(tok2, "const %type% < %type% , %type% > &|* %var% (") ||
-                    Token::Match(tok2, "const %type% &|* %var% (") ||
-                    Token::Match(tok2, "const %type% :: %type% &|*| %var% (") ||
-                    Token::Match(tok2, "const %type% :: %type% < %type% > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% :: %type% < %type% , %type% > *|&  %var% (") ||
-                    Token::Match(tok2, "const %type% :: %type% < %type% :: %type% < %type% > , %type% > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% < %type% < %type% > , %type% > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% :: %type% < %type% , %type% :: %type% < %type% > > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% < %type% , %type% < %type% > > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% :: %type% < %type% :: %type% < %type% > , %type% :: %type% < %type% > > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% < %type% < %type% > , %type% < %type% > > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% :: %type% < %type% :: %type% < %type% , %type% > , %type% > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% < %type% < %type% , %type% > , %type% > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% :: %type% < %type% , %type% :: %type% < %type% , %type% > > *|& %var% (") ||
-                    Token::Match(tok2, "const %type% < %type% , %type% < %type% , %type% > > *|& %var% (") ||
-                    Token::Match(tok2, "%type% operator %any% ("))
+                if (isMemberFunc(tok2))
                 {
                     // goto function name..
                     while (tok2->next()->str() != "(")
@@ -1792,6 +1759,90 @@ bool CheckClass::sameFunc(int nest, const Token *firstEnd, const Token *secondEn
     }
 
     return true;
+}
+
+// A const member function can return either a copy of or
+// a const reference or pointer to something.
+// Is this a member function with these signatures:
+// type var (                    returns a copy of something
+// const type var (              returns a const copy of something
+// const type & var (            returns a const reference to something
+// const type * var (            returns a const pointer to something
+// type operator any (           returns a copy of something
+// const type operator any (     returns a const copy of something
+// const type & operator any (   returns a const reference to something
+// const type * operator any (   returns a const pointer to something
+// Type can be anything from a standard type to a complex template.
+bool CheckClass::isMemberFunc(const Token *tok)
+{
+    bool isConst = false;
+
+    if (tok->str() == "const")
+    {
+        isConst = true;
+        tok = tok->next();
+    }
+
+    if (Token::Match(tok, "%type%"))
+    {
+        tok = tok->next();
+
+        if (Token::Match(tok, "%var% ("))
+            return true;
+        else if (Token::Match(tok, "operator %any% ("))
+            return true;
+        else if (Token::Match(tok, "%type%"))
+            tok = tok->next();
+
+        while (Token::Match(tok, ":: %type%"))
+            tok = tok->tokAt(2);
+
+        // template with parameter(s)?
+        if (Token::Match(tok, "< %type%"))
+        {
+            unsigned int level = 1;
+            tok = tok->tokAt(2);
+            while (tok)
+            {
+                if (tok->str() == "<")
+                    level++;
+                else if (tok->str() == ">")
+                {
+                    level--;
+                    if (level == 0)
+                    {
+                        tok = tok->next();
+                        break;
+                    }
+                }
+                tok = tok->next();
+            }
+        }
+
+        // template with default type
+        else if (Token::Match(tok, "< >"))
+            tok = tok->tokAt(2);
+
+        // operator something
+        else if (Token::Match(tok, "operator %any% ("))
+            return true;
+
+        if (isConst)
+        {
+            while (Token::Match(tok, "*|&"))
+            {
+                tok = tok->next();
+
+                if (tok->str() == "const")
+                    tok = tok->next();
+            }
+        }
+
+        if (Token::Match(tok, "%var% ("))
+            return true;
+    }
+
+    return false;
 }
 
 bool CheckClass::isMemberVar(const Var *varlist, const Token *tok)

@@ -2646,6 +2646,29 @@ private:
         ASSERT_EQUALS("", errout.str());
 
 
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    int * const * foo() { return &x; }\n"
+                   "private:\n"
+                   "    const int * x;\n"
+                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    const int ** foo() { return &x; }\n"
+                   "private:\n"
+                   "    const int * x;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'A::foo' can be const\n", errout.str());
+
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    const int * const * foo() { return &x; }\n"
+                   "private:\n"
+                   "    const int * x;\n"
+                   "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'A::foo' can be const\n", errout.str());
     }
 
     // increment/decrement => not const
