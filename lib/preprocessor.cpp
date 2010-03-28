@@ -353,7 +353,8 @@ std::string Preprocessor::removeParantheses(const std::string &str)
             }
 
             // "#if(A) => #if A", but avoid "#if (defined A) || defined (B)"
-            if (line.compare(0, 4, "#if(") == 0 && line[line.length() - 1] == ')')
+            if ((line.compare(0, 4, "#if(") == 0 || line.compare(0, 6, "#elif(") == 0) &&
+                line[line.length() - 1] == ')')
             {
                 int ind = 0;
                 for (std::string::size_type i = 0; i < line.length(); ++i)
@@ -367,7 +368,7 @@ std::string Preprocessor::removeParantheses(const std::string &str)
                         {
                             if (i == line.length() - 1)
                             {
-                                line[3] = ' ';
+                                line[line.find('(')] = ' ';
                                 line.erase(line.length() - 1);
                             }
                             break;
@@ -378,7 +379,7 @@ std::string Preprocessor::removeParantheses(const std::string &str)
 
             if (line.compare(0, 4, "#if(") == 0)
                 line.insert(3, " ");
-            else if (line.compare(0, 4, "#elif(") == 0)
+            else if (line.compare(0, 6, "#elif(") == 0)
                 line.insert(5, " ");
         }
         ret << line << "\n";
