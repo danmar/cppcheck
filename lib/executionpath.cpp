@@ -149,6 +149,13 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
 
         if (Token::Match(tok, "= {"))
         {
+            // GCC struct initialization.. bail out
+            if (Token::Match(tok->tokAt(2), ". %var% ="))
+            {
+                ExecutionPath::bailOut(checks);
+                return 0;
+            }
+
             tok = tok->next()->link();
             if (!tok)
             {

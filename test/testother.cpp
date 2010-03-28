@@ -1280,6 +1280,16 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #1533
+        checkUninitVar("char a()\n"
+                       "{\n"
+                       "    char key;\n"
+                       "    struct A msg = { .buf = {&key} };\n"
+                       "    init(&msg);\n"
+                       "    return key;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkUninitVar("void foo()\n"
                        "{\n"
                        "   char *buf = malloc(100);\n"
