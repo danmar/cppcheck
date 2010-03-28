@@ -1179,6 +1179,20 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
 
+        checkUninitVar("static void foo()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    for (int x = 0; i < 10; x++);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar("static void foo()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    for (int x = 0; x < 10; i++);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+
         checkUninitVar("static int foo(int x)\n"
                        "{\n"
                        "    int i;\n"

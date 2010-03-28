@@ -1924,7 +1924,7 @@ private:
                 if (p)
                     vartok = vartok->next();
                 declare(checks, vartok, tok, p, false);
-                return vartok->next();
+                return vartok;
             }
 
             // Variable declaration for array..
@@ -1932,7 +1932,7 @@ private:
             {
                 const Token * vartok = tok.next();
                 declare(checks, vartok, tok, false, true);
-                return vartok->next()->link()->next();
+                return vartok->next()->link();
             }
 
             // Template pointer variable..
@@ -2222,6 +2222,85 @@ private:
                 ExecutionPath::bailOutVar(checks, tok.varId());
             }
         }
+
+        // Parse "for"
+        if (Token::Match(&tok, "[;{}] for ("))
+        {
+            // initialized variables
+            std::set<unsigned int> varid1;
+            varid1.insert(0);
+
+            // Parse token
+            const Token *tok2;
+
+            // parse setup
+            for (tok2 = tok.tokAt(3); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == ";")
+                    break;
+                if (tok2->varId())
+                    varid1.insert(tok2->varId());
+            }
+
+            // parse condition
+            if (Token::Match(tok2, "; %var% <|<=|>=|> %num% ;"))
+            {
+                // If the variable hasn't been initialized then call "use"
+                if (varid1.find(tok2->next()->varId()) == varid1.end())
+                    use(foundError, checks, tok2->next());
+            }
+
+            // goto stepcode
+            tok2 = tok2->next();
+            while (tok2 && tok2->str() != ";")
+                tok2 = tok2->next();
+
+            // parse the stepcode
+            if (Token::Match(tok2, "; ++|-- %var% ) {") ||
+                Token::Match(tok2, "; %var% ++|-- ) {"))
+            {
+                // get id of variable..
+                unsigned int varid = tok2->next()->varId();
+                if (!varid)
+                    varid = tok2->tokAt(2)->varId();
+
+                // Check that the variable hasn't been initialized and
+                // that it isn't initialized in the body..
+                if (varid1.find(varid) == varid1.end())
+                {
+                    unsigned int indentlevel = 0;
+                    for (const Token *tok3 = tok2->tokAt(5); tok3; tok3 = tok3->next())
+                    {
+                        if (tok3->str() == "{")
+                            ++indentlevel;
+                        else if (tok3->str() == "}")
+                        {
+                            if (indentlevel == 0)
+                                break;
+                            --indentlevel;
+                        }
+                        if (tok3->varId() == varid)
+                        {
+                            varid = 0;	// variable is used.. maybe it's initialized. clear the variable id.
+                            break;
+                        }
+                    }
+
+                    // If the variable isn't initialized in the body call "use"
+                    if (varid != 0)
+                    {
+                        // goto variable
+                        tok2 = tok2->next();
+                        if (!tok2->varId())
+                            tok2 = tok2->next();
+
+                        // call "use"
+                        use(foundError, checks, tok2);
+                    }
+                }
+            }
+        }
+
         return &tok;
     }
 
