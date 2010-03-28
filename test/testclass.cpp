@@ -35,11 +35,11 @@ private:
 
     void run()
     {
-        TEST_CASE(virtualDestructor1);  // Base class not found => no error
+        TEST_CASE(virtualDestructor1);      // Base class not found => no error
         TEST_CASE(virtualDestructor2);      // Base class doesn't have a destructor
-        TEST_CASE(virtualDestructor3);  // Base class has a destructor, but it's not virtual
-        TEST_CASE(virtualDestructor4);  // Derived class doesn't have a destructor => no error
-        TEST_CASE(virtualDestructor5);  // Derived class has empty destructor => no error
+        TEST_CASE(virtualDestructor3);      // Base class has a destructor, but it's not virtual
+        TEST_CASE(virtualDestructor4);      // Derived class doesn't have a destructor => no error
+        TEST_CASE(virtualDestructor5);      // Derived class has empty destructor => no error
         TEST_CASE(virtualDestructorProtected);
         TEST_CASE(virtualDestructorInherited);
         TEST_CASE(virtualDestructorTemplate);
@@ -61,7 +61,8 @@ private:
         TEST_CASE(uninitVarHeader1);    // Class is defined in header
         TEST_CASE(uninitVarHeader2);    // Class is defined in header
         TEST_CASE(uninitVarHeader3);    // Class is defined in header
-        TEST_CASE(uninitVarPublished);  // Variables in the published section are auto-initialized
+        TEST_CASE(uninitVarPublished);  // Borland C++: Variables in the published section are auto-initialized
+        TEST_CASE(uninitProperty);		// Borland C++: No FP for properties
         TEST_CASE(uninitOperator);      // No FP about uninitialized 'operator[]'
         TEST_CASE(uninitFunction1);		// No FP when initialized in function
         TEST_CASE(uninitFunction2);		// No FP when initialized in function
@@ -1407,7 +1408,7 @@ private:
         ASSERT_EQUALS("[fred.h:6]: (style) Member variable not initialized in the constructor 'Fred::i'\n", errout.str());
     }
 
-
+    // Borland C++: No FP for published pointers - they are automaticly initialized
     void uninitVarPublished()
     {
         checkUninitVar("class Fred\n"
@@ -1416,6 +1417,20 @@ private:
                        "    int *i;\n"
                        "public:\n"
                        "    Fred() { }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // Borland C++: No FP for properties
+    void uninitProperty()
+    {
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "private:\n"
+                       "    int * i_;\n"
+                       "public:\n"
+                       "    Fred() { i_ = 0; }\n"
+                       "    __property int * i = {read=i_, write=i_};\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }

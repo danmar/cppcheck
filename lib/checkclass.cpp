@@ -64,20 +64,16 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         if (indentlevel != 1)
             continue;
 
+        // Borland C++: Skip all variables in the __published section.
+        // These are automaticly initialized.
         if (tok->str() == "__published:")
         {
             priv = false;
             for (; tok; tok = tok->next())
             {
                 if (tok->str() == "{")
-                    ++indentlevel;
-                else if (tok->str() == "}")
-                {
-                    if (indentlevel <= 1)
-                        break;
-                    --indentlevel;
-                }
-                if (indentlevel == 1 && Token::Match(tok->next(), "private:|protected:|public:"))
+                    tok = tok->link();
+                if (Token::Match(tok->next(), "private:|protected:|public:"))
                     break;
             }
             if (tok)
@@ -106,6 +102,10 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
 
         // Variable declarations that start with "static" shall be ignored..
         if (next->str() == "static")
+            continue;
+
+        // Borland C++: Ignore properties..
+        if (next->str() == "__property")
             continue;
 
         // Type definitions shall be ignored..
