@@ -816,6 +816,10 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             if (tok->next()->str() == "*")
                 ++varpos;
 
+            // make sure the variable is defined
+            if (tok->tokAt(varpos + 2)->varId() == 0)
+                continue; // FIXME we loose the check for negative index when we bail
+
             // get maximum size from type
             // find where this token is defined
             const Token *index_type = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(varpos + 2)->varId());

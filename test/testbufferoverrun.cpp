@@ -94,6 +94,7 @@ private:
         TEST_CASE(array_index_22);
         TEST_CASE(array_index_23);
         TEST_CASE(array_index_24); // ticket #1492
+        TEST_CASE(array_index_25); // ticket #1536
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -792,6 +793,16 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[65536]' index -1 out of bounds\n"
                       "[test.cpp:4]: (error) Array 'a[65536]' index 65536 out of bounds\n", errout.str());
+    }
+
+    void array_index_25()
+    {
+        // ticket #1536
+        check("void foo()\n"
+              "{\n"
+              "   long l[SOME_SIZE];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim()
