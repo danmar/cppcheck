@@ -152,7 +152,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // Array?
         else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
         {
-            if (Token::findmatch(_tokenizer->tokens(), ("class " + next->str()).c_str()))
+            if (Token::findmatch(_tokenizer->tokens(), ("class|struct " + next->str()).c_str()))
                 continue;
             varname = next->strAt(1);
         }
