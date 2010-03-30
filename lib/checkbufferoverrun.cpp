@@ -791,7 +791,7 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         else if (tok->str() == "}")
             --indentlevel;
 
-        unsigned int size = 0;
+        int size = 0;
         std::string type;
         unsigned int varid = 0;
         int nextTok = 0;
@@ -842,28 +842,30 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
                 else
                     size = SHRT_MAX + 1;
             }
+
+            // checkScope assumes size is signed int so we limit the following sizes to INT_MAX
             else if (index_type->str() == "int")
             {
                 if (index_type->isUnsigned())
-                    size = UINT_MAX; // really UINT_MAX + 1;
+                    size = INT_MAX; // should be UINT_MAX + 1U;
                 else
-                    size = INT_MAX + 1U;
+                    size = INT_MAX; // should be INT_MAX + 1U;
             }
             else if (index_type->str() == "long")
             {
                 if (index_type->isUnsigned())
                 {
                     if (index_type->isLong())
-                        size = ULONG_MAX; // really ULLONG_MAX + 1;
+                        size = INT_MAX; // should be ULLONG_MAX + 1ULL;
                     else
-                        size = ULONG_MAX; // really ULONG_MAX + 1;
+                        size = INT_MAX; // should be ULONG_MAX + 1UL;
                 }
                 else
                 {
                     if (index_type->isLong())
-                        size = ULONG_MAX; // really LLONG_MAX + 1;
+                        size = INT_MAX; // should be LLONG_MAX + 1LL;
                     else
-                        size = LONG_MAX + 1U;
+                        size = INT_MAX; // should be LONG_MAX + 1L;
                 }
             }
 

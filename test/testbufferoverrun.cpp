@@ -22,6 +22,7 @@
 #include "testsuite.h"
 
 #include <sstream>
+#include <climits>
 
 extern std::ostringstream errout;
 
@@ -93,7 +94,7 @@ private:
         TEST_CASE(array_index_21);
         TEST_CASE(array_index_22);
         TEST_CASE(array_index_23);
-        TEST_CASE(array_index_24); // ticket #1492
+        TEST_CASE(array_index_24); // ticket #1492 and #1539
         TEST_CASE(array_index_25); // ticket #1536
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
@@ -761,19 +762,40 @@ private:
 
     void array_index_24()
     {
-        // ticket #1492
+        // ticket #1492 and #1539
+        if (CHAR_MAX == SCHAR_MAX) // plain char is signed
+        {
+            check("void f(char n) {\n"
+                  "    int a[n];\n"     // n <= CHAR_MAX
+                  "    a[-1] = 0;\n"    // negative index
+                  "    a[128] = 0;\n"   // 128 > CHAR_MAX
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[128]' index -1 out of bounds\n"
+                          "[test.cpp:4]: (error) Array 'a[128]' index 128 out of bounds\n", errout.str());
+        }
+        else // plain char is unsigned
+        {
+            check("void f(char n) {\n"
+                  "    int a[n];\n"     // n <= CHAR_MAX
+                  "    a[-1] = 0;\n"    // negative index
+                  "    a[256] = 0;\n"   // 256 > CHAR_MAX
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[256]' index -1 out of bounds\n"
+                          "[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n", errout.str());
+        }
+
         check("void f(signed char n) {\n"
               "    int a[n];\n"     // n <= SCHAR_MAX
               "    a[-1] = 0;\n"    // negative index
-              "    a[128] = 0;\n" // 128 > SCHAR_MAX
+              "    a[128] = 0;\n"   // 128 > SCHAR_MAX
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[128]' index -1 out of bounds\n"
                       "[test.cpp:4]: (error) Array 'a[128]' index 128 out of bounds\n", errout.str());
 
         check("void f(unsigned char n) {\n"
-              "    int a[n];\n"     // n <= UCHAR
+              "    int a[n];\n"     // n <= UCHAR_MAX
               "    a[-1] = 0;\n"    // negative index
-              "    a[256] = 0;\n" // 256 > UCHAR_MAX
+              "    a[256] = 0;\n"   // 256 > UCHAR_MAX
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[256]' index -1 out of bounds\n"
                       "[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n", errout.str());
@@ -793,6 +815,35 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[65536]' index -1 out of bounds\n"
                       "[test.cpp:4]: (error) Array 'a[65536]' index 65536 out of bounds\n", errout.str());
+
+        check("void f(signed short n) {\n"
+              "    int a[n];\n"     // n <= SHRT_MAX
+              "    a[-1] = 0;\n"    // negative index
+              "    a[32768] = 0;\n" // 32768 > SHRT_MAX
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[32768]' index -1 out of bounds\n"
+                      "[test.cpp:4]: (error) Array 'a[32768]' index 32768 out of bounds\n", errout.str());
+
+        if (sizeof(int) == 4)
+        {
+            check("void f(int n) {\n"
+                  "    int a[n];\n"     // n <= INT_MAX
+                  "    a[-1] = 0;\n"    // negative index
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[2147483647]' index -1 out of bounds\n", errout.str());
+
+            check("void f(unsigned int n) {\n"
+                  "    int a[n];\n"     // n <= UINT_MAX
+                  "    a[-1] = 0;\n"    // negative index
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[2147483647]' index -1 out of bounds\n", errout.str());
+
+            check("void f(signed int n) {\n"
+                  "    int a[n];\n"     // n <= INT_MAX
+                  "    a[-1] = 0;\n"    // negative index
+                  "}\n");
+            ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[2147483647]' index -1 out of bounds\n", errout.str());
+        }
     }
 
     void array_index_25()
