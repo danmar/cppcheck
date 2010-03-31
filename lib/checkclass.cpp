@@ -1089,7 +1089,7 @@ static bool hasDeallocation(const Token * first, const Token * last)
 
             while (tok1 && (tok1 != last))
             {
-                if (Token::Match(tok1, "%var% = new ["))
+                if (Token::Match(tok1, "%var% = new %type% ["))
                 {
                     if (tok1->str() == var->str())
                         return true;

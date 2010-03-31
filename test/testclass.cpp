@@ -83,6 +83,7 @@ private:
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
         TEST_CASE(operatorEqToSelf4);   // nested class with multiple inheritance
         TEST_CASE(operatorEqToSelf5);   // ticket # 1233
+        TEST_CASE(operatorEqToSelf6);   // ticket # 1550
         TEST_CASE(memsetOnStruct);
         TEST_CASE(memsetOnClass);
 
@@ -818,6 +819,27 @@ private:
             "    }\n"
             "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqToSelf6()
+    {
+        // ticket # 1550
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        delete [] data;\n"
+            "        data = new char[strlen(a.data) + 1];\n"
+            "        strcpy(data, a.data);\n"
+            "        return *this;\n"
+            "    }\n"
+            "private:\n"
+            "    char * data;\n"
+            "};");
+        ASSERT_EQUALS("[test.cpp:5]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
     }
 
     // Check that base classes have virtual destructors
