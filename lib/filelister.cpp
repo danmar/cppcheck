@@ -25,7 +25,7 @@
 #include "filelister.h"
 
 #if defined(_WIN32)
-#include "fileLister_win32.h"
+#include "filelister_win32.h"
 #else // POSIX-style system
 #include "filelister_unix.h"
 #endif
