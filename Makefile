@@ -1,4 +1,4 @@
-CXXFLAGS=-Wall -Wextra -pedantic -Wfloat-equal -Wcast-qual -g -D_GLIBCXX_DEBUG
+CXXFLAGS=-Wall -Wextra -pedantic -Wno-long-long -Wfloat-equal -Wcast-qual -g -D_GLIBCXX_DEBUG
 CXX=g++
 BIN=${DESTDIR}/usr/bin
 
