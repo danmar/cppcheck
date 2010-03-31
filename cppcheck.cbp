@@ -101,6 +101,10 @@
 		<Unit filename="lib/executionpath.h" />
 		<Unit filename="lib/filelister.cpp" />
 		<Unit filename="lib/filelister.h" />
+		<Unit filename="lib/filelister_unix.cpp" />
+		<Unit filename="lib/filelister_unix.h" />
+		<Unit filename="lib/filelister_win32.cpp" />
+		<Unit filename="lib/filelister_win32.h" />
 		<Unit filename="lib/mathlib.cpp" />
 		<Unit filename="lib/mathlib.h" />
 		<Unit filename="lib/preprocessor.cpp" />
