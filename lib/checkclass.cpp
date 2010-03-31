@@ -1475,21 +1475,6 @@ void CheckClass::thisSubtraction()
 }
 //---------------------------------------------------------------------------
 
-const Token * findParameter(const Token *var, const Token *start, const Token * end)
-{
-    const Token * param = start->next();
-    for (; param && param != end; param = param->next())
-    {
-        if (param->varId()) // a function parameter
-        {
-            // check if the variable and the parameter name are the same
-            if (var->str() == param->str())
-                return param;
-        }
-    }
-    return 0;
-}
-
 struct NestInfo
 {
     std::string className;

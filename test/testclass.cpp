@@ -50,6 +50,7 @@ private:
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
+        TEST_CASE(uninitVarMemset);
         TEST_CASE(uninitVarArray1);
         TEST_CASE(uninitVarArray2);
         TEST_CASE(uninitVarArray3);
@@ -1352,6 +1353,18 @@ private:
                        "    typedef int * pointer;\n"
                        "    Foo() : a(0) {}\n"
                        "    pointer a;\n"
+                       "};\n");
+
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarMemset()
+    {
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "public:\n"
+                       "    int * pointer;\n"
+                       "    Foo() { memset(this, 0, sizeof(*this)); }\n"
                        "};\n");
 
         ASSERT_EQUALS("", errout.str());
