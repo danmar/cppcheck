@@ -397,6 +397,8 @@ private:
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";_asm { mov ax,bx };"));
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm { mov ax,bx };"));
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm__ __volatile__ ( \"mov ax,bx\" );"));
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm _emit 12h ;"));
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm mov a, b ;"));
     }
 
 

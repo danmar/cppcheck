@@ -501,6 +501,12 @@ void CheckOther::functionVariableUsage()
                     break;
             }
 
+            if (Token::Match(tok, "[;{}] asm ( ) ;"))
+            {
+                varUsage.clear();
+                break;
+            }
+
             if (Token::Match(tok, "[;{}] %type% %var% ;|=") && tok->next()->isStandardType())
                 varUsage[tok->strAt(2)].declare = true;
 

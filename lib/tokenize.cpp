@@ -1238,7 +1238,6 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
             tok->tokAt(2)->link()->next())
         {
             Token::eraseTokens(tok, tok->tokAt(2)->link()->next());
-
         }
 
         else if (Token::Match(tok->next(), "__asm__ __volatile__ (") &&
@@ -1246,6 +1245,17 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
                  tok->tokAt(3)->link()->next())
         {
             Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
+        }
+
+        else if (Token::simpleMatch(tok->next(), "__asm"))
+        {
+            const Token *tok2 = tok->next();
+            while (tok2 && (tok2->isNumber() || tok2->isName() || tok2->str() == ","))
+                tok2 = tok2->next();
+            if (tok2 && tok2->str() == ";")
+                Token::eraseTokens(tok, tok2);
+            else
+                continue;
         }
 
         else

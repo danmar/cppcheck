@@ -65,6 +65,7 @@ private:
         TEST_CASE(localvar4);
         TEST_CASE(localvar5);
         TEST_CASE(localvar6);
+        TEST_CASE(localvarasm);
 
         // Don't give false positives for variables in structs/unions
         TEST_CASE(localvarStruct1);
@@ -282,6 +283,17 @@ private:
                               "    int b[10];\n"
                               "    for (int i=0;i<10;++i)\n"
                               "        b[i] = ++a;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvarasm()
+    {
+        functionVariableUsage("void foo(int &b)\n"
+                              "{\n"
+                              "    int a;\n"
+                              "    asm();\n"
+                              "    b = a;\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
