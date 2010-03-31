@@ -174,6 +174,7 @@ public:
         _isLong = size;
     }
     bool isStandardType() const;
+    bool isIntegerType() const;
 
     static const Token *findmatch(const Token *tok, const char pattern[], unsigned int varId = 0);
 

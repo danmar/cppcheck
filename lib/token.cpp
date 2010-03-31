@@ -566,6 +566,15 @@ bool Token::isStandardType() const
     return ret;
 }
 
+bool Token::isIntegerType() const
+{
+    bool ret = false;
+    const char *type[] = {"char", "short", "int", "long", "size_t", "__int64", 0};
+    for (int i = 0; type[i]; i++)
+        ret |= (_str == type[i]);
+    return ret;
+}
+
 void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
 {
     /**[newLocation] -> b -> c -> [srcStart] -> [srcEnd] -> f */

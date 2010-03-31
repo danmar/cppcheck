@@ -115,6 +115,40 @@ void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsi
     _tokensBack->linenr(lineno);
     _tokensBack->fileIndex(fileno);
 }
+
+void Tokenizer::addtoken(const Token * tok, const unsigned int lineno, const unsigned int fileno)
+{
+    if (tok == 0)
+        return;
+
+    // Replace hexadecimal value with decimal
+    std::ostringstream str2;
+    if (strncmp(tok->str().c_str(), "0x", 2) == 0)
+    {
+        str2 << std::strtoul(tok->str().c_str() + 2, NULL, 16);
+    }
+    else
+    {
+        str2 << tok->str();
+    }
+
+    if (_tokensBack)
+    {
+        _tokensBack->insertToken(str2.str().c_str());
+    }
+    else
+    {
+        _tokens = new Token(&_tokensBack);
+        _tokensBack = _tokens;
+        _tokensBack->str(str2.str());
+    }
+
+    _tokensBack->linenr(lineno);
+    _tokensBack->fileIndex(fileno);
+    _tokensBack->isUnsigned(tok->isUnsigned());
+    _tokensBack->isSigned(tok->isSigned());
+    _tokensBack->isLong(tok->isLong());
+}
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
@@ -1238,9 +1272,6 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         }
     }
 
-    // replace "unsigned i" with "unsigned int i"
-    unsignedint();
-
     // colapse compound standard types into a single token
     // unsigned long long int => long _isUnsigned=true,_isLong=true
     simplifyStdType();
@@ -1649,13 +1680,12 @@ void Tokenizer::simplifyTemplates()
         for (std::list<Token *>::iterator iter1 = templates.begin(); iter1 != templates.end(); ++iter1)
         {
             Token *tok = *iter1;
-            std::vector<std::string> type;
+            std::vector<const Token *> type;
             for (tok = tok->tokAt(2); tok && tok->str() != ">"; tok = tok->next())
             {
                 if (Token::Match(tok, "%var% ,|>"))
-                    type.push_back(tok->str());
+                    type.push_back(tok);
             }
-
             // bail out if the end of the file was reached
             if (!tok)
                 break;
@@ -1732,8 +1762,9 @@ void Tokenizer::simplifyTemplates()
                     continue;
 
                 // New type..
-                std::vector<std::string> types2;
+                std::vector<Token> types2;
                 s = "";
+                std::string s1(name + " < ");
                 for (const Token *tok3 = tok2->tokAt(2); tok3 && tok3->str() != ">"; tok3 = tok3->next())
                 {
                     if (!tok3->next())
@@ -1741,11 +1772,20 @@ void Tokenizer::simplifyTemplates()
                         s.clear();
                         break;
                     }
-
+                    s1 += tok3->str();
+                    s1 += " ";
                     if (tok3->str() != ",")
-                        types2.push_back(tok3->str());
+                        types2.push_back(*tok3);
+                    // add additional type information
+                    if (tok3->isUnsigned())
+                        s += "unsigned";
+                    else if (tok3->isSigned())
+                        s += "signed";
+                    if (tok3->isLong())
+                        s += "long";
                     s += tok3->str();
                 }
+                s1 += ">";
                 const std::string type2(s);
 
                 if (type2.empty() || type.size() != types2.size())
@@ -1838,13 +1878,13 @@ void Tokenizer::simplifyTemplates()
                             {
                                 // search for this token in the type vector
                                 unsigned int itype = 0;
-                                while (itype < type.size() && type[itype] != tok3->str())
+                                while (itype < type.size() && type[itype]->str() != tok3->str())
                                     ++itype;
 
                                 // replace type with given type..
                                 if (itype < type.size())
                                 {
-                                    addtoken(types2[itype].c_str(), tok3->linenr(), tok3->fileIndex());
+                                    addtoken(&types2[itype], tok3->linenr(), tok3->fileIndex());
                                     continue;
                                 }
                             }
@@ -1857,7 +1897,7 @@ void Tokenizer::simplifyTemplates()
                             }
 
                             // copy
-                            addtoken(tok3->str().c_str(), tok3->linenr(), tok3->fileIndex());
+                            addtoken(tok3, tok3->linenr(), tok3->fileIndex());
                             if (Token::Match(tok3, "%type% <"))
                             {
                                 if (!Token::Match(tok3, (name + " <").c_str()))
@@ -1905,24 +1945,40 @@ void Tokenizer::simplifyTemplates()
                 }
 
                 // Replace all these template usages..
-                s = name + " < " + type2 + " >";
-                for (std::string::size_type pos = s.find(","); pos != std::string::npos; pos = s.find(",", pos + 2))
-                {
-                    s.insert(pos + 1, " ");
-                    s.insert(pos, " ");
-                }
                 for (Token *tok4 = tok2; tok4; tok4 = tok4->next())
                 {
-                    if (Token::simpleMatch(tok4, s.c_str()))
+                    if (Token::simpleMatch(tok4, s1.c_str()))
                     {
-                        tok4->str(name2);
-                        while (tok4->next()->str() != ">")
+                        bool match = true;
+                        Token * tok5 = tok4->tokAt(2);
+                        unsigned int count = 0;
+                        while (tok5->str() != ">")
                         {
+                            if (tok5->str() != ",")
+                            {
+                                if (tok5->isUnsigned() != types2[count].isUnsigned() ||
+                                    tok5->isSigned() != types2[count].isSigned() ||
+                                    tok5->isLong() != types2[count].isLong())
+                                {
+                                    match = false;
+                                    break;
+                                }
+                                count++;
+                            }
+                            tok5 = tok5->next();
+                        }
+
+                        if (match)
+                        {
+                            tok4->str(name2);
+                            while (tok4->next()->str() != ">")
+                            {
+                                used.remove(tok4->next());
+                                tok4->deleteNext();
+                            }
                             used.remove(tok4->next());
                             tok4->deleteNext();
                         }
-                        used.remove(tok4->next());
-                        tok4->deleteNext();
                     }
                 }
             }
@@ -4324,7 +4380,7 @@ void Tokenizer::simplifyStdType()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         // long unsigned => unsigned long
-        if (Token::Match(tok, "long|short unsigned|signed"))
+        if (Token::Match(tok, "long|short|int|char|_int64 unsigned|signed"))
         {
             std::string temp = tok->str();
             tok->str(tok->next()->str());
@@ -4338,7 +4394,12 @@ void Tokenizer::simplifyStdType()
         if (Token::Match(tok, "unsigned|signed"))
         {
             bool isUnsigned = tok->str() == "unsigned";
-            tok->deleteThis();
+
+            // unsigned i => unsigned int i
+            if (!tok->next()->isIntegerType())
+                tok->str("int");
+            else
+                tok->deleteThis();
             tok->isUnsigned(isUnsigned);
             tok->isSigned(!isUnsigned);
         }
@@ -4372,92 +4433,6 @@ void Tokenizer::simplifyStdType()
         }
     }
 }
-
-void Tokenizer::unsignedint()
-{
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (!Token::Match(tok, "unsigned|signed"))
-            continue;
-
-        if (Token::Match(tok->previous(), "%type% unsigned|signed %var% [;,=)]") &&
-            tok->previous()->isStandardType())
-        {
-            if (tok->str() == "signed")
-            {
-                // int signed a; -> int a;
-                tok = tok->previous();
-                tok->deleteNext();
-            }
-            else
-            {
-                // int unsigned a; -> unsigned int a;
-                std::string temp = tok->str();
-                tok->str(tok->previous()->str());
-                tok->previous()->str(temp);
-            }
-
-            continue;
-        }
-
-        if (Token::Match(tok->previous(), "extern unsigned|signed *| %var% [;[]"))
-        {
-            tok->str("int");
-            continue;
-        }
-
-        // signed int a; -> int a;
-        if (Token::Match(tok, "signed %type% %var% [;,=)]"))
-        {
-            if (tok->next()->isStandardType())
-            {
-                tok->str(tok->next()->str());
-                tok->deleteNext();
-                continue;
-            }
-        }
-
-        // A variable declaration where the "int" is left out?
-        else if (!Token::Match(tok, "unsigned|signed %var% [;,=)]") &&
-                 !Token::Match(tok->previous(), "( unsigned|signed )"))
-            continue;
-
-        // Previous token should either be a symbol or one of "{};(,"
-        if (tok->previous() &&
-            !tok->previous()->isName() &&
-            !Token::Match(tok->previous(), "[{};(,]"))
-            continue;
-
-        // next token should not be a standard type?
-        if (tok->next()->isStandardType())
-        {
-            if (tok->str() == "signed")
-            {
-                tok->str(tok->next()->str());
-                tok->deleteNext();
-            }
-
-            continue;
-        }
-
-        // The "int" is missing.. add it
-        if (tok->str() == "signed")
-            tok->str("int");
-        else
-            tok->insertToken("int");
-    }
-
-    // simplify template arguments..
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::simpleMatch(tok, "< unsigned >"))
-            tok->next()->str("int");
-        else if (Token::Match(tok, "< unsigned %type% >") &&
-                 tok->tokAt(2)->isStandardType())
-            tok->deleteNext();
-    }
-}
-
 
 void Tokenizer::simplifyIfAssign()
 {

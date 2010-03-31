@@ -65,6 +65,7 @@ private:
         TEST_CASE(division6);
         TEST_CASE(division7);
         TEST_CASE(division8);
+        TEST_CASE(division9);
     }
 
     void division1()
@@ -198,6 +199,38 @@ private:
               "    return i/sz;\n"
               "}\n", true, true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void division9()
+    {
+        check("void f()\n"
+              "{\n"
+              "    int ivar = -2;\n"
+              "    unsigned long uvar = 2;\n"
+              "    return ivar / uvar;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (possible style) Division with signed and unsigned operators\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int ivar = -2;\n"
+              "    unsigned long long uvar = 2;\n"
+              "    return ivar / uvar;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (possible style) Division with signed and unsigned operators\n", errout.str());
+
+        check("template<class A, class B> class C\n"
+              "{\n"
+              "    A a;\n"
+              "    B b;\n"
+              "    void foo() { a / b; }\n"
+              "};\n"
+              "C<int, unsigned int> c1;\n"
+              "C<int, unsigned long> c2;\n"
+              "C<int, unsigned long long> c3;\n");
+        ASSERT_EQUALS("[test.cpp:5]: (possible style) Division with signed and unsigned operators\n"
+                      "[test.cpp:5]: (possible style) Division with signed and unsigned operators\n"
+                      "[test.cpp:5]: (possible style) Division with signed and unsigned operators\n", errout.str());
     }
 };
 

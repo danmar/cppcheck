@@ -2639,51 +2639,48 @@ private:
 
 
     /**
-     * tokenize "signed i" => "int i"
+     * tokenize "signed i" => "signed int i"
      */
     void signed1()
     {
         {
-            const char code[] = "void foo ( signed int , signed float ) ;";
-            const char code2[] = "void foo ( int , float ) ;";
-            ASSERT_EQUALS(code2, tokenizeAndStringify(code));
+            const char code1[] = "void foo ( signed int , float ) ;";
+            ASSERT_EQUALS(code1, tokenizeAndStringify(code1));
         }
 
         {
             const char code1[] = "signed i ;";
-            const char code2[] = "int i ;";
+            const char code2[] = "signed int i ;";
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
 
         {
             const char code1[] = "signed int i ;";
-            const char code2[] = "int i ;";
-            ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
+            ASSERT_EQUALS(code1, tokenizeAndStringify(code1));
         }
 
         {
             const char code1[] = "int signed i ;";
-            const char code2[] = "int i ;";
+            const char code2[] = "signed int i ;";
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
 
         {
             const char code1[] = "for (signed i=0; i<10; i++)";
-            const char code2[] = "for ( int i = 0 ; i < 10 ; i ++ )";
+            const char code2[] = "for ( signed int i = 0 ; i < 10 ; i ++ )";
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
-
     }
 
     /**
      * tokenize "unsigned i" => "unsigned int i"
-     * tokenize "unsigned int" => "unsigned int"
+     * tokenize "unsigned" => "unsigned int"
      */
     void unsigned1()
     {
         // No changes..
         {
-            const char code[] = "void foo ( unsigned int , unsigned float ) ;";
+            const char code[] = "void foo ( unsigned int , float ) ;";
             ASSERT_EQUALS(code, tokenizeAndStringify(code));
         }
 
@@ -2710,7 +2707,7 @@ private:
         // "extern unsigned x;" => "extern int x;"
         {
             const char code1[] = "; extern unsigned x;";
-            const char code2[] = "; extern int x ;";
+            const char code2[] = "; extern unsigned int x ;";
             ASSERT_EQUALS(code2, tokenizeAndStringify(code1));
         }
     }

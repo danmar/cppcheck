@@ -163,14 +163,6 @@ public:
     void simplifyInitVar();
 
     /**
-     * insert an "int" after "unsigned" if needed:
-     * "unsigned i" => "unsigned int i"
-     * "signed int i" => "int i"
-     * "signed i" => "int i"
-     */
-    void unsignedint();
-
-    /**
      * Colapse compound standard types into a single token.
      * unsigned long long int => long _isUnsigned=true,_isLong=true
      */
@@ -267,6 +259,7 @@ public:
     std::vector<const Token *> _functionList;
 
     void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno);
+    void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
 
     /**
      * Simplify the operator "?:"
