@@ -79,6 +79,7 @@ private:
         TEST_CASE(operatorEqRetRefThis2); // ticket #1323
         TEST_CASE(operatorEqRetRefThis3); // ticket #1405
         TEST_CASE(operatorEqRetRefThis4); // ticket #1451
+        TEST_CASE(operatorEqRetRefThis5); // ticket #1550
         TEST_CASE(operatorEqToSelf1);   // single class
         TEST_CASE(operatorEqToSelf2);   // nested class
         TEST_CASE(operatorEqToSelf3);   // multiple inheritance
@@ -315,7 +316,7 @@ private:
             "{\n"
             "  szp &operator =(int *other) {};\n"
             "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to self\n", errout.str());
     }
 
     void operatorEqRetRefThis3()
@@ -339,6 +340,17 @@ private:
             "  return (P&)(*this += pc);\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void operatorEqRetRefThis5()
+    {
+        // ticket # 1550
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "public:\n"
+            "    A & operator=(const A &a) { }\n"
+            "};");
+        ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to self\n", errout.str());
     }
 
     // Check that operator Equal checks for assignment to self

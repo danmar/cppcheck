@@ -948,12 +948,14 @@ void CheckClass::operatorEqRetRefThis()
 
                     if (tok1 && tok1->next() && tok1->next()->str() == "{")
                     {
+                        bool foundReturn = false;
                         const Token *last = tok1->next()->link();
                         for (tok1 = tok1->tokAt(2); tok1 && tok1 != last; tok1 = tok1->next())
                         {
                             // check for return of reference to this
                             if (tok1->str() == "return")
                             {
+                                foundReturn = true;
                                 std::string cast("( " + name->str() + " & )");
                                 if (Token::Match(tok1->next(), cast.c_str()))
                                     tok1 = tok1->tokAt(4);
@@ -964,6 +966,8 @@ void CheckClass::operatorEqRetRefThis()
                                     operatorEqRetRefThisError(tok);
                             }
                         }
+                        if (!foundReturn)
+                            operatorEqRetRefThisError(tok);
                     }
                 }
             }
@@ -1005,12 +1009,14 @@ void CheckClass::operatorEqRetRefThis()
 
                     if (tok1 && tok1->next() && tok1->next()->str() == "{")
                     {
+                        bool foundReturn = false;
                         const Token *last = tok1->next()->link();
                         for (tok1 = tok1->tokAt(2); tok1 && tok1 != last; tok1 = tok1->next())
                         {
                             // check for return of reference to this
                             if (tok1->str() == "return")
                             {
+                                foundReturn = true;
                                 std::string cast("( " + name->str() + " & )");
                                 if (Token::Match(tok1->next(), cast.c_str()))
                                     tok1 = tok1->tokAt(4);
@@ -1021,6 +1027,8 @@ void CheckClass::operatorEqRetRefThis()
                                     operatorEqRetRefThisError(tok);
                             }
                         }
+                        if (!foundReturn)
+                            operatorEqRetRefThisError(tok);
                     }
                 }
             }
