@@ -1595,7 +1595,7 @@ void CheckClass::checkConst()
                         const Token *paramEnd = tok2;
 
                         // if nothing non-const was found. write error..
-                        if (checkConstFunc(varlist, paramEnd))
+                        if (checkConstFunc(classname, varlist, paramEnd))
                         {
                             for (int i = nestInfo.size() - 2; i >= 0; i--)
                                 classname = std::string(nestInfo[i].className + "::" + classname);
@@ -1623,7 +1623,7 @@ void CheckClass::checkConst()
                                 if (sameFunc(level, tok2, paramEnd))
                                 {
                                     // if nothing non-const was found. write error..
-                                    if (checkConstFunc(varlist, paramEnd))
+                                    if (checkConstFunc(classname, varlist, paramEnd))
                                     {
                                         for (int k = nestInfo.size() - 2; k >= 0; k--)
                                             classname = std::string(nestInfo[k].className + "::" + classname);
@@ -1836,7 +1836,7 @@ bool CheckClass::isMemberFunc(const Token *tok)
     return false;
 }
 
-bool CheckClass::isMemberVar(const Var *varlist, const Token *tok)
+bool CheckClass::isMemberVar(const std::string &classname, const Var *varlist, const Token *tok)
 {
     while (tok->previous() && !Token::Match(tok->previous(), "}|{|;|public:|protected:|private:|return|:|?"))
     {
@@ -1849,6 +1849,10 @@ bool CheckClass::isMemberVar(const Var *varlist, const Token *tok)
     if (tok->str() == "this")
         return true;
 
+    // ignore class namespace
+    if (tok->str() == classname && tok->next()->str() == "::")
+        tok = tok->tokAt(2);
+
     for (const Var *var = varlist; var; var = var->next)
     {
         if (var->name == tok->str())
@@ -1860,7 +1864,7 @@ bool CheckClass::isMemberVar(const Var *varlist, const Token *tok)
     return false;
 }
 
-bool CheckClass::checkConstFunc(const Var *varlist, const Token *tok)
+bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist, const Token *tok)
 {
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
@@ -1882,7 +1886,7 @@ bool CheckClass::checkConstFunc(const Var *varlist, const Token *tok)
                  (tok1->str().find("=") == 1 &&
                   tok1->str().find_first_of("<!>") == std::string::npos))
         {
-            if (isMemberVar(varlist, tok1->previous()))
+            if (isMemberVar(classname, varlist, tok1->previous()))
             {
                 isconst = false;
                 break;

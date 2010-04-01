@@ -107,6 +107,7 @@ private:
         TEST_CASE(const13); // ticket #1519
         TEST_CASE(const14);
         TEST_CASE(const15);
+        TEST_CASE(const16); // ticket #1551
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2773,6 +2774,16 @@ private:
                    "public:\n"
                    "    static unsigned long long int get()\n"
                    "    { return 0; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const16()
+    {
+        // ticket #1551
+        checkConst("class Fred {\n"
+                   "    int a;\n"
+                   "    void set(int i) { Fred::a = i; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }

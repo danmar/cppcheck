@@ -165,8 +165,8 @@ private:
 
     bool sameFunc(int nest, const Token *firstEnd, const Token *secondEnd);
     bool isMemberFunc(const Token *tok);
-    bool isMemberVar(const Var *varlist, const Token *tok);
-    bool checkConstFunc(const Var *varlist, const Token *tok);
+    bool isMemberVar(const std::string &classname, const Var *varlist, const Token *tok);
+    bool checkConstFunc(const std::string &classname, const Var *varlist, const Token *tok);
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
