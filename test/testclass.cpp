@@ -108,6 +108,7 @@ private:
         TEST_CASE(const14);
         TEST_CASE(const15);
         TEST_CASE(const16); // ticket #1551
+        TEST_CASE(const17); // ticket #1552
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2784,6 +2785,18 @@ private:
         checkConst("class Fred {\n"
                    "    int a;\n"
                    "    void set(int i) { Fred::a = i; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const17()
+    {
+        // ticket #1552
+        checkConst("class Fred {\n"
+                   "public:\n"
+                   "    void set(int i, int j) { a[i].k = i; }\n"
+                   "private:\n"
+                   "    struct { int k; } a[4];\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
