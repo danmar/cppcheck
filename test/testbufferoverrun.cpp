@@ -990,6 +990,24 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char val[5];\n"
+              "    for (unsigned int i = 3; i < 5; --i) {\n"
+              "        val[i+1] = val[i];\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char val[5];\n"
+              "    for (int i = 3; i < 5; --i) {\n"
+              "        val[i+1] = val[i];\n"
+              "    }\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'val[5]' index -1 out of bounds\n", errout.str());
     }
 
     void buffer_overrun_1()
