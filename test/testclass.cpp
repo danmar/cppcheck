@@ -1149,6 +1149,7 @@ private:
 
     void uninitVar3()
     {
+        // No FP when struct has constructor
         checkUninitVar("class Foo\n"
                        "{\n"
                        "public:\n"
@@ -1160,6 +1161,20 @@ private:
                        "    Bar bars[2];\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Using struct that doesn't have constructor
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "public:\n"
+                       "    Foo() { }\n"
+                       "private:\n"
+                       "    struct Bar {\n"
+                       "        int x;\n"
+                       "    };\n"
+                       "    Bar bars[2];\n"
+                       "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Member variable not initialized in the constructor 'Foo::bars'\n", errout.str());
+        ASSERT_EQUALS("", errout.str());	// So we notice if something is reported.
     }
 
     void uninitVar4()
