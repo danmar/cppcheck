@@ -42,7 +42,11 @@ protected:
     bool runTest(const char testname[]);
 
     void assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
-    void assertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
+
+	// the vars expected and actual need to be of type double, in order to avoid overflow of unsigned int
+	// e.g: ASSERT_EQUALS(-100.0, MathLib::toDoubleNumber("-1.0E+2")); whould not work without this.
+	void assertEquals(const char *filename, int linenr, double expected, double actual);
+
     void todoAssertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
     void todoAssertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual);
     void assertThrowFail(const char *filename, int linenr);

@@ -30,6 +30,7 @@
 #include <cstring>
 #include <cctype>
 #include <memory>
+#include <cmath> // fabs()
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -2470,6 +2471,12 @@ void CheckOther::checkMathFunctions()
                  !MathLib::isNegative(tok->tokAt(2)->str()) &&
                  MathLib::isInt(tok->tokAt(2)->str()) &&
                  MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
+        {
+            mathfunctionCallError(tok);
+        }
+		// acos( x )  x is defined for intervall [-1,+1], but not beyound
+		else if(Token::Match(tok, "acos ( %num% )") &&
+				fabs(MathLib::toDoubleNumber(tok->tokAt(2)->str())) > 1.0)
         {
             mathfunctionCallError(tok);
         }

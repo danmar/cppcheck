@@ -2169,6 +2169,7 @@ private:
 
     void mathfunctionCall1()
     {
+		// log|log10
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(-2) << std::endl;\n"
@@ -2228,9 +2229,42 @@ private:
               "    std::cout <<  log(1E-3) << std::endl;\n"
               "}");
         TODO_ASSERT_EQUALS("", errout.str());
+
+		// acos
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  acos(1) 		<< std::endl;\n"
+              "    std::cout <<  acos(-1) 		<< std::endl;\n"
+              "    std::cout <<  acos(0.1)  	<< std::endl;\n"
+              "    std::cout <<  acos(0.0001) 	<< std::endl;\n"
+              "    std::cout <<  acos(0.01) 	<< std::endl;\n"
+              "    std::cout <<  acos(1.0E-1) 	<< std::endl;\n"
+              "    std::cout <<  acos(-1.0E-1)  << std::endl;\n"
+              "    std::cout <<  acos(+1.0E-1)  << std::endl;\n"
+              "    std::cout <<  acos(0.1E-1)   << std::endl;\n"
+              "    std::cout <<  acos(+0.1E-1)  << std::endl;\n"
+              "    std::cout <<  acos(-0.1E-1)  << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  acos(1.1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 1.1 to acos() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  acos(-1.1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.1 to acos() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  acos(-110) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -110 to acos() leads to undefined result\n", errout.str());
     }
-
-
 };
 
 REGISTER_TEST(TestOther)

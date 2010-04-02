@@ -118,7 +118,7 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
     }
 }
 
-void TestFixture::assertEquals(const char *filename, int linenr, unsigned int expected, unsigned int actual)
+void TestFixture::assertEquals(const char *filename, int linenr, double expected, double actual)
 {
     std::ostringstream ostr1;
     ostr1 << expected;
