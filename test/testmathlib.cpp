@@ -186,6 +186,25 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt("+1.0E-1"));
         ASSERT_EQUALS(false, MathLib::isInt("-1.E+1"));
         ASSERT_EQUALS(false, MathLib::isInt("+1.E-1"));
+        ASSERT_EQUALS(false, MathLib::isInt(" 1.0E+1"));
+        // with whitspaces in front
+        ASSERT_EQUALS(false, MathLib::isInt(" 1.0E-1"));
+        ASSERT_EQUALS(false, MathLib::isInt(" -1.0E+1"));
+        ASSERT_EQUALS(false, MathLib::isInt(" +1.0E-1"));
+        ASSERT_EQUALS(false, MathLib::isInt(" -1.E+1"));
+        ASSERT_EQUALS(false, MathLib::isInt(" +1.E-1"));
+        // with whitspaces in front and end
+        ASSERT_EQUALS(false, MathLib::isInt(" 1.0E-1  "));
+        ASSERT_EQUALS(false, MathLib::isInt(" -1.0E+1  "));
+        ASSERT_EQUALS(false, MathLib::isInt(" +1.0E-1  "));
+        ASSERT_EQUALS(false, MathLib::isInt(" -1.E+1  "));
+        ASSERT_EQUALS(false, MathLib::isInt(" +1.E-1  "));
+        // with whitspaces in front and end
+        ASSERT_EQUALS(false, MathLib::isInt("1.0E-1  "));
+        ASSERT_EQUALS(false, MathLib::isInt("-1.0E+1  "));
+        ASSERT_EQUALS(false, MathLib::isInt("+1.0E-1  "));
+        ASSERT_EQUALS(false, MathLib::isInt("-1.E+1  "));
+        ASSERT_EQUALS(false, MathLib::isInt("+1.E-1  "));
     }
 
     void isnegative()
