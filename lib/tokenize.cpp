@@ -6180,7 +6180,7 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const std::string &
     */
     const std::string classPattern(std::string(isStruct ? "struct " : "class ") + classname + " :|{");
     const std::string internalPattern(std::string("!!~ ") + funcname + " (");
-    const std::string externalPattern(std::string(classname) + " :: " + funcname + " (");
+    const std::string externalPattern(classname + " :: " + funcname + " (");
 
     for (; tok; tok = tok->next())
     {
@@ -6234,7 +6234,8 @@ const Token * Tokenizer::findClassFunction(const Token *tok, const std::string &
 
         else if (indentlevel == 0 && Token::Match(tok, externalPattern.c_str()))
         {
-            return tok;
+            if (!Token::simpleMatch(tok->previous(), "::"))
+                return tok;
         }
     }
 
