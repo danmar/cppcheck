@@ -41,10 +41,10 @@
 #endif
 
 MainWindow::MainWindow() :
-    mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
-    mApplications(new ApplicationList(this)),
-    mTranslation(new TranslationHandler(this)),
-    mLanguages(new QActionGroup(this))
+        mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
+        mApplications(new ApplicationList(this)),
+        mTranslation(new TranslationHandler(this)),
+        mLanguages(new QActionGroup(this))
 {
     mUI.setupUi(this);
     mUI.mResults->Initialize(mSettings, mApplications);
@@ -102,7 +102,7 @@ MainWindow::MainWindow() :
     QStringList args = QCoreApplication::arguments();
     //Remove the application itself
     args.removeFirst();
-    if(!args.isEmpty())
+    if (!args.isEmpty())
     {
         DoCheckFiles(args);
     }
@@ -116,7 +116,7 @@ void MainWindow::CreateLanguageMenuItems()
 {
     QStringList languages = mTranslation->GetNames();
 
-    for(int i = 0; i < languages.size(); i++)
+    for (int i = 0; i < languages.size(); i++)
     {
         //Create an action for each language
         //Language name is pre translated
@@ -131,7 +131,7 @@ void MainWindow::CreateLanguageMenuItems()
         mLanguages->addAction(temp);
 
         //Check it if it's the value stored to settings
-        if(i == mSettings->value(SETTINGS_LANGUAGE, 0).toInt())
+        if (i == mSettings->value(SETTINGS_LANGUAGE, 0).toInt())
         {
             temp->setChecked(true);
         }
@@ -147,7 +147,7 @@ void MainWindow::CreateLanguageMenuItems()
 
 void MainWindow::LoadSettings()
 {
-    if(mSettings->value(SETTINGS_WINDOW_MAXIMIZED, false).toBool())
+    if (mSettings->value(SETTINGS_WINDOW_MAXIMIZED, false).toBool())
     {
         showMaximized();
     }
@@ -198,7 +198,7 @@ void MainWindow::SaveSettings()
 
 void MainWindow::DoCheckFiles(const QStringList &files)
 {
-    if(files.isEmpty())
+    if (files.isEmpty())
     {
         return;
     }
@@ -215,7 +215,7 @@ void MainWindow::DoCheckFiles(const QStringList &files)
     mUI.mResults->Clear();
     mThread->ClearFiles();
 
-    if(fileNames.isEmpty())
+    if (fileNames.isEmpty())
     {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
@@ -248,12 +248,12 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
     // NOTE: we use QFileDialog::getOpenFileNames() and
     // QFileDialog::getExistingDirectory() because they show native Windows
     // selection dialog which is a lot more usable than QT:s own dialog.
-    if(mode == QFileDialog::ExistingFiles)
+    if (mode == QFileDialog::ExistingFiles)
     {
         selected = QFileDialog::getOpenFileNames(this,
                    tr("Select files to check"),
                    mSettings->value(SETTINGS_CHECK_PATH, "").toString());
-        if(selected.isEmpty())
+        if (selected.isEmpty())
             mCurrentDirectory.clear();
         else
         {
@@ -262,12 +262,12 @@ QStringList MainWindow::SelectFilesToCheck(QFileDialog::FileMode mode)
         }
         FormatAndSetTitle();
     }
-    else if(mode == QFileDialog::DirectoryOnly)
+    else if (mode == QFileDialog::DirectoryOnly)
     {
         QString dir = QFileDialog::getExistingDirectory(this,
                       tr("Select directory to check"),
                       mSettings->value(SETTINGS_CHECK_PATH, "").toString());
-        if(!dir.isEmpty())
+        if (!dir.isEmpty())
         {
             mCurrentDirectory = dir;
             selected.append(dir);
@@ -294,20 +294,20 @@ Settings MainWindow::GetCppcheckSettings()
     ProjectFile pfile;
     Settings result;
 
-    if(!mCurrentDirectory.isEmpty())
+    if (!mCurrentDirectory.isEmpty())
     {
         // Format project filename (directory name + .cppcheck) and load
         // the project file if it is found.
         QStringList parts = mCurrentDirectory.split("/");
         QString projfile = mCurrentDirectory + "/" + parts[parts.count() - 1] + ".cppcheck";
         bool projectRead = false;
-        if(QFile::exists(projfile))
+        if (QFile::exists(projfile))
         {
             qDebug() << "Reading project file " << projfile;
             projectRead = pfile.Read(projfile);
         }
 
-        if(projectRead)
+        if (projectRead)
         {
             QStringList classes = pfile.GetDeAllocatedClasses();
             QString classname;
@@ -321,13 +321,13 @@ Settings MainWindow::GetCppcheckSettings()
             foreach(dir, dirs)
             {
                 QString incdir;
-                if(!QDir::isAbsolutePath(dir))
+                if (!QDir::isAbsolutePath(dir))
                     incdir = mCurrentDirectory + "/";
                 incdir += dir;
                 incdir = QDir::cleanPath(incdir);
 
                 // include paths must end with '/'
-                if(!incdir.endsWith("/"))
+                if (!incdir.endsWith("/"))
                     incdir += "/";
                 result._includePaths.push_back(incdir.toStdString());
             }
@@ -343,7 +343,7 @@ Settings MainWindow::GetCppcheckSettings()
     result._xml = false;
     result._jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
 
-    if(result._jobs <= 0)
+    if (result._jobs <= 0)
     {
         result._jobs = 1;
     }
@@ -356,11 +356,11 @@ QStringList MainWindow::GetFilesRecursively(const QString &path)
     QFileInfo info(path);
     QStringList list;
 
-    if(info.isDir())
+    if (info.isDir())
     {
         QDirIterator it(path, QDirIterator::Subdirectories);
 
-        while(it.hasNext())
+        while (it.hasNext())
         {
             list << it.next();
         }
@@ -379,7 +379,7 @@ QStringList MainWindow::RemoveUnacceptedFiles(const QStringList &list)
     QString str;
     foreach(str, list)
     {
-        if(getFileLister()->acceptFile(str.toStdString()))
+        if (getFileLister()->acceptFile(str.toStdString()))
         {
             result << str;
         }
@@ -392,7 +392,7 @@ void MainWindow::CheckDone()
 {
     EnableCheckButtons(true);
     mUI.mActionSettings->setEnabled(true);
-    if(mUI.mResults->HasResults())
+    if (mUI.mResults->HasResults())
     {
         mUI.mActionClearResults->setEnabled(true);
         mUI.mActionSave->setEnabled(true);
@@ -405,7 +405,7 @@ void MainWindow::CheckDone()
 void MainWindow::ProgramSettings()
 {
     SettingsDialog dialog(mSettings, mApplications, this);
-    if(dialog.exec() == QDialog::Accepted)
+    if (dialog.exec() == QDialog::Accepted)
     {
         dialog.SaveCheckboxValues();
         mUI.mResults->UpdateSettings(dialog.ShowFullPath(),
@@ -434,7 +434,7 @@ void MainWindow::EnableCheckButtons(bool enable)
     mUI.mActionStop->setEnabled(!enable);
     mUI.mActionCheckFiles->setEnabled(enable);
 
-    if(!enable || mThread->HasPreviousFiles())
+    if (!enable || mThread->HasPreviousFiles())
         mUI.mActionRecheck->setEnabled(enable);
 
     mUI.mActionCheckDirectory->setEnabled(enable);
@@ -473,7 +473,7 @@ void MainWindow::UncheckAll()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     // Check that we aren't checking files
-    if(!mThread->IsChecking())
+    if (!mThread->IsChecking())
     {
         SaveSettings();
         event->accept();
@@ -539,34 +539,34 @@ void MainWindow::Save()
                            filter,
                            &selectedFilter);
 
-    if(!selectedFile.isEmpty())
+    if (!selectedFile.isEmpty())
     {
         Report::Type type = Report::TXT;
-        if(selectedFilter == tr("XML files (*.xml)"))
+        if (selectedFilter == tr("XML files (*.xml)"))
         {
             type = Report::XML;
-            if(!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
+            if (!selectedFile.endsWith(".xml", Qt::CaseInsensitive))
                 selectedFile += ".xml";
         }
-        else if(selectedFilter == tr("Text files (*.txt)"))
+        else if (selectedFilter == tr("Text files (*.txt)"))
         {
             type = Report::TXT;
-            if(!selectedFile.endsWith(".txt", Qt::CaseInsensitive))
+            if (!selectedFile.endsWith(".txt", Qt::CaseInsensitive))
                 selectedFile += ".txt";
         }
-        else if(selectedFilter == tr("CSV files (*.csv)"))
+        else if (selectedFilter == tr("CSV files (*.csv)"))
         {
             type = Report::CSV;
-            if(!selectedFile.endsWith(".csv", Qt::CaseInsensitive))
+            if (!selectedFile.endsWith(".csv", Qt::CaseInsensitive))
                 selectedFile += ".csv";
         }
         else
         {
-            if(selectedFile.endsWith(".xml", Qt::CaseInsensitive))
+            if (selectedFile.endsWith(".xml", Qt::CaseInsensitive))
                 type = Report::XML;
-            else if(selectedFile.endsWith(".txt", Qt::CaseInsensitive))
+            else if (selectedFile.endsWith(".txt", Qt::CaseInsensitive))
                 type = Report::TXT;
-            else if(selectedFile.endsWith(".csv", Qt::CaseInsensitive))
+            else if (selectedFile.endsWith(".csv", Qt::CaseInsensitive))
                 type = Report::CSV;
         }
 
@@ -586,7 +586,7 @@ void MainWindow::ToggleToolbar()
 void MainWindow::FormatAndSetTitle(const QString &text)
 {
     QString title;
-    if(text.isEmpty())
+    if (text.isEmpty())
         title = tr("Cppcheck");
     else
         title = QString(tr("Cppcheck - %1")).arg(text);
@@ -596,13 +596,13 @@ void MainWindow::FormatAndSetTitle(const QString &text)
 
 void MainWindow::SetLanguage(int index)
 {
-    if(mTranslation->GetCurrentLanguage() == index)
+    if (mTranslation->GetCurrentLanguage() == index)
     {
         return;
     }
 
     QString error;
-    if(!mTranslation->SetLanguage(index, error))
+    if (!mTranslation->SetLanguage(index, error))
     {
         QMessageBox msg(QMessageBox::Critical,
                         tr("Cppcheck"),
@@ -620,9 +620,9 @@ void MainWindow::SetLanguage(int index)
         QStringList languages = mTranslation->GetNames();
         QList<QAction *> actions = mLanguages->actions();
 
-        if(languages.size() <= actions.size())
+        if (languages.size() <= actions.size())
         {
-            for(int i = 0; i < languages.size(); i++)
+            for (int i = 0; i < languages.size(); i++)
             {
                 actions[i]->setText(tr(languages[i].toLatin1()));
             }
@@ -634,9 +634,9 @@ void MainWindow::MapLanguage(QAction *action)
 {
     //Find the action that has the language that user clicked
     QList<QAction *> actions = mLanguages->actions();
-    for(int i = 0; i < actions.size(); i++)
+    for (int i = 0; i < actions.size(); i++)
     {
-        if(actions[i] == action)
+        if (actions[i] == action)
         {
             SetLanguage(i);
         }

@@ -21,9 +21,9 @@
 #include <QDebug>
 
 CheckThread::CheckThread(ThreadResult &result) :
-    mState(Ready),
-    mResult(result),
-    mCppcheck(result)
+        mState(Ready),
+        mResult(result),
+        mCppcheck(result)
 {
     //ctor
 }
@@ -45,7 +45,7 @@ void CheckThread::run()
     QString file;
     file = mResult.GetNextFile();
 
-    while(!file.isEmpty() && mState == Running)
+    while (!file.isEmpty() && mState == Running)
     {
         qDebug() << "Checking file" << file;
         mCppcheck.addFile(file.toStdString());
@@ -53,10 +53,10 @@ void CheckThread::run()
         mCppcheck.clearFiles();
         emit FileChecked(file);
 
-        if(mState == Running)
+        if (mState == Running)
             file = mResult.GetNextFile();
     }
-    if(mState == Running)
+    if (mState == Running)
         mState = Ready;
     else
         mState = Stopped;

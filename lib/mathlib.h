@@ -37,8 +37,8 @@ public:
     static std::string toString(T d);
 
     static bool isInt(const std::string & str);
-    static bool isFloat(const std::string &str);
-    static bool isNegative(const std::string &str);
+	static bool isFloat(const std::string &str);
+	static bool isNegative(const std::string &str);
 
     static std::string add(const std::string & first, const std::string & second);
     static std::string subtract(const std::string & first, const std::string & second);

@@ -21,7 +21,7 @@
 #include "csvreport.h"
 
 CsvReport::CsvReport(const QString &filename, QObject * parent) :
-    Report(filename, parent)
+        Report(filename, parent)
 {
 }
 
@@ -33,7 +33,7 @@ CsvReport::~CsvReport()
 bool CsvReport::Create()
 {
     bool success = false;
-    if(Report::Create())
+    if (Report::Create())
     {
         mTxtWriter.setDevice(Report::GetFile());
         success = true;

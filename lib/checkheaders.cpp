@@ -50,13 +50,13 @@ CheckHeaders::~CheckHeaders()
 
 void CheckHeaders::warningHeaderWithImplementation()
 {
-    for(const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Only interested in included file
-        if(tok->fileIndex() == 0)
+        if (tok->fileIndex() == 0)
             continue;
 
-        if(Token::simpleMatch(tok, ") {"))
+        if (Token::simpleMatch(tok, ") {"))
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(tok) << ": Found implementation in header";
@@ -69,7 +69,7 @@ void CheckHeaders::warningHeaderWithImplementation()
             // _errorLogger->reportErr(empty, "severity", ostr.str(), "id");
             // Goto next file..
             unsigned int fileindex = tok->fileIndex();
-            while(tok->next() && tok->fileIndex() == fileindex)
+            while (tok->next() && tok->fileIndex() == fileindex)
                 tok = tok->next();
         }
     }
@@ -90,21 +90,21 @@ void CheckHeaders::warningHeaderWithImplementation()
 void CheckHeaders::warningIncludeHeader()
 {
     // Including..
-    for(const Token *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next())
+    for (const Token *includetok = _tokenizer->tokens(); includetok; includetok = includetok->next())
     {
-        if(includetok->str() != "#include")
+        if (includetok->str() != "#include")
             continue;
 
         // Get fileindex of included file..
         unsigned int hfile = 0;
         const std::string includefile = includetok->strAt(1);
-        while(hfile < _tokenizer->getFiles()->size())
+        while (hfile < _tokenizer->getFiles()->size())
         {
-            if(getFileLister()->sameFileName(_tokenizer->getFiles()->at(hfile), includefile))
+            if (getFileLister()->sameFileName(_tokenizer->getFiles()->at(hfile), includefile))
                 break;
             ++hfile;
         }
-        if(hfile == _tokenizer->getFiles()->size())
+        if (hfile == _tokenizer->getFiles()->size())
             continue;
 
         // This header is needed if:
@@ -119,48 +119,48 @@ void CheckHeaders::warningIncludeHeader()
 
         // Extract classes and names in the header..
         int indentlevel = 0;
-        for(const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
+        for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
         {
-            if(tok1->fileIndex() != hfile)
+            if (tok1->fileIndex() != hfile)
                 continue;
 
             // I'm only interested in stuff that is declared at indentlevel 0
-            if(tok1->str() == "{")
+            if (tok1->str() == "{")
                 ++indentlevel;
 
-            else if(tok1->str() == "}")
+            else if (tok1->str() == "}")
                 --indentlevel;
 
-            if(indentlevel != 0)
+            if (indentlevel != 0)
                 continue;
 
             // Class or namespace declaration..
             // --------------------------------------
-            if(Token::Match(tok1, "class %var% {") || Token::Match(tok1, "class %var% :") || Token::Match(tok1, "namespace %var% {"))
+            if (Token::Match(tok1, "class %var% {") || Token::Match(tok1, "class %var% :") || Token::Match(tok1, "namespace %var% {"))
                 classlist.push_back(tok1->strAt(1));
 
             // Variable declaration..
             // --------------------------------------
-            else if(Token::Match(tok1, "%type% %var% ;") || Token::Match(tok1, "%type% %var% ["))
+            else if (Token::Match(tok1, "%type% %var% ;") || Token::Match(tok1, "%type% %var% ["))
                 namelist.push_back(tok1->strAt(1));
 
-            else if(Token::Match(tok1, "%type% * %var% ;") || Token::Match(tok1, "%type% * %var% ["))
+            else if (Token::Match(tok1, "%type% * %var% ;") || Token::Match(tok1, "%type% * %var% ["))
                 namelist.push_back(tok1->strAt(2));
 
-            else if(Token::Match(tok1, "const %type% %var% =") || Token::Match(tok1, "const %type% %var% ["))
+            else if (Token::Match(tok1, "const %type% %var% =") || Token::Match(tok1, "const %type% %var% ["))
                 namelist.push_back(tok1->strAt(2));
 
-            else if(Token::Match(tok1, "const %type% * %var% =") || Token::Match(tok1, "const %type% * %var% ["))
+            else if (Token::Match(tok1, "const %type% * %var% =") || Token::Match(tok1, "const %type% * %var% ["))
                 namelist.push_back(tok1->strAt(3));
 
             // enum..
             // --------------------------------------
-            else if(tok1->str() == "enum")
+            else if (tok1->str() == "enum")
             {
                 tok1 = tok1->next();
-                while(! Token::Match(tok1, "; %any%"))
+                while (! Token::Match(tok1, "; %any%"))
                 {
-                    if(tok1->isName())
+                    if (tok1->isName())
                         namelist.push_back(tok1->str());
                     tok1 = tok1->next();
                 }
@@ -168,39 +168,39 @@ void CheckHeaders::warningIncludeHeader()
 
             // function..
             // --------------------------------------
-            else if(Token::Match(tok1, "%type% %var% ("))
+            else if (Token::Match(tok1, "%type% %var% ("))
                 namelist.push_back(tok1->strAt(1));
 
-            else if(Token::Match(tok1, "%type% * %var% ("))
+            else if (Token::Match(tok1, "%type% * %var% ("))
                 namelist.push_back(tok1->strAt(2));
 
-            else if(Token::Match(tok1, "const %type% %var% ("))
+            else if (Token::Match(tok1, "const %type% %var% ("))
                 namelist.push_back(tok1->strAt(2));
 
-            else if(Token::Match(tok1, "const %type% * %var% ("))
+            else if (Token::Match(tok1, "const %type% * %var% ("))
                 namelist.push_back(tok1->strAt(3));
 
             // typedef..
             // --------------------------------------
-            else if(tok1->str() == "typedef")
+            else if (tok1->str() == "typedef")
             {
-                if(tok1->strAt(1) == "enum")
+                if (tok1->strAt(1) == "enum")
                     continue;
                 int parlevel = 0;
-                while(tok1->next())
+                while (tok1->next())
                 {
-                    if(Token::Match(tok1, "[({]"))
+                    if (Token::Match(tok1, "[({]"))
                         ++parlevel;
 
-                    else if(Token::Match(tok1, "[)}]"))
+                    else if (Token::Match(tok1, "[)}]"))
                         --parlevel;
 
-                    else if(parlevel == 0)
+                    else if (parlevel == 0)
                     {
-                        if(tok1->str() == ";")
+                        if (tok1->str() == ";")
                             break;
 
-                        if(Token::Match(tok1, "%var% ;"))
+                        if (Token::Match(tok1, "%var% ;"))
                             namelist.push_back(tok1->str());
                     }
 
@@ -213,45 +213,45 @@ void CheckHeaders::warningIncludeHeader()
         // Check if the extracted names are used...
         bool Needed = false;
         bool NeedDeclaration = false;
-        for(const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
+        for (const Token *tok1 = _tokenizer->tokens(); tok1; tok1 = tok1->next())
         {
-            if(tok1->fileIndex() != includetok->fileIndex())
+            if (tok1->fileIndex() != includetok->fileIndex())
                 continue;
 
-            if(Token::Match(tok1, ": %var% {") || Token::Match(tok1, ": %type% %var% {"))
+            if (Token::Match(tok1, ": %var% {") || Token::Match(tok1, ": %type% %var% {"))
             {
                 const std::string classname = tok1->strAt(((tok1->strAt(2) != "{")) ? 2 : 1);
-                if(std::find(classlist.begin(), classlist.end(), classname) != classlist.end())
+                if (std::find(classlist.begin(), classlist.end(), classname) != classlist.end())
                 {
                     Needed = true;
                     break;
                 }
             }
 
-            if(! tok1->isName())
+            if (! tok1->isName())
                 continue;
 
-            if(std::find(namelist.begin(), namelist.end(), tok1->str().c_str()) != namelist.end())
+            if (std::find(namelist.begin(), namelist.end(), tok1->str().c_str()) != namelist.end())
             {
                 Needed = true;
                 break;
             }
 
-            if(! NeedDeclaration)
+            if (! NeedDeclaration)
                 NeedDeclaration = (std::find(classlist.begin(), classlist.end(), tok1->str().c_str()) != classlist.end());
         }
 
 
         // Not a header file?
-        if(includetok->fileIndex() == 0)
+        if (includetok->fileIndex() == 0)
             Needed |= NeedDeclaration;
 
         // Not needed!
-        if(!Needed)
+        if (!Needed)
         {
             std::ostringstream ostr;
             ostr << _tokenizer->fileLine(includetok) << ": The included header '" << includefile << "' is not needed";
-            if(NeedDeclaration)
+            if (NeedDeclaration)
                 ostr << " (but a forward declaration is needed)";
 
             // TODO, this check is currently not used, but if it is some day

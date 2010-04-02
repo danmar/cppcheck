@@ -23,7 +23,7 @@
 #include "aboutdialog.h"
 
 AboutDialog::AboutDialog(const QString &version, QWidget *parent)
-    : QDialog(parent)
+        : QDialog(parent)
 {
     mUI.setupUi(this);
 

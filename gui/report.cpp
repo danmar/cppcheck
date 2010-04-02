@@ -20,8 +20,8 @@
 #include "report.h"
 
 Report::Report(const QString &filename, QObject * parent) :
-    QObject(parent),
-    mFilename(filename)
+        QObject(parent),
+        mFilename(filename)
 {
 }
 
@@ -33,7 +33,7 @@ Report::~Report()
 bool Report::Create()
 {
     bool succeed = false;
-    if(!mFile.isOpen())
+    if (!mFile.isOpen())
     {
         mFile.setFileName(mFilename);
         succeed = mFile.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -43,7 +43,7 @@ bool Report::Create()
 
 void Report::Close()
 {
-    if(mFile.isOpen())
+    if (mFile.isOpen())
         mFile.close();
 }
 

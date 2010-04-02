@@ -51,13 +51,13 @@ private:
         ASSERT_EQUALS(token->str(), "1");
         ASSERT_EQUALS(token->next()->str(), "2");
         ASSERT_EQUALS(token->tokAt(2)->str(), "3");
-        if(last->next())
+        if (last->next())
             ASSERT_EQUALS("Null was expected", "");
 
         ASSERT_EQUALS(last->str(), "3");
         ASSERT_EQUALS(last->previous()->str(), "2");
         ASSERT_EQUALS(last->tokAt(-2)->str(), "1");
-        if(token->previous())
+        if (token->previous())
             ASSERT_EQUALS("Null was expected", "");
 
         Tokenizer::deleteTokens(token);

@@ -241,23 +241,23 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        if(simplify)
+        if (simplify)
             tokenizer.simplifyTokenList();
 
         tokenizer.validate();
         std::string ret;
-        for(const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
-            if(tok != tokenizer.tokens())
+            if (tok != tokenizer.tokens())
                 ret += " ";
-            if(!simplify)
+            if (!simplify)
             {
-                if(tok->isUnsigned())
+                if (tok->isUnsigned())
                     ret += "unsigned ";
-                else if(tok->isSigned())
+                else if (tok->isSigned())
                     ret += "signed ";
             }
-            if(tok->isLong())
+            if (tok->isLong())
                 ret += "long ";
             ret += tok->str();
         }
@@ -701,9 +701,9 @@ private:
         tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;
-        for(const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
-            if(tok->previous())
+            if (tok->previous())
             {
                 ostr << " ";
             }
@@ -850,7 +850,7 @@ private:
             const char code[] = "; const char str[] = \"1\"; sizeof(str);";
 
             std::ostringstream expected;
-            expected << "; const char * str ; str = \"1\" ; " << sizeofFromTokenizer("char") * 2 << " ;";
+            expected << "; const char * str ; str = \"1\" ; " << sizeofFromTokenizer("char")*2 << " ;";
 
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
@@ -879,7 +879,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char * a , char * b , char * c ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -888,7 +888,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char a , char b , char c ) { g ( " <<
-                     sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " ) ; }";
+            sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -897,7 +897,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char * a , const char * b , const char * c ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -906,7 +906,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char a [ 10 ] , char b [ 10 ] , char c [ 10 ] ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -915,9 +915,9 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char a [ 10 ] , "
-                     "const char b [ 10 ] , "
-                     "const char c [ 10 ] ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+            "const char b [ 10 ] , "
+            "const char c [ 10 ] ) { g ( " <<
+            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -926,9 +926,9 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char * a [ 10 ] , "
-                     "const char * b [ 10 ] , "
-                     "const char * c [ 10 ] ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+            "const char * b [ 10 ] , "
+            "const char * c [ 10 ] ) { g ( " <<
+            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -937,7 +937,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char * a [ 10 ] , char * b [ 10 ] , char * c [ 10 ] ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -949,7 +949,7 @@ private:
 
         {
             std::ostringstream expected;
-            expected << "void f ( ) { char str [ 100 ] = \"100\" ; " << sizeofFromTokenizer("char") * 100 << " }";
+            expected << "void f ( ) { char str [ 100 ] = \"100\" ; " << sizeofFromTokenizer("char")*100 << " }";
             ASSERT_EQUALS(expected.str(), tok("void f ( ) { char str [ 100 ] = \"100\" ; sizeof ( str ) }"));
         }
     }
@@ -1092,7 +1092,7 @@ private:
 
     void sizeof18()
     {
-        if(sizeof(short int) == 2)
+        if (sizeof(short int) == 2)
         {
             {
                 const char code[] = "void f()\n"
@@ -1131,7 +1131,7 @@ private:
             }
         }
 
-        if(sizeof(long long) == 8)
+        if (sizeof(long long) == 8)
         {
             {
                 const char code[] = "void f()\n"
@@ -1843,7 +1843,7 @@ private:
         tokenizer.simplifyIfAssign();
 
         std::ostringstream ostr;
-        for(const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << (tok->previous() ? " " : "") << tok->str();
 
         return ostr.str();
@@ -1887,7 +1887,7 @@ private:
         tokenizer.simplifyIfNot();
 
         std::ostringstream ostr;
-        for(const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << (tok->previous() ? " " : "") << tok->str();
 
         return ostr.str();
@@ -1920,7 +1920,7 @@ private:
         tokenizer.simplifyLogicalOperators();
 
         std::ostringstream ostr;
-        for(const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << (tok->previous() ? " " : "") << tok->str();
 
         return ostr.str();
@@ -2482,9 +2482,9 @@ private:
         tokenizer.simplifyTypedef();
 
         std::string ret;
-        for(const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
         {
-            if(tok != tokenizer.tokens())
+            if (tok != tokenizer.tokens())
                 ret += " ";
             ret += tok->str();
         }

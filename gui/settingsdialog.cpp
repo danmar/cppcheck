@@ -29,10 +29,10 @@
 SettingsDialog::SettingsDialog(QSettings *programSettings,
                                ApplicationList *list,
                                QWidget *parent) :
-    QDialog(parent),
-    mSettings(programSettings),
-    mApplications(list),
-    mTempApplications(new ApplicationList(this))
+        QDialog(parent),
+        mSettings(programSettings),
+        mApplications(list),
+        mTempApplications(new ApplicationList(this))
 {
     mUI.setupUi(this);
     mTempApplications->Copy(list);
@@ -77,7 +77,7 @@ SettingsDialog::~SettingsDialog()
 
 Qt::CheckState SettingsDialog::BoolToCheckState(bool yes)
 {
-    if(yes)
+    if (yes)
     {
         return Qt::Checked;
     }
@@ -86,7 +86,7 @@ Qt::CheckState SettingsDialog::BoolToCheckState(bool yes)
 
 bool SettingsDialog::CheckStateToBool(Qt::CheckState state)
 {
-    if(state == Qt::Checked)
+    if (state == Qt::Checked)
     {
         return true;
     }
@@ -109,7 +109,7 @@ void SettingsDialog::SaveSettings()
 void SettingsDialog::SaveCheckboxValues()
 {
     int jobs = mUI.mJobs->text().toInt();
-    if(jobs <= 0)
+    if (jobs <= 0)
     {
         jobs = 1;
     }
@@ -131,7 +131,7 @@ void SettingsDialog::AddApplication()
 {
     ApplicationDialog dialog("", "", tr("Add a new application"), this);
 
-    if(dialog.exec() == QDialog::Accepted)
+    if (dialog.exec() == QDialog::Accepted)
     {
         mTempApplications->AddApplicationType(dialog.GetName(), dialog.GetPath());
         mUI.mListWidget->addItem(dialog.GetName());
@@ -164,7 +164,7 @@ void SettingsDialog::ModifyApplication()
                                  mTempApplications->GetApplicationPath(row),
                                  tr("Modify an application"));
 
-        if(dialog.exec() == QDialog::Accepted)
+        if (dialog.exec() == QDialog::Accepted)
         {
             mTempApplications->SetApplicationType(row, dialog.GetName(), dialog.GetPath());
             item->setText(dialog.GetName());
@@ -175,7 +175,7 @@ void SettingsDialog::ModifyApplication()
 void SettingsDialog::DefaultApplication()
 {
     QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
-    if(selected.size() > 0)
+    if (selected.size() > 0)
     {
         int index = mUI.mListWidget->row(selected[0]);
         mTempApplications->MoveFirst(index);
@@ -186,13 +186,13 @@ void SettingsDialog::DefaultApplication()
 
 void SettingsDialog::PopulateListWidget()
 {
-    for(int i = 0; i < mTempApplications->GetApplicationCount(); i++)
+    for (int i = 0; i < mTempApplications->GetApplicationCount(); i++)
     {
         mUI.mListWidget->addItem(mTempApplications->GetApplicationName(i));
     }
 
     // If list contains items select first item
-    if(mTempApplications->GetApplicationCount())
+    if (mTempApplications->GetApplicationCount())
     {
         mUI.mListWidget->setCurrentRow(0);
     }

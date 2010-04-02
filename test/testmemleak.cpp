@@ -407,7 +407,7 @@ private:
 
         // stringify..
         std::ostringstream ret;
-        for(const Token *tok = tokens; tok; tok = tok->next())
+        for (const Token *tok = tokens; tok; tok = tok->next())
             ret << tok->str();
 
         Tokenizer::deleteTokens(tokens);
@@ -572,7 +572,7 @@ private:
             , "sync_file_range", "telldir", "typeid", "while", "write", "writev"
         };
 
-        for(unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
+        for (unsigned int i = 0; i < (sizeof(call_func_white_list) / sizeof(char *)); ++i)
             ASSERT_EQUALS(true, CheckMemoryLeakInFunction::test_white_list(call_func_white_list[i]));
     }
 
@@ -586,15 +586,15 @@ private:
         Token *tokens = const_cast<Token *>(tokenizer.tokens());
 
         // replace "if ( ! var )" => "if(!var)"
-        for(Token *tok = tokens; tok; tok = tok->next())
+        for (Token *tok = tokens; tok; tok = tok->next())
         {
-            if(Token::Match(tok, "if|while ( var )"))
+            if (Token::Match(tok, "if|while ( var )"))
             {
                 Token::eraseTokens(tok, tok->tokAt(4));
                 tok->str(tok->str() + "(var)");
             }
 
-            else if(Token::Match(tok, "if|while ( ! var )"))
+            else if (Token::Match(tok, "if|while ( ! var )"))
             {
                 Token::eraseTokens(tok, tok->tokAt(5));
                 tok->str(tok->str() + "(!var)");
@@ -608,7 +608,7 @@ private:
         checkMemoryLeak.simplifycode(tokens, all);
 
         std::ostringstream ret;
-        for(const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ret << (tok->previous() ? " " : "") << tok->str();
 
         return ret.str();
@@ -720,20 +720,20 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         // replace "if ( ! var )" => "if(!var)"
-        for(Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
+        for (Token *tok = const_cast<Token *>(tokenizer.tokens()); tok; tok = tok->next())
         {
-            if(tok->str() == "if_var")
+            if (tok->str() == "if_var")
             {
                 tok->str("if(var)");
             }
 
-            else if(Token::simpleMatch(tok, "if ( var )"))
+            else if (Token::simpleMatch(tok, "if ( var )"))
             {
                 Token::eraseTokens(tok, tok->tokAt(4));
                 tok->str("if(var)");
             }
 
-            else if(Token::simpleMatch(tok, "if ( ! var )"))
+            else if (Token::simpleMatch(tok, "if ( ! var )"))
             {
                 Token::eraseTokens(tok, tok->tokAt(5));
                 tok->str("if(!var)");

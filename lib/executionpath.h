@@ -57,7 +57,7 @@ public:
      **/
     static void bailOut(std::list<ExecutionPath *> &checks)
     {
-        while(!checks.empty())
+        while (!checks.empty())
         {
             delete checks.back();
             checks.pop_back();
@@ -71,13 +71,13 @@ public:
      **/
     static void bailOutVar(std::list<ExecutionPath *> &checks, const unsigned int varid)
     {
-        if(varid == 0)
+        if (varid == 0)
             return;
 
         std::list<ExecutionPath *>::iterator it = checks.begin();
-        while(it != checks.end())
+        while (it != checks.end())
         {
-            if((*it)->varId == varid)
+            if ((*it)->varId == varid)
             {
                 delete *it;
                 checks.erase(it++);

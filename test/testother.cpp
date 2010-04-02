@@ -90,7 +90,7 @@ private:
 
         TEST_CASE(passedByValue);
 
-        TEST_CASE(mathfunctionCall1);
+		TEST_CASE(mathfunctionCall1);
     }
 
     void check(const char code[])
@@ -112,7 +112,7 @@ private:
         checkOther.warningRedundantCode();
         checkOther.checkZeroDivision();
         checkOther.unreachableCode();
-        checkOther.checkMathFunctions();
+		checkOther.checkMathFunctions();
     }
 
 
@@ -1837,7 +1837,7 @@ private:
         CheckOther::analyseFunctions(tokenizer.tokens(), f);
 
         std::string ret;
-        for(std::set<std::string>::const_iterator it = f.begin(); it != f.end(); ++it)
+        for (std::set<std::string>::const_iterator it = f.begin(); it != f.end(); ++it)
             ret += *it + " ";
         return ret;
     }
@@ -2158,8 +2158,8 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
     }
 
-    void mathfunctionCall1()
-    {
+	void mathfunctionCall1()
+	{
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(-2) << std::endl;\n"
@@ -2176,7 +2176,7 @@ private:
               "{\n"
               "    std::cout <<  log(-1.0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.0 to log() leads to undefined result\n", errout.str());
+		ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.0 to log() leads to undefined result\n", errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -2219,7 +2219,7 @@ private:
               "    std::cout <<  log(1E-3) << std::endl;\n"
               "}");
         TODO_ASSERT_EQUALS("", errout.str());
-    }
+	}
 
 
 };

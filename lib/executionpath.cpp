@@ -25,27 +25,27 @@
 // default : bail out if the condition is has variable handling
 bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> & checks)
 {
-    if(Token::Match(tok.tokAt(-3), "!!else if ("))
+    if (Token::Match(tok.tokAt(-3), "!!else if ("))
     {
         ++ifinfo;
     }
 
     unsigned int parlevel = 0;
-    for(const Token *tok2 = &tok; tok2; tok2 = tok2->next())
+    for (const Token *tok2 = &tok; tok2; tok2 = tok2->next())
     {
-        if(tok2->str() == "(")
+        if (tok2->str() == "(")
             ++parlevel;
-        else if(tok2->str() == ")")
+        else if (tok2->str() == ")")
         {
-            if(parlevel == 0)
+            if (parlevel == 0)
                 break;
             --parlevel;
         }
-        else if(Token::Match(tok2, ";{}"))
+        else if (Token::Match(tok2, ";{}"))
             break;
-        if(tok2->varId() != 0)
+        if (tok2->varId() != 0)
         {
-            if(ifinfo > 1)
+            if (ifinfo > 1)
                 return true;
             else
                 bailOutVar(checks, tok2->varId());
@@ -58,33 +58,33 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
 
 static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
 {
-    if(!tok || tok->str() == "}" || checks.empty())
+    if (!tok || tok->str() == "}" || checks.empty())
         return 0;
 
     const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
 
-    for(; tok; tok = tok->next())
+    for (; tok; tok = tok->next())
     {
-        if(tok->str() == "}")
+        if (tok->str() == "}")
             return 0;
 
-        if(Token::simpleMatch(tok, "while ("))
+        if (Token::simpleMatch(tok, "while ("))
         {
             // parse condition
-            if(checks.size() > 10 || check->parseCondition(*tok->tokAt(2), checks))
+            if (checks.size() > 10 || check->parseCondition(*tok->tokAt(2), checks))
             {
                 ExecutionPath::bailOut(checks);
                 return 0;
             }
 
             // skip "while (fgets()!=NULL)"
-            if(Token::simpleMatch(tok, "while ( fgets ("))
+            if (Token::simpleMatch(tok, "while ( fgets ("))
             {
                 const Token *tok2 = tok->tokAt(3)->link();
-                if(Token::simpleMatch(tok2, ") ) {"))
+                if (Token::simpleMatch(tok2, ") ) {"))
                 {
                     tok = tok2->tokAt(2)->link();
-                    if(!tok)
+                    if (!tok)
                         break;
                     continue;
                 }
@@ -92,15 +92,15 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         }
 
         // for/while/switch/do .. bail out
-        if(Token::Match(tok, "for|while|switch|do"))
+        if (Token::Match(tok, "for|while|switch|do"))
         {
             // goto {
             const Token *tok2 = tok->next();
-            if(tok2 && tok2->str() == "(")
+            if (tok2 && tok2->str() == "(")
                 tok2 = tok2->link();
-            if(tok2 && tok2->str() == ")")
+            if (tok2 && tok2->str() == ")")
                 tok2 = tok2->next();
-            if(!tok2 || tok2->str() != "{")
+            if (!tok2 || tok2->str() != "{")
             {
                 ExecutionPath::bailOut(checks);
                 return 0;
@@ -110,16 +110,16 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             tok2 = tok2->link();
 
             // if "do { .. } while ( .." , goto end of while..
-            if(Token::simpleMatch(tok, "do {") && Token::simpleMatch(tok2, "} while ("))
+            if (Token::simpleMatch(tok, "do {") && Token::simpleMatch(tok2, "} while ("))
                 tok2 = tok2->tokAt(2)->link();
 
             // bail out all variables if the scope contains a "return"
             // bail out all variables used in this for/while/switch/do
-            for(; tok && tok != tok2; tok = tok->next())
+            for (; tok && tok != tok2; tok = tok->next())
             {
-                if(tok->str() == "return")
+                if (tok->str() == "return")
                     ExecutionPath::bailOut(checks);
-                if(tok->varId())
+                if (tok->varId())
                     ExecutionPath::bailOutVar(checks, tok->varId());
             }
 
@@ -127,37 +127,37 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         }
 
         // .. ) { ... }  => bail out
-        if(Token::simpleMatch(tok, ") {"))
+        if (Token::simpleMatch(tok, ") {"))
         {
             ExecutionPath::bailOut(checks);
             return 0;
         }
 
-        if(Token::Match(tok, "abort|exit ("))
+        if (Token::Match(tok, "abort|exit ("))
         {
             ExecutionPath::bailOut(checks);
             return 0;
         }
 
         // don't parse into "struct type { .."
-        if(Token::Match(tok, "struct|union|class %type% {|:"))
+        if (Token::Match(tok, "struct|union|class %type% {|:"))
         {
-            while(tok && tok->str() != "{" && tok->str() != ";")
+            while (tok && tok->str() != "{" && tok->str() != ";")
                 tok = tok->next();
             tok = tok ? tok->link() : 0;
         }
 
-        if(Token::Match(tok, "= {"))
+        if (Token::Match(tok, "= {"))
         {
             // GCC struct initialization.. bail out
-            if(Token::Match(tok->tokAt(2), ". %var% ="))
+            if (Token::Match(tok->tokAt(2), ". %var% ="))
             {
                 ExecutionPath::bailOut(checks);
                 return 0;
             }
 
             tok = tok->next()->link();
-            if(!tok)
+            if (!tok)
             {
                 ExecutionPath::bailOut(checks);
                 return 0;
@@ -166,10 +166,10 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         }
 
         // ; { ... }
-        if(Token::Match(tok->previous(), "[;{}] {"))
+        if (Token::Match(tok->previous(), "[;{}] {"))
         {
             const Token *tokerr = checkExecutionPaths_(tok->next(), checks);
-            if(tokerr)
+            if (tokerr)
             {
                 ExecutionPath::bailOut(checks);
                 return tokerr;
@@ -178,16 +178,16 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             continue;
         }
 
-        if(tok->str() == "if")
+        if (tok->str() == "if")
         {
             std::list<ExecutionPath *> newchecks;
-            while(tok->str() == "if")
+            while (tok->str() == "if")
             {
                 // goto "("
                 tok = tok->next();
 
                 // parse condition
-                if(checks.size() > 10 || check->parseCondition(*tok->next(), checks))
+                if (checks.size() > 10 || check->parseCondition(*tok->next(), checks))
                 {
                     ExecutionPath::bailOut(checks);
                     ExecutionPath::bailOut(newchecks);
@@ -200,7 +200,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 // goto "{"
                 tok = tok ? tok->next() : 0;
 
-                if(!Token::simpleMatch(tok, "{"))
+                if (!Token::simpleMatch(tok, "{"))
                 {
                     ExecutionPath::bailOut(checks);
                     ExecutionPath::bailOut(newchecks);
@@ -211,16 +211,16 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 {
                     std::list<ExecutionPath *> c;
                     std::list<ExecutionPath *>::iterator it;
-                    for(it = checks.begin(); it != checks.end(); ++it)
+                    for (it = checks.begin(); it != checks.end(); ++it)
                         c.push_back((*it)->copy());
                     const Token *tokerr = checkExecutionPaths_(tok->next(), c);
-                    if(tokerr)
+                    if (tokerr)
                     {
                         ExecutionPath::bailOut(c);
                         ExecutionPath::bailOut(newchecks);
                         return tokerr;
                     }
-                    while(!c.empty())
+                    while (!c.empty())
                     {
                         newchecks.push_back(c.back());
                         c.pop_back();
@@ -231,24 +231,24 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 tok = tok->link();
 
                 // there is no else => break out
-                if(Token::Match(tok, "} !!else"))
+                if (Token::Match(tok, "} !!else"))
                     break;
 
                 // parse next "if"..
                 tok = tok->tokAt(2);
-                if(tok->str() == "if")
+                if (tok->str() == "if")
                     continue;
 
                 // there is no "if"..
                 const Token *tokerr = checkExecutionPaths_(tok->next(), checks);
-                if(tokerr)
+                if (tokerr)
                 {
                     ExecutionPath::bailOut(newchecks);
                     return tokerr;
                 }
 
                 tok = tok->link();
-                if(!tok)
+                if (!tok)
                 {
                     ExecutionPath::bailOut(newchecks);
                     return 0;
@@ -256,7 +256,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             }
 
             std::list<ExecutionPath *>::iterator it;
-            for(it = newchecks.begin(); it != newchecks.end(); ++it)
+            for (it = newchecks.begin(); it != newchecks.end(); ++it)
                 checks.push_back(*it);
         }
 
@@ -264,14 +264,14 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         {
             bool foundError = false;
             tok = check->parse(*tok, foundError, checks);
-            if(checks.empty())
+            if (checks.empty())
                 return 0;
-            else if(foundError)
+            else if (foundError)
                 return tok;
         }
 
         // return/throw ends all execution paths
-        if(tok->str() == "return" || tok->str() == "throw")
+        if (tok->str() == "return" || tok->str() == "throw")
         {
             ExecutionPath::bailOut(checks);
         }
@@ -281,17 +281,17 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
 
 void checkExecutionPaths(const Token *tok, ExecutionPath *c)
 {
-    for(; tok; tok = tok->next())
+    for (; tok; tok = tok->next())
     {
-        if(tok->str() != ")")
+        if (tok->str() != ")")
             continue;
 
         // Start of implementation..
-        if(Token::Match(tok, ") const| {"))
+        if (Token::Match(tok, ") const| {"))
         {
             // goto the "{"
             tok = tok->next();
-            if(tok->str() == "const")
+            if (tok->str() == "const")
                 tok = tok->next();
 
             std::list<ExecutionPath *> checks;
@@ -300,7 +300,7 @@ void checkExecutionPaths(const Token *tok, ExecutionPath *c)
 
             c->end(checks, tok->link());
 
-            while(!checks.empty())
+            while (!checks.empty())
             {
                 delete checks.back();
                 checks.pop_back();

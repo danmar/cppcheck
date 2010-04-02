@@ -39,7 +39,7 @@ class Check
 public:
     /** This constructor is used when registering the CheckClass */
     Check()
-        : _tokenizer(0), _settings(0), _errorLogger(0)
+            : _tokenizer(0), _settings(0), _errorLogger(0)
     {
         instances().push_back(this);
         instances().sort();
@@ -47,7 +47,7 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
+            : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
     { }
 
     virtual ~Check()
@@ -99,7 +99,7 @@ protected:
     void reportError(const Token *tok, const Severity::e severity, const std::string &id, const std::string &msg)
     {
         std::list<const Token *> callstack;
-        if(tok)
+        if (tok)
             callstack.push_back(tok);
         reportError(callstack, severity, id, msg);
     }
@@ -108,18 +108,18 @@ protected:
     void reportError(const std::list<const Token *> &callstack, const Severity::e severity, const std::string &id, std::string msg)
     {
         // If the verbose flag hasn't been given, don't show verbose information
-        if(!_settings || !_settings->_verbose)
+        if (!_settings || !_settings->_verbose)
         {
             std::string::size_type pos = msg.find("\n");
-            if(pos != std::string::npos)
+            if (pos != std::string::npos)
                 msg.erase(pos);
         }
 
         std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-        for(std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
+        for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it)
         {
             // --errorlist can provide null values here
-            if(!(*it))
+            if (!(*it))
                 continue;
 
             ErrorLogger::ErrorMessage::FileLocation loc;
@@ -129,7 +129,7 @@ protected:
         }
 
         const ErrorLogger::ErrorMessage errmsg(locationList, Severity::stringify(severity), msg, id);
-        if(_errorLogger)
+        if (_errorLogger)
             _errorLogger->reportErr(errmsg);
         else
             reportError(errmsg);

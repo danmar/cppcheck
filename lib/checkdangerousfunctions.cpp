@@ -33,17 +33,17 @@ CheckDangerousFunctions instance;
 
 void CheckDangerousFunctions::dangerousFunctions()
 {
-    for(const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if(Token::simpleMatch(tok, "mktemp ("))
+        if (Token::simpleMatch(tok, "mktemp ("))
         {
             dangerousFunctionmktemp(tok);
         }
-        else if(Token::simpleMatch(tok, "gets ("))
+        else if (Token::simpleMatch(tok, "gets ("))
         {
             dangerousFunctiongets(tok);
         }
-        else if(Token::simpleMatch(tok, "scanf ("))
+        else if (Token::simpleMatch(tok, "scanf ("))
         {
             dangerousFunctionscanf(tok);
         }

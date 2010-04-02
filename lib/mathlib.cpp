@@ -32,15 +32,15 @@
 
 long MathLib::toLongNumber(const std::string &str)
 {
-    if(str.compare(0, 2, "0x") == 0
-       || str.compare(0, 3, "+0x") == 0
-       || str.compare(0, 3, "-0x") == 0)
+    if (str.compare(0, 2, "0x") == 0
+        || str.compare(0, 3, "+0x") == 0
+        || str.compare(0, 3, "-0x") == 0)
     {
         return std::strtoul(str.c_str(), '\0', 16);
     }
-    if(str.compare(0, 1, "0") == 0
-       ||  str.compare(0, 2, "+0") == 0
-       ||  str.compare(0, 2, "-0") == 0)
+    if (str.compare(0, 1, "0") == 0
+        ||  str.compare(0, 2, "+0") == 0
+        ||  str.compare(0, 2, "-0") == 0)
     {
         return std::strtoul(str.c_str(), '\0', 8);
     }
@@ -51,7 +51,7 @@ long MathLib::toLongNumber(const std::string &str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    if(str.compare(0, 2, "0x") == 0)
+    if (str.compare(0, 2, "0x") == 0)
     {
         return std::strtoul(str.c_str(), '\0', 16);
     }
@@ -67,25 +67,25 @@ std::string MathLib::toString(T d)
     std::ostringstream result;
     result << d;
     std::string strResult(result.str());
-    if(strResult == "-0"
-       || strResult == "+0"
-       || strResult == "-0."
-       || strResult == "+0.")
+    if (strResult == "-0"
+        || strResult == "+0"
+        || strResult == "-0."
+        || strResult == "+0.")
         return std::string("0");
     return result.str();
 }
 
 bool MathLib::isFloat(const std::string &s)
 {
-    // every number that contains a . is a float
-    if(s.find("." , 0) != std::string::npos)
-        return true;
-    // scientific notation
-    else if(s.find("E-", 0) != std::string::npos
-            || s.find("e-", 0) != std::string::npos)
-        return true;
-
-    return false;
+	// every number that contains a . is a float
+    if (s.find("." , 0) != std::string::npos)
+		return true;
+	// scientific notation
+    else if (s.find("E-", 0) != std::string::npos 
+		  || s.find("e-", 0) != std::string::npos)	
+		return true;
+	
+	return false;
 }
 
 bool MathLib::isNegative(const std::string &s)
@@ -93,12 +93,12 @@ bool MathLib::isNegative(const std::string &s)
     // remember position
     unsigned long n = 0;
     // eat up whitespace
-    while(std::isspace(s[n])) ++n;
-    // every negative number has a negative sign
-    if(s[n] == '-')
-        return true;
-
-    return false;
+    while (std::isspace(s[n])) ++n;
+	// every negative number has a negative sign
+    if (s[n] == '-')
+		return true;
+	
+	return false;
 }
 
 bool MathLib::isInt(const std::string & s)
@@ -106,9 +106,9 @@ bool MathLib::isInt(const std::string & s)
     // perform prechecks:
     // ------------------
     // first check, if a point is found, it is an floating point value
-    if(s.find(".", 0) != std::string::npos) return false;
+    if (s.find(".", 0) != std::string::npos) return false;
     // check for scientific notation e.g. NumberE-Number this is obvious an floating point value
-    else if(s.find("E-", 0) != std::string::npos || s.find("e-", 0) != std::string::npos) return false;
+    else if (s.find("E-", 0) != std::string::npos || s.find("e-", 0) != std::string::npos) return false;
 
 
     // prechecking has nothing found,...
@@ -127,70 +127,70 @@ bool MathLib::isInt(const std::string & s)
     // remember position
     unsigned long n = 0;
     // eat up whitespace
-    while(std::isspace(s[n])) ++n;
+    while (std::isspace(s[n])) ++n;
 
     // determine type
-    if(s.find("E", 0) != std::string::npos)
+    if (s.find("E", 0) != std::string::npos)
     {
         Mode = eScientific;
     }
-    else if(s.find("0x", n, 2) != std::string::npos)
+    else if (s.find("0x", n, 2) != std::string::npos)
     {
         Mode = eHex;
     }
-    else if(s.length() > 1 && s[0] == '0' && std::isdigit(s[1]))
+    else if (s.length() > 1 && s[0] == '0' && std::isdigit(s[1]))
     {
         Mode = eOctal;
     }
 
     // check sign
-    if(s[n] == '-' || s[n] == '+') ++n;
+    if (s[n] == '-' || s[n] == '+') ++n;
 
     // check scientific notation
-    if(Mode == eScientific)
+    if (Mode == eScientific)
     {
         // check digits
-        while(std::isdigit(s[n])) ++n;
+        while (std::isdigit(s[n])) ++n;
 
         // check scientific notation
-        if(std::tolower(s[n]) == 'e')
+        if (std::tolower(s[n]) == 'e')
         {
             ++n;
             // check positive exponent
-            if(s[n] == '+') ++n;
+            if (s[n] == '+') ++n;
             // floating pointer number e.g. 124E-2
-            if(s[n] == '-') return false;
+            if (s[n] == '-') return false;
             // check digits of the exponent
-            while(std::isdigit(s[n])) ++n;
+            while (std::isdigit(s[n])) ++n;
         }
     }
     // check hex notation
-    else if(Mode == eHex)
+    else if (Mode == eHex)
     {
         ++n; // 0
         ++n; // x
-        while(std::isxdigit(s[n]))
+        while (std::isxdigit(s[n]))
             ++n;
     }
     // check octal notation
-    else if(Mode == eOctal)
+    else if (Mode == eOctal)
     {
-        while(isOctalDigit(s[n]))
+        while (isOctalDigit(s[n]))
             ++n;
     }
-    else if(Mode == eDefault)
+    else if (Mode == eDefault)
     {
-        while(std::isdigit(s[n])) ++n;
+        while (std::isdigit(s[n])) ++n;
         // unsigned or long
-        while(std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n;
+        while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n;
     }
     // eat up whitespace
-    while(std::isspace(s[n]))
+    while (std::isspace(s[n]))
         ++n;
 
     // if everything goes good, we are at the end of the string and no digits/character
     // is here --> return true, but if something was found eg. 12E+12AA return false
-    if(s[n])
+    if (s[n])
         return false;
     return true;
 
@@ -198,7 +198,7 @@ bool MathLib::isInt(const std::string & s)
 
 std::string MathLib::add(const std::string & first, const std::string & second)
 {
-    if(MathLib::isInt(first) && MathLib::isInt(second))
+    if (MathLib::isInt(first) && MathLib::isInt(second))
     {
         return toString<long>(toLongNumber(first) + toLongNumber(second));
     }
@@ -207,7 +207,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
 
 std::string MathLib::subtract(const std::string &first, const std::string &second)
 {
-    if(MathLib::isInt(first) && MathLib::isInt(second))
+    if (MathLib::isInt(first) && MathLib::isInt(second))
     {
         return toString<long>(toLongNumber(first) - toLongNumber(second));
     }
@@ -216,7 +216,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
-    if(MathLib::isInt(first) && MathLib::isInt(second))
+    if (MathLib::isInt(first) && MathLib::isInt(second))
     {
         return toString<long>(toLongNumber(first) / toLongNumber(second));
     }
@@ -225,7 +225,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
 
 std::string MathLib::multiply(const std::string &first, const std::string &second)
 {
-    if(MathLib::isInt(first) && MathLib::isInt(second))
+    if (MathLib::isInt(first) && MathLib::isInt(second))
     {
         return toString<long>(toLongNumber(first) * toLongNumber(second));
     }
@@ -236,7 +236,7 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
 {
     std::string result("0");
 
-    switch(action)
+    switch (action)
     {
     case '+':
         result = MathLib::add(first, second);
@@ -295,7 +295,7 @@ bool MathLib::isGreater(const std::string &first, const std::string &second)
 
 bool MathLib::isOctalDigit(char c)
 {
-    if(c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7')
+    if (c == '0' || c == '1' || c == '2' || c == '3' || c == '4' || c == '5' || c == '6' || c == '7')
         return true;
 
     return false;

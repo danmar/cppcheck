@@ -31,45 +31,45 @@ static const char DirElementName[] = "dir";
 static const char DirNameAttrib[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
-    QObject(parent)
+        QObject(parent)
 {
 }
 
 ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
-    QObject(parent),
-    mFilename(filename)
+        QObject(parent),
+        mFilename(filename)
 {
 }
 
 bool ProjectFile::Read(const QString &filename)
 {
-    if(!filename.isEmpty())
+    if (!filename.isEmpty())
         mFilename = filename;
 
     QFile file(mFilename);
-    if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
 
     QXmlStreamReader xmlReader(&file);
     bool insideProject = false;
-    while(!xmlReader.atEnd())
+    while (!xmlReader.atEnd())
     {
-        switch(xmlReader.readNext())
+        switch (xmlReader.readNext())
         {
         case QXmlStreamReader::StartElement:
-            if(xmlReader.name() == ProjectElementName)
+            if (xmlReader.name() == ProjectElementName)
                 insideProject = true;
 
             // Find allocelement from inside project element
-            if(insideProject && xmlReader.name() == AllocElementName)
+            if (insideProject && xmlReader.name() == AllocElementName)
                 ReadAutoAllocClasses(xmlReader);
 
-            if(insideProject && xmlReader.name() == IncludDirElementName)
+            if (insideProject && xmlReader.name() == IncludDirElementName)
                 ReadIncludeDirs(xmlReader);
             break;
 
         case QXmlStreamReader::EndElement:
-            if(xmlReader.name() == ProjectElementName)
+            if (xmlReader.name() == ProjectElementName)
                 insideProject = false;
             break;
 
@@ -108,22 +108,22 @@ void ProjectFile::ReadAutoAllocClasses(QXmlStreamReader &reader)
     do
     {
         type = reader.readNext();
-        switch(type)
+        switch (type)
         {
         case QXmlStreamReader::StartElement:
 
             // Read class-elements
-            if(reader.name().toString() == ClassElementName)
+            if (reader.name().toString() == ClassElementName)
             {
                 QXmlStreamAttributes attribs = reader.attributes();
                 QString name = attribs.value("", ClassNameAttrib).toString();
-                if(!name.isEmpty())
+                if (!name.isEmpty())
                     mDeAllocatedClasses << name;
             }
             break;
 
         case QXmlStreamReader::EndElement:
-            if(reader.name().toString() == AllocElementName)
+            if (reader.name().toString() == AllocElementName)
                 allRead = true;
             break;
 
@@ -140,7 +140,7 @@ void ProjectFile::ReadAutoAllocClasses(QXmlStreamReader &reader)
             break;
         }
     }
-    while(!allRead);
+    while (!allRead);
 }
 
 void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
@@ -150,22 +150,22 @@ void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
     do
     {
         type = reader.readNext();
-        switch(type)
+        switch (type)
         {
         case QXmlStreamReader::StartElement:
 
             // Read dir-elements
-            if(reader.name().toString() == DirElementName)
+            if (reader.name().toString() == DirElementName)
             {
                 QXmlStreamAttributes attribs = reader.attributes();
                 QString name = attribs.value("", DirNameAttrib).toString();
-                if(!name.isEmpty())
+                if (!name.isEmpty())
                     mIncludeDirs << name;
             }
             break;
 
         case QXmlStreamReader::EndElement:
-            if(reader.name().toString() == IncludDirElementName)
+            if (reader.name().toString() == IncludDirElementName)
                 allRead = true;
             break;
 
@@ -182,5 +182,5 @@ void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
             break;
         }
     }
-    while(!allRead);
+    while (!allRead);
 }

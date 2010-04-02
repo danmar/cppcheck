@@ -29,12 +29,12 @@
 #include "xmlreport.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :
-    QTreeView(parent),
-    mContextItem(0),
-    mCheckPath(""),
-    mVisibleErrors(false)
+        QTreeView(parent),
+        mContextItem(0),
+        mCheckPath(""),
+        mVisibleErrors(false)
 {
-    for(int i = 0; i < SHOW_NONE; i++)
+    for (int i = 0; i < SHOW_NONE; i++)
         mShowTypes[i] = false;
 
     setModel(&mModel);
@@ -76,14 +76,14 @@ void ResultsTree::AddErrorItem(const QString &file,
 {
     Q_UNUSED(file);
 
-    if(files.isEmpty())
+    if (files.isEmpty())
     {
         return;
     }
 
     QString realfile = StripPath(files[0], false);
 
-    if(realfile.isEmpty())
+    if (realfile.isEmpty())
     {
         realfile = tr("Undefined file");
     }
@@ -91,7 +91,7 @@ void ResultsTree::AddErrorItem(const QString &file,
     bool hide = !mShowTypes[SeverityToShowType(severity)];
 
     //if there is at least one error that is not hidden, we have a visible error
-    if(!hide)
+    if (!hide)
     {
         mVisibleErrors = true;
     }
@@ -106,7 +106,7 @@ void ResultsTree::AddErrorItem(const QString &file,
                                             hide,
                                             SeverityToIcon(severity));
 
-    if(!item)
+    if (!item)
         return;
 
     //Add user data to that item
@@ -119,7 +119,7 @@ void ResultsTree::AddErrorItem(const QString &file,
     item->setData(QVariant(data));
 
     //Add backtrace files as children
-    for(int i = 1; i < files.size() && i < lines.size(); i++)
+    for (int i = 1; i < files.size() && i < lines.size(); i++)
     {
         QStandardItem *child_item;
 
@@ -143,7 +143,7 @@ void ResultsTree::AddErrorItem(const QString &file,
 
     //TODO just hide/show current error and it's file
     //since this does a lot of unnecessary work
-    if(!hide)
+    if (!hide)
     {
         ShowFileItem(realfile);
     }
@@ -158,7 +158,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
         const QString &icon)
 
 {
-    if(!parent)
+    if (!parent)
     {
         return 0;
     }
@@ -172,18 +172,18 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
     list << CreateItem(tr(message.toLatin1()));
 
     // Check for duplicate rows and don't add them if found
-    for(int i = 0; i < parent->rowCount(); i++)
+    for (int i = 0; i < parent->rowCount(); i++)
     {
         // the first column is the file name and is always the same so skip it
 
         // the third column is the line number so check it first
-        if(parent->child(i, 2)->text() == list[2]->text())
+        if (parent->child(i, 2)->text() == list[2]->text())
         {
             // the second column is the severity so check it next
-            if(parent->child(i, 1)->text() == list[1]->text())
+            if (parent->child(i, 1)->text() == list[1]->text())
             {
                 // the forth column is the message so check it last
-                if(parent->child(i, 3)->text() == list[3]->text())
+                if (parent->child(i, 3)->text() == list[3]->text())
                 {
                     // this row matches so don't add it
                     return 0;
@@ -196,7 +196,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 
     setRowHidden(parent->rowCount() - 1, parent->index(), hide);
 
-    if(!icon.isEmpty())
+    if (!icon.isEmpty())
     {
         list[0]->setIcon(QIcon(icon));
     }
@@ -209,7 +209,7 @@ QStandardItem *ResultsTree::AddBacktraceFiles(QStandardItem *parent,
 ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
 {
     int value = data.toInt();
-    if(value < SHOW_ALL && value > SHOW_ERRORS)
+    if (value < SHOW_ALL && value > SHOW_ERRORS)
     {
         return SHOW_NONE;
     }
@@ -218,13 +218,13 @@ ShowTypes ResultsTree::VariantToShowType(const QVariant &data)
 
 ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
 {
-    if(severity == "possible error")
+    if (severity == "possible error")
         return SHOW_ALL;
-    if(severity == "error")
+    if (severity == "error")
         return SHOW_ERRORS;
-    if(severity == "style")
+    if (severity == "style")
         return SHOW_STYLE;
-    if(severity == "possible style")
+    if (severity == "possible style")
         return SHOW_ALL_STYLE;
 
     return SHOW_NONE;
@@ -233,7 +233,7 @@ ShowTypes ResultsTree::SeverityToShowType(const QString & severity)
 QStandardItem *ResultsTree::FindFileItem(const QString &name)
 {
     QList<QStandardItem *> list = mModel.findItems(name);
-    if(list.size() > 0)
+    if (list.size() > 0)
     {
         return list[0];
     }
@@ -247,7 +247,7 @@ void ResultsTree::Clear()
 
 void ResultsTree::LoadSettings()
 {
-    for(int i = 0; i < mModel.columnCount(); i++)
+    for (int i = 0; i < mModel.columnCount(); i++)
     {
         //mFileTree.columnWidth(i);
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
@@ -261,7 +261,7 @@ void ResultsTree::LoadSettings()
 
 void ResultsTree::SaveSettings()
 {
-    for(int i = 0; i < mModel.columnCount(); i++)
+    for (int i = 0; i < mModel.columnCount(); i++)
     {
         QString temp = QString(SETTINGS_RESULT_COLUMN_WIDTH).arg(i);
         mSettings->setValue(temp, columnWidth(i));
@@ -270,7 +270,7 @@ void ResultsTree::SaveSettings()
 
 void ResultsTree::ShowResults(ShowTypes type, bool show)
 {
-    if(type != SHOW_NONE && mShowTypes[type] != show)
+    if (type != SHOW_NONE && mShowTypes[type] != show)
     {
         mShowTypes[type] = show;
         RefreshTree();
@@ -284,11 +284,11 @@ void ResultsTree::RefreshTree()
     //Get the amount of files in the tree
     int filecount = mModel.rowCount();
 
-    for(int i = 0; i < filecount; i++)
+    for (int i = 0; i < filecount; i++)
     {
         //Get file i
         QStandardItem *file = mModel.item(i, 0);
-        if(!file)
+        if (!file)
         {
             continue;
         }
@@ -299,11 +299,11 @@ void ResultsTree::RefreshTree()
         //By default it shouldn't be visible
         bool show = false;
 
-        for(int j = 0; j < errorcount; j++)
+        for (int j = 0; j < errorcount; j++)
         {
             //Get the error itself
             QStandardItem *child = file->child(j, 0);
-            if(!child)
+            if (!child)
             {
                 continue;
             }
@@ -316,7 +316,7 @@ void ResultsTree::RefreshTree()
             //Check if this error should be hidden
             bool hide = !mShowTypes[VariantToShowType(data["severity"])];
 
-            if(!hide)
+            if (!hide)
             {
                 mVisibleErrors = true;
             }
@@ -325,7 +325,7 @@ void ResultsTree::RefreshTree()
             setRowHidden(j, file->index(), hide);
 
             //If it was shown then the file itself has to be shown as well
-            if(!hide)
+            if (!hide)
             {
                 show = true;
             }
@@ -341,7 +341,7 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, bool hide)
     QString name = StripPath(fullpath, false);
     QStandardItem *item = FindFileItem(name);
 
-    if(item)
+    if (item)
     {
         return item;
     }
@@ -363,7 +363,7 @@ QStandardItem *ResultsTree::EnsureFileItem(const QString &fullpath, bool hide)
 void ResultsTree::ShowFileItem(const QString &name)
 {
     QStandardItem *item = FindFileItem(name);
-    if(item)
+    if (item)
     {
         setRowHidden(0, mModel.indexFromItem(item), false);
     }
@@ -372,7 +372,7 @@ void ResultsTree::ShowFileItem(const QString &name)
 void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 {
     QModelIndex index = indexAt(e->pos());
-    if(index.isValid())
+    if (index.isValid())
     {
         mContextItem = mModel.itemFromIndex(index);
 
@@ -386,10 +386,10 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         //member variables
         QSignalMapper *signalMapper = new QSignalMapper(this);
 
-        if(mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent())
+        if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent())
         {
             //Go through all applications and add them to the context menu
-            for(int i = 0; i < mApplications->GetApplicationCount(); i++)
+            for (int i = 0; i < mApplications->GetApplicationCount(); i++)
             {
                 //Create an action for the application
                 QAction *start = new QAction(mApplications->GetApplicationName(i), &menu);
@@ -412,9 +412,9 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         }
 
         // Add menuitems to copy full path/filename to clipboard
-        if(mContextItem)
+        if (mContextItem)
         {
-            if(mApplications->GetApplicationCount() > 0)
+            if (mApplications->GetApplicationCount() > 0)
             {
                 menu.addSeparator();
             }
@@ -436,10 +436,10 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
         //Start the menu
         menu.exec(e->globalPos());
 
-        if(mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent())
+        if (mContextItem && mApplications->GetApplicationCount() > 0 && mContextItem->parent())
         {
             //Disconnect all signals
-            for(int i = 0; i < actions.size(); i++)
+            for (int i = 0; i < actions.size(); i++)
             {
 
                 disconnect(actions[i], SIGNAL(triggered()), signalMapper, SLOT(map()));
@@ -457,7 +457,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 void ResultsTree::StartApplication(QStandardItem *target, int application)
 {
     //If there are now application's specified, tell the user about it
-    if(mApplications->GetApplicationCount() == 0)
+    if (mApplications->GetApplicationCount() == 0)
     {
         QMessageBox msg(QMessageBox::Information,
                         tr("Cppcheck"),
@@ -468,10 +468,10 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         return;
     }
 
-    if(target && application >= 0 && application < mApplications->GetApplicationCount() && target->parent())
+    if (target && application >= 0 && application < mApplications->GetApplicationCount() && target->parent())
     {
         // Make sure we are working with the first column
-        if(target->column() != 0)
+        if (target->column() != 0)
             target = target->parent()->child(target->row(), 0);
 
         QVariantMap data = target->data().toMap();
@@ -480,7 +480,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
 
         //Replace (file) with filename
         QString file = data["file"].toString();
-        if(file.indexOf(" ") > -1)
+        if (file.indexOf(" ") > -1)
         {
             file.insert(0, "\"");
             file.append("\"");
@@ -495,7 +495,7 @@ void ResultsTree::StartApplication(QStandardItem *target, int application)
         program.replace("(severity)", data["severity"].toString(), Qt::CaseInsensitive);
 
         bool success = QProcess::startDetached(program);
-        if(!success)
+        if (!success)
         {
             QString app = mApplications->GetApplicationName(application);
             QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(app);
@@ -522,10 +522,10 @@ void ResultsTree::CopyFullPath()
 
 void ResultsTree::CopyMessage()
 {
-    if(mContextItem)
+    if (mContextItem)
     {
         // Make sure we are working with the first column
-        if(mContextItem->column() != 0)
+        if (mContextItem->column() != 0)
             mContextItem = mContextItem->parent()->child(mContextItem->row(), 0);
 
         QVariantMap data = mContextItem->data().toMap();
@@ -549,10 +549,10 @@ void ResultsTree::QuickStartApplication(const QModelIndex &index)
 
 void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
 {
-    if(target)
+    if (target)
     {
         // Make sure we are working with the first column
-        if(target->column() != 0)
+        if (target->column() != 0)
             target = target->parent()->child(target->row(), 0);
 
         QVariantMap data = target->data().toMap();
@@ -561,7 +561,7 @@ void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
         //Replace (file) with filename
         QString file = data["file"].toString();
         pathStr = file;
-        if(!fullPath)
+        if (!fullPath)
         {
             QFileInfo fi(pathStr);
             pathStr = fi.fileName();
@@ -574,11 +574,11 @@ void ResultsTree::CopyPath(QStandardItem *target, bool fullPath)
 
 QString ResultsTree::SeverityToIcon(const QString &severity)
 {
-    if(severity == "possible error")
+    if (severity == "possible error")
         return ":images/dialog-warning.png";
-    if(severity == "error")
+    if (severity == "error")
         return ":images/dialog-error.png";
-    if(severity == "style" || severity == "possible style")
+    if (severity == "style" || severity == "possible style")
         return ":images/dialog-information.png";
 
     return "";
@@ -588,10 +588,10 @@ void ResultsTree::SaveResults(Report *report)
 {
     report->WriteHeader();
 
-    for(int i = 0; i < mModel.rowCount(); i++)
+    for (int i = 0; i < mModel.rowCount(); i++)
     {
         QStandardItem *item = mModel.item(i, 0);
-        if(!isRowHidden(i, item->index()))
+        if (!isRowHidden(i, item->index()))
             SaveErrors(report, item);
     }
 
@@ -600,23 +600,23 @@ void ResultsTree::SaveResults(Report *report)
 
 void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 {
-    if(!item)
+    if (!item)
     {
         return;
     }
 
     //qDebug() << item->text() << "has" << item->rowCount() << "errors";
 
-    for(int i = 0; i < item->rowCount(); i++)
+    for (int i = 0; i < item->rowCount(); i++)
     {
         QStandardItem *error = item->child(i, 0);
 
-        if(!error)
+        if (!error)
         {
             continue;
         }
 
-        if(isRowHidden(i, item->index()) && !mSaveAllErrors)
+        if (isRowHidden(i, item->index()) && !mSaveAllErrors)
         {
             continue;
         }
@@ -638,7 +638,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
         files << file;
         lines << line;
 
-        for(int j = 0; j < error->rowCount(); j++)
+        for (int j = 0; j < error->rowCount(); j++)
         {
             QStandardItem *child_error = error->child(j, 0);
             //Get error's user data
@@ -659,7 +659,7 @@ void ResultsTree::SaveErrors(Report *report, QStandardItem *item)
 
 QString ResultsTree::ShowTypeToString(ShowTypes type)
 {
-    switch(type)
+    switch (type)
     {
     case SHOW_ALL:
         return tr("possible error");
@@ -689,7 +689,7 @@ void ResultsTree::UpdateSettings(bool showFullPath,
                                  bool saveFullPath,
                                  bool saveAllErrors)
 {
-    if(mShowFullPath != showFullPath)
+    if (mShowFullPath != showFullPath)
     {
         mShowFullPath = showFullPath;
         RefreshFilePaths();
@@ -706,7 +706,7 @@ void ResultsTree::SetCheckDirectory(const QString &dir)
 
 QString ResultsTree::StripPath(const QString &path, bool saving)
 {
-    if((!saving && mShowFullPath) || (saving && mSaveFullPath))
+    if ((!saving && mShowFullPath) || (saving && mSaveFullPath))
     {
         return QString(path);
     }
@@ -717,7 +717,7 @@ QString ResultsTree::StripPath(const QString &path, bool saving)
 
 void ResultsTree::RefreshFilePaths(QStandardItem *item)
 {
-    if(!item)
+    if (!item)
     {
         return;
     }
@@ -726,12 +726,12 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
     bool updated = false;
 
     //Loop through all errors within this file
-    for(int i = 0; i < item->rowCount(); i++)
+    for (int i = 0; i < item->rowCount(); i++)
     {
         //Get error i
         QStandardItem *error = item->child(i, 0);
 
-        if(!error)
+        if (!error)
         {
             continue;
         }
@@ -748,14 +748,14 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
         error->setText(StripPath(file, false));
 
         //If this error has backtraces make sure the files list has enough filenames
-        if(error->hasChildren())
+        if (error->hasChildren())
         {
             //Loop through all files within the error
-            for(int j = 0; j < error->rowCount(); j++)
+            for (int j = 0; j < error->rowCount(); j++)
             {
                 //Get file
                 QStandardItem *child = error->child(j, 0);
-                if(!child)
+                if (!child)
                 {
                     continue;
                 }
@@ -772,7 +772,7 @@ void ResultsTree::RefreshFilePaths(QStandardItem *item)
         }
 
         //if the main file hasn't been updated yet, update it now
-        if(!updated)
+        if (!updated)
         {
             updated = true;
             item->setText(error->text());
@@ -786,7 +786,7 @@ void ResultsTree::RefreshFilePaths()
     qDebug("Refreshing file paths");
 
     //Go through all file items (these are parent items that contain the errors)
-    for(int i = 0; i < mModel.rowCount(); i++)
+    for (int i = 0; i < mModel.rowCount(); i++)
     {
         RefreshFilePaths(mModel.item(i, 0));
     }

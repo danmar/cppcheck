@@ -36,7 +36,7 @@ static FileLister *fileLister;
 
 FileLister * getFileLister()
 {
-    if(fileLister == NULL)
+    if (fileLister == NULL)
     {
 #if defined(_WIN32)
         fileLister = new FileListerWin32;
@@ -52,11 +52,11 @@ std::string FileLister::simplifyPath(const char *originalPath)
 {
     std::string subPath = "";
     std::vector<std::string> pathParts;
-    for(; *originalPath; ++originalPath)
+    for (; *originalPath; ++originalPath)
     {
-        if(*originalPath == '/' || *originalPath == '\\')
+        if (*originalPath == '/' || *originalPath == '\\')
         {
-            if(subPath.length() > 0)
+            if (subPath.length() > 0)
             {
                 pathParts.push_back(subPath);
                 subPath = "";
@@ -68,12 +68,12 @@ std::string FileLister::simplifyPath(const char *originalPath)
             subPath.append(1, *originalPath);
     }
 
-    if(subPath.length() > 0)
+    if (subPath.length() > 0)
         pathParts.push_back(subPath);
 
-    for(std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i)
+    for (std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i)
     {
-        if(pathParts[i] == ".." && i > 1 && pathParts.size() > i + 1)
+        if (pathParts[i] == ".." && i > 1 && pathParts.size() > i + 1)
         {
             pathParts.erase(pathParts.begin() + i + 1);
             pathParts.erase(pathParts.begin() + i);
@@ -81,12 +81,12 @@ std::string FileLister::simplifyPath(const char *originalPath)
             pathParts.erase(pathParts.begin() + i - 2);
             i = 0;
         }
-        else if(i > 0 && pathParts[i] == ".")
+        else if (i > 0 && pathParts[i] == ".")
         {
             pathParts.erase(pathParts.begin() + i);
             i = 0;
         }
-        else if(pathParts[i] == "/" && i > 0 && pathParts[i-1] == "/")
+        else if (pathParts[i] == "/" && i > 0 && pathParts[i-1] == "/")
         {
             pathParts.erase(pathParts.begin() + i - 1);
             i = 0;
@@ -94,7 +94,7 @@ std::string FileLister::simplifyPath(const char *originalPath)
     }
 
     std::ostringstream oss;
-    for(std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i)
+    for (std::vector<std::string>::size_type i = 0; i < pathParts.size(); ++i)
     {
         oss << pathParts[i];
     }
@@ -112,18 +112,18 @@ static int tolowerWrapper(int c)
 bool FileLister::acceptFile(const std::string &filename)
 {
     std::string::size_type dotLocation = filename.find_last_of('.');
-    if(dotLocation == std::string::npos)
+    if (dotLocation == std::string::npos)
         return false;
 
     std::string extension = filename.substr(dotLocation);
     std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
 
-    if(extension == ".cpp" ||
-       extension == ".cxx" ||
-       extension == ".cc" ||
-       extension == ".c" ||
-       extension == ".c++" ||
-       extension == ".txx")
+    if (extension == ".cpp" ||
+        extension == ".cxx" ||
+        extension == ".cc" ||
+        extension == ".c" ||
+        extension == ".c++" ||
+        extension == ".txx")
     {
         return true;
     }

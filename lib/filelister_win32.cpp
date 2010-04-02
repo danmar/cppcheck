@@ -107,10 +107,10 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
 
     oss << cleanedPath;
 
-    if(MyIsDirectory(cleanedPath.c_str()))
+    if (MyIsDirectory(cleanedPath.c_str()))
     {
         char c = cleanedPath[ cleanedPath.size()-1 ];
-        switch(c)
+        switch (c)
         {
         case '\\':
             oss << '*';
@@ -128,7 +128,7 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
     {
         std::string::size_type pos;
         pos = cleanedPath.find_last_of('\\');
-        if(std::string::npos != pos)
+        if (std::string::npos != pos)
         {
             bdir << cleanedPath.substr(0, pos + 1);
         }
@@ -136,12 +136,12 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
 
     WIN32_FIND_DATA ffd;
     HANDLE hFind = MyFindFirstFile(oss.str(), &ffd);
-    if(INVALID_HANDLE_VALUE == hFind)
+    if (INVALID_HANDLE_VALUE == hFind)
         return;
 
     do
     {
-        if(ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
+        if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
             continue;
 
 #if defined(UNICODE)
@@ -154,15 +154,15 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
         std::ostringstream fname;
         fname << bdir.str().c_str() << ansiFfd;
 
-        if((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
+        if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0)
         {
             // File
 
             // If recursive is not used, accept all files given by user
-            if(!recursive || FileLister::acceptFile(ansiFfd))
+            if (!recursive || FileLister::acceptFile(ansiFfd))
                 filenames.push_back(fname.str());
         }
-        else if(recursive)
+        else if (recursive)
         {
             // Directory
             getFileLister()->recursiveAddFiles(filenames, fname.str().c_str(), recursive);
@@ -171,9 +171,9 @@ void FileListerWin32::recursiveAddFiles(std::vector<std::string> &filenames, con
         delete [] ansiFfd;
 #endif // defined(UNICODE)
     }
-    while(FindNextFile(hFind, &ffd) != FALSE);
+    while (FindNextFile(hFind, &ffd) != FALSE);
 
-    if(INVALID_HANDLE_VALUE != hFind)
+    if (INVALID_HANDLE_VALUE != hFind)
     {
         FindClose(hFind);
         hFind = INVALID_HANDLE_VALUE;

@@ -49,10 +49,10 @@ Settings::~Settings()
 void Settings::autoDealloc(std::istream &istr)
 {
     std::string line;
-    while(getline(istr, line))
+    while (getline(istr, line))
     {
         // Check if line has a valid classname..
-        if(line.empty())
+        if (line.empty())
             continue;
 
         // Add classname to list
@@ -63,19 +63,19 @@ void Settings::autoDealloc(std::istream &istr)
 bool Settings::Suppressions::parseFile(std::istream &istr)
 {
     std::string line;
-    while(getline(istr, line))
+    while (getline(istr, line))
     {
         // Skip empty lines
-        if(line.empty())
+        if (line.empty())
             continue;
 
         std::istringstream lineStream(line);
         std::string id;
         std::string file;
         unsigned int lineNumber = 0;
-        if(std::getline(lineStream, id, ':'))
+        if (std::getline(lineStream, id, ':'))
         {
-            if(std::getline(lineStream, file, ':'))
+            if (std::getline(lineStream, file, ':'))
             {
                 lineStream >> lineNumber;
             }
@@ -96,21 +96,21 @@ void Settings::Suppressions::addSuppression(const std::string &errorId, const st
 
 bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std::string &file, unsigned int line)
 {
-    if(_suppressions.find(errorId) == _suppressions.end())
+    if (_suppressions.find(errorId) == _suppressions.end())
         return false;
 
     // Check are all errors of this type filtered out
-    if(_suppressions[errorId].find("") != _suppressions[errorId].end())
+    if (_suppressions[errorId].find("") != _suppressions[errorId].end())
         return true;
 
-    if(_suppressions[errorId].find(file) == _suppressions[errorId].end())
+    if (_suppressions[errorId].find(file) == _suppressions[errorId].end())
         return false;
 
     // Check should all errors in this file be filtered out
-    if(std::find(_suppressions[errorId][file].begin(), _suppressions[errorId][file].end(), 0) != _suppressions[errorId][file].end())
+    if (std::find(_suppressions[errorId][file].begin(), _suppressions[errorId][file].end(), 0) != _suppressions[errorId][file].end())
         return true;
 
-    if(std::find(_suppressions[errorId][file].begin(), _suppressions[errorId][file].end(), line) == _suppressions[errorId][file].end())
+    if (std::find(_suppressions[errorId][file].begin(), _suppressions[errorId][file].end(), line) == _suppressions[errorId][file].end())
         return false;
 
     return true;
@@ -119,19 +119,19 @@ bool Settings::Suppressions::isSuppressed(const std::string &errorId, const std:
 void Settings::addEnabled(const std::string &str)
 {
     // Enable parameters may be comma separated...
-    if(str.find(",") != std::string::npos)
+    if (str.find(",") != std::string::npos)
     {
         std::string::size_type prevPos = 0;
         std::string::size_type pos = 0;
-        while((pos = str.find(",", pos)) != std::string::npos)
+        while ((pos = str.find(",", pos)) != std::string::npos)
         {
-            if(pos == prevPos)
+            if (pos == prevPos)
                 throw std::runtime_error("cppcheck: --enable parameter is empty");
             addEnabled(str.substr(prevPos, pos - prevPos));
             ++pos;
             prevPos = pos;
         }
-        if(prevPos >= str.length())
+        if (prevPos >= str.length())
             throw std::runtime_error("cppcheck: --enable parameter is empty");
         addEnabled(str.substr(prevPos));
         return;
@@ -139,11 +139,11 @@ void Settings::addEnabled(const std::string &str)
 
     bool handled = false;
 
-    if(str == "all")
+    if (str == "all")
         handled = _checkCodingStyle = _showAll = true;
-    else if(str == "style")
+    else if (str == "style")
         handled = _checkCodingStyle = true;
-    else if(str == "possibleError")
+    else if (str == "possibleError")
         handled = _showAll = true;
 
     std::set<std::string> id;
@@ -151,19 +151,19 @@ void Settings::addEnabled(const std::string &str)
     id.insert("exceptRealloc");
     id.insert("unusedFunctions");
 
-    if(str == "all")
+    if (str == "all")
     {
         std::set<std::string>::const_iterator it;
-        for(it = id.begin(); it != id.end(); ++it)
+        for (it = id.begin(); it != id.end(); ++it)
             _enabled[*it] = true;
     }
-    else if(id.find(str) != id.end())
+    else if (id.find(str) != id.end())
     {
         _enabled[str] = true;
     }
-    else if(!handled)
+    else if (!handled)
     {
-        if(str.empty())
+        if (str.empty())
             throw std::runtime_error("cppcheck: --enable parameter is empty");
         else
             throw std::runtime_error("cppcheck: there is no --enable parameter with the name '" + str + "'");
@@ -191,7 +191,7 @@ void Settings::append(const std::string &filename)
     _append = "\n";
     std::ifstream fin(filename.c_str());
     std::string line;
-    while(std::getline(fin, line))
+    while (std::getline(fin, line))
     {
         _append += line + "\n";
     }
