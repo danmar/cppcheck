@@ -98,7 +98,6 @@ public:
      * Possible patterns
      * - "%any%" any token
      * - "%var%" any token which is a name or type e.g. "hello" or "int"
-     * - "%name%" any token which is a name or type e.g. "hello" or "int"
      * - "%type%" Anything that can be a variable type, e.g. "int", but not "delete".
      * - "%num%" Any numeric token, e.g. "23"
      * - "%bool%" true or false

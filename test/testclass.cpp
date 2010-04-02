@@ -69,6 +69,7 @@ private:
         TEST_CASE(uninitOperator);      // No FP about uninitialized 'operator[]'
         TEST_CASE(uninitFunction1);		// No FP when initialized in function
         TEST_CASE(uninitFunction2);		// No FP when initialized in function
+        TEST_CASE(uninitSameClassName);	// No FP when two classes have the same name
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -1573,6 +1574,33 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+    void uninitSameClassName()
+    {
+        checkUninitVar("class B\n"
+                       "{\n"
+                       "public:\n"
+                       "    B();\n"
+                       "    int j;\n"
+                       "};\n"
+                       "\n"
+                       "class A\n"
+                       "{\n"
+                       "    class B\n"
+                       "    {\n"
+                       "    public:\n"
+                       "        B();\n"
+                       "        int i;\n"
+                       "    };\n"
+                       "};\n"
+                       "\n"
+                       "A::B::B()\n"
+                       "{\n"
+                       "    i = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void checkNoConstructor(const char code[])
     {

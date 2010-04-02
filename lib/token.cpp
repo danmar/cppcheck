@@ -390,17 +390,8 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
                 patternIdentified = true;
             }
 
-            // Any symbolname..
-            if (firstWordEquals(p, "%name%") == 0)
-            {
-                if (!tok->isName())
-                    return false;
-
-                patternIdentified = true;
-            }
-
             // Type..
-            if (firstWordEquals(p, "%type%") == 0)
+            else if (firstWordEquals(p, "%type%") == 0)
             {
                 if (!tok->isName())
                     return false;
