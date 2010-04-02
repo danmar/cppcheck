@@ -77,15 +77,15 @@ std::string MathLib::toString(T d)
 
 bool MathLib::isFloat(const std::string &s)
 {
-	// every number that contains a . is a float
+    // every number that contains a . is a float
     if (s.find("." , 0) != std::string::npos)
-		return true;
-	// scientific notation
-    else if (s.find("E-", 0) != std::string::npos 
-		  || s.find("e-", 0) != std::string::npos)	
-		return true;
-	
-	return false;
+        return true;
+    // scientific notation
+    else if (s.find("E-", 0) != std::string::npos
+             || s.find("e-", 0) != std::string::npos)
+        return true;
+
+    return false;
 }
 
 bool MathLib::isNegative(const std::string &s)
@@ -94,11 +94,11 @@ bool MathLib::isNegative(const std::string &s)
     unsigned long n = 0;
     // eat up whitespace
     while (std::isspace(s[n])) ++n;
-	// every negative number has a negative sign
+    // every negative number has a negative sign
     if (s[n] == '-')
-		return true;
-	
-	return false;
+        return true;
+
+    return false;
 }
 
 bool MathLib::isInt(const std::string & s)

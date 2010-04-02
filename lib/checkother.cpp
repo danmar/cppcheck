@@ -2439,7 +2439,7 @@ void CheckOther::checkMathFunctions()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-		// case log(-2)
+        // case log(-2)
         if (Token::Match(tok, "log ( %num% )") &&
             MathLib::isNegative(tok->tokAt(2)->str()) &&
             MathLib::isInt(tok->tokAt(2)->str()) &&
@@ -2447,32 +2447,32 @@ void CheckOther::checkMathFunctions()
         {
             mathfunctionCallError(tok);
         }
-		// case log(-2.0)
-		else if (Token::Match(tok, "log ( %num% )") &&
-            	 MathLib::isNegative(tok->tokAt(2)->str()) &&
-				 MathLib::isFloat(tok->tokAt(2)->str()) &&
-            	 MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
-		{
-            mathfunctionCallError(tok);			
-		}
+        // case log(-2.0)
+        else if (Token::Match(tok, "log ( %num% )") &&
+                 MathLib::isNegative(tok->tokAt(2)->str()) &&
+                 MathLib::isFloat(tok->tokAt(2)->str()) &&
+                 MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
+        {
+            mathfunctionCallError(tok);
+        }
 
-		// case log(0.0)
-		else if (Token::Match(tok, "log ( %num% )") &&
-            	 !MathLib::isNegative(tok->tokAt(2)->str()) &&
-				 MathLib::isFloat(tok->tokAt(2)->str()) &&
-            	 MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
-		{
-            mathfunctionCallError(tok);			
-		}
+        // case log(0.0)
+        else if (Token::Match(tok, "log ( %num% )") &&
+                 !MathLib::isNegative(tok->tokAt(2)->str()) &&
+                 MathLib::isFloat(tok->tokAt(2)->str()) &&
+                 MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
+        {
+            mathfunctionCallError(tok);
+        }
 
-		// case log(0)
-		else if (Token::Match(tok, "log ( %num% )") &&
-            	 !MathLib::isNegative(tok->tokAt(2)->str()) &&
-				 MathLib::isInt(tok->tokAt(2)->str()) &&
-            	 MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
-		{
-            mathfunctionCallError(tok);			
-		}
+        // case log(0)
+        else if (Token::Match(tok, "log ( %num% )") &&
+                 !MathLib::isNegative(tok->tokAt(2)->str()) &&
+                 MathLib::isInt(tok->tokAt(2)->str()) &&
+                 MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
+        {
+            mathfunctionCallError(tok);
+        }
     }
 }
 
@@ -2622,7 +2622,7 @@ void CheckOther::zerodivError(const Token *tok)
 
 void CheckOther::mathfunctionCallError(const Token *tok)
 {
-	reportError(tok, Severity::error, "wrongmathcall","Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
+    reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
 }
 
 void CheckOther::postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement)
