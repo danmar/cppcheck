@@ -30,7 +30,7 @@
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
-        : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
+    : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
 
 }
@@ -49,49 +49,49 @@ ThreadExecutor::~ThreadExecutor()
 bool ThreadExecutor::handleRead(unsigned int &result)
 {
     char type = 0;
-    if (read(_pipe[0], &type, 1) <= 0)
+    if(read(_pipe[0], &type, 1) <= 0)
     {
         return false;
     }
 
-    if (type != '1' && type != '2' && type != '3')
+    if(type != '1' && type != '2' && type != '3')
     {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         exit(0);
     }
 
     unsigned int len = 0;
-    if (read(_pipe[0], &len, sizeof(len)) <= 0)
+    if(read(_pipe[0], &len, sizeof(len)) <= 0)
     {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         exit(0);
     }
 
     char *buf = new char[len];
-    if (read(_pipe[0], buf, len) <= 0)
+    if(read(_pipe[0], buf, len) <= 0)
     {
         std::cerr << "#### You found a bug from cppcheck.\nThreadExecutor::handleRead error, type was:" << type << std::endl;
         exit(0);
     }
 
-    if (type == '1')
+    if(type == '1')
     {
         _errorLogger.reportOut(buf);
     }
-    else if (type == '2')
+    else if(type == '2')
     {
         ErrorLogger::ErrorMessage msg;
         msg.deserialize(buf);
 
         // Alert only about unique errors
         std::string errmsg = msg.toText();
-        if (std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end())
+        if(std::find(_errorList.begin(), _errorList.end(), errmsg) == _errorList.end())
         {
             _errorList.push_back(errmsg);
             _errorLogger.reportErr(msg);
         }
     }
-    else if (type == '3')
+    else if(type == '3')
     {
         _fileCount++;
         std::istringstream iss(buf);
@@ -109,32 +109,32 @@ unsigned int ThreadExecutor::check()
 {
     _fileCount = 0;
     unsigned int result = 0;
-    if (pipe(_pipe) == -1)
+    if(pipe(_pipe) == -1)
     {
         perror("pipe");
         exit(1);
     }
 
     int flags = 0;
-    if ((flags = fcntl(_pipe[0], F_GETFL, 0)) < 0)
+    if((flags = fcntl(_pipe[0], F_GETFL, 0)) < 0)
     {
         perror("fcntl");
         exit(1);
     }
 
-    if (fcntl(_pipe[0], F_SETFL, flags | O_NONBLOCK) < 0)
+    if(fcntl(_pipe[0], F_SETFL, flags | O_NONBLOCK) < 0)
     {
         perror("fcntl");
         exit(1);
     }
 
     unsigned int childCount = 0;
-    for (unsigned int i = 0; i < _filenames.size(); i++)
+    for(unsigned int i = 0; i < _filenames.size(); i++)
     {
         // Keep only wanted amount of child processes running at a time.
-        if (childCount >= _settings._jobs)
+        if(childCount >= _settings._jobs)
         {
-            while (handleRead(result))
+            while(handleRead(result))
             {
 
             }
@@ -145,13 +145,13 @@ unsigned int ThreadExecutor::check()
         }
 
         pid_t pid = fork();
-        if (pid < 0)
+        if(pid < 0)
         {
             // Error
             std::cerr << "Failed to create child process" << std::endl;
             exit(EXIT_FAILURE);
         }
-        else if (pid == 0)
+        else if(pid == 0)
         {
             CppCheck fileChecker(*this);
             fileChecker.settings(_settings);
@@ -166,14 +166,14 @@ unsigned int ThreadExecutor::check()
         ++childCount;
     }
 
-    while (childCount > 0)
+    while(childCount > 0)
     {
         int stat = 0;
         waitpid(0, &stat, 0);
         --childCount;
     }
 
-    while (handleRead(result))
+    while(handleRead(result))
     {
 
     }
@@ -188,7 +188,7 @@ void ThreadExecutor::writeToPipe(char type, const std::string &data)
     out[0] = type;
     std::memcpy(&(out[1]), &len, sizeof(len));
     std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
-    if (write(_pipe[1], out, len + 1 + sizeof(len)) <= 0)
+    if(write(_pipe[1], out, len + 1 + sizeof(len)) <= 0)
     {
         delete [] out;
         out = 0;

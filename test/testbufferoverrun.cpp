@@ -763,7 +763,7 @@ private:
     void array_index_24()
     {
         // ticket #1492 and #1539
-        if (CHAR_MAX == SCHAR_MAX) // plain char is signed
+        if(CHAR_MAX == SCHAR_MAX)  // plain char is signed
         {
             check("void f(char n) {\n"
                   "    int a[n];\n"     // n <= CHAR_MAX
@@ -824,7 +824,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[32768]' index -1 out of bounds\n"
                       "[test.cpp:4]: (error) Array 'a[32768]' index 32768 out of bounds\n", errout.str());
 
-        if (sizeof(int) == 4)
+        if(sizeof(int) == 4)
         {
             check("void f(int n) {\n"
                   "    int a[n];\n"     // n <= INT_MAX

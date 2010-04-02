@@ -21,7 +21,7 @@
 #include "xmlreport.h"
 
 XmlReport::XmlReport(const QString &filename, QObject * parent) :
-        Report(filename, parent)
+    Report(filename, parent)
 {
 }
 
@@ -33,7 +33,7 @@ XmlReport::~XmlReport()
 bool XmlReport::Create()
 {
     bool success = false;
-    if (Report::Create())
+    if(Report::Create())
     {
         mXmlWriter.setDevice(Report::GetFile());
         success = true;

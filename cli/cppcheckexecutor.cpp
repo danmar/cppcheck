@@ -41,25 +41,25 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     {
         cppCheck.parseFromArgs(argc, argv);
     }
-    catch (std::runtime_error &e)
+    catch(std::runtime_error &e)
     {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 
     _settings = cppCheck.settings();
-    if (_settings._xml)
+    if(_settings._xml)
     {
         reportErr(ErrorLogger::ErrorMessage::getXMLHeader());
     }
 
     unsigned int returnValue = 0;
-    if (_settings._jobs == 1)
+    if(_settings._jobs == 1)
     {
         // Single process
         returnValue = cppCheck.check();
     }
-    else if (!ThreadExecutor::isEnabled())
+    else if(!ThreadExecutor::isEnabled())
     {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     }
@@ -72,12 +72,12 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         returnValue = executor.check();
     }
 
-    if (_settings._xml)
+    if(_settings._xml)
     {
         reportErr(ErrorLogger::ErrorMessage::getXMLFooter());
     }
 
-    if (returnValue)
+    if(returnValue)
         return _settings._exitCode;
     else
         return 0;
@@ -95,20 +95,20 @@ void CppCheckExecutor::reportOut(const std::string &outmsg)
 
 void CppCheckExecutor::reportStatus(unsigned int index, unsigned int max)
 {
-    if (max > 1 && !_settings._errorsOnly)
+    if(max > 1 && !_settings._errorsOnly)
     {
         std::ostringstream oss;
         oss << index << "/" << max
-        << " files checked " <<
-        static_cast<int>(static_cast<double>(index) / max*100)
-        << "% done";
+            << " files checked " <<
+            static_cast<int>(static_cast<double>(index) / max * 100)
+            << "% done";
         std::cout << oss.str() << std::endl;
     }
 }
 
 void CppCheckExecutor::reportErr(const ErrorLogger::ErrorMessage &msg)
 {
-    if (_settings._xml)
+    if(_settings._xml)
     {
         reportErr(msg.toXML());
     }

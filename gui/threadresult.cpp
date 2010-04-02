@@ -50,9 +50,9 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
     QVariantList lines;
     QStringList files;
 
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = msg._callStack.begin();
-         tok != msg._callStack.end();
-         ++tok)
+    for(std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = msg._callStack.begin();
+        tok != msg._callStack.end();
+        ++tok)
     {
         files << QString((*tok).file.c_str());
         lines << (*tok).line;
@@ -72,7 +72,7 @@ void ThreadResult::reportErr(const ErrorLogger::ErrorMessage &msg)
 QString ThreadResult::GetNextFile()
 {
     QMutexLocker locker(&mutex);
-    if (mFiles.size() == 0)
+    if(mFiles.size() == 0)
     {
         return "";
     }

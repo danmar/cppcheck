@@ -27,9 +27,9 @@
 #include "csvreport.h"
 
 ResultsView::ResultsView(QWidget * parent) :
-        QWidget(parent),
-        mErrorsFound(false),
-        mShowNoErrorsMessage(true)
+    QWidget(parent),
+    mErrorsFound(false),
+    mShowNoErrorsMessage(true)
 {
     mUI.setupUi(this);
 }
@@ -67,13 +67,14 @@ void ResultsView::Progress(int value, int max)
 {
     mUI.mProgress->setMaximum(max);
     mUI.mProgress->setValue(value);
-    if (value >= max)
+    if(value >= max)
     {
         mUI.mProgress->setVisible(false);
         //Should we inform user of non visible/not found errors?
-        if (mShowNoErrorsMessage)
-        {   //Tell user that we found no errors
-            if (!mErrorsFound)
+        if(mShowNoErrorsMessage)
+        {
+            //Tell user that we found no errors
+            if(!mErrorsFound)
             {
                 QMessageBox msg(QMessageBox::Information,
                                 tr("Cppcheck"),
@@ -83,7 +84,7 @@ void ResultsView::Progress(int value, int max)
 
                 msg.exec();
             } //If we have errors but they aren't visible, tell user about it
-            else if (!mUI.mTree->HasVisibleResults())
+            else if(!mUI.mTree->HasVisibleResults())
             {
                 QString text = tr("Errors were found, but they are configured to be hidden.\n"\
                                   "To toggle what kind of errors are shown, open view menu.");
@@ -133,7 +134,7 @@ void ResultsView::ExpandAllResults()
 
 void ResultsView::Save(const QString &filename, Report::Type type)
 {
-    if (!mErrorsFound)
+    if(!mErrorsFound)
     {
         QMessageBox msgBox;
         msgBox.setText(tr("No errors found, nothing to save."));
@@ -143,7 +144,7 @@ void ResultsView::Save(const QString &filename, Report::Type type)
 
     Report *report = NULL;
 
-    switch (type)
+    switch(type)
     {
     case Report::CSV:
         report = new CsvReport(filename, this);
@@ -156,9 +157,9 @@ void ResultsView::Save(const QString &filename, Report::Type type)
         break;
     }
 
-    if (report)
+    if(report)
     {
-        if (report->Create())
+        if(report->Create())
             mUI.mTree->SaveResults(report);
         else
         {

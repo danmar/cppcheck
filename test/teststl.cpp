@@ -597,11 +597,12 @@ private:
     {
         const int STL_CONTAINER_LIST = 9;
         const std::string stlCont[STL_CONTAINER_LIST] =
-            {"deque", "list", "set", "multiset", "map",
-             "multimap", "hash_map", "hash_multimap", "hash_set"
-            };
+        {
+            "deque", "list", "set", "multiset", "map",
+            "multimap", "hash_map", "hash_multimap", "hash_set"
+        };
 
-        for (int i = 0; i < STL_CONTAINER_LIST; ++i)
+        for(int i = 0; i < STL_CONTAINER_LIST; ++i)
         {
             check("void f()\n"
                   "{\n"

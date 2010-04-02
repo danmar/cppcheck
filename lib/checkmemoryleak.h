@@ -84,7 +84,7 @@ private:
 
 public:
     CheckMemoryLeak(const Tokenizer *t, ErrorLogger *e)
-            : tokenizer(t), errorLogger(e)
+        : tokenizer(t), errorLogger(e)
     {
 
     }
@@ -172,7 +172,7 @@ public:
 
     /** @brief This constructor is used when running checks */
     CheckMemoryLeakInFunction(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
+        : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
     { }
 
     /** @brief run all simplified checks */
@@ -340,7 +340,7 @@ public:
     { }
 
     CheckMemoryLeakInClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
+        : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -380,7 +380,7 @@ public:
     { }
 
     CheckMemoryLeakStructMember(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
+        : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)

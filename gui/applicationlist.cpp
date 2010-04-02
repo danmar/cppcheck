@@ -21,7 +21,7 @@
 #include "common.h"
 
 ApplicationList::ApplicationList(QObject *parent) :
-        QObject(parent)
+    QObject(parent)
 {
     //ctor
 }
@@ -37,9 +37,9 @@ void ApplicationList::LoadSettings(QSettings *programSettings)
     QStringList names = programSettings->value(SETTINGS_APPLICATION_NAMES, QStringList()).toStringList();
     QStringList paths = programSettings->value(SETTINGS_APPLICATION_PATHS, QStringList()).toStringList();
 
-    if (names.size() == paths.size())
+    if(names.size() == paths.size())
     {
-        for (int i = 0; i < names.size(); i++)
+        for(int i = 0; i < names.size(); i++)
         {
             AddApplicationType(names[i], paths[i]);
         }
@@ -51,7 +51,7 @@ void ApplicationList::SaveSettings(QSettings *programSettings)
     QStringList names;
     QStringList paths;
 
-    for (int i = 0; i < GetApplicationCount(); i++)
+    for(int i = 0; i < GetApplicationCount(); i++)
     {
         names << GetApplicationName(i);
         paths << GetApplicationPath(i);
@@ -69,7 +69,7 @@ int ApplicationList::GetApplicationCount() const
 
 QString ApplicationList::GetApplicationName(const int index) const
 {
-    if (index >= 0 && index < mApplications.size())
+    if(index >= 0 && index < mApplications.size())
     {
         return mApplications[index].Name;
     }
@@ -79,7 +79,7 @@ QString ApplicationList::GetApplicationName(const int index) const
 
 QString ApplicationList::GetApplicationPath(const int index) const
 {
-    if (index >= 0 && index < mApplications.size())
+    if(index >= 0 && index < mApplications.size())
     {
         return mApplications[index].Path;
     }
@@ -93,7 +93,7 @@ void ApplicationList::SetApplicationType(const int index,
         const QString &name,
         const QString &path)
 {
-    if (index >= 0 && index < mApplications.size())
+    if(index >= 0 && index < mApplications.size())
     {
         mApplications[index].Name = name;
         mApplications[index].Path = path;
@@ -102,7 +102,7 @@ void ApplicationList::SetApplicationType(const int index,
 
 void ApplicationList::AddApplicationType(const QString &name, const QString &path)
 {
-    if (name.isEmpty() || path.isEmpty())
+    if(name.isEmpty() || path.isEmpty())
     {
         return;
     }
@@ -121,7 +121,7 @@ void ApplicationList::RemoveApplication(const int index)
 
 void ApplicationList::MoveFirst(const int index)
 {
-    if (index < mApplications.size() && index > 0)
+    if(index < mApplications.size() && index > 0)
     {
         mApplications.move(index, 0);
     }
@@ -130,13 +130,13 @@ void ApplicationList::MoveFirst(const int index)
 
 void ApplicationList::Copy(ApplicationList *list)
 {
-    if (!list)
+    if(!list)
     {
         return;
     }
 
     Clear();
-    for (int i = 0; i < list->GetApplicationCount(); i++)
+    for(int i = 0; i < list->GetApplicationCount(); i++)
     {
         AddApplicationType(list->GetApplicationName(i), list->GetApplicationPath(i));
     }

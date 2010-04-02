@@ -21,7 +21,7 @@
 #include "txtreport.h"
 
 TxtReport::TxtReport(const QString &filename, QObject * parent) :
-        Report(filename, parent)
+    Report(filename, parent)
 {
 }
 
@@ -33,7 +33,7 @@ TxtReport::~TxtReport()
 bool TxtReport::Create()
 {
     bool success = false;
-    if (Report::Create())
+    if(Report::Create())
     {
         mTxtWriter.setDevice(Report::GetFile());
         success = true;
@@ -63,15 +63,15 @@ void TxtReport::WriteError(const QStringList &files, const QStringList &lines,
 
     QString line;
 
-    for (int i = 0; i < lines.size(); i++)
+    for(int i = 0; i < lines.size(); i++)
     {
         line += QString("[%1:%2]").arg(files[i]).arg(lines[i]);
-        if (i < lines.size() - 1 && lines.size() > 0)
+        if(i < lines.size() - 1 && lines.size() > 0)
         {
             line += " -> ";
         }
 
-        if (i == lines.size() - 1)
+        if(i == lines.size() - 1)
         {
             line += ": ";
         }

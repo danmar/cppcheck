@@ -43,7 +43,7 @@ std::string ErrorLogger::ErrorMessage::serialize() const
     oss << _msg.length() << " " << _msg;
     oss << _callStack.size() << " ";
 
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok)
+    for(std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = _callStack.begin(); tok != _callStack.end(); ++tok)
     {
         std::ostringstream smallStream;
         smallStream << (*tok).line << ":" << (*tok).getfile();
@@ -57,22 +57,22 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     _callStack.clear();
     std::istringstream iss(data);
     std::vector<std::string> results;
-    while (iss.good())
+    while(iss.good())
     {
         unsigned int len = 0;
-        if (!(iss >> len))
+        if(!(iss >> len))
             return false;
 
         iss.get();
         std::string temp;
-        for (unsigned int i = 0; i < len && iss.good(); ++i)
+        for(unsigned int i = 0; i < len && iss.good(); ++i)
         {
             char c = static_cast<char>(iss.get());
             temp.append(1, c);
         }
 
         results.push_back(temp);
-        if (results.size() == 3)
+        if(results.size() == 3)
             break;
     }
 
@@ -81,18 +81,18 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
     _msg = results[2];
 
     unsigned int stackSize = 0;
-    if (!(iss >> stackSize))
+    if(!(iss >> stackSize))
         return false;
 
-    while (iss.good())
+    while(iss.good())
     {
         unsigned int len = 0;
-        if (!(iss >> len))
+        if(!(iss >> len))
             return false;
 
         iss.get();
         std::string temp;
-        for (unsigned int i = 0; i < len && iss.good(); ++i)
+        for(unsigned int i = 0; i < len && iss.good(); ++i)
         {
             char c = static_cast<char>(iss.get());
             temp.append(1, c);
@@ -106,7 +106,7 @@ bool ErrorLogger::ErrorMessage::deserialize(const std::string &data)
 
         _callStack.push_back(loc);
 
-        if (_callStack.size() >= stackSize)
+        if(_callStack.size() >= stackSize)
             break;
     }
 
@@ -127,15 +127,15 @@ std::string ErrorLogger::ErrorMessage::getXMLFooter()
 static std::string stringToXml(std::string s)
 {
     std::string::size_type pos = 0;
-    while ((pos = s.find_first_of("<>&\"", pos)) != std::string::npos)
+    while((pos = s.find_first_of("<>&\"", pos)) != std::string::npos)
     {
-        if (s[pos] == '<')
+        if(s[pos] == '<')
             s.insert(pos + 1, "&lt;");
-        else if (s[pos] == '>')
+        else if(s[pos] == '>')
             s.insert(pos + 1, "&gt;");
-        else if (s[pos] == '&')
+        else if(s[pos] == '&')
             s.insert(pos + 1, "&amp;");
-        else if (s[pos] == '"')
+        else if(s[pos] == '"')
             s.insert(pos + 1, "&quot;");
         s.erase(pos, 1);
         ++pos;
@@ -147,7 +147,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
 {
     std::ostringstream xml;
     xml << "<error";
-    if (!_callStack.empty())
+    if(!_callStack.empty())
     {
         xml << " file=\"" << stringToXml(_callStack.back().getfile()) << "\"";
         xml << " line=\"" << _callStack.back().line << "\"";
@@ -162,7 +162,7 @@ std::string ErrorLogger::ErrorMessage::toXML() const
 void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
 {
     std::string::size_type index = 0;
-    while ((index = source.find(searchFor, index)) != std::string::npos)
+    while((index = source.find(searchFor, index)) != std::string::npos)
     {
         source.replace(index, searchFor.length(), replaceWith);
         index += replaceWith.length() - searchFor.length() + 1;
@@ -171,12 +171,12 @@ void ErrorLogger::ErrorMessage::findAndReplace(std::string &source, const std::s
 
 std::string ErrorLogger::ErrorMessage::toText(const std::string &outputFormat) const
 {
-    if (outputFormat.length() == 0)
+    if(outputFormat.length() == 0)
     {
         std::ostringstream text;
-        if (!_callStack.empty())
+        if(!_callStack.empty())
             text << callStackToString(_callStack) << ": ";
-        if (!_severity.empty())
+        if(!_severity.empty())
             text << "(" << _severity << ") ";
         text << _msg;
         return text.str();
@@ -188,7 +188,7 @@ std::string ErrorLogger::ErrorMessage::toText(const std::string &outputFormat) c
         findAndReplace(result, "{severity}", _severity);
         findAndReplace(result, "{message}", _msg);
 
-        if (!_callStack.empty())
+        if(!_callStack.empty())
         {
             std::ostringstream oss;
             oss << _callStack.back().line;
@@ -215,7 +215,7 @@ void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const Token *tok, const 
 void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const Token *> &callstack, const char severity[], const std::string &msg, const std::string &id)
 {
     std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
-    for (std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
+    for(std::list<const Token *>::const_iterator tok = callstack.begin(); tok != callstack.end(); ++tok)
     {
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.file = tokenizer->file(*tok);
@@ -232,7 +232,7 @@ void ErrorLogger::_writemsg(const Tokenizer *tokenizer, const std::list<const To
 std::string ErrorLogger::callStackToString(const std::list<ErrorLogger::ErrorMessage::FileLocation> &callStack)
 {
     std::ostringstream ostr;
-    for (std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok)
+    for(std::list<ErrorLogger::ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok)
         ostr << (tok == callStack.begin() ? "" : " -> ") << "[" << (*tok).getfile() << ":" << (*tok).line << "]";
     return ostr.str();
 }
@@ -244,23 +244,23 @@ std::string ErrorLogger::ErrorMessage::FileLocation::getfile() const
 
     // replace "/ab/.." with "/"..
     std::string::size_type pos = 0;
-    while ((pos = f.find("..", pos + 1)) != std::string::npos)
+    while((pos = f.find("..", pos + 1)) != std::string::npos)
     {
         // position must be at least 4..
-        if (pos < 4)
+        if(pos < 4)
             continue;
 
         // Previous char must be a separator..
-        if (f[pos-1] != '/' && f[pos-2] != '\\')
+        if(f[pos-1] != '/' && f[pos-2] != '\\')
             continue;
 
         // Next char must be a separator..
-        if (f[pos+2] != '/' && f[pos+2] != '\\')
+        if(f[pos+2] != '/' && f[pos+2] != '\\')
             continue;
 
         // Locate previous separator..
         std::string::size_type sep = f.find_last_of("/\\", pos - 2);
-        if (sep == std::string::npos)
+        if(sep == std::string::npos)
             continue;
 
         // Delete substring..

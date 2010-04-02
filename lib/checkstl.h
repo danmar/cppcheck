@@ -40,7 +40,7 @@ public:
 
     /** This constructor is used when running checks. */
     CheckStl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger)
+        : Check(tokenizer, settings, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -56,9 +56,9 @@ public:
         checkStl.find();
         checkStl.if_find();
 
-        if (settings->_checkCodingStyle)
+        if(settings->_checkCodingStyle)
         {
-            if (settings->_showAll)
+            if(settings->_showAll)
                 checkStl.size();
         }
     }

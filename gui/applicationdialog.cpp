@@ -30,7 +30,7 @@ ApplicationDialog::ApplicationDialog(const QString &name,
                                      const QString &path,
                                      const QString &title,
                                      QWidget *parent) :
-        QDialog(parent)
+    QDialog(parent)
 {
     mUI.setupUi(this);
 
@@ -61,13 +61,13 @@ void ApplicationDialog::Browse()
                            QString(),
                            filter);
 
-    if (!selectedFile.isEmpty())
+    if(!selectedFile.isEmpty())
     {
         QString path(QDir::toNativeSeparators(selectedFile));
 
         // In Windows we must surround paths including spaces with quotation marks.
 #ifdef Q_WS_WIN
-        if (path.indexOf(" ") > -1)
+        if(path.indexOf(" ") > -1)
         {
             path.insert(0, "\"");
             path.append("\"");
@@ -91,7 +91,7 @@ QString ApplicationDialog::GetPath()
 
 void ApplicationDialog::Ok()
 {
-    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty())
+    if(mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty())
     {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),

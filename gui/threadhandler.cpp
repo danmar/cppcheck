@@ -21,8 +21,8 @@
 #include <QDebug>
 
 ThreadHandler::ThreadHandler(QObject *parent) :
-        QObject(parent),
-        mRunningThreadCount(0)
+    QObject(parent),
+    mRunningThreadCount(0)
 {
     SetThreadCount(1);
 }
@@ -46,12 +46,12 @@ void ThreadHandler::SetFiles(const QStringList &files)
 
 void ThreadHandler::Check(Settings settings, bool recheck)
 {
-    if (recheck && mRunningThreadCount == 0)
+    if(recheck && mRunningThreadCount == 0)
     {
         mResults.SetFiles(mLastFiles);
     }
 
-    if (mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs <= 0)
+    if(mResults.GetFileCount() == 0 || mRunningThreadCount > 0 || settings._jobs <= 0)
     {
         qDebug() << "Can't start checking if there's no files to check or if check is in progress.";
         emit Done();
@@ -62,12 +62,12 @@ void ThreadHandler::Check(Settings settings, bool recheck)
 
     mRunningThreadCount = mThreads.size();
 
-    if (mResults.GetFileCount() < mRunningThreadCount)
+    if(mResults.GetFileCount() < mRunningThreadCount)
     {
         mRunningThreadCount = mResults.GetFileCount();
     }
 
-    for (int i = 0; i < mRunningThreadCount; i++)
+    for(int i = 0; i < mRunningThreadCount; i++)
     {
         mThreads[i]->Check(settings);
     }
@@ -80,9 +80,9 @@ bool ThreadHandler::IsChecking() const
 
 void ThreadHandler::SetThreadCount(const int count)
 {
-    if (mRunningThreadCount > 0 ||
-        count == mThreads.size() ||
-        count <= 0)
+    if(mRunningThreadCount > 0 ||
+       count == mThreads.size() ||
+       count <= 0)
     {
         return;
     }
@@ -90,7 +90,7 @@ void ThreadHandler::SetThreadCount(const int count)
     //Remove unused old threads
     RemoveThreads();
     //Create new threads
-    for (int i = mThreads.size(); i < count; i++)
+    for(int i = mThreads.size(); i < count; i++)
     {
         mThreads << new CheckThread(mResults);
         connect(mThreads.last(), SIGNAL(Done()),
@@ -104,7 +104,7 @@ void ThreadHandler::SetThreadCount(const int count)
 
 void ThreadHandler::RemoveThreads()
 {
-    for (int i = 0; i < mThreads.size(); i++)
+    for(int i = 0; i < mThreads.size(); i++)
     {
         mThreads[i]->terminate();
         disconnect(mThreads.last(), SIGNAL(Done()),
@@ -121,7 +121,7 @@ void ThreadHandler::RemoveThreads()
 void ThreadHandler::ThreadDone()
 {
     mRunningThreadCount--;
-    if (mRunningThreadCount == 0)
+    if(mRunningThreadCount == 0)
     {
         emit Done();
     }
@@ -129,7 +129,7 @@ void ThreadHandler::ThreadDone()
 
 void ThreadHandler::Stop()
 {
-    for (int i = 0; i < mThreads.size(); i++)
+    for(int i = 0; i < mThreads.size(); i++)
     {
         mThreads[i]->stop();
     }
@@ -168,7 +168,7 @@ void ThreadHandler::SaveSettings(QSettings &settings)
 
 bool ThreadHandler::HasPreviousFiles() const
 {
-    if (mLastFiles.size() > 0)
+    if(mLastFiles.size() > 0)
         return true;
 
     return false;

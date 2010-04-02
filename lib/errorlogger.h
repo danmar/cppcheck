@@ -359,7 +359,7 @@ public:
     enum e { error, style, possibleError, possibleStyle };
     static std::string stringify(e severity)
     {
-        switch (severity)
+        switch(severity)
         {
         case error:
             return "error";

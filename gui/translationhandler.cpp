@@ -24,30 +24,30 @@
 #include <QLocale>
 
 TranslationHandler::TranslationHandler(QObject *parent) :
-        QObject(parent),
-        mCurrentLanguage(-1),
-        mTranslator(new QTranslator(this))
+    QObject(parent),
+    mCurrentLanguage(-1),
+    mTranslator(new QTranslator(this))
 {
     //Add our default languages
     mNames  << QT_TRANSLATE_NOOP("MainWindow", "English")
-    << QT_TRANSLATE_NOOP("MainWindow", "Dutch")
-    << QT_TRANSLATE_NOOP("MainWindow", "Finnish")
-    << QT_TRANSLATE_NOOP("MainWindow", "Swedish")
-    << QT_TRANSLATE_NOOP("MainWindow", "German")
-    << QT_TRANSLATE_NOOP("MainWindow", "Russian")
-    << QT_TRANSLATE_NOOP("MainWindow", "Polish");
+            << QT_TRANSLATE_NOOP("MainWindow", "Dutch")
+            << QT_TRANSLATE_NOOP("MainWindow", "Finnish")
+            << QT_TRANSLATE_NOOP("MainWindow", "Swedish")
+            << QT_TRANSLATE_NOOP("MainWindow", "German")
+            << QT_TRANSLATE_NOOP("MainWindow", "Russian")
+            << QT_TRANSLATE_NOOP("MainWindow", "Polish");
 
     mFiles  << "cppcheck_en"
-    << "cppcheck_nl"
-    << "cppcheck_fi"
-    << "cppcheck_se"
-    << "cppcheck_de"
-    << "cppcheck_ru"
-    << "cppcheck_pl";
+            << "cppcheck_nl"
+            << "cppcheck_fi"
+            << "cppcheck_se"
+            << "cppcheck_de"
+            << "cppcheck_ru"
+            << "cppcheck_pl";
 
     //Load english as a fallback language
     QTranslator *english = new QTranslator();
-    if (english->load("cppcheck_en"))
+    if(english->load("cppcheck_en"))
     {
         qApp->installTranslator(english);
     }
@@ -75,10 +75,10 @@ const QStringList TranslationHandler::GetFiles()
 bool TranslationHandler::SetLanguage(const int index, QString &error)
 {
     //If english is the language
-    if (index == 0)
+    if(index == 0)
     {
         //Just remove all extra translators
-        if (mTranslator)
+        if(mTranslator)
         {
             qApp->removeTranslator(mTranslator);
         }
@@ -88,17 +88,17 @@ bool TranslationHandler::SetLanguage(const int index, QString &error)
     }
 
     //Make sure the translator is otherwise valid
-    if (index >= mNames.size())
+    if(index >= mNames.size())
     {
         error = QObject::tr("Incorrect language specified!");
         return false;
     }
 
     //Load the new language
-    if (!mTranslator->load(mFiles[index]))
+    if(!mTranslator->load(mFiles[index]))
     {
         //If it failed, lets check if the default file exists
-        if (!QFile::exists(mFiles[index] + ".qm"))
+        if(!QFile::exists(mFiles[index] + ".qm"))
         {
             error = QObject::tr("Language file %1 not found!");
             error = error.arg(mFiles[index] + ".qm");
@@ -144,7 +144,7 @@ int TranslationHandler::SuggestLanguage() const
     int index = mFiles.indexOf(file);
 
     //If nothing found, return english
-    if (index < 0)
+    if(index < 0)
     {
         return 0;
     }
