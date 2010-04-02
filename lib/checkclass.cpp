@@ -104,10 +104,6 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         if (next->str() == "__property")
             continue;
 
-        // Type definitions shall be ignored..
-        if (next->str() == "typedef")
-            continue;
-
         // Is it a static variable?
         bool isStatic = false;
         if (next->str() == "static")
