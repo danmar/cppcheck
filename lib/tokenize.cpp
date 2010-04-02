@@ -230,11 +230,8 @@ void Tokenizer::createTokens(std::istream &code)
     // Read one byte at a time from code and create tokens
     for (char ch = (char)code.get(); code.good(); ch = (char)code.get())
     {
-        // We are not handling UTF and stuff like that. Code is supposed to plain simple text.
-        if (ch < 0)
-            continue;
-
         // char/string..
+        // multiline strings are not handled. The preprocessor should handle that for us.
         if (ch == '\'' || ch == '\"')
         {
             std::string line;
@@ -246,9 +243,6 @@ void Tokenizer::createTokens(std::istream &code)
             {
                 // Append token..
                 line += c;
-
-                if (c == '\n')
-                    ++lineno;
 
                 // Special sequence '\.'
                 if (special)

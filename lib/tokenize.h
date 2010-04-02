@@ -71,7 +71,11 @@ public:
 
     /**
      * Create tokens from code.
-     * @param code input stream for code, same as what tokenize()
+     * The code must be preprocessed first:
+     * - multiline strings are not handled.
+     * - UTF in the code are not handled.
+     * - comments are not handled.
+     * @param code input stream for code
      */
     void createTokens(std::istream &code);
 
