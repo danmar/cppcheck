@@ -2474,9 +2474,9 @@ void CheckOther::checkMathFunctions()
         {
             mathfunctionCallError(tok);
         }
-		// acos( x )  x is defined for intervall [-1,+1], but not beyound
-		else if(Token::Match(tok, "acos ( %num% )") &&
-				fabs(MathLib::toDoubleNumber(tok->tokAt(2)->str())) > 1.0)
+        // acos( x )  x is defined for intervall [-1,+1], but not beyound
+        else if (Token::Match(tok, "acos ( %num% )") &&
+                 fabs(MathLib::toDoubleNumber(tok->tokAt(2)->str())) > 1.0)
         {
             mathfunctionCallError(tok);
         }

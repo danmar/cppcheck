@@ -55,11 +55,11 @@ double MathLib::toDoubleNumber(const std::string &str)
     {
         return std::strtoul(str.c_str(), '\0', 16);
     }
-	// nullcheck
-	else if (str == "-0" || str == "-0.0" ||  str == "-0."
-         ||  str == "+0" || str == "+0.0" ||  str == "+0.")
-        	return 0.0;
-	// otherwise, convert to double
+    // nullcheck
+    else if (str == "-0" || str == "-0.0" ||  str == "-0."
+             ||  str == "+0" || str == "+0.0" ||  str == "+0.")
+        return 0.0;
+    // otherwise, convert to double
     std::istringstream istr(str.c_str());
     double ret;
     istr >> ret;
