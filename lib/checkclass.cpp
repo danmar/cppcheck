@@ -1902,6 +1902,13 @@ bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist
             }
         }
 
+        // streaming: <<
+        else if (tok1->str() == "<<" && isMemberVar(classname, varlist, tok1->previous()))
+        {
+            isconst = false;
+            break;
+        }
+
         // increment/decrement (member variable?)..
         else if (Token::Match(tok1, "++|--"))
         {

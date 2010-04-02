@@ -112,7 +112,8 @@ private:
         TEST_CASE(const16); // ticket #1551
         TEST_CASE(const17); // ticket #1552
         TEST_CASE(const18); // ticket #1563
-        TEST_CASE(constoperator);   // operator< can often be const
+        TEST_CASE(constoperator1);  // operator< can often be const
+        TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
         TEST_CASE(constDelete);     // delete member variable => not const
@@ -2241,13 +2242,29 @@ private:
     }
 
     // operator< can often be const
-    void constoperator()
+    void constoperator1()
     {
         checkConst("struct Fred {\n"
                    "    int a;\n"
                    "    bool operator<(const Fred &f) { return (a < f.a); }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::operator<' can be const\n", errout.str());
+    }
+
+    // operator<<
+    void constoperator2()
+    {
+        checkConst("struct Foo {\n"
+                   "    void operator<<(int);\n"
+                   "};\n"
+                   "struct Fred {\n"
+                   "    Foo foo;\n"
+                   "    void x()\n"
+                   "    {\n"
+                   "        foo << 123;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const5()
