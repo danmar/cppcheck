@@ -91,6 +91,13 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             }
         }
 
+        // goto => bailout
+        if (tok->str() == "goto")
+        {
+            ExecutionPath::bailOut(checks);
+            return 0;
+        }
+
         // for/while/switch/do .. bail out
         if (Token::Match(tok, "for|while|switch|do"))
         {

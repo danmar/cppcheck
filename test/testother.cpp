@@ -1390,6 +1390,15 @@ private:
                        "  return retval;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int foo()\n"
+                       "{\n"
+                       "    int i;\n"
+                       "    goto exit;\n"
+                       "    i++;\n"
+                       "exit:\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // if..
