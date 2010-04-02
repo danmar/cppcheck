@@ -82,6 +82,7 @@ public:
         checkOther.strPlusChar();
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
+		checkOther.checkMathFunctions();
 
         // New type of check: Check execution paths
         checkOther.executionPaths();
@@ -150,6 +151,9 @@ public:
     /** @brief %Check zero division*/
     void checkZeroDivision();
 
+	/** @brief %Check for parameters given to math function that do not make sense*/
+	void checkMathFunctions();
+
     /** @brief %Check for post increment/decrement in for loop*/
     void postIncrement();
 
@@ -184,6 +188,7 @@ public:
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
     void zerodivError(const Token *tok);
+	void mathfunctionCallError(const Token *tok);
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
 
     void getErrorMessages()
@@ -196,6 +201,7 @@ public:
         uninitdataError(0, "varname");
         uninitvarError(0, "varname");
         zerodivError(0);
+		mathfunctionCallError(0);
 
         // style
         cstyleCastError(0);

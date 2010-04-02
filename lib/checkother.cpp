@@ -2435,6 +2435,48 @@ void CheckOther::checkZeroDivision()
 }
 
 
+void CheckOther::checkMathFunctions()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+		// case log(-2)
+        if (Token::Match(tok, "log ( %num% )") &&
+            MathLib::isNegative(tok->tokAt(2)->str()) &&
+            MathLib::isInt(tok->tokAt(2)->str()) &&
+            MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
+        {
+            mathfunctionCallError(tok);
+        }
+		// case log(-2.0)
+		else if (Token::Match(tok, "log ( %num% )") &&
+            	 MathLib::isNegative(tok->tokAt(2)->str()) &&
+				 MathLib::isFloat(tok->tokAt(2)->str()) &&
+            	 MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
+		{
+            mathfunctionCallError(tok);			
+		}
+
+		// case log(0.0)
+		else if (Token::Match(tok, "log ( %num% )") &&
+            	 !MathLib::isNegative(tok->tokAt(2)->str()) &&
+				 MathLib::isFloat(tok->tokAt(2)->str()) &&
+            	 MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
+		{
+            mathfunctionCallError(tok);			
+		}
+
+		// case log(0)
+		else if (Token::Match(tok, "log ( %num% )") &&
+            	 !MathLib::isNegative(tok->tokAt(2)->str()) &&
+				 MathLib::isInt(tok->tokAt(2)->str()) &&
+            	 MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
+		{
+            mathfunctionCallError(tok);			
+		}
+    }
+}
+
+
 
 void CheckOther::postIncrement()
 {
@@ -2576,6 +2618,11 @@ void CheckOther::uninitvarError(const Token *tok, const std::string &varname)
 void CheckOther::zerodivError(const Token *tok)
 {
     reportError(tok, Severity::error, "zerodiv", "Division by zero");
+}
+
+void CheckOther::mathfunctionCallError(const Token *tok)
+{
+	reportError(tok, Severity::error, "wrongmathcall","Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
 }
 
 void CheckOther::postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement)

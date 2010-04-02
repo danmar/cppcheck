@@ -34,6 +34,8 @@ private:
         TEST_CASE(calculate);
         TEST_CASE(convert);
         TEST_CASE(isint);
+        TEST_CASE(isnegative);
+        TEST_CASE(isfloat);
     }
 
     void calculate()
@@ -164,6 +166,55 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt("-1.E+1"));
         ASSERT_EQUALS(false, MathLib::isInt("+1.E-1"));
     }
+
+	void isnegative()
+	{
+        ASSERT_EQUALS(true, MathLib::isNegative("-1"));	
+        ASSERT_EQUALS(true, MathLib::isNegative("-1."));
+        ASSERT_EQUALS(true, MathLib::isNegative("-1.0"));
+        ASSERT_EQUALS(true, MathLib::isNegative("-1.0E+2"));
+        ASSERT_EQUALS(true, MathLib::isNegative("-1.0E-2"));
+
+        ASSERT_EQUALS(false, MathLib::isNegative("+1"));	
+        ASSERT_EQUALS(false, MathLib::isNegative("+1."));
+        ASSERT_EQUALS(false, MathLib::isNegative("+1.0"));
+        ASSERT_EQUALS(false, MathLib::isNegative("+1.0E+2"));
+        ASSERT_EQUALS(false, MathLib::isNegative("+1.0E-2"));		
+	}
+
+	void isfloat()
+	{
+        ASSERT_EQUALS(false, MathLib::isFloat("0"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0."));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.0"));
+        ASSERT_EQUALS(true , MathLib::isFloat("-0."));
+        ASSERT_EQUALS(true , MathLib::isFloat("+0."));
+        ASSERT_EQUALS(true , MathLib::isFloat("-0.0"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+0.0"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+0.0E+1"));
+        ASSERT_EQUALS(true , MathLib::isFloat("+0.0E-1"));
+        ASSERT_EQUALS(true , MathLib::isFloat("-0.0E+1"));
+        ASSERT_EQUALS(true , MathLib::isFloat("-0.0E-1"));  
+
+        ASSERT_EQUALS(false , MathLib::isFloat("1"));
+        ASSERT_EQUALS(false , MathLib::isFloat("-1"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1E+1"));
+        ASSERT_EQUALS(false , MathLib::isFloat("+1E+10000"));
+        ASSERT_EQUALS(false , MathLib::isFloat("-1E+1"));
+        ASSERT_EQUALS(false , MathLib::isFloat("-1E+10000"));
+        ASSERT_EQUALS(true  , MathLib::isFloat("-1E-1"));
+        ASSERT_EQUALS(true  , MathLib::isFloat("-1E-10000"));
+
+        ASSERT_EQUALS(true , MathLib::isFloat("0.4"));
+        ASSERT_EQUALS(true , MathLib::isFloat("2352.3f"));
+        ASSERT_EQUALS(true , MathLib::isFloat("0.00004"));
+        ASSERT_EQUALS(true , MathLib::isFloat("2352.00001f"));
+        ASSERT_EQUALS(true , MathLib::isFloat(".4"));
+        ASSERT_EQUALS(true , MathLib::isFloat("1.0E+1"));
+        ASSERT_EQUALS(true , MathLib::isFloat("1.0E-1"));
+        ASSERT_EQUALS(true , MathLib::isFloat("-1.0E+1"));
+	}
 };
 
 REGISTER_TEST(TestMathLib)

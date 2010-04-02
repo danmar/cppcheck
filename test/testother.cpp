@@ -89,6 +89,8 @@ private:
         TEST_CASE(dangerousStrolUsage);
 
         TEST_CASE(passedByValue);
+
+		TEST_CASE(mathfunctionCall1);
     }
 
     void check(const char code[])
@@ -110,9 +112,8 @@ private:
         checkOther.warningRedundantCode();
         checkOther.checkZeroDivision();
         checkOther.unreachableCode();
+		checkOther.checkMathFunctions();
     }
-
-
 
 
     void zeroDiv1()
@@ -2156,6 +2157,70 @@ private:
         testPassedByValue("void f(const std::map<std::string,int> v) {}");
         ASSERT_EQUALS("[test.cpp:1]: (style) Function parameter 'v' is passed by value. It could be passed by reference instead.\n", errout.str());
     }
+
+	void mathfunctionCall1()
+	{
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(-2) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -2 to log() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(-1.) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1. to log() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(-1.0) << std::endl;\n"
+              "}");
+		ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1.0 to log() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(-0.1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -0.1 to log() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(0) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0 to log() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(0.) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0. to log() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(0.0) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0.0 to log() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(1.0E+3) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(1.0E-3) << std::endl;\n"
+              "}");
+        TODO_ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  log(1E-3) << std::endl;\n"
+              "}");
+        TODO_ASSERT_EQUALS("", errout.str());
+	}
+
 
 };
 
