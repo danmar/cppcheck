@@ -100,10 +100,6 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         if (next->str().find(":") != std::string::npos)
             continue;
 
-        // Variable declarations that start with "static" shall be ignored..
-        if (next->str() == "static")
-            continue;
-
         // Borland C++: Ignore properties..
         if (next->str() == "__property")
             continue;
@@ -111,6 +107,14 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // Type definitions shall be ignored..
         if (next->str() == "typedef")
             continue;
+
+        // Is it a static variable?
+        bool isStatic = false;
+        if (next->str() == "static")
+        {
+            isStatic = true;
+            next = next->next();
+        }
 
         // Is it a mutable variable?
         bool isMutable = false;
@@ -185,7 +189,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // If the varname was set in one of the two if-block above, create a entry for this variable..
         if (!varname.empty() && varname != "operator")
         {
-            Var *var = new Var(varname, false, priv, isMutable, varlist);
+            Var *var = new Var(varname, false, priv, isMutable, isStatic, varlist);
             varlist  = var;
         }
     }
@@ -507,7 +511,7 @@ void CheckClass::constructors()
                 // If there is a private variable, there should be a constructor..
                 for (const Var *var = varlist; var; var = var->next)
                 {
-                    if (var->priv)
+                    if (var->priv && !var->isStatic)
                     {
                         noConstructorError(tok1, classNameToken->str(), isStruct);
                         break;
@@ -586,7 +590,7 @@ void CheckClass::checkConstructors(const Token *tok1, const std::string &funcnam
                 if (classNameUsed)
                     operatorEqVarError(constructor_token, className, var->name);
             }
-            else
+            else if (!var->isStatic)
                 uninitVarError(constructor_token, className, var->name, hasPrivateConstructor);
         }
 

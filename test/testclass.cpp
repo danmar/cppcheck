@@ -110,6 +110,7 @@ private:
         TEST_CASE(const15);
         TEST_CASE(const16); // ticket #1551
         TEST_CASE(const17); // ticket #1552
+        TEST_CASE(const18); // ticket #1563
         TEST_CASE(constoperator);   // operator< can often be const
         TEST_CASE(constincdec);     // increment/decrement => non-const
         TEST_CASE(constReturnReference);
@@ -2813,6 +2814,17 @@ private:
                    "    void set(int i, int j) { a[i].k = i; }\n"
                    "private:\n"
                    "    struct { int k; } a[4];\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const18()
+    {
+        // ticket #1563
+        checkConst("class Fred {\n"
+                   "static int x;\n"
+                   "public:\n"
+                   "    void set(int i) { x = i; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }

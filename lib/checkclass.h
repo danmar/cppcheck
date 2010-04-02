@@ -113,11 +113,12 @@ private:
     class Var
     {
     public:
-        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, Var *next_ = 0)
+        Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, Var *next_ = 0)
                 : name(name_),
                 init(init_),
                 priv(priv_),
                 isMutable(mutable_),
+                isStatic(static_),
                 next(next_)
         {
         }
@@ -133,6 +134,9 @@ private:
 
         /** @brief is this variable mutable? */
         bool        isMutable;
+
+        /** @brief is this variable static? */
+        bool        isStatic;
 
         /** @brief next Var item */
         Var *next;
