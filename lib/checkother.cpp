@@ -2440,7 +2440,7 @@ void CheckOther::checkMathFunctions()
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // case log(-2)
-        if (Token::Match(tok, "log ( %num% )") &&
+        if (Token::Match(tok, "log|log10 ( %num% )") &&
             MathLib::isNegative(tok->tokAt(2)->str()) &&
             MathLib::isInt(tok->tokAt(2)->str()) &&
             MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
@@ -2448,7 +2448,7 @@ void CheckOther::checkMathFunctions()
             mathfunctionCallError(tok);
         }
         // case log(-2.0)
-        else if (Token::Match(tok, "log ( %num% )") &&
+        else if (Token::Match(tok, "log|log10 ( %num% )") &&
                  MathLib::isNegative(tok->tokAt(2)->str()) &&
                  MathLib::isFloat(tok->tokAt(2)->str()) &&
                  MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
@@ -2457,7 +2457,7 @@ void CheckOther::checkMathFunctions()
         }
 
         // case log(0.0)
-        else if (Token::Match(tok, "log ( %num% )") &&
+        else if (Token::Match(tok, "log|log10 ( %num% )") &&
                  !MathLib::isNegative(tok->tokAt(2)->str()) &&
                  MathLib::isFloat(tok->tokAt(2)->str()) &&
                  MathLib::toDoubleNumber(tok->tokAt(2)->str()) <= 0.)
@@ -2466,7 +2466,7 @@ void CheckOther::checkMathFunctions()
         }
 
         // case log(0)
-        else if (Token::Match(tok, "log ( %num% )") &&
+        else if (Token::Match(tok, "log|log10 ( %num% )") &&
                  !MathLib::isNegative(tok->tokAt(2)->str()) &&
                  MathLib::isInt(tok->tokAt(2)->str()) &&
                  MathLib::toLongNumber(tok->tokAt(2)->str()) <= 0)
