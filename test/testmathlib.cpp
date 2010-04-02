@@ -128,7 +128,15 @@ private:
         ASSERT_EQUALS(1e+10 , MathLib::toDoubleNumber("+1.0E+10"));
         ASSERT_EQUALS(100.0 , MathLib::toDoubleNumber("1.0E+2"));
         ASSERT_EQUALS(1e+10 , MathLib::toDoubleNumber("1.0E+10"));
+        ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("0E+0"));
+        ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("0E-0"));
+        ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("0E+00"));
+        ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("0E-00"));
+        ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("-0E+00"));
+        ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("+0E-00"));
         ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("0"));
+        ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("0."));
+        ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("0.0"));
         ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("-0"));
         ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("+0"));
         ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("-0."));

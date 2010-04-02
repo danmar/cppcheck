@@ -56,8 +56,7 @@ double MathLib::toDoubleNumber(const std::string &str)
         return std::strtoul(str.c_str(), '\0', 16);
     }
     // nullcheck
-    else if (str == "-0" || str == "-0.0" ||  str == "-0."
-             ||  str == "+0" || str == "+0.0" ||  str == "+0.")
+    else if (isNullValue(str))
         return 0.0;
     // otherwise, convert to double
     std::istringstream istr(str.c_str());
@@ -296,6 +295,19 @@ std::string MathLib::abs(const std::string &tok)
 bool MathLib::isGreater(const std::string &first, const std::string &second)
 {
     return toDoubleNumber(first) > toDoubleNumber(second);
+}
+
+bool MathLib::isNullValue(const std::string &str)
+{
+    return (str == "-0"      || str == "-0.0" 
+        ||  str == "-0."     || str == "-0E-00" 
+        ||  str == "-0E+00"  || str == "+0E+00" 
+        ||  str == "+0E-00"  || str == "+0" 
+        ||  str == "+0.0"    || str == "+0." 
+        ||  str == "0.0"     || str == "-0e-00"  
+        ||  str == "+0e+00"  || str == "-0e+00" 
+        ||  str == "+0e-00"  || str == "-0e-00"
+        ||  str == "-0E-0"   || str == "+0E-00");
 }
 
 bool MathLib::isOctalDigit(char c)
