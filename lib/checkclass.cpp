@@ -409,6 +409,12 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             initVar(varlist, ftok->strAt(1));
         }
 
+        // Assignment of struct member of member variable?
+        else if (Token::Match(ftok, "%var% . %any% ="))
+        {
+            initVar(varlist, ftok->strAt(0));
+        }
+
         // The functions 'clear' and 'Clear' are supposed to initialize variable.
         if (Token::Match(ftok, "%var% . clear|Clear ("))
         {
