@@ -2169,7 +2169,7 @@ private:
 
     void mathfunctionCall1()
     {
-		// log|log10
+        // log|log10
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(-2) << std::endl;\n"
@@ -2230,7 +2230,7 @@ private:
               "}");
         TODO_ASSERT_EQUALS("", errout.str());
 
-		// acos
+        // acos
         check("void foo()\n"
               "{\n"
               "    std::cout <<  acos(1) 		<< std::endl;\n"

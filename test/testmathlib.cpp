@@ -116,9 +116,9 @@ private:
         ASSERT_EQUALS(100	, MathLib::toLongNumber("+10.0E+1"));
         ASSERT_EQUALS(-1	, MathLib::toLongNumber("-10.0E-1"));
 
-		// -----------------
-		// to double number:
-		// -----------------
+        // -----------------
+        // to double number:
+        // -----------------
         ASSERT_EQUALS(10.0	, MathLib::toDoubleNumber("10"));
         ASSERT_EQUALS(1000.0, MathLib::toDoubleNumber("10E+2"));
         ASSERT_EQUALS(100.0 , MathLib::toDoubleNumber("1.0E+2"));
@@ -135,7 +135,7 @@ private:
         ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("+0."));
         ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("-0.0"));
         ASSERT_EQUALS(0.0   , MathLib::toDoubleNumber("+0.0"));
-		
+
     }
 
     void isint()
