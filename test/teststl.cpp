@@ -75,9 +75,6 @@ private:
         // if (str.find("ab"))
         TEST_CASE(if_find);
 
-        // find
-        TEST_CASE(find1);
-
         TEST_CASE(size1);
     }
 
@@ -686,15 +683,6 @@ private:
 
 
 
-    void find1()
-    {
-        check("void f(std::vector<int> &ints)\n"
-              "{\n"
-              "    std::vector<int>::iterator it = std::find(ints.begin(), ints.end(), 33);\n"
-              "    *it = 11;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
 
     void size1()
     {
