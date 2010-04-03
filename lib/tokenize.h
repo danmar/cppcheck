@@ -262,7 +262,7 @@ public:
 
     std::vector<const Token *> _functionList;
 
-    void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split=false);
+    void addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split = false);
     void addtoken(const Token *tok, const unsigned int lineno, const unsigned int fileno);
 
     /**
