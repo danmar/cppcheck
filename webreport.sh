@@ -14,4 +14,7 @@ rm -R htdocs/coverage_report
 mv doxyoutput/html htdocs/doxyoutput
 mv coverage_report htdocs/
 
+# Detect duplicate code..
+~/pmd-4.2.5/bin/cpd.sh lib/ > htdocs/cpd.txt
+
 scp -r htdocs hyd_danmar,cppcheck@web.sourceforge.net:/home/groups/c/cp/cppcheck/
