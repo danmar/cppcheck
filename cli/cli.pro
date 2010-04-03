@@ -27,7 +27,7 @@ win32 {
 
 # Add more strict compiling flags for GCC
 contains(QMAKE_CXX, g++) {
-    QMAKE_CXXFLAGS_WARN_ON += -Wextra -pedantic -Wfloat-equal -Wcast-qual -Wlogical-op
+    QMAKE_CXXFLAGS_WARN_ON += -Wextra -pedantic -Wfloat-equal -Wcast-qual -Wlogical-op -Wno-long-long
 
     CONFIG(debug, debug|release) {
         # checked STL
