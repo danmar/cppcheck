@@ -172,6 +172,13 @@ private:
     bool isMemberVar(const std::string &classname, const Var *varlist, const Token *tok);
     bool checkConstFunc(const std::string &classname, const Var *varlist, const Token *tok);
 
+    /**
+     * @brief Helper function for operatorEqRetRefThis that checks if there are errors
+     * @param tok The "operator" token in a operator=(.. function
+     * @param classname Name of class
+     */
+    void operatorEqRetRefThis_finderr(const Token *tok, const std::string &classname);
+
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
     void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool hasPrivateConstructor);

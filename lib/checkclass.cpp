@@ -919,6 +919,37 @@ static void nameStr(const Token * name, int length, std::string & str)
     }
 }
 
+void CheckClass::operatorEqRetRefThis_finderr(const Token *tok, const std::string &classname)
+{
+    // find the ')'
+    const Token *tok1 = tok->tokAt(2)->link();
+
+    // is there an implementation?
+    if (Token::simpleMatch(tok1, ") {"))
+    {
+        bool foundReturn = false;
+        const Token *last = tok1->next()->link();
+        for (tok1 = tok1->tokAt(2); tok1 && tok1 != last; tok1 = tok1->next())
+        {
+            // check for return of reference to this
+            if (tok1->str() == "return")
+            {
+                foundReturn = true;
+                std::string cast("( " + classname + " & )");
+                if (Token::Match(tok1->next(), cast.c_str()))
+                    tok1 = tok1->tokAt(4);
+
+                if (!(Token::Match(tok1->tokAt(1), "(| * this ;|=") ||
+                      Token::Match(tok1->tokAt(1), "(| * this +=") ||
+                      Token::Match(tok1->tokAt(1), "operator = (")))
+                    operatorEqRetRefThisError(tok);
+            }
+        }
+        if (!foundReturn)
+            operatorEqRetRefThisError(tok);
+    }
+}
+
 void CheckClass::operatorEqRetRefThis()
 {
     const Token *tok2 = _tokenizer->tokens();
@@ -952,32 +983,7 @@ void CheckClass::operatorEqRetRefThis()
                 // check class name
                 if (tok1->tokAt(-(1 + nameLength)) && nameMatch(name, tok1->tokAt(-(1 + nameLength)), nameLength))
                 {
-                    // may take overloaded argument types so no need to check them
-                    tok1 = tok->tokAt(2)->link();
-
-                    if (tok1 && tok1->next() && tok1->next()->str() == "{")
-                    {
-                        bool foundReturn = false;
-                        const Token *last = tok1->next()->link();
-                        for (tok1 = tok1->tokAt(2); tok1 && tok1 != last; tok1 = tok1->next())
-                        {
-                            // check for return of reference to this
-                            if (tok1->str() == "return")
-                            {
-                                foundReturn = true;
-                                std::string cast("( " + name->str() + " & )");
-                                if (Token::Match(tok1->next(), cast.c_str()))
-                                    tok1 = tok1->tokAt(4);
-
-                                if (!(Token::Match(tok1->tokAt(1), "(| * this ;|=") ||
-                                      Token::Match(tok1->tokAt(1), "(| * this +=") ||
-                                      Token::Match(tok1->tokAt(1), "operator = (")))
-                                    operatorEqRetRefThisError(tok);
-                            }
-                        }
-                        if (!foundReturn)
-                            operatorEqRetRefThisError(tok);
-                    }
+                    operatorEqRetRefThis_finderr(tok, name->str());
                 }
             }
         }
@@ -1001,44 +1007,17 @@ void CheckClass::operatorEqRetRefThis()
                     tok1 = tok1->previous();
                 }
 
-                if (tok1 && Token::Match(tok1, "struct %var%"))
+                if (Token::Match(tok1, "struct|class %var%"))
                 {
-                    isPublic = true;
-                    name = tok1->tokAt(1);
-                }
-                else if (tok1 && Token::Match(tok1, "class %var%"))
-                {
+                    // data members in structs are public by default
+                    isPublic = bool(tok1->str() == "struct");
+
                     name = tok1->tokAt(1);
                 }
 
                 if (tok->tokAt(-2) && tok->tokAt(-2)->str() == name->str())
                 {
-                    // may take overloaded argument types so no need to check them
-                    tok1 = tok->tokAt(2)->link();
-
-                    if (tok1 && tok1->next() && tok1->next()->str() == "{")
-                    {
-                        bool foundReturn = false;
-                        const Token *last = tok1->next()->link();
-                        for (tok1 = tok1->tokAt(2); tok1 && tok1 != last; tok1 = tok1->next())
-                        {
-                            // check for return of reference to this
-                            if (tok1->str() == "return")
-                            {
-                                foundReturn = true;
-                                std::string cast("( " + name->str() + " & )");
-                                if (Token::Match(tok1->next(), cast.c_str()))
-                                    tok1 = tok1->tokAt(4);
-
-                                if (!(Token::Match(tok1->tokAt(1), "(| * this ;|=") ||
-                                      Token::Match(tok1->tokAt(1), "(| * this +=") ||
-                                      Token::Match(tok1->tokAt(1), "operator = (")))
-                                    operatorEqRetRefThisError(tok);
-                            }
-                        }
-                        if (!foundReturn)
-                            operatorEqRetRefThisError(tok);
-                    }
+                    operatorEqRetRefThis_finderr(tok, name->str());
                 }
             }
         }
