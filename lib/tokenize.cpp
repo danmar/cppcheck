@@ -85,10 +85,30 @@ const std::vector<std::string> *Tokenizer::getFiles() const
 // add a token. Used by 'Tokenizer'
 //---------------------------------------------------------------------------
 
-void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsigned int fileno)
+void Tokenizer::addtoken(const char str[], const unsigned int lineno, const unsigned int fileno, bool split)
 {
     if (str[0] == 0)
         return;
+
+    // If token contains # characters, split it up
+    if (split && strstr(str, "##"))
+    {
+        std::string temp;
+        for (unsigned int i = 0; str[i]; ++i)
+        {
+            if (strncmp(&str[i], "##", 2) == 0)
+            {
+                addtoken(temp.c_str(), lineno, fileno, false);
+                temp.clear();
+                addtoken("##", lineno, fileno, false);
+                ++i;
+            }
+            else
+                temp += str[i];
+        }
+        addtoken(temp.c_str(), lineno, fileno, false);
+        return;
+    }
 
     // Replace hexadecimal value with decimal
     std::ostringstream str2;
@@ -338,26 +358,7 @@ void Tokenizer::createTokens(std::istream &code)
                     continue;
                 }
 
-                // If token contains # characters, split it up
-                if (CurrentToken.find("##") == std::string::npos)
-                    addtoken(CurrentToken.c_str(), lineno, FileIndex);
-                else
-                {
-                    std::string temp;
-                    for (std::string::size_type i = 0; i < CurrentToken.length(); ++i)
-                    {
-                        if (CurrentToken[i] == '#' && CurrentToken.length() + 1 > i && CurrentToken[i+1] == '#')
-                        {
-                            addtoken(temp.c_str(), lineno, FileIndex);
-                            temp.clear();
-                            addtoken("##", lineno, FileIndex);
-                            ++i;
-                        }
-                        else
-                            temp += CurrentToken[i];
-                    }
-                    addtoken(temp.c_str(), lineno, FileIndex);
-                }
+                addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
 
                 CurrentToken.clear();
 
@@ -383,25 +384,7 @@ void Tokenizer::createTokens(std::istream &code)
 
         CurrentToken += ch;
     }
-    if (CurrentToken.find("##") == std::string::npos)
-        addtoken(CurrentToken.c_str(), lineno, FileIndex);
-    else
-    {
-        std::string temp;
-        for (std::string::size_type i = 0; i < CurrentToken.length(); ++i)
-        {
-            if (CurrentToken[i] == '#' && CurrentToken.length() + 1 > i && CurrentToken[i+1] == '#')
-            {
-                addtoken(temp.c_str(), lineno, FileIndex);
-                temp.clear();
-                addtoken("##", lineno, FileIndex);
-                ++i;
-            }
-            else
-                temp += CurrentToken[i];
-        }
-        addtoken(temp.c_str(), lineno, FileIndex);
-    }
+    addtoken(CurrentToken.c_str(), lineno, FileIndex, true);
 }
 
 void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, const std::string &type)
