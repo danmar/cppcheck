@@ -2629,7 +2629,10 @@ void CheckOther::zerodivError(const Token *tok)
 
 void CheckOther::mathfunctionCallError(const Token *tok)
 {
-    reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
+    if (tok)
+        reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
+    else
+        reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
 }
 
 void CheckOther::postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement)

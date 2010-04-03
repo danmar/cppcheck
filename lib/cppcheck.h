@@ -124,6 +124,12 @@ public:
         _settings.terminate();
     }
 
+    /**
+     * @brief Call all "getErrorMessages" in all registered Check classes.
+     * Also print out xml header and footer.
+     */
+    void getErrorMessages();
+
 private:
     void checkFile(const std::string &code, const char FileName[]);
 

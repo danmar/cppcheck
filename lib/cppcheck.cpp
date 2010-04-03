@@ -320,19 +320,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         // print all possible error messages..
         else if (strcmp(argv[i], "--errorlist") == 0)
         {
-            // call all "getErrorMessages" in all registered Check classes
-            std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
-            for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
-            {
-                (*it)->getErrorMessages();
-            }
-
-            Tokenizer tokenizer(&_settings, 0);
-            tokenizer.getErrorMessages();
-
-            std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
-
-            return;
+            getErrorMessages();
         }
 
         // documentation..
@@ -673,4 +661,19 @@ const std::vector<std::string> &CppCheck::filenames() const
 void CppCheck::reportStatus(unsigned int /*index*/, unsigned int /*max*/)
 {
 
+}
+
+void CppCheck::getErrorMessages()
+{
+    // call all "getErrorMessages" in all registered Check classes
+    std::cout << ErrorLogger::ErrorMessage::getXMLHeader();
+    for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+    {
+        (*it)->getErrorMessages();
+    }
+
+    Tokenizer tokenizer(&_settings, 0);
+    tokenizer.getErrorMessages();
+
+    std::cout << ErrorLogger::ErrorMessage::getXMLFooter() << std::endl;
 }

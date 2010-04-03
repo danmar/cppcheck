@@ -54,6 +54,7 @@ private:
 
         TEST_CASE(include);
         TEST_CASE(templateFormat);
+        TEST_CASE(getErrorMessages);
     }
 
     void linenumbers()
@@ -119,6 +120,13 @@ private:
         ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"testSeverity\" msg=\"long testMessage\"/>", errmsg.toXML());
         ASSERT_EQUALS("[some/{file}file.cpp:10]: (testSeverity) long testMessage", errmsg.toText());
         ASSERT_EQUALS("testId-some/{file}file.cpp,testSeverity.10?{long testMessage}", errmsg.toText("{id}-{file},{severity}.{line}?{{message}}"));
+    }
+
+    void getErrorMessages()
+    {
+        errout.str("");
+        CppCheck cppCheck(*this);
+        cppCheck.getErrorMessages();
     }
 };
 
