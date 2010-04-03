@@ -1379,13 +1379,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                     done = false;
                 }
 
-                // Delete "if ; else ;"
-                else if (Token::simpleMatch(tok2->next(), "if ; else ;"))
-                {
-                    Token::eraseTokens(tok2, tok2->tokAt(4));
-                    done = false;
-                }
-
                 // Reduce "if X ; else X ;" => "X ;"
                 else if (Token::Match(tok2->next(), "if %var% ; else %var% ;") &&
                          std::string(tok2->strAt(2)) == std::string(tok2->strAt(5)))
