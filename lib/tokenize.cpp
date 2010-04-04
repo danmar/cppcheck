@@ -6304,6 +6304,8 @@ void Tokenizer::cppcheckError(const Token *tok) const
 
     if (_errorLogger)
         _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
 }
 
 
@@ -6783,6 +6785,7 @@ void Tokenizer::simplifyConst()
 void Tokenizer::getErrorMessages()
 {
     syntaxError(0, ' ');
+    cppcheckError(0);
 }
 
 /** find pattern */

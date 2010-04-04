@@ -196,5 +196,7 @@ void CheckUnusedFunctions::check()
     }
 }
 
-
-
+void CheckUnusedFunctions::unusedFunctionError(const Token *tok)
+{
+    reportError(tok, Severity::style, "unusedFunction", "The function 'funcName' is never used");
+}

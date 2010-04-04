@@ -22,13 +22,14 @@
 #define checkunusedfunctionsH
 //---------------------------------------------------------------------------
 
+#include "check.h"
 #include "tokenize.h"
 #include "errorlogger.h"
 
 /// @addtogroup Checks
 /// @{
 
-class CheckUnusedFunctions
+class CheckUnusedFunctions: public Check
 {
 public:
     CheckUnusedFunctions(ErrorLogger *errorLogger = 0);
@@ -50,6 +51,35 @@ public:
     void check();
 
 private:
+
+    void getErrorMessages()
+    {
+        unusedFunctionError(0);
+    }
+
+    /**
+     * Dummy implementation, just to provide error for --errorlist
+     */
+    void unusedFunctionError(const Token *tok);
+
+    /**
+     * Dummy implementation, just to provide error for --errorlist
+     */
+    void runSimplifiedChecks(const Tokenizer */*tokenizer*/, const Settings */*settings*/, ErrorLogger */*errorLogger*/)
+    {
+
+    }
+
+    std::string name() const
+    {
+        return "Unused functions";
+    }
+
+    std::string classInfo() const
+    {
+        return "Check for functions that are never called\n";
+    }
+
     ErrorLogger *_errorLogger;
 
 
