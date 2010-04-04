@@ -2288,7 +2288,7 @@ private:
                         }
                         if (tok3->varId() == varid)
                         {
-                            varid = 0;	// variable is used.. maybe it's initialized. clear the variable id.
+                            varid = 0;  // variable is used.. maybe it's initialized. clear the variable id.
                             break;
                         }
                     }
@@ -2340,7 +2340,7 @@ public:
     /** Functions that don't handle uninitialized variables well */
     static std::set<std::string> uvarFunctions;
 
-    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func)
+    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func, bool showAll)
     {
         for (const Token *tok = tokens; tok; tok = tok->next())
         {
@@ -2365,9 +2365,67 @@ public:
                         continue;
                     }
 
-                    if (Token::Match(tok2, "const %type% %var% ,|)") && tok2->next()->isStandardType())
+                    if (tok2->isStandardType() && Token::Match(tok2, "%type% & %var% ,|)"))
                     {
-                        tok2 = tok2->tokAt(2);
+                        const unsigned int varid(tok2->tokAt(2)->varId());
+
+                        // flags for read/write
+                        bool r = false, w = false;
+
+                        // check how the variable is used in the function
+                        unsigned int indentlevel = 0;
+                        for (const Token *tok3 = tok2; tok3; tok3 = tok3->next())
+                        {
+                            if (tok3->str() == "{")
+                                ++indentlevel;
+                            else if (tok3->str() == "}")
+                            {
+                                if (indentlevel <= 1)
+                                    break;
+                                --indentlevel;
+                            }
+                            else if (indentlevel == 0 && tok3->str() == ";")
+                                break;
+                            else if (indentlevel >= 1 && tok3->varId() == varid)
+                            {
+                                if (Token::Match(tok3->previous(), "++|--") ||
+                                    Token::Match(tok3->next(), "++|--"))
+                                {
+                                    r = true;
+                                }
+
+                                // --all
+                                else if (showAll)
+                                {
+                                    if (!Token::simpleMatch(tok3->next(), "="))
+                                        r = true;
+                                    else
+                                    {
+                                        w = true;
+                                        break;
+                                    }
+                                }
+
+                                else
+                                {
+                                    w = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!r || w)
+                            break;
+
+                        tok2 = tok2->tokAt(3);
+                        continue;
+                    }
+
+                    if (Token::Match(tok2, "const %type% &|*| const| %var% ,|)") && tok2->next()->isStandardType())
+                    {
+                        tok2 = tok2->tokAt(3);
+                        while (tok2->isName())
+                            tok2 = tok2->next();
                         continue;
                     }
 
@@ -2389,9 +2447,9 @@ std::set<std::string> CheckUninitVar::uvarFunctions;
 /// @}
 
 
-void CheckOther::analyseFunctions(const Token * const tokens, std::set<std::string> &func)
+void CheckOther::analyseFunctions(const Token * const tokens, std::set<std::string> &func, bool showAll)
 {
-    CheckUninitVar::analyseFunctions(tokens, func);
+    CheckUninitVar::analyseFunctions(tokens, func, showAll);
 }
 
 
@@ -2408,7 +2466,7 @@ void CheckOther::executionPaths()
     {
         // no writing if multiple threads are used (TODO: thread safe analysis?)
         if (_settings->_jobs == 1)
-            CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions);
+            CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions, _settings->_showAll);
 
         CheckUninitVar c(this);
         checkExecutionPaths(_tokenizer->tokens(), &c);

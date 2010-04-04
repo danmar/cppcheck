@@ -1843,18 +1843,21 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         std::set<std::string> f;
-        CheckOther::analyseFunctions(tokenizer.tokens(), f);
+        CheckOther::analyseFunctions(tokenizer.tokens(), f, true);
 
         std::string ret;
         for (std::set<std::string>::const_iterator it = f.begin(); it != f.end(); ++it)
-            ret += *it + " ";
+            ret += (ret.empty() ? "" : " ") + *it;
         return ret;
     }
 
     void uninitvar_func()
     {
         // function analysis..
-        ASSERT_EQUALS("foo ", analyseFunctions("void foo(int x) { }"));
+        ASSERT_EQUALS("foo", analyseFunctions("void foo(int x) { }"));
+        ASSERT_EQUALS("foo", analyseFunctions("void foo(const int &x) { }"));
+        ASSERT_EQUALS("foo", analyseFunctions("void foo(int &x) { ++x; }"));
+        ASSERT_EQUALS("", analyseFunctions("void foo(int &x) { x = 0; }"));
         ASSERT_EQUALS("", analyseFunctions("void foo(s x) { }"));
 
         // function calls..
