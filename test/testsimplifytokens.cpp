@@ -856,13 +856,9 @@ private:
         }
 
         {
+            // Ticket #799
             const char code[] = "; const char str[] = {'1'}; sizeof(str);";
-
-            const char str[] = {'1'};
-            std::ostringstream expected;
-            expected << "; const char * str ; str = { '1' } ; " << sizeof(str) << " ;";
-
-            TODO_ASSERT_EQUALS(expected.str(), sizeof_(code));
+            ASSERT_EQUALS("; const char str [ 1 ] = { '1' } ; 1 ;", sizeof_(code));
         }
 
         // ticket #716 - sizeof string
