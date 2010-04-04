@@ -2222,23 +2222,23 @@ private:
               "{\n"
               "    std::cout <<  log(1.0E-3) << std::endl;\n"
               "}");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo()\n"
               "{\n"
               "    std::cout <<  log(1E-3) << std::endl;\n"
               "}");
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // acos
         check("void foo()\n"
               "{\n"
-              "    std::cout <<  acos(1) 		<< std::endl;\n"
-              "    std::cout <<  acos(-1) 		<< std::endl;\n"
-              "    std::cout <<  acos(0.1)  	<< std::endl;\n"
-              "    std::cout <<  acos(0.0001) 	<< std::endl;\n"
-              "    std::cout <<  acos(0.01) 	<< std::endl;\n"
-              "    std::cout <<  acos(1.0E-1) 	<< std::endl;\n"
+              "    std::cout <<  acos(1)        << std::endl;\n"
+              "    std::cout <<  acos(-1)       << std::endl;\n"
+              "    std::cout <<  acos(0.1)      << std::endl;\n"
+              "    std::cout <<  acos(0.0001)   << std::endl;\n"
+              "    std::cout <<  acos(0.01)     << std::endl;\n"
+              "    std::cout <<  acos(1.0E-1)   << std::endl;\n"
               "    std::cout <<  acos(-1.0E-1)  << std::endl;\n"
               "    std::cout <<  acos(+1.0E-1)  << std::endl;\n"
               "    std::cout <<  acos(0.1E-1)   << std::endl;\n"

@@ -41,6 +41,7 @@ private:
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize3);
         TEST_CASE(tokenize4);
+        TEST_CASE(tokenize5);
 
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
@@ -304,6 +305,13 @@ private:
                       "const int i ;\n"
                       "}", tokenizeAndStringify(code.c_str()));
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void tokenize5()
+    {
+        // Tokenize values
+        ASSERT_EQUALS("; + 1E3 ;", tokenizeAndStringify("; +1E3 ;"));
+        ASSERT_EQUALS("; 1E-2 ;", tokenizeAndStringify("; 1E-2 ;"));
     }
 
     void wrong_syntax()

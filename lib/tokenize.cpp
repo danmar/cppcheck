@@ -331,7 +331,8 @@ void Tokenizer::createTokens(std::istream &code)
             else if (strchr("+-", ch) &&
                      CurrentToken.length() > 0 &&
                      std::isdigit(CurrentToken[0]) &&
-                     CurrentToken[CurrentToken.length()-1] == 'e')
+                     (CurrentToken[CurrentToken.length()-1] == 'e' ||
+                      CurrentToken[CurrentToken.length()-1] == 'E'))
             {
                 // Don't separate doubles "4.2e+10"
             }
