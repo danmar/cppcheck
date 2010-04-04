@@ -1474,8 +1474,12 @@ private:
         }
     }
 
-    /** variable is dereferenced. If the variable is null there's an error */
-    static void dereference(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    /**
+     * Dereferencing variable. Check if it is safe (if the variable is null there's an error)
+     * @param checks Checks
+     * @param tok token where dereferencing happens
+     */
+    static void dereference(std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());
 
@@ -1485,19 +1489,18 @@ private:
             CheckNullpointer *c = dynamic_cast<CheckNullpointer *>(*it);
             if (c && c->varId == varid && c->null)
             {
-                foundError = true;
                 CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
                 if (checkOther)
                 {
                     checkOther->nullPointerError(tok, c->varname);
-                    break;
+                    return;
                 }
             }
         }
     }
 
     /** parse tokens */
-    const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
+    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
     {
         if (Token::Match(tok.previous(), "[;{}] const| %type% * %var% ;"))
         {
@@ -1543,7 +1546,7 @@ private:
             std::list<const Token *> var;
             parseFunctionCall(tok, var, 0);
             for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
-                dereference(foundError, checks, *it);
+                dereference(checks, *it);
         }
 
         if (tok.varId() != 0)
@@ -1551,17 +1554,17 @@ private:
             if (Token::Match(tok.previous(), "[;{}=] %var% = 0 ;"))
                 setnull(checks, tok.varId());
             else if (Token::Match(tok.tokAt(-2), "[;{}=+-/(,] * %var%"))
-                dereference(foundError, checks, &tok);
+                dereference(checks, &tok);
             else if (Token::Match(tok.tokAt(-2), "return * %var%"))
-                dereference(foundError, checks, &tok);
+                dereference(checks, &tok);
             else if (!Token::simpleMatch(tok.tokAt(-2), "& (") && Token::Match(tok.next(), ". %var%"))
-                dereference(foundError, checks, &tok);
+                dereference(checks, &tok);
             else if (Token::Match(tok.previous(), "[;{}=+-/(,] %var% [ %any% ]"))
-                dereference(foundError, checks, &tok);
+                dereference(checks, &tok);
             else if (Token::Match(tok.previous(), "return %var% [ %any% ]"))
-                dereference(foundError, checks, &tok);
+                dereference(checks, &tok);
             else if (Token::Match(&tok, "%var% ("))
-                dereference(foundError, checks, &tok);
+                dereference(checks, &tok);
             else
                 bailOutVar(checks, tok.varId());
         }
@@ -1575,7 +1578,6 @@ private:
                 if (checkOther)
                 {
                     checkOther->nullPointerError(&tok);
-                    foundError = true;
                 }
             }
         }
@@ -1588,11 +1590,10 @@ private:
     {
         if (Token::Match(&tok, "!| %var% ("))
         {
-            bool foundError = false;
             std::list<const Token *> var;
             parseFunctionCall(tok.str() == "!" ? *tok.next() : tok, var, 0);
             for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
-                dereference(foundError, checks, *it);
+                dereference(checks, *it);
         }
 
         return ExecutionPath::parseCondition(tok, checks);
@@ -1656,7 +1657,7 @@ private:
     }
 
     /** Initializing a pointer value. For example: *p = 0; */
-    static void init_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    static void init_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());
         if (!varid)
@@ -1676,7 +1677,7 @@ private:
                 }
                 else
                 {
-                    use_pointer(foundError, checks, tok);
+                    use_pointer(checks, tok);
                 }
             }
 
@@ -1685,7 +1686,7 @@ private:
     }
 
     /** Deallocate a pointer. For example: free(p); */
-    static void dealloc_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    static void dealloc_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
     {
         const unsigned int varid(tok->varId());
         if (!varid)
@@ -1702,7 +1703,6 @@ private:
                     CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
                     if (checkOther)
                     {
-                        foundError = true;
                         checkOther->uninitvarError(tok, c->varname);
                         break;
                     }
@@ -1777,16 +1777,16 @@ private:
 
     /**
      * use - called from the use* functions below.
-     * @param foundError this is set to true if an error is found
      * @param checks all available checks
      * @param tok variable token
      * @param mode specific behaviour
+     * @return if error is found, true is returned
      */
-    static void use(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok, const int mode)
+    static bool use(std::list<ExecutionPath *> &checks, const Token *tok, const int mode)
     {
         const unsigned int varid(tok->varId());
         if (varid == 0)
-            return;
+            return false;
 
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
@@ -1819,56 +1819,55 @@ private:
                         checkOther->uninitdataError(tok, c->varname);
                     else
                         checkOther->uninitvarError(tok, c->varname);
-                    foundError = true;
-                    break;
+                    return true;
                 }
             }
         }
+
+        // No error found
+        return false;
     }
 
     /**
      * Reading variable. Use this function in situations when it is
      * invalid to read the data of the variable but not the address.
-     * @param foundError this is set to true if an error is found
      * @param checks all available checks
      * @param tok variable token
+     * @return if error is found, true is returned
      */
-    static void use(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    static bool use(std::list<ExecutionPath *> &checks, const Token *tok)
     {
-        use(foundError, checks, tok, 0);
+        return use(checks, tok, 0);
     }
 
     /**
      * Reading array elements. If the variable is not an array then the usage is ok.
-     * @param foundError this is set to true if an error is found
      * @param checks all available checks
      * @param tok variable token
      */
-    static void use_array(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    static void use_array(std::list<ExecutionPath *> &checks, const Token *tok)
     {
-        use(foundError, checks, tok, 1);
+        use(checks, tok, 1);
     }
 
     /**
      * Bad pointer usage. If the variable is not a pointer then the usage is ok.
-     * @param foundError this is set to true if an error is found
      * @param checks all available checks
      * @param tok variable token
      */
-    static void use_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    static void use_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
     {
-        use(foundError, checks, tok, 2);
+        use(checks, tok, 2);
     }
 
     /**
      * Using variable.. if it's a dead pointer the usage is invalid.
-     * @param foundError this is set to true if an error is found
      * @param checks all available checks
      * @param tok variable token
      */
-    static void use_dead_pointer(bool &foundError, std::list<ExecutionPath *> &checks, const Token *tok)
+    static void use_dead_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
     {
-        use(foundError, checks, tok, 3);
+        use(checks, tok, 3);
     }
 
     /** declaring a variable */
@@ -1916,7 +1915,7 @@ private:
     }
 
     /** parse tokens. @sa ExecutionPath::parse */
-    const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
+    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
     {
         // Variable declaration..
         if (tok.str() != "return")
@@ -1967,13 +1966,13 @@ private:
             // Used..
             if (Token::Match(tok.previous(), "[[(,+-*/] %var% []),+-*/]"))
             {
-                use(foundError, checks, &tok);
+                use(checks, &tok);
                 return &tok;
             }
 
             if (Token::Match(tok.previous(), "++|--") || Token::Match(tok.next(), "++|--"))
             {
-                use(foundError, checks, &tok);
+                use(checks, &tok);
                 return &tok;
             }
 
@@ -1989,7 +1988,13 @@ private:
                     if (tok2->varId() &&
                         !Token::Match(tok2->previous(), "&|::") &&
                         !Token::simpleMatch(tok2->next(), "="))
-                        use(foundError, checks, tok2);
+                    {
+                        bool foundError = use(checks, tok2);
+                        if (foundError)
+                        {
+                            bailOutVar(checks, tok2->varId());
+                        }
+                    }
                 }
 
                 // pointer aliasing?
@@ -2001,15 +2006,15 @@ private:
 
             if (Token::simpleMatch(tok.next(), "("))
             {
-                use_pointer(foundError, checks, &tok);
+                use_pointer(checks, &tok);
             }
 
             if (Token::Match(tok.tokAt(-2), "[;{}] *"))
             {
                 if (Token::simpleMatch(tok.next(), "="))
-                    init_pointer(foundError, checks, &tok);
+                    init_pointer(checks, &tok);
                 else
-                    use_pointer(foundError, checks, &tok);
+                    use_pointer(checks, &tok);
                 return &tok;
             }
 
@@ -2025,11 +2030,11 @@ private:
                 if (Token::Match(eq, "+=|-=|*=|/=|&=|^=") || eq->str() == "|=")
                 {
                     if (tok.previous()->str() == "*")
-                        use_pointer(foundError, checks, &tok);
+                        use_pointer(checks, &tok);
                     else if (tok.next()->str() == "[")
-                        use_array(foundError, checks, &tok);
+                        use_array(checks, &tok);
                     else
-                        use(foundError, checks, &tok);
+                        use(checks, &tok);
                 }
             }
 
@@ -2059,7 +2064,7 @@ private:
             if (Token::simpleMatch(tok.previous(), "delete") ||
                 Token::simpleMatch(tok.tokAt(-3), "delete [ ]"))
             {
-                dealloc_pointer(foundError, checks, &tok);
+                dealloc_pointer(checks, &tok);
                 return &tok;
             }
         }
@@ -2072,7 +2077,7 @@ private:
             // deallocate pointer
             if (Token::Match(&tok, "free|kfree|fclose ( %var% )"))
             {
-                dealloc_pointer(foundError, checks, tok.tokAt(2));
+                dealloc_pointer(checks, tok.tokAt(2));
                 return tok.tokAt(3);
             }
 
@@ -2081,7 +2086,7 @@ private:
                 std::list<const Token *> var;
                 parseFunctionCall(tok, var, 1);
                 for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
-                    use_array(foundError, checks, *it);
+                    use_array(checks, *it);
             }
 
             // strncpy doesn't 0-terminate first parameter
@@ -2122,7 +2127,7 @@ private:
                 else if (tok2->varId())
                 {
                     if (Token::Match(tok2->tokAt(-2), "[(,] *") || Token::Match(tok2->next(), ". %var%"))
-                        use_dead_pointer(foundError, checks, tok2);
+                        use_dead_pointer(checks, tok2);
 
                     // it is possible that the variable is initialized here
                     bailouts.insert(tok2->varId());
@@ -2163,7 +2168,7 @@ private:
             // Todo: if (!array && ..
             if (Token::Match(tok.next(), "%var% ;"))
             {
-                use(foundError, checks, tok.next());
+                use(checks, tok.next());
             }
         }
 
@@ -2181,7 +2186,7 @@ private:
                 {
                     if (!Token::Match(tok.tokAt(-3), "[;{}] %var% ="))
                     {
-                        use(foundError, checks, &tok);
+                        use(checks, &tok);
                         return &tok;
                     }
 
@@ -2193,7 +2198,7 @@ private:
                         if (tok2 && !Token::simpleMatch(tok2->previous(), "*"))
                         */
                         {
-                            use(foundError, checks, &tok);
+                            use(checks, &tok);
                             return &tok;
                         }
                     }
@@ -2206,7 +2211,7 @@ private:
                 while (Token::Match(tok2, ". %var%"))
                     tok2 = tok2->tokAt(2);
                 if (tok2 && tok2->str() != "=")
-                    use_pointer(foundError, checks, &tok);
+                    use_pointer(checks, &tok);
                 else
                     bailOutVar(checks, tok.varId());
                 return &tok;
@@ -2220,7 +2225,7 @@ private:
 
             if (Token::Match(tok.tokAt(-2), "[,(=] *"))
             {
-                use_pointer(foundError, checks, &tok);
+                use_pointer(checks, &tok);
                 return &tok;
             }
 
@@ -2254,7 +2259,7 @@ private:
             {
                 // If the variable hasn't been initialized then call "use"
                 if (varid1.find(tok2->next()->varId()) == varid1.end())
-                    use(foundError, checks, tok2->next());
+                    use(checks, tok2->next());
             }
 
             // goto stepcode
@@ -2302,7 +2307,7 @@ private:
                             tok2 = tok2->next();
 
                         // call "use"
-                        use(foundError, checks, tok2);
+                        use(checks, tok2);
                     }
                 }
             }
@@ -2313,22 +2318,20 @@ private:
 
     bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
     {
-        bool foundError = false;
-
         if (tok.varId() && Token::Match(&tok, "%var% <|<=|==|!=|)|["))
-            use(foundError, checks, &tok);
+            use(checks, &tok);
 
         else if (Token::Match(&tok, "!| %var% ("))
         {
             std::list<const Token *> var;
             parseFunctionCall(tok.str() == "!" ? *tok.next() : tok, var, 1);
             for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
-                use_array(foundError, checks, *it);
+                use_array(checks, *it);
         }
 
         else if (Token::Match(&tok, "! %var% )"))
         {
-            use(foundError, checks, &tok);
+            use(checks, &tok);
             return false;
         }
 

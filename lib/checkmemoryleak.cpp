@@ -2747,7 +2747,7 @@ private:
     }
 
     /** return */
-    static void ret(const std::list<ExecutionPath *> &checks, const Token *tok, bool &foundError)
+    static void ret(const std::list<ExecutionPath *> &checks, const Token *tok)
     {
         std::list<ExecutionPath *>::const_iterator it;
         for (it = checks.begin(); it != checks.end(); ++it)
@@ -2759,7 +2759,6 @@ private:
                 if (checkMemleak)
                 {
                     checkMemleak->memleakError(tok, C->varname, false);
-                    foundError = true;
                     break;
                 }
             }
@@ -2767,7 +2766,7 @@ private:
     }
 
     /** parse the tokens */
-    const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const
+    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
     {
         //std::cout << "CheckLocalLeaks::parse " << tok.str() << std::endl;
         //printOut(checks);
@@ -2808,7 +2807,7 @@ private:
 
         if (tok.str() == "return")
         {
-            ret(checks, &tok, foundError);
+            ret(checks, &tok);
         }
 
         return &tok;
@@ -2817,8 +2816,7 @@ private:
     /** going out of scope - all execution paths end */
     void end(const std::list<ExecutionPath *> &checks, const Token *tok) const
     {
-        bool foundError = false;
-        ret(checks, tok, foundError);
+        ret(checks, tok);
     }
 };
 

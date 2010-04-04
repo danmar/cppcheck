@@ -1040,8 +1040,8 @@ private:
                          "    int r = *p;\n"
                          "    int r2 = *p2;\n"
                          "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n"
-                           "[test.cpp:6]: (error) Null pointer dereference\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n"
+                      "[test.cpp:6]: (error) Null pointer dereference\n", errout.str());
 
     }
 

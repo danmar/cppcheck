@@ -56,17 +56,17 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
 }
 
 
-static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
+static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
 {
     if (!tok || tok->str() == "}" || checks.empty())
-        return 0;
+        return;
 
     const std::auto_ptr<ExecutionPath> check(checks.front()->copy());
 
     for (; tok; tok = tok->next())
     {
         if (tok->str() == "}")
-            return 0;
+            return;
 
         if (Token::simpleMatch(tok, "while ("))
         {
@@ -74,7 +74,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             if (checks.size() > 10 || check->parseCondition(*tok->tokAt(2), checks))
             {
                 ExecutionPath::bailOut(checks);
-                return 0;
+                return;
             }
 
             // skip "while (fgets()!=NULL)"
@@ -95,7 +95,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         if (tok->str() == "goto")
         {
             ExecutionPath::bailOut(checks);
-            return 0;
+            return;
         }
 
         // for/while/switch/do .. bail out
@@ -110,7 +110,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             if (!tok2 || tok2->str() != "{")
             {
                 ExecutionPath::bailOut(checks);
-                return 0;
+                return;
             }
 
             // skip { .. }
@@ -137,13 +137,13 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         if (Token::simpleMatch(tok, ") {"))
         {
             ExecutionPath::bailOut(checks);
-            return 0;
+            return;
         }
 
         if (Token::Match(tok, "abort|exit ("))
         {
             ExecutionPath::bailOut(checks);
-            return 0;
+            return;
         }
 
         // don't parse into "struct type { .."
@@ -160,14 +160,14 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             if (Token::Match(tok->tokAt(2), ". %var% ="))
             {
                 ExecutionPath::bailOut(checks);
-                return 0;
+                return;
             }
 
             tok = tok->next()->link();
             if (!tok)
             {
                 ExecutionPath::bailOut(checks);
-                return 0;
+                return;
             }
             continue;
         }
@@ -175,12 +175,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
         // ; { ... }
         if (Token::Match(tok->previous(), "[;{}] {"))
         {
-            const Token *tokerr = checkExecutionPaths_(tok->next(), checks);
-            if (tokerr)
-            {
-                ExecutionPath::bailOut(checks);
-                return tokerr;
-            }
+            checkExecutionPaths_(tok->next(), checks);
             tok = tok->link();
             continue;
         }
@@ -198,7 +193,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 {
                     ExecutionPath::bailOut(checks);
                     ExecutionPath::bailOut(newchecks);
-                    return 0;
+                    return;
                 }
 
                 // goto ")"
@@ -211,7 +206,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                 {
                     ExecutionPath::bailOut(checks);
                     ExecutionPath::bailOut(newchecks);
-                    return 0;
+                    return;
                 }
 
                 // Recursively check into the if ..
@@ -220,13 +215,7 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                     std::list<ExecutionPath *>::iterator it;
                     for (it = checks.begin(); it != checks.end(); ++it)
                         c.push_back((*it)->copy());
-                    const Token *tokerr = checkExecutionPaths_(tok->next(), c);
-                    if (tokerr)
-                    {
-                        ExecutionPath::bailOut(c);
-                        ExecutionPath::bailOut(newchecks);
-                        return tokerr;
-                    }
+                    checkExecutionPaths_(tok->next(), c);
                     while (!c.empty())
                     {
                         newchecks.push_back(c.back());
@@ -247,18 +236,12 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
                     continue;
 
                 // there is no "if"..
-                const Token *tokerr = checkExecutionPaths_(tok->next(), checks);
-                if (tokerr)
-                {
-                    ExecutionPath::bailOut(newchecks);
-                    return tokerr;
-                }
-
+                checkExecutionPaths_(tok->next(), checks);
                 tok = tok->link();
                 if (!tok)
                 {
                     ExecutionPath::bailOut(newchecks);
-                    return 0;
+                    return;
                 }
             }
 
@@ -269,12 +252,9 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
 
 
         {
-            bool foundError = false;
-            tok = check->parse(*tok, foundError, checks);
+            tok = check->parse(*tok, checks);
             if (checks.empty())
-                return 0;
-            else if (foundError)
-                return tok;
+                return;
         }
 
         // return/throw ends all execution paths
@@ -283,7 +263,6 @@ static const Token *checkExecutionPaths_(const Token *tok, std::list<ExecutionPa
             ExecutionPath::bailOut(checks);
         }
     }
-    return 0;
 }
 
 void checkExecutionPaths(const Token *tok, ExecutionPath *c)

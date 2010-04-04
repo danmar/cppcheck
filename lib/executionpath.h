@@ -96,7 +96,7 @@ public:
      * @param checks The execution paths. All execution paths in the list are executed in the current scope.
      * @return the token before the "next" token.
      **/
-    virtual const Token *parse(const Token &tok, bool &foundError, std::list<ExecutionPath *> &checks) const = 0;
+    virtual const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const = 0;
 
     /**
      * Parse condition
