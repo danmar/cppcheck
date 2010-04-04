@@ -99,6 +99,7 @@ private:
         TEST_CASE(simplifyKnownVariables19);
         TEST_CASE(simplifyKnownVariables20);
         TEST_CASE(simplifyKnownVariables21);
+        TEST_CASE(simplifyKnownVariables22);
 
         TEST_CASE(match1);
 
@@ -1054,6 +1055,26 @@ private:
 
         ASSERT_EQUALS(
             "void foo ( ) { int n ; n = 10 ; for ( int i = 0 ; i < 10 ; ++ i ) { } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables22()
+    {
+        // This testcase is related to ticket #1169
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    int n = 10;\n"
+                            "    i = (n >> 1);\n"
+                            "}\n";
+
+        // Wanted result - Ticket #1169 can probably be closed when this works
+        TODO_ASSERT_EQUALS(
+            "void foo ( ) { int n ; n = 10 ; i = ( 10 >> 1 ) ; }",
+            simplifyKnownVariables(code));
+
+        // Current result
+        ASSERT_EQUALS(
+            "void foo ( ) { int n ; n = 10 ; i = ( n >> 1 ) ; }",
             simplifyKnownVariables(code));
     }
 
