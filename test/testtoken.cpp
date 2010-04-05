@@ -23,10 +23,10 @@
 #include <cstring>
 
 extern std::ostringstream errout;
-class TestTOKEN : public TestFixture
+class TestToken : public TestFixture
 {
 public:
-    TestTOKEN() : TestFixture("TestTOKEN")
+    TestToken() : TestFixture("TestToken")
     { }
 
 private:
@@ -123,4 +123,4 @@ private:
     }
 };
 
-REGISTER_TEST(TestTOKEN)
+REGISTER_TEST(TestToken)
