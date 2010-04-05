@@ -1437,6 +1437,16 @@ private:
     // memchr/memset/memcpy/etc
     void memfunc()
     {
+        check("struct S {\n"
+              "    char a[5];\n"
+              "};\n"
+              "void f()\n"
+              "{\n"
+              "    S s;\n"
+              "    memset(s.a, 0, 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: s.a\n", errout.str());
+
         check("void f()\n"
               "{\n"
               "    char str[5];\n"
