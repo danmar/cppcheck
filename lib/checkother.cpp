@@ -2563,6 +2563,13 @@ void CheckOther::checkMathFunctions()
         {
             mathfunctionCallError(tok);
         }
+		// atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
+        else if (Token::Match(tok, "atan2 ( %num% , %num% )") &&
+                 MathLib::isNullValue(tok->tokAt(2)->str()) &&
+				 MathLib::isNullValue(tok->tokAt(4)->str()))
+        {
+            mathfunctionCallError(tok,2);
+        }
     }
 }
 
@@ -2710,10 +2717,15 @@ void CheckOther::zerodivError(const Token *tok)
     reportError(tok, Severity::error, "zerodiv", "Division by zero");
 }
 
-void CheckOther::mathfunctionCallError(const Token *tok)
+void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numParam)
 {
     if (tok)
-        reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
+    {
+		if(numParam == 1)    
+			reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
+		else if (numParam == 2)
+			reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " and " + tok->tokAt(4)->str() + " to " + tok->str() + "() leads to undefined result");
+	}
     else
         reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
 }

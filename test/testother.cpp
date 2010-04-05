@@ -2281,6 +2281,32 @@ private:
               "    std::cout <<  acos(-110) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -110 to acos() leads to undefined result\n", errout.str());
+
+
+        // atan2
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  atan2(1,1)        << std::endl;\n"
+              "    std::cout <<  atan2(-1,-1)      << std::endl;\n"
+              "    std::cout <<  atan2(0.1,1)      << std::endl;\n"
+              "    std::cout <<  atan2(0.0001,100) << std::endl;\n"
+              "    std::cout <<  atan2(0.01m-1)    << std::endl;\n"
+              "    std::cout <<  atan2(1.0E-1,-3)  << std::endl;\n"
+              "    std::cout <<  atan2(-1.0E-1,+2) << std::endl;\n"
+              "    std::cout <<  atan2(+1.0E-1,0)  << std::endl;\n"
+              "    std::cout <<  atan2(0.1E-1,3)   << std::endl;\n"
+              "    std::cout <<  atan2(+0.1E-1,1)  << std::endl;\n"
+              "    std::cout <<  atan2(-0.1E-1,8)  << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  atan2(0,0) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0 and 0 to atan2() leads to undefined result\n", errout.str());
+
+
     }
 };
 
