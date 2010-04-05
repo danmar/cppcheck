@@ -2334,6 +2334,19 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // sqrt
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  sqrt(-1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value -1 to sqrt() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  sqrt(1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
 
     }
 };
