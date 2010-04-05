@@ -1606,6 +1606,13 @@ private:
         checkUninitVar("int f()\n"
                        "{\n"
                        "    char a[10];\n"
+                       "    a[a[0]] = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+
+        checkUninitVar("int f()\n"
+                       "{\n"
+                       "    char a[10];\n"
                        "    *a = '\\0';\n"
                        "    int i = strlen(a);\n"
                        "}\n");

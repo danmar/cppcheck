@@ -1992,9 +1992,9 @@ private:
                 return &tok;
             }
 
-            if (Token::Match(tok.previous(), "[;{}] %var% ="))
+            if (Token::Match(tok.previous(), "[;{}] %var% =|["))
             {
-                // using same variable rhs?
+                // check variable usages in rhs/index
                 for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
                 {
                     if (Token::Match(tok2, ";|)|="))
