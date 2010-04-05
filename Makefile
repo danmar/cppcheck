@@ -116,10 +116,10 @@ lib/checkother.o: lib/checkother.cpp lib/checkother.h lib/check.h lib/token.h li
 lib/checkstl.o: lib/checkstl.cpp lib/checkstl.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkstl.o lib/checkstl.cpp
 
-lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunctions.h lib/tokenize.h lib/classinfo.h lib/token.h lib/errorlogger.h lib/settings.h
+lib/checkunusedfunctions.o: lib/checkunusedfunctions.cpp lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkunusedfunctions.o lib/checkunusedfunctions.cpp
 
-lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/tokenize.h lib/classinfo.h lib/token.h lib/preprocessor.h lib/filelister.h lib/check.h
+lib/cppcheck.o: lib/cppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/preprocessor.h lib/filelister.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/cppcheck.o lib/cppcheck.cpp
 
 lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h
@@ -128,7 +128,7 @@ lib/errorlogger.o: lib/errorlogger.cpp lib/errorlogger.h lib/settings.h lib/toke
 lib/executionpath.o: lib/executionpath.cpp lib/executionpath.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/executionpath.o lib/executionpath.cpp
 
-lib/filelister.o: lib/filelister.cpp lib/filelister.h lib/filelister_unix.h
+lib/filelister.o: lib/filelister.cpp lib/filelister.h lib/filelister_win32.h lib/filelister_unix.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/filelister.o lib/filelister.cpp
 
 lib/filelister_unix.o: lib/filelister_unix.cpp lib/filelister.h lib/filelister_unix.h
@@ -152,13 +152,13 @@ lib/token.o: lib/token.cpp lib/token.h
 lib/tokenize.o: lib/tokenize.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/filelister.h lib/mathlib.h lib/settings.h lib/errorlogger.h lib/check.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/tokenize.o lib/tokenize.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/tokenize.h lib/classinfo.h lib/token.h cli/threadexecutor.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h cli/threadexecutor.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/cppcheckexecutor.o cli/cppcheckexecutor.cpp
 
 cli/main.o: cli/main.cpp cli/cppcheckexecutor.h lib/errorlogger.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/main.o cli/main.cpp
 
-cli/threadexecutor.o: cli/threadexecutor.cpp cli/threadexecutor.h lib/settings.h lib/errorlogger.h lib/cppcheck.h lib/checkunusedfunctions.h lib/tokenize.h lib/classinfo.h lib/token.h
+cli/threadexecutor.o: cli/threadexecutor.cpp cli/threadexecutor.h lib/settings.h lib/errorlogger.h lib/cppcheck.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o cli/threadexecutor.o cli/threadexecutor.cpp
 
 test/testautovariables.o: test/testautovariables.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkautovariables.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
@@ -176,7 +176,7 @@ test/testclass.o: test/testclass.cpp lib/tokenize.h lib/classinfo.h lib/token.h 
 test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkclass.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testconstructors.o test/testconstructors.cpp
 
-test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/tokenize.h lib/classinfo.h lib/token.h test/testsuite.h
+test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testcppcheck.o test/testcppcheck.cpp
 
 test/testdangerousfunctions.o: test/testdangerousfunctions.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkdangerousfunctions.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
@@ -227,7 +227,7 @@ test/testtoken.o: test/testtoken.cpp test/testsuite.h lib/errorlogger.h lib/sett
 test/testtokenize.o: test/testtokenize.cpp test/testsuite.h lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testtokenize.o test/testtokenize.cpp
 
-test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/tokenize.h lib/classinfo.h lib/token.h test/testsuite.h lib/errorlogger.h lib/settings.h lib/checkunusedfunctions.h
+test/testunusedfunctions.o: test/testunusedfunctions.cpp lib/tokenize.h lib/classinfo.h lib/token.h test/testsuite.h lib/errorlogger.h lib/settings.h lib/checkunusedfunctions.h lib/check.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testunusedfunctions.o test/testunusedfunctions.cpp
 
 test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkclass.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
