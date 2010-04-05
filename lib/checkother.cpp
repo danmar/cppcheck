@@ -2576,6 +2576,13 @@ void CheckOther::checkMathFunctions()
         {
             mathfunctionCallError(tok,2);
         }
+		// pow ( x , y) If x is zero, and y is negative --> division by zero
+        else if (Token::Match(tok, "pow ( %num% , %num% )") &&
+				 MathLib::isNullValue(tok->tokAt(2)->str())  &&
+				 MathLib::isNegative(tok->tokAt(4)->str()))
+        {
+            mathfunctionCallError(tok,2);
+        }
 
     }
 }

@@ -2306,11 +2306,33 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0 and 0 to atan2() leads to undefined result\n", errout.str());
 
+
+        // fmod
         check("void foo()\n"
               "{\n"
               "    std::cout <<  fmod(1.0,0) << std::endl;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 1.0 and 0 to fmod() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  fmod(1.0,1) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+
+        // pow
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  pow(0,-10) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Passing value 0 and -10 to pow() leads to undefined result\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    std::cout <<  pow(0,10) << std::endl;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
 
     }
