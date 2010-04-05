@@ -838,11 +838,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     alloctype = alloc;
                 }
 
-                else if (matchFunctionsThatReturnArg(tok->previous(), varid))
-                {
-                    addtoken("use");
-                }
-
                 // assignment..
                 else
                 {
@@ -941,11 +936,6 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         {
                             addtoken("dealloc");
                             addtoken(";");
-                            dep = true;
-                            break;
-                        }
-                        if (Token::Match(tok2, ". %varid% !!.", varid))
-                        {
                             dep = true;
                             break;
                         }
