@@ -1445,7 +1445,7 @@ private:
               "    S s;\n"
               "    memset(s.a, 0, 10);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: s.a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds: s.a\n", errout.str());
 
         check("void f()\n"
               "{\n"
