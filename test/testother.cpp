@@ -1673,6 +1673,13 @@ private:
 
         checkUninitVar("void f()\n"
                        "{\n"
+                       "    char *p = malloc(64);\n"
+                       "    int x = p[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Data is allocated but not initialized: p\n", errout.str());
+
+        checkUninitVar("void f()\n"
+                       "{\n"
                        "    Fred *fred = new Fred;\n"
                        "    fred->foo();\n"
                        "};\n");

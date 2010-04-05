@@ -1810,6 +1810,10 @@ private:
                 if (mode == 3 && (!c->pointer || c->alloc))
                     continue;
 
+                // mode 4 : reading uninitialized array or pointer is invalid.
+                if (mode == 4 && (!c->array && !c->pointer))
+                    continue;
+
                 CheckOther *checkOther = dynamic_cast<CheckOther *>(c->owner);
                 if (checkOther)
                 {
@@ -1855,9 +1859,9 @@ private:
      * @param checks all available checks
      * @param tok variable token
      */
-    static void use_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
+    static bool use_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
     {
-        use(checks, tok, 2);
+        return use(checks, tok, 2);
     }
 
     /**
@@ -1865,10 +1869,22 @@ private:
      * @param checks all available checks
      * @param tok variable token
      */
-    static void use_dead_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
+    static bool use_dead_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
     {
-        use(checks, tok, 3);
+        return use(checks, tok, 3);
     }
+
+    /**
+     * Using variable.. reading from uninitialized array or pointer data is invalid.
+     * Example: = x[0];
+     * @param checks all available checks
+     * @param tok variable token
+     */
+    static bool use_array_or_pointer_data(std::list<ExecutionPath *> &checks, const Token *tok)
+    {
+        return use(checks, tok, 4);
+    }
+
 
     /** declaring a variable */
     void declare(std::list<ExecutionPath *> &checks, const Token *vartok, const Token &tok, const bool p, const bool a) const
@@ -1918,7 +1934,7 @@ private:
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
     {
         // Variable declaration..
-        if (tok.str() != "return")
+        if (tok.isName() && tok.str() != "return")
         {
             if (Token::Match(&tok, "enum %type% {"))
                 return tok.tokAt(2)->link();
@@ -1989,7 +2005,13 @@ private:
                         !Token::Match(tok2->previous(), "&|::") &&
                         !Token::simpleMatch(tok2->next(), "="))
                     {
-                        bool foundError = use(checks, tok2);
+                        bool foundError;
+                        if (tok2->next()->str() == "[")
+                            foundError = use_array_or_pointer_data(checks, tok2);
+                        else
+                            foundError = use(checks, tok2);
+
+                        // prevent duplicate error messages
                         if (foundError)
                         {
                             bailOutVar(checks, tok2->varId());
