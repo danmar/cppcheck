@@ -267,29 +267,22 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             if (_settings->_checkCodingStyle)
             {
                 // check for strncpy which is not terminated
-                if (Token::Match(tok, "strncpy ( %varid% , %any% , %any% )", varid))
+                if (Token::Match(tok, "strncpy ( %varid% , %any% , %num% )", varid))
                 {
-                    const Token *tokSz = tok->tokAt(6);
-                    if (tokSz->isNumber())
+                    // strncpy takes entire variable length as input size
+                    if (MathLib::toLongNumber(tok->strAt(6)) == total_size)
                     {
-                        // strncpy takes entire variable length as input size
-                        const std::string num = tok->strAt(6);
-                        if (MathLib::toLongNumber(num) == total_size)
+                        const Token *tok2 = tok->next()->link()->next();
+                        for (; tok2; tok2 = tok2->next())
                         {
-                            const Token *tok2 = tok->next()->link()->next()->next();
-                            for (; tok2; tok2 = tok2->next())
+                            if (tok2->varId() == tok->tokAt(2)->varId())
                             {
-                                if (Token::Match(tok2, "%varid%", tok->tokAt(2)->varId()))
+                                if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
                                 {
-                                    if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
-                                    {
-                                        terminateStrncpyError(tok);
-                                    }
-                                    else
-                                    {
-                                        break;
-                                    }
+                                    terminateStrncpyError(tok);
                                 }
+
+                                break;
                             }
                         }
                     }

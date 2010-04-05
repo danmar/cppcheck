@@ -1775,6 +1775,21 @@ private:
               "    bar[99] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) After a strncpy() the buffer should be zero-terminated\n", errout.str());
+
+        // Test with invalid code that there is no segfault
+        check("char baz[100];\n"
+              "strncpy(baz, \"var\", sizeof(baz))\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Test that there are no duplicate error messages
+        check("void foo ( char *bar )\n"
+              "{\n"
+              "    char baz[100];\n"
+              "    strncpy(baz, bar, sizeof(baz));\n"
+              "    foo(baz);\n"
+              "    foo(baz);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) After a strncpy() the buffer should be zero-terminated\n", errout.str());
     }
 
     void terminateStrncpy2()
