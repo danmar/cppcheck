@@ -2570,6 +2570,13 @@ void CheckOther::checkMathFunctions()
         {
             mathfunctionCallError(tok,2);
         }
+		// fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined). 
+        else if (Token::Match(tok, "fmod ( %num% , %num% )") &&
+				 MathLib::isNullValue(tok->tokAt(4)->str()))
+        {
+            mathfunctionCallError(tok,2);
+        }
+
     }
 }
 
