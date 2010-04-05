@@ -300,7 +300,7 @@ bool MathLib::isGreater(const std::string &first, const std::string &second)
 bool MathLib::isNullValue(const std::string &str)
 {
     return (str == "-0"      || str == "-0.0"
-            ||  str == "0"      
+            ||  str == "0"
             ||  str == "-0."     || str == "-0E-00"
             ||  str == "-0E+00"  || str == "+0E+00"
             ||  str == "+0E-00"  || str == "+0"

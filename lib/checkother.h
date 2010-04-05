@@ -189,7 +189,7 @@ public:
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname);
     void zerodivError(const Token *tok);
-    void mathfunctionCallError(const Token *tok, const unsigned int numParam=1);
+    void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
 
     void getErrorMessages()

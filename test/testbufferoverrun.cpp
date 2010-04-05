@@ -130,6 +130,8 @@ private:
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
 
+        TEST_CASE(memfunc);		// memchr/memset/memcpy
+
         TEST_CASE(cin1);
 
         TEST_CASE(varid1);
@@ -1428,6 +1430,42 @@ private:
               "    strncat(str, a, 5);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (possible error) Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append\n", errout.str());
+    }
+
+
+
+    // memchr/memset/memcpy/etc
+    void memfunc()
+    {
+        check("void f()\n"
+              "{\n"
+              "    char str[5];\n"
+              "    memset(str, 0, 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char a[5], b[50];\n"
+              "    memcpy(a, b, 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char a[5], b[50];\n"
+              "    memmove(a, b, 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+
+        // When this TODO assertion works, ticket #909 can probably be closed
+        check("void f()\n"
+              "{\n"
+              "    char a[5], b[50];\n"
+              "    memchr(a, b, 10);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
 
