@@ -2563,18 +2563,18 @@ void CheckOther::checkMathFunctions()
         {
             mathfunctionCallError(tok);
         }
-		// atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
+        // atan2 ( x , y): x and y can not be zero, because this is mathematically not defined
         else if (Token::Match(tok, "atan2 ( %num% , %num% )") &&
                  MathLib::isNullValue(tok->tokAt(2)->str()) &&
-				 MathLib::isNullValue(tok->tokAt(4)->str()))
+                 MathLib::isNullValue(tok->tokAt(4)->str()))
         {
-            mathfunctionCallError(tok,2);
+            mathfunctionCallError(tok, 2);
         }
-		// fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined). 
+        // fmod ( x , y) If y is zero, then either a range error will occur or the function will return zero (implementation-defined).
         else if (Token::Match(tok, "fmod ( %num% , %num% )") &&
-				 MathLib::isNullValue(tok->tokAt(4)->str()))
+                 MathLib::isNullValue(tok->tokAt(4)->str()))
         {
-            mathfunctionCallError(tok,2);
+            mathfunctionCallError(tok, 2);
         }
 
     }
@@ -2728,11 +2728,11 @@ void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numP
 {
     if (tok)
     {
-		if(numParam == 1)    
-			reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
-		else if (numParam == 2)
-			reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " and " + tok->tokAt(4)->str() + " to " + tok->str() + "() leads to undefined result");
-	}
+        if (numParam == 1)
+            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " to " + tok->str() + "() leads to undefined result");
+        else if (numParam == 2)
+            reportError(tok, Severity::error, "wrongmathcall", "Passing value " + tok->tokAt(2)->str() + " and " + tok->tokAt(4)->str() + " to " + tok->str() + "() leads to undefined result");
+    }
     else
         reportError(tok, Severity::error, "wrongmathcall", "Passing value " " to " "() leads to undefined result");
 }
