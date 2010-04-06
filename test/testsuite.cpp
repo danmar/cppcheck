@@ -26,6 +26,7 @@
 #include <list>
 
 std::ostringstream errout;
+std::ostringstream output;
 
 /**
  * TestRegistry
@@ -201,7 +202,7 @@ size_t TestFixture::runTests(const char cmd[])
 
 void TestFixture::reportOut(const std::string & outmsg)
 {
-    errout << outmsg << std::endl;
+    output << outmsg << std::endl;
 }
 
 void TestFixture::reportErr(const ErrorLogger::ErrorMessage &msg)

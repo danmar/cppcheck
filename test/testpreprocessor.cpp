@@ -31,6 +31,7 @@
 #include <stdexcept>
 
 extern std::ostringstream errout;
+extern std::ostringstream output;
 
 class TestPreprocessor : public TestFixture
 {
@@ -1050,6 +1051,7 @@ private:
                                 "#endif\n";
 
         errout.str("");
+        output.str("");
 
         // Preprocess => actual result..
         std::istringstream istr(filedata);
@@ -1065,7 +1067,7 @@ private:
         ASSERT_EQUALS("\n\n\n", actual[""]);
 
         // the "defined(DEF_10) || defined(DEF_11)" are not handled correctly..
-        ASSERT_EQUALS("unhandled configuration: defined(DEF_10)||defined(DEF_11)\n", errout.str());
+        ASSERT_EQUALS("unhandled configuration: defined(DEF_10)||defined(DEF_11)\n", output.str());
         TODO_ASSERT_EQUALS(2, actual.size());
         TODO_ASSERT_EQUALS("\na1;\n\n", actual["DEF_10"]);
 

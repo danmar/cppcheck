@@ -28,6 +28,7 @@
 #include <string>
 
 extern std::ostringstream errout;
+extern std::ostringstream output;
 
 class TestCppcheck : public TestFixture
 {
@@ -40,6 +41,7 @@ private:
     void check(const std::string &data)
     {
         errout.str("");
+        output.str("");
         CppCheck cppCheck(*this);
         cppCheck.addFile("file.cpp", data);
         cppCheck.check();
@@ -55,6 +57,39 @@ private:
         TEST_CASE(include);
         TEST_CASE(templateFormat);
         TEST_CASE(getErrorMessages);
+        TEST_CASE(parseArgs);
+    }
+
+    void argCheck(int argc, const char *argv[])
+    {
+        errout.str("");
+        output.str("");
+        CppCheck cppCheck(*this);
+        cppCheck.parseFromArgs(argc, argv);
+    }
+
+    void parseArgs()
+    {
+        {
+            const char *argv[] = {"cppcheck", "--help"};
+            argCheck(2, argv);
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(true, output.str().find("Example usage") != std::string::npos);
+        }
+
+        {
+            const char *argv[] = {"cppcheck"};
+            argCheck(1, argv);
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(true, output.str().find("Example usage") != std::string::npos);
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--version"};
+            argCheck(2, argv);
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(std::string("Cppcheck ") + CppCheck::version() + "\n", output.str());
+        }
     }
 
     void linenumbers()
@@ -68,8 +103,8 @@ private:
         check(filedata);
 
         // Compare results..
-        ASSERT_EQUALS("Checking file.cpp...\n"
-                      "[file.cpp:5]: (error) Dereferencing 'foo' after it is deallocated / released\n", errout.str());
+        ASSERT_EQUALS("Checking file.cpp...\n", output.str());
+        ASSERT_EQUALS("[file.cpp:5]: (error) Dereferencing 'foo' after it is deallocated / released\n", errout.str());
     }
 
     void linenumbers2()
