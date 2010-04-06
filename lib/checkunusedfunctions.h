@@ -65,7 +65,7 @@ private:
     /**
      * Dummy implementation, just to provide error for --errorlist
      */
-    void runSimplifiedChecks(const Tokenizer */*tokenizer*/, const Settings */*settings*/, ErrorLogger */*errorLogger*/)
+    void runSimplifiedChecks(const Tokenizer *, const Settings *, ErrorLogger *)
     {
 
     }
