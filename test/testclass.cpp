@@ -323,6 +323,14 @@ private:
             "  szp &operator =(int *other) {};\n"
             "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to self\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class szp\n"
+            "{\n"
+            "  szp &operator =(int *other);\n"
+            "};\n"
+            "szp &szp::operator =(int *other) {};");
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to self\n", errout.str());
     }
 
     void operatorEqRetRefThis3()
@@ -334,6 +342,34 @@ private:
             "  inline A &operator =(int *other) { return (*this;) };\n"
             "  inline A &operator =(long *other) { return (*this = 0;) };\n"
             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "public:\n"
+            "  A &operator =(int *other);\n"
+            "  A &operator =(long *other);\n"
+            "};\n"
+            "A &A::operator =(int *other) { return (*this;) };\n"
+            "A &A::operator =(long *other) { return (*this = 0;) };");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "public:\n"
+            "  inline A &operator =(int *other) { return (*this;) };\n"
+            "  inline A &operator =(long *other) { return operator = (*(int *)other); };\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "public:\n"
+            "  A &operator =(int *other);\n"
+            "  A &operator =(long *other);\n"
+            "};\n"
+            "A &A::operator =(int *other) { return (*this;) };\n"
+            "A &A::operator =(long *other) { return operator = (*(int *)other); };");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -357,6 +393,14 @@ private:
             "    A & operator=(const A &a) { }\n"
             "};");
         ASSERT_EQUALS("[test.cpp:3]: (style) 'operator=' should return reference to self\n", errout.str());
+
+        checkOpertorEqRetRefThis(
+            "class A {\n"
+            "public:\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A :: operator=(const A &a) { }");
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should return reference to self\n", errout.str());
     }
 
     // Check that operator Equal checks for assignment to self
@@ -795,7 +839,41 @@ private:
             "    char *s;\n"
             "    A & operator=(const A &a)\n"
             "    {\n"
+            "        if((this!=&a))\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
             "        if(!(&a==this))\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        if(!(this==&a))\n"
             "        {\n"
             "            free(s);\n"
             "            s = strdup(a.s);\n"
@@ -829,6 +907,23 @@ private:
             "    char *s;\n"
             "    A & operator=(const A &a)\n"
             "    {\n"
+            "        if(false==(this==&a))\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
             "        if(true!=(&a==this))\n"
             "        {\n"
             "            free(s);\n"
@@ -836,6 +931,167 @@ private:
             "        }\n"
             "        return *this;\n"
             "    }\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        if(true!=(this==&a))\n"
+            "        {\n"
+            "            free(s);\n"
+            "            s = strdup(a.s);\n"
+            "        }\n"
+            "        return *this;\n"
+            "    }\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if((&a!=this))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if((this!=&a))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if(!(&a==this))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if(!(this==&a))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if(false==(&a==this))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if(false==(this==&a))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if(true!=(&a==this))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    char *s;\n"
+            "    A & operator=(const A &a);\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    if(true!=(this==&a))\n"
+            "    {\n"
+            "        free(s);\n"
+            "        s = strdup(a.s);\n"
+            "    }\n"
+            "    return *this;\n"
             "};");
         ASSERT_EQUALS("", errout.str());
     }
@@ -847,7 +1103,6 @@ private:
             "class A\n"
             "{\n"
             "public:\n"
-            "    char *s;\n"
             "    A & operator=(const A &a)\n"
             "    {\n"
             "        delete [] data;\n"
@@ -858,7 +1113,57 @@ private:
             "private:\n"
             "    char * data;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:5]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a);\n"
+            "private:\n"
+            "    char * data;\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    delete [] data;\n"
+            "    data = new char[strlen(a.data) + 1];\n"
+            "    strcpy(data, a.data);\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("[test.cpp:8]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a)\n"
+            "    {\n"
+            "        delete data;\n"
+            "        data = new char;\n"
+            "        *data  = *a.data;\n"
+            "        return *this;\n"
+            "    }\n"
+            "private:\n"
+            "    char * data;\n"
+            "};");
+        ASSERT_EQUALS("[test.cpp:4]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+
+        checkOpertorEqToSelf(
+            "class A\n"
+            "{\n"
+            "public:\n"
+            "    A & operator=(const A &a);\n"
+            "private:\n"
+            "    char * data;\n"
+            "};\n"
+            "A & A::operator=(const A &a)\n"
+            "{\n"
+            "    delete data;\n"
+            "    data = new char;\n"
+            "    *data = *a.data;\n"
+            "    return *this;\n"
+            "};");
+        ASSERT_EQUALS("[test.cpp:8]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
     }
 
     // Check that base classes have virtual destructors
