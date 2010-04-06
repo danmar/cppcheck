@@ -861,7 +861,7 @@ void CheckClass::operatorEq()
     const Token *tok2 = _tokenizer->tokens();
     const Token *tok;
 
-    while ((tok = Token::findmatch(tok2, "void operator = (")))
+    while ((tok = Token::findmatch(tok2, "void operator = (")) != NULL)
     {
         const Token *tok1 = tok;
         while (tok1 && !Token::Match(tok1, "class|struct %var%"))
@@ -955,7 +955,7 @@ void CheckClass::operatorEqRetRefThis()
     const Token *tok2 = _tokenizer->tokens();
     const Token *tok;
 
-    while ((tok = Token::findmatch(tok2, "operator = (")))
+    while ((tok = Token::findmatch(tok2, "operator = (")) != NULL)
     {
         const Token *tok1 = tok;
 
@@ -1199,7 +1199,7 @@ void CheckClass::operatorEqToSelf()
     const Token *tok2 = _tokenizer->tokens();
     const Token *tok;
 
-    while ((tok = Token::findmatch(tok2, "operator = (")))
+    while ((tok = Token::findmatch(tok2, "operator = (")) != NULL)
     {
         const Token *tok1 = tok;
 
@@ -1600,7 +1600,7 @@ void CheckClass::checkConst()
                             int level = 0;
                             for (int j = nestInfo.size() - 1; j >= i; j--, level++)
                                 pattern = std::string(nestInfo[j].className + " :: " + pattern);
-                            while ((found = Token::findmatch(found->next(), pattern.c_str())))
+                            while ((found = Token::findmatch(found->next(), pattern.c_str())) != NULL)
                             {
                                 const Token *paramEnd = found->tokAt(1 + (2 * level))->link();
                                 if (!paramEnd)

@@ -378,7 +378,7 @@ void CheckOther::checkUnsignedDivision()
 void CheckOther::unreachableCode()
 {
     const Token *tok = _tokenizer->tokens();
-    while ((tok = Token::findmatch(tok, "[;{}] return")))
+    while ((tok = Token::findmatch(tok, "[;{}] return")) != NULL)
     {
         // Goto the 'return' token
         tok = tok->next();
