@@ -973,17 +973,17 @@ void CheckClass::operatorEqRetRefThis()
                 nameLength += 2;
             }
 
-            const Token *name = tok1;
+            const Token *className = tok1;
             std::string nameString;
 
-            nameStr(name, nameLength, nameString);
+            nameStr(className, nameLength, nameString);
 
             if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
             {
                 // check class name
-                if (tok1->tokAt(-(1 + nameLength)) && nameMatch(name, tok1->tokAt(-(1 + nameLength)), nameLength))
+                if (tok1->tokAt(-(1 + nameLength)) && nameMatch(className, tok1->tokAt(-(1 + nameLength)), nameLength))
                 {
-                    operatorEqRetRefThis_finderr(tok, name->str());
+                    operatorEqRetRefThis_finderr(tok, className->str());
                 }
             }
         }
@@ -995,7 +995,7 @@ void CheckClass::operatorEqRetRefThis()
             // check backwards for proper function signature
             if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
             {
-                const Token *name = 0;
+                const Token *className = 0;
                 bool isPublic = false;
                 while (tok1 && !Token::Match(tok1, "class|struct %var%"))
                 {
@@ -1012,12 +1012,12 @@ void CheckClass::operatorEqRetRefThis()
                     // data members in structs are public by default
                     isPublic = bool(tok1->str() == "struct");
 
-                    name = tok1->tokAt(1);
+                    className = tok1->tokAt(1);
                 }
 
-                if (tok->tokAt(-2) && tok->tokAt(-2)->str() == name->str())
+                if (tok->tokAt(-2) && tok->tokAt(-2)->str() == className->str())
                 {
-                    operatorEqRetRefThis_finderr(tok, name->str());
+                    operatorEqRetRefThis_finderr(tok, className->str());
                 }
             }
         }
@@ -1217,17 +1217,17 @@ void CheckClass::operatorEqToSelf()
                 nameLength += 2;
             }
 
-            const Token *name = tok1;
+            const Token *className = tok1;
             std::string nameString;
 
-            nameStr(name, nameLength, nameString);
+            nameStr(className, nameLength, nameString);
 
             if (!hasMultipleInheritanceGlobal(_tokenizer->tokens(), nameString))
             {
                 if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
                 {
                     // check returned class name
-                    if (tok1->tokAt(-(1 + nameLength)) && nameMatch(name, tok1->tokAt(-(1 + nameLength)), nameLength))
+                    if (tok1->tokAt(-(1 + nameLength)) && nameMatch(className, tok1->tokAt(-(1 + nameLength)), nameLength))
                     {
                         // check forward for proper function signature
                         std::string pattern = "const " + nameString + " & %var% )";
@@ -1235,7 +1235,7 @@ void CheckClass::operatorEqToSelf()
                         {
                             const Token * rhs = tok->tokAt(5 + nameLength);
 
-                            if (nameMatch(name, tok->tokAt(4), nameLength))
+                            if (nameMatch(className, tok->tokAt(4), nameLength))
                             {
                                 tok1 = tok->tokAt(2)->link();
 
@@ -1263,23 +1263,23 @@ void CheckClass::operatorEqToSelf()
             // check backwards for proper function signature
             if (tok1->tokAt(-1) && tok1->tokAt(-1)->str() == "&")
             {
-                const Token *name = 0;
+                const Token *className = 0;
                 while (tok1 && !Token::Match(tok1, "class|struct %var%"))
                     tok1 = tok1->previous();
 
                 if (Token::Match(tok1, "struct|class %var%"))
-                    name = tok1->tokAt(1);
+                    className = tok1->tokAt(1);
 
                 if (!hasMultipleInheritanceInline(tok1))
                 {
-                    if (Token::simpleMatch(tok->tokAt(-2), name->str().c_str()))
+                    if (Token::simpleMatch(tok->tokAt(-2), className->str().c_str()))
                     {
                         // check forward for proper function signature
                         if (Token::Match(tok->tokAt(3), "const %type% & %var% )"))
                         {
                             const Token * rhs = tok->tokAt(6);
 
-                            if (tok->tokAt(4)->str() == name->str())
+                            if (tok->tokAt(4)->str() == className->str())
                             {
                                 tok1 = tok->tokAt(2)->link();
 
@@ -1597,18 +1597,18 @@ void CheckClass::checkConst()
                         {
                             const Token *found = nestInfo[i].classEnd;
                             std::string pattern(functionName + " (");
-                            int level = 0;
-                            for (int j = nestInfo.size() - 1; j >= i; j--, level++)
+                            int namespaceLevel = 0;
+                            for (int j = nestInfo.size() - 1; j >= i; j--, namespaceLevel++)
                                 pattern = std::string(nestInfo[j].className + " :: " + pattern);
                             while ((found = Token::findmatch(found->next(), pattern.c_str())) != NULL)
                             {
-                                const Token *paramEnd = found->tokAt(1 + (2 * level))->link();
+                                const Token *paramEnd = found->tokAt(1 + (2 * namespaceLevel))->link();
                                 if (!paramEnd)
                                     break;
                                 if (paramEnd->next()->str() != "{")
                                     break;
 
-                                if (sameFunc(level, tok2, paramEnd))
+                                if (sameFunc(namespaceLevel, tok2, paramEnd))
                                 {
                                     // if nothing non-const was found. write error..
                                     if (checkConstFunc(classname, varlist, paramEnd))

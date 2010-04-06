@@ -196,18 +196,18 @@ public:
     {
         return _linenr;
     }
-    void linenr(unsigned int linenr)
+    void linenr(unsigned int lineNumber)
     {
-        _linenr = linenr;
+        _linenr = lineNumber;
     }
 
     unsigned int fileIndex() const
     {
         return _fileIndex;
     }
-    void fileIndex(unsigned int fileIndex)
+    void fileIndex(unsigned int indexOfFile)
     {
-        _fileIndex = fileIndex;
+        _fileIndex = indexOfFile;
     }
 
     Token *next() const
@@ -290,9 +290,9 @@ public:
      * @param link The token where this token should link
      * to.
      */
-    void link(Token *link)
+    void link(Token *linkToToken)
     {
-        _link = link;
+        _link = linkToToken;
     }
 
     /**
@@ -330,13 +330,13 @@ public:
     static void move(Token *srcStart, Token *srcEnd, Token *newLocation);
 
 private:
-    void next(Token *next)
+    void next(Token *nextToken)
     {
-        _next = next;
+        _next = nextToken;
     }
-    void previous(Token *previous)
+    void previous(Token *previousToken)
     {
-        _previous = previous;
+        _previous = previousToken;
     }
 
     /**
