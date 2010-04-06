@@ -921,15 +921,15 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 {
                     // Check if the condition depends on var somehow..
                     bool dep = false;
-                    int parlevel = 0;
+                    int innerParlevel = 0;
                     for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
                     {
                         if (tok2->str() == "(")
-                            ++parlevel;
+                            ++innerParlevel;
                         if (tok2->str() == ")")
                         {
-                            --parlevel;
-                            if (parlevel <= 0)
+                            --innerParlevel;
+                            if (innerParlevel <= 0)
                                 break;
                         }
                         if (Token::Match(tok2, "close|pclose|fclose|closedir ( %varid% )", varid))
@@ -943,7 +943,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         {
                             dep = true;
                         }
-                        if (parlevel > 0 && Token::Match(tok2, "! %varid%", varid))
+                        if (innerParlevel > 0 && Token::Match(tok2, "! %varid%", varid))
                         {
                             dep = true;
                             break;
@@ -1154,15 +1154,15 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
             // The "::use" means that a member function was probably called but it wasn't analyzed further
             else if (classmember)
             {
-                int parlevel = 1;
+                int innerParlevel = 1;
                 for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
                 {
                     if (tok2->str() == "(")
-                        ++parlevel;
+                        ++innerParlevel;
                     else if (tok2->str() == ")")
                     {
-                        --parlevel;
-                        if (parlevel <= 0)
+                        --innerParlevel;
+                        if (innerParlevel <= 0)
                             break;
                     }
                     if (tok2->varId() == varid)
@@ -1289,18 +1289,18 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
         {
             if (Token::simpleMatch(tok2, "while1 {"))
             {
-                unsigned int indentlevel = 0;
+                unsigned int innerIndentlevel = 0;
                 for (Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next())
                 {
                     if (tok3->str() == "{")
-                        ++indentlevel;
+                        ++innerIndentlevel;
                     else if (tok3->str() == "}")
                     {
-                        if (indentlevel == 0)
+                        if (innerIndentlevel == 0)
                             break;
-                        --indentlevel;
+                        --innerIndentlevel;
                     }
-                    while (indentlevel == 0 && Token::Match(tok3, "[{};] if|ifv|else { continue ; }"))
+                    while (innerIndentlevel == 0 && Token::Match(tok3, "[{};] if|ifv|else { continue ; }"))
                     {
                         Token::eraseTokens(tok3, tok3->tokAt(6));
                         if (Token::simpleMatch(tok3->next(), "else"))
