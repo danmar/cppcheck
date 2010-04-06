@@ -608,6 +608,24 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             }
         }
 
+        // fread|frwite
+        // size_t fread ( void * ptr, size_t size, size_t count, FILE * stream );
+        // ptr    -> Pointer to a block of memory with a minimum size of (size*count) bytes.
+        // size   -> Size in bytes of each element to be read.
+        // count  -> Number of elements, each one with a size of size bytes.
+        // stream -> Pointer to a FILE object that specifies an input stream. 
+        if (varid > 0 &&
+            Token::Match(tok, "fread|fwrite ( %varid% , %num% , %num% , %any% )", varid) &&
+            MathLib::isInt(tok->strAt(6)))
+        {
+            long len = MathLib::toLongNumber(tok->strAt(4))*MathLib::toLongNumber(tok->strAt(6));
+            if (len < 0 || len > total_size)
+            {
+                bufferOverrun(tok);
+                continue;
+            }
+        }
+
         // Writing data into array..
         if (varid > 0 &&
             Token::Match(tok, "fgets ( %varid% , %num% , %any% )", varid) &&
