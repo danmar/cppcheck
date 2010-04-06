@@ -1073,30 +1073,30 @@ private:
         // fread
         check("void f(FILE* fd)\n"
               "{\n"
-	          "char str[3];\n"
-	          "fread(str,sizeof(char),4,fd);\n" 
+              "char str[3];\n"
+              "fread(str,sizeof(char),4,fd);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
-	          "char str[3*sizeof(char)];\n"
-	          "fread(str,sizeof(char),3,fd);\n" 
+              "char str[3*sizeof(char)];\n"
+              "fread(str,sizeof(char),3,fd);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // fwrite
         check("void f(FILE* fd)\n"
               "{\n"
-	          "char str[3];\n"
-	          "fwrite(str,sizeof(char),4,fd);\n" 
+              "char str[3];\n"
+              "fwrite(str,sizeof(char),4,fd);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
 
         check("void f(FILE* fd)\n"
               "{\n"
-	          "char str[3*sizeof(char)];\n"
-	          "fwrite(str,sizeof(char),3,fd);\n" 
+              "char str[3*sizeof(char)];\n"
+              "fwrite(str,sizeof(char),3,fd);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
