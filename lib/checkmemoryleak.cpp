@@ -965,7 +965,9 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                         addtoken((dep ? "ifv" : "if"));
                     }
 
-                    tok = tok->next()->link();
+                    tok = tok->next();
+                    if (tok->link())
+                        tok = tok->link();
                 }
             }
         }
