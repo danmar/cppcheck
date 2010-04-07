@@ -1824,6 +1824,16 @@ private:
                        "    Fred() { }\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class Fred\n"
+                       "{\n"
+                       "__published:\n"
+                       "    int * i_;\n"
+                       "    __property int * i = {read=i_, write=i_};\n"
+                       "public:\n"
+                       "    Fred() { i_ = 0; }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // Borland C++: No FP for properties
