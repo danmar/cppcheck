@@ -30,6 +30,11 @@ class FileLister
 {
 public:
     /**
+     * @brief destructor of class filelister
+     */
+     virtual ~FileLister(){}
+    
+    /**
      * @brief Add source files to a vector (*.c;*.cpp;*.cxx;*.c++;*.cc;*.txx)
      * @param filenames output vector that filenames are written to
      * @param path root path
