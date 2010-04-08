@@ -4357,6 +4357,24 @@ private:
             const char expected[] = "struct ABC : public XYZ { struct Anonymous0 { } ; Anonymous0 def ; } ;";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+
+        {
+            const char code[] = "struct { int x; }; int y;";
+            const char expected[] = "int x ; int y ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { int x; };";
+            const char expected[] = "int x ; ;";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
+
+        {
+            const char code[] = "struct { };";
+            const char expected[] = ";";
+            ASSERT_EQUALS(expected, tok(code, false));
+        }
     }
 };
 

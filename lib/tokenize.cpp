@@ -6925,15 +6925,23 @@ void Tokenizer::simplifyStructDecl()
                 tok = tok->next();
                 tok->insertToken(name.c_str());
             }
+
+            // unnamed anonymous struct/union so remove it
             else if (tok->next()->str() == ";")
             {
-                Token *previous = tok1->previous();
-                previous->deleteNext();
-                previous->deleteNext();
-                tok1 = previous->next();
-                previous = tok->previous();
-                previous->deleteNext();
-                previous->deleteNext();
+                tok1->deleteThis();
+                if (tok1->next() == tok)
+                {
+                    tok1->deleteThis();
+                    tok = tok1;
+                }
+                else
+                    tok1->deleteThis();
+                tok->deleteThis();
+                if (tok->next())
+                    tok->deleteThis();
+                if (!tok->next())
+                    return;
             }
 
             tok = tok1->next();
