@@ -968,6 +968,13 @@ void CheckBufferOverrun::checkStructVariable()
         // Found a struct declaration. Search for arrays..
         for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
         {
+            // skip inner scopes..
+            if (tok2->next() && tok2->next()->str() == "{")
+            {
+                tok2 = tok2->next()->link();
+                continue;
+            }
+
             if (tok2->str() == "}")
                 break;
 

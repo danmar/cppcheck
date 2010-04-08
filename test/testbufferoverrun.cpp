@@ -101,6 +101,7 @@ private:
         TEST_CASE(array_index_calculation);
         TEST_CASE(array_index_negative);
         TEST_CASE(array_index_for_decr);
+        TEST_CASE(array_index_varnames);   // FP: struct member. #1576
 
         TEST_CASE(buffer_overrun_1);
         TEST_CASE(buffer_overrun_2);
@@ -1011,6 +1012,24 @@ private:
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'val[5]' index -1 out of bounds\n", errout.str());
     }
+
+
+    void array_index_varnames()
+    {
+        check("struct A {\n"
+              "    char data[4];\n"
+              "    struct B { char data[3]; };\n"
+              "    B b;\n"
+              "};\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    A a;\n"
+              "    a.data[3] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void buffer_overrun_1()
     {
