@@ -704,7 +704,7 @@ void CheckClass::privateFunctions()
             }
 
             // Check member class functions to see what functions are used..
-            if ((inclass && indent_level == 1 && Token::Match(ftok, ") const| {")) ||
+            if ((inclass && indent_level == 1 && Token::Match(ftok, "%var% (")) ||
                 (Token::Match(ftok, (classname + " :: ~| %var% (").c_str())))
             {
                 while (ftok && ftok->str() != ")")
@@ -714,7 +714,21 @@ void CheckClass::privateFunctions()
                 if (Token::Match(ftok, ") : %var% ("))
                 {
                     while (!Token::Match(ftok->next(), "[{};]"))
+                    {
+                        if (Token::Match(ftok, "::|,|( %var% ,|)"))
+                        {
+                            // Remove function from FuncList
+                            std::list<const Token *>::iterator it = FuncList.begin();
+                            while (it != FuncList.end())
+                            {
+                                if (ftok->next()->str() == (*it)->str())
+                                    FuncList.erase(it++);
+                                else
+                                    it++;
+                            }
+                        }
                         ftok = ftok->next();
+                    }
                 }
                 if (!Token::Match(ftok, ") const| {"))
                     continue;

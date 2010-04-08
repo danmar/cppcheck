@@ -41,7 +41,8 @@ private:
         TEST_CASE(test5);
 
         // [ 2236547 ] False positive --style unused function, called via pointer
-        TEST_CASE(func_pointer);
+        TEST_CASE(func_pointer1);
+        TEST_CASE(func_pointer2);
 
         TEST_CASE(ctor);
 
@@ -208,7 +209,7 @@ private:
 
 
 
-    void func_pointer()
+    void func_pointer1()
     {
         check("class Fred\n"
               "{\n"
@@ -232,6 +233,27 @@ private:
 
         ASSERT_EQUALS("[test.cpp:6]: (style) Unused private function 'Fred::get'\n", errout.str());
     }
+
+
+
+    void func_pointer2()
+    {
+        check("class UnusedPrivateFunctionMemberPointer\n"
+              "{\n"
+              "public:\n"
+              "    UnusedPrivateFunctionMemberPointer()\n"
+              "    :   mObserver(this, &UnusedPrivateFunctionMemberPointer::callback)\n"
+              "    {}\n"
+              "\n"
+              "private:\n"
+              "    void callback(const& unsigned) const {}\n"
+              "\n"
+              "    Observer<UnusedPrivateFunctionMemberPointer, unsigned> mObserver;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
 
 
     void ctor()
