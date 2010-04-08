@@ -54,9 +54,9 @@ CppCheck::~CppCheck()
 
 }
 
-void CppCheck::settings(const Settings &settings)
+void CppCheck::settings(const Settings &currentSettings)
 {
-    _settings = settings;
+    _settings = currentSettings;
 }
 
 void CppCheck::addFile(const std::string &path)

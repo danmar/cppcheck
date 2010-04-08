@@ -171,14 +171,14 @@ public:
     { }
 
     /** @brief This constructor is used when running checks */
-    CheckMemoryLeakInFunction(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
+    CheckMemoryLeakInFunction(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
+            : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
     { }
 
     /** @brief run all simplified checks */
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
     {
-        CheckMemoryLeakInFunction checkMemoryLeak(tokenizer, settings, errorLogger);
+        CheckMemoryLeakInFunction checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.check();
     }
 
@@ -339,13 +339,13 @@ public:
     CheckMemoryLeakInClass() : Check(), CheckMemoryLeak(0, 0)
     { }
 
-    CheckMemoryLeakInClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
+    CheckMemoryLeakInClass(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
+            : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
     { }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
     {
-        CheckMemoryLeakInClass checkMemoryLeak(tokenizer, settings, errorLogger);
+        CheckMemoryLeakInClass checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.check();
     }
 
@@ -379,13 +379,13 @@ public:
     CheckMemoryLeakStructMember() : Check(), CheckMemoryLeak(0, 0)
     { }
 
-    CheckMemoryLeakStructMember(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger)
+    CheckMemoryLeakStructMember(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
+            : Check(tokenizr, settings, errLog), CheckMemoryLeak(tokenizr, errLog)
     { }
 
-    void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
     {
-        CheckMemoryLeakStructMember checkMemoryLeak(tokenizer, settings, errorLogger);
+        CheckMemoryLeakStructMember checkMemoryLeak(tokenizr, settings, errLog);
         checkMemoryLeak.check();
     }
 
