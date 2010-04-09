@@ -3256,6 +3256,12 @@ private:
                    "    LPVOID a() { return 0; };\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #1579 - HDC
+        checkConst("class Fred {\n"
+                   "    HDC a() { return 0; };\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

@@ -1562,9 +1562,27 @@ void CheckClass::checkConst()
                 if (Token::Match(tok2, "static|virtual"))
                     continue;
 
-                // don't warn if type is LP..
-                if (tok2->str().compare(0, 2, "LP") == 0)
-                    continue;
+                // don't warn for unknown types..
+                // LPVOID, HDC, etc
+                if (tok2->isName())
+                {
+                    bool allupper = true;
+                    const std::string s(tok2->str());
+                    for (std::string::size_type pos = 0; pos < s.size(); ++pos)
+                    {
+                        unsigned char ch = s[pos];
+                        if (ch != '_' &&
+                            !std::isupper(ch) &&
+                            !std::isdigit(ch))
+                        {
+                            allupper = false;
+                            break;
+                        }
+                    }
+
+                    if (allupper)
+                        continue;
+                }
 
                 // member function?
                 if (isMemberFunc(tok2))
