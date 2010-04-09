@@ -156,9 +156,9 @@ unsigned int ThreadExecutor::check()
             CppCheck fileChecker(*this);
             fileChecker.settings(_settings);
             fileChecker.addFile(_filenames[i]);
-            unsigned int result = fileChecker.check();
+            unsigned int resultOfCheck = fileChecker.check();
             std::ostringstream oss;
-            oss << result;
+            oss << resultOfCheck;
             writeToPipe('3', oss.str());
             exit(0);
         }

@@ -533,9 +533,9 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
     return ret;
 }
 
-void Preprocessor::preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
+void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
-    processedFile = read(istr, filename, _settings);
+    processedFile = read(srcCodeStream, filename, _settings);
 
     // Replace all tabs with spaces..
     std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
@@ -707,8 +707,8 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
             if (par != 0)
             {
-                std::ostringstream line;
-                line << __LINE__;
+                std::ostringstream lineStream;
+                lineStream << __LINE__;
 
                 ErrorLogger::ErrorMessage errmsg;
                 ErrorLogger::ErrorMessage::FileLocation loc;
@@ -717,7 +717,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 errmsg._callStack.push_back(loc);
                 errmsg._severity = "error";
                 errmsg._msg = "mismatching number of '(' and ')' in this line: " + def;
-                errmsg._id  = "preprocessor" + line.str();
+                errmsg._id  = "preprocessor" + lineStream.str();
                 _errorLogger->reportErr(errmsg);
                 ret.clear();
                 return ret;
@@ -783,9 +783,9 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
             else
             {
-                std::string def((deflist.back() == "1") ? "0" : "1");
+                std::string tempDef((deflist.back() == "1") ? "0" : "1");
                 deflist.pop_back();
-                deflist.push_back(def);
+                deflist.push_back(tempDef);
             }
         }
 
@@ -848,11 +848,11 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
         if (s.find("&&") != std::string::npos)
         {
             Tokenizer tokenizer(_settings, _errorLogger);
-            std::istringstream istr(s.c_str());
-            if (!tokenizer.tokenize(istr, filename.c_str()))
+            std::istringstream tempIstr(s.c_str());
+            if (!tokenizer.tokenize(tempIstr, filename.c_str()))
             {
-                std::ostringstream line;
-                line << __LINE__;
+                std::ostringstream lineStream;
+                lineStream << __LINE__;
 
                 ErrorLogger::ErrorMessage errmsg;
                 ErrorLogger::ErrorMessage::FileLocation loc;
@@ -861,7 +861,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 errmsg._callStack.push_back(loc);
                 errmsg._severity = "error";
                 errmsg._msg = "Error parsing this: " + s;
-                errmsg._id  = "preprocessor" + line.str();
+                errmsg._id  = "preprocessor" + lineStream.str();
                 _errorLogger->reportErr(errmsg);
             }
 
@@ -1148,8 +1148,8 @@ std::string Preprocessor::getcode(const std::string &filedata, std::string cfg, 
             {
                 Tokenizer tokenizer;
                 line.erase(0, sizeof("#pragma endasm"));
-                std::istringstream istr(line.c_str());
-                tokenizer.tokenize(istr, "");
+                std::istringstream tempIstr(line.c_str());
+                tokenizer.tokenize(tempIstr, "");
                 if (Token::Match(tokenizer.tokens(), "( %var% = %any% )"))
                 {
                     ret << "asm(" << tokenizer.tokens()->strAt(1) << ");";
@@ -1291,11 +1291,11 @@ static int tolowerWrapper(int c)
 }
 
 
-void Preprocessor::handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths)
+void Preprocessor::handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths)
 {
     std::list<std::string> paths;
     std::string path;
-    path = filename;
+    path = filePath;
     path.erase(1 + path.find_last_of("\\/"));
     paths.push_back(path);
     std::string::size_type pos = 0;
@@ -1623,11 +1623,11 @@ public:
                                     const std::string &s(params2[i]);
                                     std::ostringstream ostr;
                                     ostr << "\"";
-                                    for (std::string::size_type i = 0; i < s.size(); ++i)
+                                    for (std::string::size_type j = 0; j < s.size(); ++j)
                                     {
-                                        if (s[i] == '\\' || s[i] == '\"')
+                                        if (s[j] == '\\' || s[j] == '\"')
                                             ostr << '\\';
-                                        ostr << s[i];
+                                        ostr << s[j];
                                     }
                                     str = ostr.str() + "\"";
                                 }
@@ -2027,9 +2027,9 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                                    "syntaxError",
                                    std::string("Syntax error. Not enough parameters for macro '") + macro->name() + "'.");
 
-                        std::map<std::string, PreprocessorMacro *>::iterator it;
-                        for (it = macros.begin(); it != macros.end(); ++it)
-                            delete it->second;
+                        std::map<std::string, PreprocessorMacro *>::iterator iter;
+                        for (iter = macros.begin(); iter != macros.end(); ++iter)
+                            delete iter->second;
 
                         return "";
                     }

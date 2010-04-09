@@ -595,10 +595,10 @@ const Token *Token::findmatch(const Token *tok, const char pattern[], unsigned i
     return 0;
 }
 
-void Token::insertToken(const std::string &str)
+void Token::insertToken(const std::string &tokenStr)
 {
     Token *newToken = new Token(tokensBack);
-    newToken->str(str);
+    newToken->str(tokenStr);
     newToken->_linenr = _linenr;
     newToken->_fileIndex = _fileIndex;
     if (this->next())
@@ -658,38 +658,38 @@ std::string Token::stringifyList(bool varid, const char *title, const std::vecto
     if (title)
         ret << "\n### " << title << " ###\n";
 
-    unsigned int linenr = 0;
-    int fileIndex = -1;
+    unsigned int lineNumber = 0;
+    int fileInd = -1;
     std::map<unsigned int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok; tok = tok->next())
     {
         bool fileChange = false;
-        if (static_cast<int>(tok->_fileIndex) != fileIndex)
+        if (static_cast<int>(tok->_fileIndex) != fileInd)
         {
-            if (fileIndex != -1)
+            if (fileInd != -1)
             {
-                lineNumbers[fileIndex] = tok->_fileIndex;
+                lineNumbers[fileInd] = tok->_fileIndex;
             }
 
-            fileIndex = static_cast<int>(tok->_fileIndex);
+            fileInd = static_cast<int>(tok->_fileIndex);
             ret << "\n\n##file ";
-            if (fileNames.size() > static_cast<unsigned int>(fileIndex))
-                ret << fileNames.at(fileIndex);
+            if (fileNames.size() > static_cast<unsigned int>(fileInd))
+                ret << fileNames.at(fileInd);
             else
-                ret << fileIndex;
+                ret << fileInd;
 
-            linenr = lineNumbers[fileIndex];
+            lineNumber = lineNumbers[fileInd];
             fileChange = true;
         }
 
-        if (linenr != tok->linenr() || fileChange)
+        if (lineNumber != tok->linenr() || fileChange)
         {
-            while (linenr < tok->linenr())
+            while (lineNumber < tok->linenr())
             {
-                ++linenr;
-                ret << "\n" << linenr << ":";
+                ++lineNumber;
+                ret << "\n" << lineNumber << ":";
             }
-            linenr = tok->linenr();
+            lineNumber = tok->linenr();
         }
 
         ret << " " << tok->str();

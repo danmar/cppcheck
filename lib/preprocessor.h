@@ -54,7 +54,7 @@ public:
      * Extract the code for each configuration. Use this with getcode() to get the
      * file data for each individual configuration.
      *
-     * @param istr The (file/string) stream to read from.
+     * @param srcCodeStream The (file/string) stream to read from.
      * @param processedFile Give reference to empty string as a parameter,
      * function will fill processed file here. Use this also as a filedata parameter
      * to getcode() if you recieved more than once configurations.
@@ -67,7 +67,7 @@ public:
      * Note that if path from given filename is also extracted and that is used as
      * a last include path if include file was not found from earlier paths.
      */
-    void preprocess(std::istream &istr, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
+    void preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths);
 
     /** Just read the code into a string. Perform simple cleanup of the code */
     static std::string read(std::istream &istr, const std::string &filename, Settings *settings);
@@ -185,7 +185,7 @@ private:
      * Search includes from code and append code from the included
      * file
      * @param code The source code to modify
-     * @param filename The name of the file to check e.g. "src/main.cpp"
+     * @param filePath Relative path to file to check e.g. "src/main.cpp"
      * @param includePaths List of paths where incude files should be searched from,
      * single path can be e.g. in format "include/".
      * There must be a path separator at the end. Default parameter is empty list.
@@ -193,7 +193,7 @@ private:
      * a last include path if include file was not found from earlier paths.
      * @return modified source code
      */
-    void handleIncludes(std::string &code, const std::string &filename, const std::list<std::string> &includePaths);
+    void handleIncludes(std::string &code, const std::string &filePath, const std::list<std::string> &includePaths);
 
     Settings *_settings;
     ErrorLogger *_errorLogger;

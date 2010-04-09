@@ -393,7 +393,7 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
 
-        const unsigned int varid(Token::findmatch(tokenizer.tokens(), varname)->varId());
+        const unsigned int varId(Token::findmatch(tokenizer.tokens(), varname)->varId());
 
         // getcode..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, 0, 0);
@@ -403,7 +403,7 @@ private:
         CheckMemoryLeak::AllocType allocType, deallocType;
         allocType = deallocType = CheckMemoryLeak::No;
         bool all = false;
-        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varid, allocType, deallocType, false, all, 1);
+        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varId, allocType, deallocType, false, all, 1);
 
         // stringify..
         std::ostringstream ret;

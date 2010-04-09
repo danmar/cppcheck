@@ -246,20 +246,20 @@ private:
 
         tokenizer.validate();
         std::string ret;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
         {
-            if (tok != tokenizer.tokens())
+            if (tok1 != tokenizer.tokens())
                 ret += " ";
             if (!simplify)
             {
-                if (tok->isUnsigned())
+                if (tok1->isUnsigned())
                     ret += "unsigned ";
-                else if (tok->isSigned())
+                else if (tok1->isSigned())
                     ret += "signed ";
             }
-            if (tok->isLong())
+            if (tok1->isLong())
                 ret += "long ";
-            ret += tok->str();
+            ret += tok1->str();
         }
 
         return ret;
@@ -701,13 +701,13 @@ private:
         tokenizer.simplifyTokenList();
 
         std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
         {
-            if (tok->previous())
+            if (tok1->previous())
             {
                 ostr << " ";
             }
-            ostr << tok->str();
+            ostr << tok1->str();
         }
 
         return ostr.str();
@@ -719,9 +719,9 @@ private:
         std::istringstream istr("");
         tokenizer.tokenize(istr, "test.cpp");
         tokenizer.simplifyTokenList();
-        Token tok(0);
-        tok.str(type);
-        return tokenizer.sizeOfType(&tok);
+        Token tok1(0);
+        tok1.str(type);
+        return tokenizer.sizeOfType(&tok1);
     }
 
     void sizeof1()
@@ -1839,8 +1839,8 @@ private:
         tokenizer.simplifyIfAssign();
 
         std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << (tok->previous() ? " " : "") << tok->str();
+        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
+            ostr << (tok1->previous() ? " " : "") << tok1->str();
 
         return ostr.str();
     }
@@ -1883,8 +1883,8 @@ private:
         tokenizer.simplifyIfNot();
 
         std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << (tok->previous() ? " " : "") << tok->str();
+        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
+            ostr << (tok1->previous() ? " " : "") << tok1->str();
 
         return ostr.str();
     }
@@ -1916,8 +1916,8 @@ private:
         tokenizer.simplifyLogicalOperators();
 
         std::ostringstream ostr;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
-            ostr << (tok->previous() ? " " : "") << tok->str();
+        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
+            ostr << (tok1->previous() ? " " : "") << tok1->str();
 
         return ostr.str();
     }
@@ -2478,11 +2478,11 @@ private:
         tokenizer.simplifyTypedef();
 
         std::string ret;
-        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+        for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
         {
-            if (tok != tokenizer.tokens())
+            if (tok1 != tokenizer.tokens())
                 ret += " ";
-            ret += tok->str();
+            ret += tok1->str();
         }
 
         return ret;

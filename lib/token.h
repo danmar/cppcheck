@@ -228,9 +228,9 @@ public:
     /**
      * Insert new token after this token. This function will handle
      * relations between next and previous token also.
-     * @param str String for the new token.
+     * @param tokenStr String for the new token.
      */
-    void insertToken(const std::string &str);
+    void insertToken(const std::string &tokenStr);
 
     Token *previous() const
     {

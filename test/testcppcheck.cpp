@@ -126,35 +126,35 @@ private:
     void xml()
     {
         // Test the errorlogger..
-        ErrorLogger::ErrorMessage errmsg;
-        errmsg._msg = "ab<cd>ef";
-        ASSERT_EQUALS("<error id=\"\" severity=\"\" msg=\"ab&lt;cd&gt;ef\"/>", errmsg.toXML());
+        ErrorLogger::ErrorMessage errorMessage;
+        errorMessage._msg = "ab<cd>ef";
+        ASSERT_EQUALS("<error id=\"\" severity=\"\" msg=\"ab&lt;cd&gt;ef\"/>", errorMessage.toXML());
     }
 
 
     void include()
     {
-        ErrorLogger::ErrorMessage errmsg;
+        ErrorLogger::ErrorMessage errorMessage;
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.file = "ab/cd/../ef.h";
-        errmsg._callStack.push_back(loc);
-        ASSERT_EQUALS("<error file=\"ab/ef.h\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errmsg.toXML());
-        ASSERT_EQUALS("[ab/ef.h:0]: ", errmsg.toText());
+        errorMessage._callStack.push_back(loc);
+        ASSERT_EQUALS("<error file=\"ab/ef.h\" line=\"0\" id=\"\" severity=\"\" msg=\"\"/>", errorMessage.toXML());
+        ASSERT_EQUALS("[ab/ef.h:0]: ", errorMessage.toText());
     }
 
     void templateFormat()
     {
-        ErrorLogger::ErrorMessage errmsg;
+        ErrorLogger::ErrorMessage errorMessage;
         ErrorLogger::ErrorMessage::FileLocation loc;
         loc.file = "some/{file}file.cpp";
         loc.line = 10;
-        errmsg._callStack.push_back(loc);
-        errmsg._id = "testId";
-        errmsg._severity = "testSeverity";
-        errmsg._msg = "long testMessage";
-        ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"testSeverity\" msg=\"long testMessage\"/>", errmsg.toXML());
-        ASSERT_EQUALS("[some/{file}file.cpp:10]: (testSeverity) long testMessage", errmsg.toText());
-        ASSERT_EQUALS("testId-some/{file}file.cpp,testSeverity.10?{long testMessage}", errmsg.toText("{id}-{file},{severity}.{line}?{{message}}"));
+        errorMessage._callStack.push_back(loc);
+        errorMessage._id = "testId";
+        errorMessage._severity = "testSeverity";
+        errorMessage._msg = "long testMessage";
+        ASSERT_EQUALS("<error file=\"some/{file}file.cpp\" line=\"10\" id=\"testId\" severity=\"testSeverity\" msg=\"long testMessage\"/>", errorMessage.toXML());
+        ASSERT_EQUALS("[some/{file}file.cpp:10]: (testSeverity) long testMessage", errorMessage.toText());
+        ASSERT_EQUALS("testId-some/{file}file.cpp,testSeverity.10?{long testMessage}", errorMessage.toText("{id}-{file},{severity}.{line}?{{message}}"));
     }
 
     void getErrorMessages()
