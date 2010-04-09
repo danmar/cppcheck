@@ -667,7 +667,7 @@ void CheckOther::checkVariableScope()
                     lookupVar(tok1->tokAt(6), tok1->strAt(1));
                 }
             }
-            else if (Token::Match(tok1, "%type% %var% [;=]"))
+            else if (tok1->isStandardType() && Token::Match(tok1, "%type% %var% [;=]"))
             {
                 lookupVar(tok1, tok1->strAt(1));
             }

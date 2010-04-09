@@ -61,6 +61,7 @@ private:
         TEST_CASE(varScope6);
         TEST_CASE(varScope7);
         TEST_CASE(varScope8);
+        TEST_CASE(varScope9);		// classes may have extra side-effects
 
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -631,6 +632,22 @@ private:
                  "    }\n"
                  "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable edgeResistance can be reduced\n", errout.str());
+    }
+
+    void varScope9()
+    {
+        // classes may have extra side effects
+        varScope("class fred {\n"
+                 "public:\n"
+                 "    void x();\n"
+                 "};\n"
+                 "void test(int a) {\n"
+                 "    fred f;\n"
+                 "    if (a == 2) {\n"
+                 "        f.x();\n"
+                 "    }\n"
+                 "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
