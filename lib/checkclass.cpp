@@ -554,13 +554,7 @@ void CheckClass::checkConstructors(const Token *tok1, const std::string &funcnam
         // Check if any variables are uninitialized
         for (Var *var = varlist; var; var = var->next)
         {
-            if (var->init)
-                continue;
-
-            // Is it a static member variable?
-            std::ostringstream pattern;
-            pattern << className << " :: " << var->name << " =";
-            if (Token::findmatch(_tokenizer->tokens(), pattern.str().c_str()))
+            if (var->init || var->isStatic)
                 continue;
 
             // It's non-static and it's not initialized => error

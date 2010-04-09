@@ -48,6 +48,7 @@ private:
         TEST_CASE(uninitVar2);
         TEST_CASE(uninitVar3);
         TEST_CASE(uninitVar4);
+        TEST_CASE(uninitVar5);
         TEST_CASE(uninitVarEnum);
         TEST_CASE(uninitVarStream);
         TEST_CASE(uninitVarTypedef);
@@ -1495,6 +1496,19 @@ private:
                        "        int x;\n"
                        "    };\n"
                        "    struct Bar bar;\n"
+                       "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVar5()
+    {
+        checkUninitVar("class Foo\n"
+                       "{\n"
+                       "public:\n"
+                       "    Foo() { }\n"
+                       "    Foo &operator=(const Foo &)\n"
+                       "    { return *this; }\n"
+                       "    static int i;\n"
                        "};\n");
         ASSERT_EQUALS("", errout.str());
     }
