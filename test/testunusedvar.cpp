@@ -58,6 +58,8 @@ private:
         TEST_CASE(structmember4);
         TEST_CASE(structmember5);
         TEST_CASE(structmember6);
+        TEST_CASE(structmember7);
+        TEST_CASE(structmember8);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -196,6 +198,48 @@ private:
               "void foo(char *buf)\n"
               "{\n"
               "    struct AB *ab = (AB *)&buf[10];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember7()
+    {
+        check("struct AB\n"
+              "{\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "\n"
+              "void foo(struct AB *ab)\n"
+              "{\n"
+              "    ab->a = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct AB\n"
+              "{\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "\n"
+              "void foo(struct AB _shuge *ab)\n"
+              "{\n"
+              "    ab->a = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember8()
+    {
+        check("struct AB\n"
+              "{\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "\n"
+              "void foo(char *ab)\n"
+              "{\n"
+              "    ((AB *)ab)->b = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

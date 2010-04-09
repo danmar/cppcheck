@@ -860,6 +860,12 @@ void CheckOther::checkStructMemberUsage()
             const std::string s("( struct| " + tok->next()->str() + " * ) & %var% [");
             if (Token::findmatch(tok, s.c_str()))
                 structname = "";
+
+            // Try to prevent false positives when struct members are not used directly.
+            if (Token::findmatch(tok, (structname + " *").c_str()))
+                structname = "";
+            else if (Token::findmatch(tok, (structname + " %type% *").c_str()))
+                structname = "";
         }
 
         if (tok->str() == "}")
@@ -867,6 +873,7 @@ void CheckOther::checkStructMemberUsage()
 
         if (!structname.empty() && Token::Match(tok, "[{;]"))
         {
+            // Declaring struct variable..
             std::string varname;
             if (Token::Match(tok->next(), "%type% %var% [;[]"))
                 varname = tok->strAt(2);
@@ -879,6 +886,7 @@ void CheckOther::checkStructMemberUsage()
             else
                 continue;
 
+            // Check if the struct variable is anywhere in the file
             const std::string usagePattern(". " + varname);
             bool used = false;
             for (const Token *tok2 = _tokenizer->tokens(); tok2; tok2 = tok2->next())
