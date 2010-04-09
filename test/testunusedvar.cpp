@@ -67,6 +67,7 @@ private:
         TEST_CASE(localvar4);
         TEST_CASE(localvar5);
         TEST_CASE(localvar6);
+        TEST_CASE(localvar7);
         TEST_CASE(localvarasm);
 
         // Don't give false positives for variables in structs/unions
@@ -329,6 +330,32 @@ private:
                               "        b[i] = ++a;\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvar7()// ticket 1253
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i;\n"
+                              "    i--;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Unused variable: i\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i;\n"
+                              "    int &ii(i);"
+                              "    ii--;\n"
+                              "}\n");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'i' is not assigned a value\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i;\n"
+                              "    int &ii=i;"
+                              "    ii--;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'i' is not assigned a value\n"), errout.str());
     }
 
     void localvarasm()
