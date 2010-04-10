@@ -1260,3 +1260,174 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
     }
 }
 
+
+
+
+#include "executionpath.h"
+
+/// @addtogroup Checks
+/// @{
+
+
+class ArrayInfo
+{
+public:
+    /** type size in bytes */
+    unsigned int type_size;
+
+    /** number of elements of array */
+    unsigned int num;
+};
+
+
+/**
+ * @brief %Check for buffer overruns (using ExecutionPath)
+ */
+
+class ExecutionPathBufferOverrun : public ExecutionPath
+{
+public:
+    /** Startup constructor */
+    ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, ArrayInfo> &arrayinfo)
+            : ExecutionPath(c, 0), arrayInfo(arrayinfo)
+    {
+    }
+
+private:
+    /** Copy this check */
+    ExecutionPath *copy()
+    {
+        return new ExecutionPathBufferOverrun(*this);
+    }
+
+    /** @brief buffer information */
+    const std::map<unsigned int, ArrayInfo> &arrayInfo;
+
+    /** no implementation => compiler error if used by accident */
+    void operator=(const ExecutionPathBufferOverrun &);
+
+    /** internal constructor for creating extra checks */
+    ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, ArrayInfo> &arrayinfo, unsigned int varid_)
+            : ExecutionPath(c, varid_),
+            arrayInfo(arrayinfo)
+    {
+        // Pretend that variables are initialized to 0
+        // This checking is not about uninitialized variables
+        value = 0;
+    }
+
+    unsigned int value;
+
+    /** @brief Assign value to a variable */
+    static void assign_value(std::list<ExecutionPath *> &checks, unsigned int varid, const std::string &value)
+    {
+        if (varid == 0)
+            return;
+
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(*it);
+            if (c && c->varId == varid)
+                c->value = MathLib::toLongNumber(value);
+        }
+    }
+
+    /** @brief Found array usage.. */
+    static void array_index(const Token *tok, std::list<ExecutionPath *> &checks, unsigned int varid1, unsigned int varid2)
+    {
+        if (varid1 == 0 || varid2 == 0)
+            return;
+
+        // Locate array info corresponding to varid1
+        ArrayInfo ai;
+        {
+            ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(checks.front());
+            std::map<unsigned int, ArrayInfo>::const_iterator it;
+            it = c->arrayInfo.find(varid1);
+            if (it == c->arrayInfo.end())
+                return;
+            ai = it->second;
+        }
+
+        // Check if varid2 variable has a value that is out-of-bounds
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(*it);
+            if (c && c->varId == varid2 && c->value >= ai.num)
+            {
+                // variable value is out of bounds, report error
+                CheckBufferOverrun *checkBufferOverrun = dynamic_cast<CheckBufferOverrun *>(c->owner);
+                if (checkBufferOverrun)
+                {
+                    checkBufferOverrun->arrayIndexOutOfBounds(tok, ai.num, c->value);
+                    break;
+                }
+            }
+        }
+    }
+
+    const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
+    {
+        if (Token::Match(tok.previous(), "[;{}]"))
+        {
+            // Declaring variable..
+            if (Token::Match(&tok, "%type% %var% ;") && tok.isStandardType())
+            {
+                checks.push_back(new ExecutionPathBufferOverrun(owner, arrayInfo, tok.next()->varId()));
+                return tok.tokAt(2);
+            }
+
+            // Assign variable..
+            if (Token::Match(&tok, "%var% = %num% ;"))
+            {
+                assign_value(checks, tok.varId(), tok.strAt(2));
+                return tok.tokAt(3);
+            }
+        }
+
+        // Assign variable (unknown value = 0)..
+        if (Token::Match(&tok, "%var% ="))
+        {
+            assign_value(checks, tok.varId(), "0");
+            return &tok;
+        }
+
+        // Array index..
+        if (Token::Match(&tok, "%var% [ %var% ]"))
+        {
+            array_index(&tok, checks, tok.varId(), tok.tokAt(2)->varId());
+            return tok.tokAt(3);
+        }
+
+        return &tok;
+    }
+};
+
+/// @}
+
+
+void CheckBufferOverrun::executionPaths()
+{
+    // Parse all tokens and extract array info..
+    std::map<unsigned int, ArrayInfo> arrayInfo;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "[;{}] %type% %var% [ %num% ] ;"))
+        {
+            const unsigned int varid(tok->tokAt(2)->varId());
+            ArrayInfo ai;
+            ai.type_size = _tokenizer->sizeOfType(tok->next());
+            ai.num = MathLib::toLongNumber(tok->strAt(4));
+            arrayInfo[varid] = ai;
+        }
+    }
+
+    // Perform checking - check how the arrayInfo arrays are used
+    ExecutionPathBufferOverrun c(this, arrayInfo);
+    checkExecutionPaths(_tokenizer->tokens(), &c);
+}
+
+
+

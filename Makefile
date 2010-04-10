@@ -92,7 +92,7 @@ install:	cppcheck
 lib/checkautovariables.o: lib/checkautovariables.cpp lib/checkautovariables.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkautovariables.o lib/checkautovariables.cpp
 
-lib/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h
+lib/checkbufferoverrun.o: lib/checkbufferoverrun.cpp lib/checkbufferoverrun.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkbufferoverrun.o lib/checkbufferoverrun.cpp
 
 lib/checkclass.o: lib/checkclass.cpp lib/checkclass.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h

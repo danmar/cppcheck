@@ -61,10 +61,16 @@ public:
     {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.bufferOverrun();
+
+        /** ExecutionPath checking.. */
+        checkBufferOverrun.executionPaths();
     }
 
     /** @brief %Check for buffer overruns */
     void bufferOverrun();
+
+    /** @brief %Check for buffer overruns by inspecting execution paths */
+    void executionPaths();
 
     /**
      * @brief Get minimum length of format string result
@@ -73,8 +79,6 @@ public:
      * @return minimum length of resulting string
      */
     static int countSprintfLength(const std::string &input_string, const std::list<const Token*> &parameters);
-
-private:
 
     /**
      * @brief %Check code that matches: "sprintf ( %varid% , %str% [,)]" when varid is not 0,

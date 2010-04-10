@@ -151,6 +151,8 @@ private:
         TEST_CASE(terminateStrncpy1);
         TEST_CASE(terminateStrncpy2);
         TEST_CASE(recursive_long_time);
+
+        TEST_CASE(executionPaths1);
     }
 
 
@@ -1917,6 +1919,39 @@ private:
               "    f2(a);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+
+
+    void epcheck(const char code[])
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+        tokenizer.simplifyTokenList();
+
+        // Clear the error buffer..
+        errout.str("");
+
+        // Check for buffer overruns..
+        Settings settings;
+        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
+        checkBufferOverrun.executionPaths();
+    }
+
+
+    void executionPaths1()
+    {
+        epcheck("void f(int a)\n"
+                "{\n"
+                "    int buf[10];\n"
+                "    int i = 5;\n"
+                "    if (a == 1)\n"
+                "        i = 1000;\n"
+                "    buf[i] = 0;\n"
+                "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' index 1000 out of bounds\n", errout.str());
     }
 };
 
