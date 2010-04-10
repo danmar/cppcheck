@@ -47,8 +47,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings._showAll = true;
+        Settings settings(Settings::testSettings());
 
         // Check for unused variables..
         CheckOther checkOther(&tokenizer, &settings, this);

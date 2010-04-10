@@ -48,15 +48,26 @@ private:
 
     /** @brief terminate checking */
     bool _terminate;
+
+    Settings(bool all);
+
 public:
     Settings();
+    Settings(const Settings &s);
+    const Settings &operator=(const Settings &s);
     virtual ~Settings();
+
+    /** @brief Return test settings where inconclusive is true */
+    static Settings testSettings()
+    {
+        return Settings(true);
+    }
 
     /** @brief Is --debug given? */
     bool _debug;
 
-    /** @brief Is --all given? */
-    bool _showAll;
+    /** @brief Inconclusive checks - for debugging of Cppcheck */
+    const bool inconclusive;
 
     /** @brief Is --style given? */
     bool _checkCodingStyle;

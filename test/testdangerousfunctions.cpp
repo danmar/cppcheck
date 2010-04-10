@@ -53,8 +53,7 @@ private:
         errout.str("");
 
         // Check for dangerous functions..
-        Settings settings;
-        settings._showAll = true;
+        Settings settings(Settings::testSettings());
         CheckDangerousFunctions checkDangerousFunctions(&tokenizer, &settings, this);
         checkDangerousFunctions.dangerousFunctions();
     }

@@ -91,9 +91,8 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
+        Settings settings(Settings::testSettings());
         settings._checkCodingStyle = true;
-        settings._showAll = true;
         CheckStl checkStl;
         checkStl.runSimplifiedChecks(&tokenizer, &settings, this);
     }

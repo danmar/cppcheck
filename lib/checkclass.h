@@ -63,7 +63,7 @@ public:
             checkClass.operatorEq();
             checkClass.privateFunctions();
             checkClass.operatorEqRetRefThis();
-            if (settings->_showAll)
+            if (settings->inconclusive)
             {
                 checkClass.thisSubtraction();
                 checkClass.operatorEqToSelf();

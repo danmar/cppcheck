@@ -603,7 +603,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             --parlevel;
             if (parlevel < 1)
             {
-                return (_settings && _settings->_showAll) ? 0 : "callfunc";
+                return (_settings && _settings->inconclusive) ? 0 : "callfunc";
             }
         }
 
@@ -800,7 +800,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     {
                         if (isclass(_tokenizer, tok->tokAt(3)))
                         {
-                            if (_settings->_showAll)
+                            if (_settings->inconclusive)
                             {
 
                                 if (_settings->isAutoDealloc(tok->strAt(3)))
@@ -1380,7 +1380,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 }
 
                 // Two "if alloc ;" after one another.. perhaps only one of them can be executed each time
-                else if (!_settings->_showAll && Token::Match(tok2, "[;{}] if alloc ; if alloc ;"))
+                else if (!_settings->inconclusive && Token::Match(tok2, "[;{}] if alloc ; if alloc ;"))
                 {
                     Token::eraseTokens(tok2, tok2->tokAt(4));
                     done = false;
@@ -1399,7 +1399,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 // Otherwise, only the "if" will be deleted
                 else if (Token::Match(tok2, "[;{}] if assign|dealloc|use ; !!else"))
                 {
-                    if (_settings->_showAll && tok2->tokAt(2)->str() != "assign" && !Token::simpleMatch(tok2->tokAt(2), "dealloc ; dealloc"))
+                    if (_settings->inconclusive && tok2->tokAt(2)->str() != "assign" && !Token::simpleMatch(tok2->tokAt(2), "dealloc ; dealloc"))
                     {
                         Token::eraseTokens(tok2, tok2->tokAt(3));
                         all = true;
@@ -1471,7 +1471,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
                 }
 
                 // Reducing if..
-                else if (_settings->_showAll)
+                else if (_settings->inconclusive)
                 {
                     if (Token::Match(tok2, "[;{}] if { assign|dealloc|use ; return ; } !!else"))
                     {
@@ -1616,7 +1616,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             }
 
             // Remove the "if break|continue ;" that follows "dealloc ; alloc ;"
-            if (! _settings->_showAll && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
+            if (! _settings->inconclusive && Token::Match(tok2, "dealloc ; alloc ; if break|continue ;"))
             {
                 tok2 = tok2->tokAt(3);
                 Token::eraseTokens(tok2, tok2->tokAt(3));
@@ -1881,7 +1881,7 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
         }
 
         // If "--all" is given, remove all "callfunc"..
-        if (done && _settings->_showAll)
+        if (done && _settings->inconclusive)
         {
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
@@ -2047,7 +2047,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
         return;
     }
 
-    if ((result = findleak(tok, _settings->_showAll)) != NULL)
+    if ((result = findleak(tok, _settings->inconclusive)) != NULL)
     {
         memoryLeak(result, varname, alloctype, all);
     }
@@ -2293,7 +2293,7 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
             if (_settings->isAutoDealloc(tok->str().c_str()))
                 continue;
 
-            if (_settings->_showAll || !isclass(_tokenizer, tok))
+            if (_settings->inconclusive || !isclass(_tokenizer, tok))
                 variable(classname.back(), tok->tokAt(2));
         }
     }
@@ -2301,7 +2301,7 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
 
 void CheckMemoryLeakInClass::variable(const std::string &classname, const Token *tokVarname)
 {
-    if (!_settings->_showAll)
+    if (!_settings->inconclusive)
         return;
 
     const std::string varname = tokVarname->strAt(0);

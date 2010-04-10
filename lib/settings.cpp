@@ -24,9 +24,9 @@
 #include <stdexcept>
 
 Settings::Settings()
+        : inconclusive(false)
 {
     _debug = false;
-    _showAll = false;
     _checkCodingStyle = false;
     _errorsOnly = false;
     _inlineSuppressions = false;
@@ -38,6 +38,40 @@ Settings::Settings()
     _showtime = false;
     _append = "";
     _terminate = false;
+}
+
+Settings::Settings(const Settings &s)
+        : inconclusive(s.inconclusive)
+{
+    *this = s;
+}
+
+// Constructor used in unit testing..
+Settings::Settings(bool all)
+        : inconclusive(all)
+{
+    Settings s;
+    *this = s;		// This assigns all members except "inconclusive"
+}
+
+const Settings &Settings::operator=(const Settings & s)
+{
+    if (&s == this)
+        return *this;
+
+    _debug = s._debug;
+    _checkCodingStyle = s._checkCodingStyle;
+    _errorsOnly = s._errorsOnly;
+    _inlineSuppressions = s._inlineSuppressions;
+    _verbose = s._verbose;
+    _force = s._force;
+    _xml = s._xml;
+    _jobs = s._jobs;
+    _exitCode = s._exitCode;
+    _showtime = s._showtime;
+    _append = s._append;
+    _terminate = s._terminate;
+    return *this;
 }
 
 Settings::~Settings()
@@ -140,11 +174,9 @@ void Settings::addEnabled(const std::string &str)
     bool handled = false;
 
     if (str == "all")
-        handled = _checkCodingStyle = _showAll = true;
+        handled = _checkCodingStyle = true;
     else if (str == "style")
         handled = _checkCodingStyle = true;
-    else if (str == "possibleError")
-        handled = _showAll = true;
 
     std::set<std::string> id;
     id.insert("exceptNew");

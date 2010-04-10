@@ -64,7 +64,7 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(int size, int index)
     if (size <= 1 || _callStack.size() > 1)
     {
         severity = Severity::possibleError;
-        if (_settings->_showAll == false)
+        if (_settings->inconclusive == false)
             return;
     }
     else
@@ -88,7 +88,7 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varn
     if (_callStack.size() > 0)
     {
         severity = Severity::possibleError;
-        if (_settings->_showAll == false)
+        if (_settings->inconclusive == false)
             return;
     }
     else
@@ -109,7 +109,7 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varn
 
 void CheckBufferOverrun::dangerousStdCin(const Token *tok)
 {
-    if (_settings && _settings->_showAll == false)
+    if (_settings && _settings->inconclusive == false)
         return;
 
     reportError(tok, Severity::possibleError, "dangerousStdCin", "Dangerous usage of std::cin, possible buffer overrun");
@@ -117,7 +117,7 @@ void CheckBufferOverrun::dangerousStdCin(const Token *tok)
 
 void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
-    if (_settings && _settings->_showAll == false)
+    if (_settings && _settings->inconclusive == false)
         return;
 
     reportError(tok, Severity::possibleError, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
@@ -130,7 +130,7 @@ void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
 
 void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
 {
-    if (_settings && _settings->_showAll == false)
+    if (_settings && _settings->inconclusive == false)
         return;
 
     reportError(tok, Severity::possibleError, "sizeArgumentAsChar", "The size argument is given as a char constant");
@@ -700,7 +700,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if (Token::Match(tok, "%var% ("))
         {
             // Only perform this checking if showAll setting is enabled..
-            if (!_settings->_showAll)
+            if (!_settings->inconclusive)
                 continue;
 
             unsigned int parlevel = 0, par = 0;

@@ -3435,8 +3435,7 @@ private:
     void checkSimplifyTypedef(const char code[])
     {
         // Tokenize..
-        Settings settings;
-        settings._showAll = true;
+        Settings settings(Settings::testSettings());
         settings._checkCodingStyle = true;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -4046,8 +4045,7 @@ private:
     void checkSimplifyEnum(const char code[])
     {
         // Tokenize..
-        Settings settings;
-        settings._showAll = true;
+        Settings settings(Settings::testSettings());
         settings._checkCodingStyle = true;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);

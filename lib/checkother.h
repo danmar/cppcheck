@@ -73,7 +73,7 @@ public:
             checkOther.checkConstantFunctionParameter();
             checkOther.checkIncompleteStatement();
             checkOther.unreachableCode();
-            if (settings->_showAll)
+            if (settings->inconclusive)
             {
                 checkOther.postIncrement();
             }

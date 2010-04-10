@@ -307,7 +307,7 @@ void CheckOther::invalidFunctionUsage()
 
 void CheckOther::checkUnsignedDivision()
 {
-    if (!_settings->_showAll || !_settings->_checkCodingStyle)
+    if (!_settings->inconclusive || !_settings->_checkCodingStyle)
         return;
 
     // Check for "ivar / uvar" and "uvar / ivar"
@@ -327,16 +327,13 @@ void CheckOther::checkUnsignedDivision()
                  tok->tokAt(1)->varId() != 0 &&
                  tok->tokAt(3)->varId() != 0)
         {
-            if (ErrorLogger::udivWarning(*_settings))
-            {
-                char sign1 = varsign[tok->tokAt(1)->varId()];
-                char sign2 = varsign[tok->tokAt(3)->varId()];
+            char sign1 = varsign[tok->tokAt(1)->varId()];
+            char sign2 = varsign[tok->tokAt(3)->varId()];
 
-                if (sign1 && sign2 && sign1 != sign2)
-                {
-                    // One of the operands are signed, the other is unsigned..
-                    udivWarning(tok->next());
-                }
+            if (sign1 && sign2 && sign1 != sign2)
+            {
+                // One of the operands are signed, the other is unsigned..
+                udivWarning(tok->next());
             }
         }
 
@@ -2499,7 +2496,7 @@ void CheckOther::executionPaths()
     {
         // no writing if multiple threads are used (TODO: thread safe analysis?)
         if (_settings->_jobs == 1)
-            CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions, _settings->_showAll);
+            CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions, _settings->inconclusive);
 
         CheckUninitVar c(this);
         checkExecutionPaths(_tokenizer->tokens(), &c);

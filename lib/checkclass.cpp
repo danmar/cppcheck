@@ -481,7 +481,7 @@ void CheckClass::constructors()
             }
         }
 
-        if (hasPrivateConstructor && !_settings->_showAll)
+        if (hasPrivateConstructor && !_settings->inconclusive)
         {
             /** @todo Handle private constructors. Right now to avoid
              * false positives we just bail out */
@@ -542,7 +542,7 @@ void CheckClass::checkConstructors(const Token *tok1, const std::string &funcnam
     const std::string className = tok1->strAt(1);
 
     // Check that all member variables are initialized..
-    bool withClasses = bool(_settings->_showAll && funcname == "operator =");
+    bool withClasses = bool(_settings->inconclusive && funcname == "operator =");
     Var *varlist = getVarList(tok1, withClasses, isStruct);
 
     int indentlevel = 0;

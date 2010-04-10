@@ -46,8 +46,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings._showAll = all;
+        Settings settings(all ? Settings::testSettings() : Settings());
         settings._checkCodingStyle = style;
 
         // Check for unsigned divisions..

@@ -212,9 +212,8 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        Settings settings;
+        Settings settings(showAll ? Settings::testSettings() : Settings());
         settings._debug = true;
-        settings._showAll = showAll;
         tokenizer.fillFunctionList();
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.check();
@@ -601,8 +600,7 @@ private:
             }
         }
 
-        Settings settings;
-        settings._showAll = all;
+        Settings settings(all ? Settings::testSettings() : Settings());
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
         all = false;
         checkMemoryLeak.simplifycode(tokens, all);
@@ -2143,9 +2141,8 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        Settings settings;
+        Settings settings(Settings::testSettings());
         settings._debug = true;
-        settings._showAll = true;
 
         {
             std::istringstream istr(_autoDealloc);
@@ -2715,9 +2712,8 @@ private:
         errout.str("");
 
         // Check for memory leaks..
-        Settings settings;
+        Settings settings(showAll ? Settings::testSettings() : Settings());
         settings._debug = true;
-        settings._showAll = showAll;
         tokenizer.fillFunctionList();
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.check();

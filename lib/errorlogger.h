@@ -117,23 +117,6 @@ public:
      */
     virtual void reportStatus(unsigned int index, unsigned int max) = 0;
 
-
-    static bool arrayIndexOutOfBounds(const Settings &s)
-    {
-        return s._showAll;
-    }
-
-    static bool bufferOverrun(const Settings &s)
-    {
-        return s._showAll;
-    }
-
-
-    static bool strncatUsage(const Settings &s)
-    {
-        return s._showAll;
-    }
-
     static bool outOfBounds()
     {
         return true;
@@ -189,11 +172,6 @@ public:
         reportErr(ErrorLogger::ErrorMessage(loc, "style", "The function '" + funcname + "' is never used", "unusedFunction"));
     }
 
-    static bool unusedFunction(const Settings &s)
-    {
-        return s._checkCodingStyle || s._showAll;
-    }
-
 
     static bool mismatchAllocDealloc()
     {
@@ -204,12 +182,6 @@ public:
     {
         return true;
     }
-
-    static bool memleakall(const Settings &s)
-    {
-        return s._showAll;
-    }
-
 
     static bool resourceLeak()
     {
@@ -267,12 +239,6 @@ public:
     static bool udivError()
     {
         return true;
-    }
-
-
-    static bool udivWarning(const Settings &s)
-    {
-        return s._checkCodingStyle || s._showAll;
     }
 
 

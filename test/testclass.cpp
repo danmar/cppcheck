@@ -417,9 +417,8 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
+        Settings settings(Settings::testSettings());
         settings._checkCodingStyle = true;
-        settings._showAll = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.operatorEqToSelf();
     }
@@ -1392,8 +1391,7 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings._showAll = true;
+        Settings settings(Settings::testSettings());
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
@@ -2108,9 +2106,8 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
+        Settings settings(Settings::testSettings());
         settings._checkCodingStyle = true;
-        settings._showAll = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.thisSubtraction();
     }
