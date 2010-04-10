@@ -475,6 +475,7 @@ private:
               "    memclr( 10, str );   // ERROR\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("", errout.str());	// current result
 
         // This is not an error
         check("static void memclr( char *data, int size )\n"
