@@ -67,7 +67,20 @@ void CheckStl::iterators()
             else if (Token::Match(tok2, "%var% . insert|erase ( %varid% )|,", iteratorId))
             {
                 if (tok2->varId() != containerId && tok2->tokAt(5)->str() != ".")
+                {
+                    // skip error message if container is a set..
+                    if (tok2->varId() > 0)
+                    {
+                        const Token *decltok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok2->varId());
+                        while (decltok && !Token::Match(decltok, "[;{},(]"))
+                            decltok = decltok->previous();
+                        if (Token::Match(decltok, "%any% const| std :: set"))
+                            continue;	// No warning
+                    }
+
+                    // Show error message, mismatching iterator is used.
                     iteratorsError(tok2, tok->strAt(2), tok2->str());
+                }
                 else if (tok2->strAt(2) == std::string("erase"))
                     validIterator = false;
 
