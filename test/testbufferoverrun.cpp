@@ -140,7 +140,8 @@ private:
 
         TEST_CASE(assign1);
 
-        TEST_CASE(alloc);    // Buffer allocated with new
+        TEST_CASE(alloc1);    // Buffer allocated with new
+        TEST_CASE(alloc2);    // Buffer allocated with malloc
 
         TEST_CASE(memset1);
         TEST_CASE(memset2);
@@ -1600,18 +1601,11 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'str[3]' index 3 out of bounds\n", errout.str());
     }
 
-    void alloc()
+    void alloc1()
     {
         check("void foo()\n"
               "{\n"
               "    char *s = new char[10];\n"
-              "    s[10] = 0;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' index 10 out of bounds\n", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    char *s = (char *)malloc(10);\n"
               "    s[10] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' index 10 out of bounds\n", errout.str());
@@ -1638,14 +1632,6 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[9]' index 9 out of bounds\n", errout.str());
 
-        // ticket #842
-        check("void f() {\n"
-              "  int *tab4 = malloc(20 * sizeof(int));\n"
-              "  tab4[20] = 0;\n"
-              "  free(tab4);\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'tab4[20]' index 20 out of bounds\n", errout.str());
-
         check("void f() {\n"
               "  int *tab4 = malloc(20 * sizeof(int));\n"
               "  tab4[19] = 0;\n"
@@ -1666,6 +1652,31 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    // data is allocated with malloc
+    void alloc2()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    char *s = (char *)malloc(10);\n"
+              "    s[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 's[10]' index 10 out of bounds\n", errout.str());
+
+        // ticket #842
+        check("void f() {\n"
+              "    int *tab4 = malloc(20 * sizeof(int));\n"
+              "    tab4[20] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'tab4[20]' index 20 out of bounds\n", errout.str());
+
+        // ticket #1134
+        check("void f() {\n"
+              "    int *x, i;\n"
+              "    x = malloc(10 * sizeof(int));\n"
+              "    x[10] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'x[10]' index 10 out of bounds\n", errout.str());
+    }
 
     void memset1()
     {

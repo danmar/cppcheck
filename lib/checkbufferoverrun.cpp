@@ -913,19 +913,20 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         else if (indentlevel > 0 && Token::Match(tok, "[*;{}] %var% = malloc ( %num% ) ;"))
         {
             size = MathLib::toLongNumber(tok->strAt(5));
-            type = "char";
+            type = "char";   // minimum type, typesize=1
             varid = tok->tokAt(1)->varId();
             nextTok = 7;
 
-            // "int * x ; x = malloc (y);"
-            const Token *declTok = tok->tokAt(-3);
-            if (varid > 0 && declTok && Token::Match(declTok, "%type% * %varid% ;", varid))
+            if (varid > 0)
             {
-                type = declTok->strAt(0);
+                // get type of variable
+                const Token *declTok = Token::findmatch(_tokenizer->tokens(), "[;{}] %type% * %varid% ;", varid);
+                type = declTok->next()->str();
+
                 // malloc() gets count of bytes and not count of
                 // elements, so we should calculate count of elements
                 // manually
-                unsigned int sizeOfType = _tokenizer->sizeOfType(declTok);
+                unsigned int sizeOfType = _tokenizer->sizeOfType(declTok->next());
                 if (sizeOfType > 0)
                     size /= sizeOfType;
             }
