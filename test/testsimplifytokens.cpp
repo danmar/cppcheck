@@ -229,6 +229,10 @@ private:
 
         // struct ABC { } abc; => struct ABC { }; ABC abc;
         TEST_CASE(simplifyStructDecl);
+
+        // register int var; => int var;
+        // inline int foo() {} => int foo() {}
+        TEST_CASE(removeUnwantedKeywords);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -4375,6 +4379,15 @@ private:
             const char expected[] = ";";
             ASSERT_EQUALS(expected, tok(code, false));
         }
+    }
+
+    void removeUnwantedKeywords()
+    {
+        ASSERT_EQUALS("int var ;", tok("register int var ;", true));
+        ASSERT_EQUALS("short var ;", tok("register short int var ;", true));
+        ASSERT_EQUALS("int foo ( ) { }", tok("inline int foo ( ) { }", true));
+        ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
+        ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
     }
 };
 

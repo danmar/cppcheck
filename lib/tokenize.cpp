@@ -2917,7 +2917,15 @@ bool Tokenizer::simplifyTokenList()
     simplifyMathFunctions();
 
     // Remove unwanted keywords
-    static const char * const unwantedWords[] = { "unsigned", "unlikely", "likely" };
+    static const char * const unwantedWords[] = { "unsigned", "unlikely", "likely", "register", "inline" };
+    for (unsigned ui = 0; ui < sizeof(unwantedWords) / sizeof(unwantedWords[0]) && _tokens; ui++)
+    {
+        if (_tokens->str() == unwantedWords[ui])
+        {
+            _tokens->deleteThis();
+            break;
+        }
+    }
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         for (unsigned ui = 0; ui < sizeof(unwantedWords) / sizeof(unwantedWords[0]) && tok->next(); ui++)
