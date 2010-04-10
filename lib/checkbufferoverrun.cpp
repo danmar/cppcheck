@@ -1336,7 +1336,7 @@ private:
     /** @brief Found array usage.. */
     static void array_index(const Token *tok, std::list<ExecutionPath *> &checks, unsigned int varid1, unsigned int varid2)
     {
-        if (varid1 == 0 || varid2 == 0)
+        if (checks.empty() || varid1 == 0 || varid2 == 0)
             return;
 
         // Locate array info corresponding to varid1
