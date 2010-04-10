@@ -123,9 +123,10 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--debug") == 0)
             _settings._debug = true;
 
-        // Show all messages
+        // Inconclusive checking - keep this for compatibility but don't
+        // handle it
         else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--all") == 0)
-            _settings.addEnabled("possibleError");
+            ;
 
         // Only print something when there are errors
         else if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0)
@@ -369,7 +370,7 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         oss <<   "Cppcheck - A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
-        "    cppcheck [--all] [--append=file] [--auto-dealloc file.lst] [--enable]\n"
+        "    cppcheck [--append=file] [--auto-dealloc file.lst] [--enable]\n"
         "             [--error-exitcode=[n]] [--exitcode-suppressions file] [--force]\n"
         "             [--help] [-Idir] [-j [jobs]] [--quiet] [--style]\n"
         "             [--suppressions file.txt] [--inline-suppr] [--file-list=file.txt]\n"
@@ -378,7 +379,6 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
         "are checked recursively from given directory.\n\n"
         "Options:\n"
-        "    -a, --all            deprecated, use --enable=possibleError\n"
         "    --append=file        This allows you to provide information about\n"
         "                         functions by providing an implementation for these.\n"
         "    --auto-dealloc file  Suppress warnings about classes that have automatic\n"
@@ -391,9 +391,6 @@ void CppCheck::parseFromArgs(int argc, const char* const argv[])
         "                          * all - enable all checks\n"
         "                          * exceptNew - exception safety when using new\n"
         "                          * exceptRealloc - exception safety when reallocating\n"
-        "                          * possibleError - Make the checking more sensitive.\n"
-        "                            More bugs are detected, but there are also\n"
-        "                            more false positives\n"
         "                          * style - Check coding style\n"
         "                          * unusedFunctions - check for unused functions\n"
         "                         Several ids can be given if you separate them with commas\n"
