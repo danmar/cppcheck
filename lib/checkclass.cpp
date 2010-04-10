@@ -1571,9 +1571,7 @@ void CheckClass::checkConst()
                     for (std::string::size_type pos = 0; pos < s.size(); ++pos)
                     {
                         unsigned char ch = s[pos];
-                        if (ch != '_' &&
-                            !std::isupper(ch) &&
-                            !std::isdigit(ch))
+                        if (!(ch == '_' || (ch >= 'A' && ch <= 'Z')))
                         {
                             allupper = false;
                             break;
