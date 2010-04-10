@@ -80,9 +80,7 @@
     <property name="title">
      <string>&amp;View</string>
     </property>
-    <addaction name="mActionShowAll"/>
     <addaction name="mActionShowStyle"/>
-    <addaction name="mActionShowAllStyle"/>
     <addaction name="mActionShowErrors"/>
     <addaction name="mActionCheckAll"/>
     <addaction name="mActionUncheckAll"/>
