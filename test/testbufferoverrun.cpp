@@ -398,11 +398,10 @@ private:
               "\n"
               "static void f()\n"
               "{\n"
-              "  int datasize = 10;\n"
-              "  struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + datasize - 1);\n"
-              "  x->str[1] = 0;"
+              "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
+              "    x->str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (possible error) Array 'str[1]' index 1 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (possible error) Array 'str[1]' index 1 out of bounds\n", errout.str());
         TODO_ASSERT_EQUALS("", errout.str());
     }
 
