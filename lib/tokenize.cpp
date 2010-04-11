@@ -2147,19 +2147,49 @@ void Tokenizer::updateClassList()
 
 void Tokenizer::setVarId()
 {
-    // Clear all variable ids
-    for (Token *tok = _tokens; tok; tok = tok->next())
-        tok->varId(0);
+    unsigned int _varId = 0;
+
+    // Assign string ids so that string comparisons will not be needed
+    {
+        std::map<std::string, unsigned int> id1;
+        unsigned int strid = 0;
+
+        // Initialize id according to strings..
+        for (Token *tok = _tokens; tok; tok = tok->next())
+        {
+            if (!tok->isName())
+                tok->varId(0);
+            else
+            {
+                std::map<std::string, unsigned int>::const_iterator it;
+                it = id1.find(tok->str());
+                if (it != id1.end())
+                    tok->varId(it->second);
+                else
+                {
+                    ++strid;
+                    id1[tok->str()] = strid;
+                    tok->varId(strid);
+                }
+            }
+        }
+
+        _varId = strid + 1;
+    }
+
+    const unsigned int varId1(_varId);
 
     // Set variable ids..
-    unsigned int _varId = 0;
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (tok != _tokens && !Token::Match(tok, "[,;{}(] %type%"))
+        if (tok != _tokens && !Token::Match(tok, "[,;{}(] %var%"))
             continue;
 
-        if (Token::Match(tok, "[,;{}(] %type%"))
+        if (Token::Match(tok, "[,;{}(] %var%"))
             tok = tok->next();
+
+        if (tok->varId() >= varId1)
+            continue;
 
         if (tok->str() == "new")
             continue;
@@ -2167,7 +2197,7 @@ void Tokenizer::setVarId()
         if (tok->str() == "unsigned")
             tok = tok->next();
 
-        if (Token::Match(tok, "class|struct %type% :|{|;"))
+        if (Token::Match(tok, "class|struct %var% :|{|;"))
             continue;
 
         if (Token::Match(tok, "else|return|typedef|delete|sizeof"))
@@ -2180,7 +2210,7 @@ void Tokenizer::setVarId()
             tok = tok->tokAt(2);
 
         // Skip template arguments..
-        if (Token::Match(tok, "%type% <"))
+        if (Token::Match(tok, "%var% <"))
         {
             int level = 1;
             bool again;
@@ -2193,13 +2223,13 @@ void Tokenizer::setVarId()
                 while (Token::Match(tok2, "%var% ::"))
                     tok2 = tok2->tokAt(2);
 
-                if (Token::Match(tok2, "%type% <"))
+                if (Token::Match(tok2, "%var% <"))
                 {
                     level++;
                     tok2 = tok2->tokAt(2);
                     again = true;
                 }
-                else if (Token::Match(tok2, "%type% ,"))
+                else if (Token::Match(tok2, "%var% ,"))
                 {
                     tok2 = tok2->tokAt(2);
                     again = true;
@@ -2237,13 +2267,13 @@ void Tokenizer::setVarId()
             while (again);
         }
 
-        // Determine name of declared variable..
-        std::string varname;
+        // Determine "string id" for variable..
+        unsigned int strid = 0;
         Token *tok2 = tok->tokAt(1);
         while (tok2)
         {
             if (tok2->isName())
-                varname = tok2->str();
+                strid = (tok2->str() == "operator") ? 0 : tok2->varId();
             else if (tok2->str() != "*" && tok2->str() != "&")
                 break;
             tok2 = tok2->next();
@@ -2253,7 +2283,7 @@ void Tokenizer::setVarId()
         if (!tok2)
             break;
 
-        if (varname == "operator" && Token::Match(tok2, "=|+|-|*|/|[| ]| ("))
+        if (strid == 0)
             continue;
 
         // Is it a function?
@@ -2267,7 +2297,7 @@ void Tokenizer::setVarId()
             if (Token::Match(tok2->next(), "%num%") ||
                 Token::Match(tok2->next(), "%bool%") ||
                 tok2->next()->str()[0] == '"' ||
-                tok2->next()->varId() != 0)
+                tok2->next()->varId() >= varId1)
             {
                 // This is not a function
             }
@@ -2278,7 +2308,7 @@ void Tokenizer::setVarId()
         }
 
         // Variable declaration found => Set variable ids
-        if (Token::Match(tok2, "[,();[=]") && !varname.empty())
+        if (Token::Match(tok2, "[,();[=]"))
         {
             ++_varId;
             int indentlevel = 0;
@@ -2287,7 +2317,7 @@ void Tokenizer::setVarId()
             bool funcDeclaration = false;
             for (tok2 = tok->next(); tok2; tok2 = tok2->next())
             {
-                if (!dot && tok2->str() == varname && !Token::Match(tok2->previous(), "struct|union"))
+                if (!dot && tok2->varId() == strid && !Token::Match(tok2->previous(), "struct|union"))
                     tok2->varId(_varId);
                 else if (tok2->str() == "{")
                     ++indentlevel;
@@ -2323,13 +2353,13 @@ void Tokenizer::setVarId()
     {
         // str.clear is a variable
         // str.clear() is a member function
-        if (tok->varId() != 0 &&
+        if (tok->varId() > varId1 &&
             Token::Match(tok->next(), ". %var% !!(") &&
-            tok->tokAt(2)->varId() == 0)
+            tok->tokAt(2)->varId() <= varId1)
         {
             ++_varId;
 
-            const std::string pattern(std::string("%varid% . ") + tok->strAt(2));
+            const std::string pattern("%varid% . " + tok->strAt(2));
             for (Token *tok2 = tok; tok2; tok2 = tok2->next())
             {
                 if (Token::Match(tok2, pattern.c_str(), tok->varId()))
@@ -2348,7 +2378,7 @@ void Tokenizer::setVarId()
             {
                 if (Token::simpleMatch(tok2->tokAt(3), "("))
                     allMemberFunctions.push_back(tok2);
-                else if (tok2->tokAt(2)->varId() != 0)
+                else if (tok2->tokAt(2)->varId() >= _varId)
                     allMemberVars.push_back(tok2);
             }
         }
@@ -2360,7 +2390,6 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "class %var% {"))
         {
             const std::string &classname(tok->next()->str());
-
 
             // What member variables are there in this class?
             std::map<std::string, unsigned int> varlist;
@@ -2379,7 +2408,7 @@ void Tokenizer::setVarId()
                     }
 
                     // Found a member variable..
-                    else if (indentlevel == 1 && tok2->varId() > 0)
+                    else if (indentlevel == 1 && tok2->varId() >= varId1)
                         varlist[tok2->str()] = tok2->varId();
                 }
             }
@@ -2438,7 +2467,7 @@ void Tokenizer::setVarId()
                         --indentlevel;
                     }
                     else if (indentlevel > 0 &&
-                             tok2->varId() == 0 &&
+                             tok2->varId() > 0 &&
                              varlist.find(tok2->str()) != varlist.end())
                     {
                         tok2->varId(varlist[tok2->str()]);
@@ -2446,6 +2475,18 @@ void Tokenizer::setVarId()
                 }
             }
 
+        }
+    }
+
+    // Cleanup string ids..
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (tok->varId())
+        {
+            if (tok->varId() >= varId1)
+                tok->varId(tok->varId() - varId1);
+            else
+                tok->varId(0);
         }
     }
 }
