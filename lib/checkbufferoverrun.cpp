@@ -921,6 +921,9 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             {
                 // get type of variable
                 const Token *declTok = Token::findmatch(_tokenizer->tokens(), "[;{}] %type% * %varid% ;", varid);
+                if (!declTok)
+                    continue;
+
                 type = declTok->next()->str();
 
                 // malloc() gets count of bytes and not count of

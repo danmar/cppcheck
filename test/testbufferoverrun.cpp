@@ -152,6 +152,8 @@ private:
         TEST_CASE(terminateStrncpy2);
         TEST_CASE(recursive_long_time);
 
+        TEST_CASE(crash);	// Ticket #1587 - crash
+
         TEST_CASE(executionPaths1);
     }
 
@@ -1917,6 +1919,23 @@ private:
               "{\n"
               "    char a[10];\n"
               "    f2(a);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    // Ticket #1587 - crash
+    void crash()
+    {
+        check("struct struct A\n"
+              "{\n"
+              "    int alloclen;\n"
+              "};\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    struct A *str;\n"
+              "    str = malloc(4);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
