@@ -22,7 +22,6 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
-#include <stdexcept>
 
 CppCheckExecutor::CppCheckExecutor()
 {
@@ -37,13 +36,8 @@ CppCheckExecutor::~CppCheckExecutor()
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     CppCheck cppCheck(*this);
-    try
+    if (!cppCheck.parseFromArgs(argc, argv))
     {
-        cppCheck.parseFromArgs(argc, argv);
-    }
-    catch (std::runtime_error &e)
-    {
-        std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 

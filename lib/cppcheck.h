@@ -102,9 +102,9 @@ public:
      *
      * @param argc argc from main()
      * @param argv argv from main()
-     * @throw std::runtime_error when errors are found in the input
+     * @return false when errors are found in the input
      */
-    void parseFromArgs(int argc, const char* const argv[]);
+    bool parseFromArgs(int argc, const char* const argv[]);
 
     /**
      * @brief Returns current version number as a string.

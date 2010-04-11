@@ -59,60 +59,63 @@ private:
         TEST_CASE(templateFormat);
         TEST_CASE(getErrorMessages);
         TEST_CASE(parseOutputtingArgs);
+        TEST_CASE(parseOutputtingInvalidArgs);
     }
 
-    void argCheck(int argc, const char *argv[])
+    bool argCheck(int argc, const char *argv[])
     {
         errout.str("");
         output.str("");
         CppCheck cppCheck(*this);
-        cppCheck.parseFromArgs(argc, argv);
+        return cppCheck.parseFromArgs(argc, argv);
     }
 
     void parseOutputtingArgs()
     {
         {
             const char *argv[] = {"cppcheck", "--help"};
-            argCheck(2, argv);
+            ASSERT_EQUALS(true, argCheck(2, argv));
             ASSERT_EQUALS("", errout.str());
             ASSERT_EQUALS(true, output.str().find("Example usage") != std::string::npos);
         }
 
         {
             const char *argv[] = {"cppcheck"};
-            argCheck(1, argv);
+            ASSERT_EQUALS(true, argCheck(1, argv));
             ASSERT_EQUALS("", errout.str());
             ASSERT_EQUALS(true, output.str().find("Example usage") != std::string::npos);
         }
 
         {
             const char *argv[] = {"cppcheck", "--version"};
-            argCheck(2, argv);
+            ASSERT_EQUALS(true, argCheck(2, argv));
             ASSERT_EQUALS("", errout.str());
             ASSERT_EQUALS(std::string("Cppcheck ") + CppCheck::version() + "\n", output.str());
         }
 
         {
             const char *argv[] = {"cppcheck", "--doc"};
-            argCheck(2, argv);
+            ASSERT_EQUALS(true, argCheck(2, argv));
             ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(true, output.str().find("===Bounds checking===") != std::string::npos);
+            ASSERT_EQUALS(true, output.str().find("===Unused functions===") != std::string::npos);
+        }
+    }
 
-            // TODO: --doc prints output directly to stdout, so it can't
-            // be tested. Add test here when it is changed.
-            TODO_ASSERT_EQUALS("Something", output.str());
+    void parseOutputtingInvalidArgs()
+    {
+        {
+            const char *argv[] = {"cppcheck", "--invalidArg"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: error: unrecognized command line option \"--invalidArg\"\n", output.str());
         }
 
         {
-            const char *argv[] = {"cppcheck", "--invalidArg"};
-            try
-            {
-                argCheck(2, argv);
-                ASSERT_EQUALS("", "Should not come here");
-            }
-            catch (std::runtime_error &e)
-            {
-                ASSERT_EQUALS("cppcheck: error: unrecognized command line option \"--invalidArg\"", e.what());
-            }
+            const char *argv[] = {"cppcheck", "--suppressions"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: No file specified for the --suppressions option\n", output.str());
         }
     }
 
