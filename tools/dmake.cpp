@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     // TODO: add more compiler warnings.
     // -Wsign-conversion : generates too many compiler warnings currently
     // -Wlogical-op      : doesn't work on older GCC
-    fout << "CXXFLAGS=-Wall -Wextra -pedantic -Wno-long-long -Wfloat-equal -Wcast-qual ";
+    fout << "CXXFLAGS=-Wall -Wextra -Wshadow -pedantic -Wno-long-long -Wfloat-equal -Wcast-qual ";
     fout << (release ? "-O2 -DNDEBUG" : "-g -D_GLIBCXX_DEBUG") << "\n";
     fout << "CXX=g++\n";
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
