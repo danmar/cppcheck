@@ -26,6 +26,7 @@
 
 #include <map>
 #include <string>
+#include <stdexcept>
 
 extern std::ostringstream errout;
 extern std::ostringstream output;
@@ -57,7 +58,7 @@ private:
         TEST_CASE(include);
         TEST_CASE(templateFormat);
         TEST_CASE(getErrorMessages);
-        TEST_CASE(parseArgs);
+        TEST_CASE(parseOutputtingArgs);
     }
 
     void argCheck(int argc, const char *argv[])
@@ -68,7 +69,7 @@ private:
         cppCheck.parseFromArgs(argc, argv);
     }
 
-    void parseArgs()
+    void parseOutputtingArgs()
     {
         {
             const char *argv[] = {"cppcheck", "--help"};
@@ -89,6 +90,29 @@ private:
             argCheck(2, argv);
             ASSERT_EQUALS("", errout.str());
             ASSERT_EQUALS(std::string("Cppcheck ") + CppCheck::version() + "\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--doc"};
+            argCheck(2, argv);
+            ASSERT_EQUALS("", errout.str());
+
+            // TODO: --doc prints output directly to stdout, so it can't
+            // be tested. Add test here when it is changed.
+            TODO_ASSERT_EQUALS("Something", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--invalidArg"};
+            try
+            {
+                argCheck(2, argv);
+                ASSERT_EQUALS("", "Should not come here");
+            }
+            catch (std::runtime_error &e)
+            {
+                ASSERT_EQUALS("cppcheck: error: unrecognized command line option \"--invalidArg\"", e.what());
+            }
         }
     }
 
