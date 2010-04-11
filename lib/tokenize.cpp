@@ -974,24 +974,24 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         tok3 = tok2;
-                        Token * nextToken;
-                        std::stack<Token *> links;
-                        for (nextToken = argStart->next(); nextToken != argEnd; nextToken = nextToken->next())
+                        Token * nextArgTok;
+                        std::stack<Token *> argLinks;
+                        for (nextArgTok = argStart->next(); nextArgTok != argEnd; nextArgTok = nextArgTok->next())
                         {
-                            tok2->insertToken(nextToken->strAt(0));
+                            tok2->insertToken(nextArgTok->strAt(0));
                             tok2 = tok2->next();
 
                             // Check for links and fix them up
                             if (tok2->str() == "(" || tok2->str() == "[")
-                                links.push(tok2);
+                                argLinks.push(tok2);
                             if (tok2->str() == ")" || tok2->str() == "]")
                             {
-                                Token * link = links.top();
+                                Token * link = argLinks.top();
 
                                 tok2->link(link);
                                 link->link(tok2);
 
-                                links.pop();
+                                argLinks.pop();
                             }
                         }
                         tok2->insertToken(")");
@@ -1002,24 +1002,24 @@ void Tokenizer::simplifyTypedef()
                     if (arrayStart && arrayEnd)
                     {
                         tok2 = tok2->next();
-                        Token * nextToken;
-                        std::stack<Token *> links;
-                        for (nextToken = arrayStart; nextToken != arrayEnd->next(); nextToken = nextToken->next())
+                        Token * nextArrTok;
+                        std::stack<Token *> arrLinks;
+                        for (nextArrTok = arrayStart; nextArrTok != arrayEnd->next(); nextArrTok = nextArrTok->next())
                         {
-                            tok2->insertToken(nextToken->strAt(0));
+                            tok2->insertToken(nextArrTok->strAt(0));
                             tok2 = tok2->next();
 
                             // Check for links and fix them up
                             if (tok2->str() == "(" || tok2->str() == "[")
-                                links.push(tok2);
+                                arrLinks.push(tok2);
                             if (tok2->str() == ")" || tok2->str() == "]")
                             {
-                                Token * link = links.top();
+                                Token * link = arrLinks.top();
 
                                 tok2->link(link);
                                 link->link(tok2);
 
-                                links.pop();
+                                arrLinks.pop();
                             }
                         }
                         tok2 = tok2->next();
@@ -3848,26 +3848,26 @@ bool Tokenizer::simplifyQuestionMark()
             }
 
             int ind = 0;
-            for (const Token *end = semicolon; end; end = end->next())
+            for (const Token *endTok = semicolon; endTok; endTok = endTok->next())
             {
-                if (end->str() == ";")
+                if (endTok->str() == ";")
                 {
-                    Token::eraseTokens(semicolon->previous(), end->next());
+                    Token::eraseTokens(semicolon->previous(), endTok->next());
                     ret = true;
                     break;
                 }
 
-                else if (Token::Match(end, "[({[]"))
+                else if (Token::Match(endTok, "[({[]"))
                 {
                     ++ind;
                 }
 
-                else if (Token::Match(end, "[)}]]"))
+                else if (Token::Match(endTok, "[)}]]"))
                 {
                     --ind;
                     if (ind < 0)
                     {
-                        Token::eraseTokens(semicolon->previous(), end);
+                        Token::eraseTokens(semicolon->previous(), endTok);
                         ret = true;
                         break;
                     }
@@ -5321,13 +5321,13 @@ void Tokenizer::simplifyGoto()
         {
             // Is this label at the end..
             bool end = false;
-            int lev = 0;
+            int level = 0;
             for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
             {
                 if (tok2->str() == "}")
                 {
-                    --lev;
-                    if (lev < 0)
+                    --level;
+                    if (level < 0)
                     {
                         end = true;
                         break;
@@ -5335,7 +5335,7 @@ void Tokenizer::simplifyGoto()
                 }
                 else if (tok2->str() == "{")
                 {
-                    ++lev;
+                    ++level;
                 }
 
                 if (Token::Match(tok2, "%var% :") || tok2->str() == "goto")
@@ -5779,7 +5779,7 @@ void Tokenizer::simplifyEnum()
 
                     bool exitThisScope = false;
                     int exitScope = 0;
-                    bool simplifyEnum = false;
+                    bool simplify = false;
                     bool hasClass = false;
                     for (Token *tok2 = tok1->next(); tok2; tok2 = tok2->next())
                     {
@@ -5801,7 +5801,7 @@ void Tokenizer::simplifyEnum()
                         }
                         else if (!pattern.empty() && Token::Match(tok2, pattern.c_str()))
                         {
-                            simplifyEnum = true;
+                            simplify = true;
                             hasClass = true;
                         }
                         else if (inScope && !exitThisScope && tok2->str() == enumName->str())
@@ -5813,7 +5813,7 @@ void Tokenizer::simplifyEnum()
                             }
                             else if (!duplicateDefinition(&tok2, enumName))
                             {
-                                simplifyEnum = true;
+                                simplify = true;
                                 hasClass = false;
                             }
                             else
@@ -5823,7 +5823,7 @@ void Tokenizer::simplifyEnum()
                             }
                         }
 
-                        if (simplifyEnum)
+                        if (simplify)
                         {
                             if (enumValue)
                                 tok2->str(enumValue->strAt(0));
@@ -5860,7 +5860,7 @@ void Tokenizer::simplifyEnum()
                                 tok2->deleteNext();
                             }
 
-                            simplifyEnum = false;
+                            simplify = false;
                         }
                     }
                 }
@@ -5869,11 +5869,11 @@ void Tokenizer::simplifyEnum()
             // check for a variable definition: enum {} x;
             if (end->next()->str() != ";")
             {
-                Token * tok = end;
+                Token * tempTok = end;
 
-                tok->insertToken(";");
-                tok = tok->next();
-                tok->insertToken("int");
+                tempTok->insertToken(";");
+                tempTok = tempTok->next();
+                tempTok->insertToken("int");
             }
 
             if (enumType)
@@ -5884,7 +5884,7 @@ void Tokenizer::simplifyEnum()
 
                 bool exitThisScope = false;
                 int exitScope = 0;
-                bool simplifyEnum = false;
+                bool simplify = false;
                 bool hasClass = false;
                 for (Token *tok2 = end->next(); tok2; tok2 = tok2->next())
                 {
@@ -5904,7 +5904,7 @@ void Tokenizer::simplifyEnum()
                         ++level;
                     else if (!pattern.empty() && ((Token::Match(tok2, "enum") && Token::Match(tok2->next(), pattern.c_str())) || Token::Match(tok2, pattern.c_str())))
                     {
-                        simplifyEnum = true;
+                        simplify = true;
                         hasClass = true;
                     }
                     else if (inScope && !exitThisScope && (tok2->str() == enumType->str() || (tok2->str() == "enum" && tok2->next()->str() == enumType->str())))
@@ -5915,12 +5915,12 @@ void Tokenizer::simplifyEnum()
                         }
                         else if (tok2->next() && tok2->next()->isName())
                         {
-                            simplifyEnum = true;
+                            simplify = true;
                             hasClass = false;
                         }
                     }
 
-                    if (simplifyEnum)
+                    if (simplify)
                     {
                         if (tok2->str() == "enum")
                             tok2->deleteNext();
@@ -5932,7 +5932,7 @@ void Tokenizer::simplifyEnum()
                             tok2->deleteNext();
                         }
 
-                        simplifyEnum = false;
+                        simplify = false;
                     }
                 }
             }

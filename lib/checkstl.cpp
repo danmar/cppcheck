@@ -368,11 +368,11 @@ void CheckStl::pushback()
 
             if (Token::Match(tok2, "%varid% = %var% . begin ( ) ; %varid% != %var% . end ( ) ; ++| %varid% ++| ) {", iteratorid))
             {
-                const unsigned int vectorid(tok2->tokAt(2)->varId());
-                if (vectorid == 0)
+                const unsigned int varId(tok2->tokAt(2)->varId());
+                if (varId == 0)
                     continue;
 
-                const Token *pushback = 0;
+                const Token *pushbackTok = 0;
                 unsigned int indent3 = 0;
                 for (const Token *tok3 = tok2->tokAt(20); tok3; tok3 = tok3->next())
                 {
@@ -386,17 +386,17 @@ void CheckStl::pushback()
                     }
                     else if (tok3->str() == "break")
                     {
-                        pushback = 0;
+                        pushbackTok = 0;
                         break;
                     }
-                    else if (Token::Match(tok3, "%varid% . push_front|push_back|insert (", vectorid))
+                    else if (Token::Match(tok3, "%varid% . push_front|push_back|insert (", varId))
                     {
-                        pushback = tok3->tokAt(2);
+                        pushbackTok = tok3->tokAt(2);
                     }
                 }
 
-                if (pushback)
-                    invalidIteratorError(pushback, pushback->str(), tok2->strAt(0));
+                if (pushbackTok)
+                    invalidIteratorError(pushbackTok, pushbackTok->str(), tok2->strAt(0));
             }
 
             // Assigning iterator..
