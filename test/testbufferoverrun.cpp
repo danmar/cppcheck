@@ -95,6 +95,7 @@ private:
         TEST_CASE(array_index_23);
         TEST_CASE(array_index_24); // ticket #1492 and #1539
         TEST_CASE(array_index_25); // ticket #1536
+        TEST_CASE(array_index_26);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -859,6 +860,25 @@ private:
         check("void foo()\n"
               "{\n"
               "   long l[SOME_SIZE];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_26()
+    {
+        check("void f()\n"
+              "{\n"
+              "    int a[3];\n"
+              "    for (int i = 3; 0 <= i; i--)\n"
+              "        a[i] = i;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[3]' index 3 out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    int a[4];\n"
+              "    for (int i = 3; 0 <= i; i--)\n"
+              "        a[i] = i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
