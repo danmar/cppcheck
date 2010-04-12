@@ -30,16 +30,46 @@
 #include <cstring>
 #include <fstream>
 #include <stdexcept>
-
-#ifdef __GNUC__
-#include <ctime> // clock_t
-#define TIMER_START() clock_t c1 = clock();
-#define TIMER_END(str) if(_settings._showtime){clock_t c2 = clock(); std::cout << str << ": " << ((c2 - c1) / 1000) << std::endl;}
-#else
 #include <ctime>
-#define TIMER_START() std::time_t t1; std::time(&t1);
-#define TIMER_END(str) if(_settings._showtime){std::time_t t2; std::time(&t2); std::cout << str << ": " << (t2 - t1) << std::endl;}
-#endif
+
+class Timer
+{
+public:
+    Timer(const std::string& str, const Settings& settings)
+            : _str(str)
+            , _settings(settings)
+            , _stopped(false)
+    {
+        if (_settings._showtime)
+            start = clock();
+    }
+
+    ~Timer()
+    {
+        Stop();
+    }
+
+    void Stop()
+    {
+        if (_settings._showtime && !_stopped)
+        {
+            clock_t end = clock();
+            clock_t diff = end - start;
+            double sec = (double)diff / CLOCKS_PER_SEC;
+            std::cout << _str << ": " <<  sec << "s" << std::endl;
+        }
+
+        _stopped = true;
+    }
+
+private:
+    Timer& operator=(const Timer&);
+
+    const std::string _str;
+    const Settings& _settings;
+    clock_t start;
+    bool _stopped;
+};
 
 //---------------------------------------------------------------------------
 
@@ -509,9 +539,8 @@ unsigned int CppCheck::check()
             {
                 // Only file name was given, read the content from file
                 std::ifstream fin(fname.c_str());
-                TIMER_START();
+                Timer t("Preprocessor::preprocess", _settings);
                 preprocessor.preprocess(fin, filedata, configurations, fname, _settings._includePaths);
-                TIMER_END("Preprocessor::preprocess");
             }
 
             int checkCount = 0;
@@ -528,9 +557,9 @@ unsigned int CppCheck::check()
                 }
 
                 cfg = *it;
-                TIMER_START();
+                Timer t("Preprocessor::getcode", _settings);
                 const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, &_errorLogger);
-                TIMER_END("Preprocessor::getcode");
+                t.Stop();
 
                 // If only errors are printed, print filename after the check
                 if (_settings._errorsOnly == false && it != configurations.begin())
@@ -575,24 +604,23 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         return;
 
     Tokenizer _tokenizer(&_settings, this);
+    bool result;
 
     // Tokenize the file
+    std::istringstream istr(code);
+
+    Timer timer("Tokenizer::tokenize", _settings);
+    result = _tokenizer.tokenize(istr, FileName, cfg);
+    timer.Stop();
+    if (!result)
     {
-        std::istringstream istr(code);
-        TIMER_START();
-        if (!_tokenizer.tokenize(istr, FileName, cfg))
-        {
-            // File had syntax errors, abort
-            return;
-        }
-        TIMER_END("Tokenizer::tokenize");
+        // File had syntax errors, abort
+        return;
     }
 
-    {
-        TIMER_START();
-        _tokenizer.fillFunctionList();
-        TIMER_END("Tokenizer::fillFunctionList");
-    }
+    Timer timer2("Tokenizer::fillFunctionList", _settings);
+    _tokenizer.fillFunctionList();
+    timer2.Stop();
 
     // call all "runChecks" in all registered Check classes
     for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
@@ -600,24 +628,19 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         if (_settings.terminated())
             return;
 
-        TIMER_START();
+        Timer timerRunChecks((*it)->name() + "::runChecks", _settings);
         (*it)->runChecks(&_tokenizer, &_settings, this);
-        TIMER_END((*it)->name() << "::runChecks");
     }
 
-    {
-        TIMER_START();
-        bool result = _tokenizer.simplifyTokenList();
-        TIMER_END("Tokenizer::simplifyTokenList");
-        if (!result)
-            return;
-    }
+    Timer timer3("Tokenizer::simplifyTokenList", _settings);
+    result = _tokenizer.simplifyTokenList();
+    timer3.Stop();
+    if (!result)
+        return;
 
-    {
-        TIMER_START();
-        _tokenizer.fillFunctionList();
-        TIMER_END("Tokenizer::fillFunctionList");
-    }
+    Timer timer4("Tokenizer::fillFunctionList", _settings);
+    _tokenizer.fillFunctionList();
+    timer4.Stop();
 
     if (_settings.isEnabled("unusedFunctions") && _settings._jobs == 1)
         _checkUnusedFunctions.parseTokens(_tokenizer);
@@ -628,9 +651,8 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         if (_settings.terminated())
             return;
 
-        TIMER_START();
+        Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings);
         (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
-        TIMER_END((*it)->name() << "::runSimplifiedChecks");
     }
 }
 
