@@ -414,12 +414,38 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
         Check::reportError(errmsg);
 }
 
+void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, const std::string &type)
+{
+    if (!(_settings && _settings->_checkCodingStyle))
+        return;
+
+    std::list<ErrorLogger::ErrorMessage::FileLocation> locationList;
+    ErrorLogger::ErrorMessage::FileLocation loc;
+    loc.line = tok1->linenr();
+    loc.file = file(tok1);
+    locationList.push_back(loc);
+    loc.line = tok2->linenr();
+    loc.file = file(tok2);
+    locationList.push_back(loc);
+
+    const ErrorLogger::ErrorMessage errmsg(locationList,
+                                           "style",
+                                           std::string(type + " '" + tok2->str() +
+                                                       "' forward declaration unnecessary, already declared"),
+                                           "unnecessaryForwardDeclaration");
+
+    if (_errorLogger)
+        _errorLogger->reportErr(errmsg);
+    else
+        Check::reportError(errmsg);
+}
+
 // check if this statement is a duplicate definition
 bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
-    if (tok && tok->next() && Token::Match(tok->next(), ";|,|[|=|)|>|("))
+    if (tok && tok->next() && Token::Match(tok->next(), ";|,|[|=|)|>|(|{"))
     {
         const Token * end = tok->next();
 
@@ -514,7 +540,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
             else
             {
                 // look backwards
-                if (Token::Match(tok->previous(), "typedef|}|>") ||
+                if (Token::Match(tok->previous(), "typedef|}|>|struct") ||
                     (Token::Match(tok->previous(), "%type%") &&
                      (!Token::Match(tok->previous(), "return|new|const|friend|struct") &&
                       !Token::Match(tok->tokAt(-2), "friend class"))))
@@ -532,6 +558,20 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                         {
                             duplicateTypedefError(*tokPtr, name, "Enum");
                             return true;
+                        }
+                        else if (tok->previous()->str() == "struct")
+                        {
+                            if (tok->next()->str() != ";")
+                            {
+                                duplicateTypedefError(*tokPtr, name, "Struct");
+                                return true;
+                            }
+                            else
+                            {
+                                // forward declaration after declaration
+                                duplicateDeclarationError(*tokPtr, name, "Struct");
+                                return false;
+                            }
                         }
                         else if (tok->previous()->str() == "{")
                             level--;

@@ -180,6 +180,7 @@ private:
         TEST_CASE(simplifyTypedef40);
         TEST_CASE(simplifyTypedef41); // ticket #1488
         TEST_CASE(simplifyTypedef42); // ticket #1506
+        TEST_CASE(simplifyTypedef43); // ticket #1588
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -3519,7 +3520,7 @@ private:
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n"
                       "[test.cpp:20] -> [test.cpp:1]: (style) Function parameter 'A' hides typedef with same name\n"
                       "[test.cpp:21] -> [test.cpp:1]: (style) Variable 'A' hides typedef with same name\n"
-                      "[test.cpp:24] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n", errout.str());
+                      "[test.cpp:24] -> [test.cpp:1]: (style) Struct 'A' hides typedef with same name\n", errout.str());
     }
 
     void simplifyTypedef36()
@@ -3663,7 +3664,28 @@ private:
         // ticket #1506
         checkSimplifyTypedef("typedef struct A { } A;\n"
                              "struct A;");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Struct 'A' forward declaration unnecessary, already declared\n", errout.str());
+    }
+
+    void simplifyTypedef43()
+    {
+        // ticket #1588
+        const char code[] = "typedef struct foo A;\n"
+                            "struct A\n"
+                            "{\n"
+                            "    int alloclen;\n"
+                            "};\n";
+
+        // The expected result..
+        const std::string expected("; "
+                                   "struct A "
+                                   "{ "
+                                   "int alloclen ; "
+                                   "} ;");
+        ASSERT_EQUALS(expected, sizeof_(code));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Struct 'A' hides typedef with same name\n", errout.str());
     }
 
     void reverseArraySyntax()
