@@ -1688,23 +1688,59 @@ private:
 
     void varid_in_class()
     {
-        const std::string actual = tokenizeDebugListing(
-                                       "class Foo\n"
-                                       "{\n"
-                                       "public:\n"
-                                       "    std::string name1;\n"
-                                       "    std::string name2;\n"
-                                       "};\n");
+        {
+            const std::string actual = tokenizeDebugListing(
+                                           "class Foo\n"
+                                           "{\n"
+                                           "public:\n"
+                                           "    std::string name1;\n"
+                                           "    std::string name2;\n"
+                                           "};\n");
 
-        const std::string expected("\n\n##file 0\n"
-                                   "1: class Foo\n"
-                                   "2: {\n"
-                                   "3: public:\n"
-                                   "4: std :: string name1@1 ;\n"
-                                   "5: std :: string name2@2 ;\n"
-                                   "6: } ;\n");
+            const std::string expected("\n\n##file 0\n"
+                                       "1: class Foo\n"
+                                       "2: {\n"
+                                       "3: public:\n"
+                                       "4: std :: string name1@1 ;\n"
+                                       "5: std :: string name2@2 ;\n"
+                                       "6: } ;\n");
 
-        ASSERT_EQUALS(expected, actual);
+            ASSERT_EQUALS(expected, actual);
+        }
+
+        {
+            const std::string actual = tokenizeDebugListing(
+                                           "class foo\n"
+                                           "{\n"
+                                           "public:\n"
+                                           "    void do_something(const int x, const int y);\n"
+                                           "    void bar();\n"
+                                           "};\n"
+                                           "\n"
+                                           "void foo::bar()\n"
+                                           "{\n"
+                                           "    POINT pOutput = { 0 , 0 };\n"
+                                           "    int x = pOutput.x;\n"
+                                           "    int y = pOutput.y;\n"
+                                           "}\n");
+
+            const std::string expected("\n\n##file 0\n"
+                                       "1: class foo\n"
+                                       "2: {\n"
+                                       "3: public:\n"
+                                       "4: void do_something ( const int x@1 , const int y@2 ) ;\n"
+                                       "5: void bar ( ) ;\n"
+                                       "6: } ;\n"
+                                       "7:\n"
+                                       "8: void foo :: bar ( )\n"
+                                       "9: {\n"
+                                       "10: POINT pOutput@3 ; pOutput@3 = { 0 , 0 } ;\n"
+                                       "11: int x@4 ; x@4 = pOutput@3 . x@6 ;\n"
+                                       "12: int y@5 ; y@5 = pOutput@3 . y@7 ;\n"
+                                       "13: }\n");
+
+            ASSERT_EQUALS(expected, actual);
+        }
     }
 
     void varid_operator()
