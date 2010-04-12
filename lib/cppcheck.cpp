@@ -32,16 +32,82 @@
 #include <stdexcept>
 #include <ctime>
 
+/*
+	TODO:
+	- handle SHOWTIME_TOP5 and SHOWTIME_AVERAGE (show time per result average) in TimerResults
+	- sort list by time
+	- list number of results?
+	- find way to store number of results per entry
+	- do not sort the results alphabetically
+*/
+enum
+{
+    SHOWTIME_NONE = 0,
+    SHOWTIME_FILE,
+    SHOWTIME_SUMMARY,
+    SHOWTIME_TOP5,
+    SHOWTIME_AVERAGE
+};
+
+class TimerResultsIntf
+{
+public:
+    virtual ~TimerResultsIntf() { }
+
+    virtual void AddResults(const std::string& str, clock_t clocks) = 0;
+};
+
+class TimerResults : public TimerResultsIntf
+{
+public:
+    TimerResults()
+    //	: _numerOfResults(0)
+    {
+    }
+
+    void ShowResults()
+    {
+        std::map<std::string, clock_t>::const_iterator I = _results.begin();
+        const std::map<std::string, clock_t>::const_iterator E = _results.end();
+
+        while (I != E)
+        {
+            double sec = (double)I->second / CLOCKS_PER_SEC;
+            std::cout << I->first << ": " << sec << "s" << std::endl;
+
+            ++I;
+        }
+    }
+
+    virtual void AddResults(const std::string& str, clock_t clocks)
+    {
+        if (_results.find(str) != _results.end())
+            _results[str] += clocks;
+        else
+            _results[str] = clocks;
+
+        //_numerOfResults++;
+    }
+
+private:
+    std::map<std::string, clock_t> _results;
+    //unsigned int _numerOfResults;
+};
+
+static TimerResults S_timerResults;
+
 class Timer
 {
 public:
-    Timer(const std::string& str, const Settings& settings)
+    Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = NULL)
             : _str(str)
-            , _settings(settings)
+            , _showtimeMode(showtimeMode)
             , _stopped(false)
+            , _start(0)
+            , _timerResults(timerResults)
     {
-        if (_settings._showtime)
-            start = clock();
+        if (showtimeMode != SHOWTIME_NONE)
+            _start = clock();
     }
 
     ~Timer()
@@ -51,24 +117,35 @@ public:
 
     void Stop()
     {
-        if (_settings._showtime && !_stopped)
+        if ((_showtimeMode != SHOWTIME_NONE) && !_stopped)
         {
             clock_t end = clock();
-            clock_t diff = end - start;
-            double sec = (double)diff / CLOCKS_PER_SEC;
-            std::cout << _str << ": " <<  sec << "s" << std::endl;
+            clock_t diff = end - _start;
+
+            if ((_showtimeMode == SHOWTIME_SUMMARY) || (_showtimeMode == SHOWTIME_TOP5))
+            {
+                if (_timerResults)
+                    _timerResults->AddResults(_str, diff);
+            }
+
+            if (_showtimeMode == SHOWTIME_FILE)
+            {
+                double sec = (double)diff / CLOCKS_PER_SEC;
+                std::cout << _str << ": " << sec << "s" << std::endl;
+            }
         }
 
         _stopped = true;
     }
 
 private:
-    Timer& operator=(const Timer&);
+    Timer& operator=(const Timer&); // disallow assignments
 
     const std::string _str;
-    const Settings& _settings;
-    clock_t start;
+    unsigned int _showtimeMode;
+    clock_t _start;
     bool _stopped;
+    TimerResultsIntf* _timerResults;
 };
 
 //---------------------------------------------------------------------------
@@ -81,7 +158,7 @@ CppCheck::CppCheck(ErrorLogger &errorLogger)
 
 CppCheck::~CppCheck()
 {
-
+    S_timerResults.ShowResults();
 }
 
 void CppCheck::settings(const Settings &currentSettings)
@@ -231,8 +308,20 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             _settings.append(9 + argv[i]);
 
         // show timing information..
-        else if (strcmp(argv[i], "--showtime") == 0)
-            _settings._showtime = true;
+        else if (strncmp(argv[i], "--showtime=", 11) == 0)
+        {
+            const std::string showtimeMode = argv[i] + 11;
+            if (showtimeMode == "file")
+                _settings._showtime = SHOWTIME_FILE;
+            else if (showtimeMode == "summary")
+                _settings._showtime = SHOWTIME_SUMMARY;
+            else if (showtimeMode == "top5")
+                _settings._showtime = SHOWTIME_TOP5;
+            else if (showtimeMode == "average")
+                _settings._showtime = SHOWTIME_AVERAGE;
+            else
+                _settings._showtime = SHOWTIME_NONE;
+        }
 
         // Print help
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
@@ -539,7 +628,7 @@ unsigned int CppCheck::check()
             {
                 // Only file name was given, read the content from file
                 std::ifstream fin(fname.c_str());
-                Timer t("Preprocessor::preprocess", _settings);
+                Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
                 preprocessor.preprocess(fin, filedata, configurations, fname, _settings._includePaths);
             }
 
@@ -557,7 +646,7 @@ unsigned int CppCheck::check()
                 }
 
                 cfg = *it;
-                Timer t("Preprocessor::getcode", _settings);
+                Timer t("Preprocessor::getcode", _settings._showtime, &S_timerResults);
                 const std::string codeWithoutCfg = Preprocessor::getcode(filedata, *it, fname, &_errorLogger);
                 t.Stop();
 
@@ -609,7 +698,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
     // Tokenize the file
     std::istringstream istr(code);
 
-    Timer timer("Tokenizer::tokenize", _settings);
+    Timer timer("Tokenizer::tokenize", _settings._showtime, &S_timerResults);
     result = _tokenizer.tokenize(istr, FileName, cfg);
     timer.Stop();
     if (!result)
@@ -618,7 +707,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         return;
     }
 
-    Timer timer2("Tokenizer::fillFunctionList", _settings);
+    Timer timer2("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
     _tokenizer.fillFunctionList();
     timer2.Stop();
 
@@ -628,17 +717,17 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         if (_settings.terminated())
             return;
 
-        Timer timerRunChecks((*it)->name() + "::runChecks", _settings);
+        Timer timerRunChecks((*it)->name() + "::runChecks", _settings._showtime, &S_timerResults);
         (*it)->runChecks(&_tokenizer, &_settings, this);
     }
 
-    Timer timer3("Tokenizer::simplifyTokenList", _settings);
+    Timer timer3("Tokenizer::simplifyTokenList", _settings._showtime, &S_timerResults);
     result = _tokenizer.simplifyTokenList();
     timer3.Stop();
     if (!result)
         return;
 
-    Timer timer4("Tokenizer::fillFunctionList", _settings);
+    Timer timer4("Tokenizer::fillFunctionList", _settings._showtime, &S_timerResults);
     _tokenizer.fillFunctionList();
     timer4.Stop();
 
@@ -651,7 +740,7 @@ void CppCheck::checkFile(const std::string &code, const char FileName[])
         if (_settings.terminated())
             return;
 
-        Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings);
+        Timer timerSimpleChecks((*it)->name() + "::runSimplifiedChecks", _settings._showtime, &S_timerResults);
         (*it)->runSimplifiedChecks(&_tokenizer, &_settings, this);
     }
 }

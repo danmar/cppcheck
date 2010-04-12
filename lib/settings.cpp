@@ -35,7 +35,7 @@ Settings::Settings()
     _xml = false;
     _jobs = 1;
     _exitCode = 0;
-    _showtime = false;
+    _showtime = 0; // TODO: use enum
     _append = "";
     _terminate = false;
 }
