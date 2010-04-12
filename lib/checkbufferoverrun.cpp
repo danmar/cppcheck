@@ -358,35 +358,35 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             else
                 continue;
 
-            int value = 0;
             if (counter_varid == 0)
                 continue;
 
+            bool maxMinFlipped = false;
             const Token *strindextoken = 0;
             if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
             {
-                value = MathLib::toLongNumber(tok2->strAt(2));
+                long value = MathLib::toLongNumber(tok2->strAt(2));
                 max_counter_value = MathLib::toString<long>(value - 1);
                 strindextoken = tok2;
             }
             else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
             {
-                value = MathLib::toLongNumber(tok2->strAt(2)) + 1;
                 max_counter_value = tok2->strAt(2);
                 strindextoken = tok2;
             }
             else if (Token::Match(tok2, " %num% < %varid% ;", counter_varid))
             {
+                long value = MathLib::toLongNumber(tok2->str());
+                maxMinFlipped = true;
                 max_counter_value = min_counter_value;
                 min_counter_value = MathLib::toString<long>(value + 1);
-                value = MathLib::toLongNumber(max_counter_value);
                 strindextoken = tok2->tokAt(2);
             }
             else if (Token::Match(tok2, "%num% <= %varid% ;", counter_varid))
             {
+                maxMinFlipped = true;
                 max_counter_value = min_counter_value;
                 min_counter_value = tok2->str();
-                value = MathLib::toLongNumber(max_counter_value);
                 strindextoken = tok2->tokAt(2);
             }
             else
@@ -397,7 +397,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             // Get index variable and stopsize.
             const std::string strindex = strindextoken->str();
             bool condition_out_of_bounds = true;
-            if (value <= size)
+            if (MathLib::toLongNumber(max_counter_value) < size)
                 condition_out_of_bounds = false;
 
             const Token *tok3 = tok2->tokAt(4);
@@ -465,7 +465,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             }
             else if (Token::Match(tok3, "--| %varid% --| )", counter_varid))
             {
-                if (MathLib::toLongNumber(min_counter_value) < MathLib::toLongNumber(max_counter_value))
+                if (!maxMinFlipped && MathLib::toLongNumber(min_counter_value) < MathLib::toLongNumber(max_counter_value))
                 {
                     // Code relies on the fact that integer will overflow:
                     // for (unsigned int i = 3; i < 5; --i)

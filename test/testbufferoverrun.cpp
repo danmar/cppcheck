@@ -872,7 +872,7 @@ private:
               "    for (int i = 3; 0 <= i; i--)\n"
               "        a[i] = i;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[3]' index 3 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
