@@ -45,21 +45,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
-				Optimization="4"
+				Optimization="0"
 				AdditionalIncludeDirectories="..\lib"
 				PreprocessorDefinitions="_DEBUG;WIN32"
-				GeneratePreprocessedFile="0"
-				ExceptionHandling="1"
+				MinimalRebuild="false"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="false"
 				TreatWChar_tAsBuiltInType="false"
-				RuntimeTypeInfo="true"
 				AssemblerListingLocation="$(IntDir)\"
-				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
-				XMLDocumentationFileName="$(IntDir)\"
 				WarningLevel="4"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -67,8 +62,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="WIN32,_DEBUG"
-				ResourceOutputFileName="$(IntDir)/$(InputName).res"
+				PreprocessorDefinitions="WIN32;_DEBUG"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -78,11 +72,9 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="shlwapi.lib"
 				OutputFile="$(OutDir)\cppcheck.exe"
-				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=""
 				SubSystem="1"
-				LinkTimeCodeGeneration="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -140,18 +132,12 @@
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\lib"
 				PreprocessorDefinitions="NDEBUG,WIN32"
-				GeneratePreprocessedFile="0"
-				ExceptionHandling="1"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
 				TreatWChar_tAsBuiltInType="false"
-				RuntimeTypeInfo="true"
 				AssemblerListingLocation="$(IntDir)\"
-				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
-				XMLDocumentationFileName="$(IntDir)\"
 				WarningLevel="4"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="0"
 			/>
 			<Tool
@@ -166,15 +152,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				IgnoreImportLibrary="true"
 				AdditionalDependencies="shlwapi.lib"
 				OutputFile="$(OutDir)\cppcheck.exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				GenerateDebugInformation="false"
 				ProgramDatabaseFile=""
 				SubSystem="1"
-				LinkTimeCodeGeneration="1"
 			/>
 			<Tool
 				Name="VCALinkTool"

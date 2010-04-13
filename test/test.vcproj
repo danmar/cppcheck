@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="test"
 	ProjectGUID="{BA98E531-D8B3-39CB-8171-064854404B81}"
 	Keyword="Qt4VSv1.0"
@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
-				Optimization="4"
+				Optimization="0"
 				AdditionalIncludeDirectories="..\lib"
 				PreprocessorDefinitions="_DEBUG,WIN32,UNIT_TESTING"
 				GeneratePreprocessedFile="0"
@@ -57,7 +57,7 @@
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
 				XMLDocumentationFileName="$(IntDir)\"
-				WarningLevel="3"
+				WarningLevel="4"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 			/>
