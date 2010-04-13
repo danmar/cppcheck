@@ -55,12 +55,6 @@ Usage
 
     Run the cppcheck program without parameters and a help text will be shown.
 
-
-Recommendations
-
-    When the "--all" flag is given you may get a lot of error messages.
-
-
 Webpage
 
     http://www.sf.net/projects/cppcheck
