@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="cppcheck"
 	ProjectGUID="{7D0D241B-E144-3FAC-ABD3-8D1BBA4B600A}"
 	RootNamespace="cppcheck"
@@ -359,10 +359,6 @@
 				>
 			</File>
 			<File
-				RelativePath="cppcheckexecutor.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\lib\errorlogger.h"
 				>
 			</File>
@@ -392,10 +388,6 @@
 			</File>
 			<File
 				RelativePath="..\lib\settings.h"
-				>
-			</File>
-			<File
-				RelativePath="threadexecutor.cpp"
 				>
 			</File>
 			<File
