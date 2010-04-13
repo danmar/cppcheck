@@ -3190,16 +3190,6 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
-    // Replace pointer casts of 0.. "(char *)0" => "0"
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::Match(tok->next(), "( %type% * ) 0") ||
-            Token::Match(tok->next(), "( %type% %type% * ) 0"))
-        {
-            Token::eraseTokens(tok, tok->next()->link()->next());
-        }
-    }
-
     // Change initialisation of variable to assignment
     simplifyInitVar();
 
@@ -3943,6 +3933,19 @@ void Tokenizer::simplifyCasts()
             {
                 // If there was another cast before this, go back
                 // there to check it also. e.g. "(int)(char)x"
+                tok = tok->link()->previous();
+            }
+        }
+
+        // Replace pointer casts of 0.. "(char *)0" => "0"
+        while (Token::Match(tok->next(), "( %type% * ) 0") ||
+               Token::Match(tok->next(), "( %type% %type% * ) 0"))
+        {
+            Token::eraseTokens(tok, tok->next()->link()->next());
+            if (tok->str() == ")" && tok->link()->previous())
+            {
+                // If there was another cast before this, go back
+                // there to check it also. e.g. "(char*)(char*)0"
                 tok = tok->link()->previous();
             }
         }

@@ -105,6 +105,7 @@ private:
 
         // Assignment in condition..
         TEST_CASE(ifassign1);
+        TEST_CASE(ifAssignWithCast);
         TEST_CASE(whileAssign);
 
         // "if(0==x)" => "if(!x)"
@@ -294,6 +295,7 @@ private:
         ASSERT_EQUALS("if ( * a )", tok("if ((unsigned int)(unsigned char)*a)"));
         ASSERT_EQUALS("class A { A operator * ( int ) ; } ;", tok("class A { A operator *(int); };"));
         ASSERT_EQUALS("class A { A operator * ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
+        ASSERT_EQUALS("if ( ! p )", tok("if (p == (char *)(char *)0)"));
     }
 
 
@@ -1861,6 +1863,27 @@ private:
         TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }", tok("void foo(A a) {if((a.c=b())>=0);}"));
     }
 
+    void ifAssignWithCast()
+    {
+        const char *code =  "void foo()\n"
+                            "{\n"
+                            "FILE *f;\n"
+                            "if( (f = fopen(\"foo\", \"r\")) == ((FILE*)NULL) )\n"
+                            "return(-1);\n"
+                            "fclose(f);\n"
+                            "}\n";
+        const char *exptected = "void foo ( ) "
+                                "{ "
+                                "FILE * f ; "
+                                "f = fopen ( \"foo\" , \"r\" ) ; "
+                                "if ( ! f ) "
+                                "{ "
+                                "return -1 ; "
+                                "} "
+                                "fclose ( f ) ; "
+                                "}";
+        ASSERT_EQUALS(exptected, tok(code));
+    }
 
     void whileAssign()
     {
