@@ -2820,10 +2820,9 @@ void Tokenizer::simplifySizeof()
         }
 
         // sizeof(type *) => sizeof(*)
-        if (Token::Match(tok->next(), "( %type% *)"))
+        if (Token::Match(tok->next(), "( %type% * )"))
         {
             tok->next()->deleteNext();
-            continue;
         }
 
         if (Token::Match(tok->next(), "( * )"))

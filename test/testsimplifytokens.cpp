@@ -1095,14 +1095,16 @@ private:
 
     void sizeof18()
     {
-        if (sizeof(short int) == 2)
         {
+            std::ostringstream expected;
+            expected << sizeof(short int);
+
             {
                 const char code[] = "void f()\n"
                                     "{\n"
                                     "    sizeof(short int);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 2 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1111,7 +1113,7 @@ private:
                                     "{\n"
                                     "    sizeof(unsigned short int);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 2 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1120,7 +1122,7 @@ private:
                                     "{\n"
                                     "    sizeof(short unsigned int);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 2 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1129,19 +1131,21 @@ private:
                                     "{\n"
                                     "    sizeof(signed short int);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 2 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
         }
 
-        if (sizeof(long long) == 8)
         {
+            std::ostringstream expected;
+            expected << sizeof(long long);
+
             {
                 const char code[] = "void f()\n"
                                     "{\n"
                                     "    sizeof(long long);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1150,7 +1154,7 @@ private:
                                     "{\n"
                                     "    sizeof(signed long long);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1159,7 +1163,7 @@ private:
                                     "{\n"
                                     "    sizeof(unsigned long long);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1168,7 +1172,7 @@ private:
                                     "{\n"
                                     "    sizeof(long unsigned long);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1177,7 +1181,7 @@ private:
                                     "{\n"
                                     "    sizeof(long long int);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1186,7 +1190,7 @@ private:
                                     "{\n"
                                     "    sizeof(signed long long int);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1195,7 +1199,7 @@ private:
                                     "{\n"
                                     "    sizeof(unsigned long long int);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
 
@@ -1204,9 +1208,31 @@ private:
                                     "{\n"
                                     "    sizeof(long unsigned long int);\n"
                                     "}\n";
-                ASSERT_EQUALS("void f ( ) { 8 ; }", tok(code));
+                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
                 ASSERT_EQUALS("", errout.str());
             }
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    sizeof(char*);\n"
+                                "}\n";
+            std::ostringstream expected;
+            expected << sizeof(int*);
+            ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    sizeof(unsigned int*);\n"
+                                "}\n";
+            std::ostringstream expected;
+            expected << sizeof(int*);
+            ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
+            ASSERT_EQUALS("", errout.str());
         }
     }
 
