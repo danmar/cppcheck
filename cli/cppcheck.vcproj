@@ -44,13 +44,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
 				Optimization="0"
+				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="..\lib"
 				PreprocessorDefinitions="_DEBUG;WIN32"
-				MinimalRebuild="false"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="false"
 				TreatWChar_tAsBuiltInType="false"
 				AssemblerListingLocation="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
@@ -75,6 +74,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=""
 				SubSystem="1"
+				LinkTimeCodeGeneration="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -127,13 +127,12 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
 				Optimization="2"
+				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\lib"
 				PreprocessorDefinitions="NDEBUG,WIN32"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="false"
 				TreatWChar_tAsBuiltInType="false"
 				AssemblerListingLocation="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
@@ -152,11 +151,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
 				AdditionalDependencies="shlwapi.lib"
 				OutputFile="$(OutDir)\cppcheck.exe"
 				LinkIncremental="1"
 				ProgramDatabaseFile=""
 				SubSystem="1"
+				LinkTimeCodeGeneration="1"
 			/>
 			<Tool
 				Name="VCALinkTool"

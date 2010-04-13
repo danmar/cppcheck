@@ -43,22 +43,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\lib"
 				PreprocessorDefinitions="_DEBUG,WIN32,UNIT_TESTING"
-				GeneratePreprocessedFile="0"
-				ExceptionHandling="1"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				BufferSecurityCheck="false"
 				TreatWChar_tAsBuiltInType="false"
-				RuntimeTypeInfo="true"
 				AssemblerListingLocation="$(IntDir)\"
-				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
-				XMLDocumentationFileName="$(IntDir)\"
 				WarningLevel="4"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -76,11 +69,10 @@
 				IgnoreImportLibrary="true"
 				AdditionalDependencies="shlwapi.lib"
 				OutputFile="$(OutDir)\test.exe"
-				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=""
 				SubSystem="1"
-				LinkTimeCodeGeneration="0"
+				LinkTimeCodeGeneration="1"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -133,23 +125,17 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="-Zm200 -w34100 -w34189 -Zm200 -w34100 -w34189 -w34100 -w34189"
+				AdditionalOptions="123456"
 				Optimization="2"
+				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\lib"
 				PreprocessorDefinitions="NDEBUG,WIN32,UNIT_TESTING"
-				GeneratePreprocessedFile="0"
-				ExceptionHandling="1"
 				RuntimeLibrary="2"
-				BufferSecurityCheck="false"
 				TreatWChar_tAsBuiltInType="false"
-				RuntimeTypeInfo="true"
 				AssemblerListingLocation="$(IntDir)\"
-				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
-				XMLDocumentationFileName="$(IntDir)\"
-				WarningLevel="3"
-				SuppressStartupBanner="true"
+				WarningLevel="4"
 				DebugInformationFormat="0"
 			/>
 			<Tool
@@ -168,8 +154,6 @@
 				AdditionalDependencies="shlwapi.lib"
 				OutputFile="$(OutDir)\test.exe"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
-				GenerateDebugInformation="false"
 				ProgramDatabaseFile=""
 				SubSystem="1"
 				LinkTimeCodeGeneration="1"
