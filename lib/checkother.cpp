@@ -2795,11 +2795,11 @@ void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_n
     if (isTestForEmpty)
     {
         reportError(tok, Severity::possibleStyle,
-            "emptyStringTest", "Empty string test can be simplified to \"*" + var_name + " == '\\0'\"");
+                    "emptyStringTest", "Empty string test can be simplified to \"*" + var_name + " == '\\0'\"");
     }
     else
     {
         reportError(tok, Severity::possibleStyle,
-            "emptyStringTest", "Non-empty string test can be simplified to \"*" + var_name + " != '\\0'\"");
+                    "emptyStringTest", "Non-empty string test can be simplified to \"*" + var_name + " != '\\0'\"");
     }
 }
