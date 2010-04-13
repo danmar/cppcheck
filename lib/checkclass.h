@@ -140,6 +140,9 @@ private:
 
         /** @brief next Var item */
         Var *next;
+
+    private:
+        Var& operator=(const Var&); // disallow assignments
     };
 
     /**

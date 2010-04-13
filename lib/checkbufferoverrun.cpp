@@ -174,6 +174,8 @@ public:
     }
 
 private:
+    TokenStrEquals& operator=(const TokenStrEquals&); // disallow assignments
+
     const std::string value;
 };
 

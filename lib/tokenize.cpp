@@ -18,6 +18,10 @@
 
 
 //---------------------------------------------------------------------------
+#ifdef _MSC_VER
+#pragma warning(disable: 4503)
+#endif
+
 #include "tokenize.h"
 #include "token.h"
 #include "filelister.h"
