@@ -60,6 +60,7 @@ private:
         TEST_CASE(getErrorMessages);
         TEST_CASE(parseOutputtingArgs);
         TEST_CASE(parseOutputtingInvalidArgs);
+        TEST_CASE(parseArgsAndCheck);
     }
 
     bool argCheck(int argc, const char *argv[])
@@ -68,6 +69,30 @@ private:
         output.str("");
         CppCheck cppCheck(*this);
         return cppCheck.parseFromArgs(argc, argv);
+    }
+
+    bool argCheckWithCheck(int argc, const char *argv[], const std::string &data)
+    {
+        errout.str("");
+        output.str("");
+        CppCheck cppCheck(*this);
+        cppCheck.addFile("file.cpp", data);
+        bool result = cppCheck.parseFromArgs(argc, argv);
+        if (result)
+            cppCheck.check();
+
+        return result;
+    }
+
+    void parseArgsAndCheck()
+    {
+        {
+            const char *argv[] = {"cppcheck", "--showtime=top5"};
+            const char *data = "void foo(){}";
+            ASSERT_EQUALS(true, argCheckWithCheck(2, argv, data));
+            ASSERT_EQUALS("", errout.str());
+//            ASSERT_EQUALS(true, output.str().find("Overall time:") != std::string::npos);
+        }
     }
 
     void parseOutputtingArgs()
