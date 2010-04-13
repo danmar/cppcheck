@@ -34,19 +34,22 @@
 
 /*
 	TODO:
-	- handle SHOWTIME_TOP5 and SHOWTIME_AVERAGE (show time per result average) in TimerResults
+	- handle SHOWTIME_TOP5 in TimerResults
 	- sort list by time
-	- list number of results?
-	- find way to store number of results per entry
 	- do not sort the results alphabetically
+	- rename "file" to "single"
+	- synchronise map access in multithreaded mode or disable timing
+	- add unit tests
+		- for --showtime
+		- for Timer* classes
+	- move timer stuff to seperate source/header
 */
 enum
 {
     SHOWTIME_NONE = 0,
     SHOWTIME_FILE,
     SHOWTIME_SUMMARY,
-    SHOWTIME_TOP5,
-    SHOWTIME_AVERAGE
+    SHOWTIME_TOP5
 };
 
 class TimerResultsIntf
@@ -57,41 +60,55 @@ public:
     virtual void AddResults(const std::string& str, clock_t clocks) = 0;
 };
 
+struct TimerResultsData
+{
+    clock_t _clocks;
+    unsigned int _numberOfResults;
+
+    TimerResultsData()
+            : _clocks(0)
+            , _numberOfResults(0)
+    {
+    }
+};
+
 class TimerResults : public TimerResultsIntf
 {
 public:
     TimerResults()
-    //	: _numerOfResults(0)
     {
     }
 
     void ShowResults()
     {
-        std::map<std::string, clock_t>::const_iterator I = _results.begin();
-        const std::map<std::string, clock_t>::const_iterator E = _results.end();
+        clock_t overallClocks = 0;
+
+        std::map<std::string, struct TimerResultsData>::const_iterator I = _results.begin();
+        const std::map<std::string, struct TimerResultsData>::const_iterator E = _results.end();
 
         while (I != E)
         {
-            double sec = (double)I->second / CLOCKS_PER_SEC;
-            std::cout << I->first << ": " << sec << "s" << std::endl;
+            const double sec = (double)I->second._clocks / CLOCKS_PER_SEC;
+            const double secAverage = (double)(I->second._clocks / I->second._numberOfResults) / CLOCKS_PER_SEC;
+            std::cout << I->first << ": " << sec << "s (avg. " << secAverage << "s - " << I->second._numberOfResults  << " result(s))" << std::endl;
+
+            overallClocks += I->second._clocks;
 
             ++I;
         }
+
+        const double secOverall = (double)overallClocks / CLOCKS_PER_SEC;
+        std::cout << "Overall time: " << secOverall << "s" << std::endl;
     }
 
     virtual void AddResults(const std::string& str, clock_t clocks)
     {
-        if (_results.find(str) != _results.end())
-            _results[str] += clocks;
-        else
-            _results[str] = clocks;
-
-        //_numerOfResults++;
+        _results[str]._clocks += clocks;
+        _results[str]._numberOfResults++;
     }
 
 private:
-    std::map<std::string, clock_t> _results;
-    //unsigned int _numerOfResults;
+    std::map<std::string, struct TimerResultsData> _results;
 };
 
 static TimerResults S_timerResults;
@@ -102,8 +119,8 @@ public:
     Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = NULL)
             : _str(str)
             , _showtimeMode(showtimeMode)
-            , _stopped(false)
             , _start(0)
+            , _stopped(false)
             , _timerResults(timerResults)
     {
         if (showtimeMode != SHOWTIME_NONE)
@@ -119,19 +136,18 @@ public:
     {
         if ((_showtimeMode != SHOWTIME_NONE) && !_stopped)
         {
-            clock_t end = clock();
-            clock_t diff = end - _start;
-
-            if ((_showtimeMode == SHOWTIME_SUMMARY) || (_showtimeMode == SHOWTIME_TOP5))
-            {
-                if (_timerResults)
-                    _timerResults->AddResults(_str, diff);
-            }
+            const clock_t end = clock();
+            const clock_t diff = end - _start;
 
             if (_showtimeMode == SHOWTIME_FILE)
             {
                 double sec = (double)diff / CLOCKS_PER_SEC;
                 std::cout << _str << ": " << sec << "s" << std::endl;
+            }
+            else
+            {
+                if (_timerResults)
+                    _timerResults->AddResults(_str, diff);
             }
         }
 
@@ -142,7 +158,7 @@ private:
     Timer& operator=(const Timer&); // disallow assignments
 
     const std::string _str;
-    unsigned int _showtimeMode;
+    const unsigned int _showtimeMode;
     clock_t _start;
     bool _stopped;
     TimerResultsIntf* _timerResults;
@@ -317,8 +333,6 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
                 _settings._showtime = SHOWTIME_SUMMARY;
             else if (showtimeMode == "top5")
                 _settings._showtime = SHOWTIME_TOP5;
-            else if (showtimeMode == "average")
-                _settings._showtime = SHOWTIME_AVERAGE;
             else
                 _settings._showtime = SHOWTIME_NONE;
         }

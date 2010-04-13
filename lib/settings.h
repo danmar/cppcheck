@@ -111,7 +111,7 @@ public:
         e.g. "{severity} {file}:{line} {message} {id}" */
     std::string _outputFormat;
 
-    /** @brief show timing information (--showtime=file|summary|top5|average) */
+    /** @brief show timing information (--showtime=file|summary|top5) */
     unsigned int _showtime;
 
     /** @brief List of include paths, e.g. "my/includes/" which should be used
