@@ -174,7 +174,8 @@ CppCheck::CppCheck(ErrorLogger &errorLogger)
 
 CppCheck::~CppCheck()
 {
-    S_timerResults.ShowResults();
+    if (_settings._showtime != SHOWTIME_NONE)
+        S_timerResults.ShowResults();
 }
 
 void CppCheck::settings(const Settings &currentSettings)
