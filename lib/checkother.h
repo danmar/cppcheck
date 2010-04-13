@@ -73,6 +73,7 @@ public:
             checkOther.checkConstantFunctionParameter();
             checkOther.checkIncompleteStatement();
             checkOther.unreachableCode();
+            checkOther.checkEmptyStringTest();
             if (settings->inconclusive)
             {
                 checkOther.postIncrement();
@@ -165,6 +166,8 @@ public:
     //    haystack.remove(needle);
     void redundantCondition2();
 
+    /** @brief %Check for inefficient empty string test*/
+    void checkEmptyStringTest();
 
     // Error messages..
     void cstyleCastError(const Token *tok);
@@ -191,6 +194,7 @@ public:
     void zerodivError(const Token *tok);
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
+    void emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty);
 
     void getErrorMessages()
     {
@@ -221,6 +225,7 @@ public:
 
         // optimisations
         postIncrementError(0, "varname", true);
+        emptyStringTestError(0, "varname", true);
     }
 
     std::string name() const

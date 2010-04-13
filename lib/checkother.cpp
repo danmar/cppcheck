@@ -215,8 +215,37 @@ void CheckOther::redundantCondition2()
     }
 }
 //---------------------------------------------------------------------------
+// "if (strlen(s))" can be rewritten as "if (*s != '\0')"
+//---------------------------------------------------------------------------
+void CheckOther::checkEmptyStringTest()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        // Non-empty string tests
+        if (Token::Match(tok, "if ( strlen ( %any% ) )"))
+        {
+            emptyStringTestError(tok, tok->strAt(4), false);
+        }
+        else if (Token::Match(tok, "strlen ( %any% ) !=|> 0"))
+        {
+            emptyStringTestError(tok, tok->strAt(2), false);
+        }
+        else if (Token::Match(tok, "0 < strlen ( %any% )"))
+        {
+            emptyStringTestError(tok, tok->strAt(4), false);
+        }
 
-
+        // Empty string tests
+        else if (Token::Match(tok, "! strlen ( %any% )"))
+        {
+            emptyStringTestError(tok, tok->strAt(3), true);
+        }
+        else if (Token::Match(tok, "strlen ( %any% ) == 0"))
+        {
+            emptyStringTestError(tok, tok->strAt(2), true);
+        }
+    }
+}
 
 //---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
@@ -2759,4 +2788,18 @@ void CheckOther::postIncrementError(const Token *tok, const std::string &var_nam
 {
     std::string type = (isIncrement ? "Incrementing" : "Decrementing");
     reportError(tok, Severity::possibleStyle, "postIncrementDecrement", ("Pre-" + type + " variable '" + var_name + "' is preferred to Post-" + type));
+}
+
+void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty)
+{
+    if (isTestForEmpty)
+    {
+        reportError(tok, Severity::possibleStyle,
+            "emptyStringTest", "Empty string test can be simplified to \"*" + var_name + " == '\\0'\"");
+    }
+    else
+    {
+        reportError(tok, Severity::possibleStyle,
+            "emptyStringTest", "Non-empty string test can be simplified to \"*" + var_name + " != '\\0'\"");
+    }
 }
