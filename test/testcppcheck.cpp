@@ -80,6 +80,13 @@ private:
         }
 
         {
+            const char *argv[] = {"cppcheck", "-h"};
+            ASSERT_EQUALS(true, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(true, output.str().find("Example usage") != std::string::npos);
+        }
+
+        {
             const char *argv[] = {"cppcheck"};
             ASSERT_EQUALS(true, argCheck(1, argv));
             ASSERT_EQUALS("", errout.str());
@@ -116,6 +123,69 @@ private:
             ASSERT_EQUALS(false, argCheck(2, argv));
             ASSERT_EQUALS("", errout.str());
             ASSERT_EQUALS("cppcheck: No file specified for the --suppressions option\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--exitcode-suppressions"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: No file specified for the --exitcode-suppressions option\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--enable"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: error: unrecognized command line option \"--enable\"\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--append"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: error: unrecognized command line option \"--append\"\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--error-exitcode"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: error: unrecognized command line option \"--error-exitcode\"\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--file-list"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: error: unrecognized command line option \"--file-list\"\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--showtime"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: error: unrecognized command line option \"--showtime\"\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "-I"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: argument to '-I' is missing\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "-j"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: argument to '-j' is missing\n", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--template"};
+            ASSERT_EQUALS(false, argCheck(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: argument to '--template' is missing\n", output.str());
         }
     }
 
