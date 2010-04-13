@@ -1827,21 +1827,21 @@ private:
 
     void unicodeInCode()
     {
-        const std::string filedata(std::string("a") + char(200));
+        const std::string filedata("a\xC8");
         std::istringstream istr(filedata);
         ASSERT_THROW(Preprocessor::read(istr), std::runtime_error);
     }
 
     void unicodeInComment()
     {
-        const std::string filedata(std::string("//") + char(200));
+        const std::string filedata("//\xC8");
         std::istringstream istr(filedata.c_str());
         ASSERT_EQUALS("", Preprocessor::read(istr));
     }
 
     void unicodeInString()
     {
-        const std::string filedata(std::string("\"") + char(200) + "\"");
+        const std::string filedata("\"\xC8\"");
         std::istringstream istr(filedata.c_str());
         ASSERT_EQUALS(filedata, Preprocessor::read(istr));
     }
