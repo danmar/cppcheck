@@ -74,7 +74,7 @@
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=""
 				SubSystem="1"
-				LinkTimeCodeGeneration="1"
+				LinkTimeCodeGeneration="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -137,7 +137,7 @@
 				AssemblerListingLocation="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
 				WarningLevel="4"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -155,6 +155,7 @@
 				AdditionalDependencies="shlwapi.lib"
 				OutputFile="$(OutDir)\cppcheck.exe"
 				LinkIncremental="1"
+				GenerateDebugInformation="true"
 				ProgramDatabaseFile=""
 				SubSystem="1"
 				LinkTimeCodeGeneration="1"
