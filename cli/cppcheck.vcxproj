@@ -122,21 +122,57 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\lib\checkautovariables.cpp" />
+    <ClCompile Include="..\lib\checkbufferoverrun.cpp" />
+    <ClCompile Include="..\lib\checkclass.cpp" />
+    <ClCompile Include="..\lib\checkdangerousfunctions.cpp" />
+    <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
+    <ClCompile Include="..\lib\checkheaders.cpp" />
+    <ClCompile Include="..\lib\checkmemoryleak.cpp" />
+    <ClCompile Include="..\lib\checkother.cpp" />
+    <ClCompile Include="..\lib\checkstl.cpp" />
+    <ClCompile Include="..\lib\checkunusedfunctions.cpp" />
+    <ClCompile Include="..\lib\cppcheck.cpp" />
+    <ClCompile Include="..\lib\errorlogger.cpp" />
+    <ClCompile Include="..\lib\executionpath.cpp" />
+    <ClCompile Include="..\lib\filelister.cpp" />
+    <ClCompile Include="..\lib\filelister_win32.cpp" />
+    <ClCompile Include="..\lib\mathlib.cpp" />
+    <ClCompile Include="..\lib\preprocessor.cpp" />
+    <ClCompile Include="..\lib\settings.cpp" />
+    <ClCompile Include="..\lib\token.cpp" />
+    <ClCompile Include="..\lib\tokenize.cpp" />
     <ClCompile Include="cppcheckexecutor.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\lib\check.h" />
+    <ClInclude Include="..\lib\checkautovariables.h" />
+    <ClInclude Include="..\lib\checkbufferoverrun.h" />
+    <ClInclude Include="..\lib\checkclass.h" />
+    <ClInclude Include="..\lib\checkdangerousfunctions.h" />
+    <ClInclude Include="..\lib\checkexceptionsafety.h" />
+    <ClInclude Include="..\lib\checkheaders.h" />
+    <ClInclude Include="..\lib\checkmemoryleak.h" />
+    <ClInclude Include="..\lib\checkother.h" />
+    <ClInclude Include="..\lib\checkstl.h" />
+    <ClInclude Include="..\lib\checkunusedfunctions.h" />
+    <ClInclude Include="..\lib\classinfo.h" />
+    <ClInclude Include="..\lib\cppcheck.h" />
+    <ClInclude Include="..\lib\errorlogger.h" />
+    <ClInclude Include="..\lib\executionpath.h" />
+    <ClInclude Include="..\lib\filelister.h" />
+    <ClInclude Include="..\lib\filelister_win32.h" />
+    <ClInclude Include="..\lib\mathlib.h" />
+    <ClInclude Include="..\lib\preprocessor.h" />
+    <ClInclude Include="..\lib\settings.h" />
+    <ClInclude Include="..\lib\token.h" />
+    <ClInclude Include="..\lib\tokenize.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="cppcheck.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\lib\lib.vcxproj">
-      <Project>{ace2abb0-1027-44df-8e14-8b4daf88590f}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
