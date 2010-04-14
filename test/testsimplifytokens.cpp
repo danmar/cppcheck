@@ -182,6 +182,7 @@ private:
         TEST_CASE(simplifyTypedef41); // ticket #1488
         TEST_CASE(simplifyTypedef42); // ticket #1506
         TEST_CASE(simplifyTypedef43); // ticket #1588
+        TEST_CASE(simplifyTypedef44);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -3714,27 +3715,163 @@ private:
         checkSimplifyTypedef("typedef struct A { } A;\n"
                              "struct A;");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Struct 'A' forward declaration unnecessary, already declared\n", errout.str());
+
+        checkSimplifyTypedef("typedef union A { int i; float f; } A;\n"
+                             "union A;");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Union 'A' forward declaration unnecessary, already declared\n", errout.str());
+
+        checkSimplifyTypedef("typedef std::map<std::string, int> A;\n"
+                             "class A;");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Class 'A' forward declaration unnecessary, already declared\n", errout.str());
     }
 
     void simplifyTypedef43()
     {
         // ticket #1588
-        const char code[] = "typedef struct foo A;\n"
-                            "struct A\n"
-                            "{\n"
-                            "    int alloclen;\n"
-                            "};\n";
+        {
+            const char code[] = "typedef struct foo A;\n"
+                                "struct A\n"
+                                "{\n"
+                                "    int alloclen;\n"
+                                "};\n";
 
-        // The expected result..
-        const std::string expected("; "
-                                   "struct A "
-                                   "{ "
-                                   "int alloclen ; "
-                                   "} ;");
-        ASSERT_EQUALS(expected, sizeof_(code));
+            // The expected result..
+            const std::string expected("; "
+                                       "struct A "
+                                       "{ "
+                                       "int alloclen ; "
+                                       "} ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
 
-        checkSimplifyTypedef(code);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Struct 'A' hides typedef with same name\n", errout.str());
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Struct 'A' hides typedef with same name\n", errout.str());
+        }
+
+        {
+            const char code[] = "typedef union foo A;\n"
+                                "union A\n"
+                                "{\n"
+                                "    int alloclen;\n"
+                                "};\n";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "union A "
+                                       "{ "
+                                       "int alloclen ; "
+                                       "} ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Union 'A' hides typedef with same name\n", errout.str());
+        }
+
+        {
+            const char code[] = "typedef class foo A;\n"
+                                "class A\n"
+                                "{\n"
+                                "    int alloclen;\n"
+                                "};\n";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "class A "
+                                       "{ "
+                                       "int alloclen ; "
+                                       "} ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Class 'A' hides typedef with same name\n", errout.str());
+        }
+    }
+
+    void simplifyTypedef44()
+    {
+        {
+            const char code[] = "typedef std::map<std::string, int> Map;\n"
+                                "class MyMap : public Map\n"
+                                "{\n"
+                                "};\n";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "class MyMap : public std :: map < std :: string , int > "
+                                       "{ "
+                                       "} ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef std::map<std::string, int> Map;\n"
+                                "class MyMap : protected Map\n"
+                                "{\n"
+                                "};\n";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "class MyMap : protected std :: map < std :: string , int > "
+                                       "{ "
+                                       "} ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef std::map<std::string, int> Map;\n"
+                                "class MyMap : private Map\n"
+                                "{\n"
+                                "};\n";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "class MyMap : private std :: map < std :: string , int > "
+                                       "{ "
+                                       "} ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef struct foo { } A;\n"
+                                "struct MyA : public A\n"
+                                "{\n"
+                                "};\n";
+
+            // The expected result..
+            const std::string expected("struct foo { } ; ; "
+                                       "struct MyA : public foo "
+                                       "{ "
+                                       "} ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef class foo { } A;\n"
+                                "class MyA : public A\n"
+                                "{\n"
+                                "};\n";
+
+            // The expected result..
+            const std::string expected("class foo { } ; ; "
+                                       "class MyA : public foo "
+                                       "{ "
+                                       "} ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void reverseArraySyntax()

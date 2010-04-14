@@ -544,9 +544,9 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
             else
             {
                 // look backwards
-                if (Token::Match(tok->previous(), "typedef|}|>|struct") ||
+                if (Token::Match(tok->previous(), "typedef|}|>") ||
                     (Token::Match(tok->previous(), "%type%") &&
-                     (!Token::Match(tok->previous(), "return|new|const|friend|struct") &&
+                     (!Token::Match(tok->previous(), "return|new|const|friend|public|private|protected") &&
                       !Token::Match(tok->tokAt(-2), "friend class"))))
                 {
                     // scan backwards for the end of the previous statement
@@ -574,6 +574,34 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
                             {
                                 // forward declaration after declaration
                                 duplicateDeclarationError(*tokPtr, name, "Struct");
+                                return false;
+                            }
+                        }
+                        else if (tok->previous()->str() == "union")
+                        {
+                            if (tok->next()->str() != ";")
+                            {
+                                duplicateTypedefError(*tokPtr, name, "Union");
+                                return true;
+                            }
+                            else
+                            {
+                                // forward declaration after declaration
+                                duplicateDeclarationError(*tokPtr, name, "Union");
+                                return false;
+                            }
+                        }
+                        else if (tok->previous()->str() == "class")
+                        {
+                            if (tok->next()->str() != ";")
+                            {
+                                duplicateTypedefError(*tokPtr, name, "Class");
+                                return true;
+                            }
+                            else
+                            {
+                                // forward declaration after declaration
+                                duplicateDeclarationError(*tokPtr, name, "Class");
                                 return false;
                             }
                         }
@@ -639,10 +667,10 @@ void Tokenizer::simplifyTypedef()
         else if (tok->str() != "typedef")
             continue;
 
-        // pull struct, union or enum definition out of typedef
-        // use typedef name for unnamed struct, union or enum
-        if (Token::Match(tok->next(), "struct|enum|union %type% {") ||
-            Token::Match(tok->next(), "struct|enum|union {"))
+        // pull struct, union, enum or class definition out of typedef
+        // use typedef name for unnamed struct, union, enum or class
+        if (Token::Match(tok->next(), "struct|enum|union|class %type% {") ||
+            Token::Match(tok->next(), "struct|enum|union|class {"))
         {
             Token *tok1;
             std::string name;
@@ -935,12 +963,19 @@ void Tokenizer::simplifyTypedef()
 
                 if (simplifyType)
                 {
+                    bool isDerived = false;
+                    isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
+
                     bool inCast = false;
 
                     if ((tok2->previous()->str() == "(" && tok2->next()->str() == ")") ||
                         (Token::Match(tok2->tokAt(-1), "<") &&
                          Token::Match(tok2->next(), "> (")))
                         inCast = true;
+
+                    // skip over class or struct in derived class declaration
+                    if (isDerived && Token::Match(typeStart, "class|struct"))
+                        typeStart = typeStart->next();
 
                     tok2->str(typeStart->str());
                     Token * nextToken;
