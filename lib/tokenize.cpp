@@ -4765,30 +4765,55 @@ void Tokenizer::simplifyLogicalOperators()
     }
 }
 
-
+// int i(0); => int i; i = 0;
 void Tokenizer::simplifyInitVar()
 {
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[{};] %type% *| %var% ( %num% ) ;"))
-        {
-            // call constructor of class => no simplification
-            if (!tok->next()->isStandardType() && tok->tokAt(2)->str() != "*")
-                continue;
-
-            // goto variable name..
-            tok = tok->tokAt(2);
-            if (tok->str() == "*")
-                tok = tok->next();
-
-            // insert '='
-            tok->insertToken("=");
-
-            // remove parantheses..
-            tok->next()->deleteNext();
-            tok->next()->next()->deleteNext();
-        }
+        if (Token::Match(tok, "[{};] class|struct|union| %type% *| %var% ( &| %any% ) ;"))
+            tok = initVar(tok->next());
+        else if (tok == _tokens && Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %num% ) ;"))
+            tok = initVar(tok);
     }
+}
+
+Token * Tokenizer::initVar(Token * tok)
+{
+    // call constructor of class => no simplification
+    if (Token::Match(tok, "class|struct|union"))
+    {
+        if (tok->tokAt(2)->str() != "*")
+            return tok;
+
+        tok = tok->next();
+    }
+    else if (!tok->isStandardType() && tok->tokAt(1)->str() != "*")
+        return tok;
+
+    // goto variable name..
+    tok = tok->next();
+    if (tok->str() == "*")
+        tok = tok->next();
+
+    // check initializer..
+    if (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void")
+        return tok;
+
+    // insert '; var ='
+    tok->insertToken(";");
+    tok->next()->insertToken(tok->str());
+    tok = tok->tokAt(2);
+    tok->insertToken("=");
+
+    // remove parantheses..
+    tok = tok->next();
+    tok->deleteNext();
+    tok = tok->next();
+    if (tok->str() == "&")
+        tok = tok->next();
+    tok->deleteNext();
+
+    return tok;
 }
 
 

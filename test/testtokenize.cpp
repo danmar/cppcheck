@@ -206,6 +206,7 @@ private:
         TEST_CASE(arraySize);
 
         TEST_CASE(labels);
+        TEST_CASE(simplifyInitVar);
     }
 
 
@@ -3071,6 +3072,183 @@ private:
     void labels()
     {
         ASSERT_EQUALS(" void f(){ ab:; a=0;}", labels_("void f() { ab: a=0; }"));
+    }
+
+    // Check simplifyInitVar
+    void checkSimplifyInitVar(const char code[])
+    {
+        // Tokenize..
+        Settings settings(Settings::testSettings());
+        settings._checkCodingStyle = true;
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        errout.str("");
+        tokenizer.tokenize(istr, "test.cpp");
+    }
+
+    void simplifyInitVar()
+    {
+        {
+            const char code[] = "int i ; int p(0);";
+            ASSERT_EQUALS("int i ; int p ; p = 0 ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int i; int *p(0);";
+            ASSERT_EQUALS("int i ; int * p ; p = 0 ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int p(0);";
+            ASSERT_EQUALS("int p ; p = 0 ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int *p(0);";
+            ASSERT_EQUALS("int * p ; p = 0 ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int i ; int p(i);";
+            ASSERT_EQUALS("int i ; int p ; p = i ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int i; int *p(&i);";
+            ASSERT_EQUALS("int i ; int * p ; p = & i ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int i; void *p(&i);";
+            ASSERT_EQUALS("int i ; void * p ; p = & i ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "struct S { }; struct S s; struct S *p(&s);";
+            ASSERT_EQUALS("struct S { } ; struct S s ; struct S * p ; p = & s ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "struct S { }; S s; S *p(&s);";
+            ASSERT_EQUALS("struct S { } ; S s ; S * p ; p = & s ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "union S { int i; float f; }; union S s; union S *p(&s);";
+            ASSERT_EQUALS("union S { int i ; float f ; } ; union S s ; union S * p ; p = & s ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "union S { int i; float f; }; S s; S *p(&s);";
+            ASSERT_EQUALS("union S { int i ; float f ; } ; S s ; S * p ; p = & s ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "class C { }; class C c; class C *p(&c);";
+            ASSERT_EQUALS("class C { } ; class C c ; class C * p ; p = & c ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "class C { }; C c; C *p(&c);";
+            ASSERT_EQUALS("class C { } ; C c ; C * p ; p = & c ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "struct S { }; struct S s; struct S s1(s);";
+            ASSERT_EQUALS("struct S { } ; struct S s ; struct S s1 ( s ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "struct S { }; S s; S s1(s);";
+            ASSERT_EQUALS("struct S { } ; S s ; S s1 ( s ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "struct S { }; struct S s; struct S s1(&s);";
+            ASSERT_EQUALS("struct S { } ; struct S s ; struct S s1 ( & s ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "struct S { }; S s; S s1(&s);";
+            ASSERT_EQUALS("struct S { } ; S s ; S s1 ( & s ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "class S { int function(void); };";
+            ASSERT_EQUALS("class S { int function ( void ) ; } ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "class S { int function(int); };";
+            ASSERT_EQUALS("class S { int function ( int ) ; } ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int function(void);";
+            ASSERT_EQUALS("int function ( void ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int function(int);";
+            ASSERT_EQUALS("int function ( int ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "extern int function(void);";
+            ASSERT_EQUALS("extern int function ( void ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int function1(void); int function2(void);";
+            ASSERT_EQUALS("int function1 ( void ) ; int function2 ( void ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
     }
 };
 

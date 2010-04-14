@@ -165,6 +165,7 @@ public:
      * ; int *p = 0;
      */
     void simplifyInitVar();
+    Token * initVar(Token * tok);
 
     /**
      * Colapse compound standard types into a single token.
