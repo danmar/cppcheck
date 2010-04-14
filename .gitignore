@@ -30,3 +30,5 @@ gui/*.qm
 doxyoutput/
 # qmake generated
 src/Makefile
+
+*.sdf
