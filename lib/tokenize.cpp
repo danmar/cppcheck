@@ -4807,7 +4807,7 @@ void Tokenizer::simplifyInitVar()
     {
         if (Token::Match(tok, "[{};] class|struct|union| %type% *| %var% ( &| %any% ) ;"))
             tok = initVar(tok->next());
-        else if (tok == _tokens && Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %num% ) ;"))
+        else if (tok == _tokens && Token::Match(tok, "class|struct|union| %type% *| %var% ( &| %any% ) ;"))
             tok = initVar(tok);
     }
 }
@@ -4832,6 +4832,8 @@ Token * Tokenizer::initVar(Token * tok)
 
     // check initializer..
     if (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void")
+        return tok;
+    else if (!tok->tokAt(2)->isNumber() && tok->tokAt(2)->str() != "&" && tok->tokAt(2)->varId() == 0)
         return tok;
 
     // insert '; var ='

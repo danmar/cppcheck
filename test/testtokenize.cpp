@@ -3075,7 +3075,7 @@ private:
     }
 
     // Check simplifyInitVar
-    void checkSimplifyInitVar(const char code[])
+    void checkSimplifyInitVar(const char code[], bool simplify = false)
     {
         // Tokenize..
         Settings settings(Settings::testSettings());
@@ -3084,6 +3084,11 @@ private:
         std::istringstream istr(code);
         errout.str("");
         tokenizer.tokenize(istr, "test.cpp");
+
+        if (simplify)
+            tokenizer.simplifyTokenList();
+
+        tokenizer.validate();
     }
 
     void simplifyInitVar()
@@ -3118,8 +3123,13 @@ private:
 
         {
             const char code[] = "int i ; int p(i);";
-            ASSERT_EQUALS("int i ; int p ; p = i ;", tokenizeAndStringify(code));
-            checkSimplifyInitVar(code);
+            // this can't be simplified because i doesn't have a varid yet
+            ASSERT_EQUALS("int i ; int p ( i ) ;", tokenizeAndStringify(code, false));
+            checkSimplifyInitVar(code, false);
+            ASSERT_EQUALS("", errout.str());
+            // this can be simplified because i shold have a varid
+            ASSERT_EQUALS("int i ; int p ; p = i ;", tokenizeAndStringify(code, true));
+            checkSimplifyInitVar(code, true);
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -3208,6 +3218,13 @@ private:
         }
 
         {
+            const char code[] = "class S { int function(); };";
+            ASSERT_EQUALS("class S { int function ( ) ; } ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
             const char code[] = "class S { int function(void); };";
             ASSERT_EQUALS("class S { int function ( void ) ; } ;", tokenizeAndStringify(code));
             checkSimplifyInitVar(code);
@@ -3249,6 +3266,45 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
 
+        {
+            const char code[] = "int function(A);";
+            // We can't tell if this a function prototype or a variable without knowing
+            // what A is. Since A is undefined, just leave it alone.
+            ASSERT_EQUALS("int function ( A ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "int i; int function(A);";
+            ASSERT_EQUALS("int i ; int function ( A ) ;", tokenizeAndStringify(code));
+            checkSimplifyInitVar(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "class A { } ; int foo(A);";
+            // don't know what A is yet so leave it alone
+            ASSERT_EQUALS("class A { } ; int foo ( A ) ;", tokenizeAndStringify(code, false));
+            checkSimplifyInitVar(code, false);
+            ASSERT_EQUALS("", errout.str());
+            // we know A is not a variable here so leave it alone
+            ASSERT_EQUALS("class A { } ; int foo ( A ) ;", tokenizeAndStringify(code, true));
+            checkSimplifyInitVar(code, true);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "class A { } ; A a; int foo(a);";
+            // don't know what a is yet so leave it alone
+            ASSERT_EQUALS("class A { } ; A a ; int foo ( a ) ;", tokenizeAndStringify(code, false));
+            checkSimplifyInitVar(code, false);
+            ASSERT_EQUALS("", errout.str());
+            // we know a is a variable here so simplify it
+            ASSERT_EQUALS("class A { } ; A a ; int foo ; foo = a ;", tokenizeAndStringify(code, true));
+            checkSimplifyInitVar(code, true);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 };
 
