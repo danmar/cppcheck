@@ -1686,6 +1686,8 @@ public:
                     optcomma = false;
                     macrocode += str;
                     if (Token::Match(tok, "%var% %var%") ||
+                        Token::Match(tok, "%var% %num%") ||
+                        Token::Match(tok, "%num% %var%") ||
                         Token::Match(tok, "> >"))
                         macrocode += " ";
                 }
@@ -2075,7 +2077,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     }
 
                     // make sure number of newlines remain the same..
-                    const std::string macrocode(std::string(numberOfNewlines, '\n') + tempMacro);
+                    std::string macrocode(std::string(numberOfNewlines, '\n') + tempMacro);
 
                     // Insert macro code..
                     if (macro->variadic() || macro->nopar() || !macro->params().empty())
@@ -2101,6 +2103,10 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
                     // erase macro
                     line.erase(pos1, pos2 - pos1);
+
+                    // Don't glue this macro into variable or number after it
+                    if (std::isalnum(line[pos1]) || line[pos1] == '_')
+                        macrocode.append(1,' ');
 
                     // insert expanded macro code
                     line.insert(pos1, macrocode);

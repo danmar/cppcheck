@@ -139,6 +139,7 @@ private:
         TEST_CASE(macro_mismatch);
         TEST_CASE(macro_linenumbers);
         TEST_CASE(macro_nopar);
+        TEST_CASE(macro_switchCase);
         TEST_CASE(string1);
         TEST_CASE(string2);
         TEST_CASE(string3);
@@ -1420,6 +1421,52 @@ private:
         ASSERT_EQUALS("\n{ NULL }\n", OurPreprocessor::expandMacros(filedata));
     }
 
+    void macro_switchCase()
+    {
+        {
+            // Make sure "case 2" doesn't become "case2"
+            const char filedata[] = "#define A( b ) "
+                                    "switch( a ){ "
+                                    "case 2: "
+                                    " break; "
+                                    "}\n"
+                                    "A( 5 );\n";
+            ASSERT_EQUALS("\nswitch(a){case 2:break;};\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            // Make sure "2 BB" doesn't become "2BB"
+            const char filedata[] = "#define A() AA : 2 BB\n"
+                                    "A();\n";
+            ASSERT_EQUALS("\nAA : 2 BB;\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+        {
+            const char filedata[] = "#define A }\n"
+                                    "#define B() A\n"
+                                    "#define C( a ) B() break;\n"
+                                    "{C( 2 );\n";
+            ASSERT_EQUALS("\n\n\n{} break;;\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+
+        {
+            const char filedata[] = "#define A }\n"
+                                    "#define B() A\n"
+                                    "#define C( a ) B() _break;\n"
+                                    "{C( 2 );\n";
+            ASSERT_EQUALS("\n\n\n{} _break;;\n", OurPreprocessor::expandMacros(filedata));
+        }
+
+
+        {
+            const char filedata[] = "#define A }\n"
+                                    "#define B() A\n"
+                                    "#define C( a ) B() 5;\n"
+                                    "{C( 2 );\n";
+            ASSERT_EQUALS("\n\n\n{} 5;;\n", OurPreprocessor::expandMacros(filedata));
+        }
+    }
 
     void string1()
     {
