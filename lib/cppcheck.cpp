@@ -40,7 +40,7 @@
 	- rename "file" to "single"
 	- synchronise map access in multithreaded mode or disable timing
 	- add unit tests
-		- for --showtime
+		- for --showtime (needs input file)
 		- for Timer* classes
 	- move timer stuff to seperate source/header
 */
@@ -669,7 +669,11 @@ unsigned int CppCheck::check()
                 if (_settings._errorsOnly == false && it != configurations.begin())
                     _errorLogger.reportOut(std::string("Checking ") + fname + ": " + cfg + std::string("..."));
 
-                checkFile(codeWithoutCfg + _settings.append(), _filenames[c].c_str());
+                std::string appendCode = _settings.append();
+                if( !appendCode.empty() )
+                    Preprocessor::preprocessWhitespaces(appendCode);
+
+                checkFile(codeWithoutCfg + appendCode, _filenames[c].c_str());
                 ++checkCount;
             }
         }

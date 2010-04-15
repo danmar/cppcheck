@@ -568,10 +568,8 @@ std::string Preprocessor::replaceIfDefined(const std::string &str)
     return ret;
 }
 
-void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
+void Preprocessor::preprocessWhitespaces(std::string &processedFile)
 {
-    processedFile = read(srcCodeStream, filename, _settings);
-
     // Replace all tabs with spaces..
     std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
 
@@ -581,6 +579,14 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
 
     // Remove space characters that are after or before new line character
     processedFile = removeSpaceNearNL(processedFile);
+}
+
+void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
+{
+    processedFile = read(srcCodeStream, filename, _settings);
+
+    // normalize the whitespaces of the file
+    preprocessWhitespaces(processedFile);
 
     // Remove asm(...)
     removeAsm(processedFile);

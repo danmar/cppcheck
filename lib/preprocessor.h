@@ -91,6 +91,12 @@ public:
      */
     static void simplifyCondition(const std::map<std::string, std::string> &variables, std::string &condition, bool match);
 
+    /**
+     * preprocess all whitespaces
+     * @param processedFile The data to be processed
+     */
+    static void preprocessWhitespaces(std::string &processedFile);
+
 protected:
 
     /**
