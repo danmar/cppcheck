@@ -469,6 +469,7 @@ public:
         declare = false;
         read = false;
         write = false;
+        modified = false;
     }
 
     /** variable is used.. set both read+write */
@@ -487,6 +488,7 @@ public:
     bool declare;
     bool read;
     bool write;
+    bool modified; // read/modify/write
 };
 
 void CheckOther::functionVariableUsage()
@@ -504,7 +506,7 @@ void CheckOther::functionVariableUsage()
         // Find next scope that will be checked next time..
         token = Token::findmatch(token->link(), ") const| {");
 
-        // Varname, usage {1=declare, 2=read, 4=write}
+        // Varname, usage {declare, read, write}
         std::map<std::string, VariableUsage> varUsage;
 
         unsigned int indentlevel = 0;
@@ -535,15 +537,110 @@ void CheckOther::functionVariableUsage()
             }
 
             if (Token::Match(tok, "[;{}] %type% %var% ;|=") && tok->next()->isStandardType())
+            {
                 varUsage[tok->strAt(2)].declare = true;
+                if (tok->tokAt(3)->str() == "=")
+                    varUsage[tok->strAt(2)].write = true;
+                tok = tok->tokAt(2);
+            }
 
-            else if (Token::Match(tok, "[;{}] %type% * %var% ;|=") && tok->next()->isStandardType())
+            else if (Token::Match(tok, "[;{}] %type% %var% ( %any% ) ;") && tok->next()->isStandardType())
+            {
+                varUsage[tok->strAt(2)].declare = true;
+                varUsage[tok->strAt(2)].write = true;
+                if (tok->tokAt(4)->varId() > 0)
+                {
+                    if (varUsage.find(tok->tokAt(4)->str()) != varUsage.end())
+                    {
+                        varUsage.find(tok->tokAt(4)->str())->second.read = true;
+                    }
+                }
+                tok = tok->tokAt(5);
+            }
+
+            else if (Token::Match(tok, "[;{}] %type% %var% [ %num% ] ;|=") && tok->next()->isStandardType())
+            {
+                varUsage[tok->strAt(2)].declare = true;
+                if (tok->tokAt(6)->str() == "=")
+                    varUsage[tok->strAt(2)].write = true;
+                tok = tok->tokAt(5);
+            }
+
+            else if (Token::Match(tok, "[;{}] %type% *|& %var% ;|="))
+            {
+                if (tok->next()->str() != "return")
+                {
+                    varUsage[tok->strAt(3)].declare = true;
+                    if (tok->tokAt(4)->str() == "=")
+                        varUsage[tok->strAt(3)].write = true;
+                    tok = tok->tokAt(3);
+                }
+            }
+
+            else if (Token::Match(tok, "[;{}] const %type% *|& %var% ;|="))
+            {
+                varUsage[tok->strAt(4)].declare = true;
+                if (tok->tokAt(5)->str() == "=")
+                    varUsage[tok->strAt(4)].write = true;
+                tok = tok->tokAt(4);
+            }
+
+            else if (Token::Match(tok, "[;{}] struct|union %type% *|& %var% ;|="))
+            {
+                varUsage[tok->strAt(4)].declare = true;
+                if (tok->tokAt(5)->str() == "=")
+                    varUsage[tok->strAt(4)].write = true;
+                tok = tok->tokAt(4);
+            }
+
+            else if (Token::Match(tok, "[;{}] const struct|union %type% *|& %var% ;|="))
+            {
+                varUsage[tok->strAt(5)].declare = true;
+                if (tok->tokAt(6)->str() == "=")
+                    varUsage[tok->strAt(5)].write = true;
+                tok = tok->tokAt(5);
+            }
+
+            else if (Token::Match(tok, "[;{}] %type% &|* %var% ( %any% ) ;") && (tok->next()->isStandardType() || tok->next()->str() == "void"))
+            {
                 varUsage[tok->strAt(3)].declare = true;
+                varUsage[tok->strAt(3)].write = true;
+                if (tok->tokAt(5)->varId() > 0)
+                {
+                    if (varUsage.find(tok->tokAt(5)->str()) != varUsage.end())
+                    {
+                        if (tok->tokAt(2)->str() == "&")
+                            varUsage.find(tok->tokAt(5)->str())->second.read = true;
+                        else
+                            varUsage.find(tok->tokAt(5)->str())->second.use();
+                    }
+                }
+                tok = tok->tokAt(6);
+            }
+
+            else if (Token::Match(tok, "[;{}] %type% *|& %var% [ %num% ] ;|=") && (tok->next()->isStandardType() || tok->next()->str() == "void"))
+            {
+                varUsage[tok->strAt(3)].declare = true;
+                if (tok->tokAt(7)->str() == "=")
+                    varUsage[tok->strAt(3)].write = true;
+                tok = tok->tokAt(6);
+            }
+
+            else if (Token::Match(tok, "[;{}] const %type% *|& %var% [ %num% ] ;|=") && (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void"))
+            {
+                varUsage[tok->strAt(4)].declare = true;
+                if (tok->tokAt(8)->str() == "=")
+                    varUsage[tok->strAt(4)].write = true;
+                tok = tok->tokAt(7);
+            }
 
             else if (Token::Match(tok, "delete|return %var%"))
                 varUsage[tok->strAt(1)].read = true;
 
             else if (Token::Match(tok, "%var% ="))
+                varUsage[tok->str()].write = true;
+
+            else if (Token::Match(tok, "%var% [ %any% ] ="))
                 varUsage[tok->str()].write = true;
 
             else if (Token::Match(tok, "else %var% ="))
@@ -555,11 +652,15 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "[(,] %var% [,)]"))
                 varUsage[ tok->strAt(1)].use();   // use = read + write
 
-            else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) && Token::Match(tok->next(), "%var%"))
+            else if (Token::Match(tok, " %var% ."))
+                varUsage[ tok->str()].use();   // use = read + write
+
+            else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) &&
+                     (Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false")))
                 varUsage[ tok->strAt(1)].read = true;
 
             else if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
-                varUsage[ tok->strAt(1)].read = true;
+                varUsage[ tok->strAt(1)].modified = true;
 
             else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
                 varUsage[ tok->str()].read = true;
@@ -567,9 +668,11 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "; %var% ;"))
                 varUsage[ tok->strAt(1)].read = true;
 
-            else if (Token::Match(tok, "++|-- %var%") ||
-                     Token::Match(tok, "%var% ++|--"))
-                varUsage[tok->strAt(1)].use();
+            else if (Token::Match(tok, "++|-- %var%"))
+                varUsage[tok->strAt(1)].modified = true;
+
+            else if (Token::Match(tok, "%var% ++|--"))
+                varUsage[tok->str()].modified = true;
         }
 
         // Check usage of all variables in the current scope..
@@ -581,20 +684,25 @@ void CheckOther::functionVariableUsage()
             if (!std::isalpha(varname[0]))
                 continue;
 
-            if (!(usage.declare))
+            if (!usage.declare)
                 continue;
 
-            if (usage.unused())
+            if (usage.unused() && !usage.modified)
             {
                 unusedVariableError(tok1, varname);
             }
 
-            else if (!(usage.read))
+            else if (usage.modified & !usage.write)
+            {
+                unassignedVariableError(tok1, varname);
+            }
+
+            else if (!usage.read && !usage.modified)
             {
                 unreadVariableError(tok1, varname);
             }
 
-            else if (!(usage.write))
+            else if (!usage.write)
             {
                 unassignedVariableError(tok1, varname);
             }

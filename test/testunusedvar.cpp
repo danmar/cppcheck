@@ -68,6 +68,7 @@ private:
         TEST_CASE(localvar5);
         TEST_CASE(localvar6);
         TEST_CASE(localvar7);
+        TEST_CASE(localvar8);
         TEST_CASE(localvarasm);
 
         // Don't give false positives for variables in structs/unions
@@ -276,13 +277,38 @@ private:
                               "    int i = 0;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    bool i = false;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int * i = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    void * i = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
     }
 
     void localvar2()
     {
-        functionVariableUsage("void foo()\n"
+        functionVariableUsage("int foo()\n"
                               "{\n"
                               "    int i;\n"
+                              "    return i;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'i' is not assigned a value\n"), errout.str());
+
+        functionVariableUsage("bool foo()\n"
+                              "{\n"
+                              "    bool i;\n"
                               "    return i;\n"
                               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'i' is not assigned a value\n"), errout.str());
@@ -329,7 +355,7 @@ private:
                               "    for (int i=0;i<10;++i)\n"
                               "        b[i] = ++a;\n"
                               "}\n");
-        ASSERT_EQUALS(std::string(""), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'b' is assigned a value that is never used\n"), errout.str());
     }
 
     void localvar7()// ticket 1253
@@ -339,23 +365,155 @@ private:
                               "    int i;\n"
                               "    i--;\n"
                               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Unused variable: i\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'i' is not assigned a value\n"), errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int i;\n"
-                              "    int &ii(i);"
-                              "    ii--;\n"
-                              "}\n");
-        TODO_ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'i' is not assigned a value\n"), errout.str());
-
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    int i;\n"
-                              "    int &ii=i;"
+                              "    int &ii(i);\n"
                               "    ii--;\n"
                               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'i' is not assigned a value\n"), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i;\n"
+                              "    int &ii=i;\n"
+                              "    ii--;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'i' is not assigned a value\n"), errout.str());
+    }
+
+    void localvar8()
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i[2];\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    void * i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    const void * i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    A * i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    struct A * i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int * i[2];\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    const int * i[2];\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    void * i[2];\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    const void * i[2];\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: i\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    A * i;\n"
+                              "    i->f();\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char * i;\n"
+                              "    if (i);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char * i = 0;\n"
+                              "    if (i);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char * i = new char[10];\n"
+                              "    if (i);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int i(0);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char *i;\n"
+                              "    i = fgets();\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char *i;\n"
+                              "    f(i);\n"
+                              "}\n");
+
+        functionVariableUsage("int a;\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    return &a;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int a[10];\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    int *p = &a[0];\n"
+                              "    for (int i = 0; i < 10; i++)\n"
+                              "        p[i] = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'p' is assigned a value that is never used\n", errout.str());
     }
 
     void localvarasm()
