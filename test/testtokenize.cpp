@@ -100,6 +100,7 @@ private:
         TEST_CASE(simplifyKnownVariables20);
         TEST_CASE(simplifyKnownVariables21);
         TEST_CASE(simplifyKnownVariables22);
+        TEST_CASE(simplifyKnownVariables23);
 
         TEST_CASE(match1);
 
@@ -1076,6 +1077,41 @@ private:
         // Current result
         ASSERT_EQUALS(
             "void foo ( ) { int n ; n = 10 ; i = ( n >> 1 ) ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables23()
+    {
+        // This testcase is related to ticket #1596
+        const char code[] = "void foo(int x)\n"
+                            "{\n"
+                            "    int a[10], c = 0;\n"
+                            "    if (x) {\n"
+                            "        a[c] = 0;\n"
+                            "        c++;\n"
+                            "    } else {\n"
+                            "        a[c] = 0;\n"
+                            "    }\n"
+                            "}\n";
+
+        // wanted result
+        TODO_ASSERT_EQUALS(
+            "void foo ( int x ) "
+            "{"
+            " int a [ 10 ] ; int c ; c = 0 ;"
+            " if ( x ) { a [ 0 ] = 0 ; c = 1 ; }"
+            " else { a [ 0 ] = 0 ; } "
+            "}",
+            simplifyKnownVariables(code));
+
+        // Current result
+        ASSERT_EQUALS(
+            "void foo ( int x ) "
+            "{"
+            " int a [ 10 ] ; int c ; c = 0 ;"
+            " if ( x ) { a [ 0 ] = 0 ; c ++ ; }"
+            " else { a [ c ] = 0 ; } "
+            "}",
             simplifyKnownVariables(code));
     }
 
