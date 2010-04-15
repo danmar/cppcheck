@@ -21,8 +21,8 @@
 #include <QDebug>
 
 ThreadHandler::ThreadHandler(QObject *parent) :
-        QObject(parent),
-        mRunningThreadCount(0)
+    QObject(parent),
+    mRunningThreadCount(0)
 {
     SetThreadCount(1);
 }

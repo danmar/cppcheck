@@ -40,7 +40,7 @@ public:
 
     /** This constructor is used when running checks. */
     CheckDangerousFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger)
+        : Check(tokenizer, settings, errorLogger)
     { }
 
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)

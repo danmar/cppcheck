@@ -21,7 +21,7 @@
 #include "txtreport.h"
 
 TxtReport::TxtReport(const QString &filename, QObject * parent) :
-        Report(filename, parent)
+    Report(filename, parent)
 {
 }
 

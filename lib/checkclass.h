@@ -40,7 +40,7 @@ public:
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger)
+        : Check(tokenizer, settings, errorLogger)
     { }
 
     /** @brief Run checks on the normal token list */
@@ -114,12 +114,12 @@ private:
     {
     public:
         Var(const std::string &name_, bool init_ = false, bool priv_ = false, bool mutable_ = false, bool static_ = false, Var *next_ = 0)
-                : name(name_),
-                init(init_),
-                priv(priv_),
-                isMutable(mutable_),
-                isStatic(static_),
-                next(next_)
+            : name(name_),
+              init(init_),
+              priv(priv_),
+              isMutable(mutable_),
+              isStatic(static_),
+              next(next_)
         {
         }
 

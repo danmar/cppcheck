@@ -121,10 +121,10 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
         ++fails_counter;
 
         errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
-        << "Expected:" << std::endl
-        << writestr(expected) << std::endl
-        << "Actual:" << std::endl
-        << writestr(actual) << std::endl;
+               << "Expected:" << std::endl
+               << writestr(expected) << std::endl
+               << "Actual:" << std::endl
+               << writestr(actual) << std::endl;
     }
 }
 
@@ -159,7 +159,7 @@ void TestFixture::assertThrowFail(const char *filename, int linenr)
     ++fails_counter;
 
     errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl
-    << "The expected exception was not thrown" << std::endl;
+           << "The expected exception was not thrown" << std::endl;
 }
 
 void TestFixture::printTests()

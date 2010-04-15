@@ -213,8 +213,8 @@ std::string Preprocessor::removeComments(const std::string &str, const std::stri
         {
             std::ostringstream errmsg;
             errmsg << "The code contains characters that are unhandled. "
-            << "Neither unicode nor extended ascii are supported. "
-            << "(line=" << lineno << ", character code=" << std::hex << (int(ch) & 0xff) << ")";
+                   << "Neither unicode nor extended ascii are supported. "
+                   << "(line=" << lineno << ", character code=" << std::hex << (int(ch) & 0xff) << ")";
             throw std::runtime_error(errmsg.str());
         }
 
@@ -1477,7 +1477,7 @@ public:
      * e.g. "A(x) foo(x);"
      */
     PreprocessorMacro(const std::string &macro)
-            : _macro(macro), _prefix("__cppcheck__")
+        : _macro(macro), _prefix("__cppcheck__")
     {
         // Tokenize the macro to make it easier to handle
         std::istringstream istr(macro.c_str());

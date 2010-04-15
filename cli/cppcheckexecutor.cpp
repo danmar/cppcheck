@@ -93,9 +93,9 @@ void CppCheckExecutor::reportStatus(unsigned int index, unsigned int max)
     {
         std::ostringstream oss;
         oss << index << "/" << max
-        << " files checked " <<
-        static_cast<int>(static_cast<double>(index) / max*100)
-        << "% done";
+            << " files checked " <<
+            static_cast<int>(static_cast<double>(index) / max*100)
+            << "% done";
         std::cout << oss.str() << std::endl;
     }
 }

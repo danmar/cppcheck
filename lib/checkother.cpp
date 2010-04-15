@@ -1583,9 +1583,9 @@ public:
 private:
     /** Create checking of specific variable: */
     CheckNullpointer(Check *c, const unsigned int id, const std::string &name)
-            : ExecutionPath(c, id),
-            varname(name),
-            null(false)
+        : ExecutionPath(c, id),
+          varname(name),
+          null(false)
     {
     }
 
@@ -1751,7 +1751,7 @@ class CheckUninitVar : public ExecutionPath
 public:
     /** Startup constructor */
     CheckUninitVar(Check *c)
-            : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), strncpy_(false)
+        : ExecutionPath(c, 0), pointer(false), array(false), alloc(false), strncpy_(false)
     {
     }
 
@@ -1767,7 +1767,7 @@ private:
 
     /** internal constructor for creating extra checks */
     CheckUninitVar(Check *c, unsigned int v, const std::string &name, bool p, bool a)
-            : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), strncpy_(false)
+        : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), strncpy_(false)
     {
     }
 

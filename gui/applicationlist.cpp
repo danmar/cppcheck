@@ -21,7 +21,7 @@
 #include "common.h"
 
 ApplicationList::ApplicationList(QObject *parent) :
-        QObject(parent)
+    QObject(parent)
 {
     //ctor
 }

@@ -31,13 +31,13 @@ static const char DirElementName[] = "dir";
 static const char DirNameAttrib[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
-        QObject(parent)
+    QObject(parent)
 {
 }
 
 ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
-        QObject(parent),
-        mFilename(filename)
+    QObject(parent),
+    mFilename(filename)
 {
 }
 

@@ -30,7 +30,7 @@ ApplicationDialog::ApplicationDialog(const QString &name,
                                      const QString &path,
                                      const QString &title,
                                      QWidget *parent) :
-        QDialog(parent)
+    QDialog(parent)
 {
     mUI.setupUi(this);
 

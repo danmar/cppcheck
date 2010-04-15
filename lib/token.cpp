@@ -27,20 +27,20 @@
 #include <map>
 
 Token::Token(Token **t) :
-        tokensBack(t),
-        _str(""),
-        _isName(false),
-        _isNumber(false),
-        _isBoolean(false),
-        _isUnsigned(false),
-        _isSigned(false),
-        _isLong(false),
-        _varId(0),
-        _next(0),
-        _previous(0),
-        _link(0),
-        _fileIndex(0),
-        _linenr(0)
+    tokensBack(t),
+    _str(""),
+    _isName(false),
+    _isNumber(false),
+    _isBoolean(false),
+    _isUnsigned(false),
+    _isSigned(false),
+    _isLong(false),
+    _varId(0),
+    _next(0),
+    _previous(0),
+    _link(0),
+    _fileIndex(0),
+    _linenr(0)
 {
 }
 

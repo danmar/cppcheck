@@ -27,9 +27,9 @@
 #include "csvreport.h"
 
 ResultsView::ResultsView(QWidget * parent) :
-        QWidget(parent),
-        mErrorsFound(false),
-        mShowNoErrorsMessage(true)
+    QWidget(parent),
+    mErrorsFound(false),
+    mShowNoErrorsMessage(true)
 {
     mUI.setupUi(this);
 }
@@ -72,7 +72,8 @@ void ResultsView::Progress(int value, int max)
         mUI.mProgress->setVisible(false);
         //Should we inform user of non visible/not found errors?
         if (mShowNoErrorsMessage)
-        {   //Tell user that we found no errors
+        {
+            //Tell user that we found no errors
             if (!mErrorsFound)
             {
                 QMessageBox msg(QMessageBox::Information,

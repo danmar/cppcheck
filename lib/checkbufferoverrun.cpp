@@ -160,7 +160,7 @@ public:
      * @param str Token::str() is compared against this.
      */
     TokenStrEquals(const std::string &str)
-            : value(str)
+        : value(str)
     {
     }
 
@@ -1294,7 +1294,7 @@ class ExecutionPathBufferOverrun : public ExecutionPath
 public:
     /** Startup constructor */
     ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, ArrayInfo> &arrayinfo)
-            : ExecutionPath(c, 0), arrayInfo(arrayinfo)
+        : ExecutionPath(c, 0), arrayInfo(arrayinfo)
     {
     }
 
@@ -1313,8 +1313,8 @@ private:
 
     /** internal constructor for creating extra checks */
     ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, ArrayInfo> &arrayinfo, unsigned int varid_)
-            : ExecutionPath(c, varid_),
-            arrayInfo(arrayinfo)
+        : ExecutionPath(c, varid_),
+          arrayInfo(arrayinfo)
     {
         // Pretend that variables are initialized to 0
         // This checking is not about uninitialized variables

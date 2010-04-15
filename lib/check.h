@@ -39,7 +39,7 @@ class Check
 public:
     /** This constructor is used when registering the CheckClass */
     Check()
-            : _tokenizer(0), _settings(0), _errorLogger(0)
+        : _tokenizer(0), _settings(0), _errorLogger(0)
     {
         instances().push_back(this);
         instances().sort();
@@ -47,7 +47,7 @@ public:
 
     /** This constructor is used when running checks. */
     Check(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
+        : _tokenizer(tokenizer), _settings(settings), _errorLogger(errorLogger)
     { }
 
     virtual ~Check()

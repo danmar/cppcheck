@@ -41,10 +41,10 @@
 #endif
 
 MainWindow::MainWindow() :
-        mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
-        mApplications(new ApplicationList(this)),
-        mTranslation(new TranslationHandler(this)),
-        mLanguages(new QActionGroup(this))
+    mSettings(new QSettings("Cppcheck", "Cppcheck-GUI", this)),
+    mApplications(new ApplicationList(this)),
+    mTranslation(new TranslationHandler(this)),
+    mLanguages(new QActionGroup(this))
 {
     mUI.setupUi(this);
     mUI.mResults->Initialize(mSettings, mApplications);

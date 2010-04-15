@@ -46,14 +46,14 @@
 //---------------------------------------------------------------------------
 
 Tokenizer::Tokenizer()
-        : _settings(0), _errorLogger(0)
+    : _settings(0), _errorLogger(0)
 {
     _tokens = 0;
     _tokensBack = 0;
 }
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger)
-        : _settings(settings), _errorLogger(errorLogger)
+    : _settings(settings), _errorLogger(errorLogger)
 {
     _tokens = 0;
     _tokensBack = 0;
@@ -409,7 +409,7 @@ void Tokenizer::duplicateTypedefError(const Token *tok1, const Token *tok2, cons
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            "style",
                                            std::string(type + " '" + tok2->str() +
-                                                       "' hides typedef with same name"),
+                                                   "' hides typedef with same name"),
                                            "variableHidingTypedef");
 
     if (_errorLogger)
@@ -435,7 +435,7 @@ void Tokenizer::duplicateDeclarationError(const Token *tok1, const Token *tok2, 
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            "style",
                                            std::string(type + " '" + tok2->str() +
-                                                       "' forward declaration unnecessary, already declared"),
+                                                   "' forward declaration unnecessary, already declared"),
                                            "unnecessaryForwardDeclaration");
 
     if (_errorLogger)
@@ -5626,7 +5626,7 @@ void Tokenizer::duplicateEnumError(const Token * tok1, const Token * tok2, const
     const ErrorLogger::ErrorMessage errmsg(locationList,
                                            "style",
                                            std::string(type + " '" + tok2->str() +
-                                                       "' hides enumerator with same name"),
+                                                   "' hides enumerator with same name"),
                                            "variableHidingEnum");
 
     if (_errorLogger)

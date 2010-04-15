@@ -21,7 +21,7 @@
 #include "xmlreport.h"
 
 XmlReport::XmlReport(const QString &filename, QObject * parent) :
-        Report(filename, parent)
+    Report(filename, parent)
 {
 }
 

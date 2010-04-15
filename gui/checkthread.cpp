@@ -21,9 +21,9 @@
 #include <QDebug>
 
 CheckThread::CheckThread(ThreadResult &result) :
-        mState(Ready),
-        mResult(result),
-        mCppcheck(result)
+    mState(Ready),
+    mResult(result),
+    mCppcheck(result)
 {
     //ctor
 }

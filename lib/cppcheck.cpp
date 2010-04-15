@@ -66,8 +66,8 @@ struct TimerResultsData
     unsigned int _numberOfResults;
 
     TimerResultsData()
-            : _clocks(0)
-            , _numberOfResults(0)
+        : _clocks(0)
+        , _numberOfResults(0)
     {
     }
 };
@@ -117,11 +117,11 @@ class Timer
 {
 public:
     Timer(const std::string& str, unsigned int showtimeMode, TimerResultsIntf* timerResults = NULL)
-            : _str(str)
-            , _showtimeMode(showtimeMode)
-            , _start(0)
-            , _stopped(false)
-            , _timerResults(timerResults)
+        : _str(str)
+        , _showtimeMode(showtimeMode)
+        , _start(0)
+        , _stopped(false)
+        , _timerResults(timerResults)
     {
         if (showtimeMode != SHOWTIME_NONE)
             _start = clock();
@@ -167,7 +167,7 @@ private:
 //---------------------------------------------------------------------------
 
 CppCheck::CppCheck(ErrorLogger &errorLogger)
-        : _errorLogger(errorLogger)
+    : _errorLogger(errorLogger)
 {
     exitcode = 0;
 }
@@ -499,7 +499,7 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             for (std::list<Check *>::iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
             {
                 doc << "===" << (*it)->name() << "===\n"
-                << (*it)->classInfo() << "\n\n";
+                    << (*it)->classInfo() << "\n\n";
             }
 
             std::string doc2(doc.str());
@@ -536,69 +536,69 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
     {
         std::ostringstream oss;
         oss <<   "Cppcheck - A tool for static C/C++ code analysis\n"
-        "\n"
-        "Syntax:\n"
-        "    cppcheck [--append=file] [--enable=<id>]\n"
-        "             [--error-exitcode=[n]] [--exitcode-suppressions file] [--force]\n"
-        "             [--help] [-Idir] [-j [jobs]] [--quiet] [--style]\n"
-        "             [--suppressions file.txt] [--inline-suppr] [--file-list=file.txt]\n"
-        "             [--verbose] [--version] [--xml] [file or path1] [file or path] ..\n"
-        "\n"
-        "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
-        "are checked recursively from given directory.\n\n"
-        "Options:\n"
-        "    --append=file        This allows you to provide information about\n"
-        "                         functions by providing an implementation for these.\n"
-        "    --enable=id          Enable specific checks. The available ids are:\n"
-        "                          * all - enable all checks\n"
-        "                          * exceptNew - exception safety when using new\n"
-        "                          * exceptRealloc - exception safety when reallocating\n"
-        "                          * style - Check coding style\n"
-        "                          * unusedFunctions - check for unused functions\n"
-        "                         Several ids can be given if you separate them with commas\n"
-        "    --error-exitcode=[n] If errors are found, integer [n] is returned instead\n"
-        "                         of default 0. EXIT_FAILURE is returned\n"
-        "                         if arguments are not valid or if no input files are\n"
-        "                         provided. Note that your operating system can\n"
-        "                         modify this value, e.g. 256 can become 0.\n"
-        "    --exitcode-suppressions file\n"
-        "                         Used when certain messages should be displayed but\n"
-        "                         should not cause a non-zero exitcode.\n"
-        "    -f, --force          Force checking on files that have \"too many\"\n"
-        "                         configurations\n"
-        "    -h, --help           Print this help\n"
-        "    -I [dir]             Give include path. Give several -I parameters to give\n"
-        "                         several paths. First given path is checked first. If\n"
-        "                         paths are relative to source files, this is not needed\n"
-        "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
-        "    -q, --quiet          Only print error messages\n"
-        "    -s, --style          deprecated, use --enable=style\n"
-        "    --suppressions file  Suppress warnings listed in the file. Filename and line\n"
-        "                         are optional. The format of the single line in file is:\n"
-        "                         [error id]:[filename]:[line]\n"
-        "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
-        "                         more comments in the form: // cppcheck-suppress memleak\n"
-        "                         on the lines before the warning to suppress.\n"
-        "    --file-list=file     Specify the files to check in a text file. One Filename per line.\n"
-        "    --template '[text]'  Format the error messages. E.g.\n"
-        "                         '{file}:{line},{severity},{id},{message}' or\n"
-        "                         '{file}({line}):({severity}) {message}'\n"
-        "                         Pre-defined templates: gcc, vs\n"
-        "    --unused-functions   deprecated, use --enable=unusedFunctions\n"
-        "    -v, --verbose        More detailed error reports\n"
-        "    --version            Print out version number\n"
-        "    --xml                Write results in xml to error stream.\n"
-        "\n"
-        "Example usage:\n"
-        "  # Recursively check the current folder. Print the progress on the screen and\n"
-        "    write errors in a file:\n"
-        "    cppcheck . 2> err.txt\n"
-        "  # Recursively check ../myproject/ and don't print progress:\n"
-        "    cppcheck --quiet ../myproject/\n"
-        "  # Check only files one.cpp and two.cpp and give all information there is:\n"
-        "    cppcheck -v -s one.cpp two.cpp\n"
-        "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
-        "    cppcheck -I inc1/ -I inc2/ f.cpp\n";
+            "\n"
+            "Syntax:\n"
+            "    cppcheck [--append=file] [--enable=<id>]\n"
+            "             [--error-exitcode=[n]] [--exitcode-suppressions file] [--force]\n"
+            "             [--help] [-Idir] [-j [jobs]] [--quiet] [--style]\n"
+            "             [--suppressions file.txt] [--inline-suppr] [--file-list=file.txt]\n"
+            "             [--verbose] [--version] [--xml] [file or path1] [file or path] ..\n"
+            "\n"
+            "If path is given instead of filename, *.cpp, *.cxx, *.cc, *.c++ and *.c files\n"
+            "are checked recursively from given directory.\n\n"
+            "Options:\n"
+            "    --append=file        This allows you to provide information about\n"
+            "                         functions by providing an implementation for these.\n"
+            "    --enable=id          Enable specific checks. The available ids are:\n"
+            "                          * all - enable all checks\n"
+            "                          * exceptNew - exception safety when using new\n"
+            "                          * exceptRealloc - exception safety when reallocating\n"
+            "                          * style - Check coding style\n"
+            "                          * unusedFunctions - check for unused functions\n"
+            "                         Several ids can be given if you separate them with commas\n"
+            "    --error-exitcode=[n] If errors are found, integer [n] is returned instead\n"
+            "                         of default 0. EXIT_FAILURE is returned\n"
+            "                         if arguments are not valid or if no input files are\n"
+            "                         provided. Note that your operating system can\n"
+            "                         modify this value, e.g. 256 can become 0.\n"
+            "    --exitcode-suppressions file\n"
+            "                         Used when certain messages should be displayed but\n"
+            "                         should not cause a non-zero exitcode.\n"
+            "    -f, --force          Force checking on files that have \"too many\"\n"
+            "                         configurations\n"
+            "    -h, --help           Print this help\n"
+            "    -I [dir]             Give include path. Give several -I parameters to give\n"
+            "                         several paths. First given path is checked first. If\n"
+            "                         paths are relative to source files, this is not needed\n"
+            "    -j [jobs]            Start [jobs] threads to do the checking simultaneously.\n"
+            "    -q, --quiet          Only print error messages\n"
+            "    -s, --style          deprecated, use --enable=style\n"
+            "    --suppressions file  Suppress warnings listed in the file. Filename and line\n"
+            "                         are optional. The format of the single line in file is:\n"
+            "                         [error id]:[filename]:[line]\n"
+            "    --inline-suppr       Enable inline suppressions. Use them by placing one or\n"
+            "                         more comments in the form: // cppcheck-suppress memleak\n"
+            "                         on the lines before the warning to suppress.\n"
+            "    --file-list=file     Specify the files to check in a text file. One Filename per line.\n"
+            "    --template '[text]'  Format the error messages. E.g.\n"
+            "                         '{file}:{line},{severity},{id},{message}' or\n"
+            "                         '{file}({line}):({severity}) {message}'\n"
+            "                         Pre-defined templates: gcc, vs\n"
+            "    --unused-functions   deprecated, use --enable=unusedFunctions\n"
+            "    -v, --verbose        More detailed error reports\n"
+            "    --version            Print out version number\n"
+            "    --xml                Write results in xml to error stream.\n"
+            "\n"
+            "Example usage:\n"
+            "  # Recursively check the current folder. Print the progress on the screen and\n"
+            "    write errors in a file:\n"
+            "    cppcheck . 2> err.txt\n"
+            "  # Recursively check ../myproject/ and don't print progress:\n"
+            "    cppcheck --quiet ../myproject/\n"
+            "  # Check only files one.cpp and two.cpp and give all information there is:\n"
+            "    cppcheck -v -s one.cpp two.cpp\n"
+            "  # Check f.cpp and search include files from inc1/ and inc2/:\n"
+            "    cppcheck -I inc1/ -I inc2/ f.cpp\n";
         reportOut(oss.str());
     }
     else if (_filenames.empty())

@@ -60,82 +60,82 @@ int main(const int argc, const char * const * const argv)
                 if (subcount < 6)
                 {
                     fout << "class Token\n"
-                    << "{\n"
-                    << "public:\n"
-                    << "    const char  *str() const;\n"
-                    << "    const Token *next() const;\n"
-                    << "    unsigned int size() const;\n"
-                    << "    char         read () const;\n"
-                    << "    operator bool() const;\n"
-                    << "};\n"
-                    << "static Token *tokens;\n";
+                         << "{\n"
+                         << "public:\n"
+                         << "    const char  *str() const;\n"
+                         << "    const Token *next() const;\n"
+                         << "    unsigned int size() const;\n"
+                         << "    char         read () const;\n"
+                         << "    operator bool() const;\n"
+                         << "};\n"
+                         << "static Token *tokens;\n";
                 }
                 else
                 {
                     fout << "struct A\n"
-                    "{\n"
-                    "    char b();\n"
-                    "    A *next;\n"
-                    "};\n";
+                         "{\n"
+                         "    char b();\n"
+                         "    A *next;\n"
+                         "};\n";
                 }
             }
 
             if (testname == "nullpointer2")
             {
                 fout << "class Fred\n"
-                << "{\n"
-                << "public:\n"
-                << "    void hello() const;\n"
-                << "    operator bool() const;\n"
-                << "};\n";
+                     << "{\n"
+                     << "public:\n"
+                     << "    void hello() const;\n"
+                     << "    operator bool() const;\n"
+                     << "};\n";
             }
 
             if (testname == "nullpointer3")
             {
                 fout << "struct DEF { };\n"
-                << "struct ABC : public DEF\n"
-                << "{\n"
-                << "    int a,b,c;\n"
-                << "    struct ABC *next;\n"
-                << "};\n"
-                << "void bar(int); void f(struct ABC **);\n";
+                     << "struct ABC : public DEF\n"
+                     << "{\n"
+                     << "    int a,b,c;\n"
+                     << "    struct ABC *next;\n"
+                     << "};\n"
+                     << "void bar(int); void f(struct ABC **);\n";
             }
 
             if (testname == "nullpointer4")
             {
                 fout << "void bar(int);\n"
-                << "int** f(int **p = 0);\n"
-                << "extern int x;\n"
-                << "struct P {\n"
-                << "    bool check() const;\n"
-                << "    P* next() const;\n"
-                << "};\n";
+                     << "int** f(int **p = 0);\n"
+                     << "extern int x;\n"
+                     << "struct P {\n"
+                     << "    bool check() const;\n"
+                     << "    P* next() const;\n"
+                     << "};\n";
             }
 
             if (testname == "nullpointer5")
             {
                 fout << "struct A {\n"
-                << "    char c() const;\n"
-                << "    operator bool() const;\n"
-                << "};\n";
+                     << "    char c() const;\n"
+                     << "    operator bool() const;\n"
+                     << "};\n";
             }
 
             if (testname == "nullpointer6")
             {
                 fout << "struct Foo {\n"
-                << "    void abcd() const;\n"
-                << "};\n"
-                << "struct FooBar : public Foo { };\n"
-                << "struct FooCar : public Foo { };\n"
-                << "extern int a;\n";
+                     << "    void abcd() const;\n"
+                     << "};\n"
+                     << "struct FooBar : public Foo { };\n"
+                     << "struct FooCar : public Foo { };\n"
+                     << "extern int a;\n";
             }
 
             if (testname == "nullpointer7")
             {
                 fout << "struct wxLongLong {\n"
-                << "    wxLongLong(int) { }\n"
-                << "    long GetValue() const;\n"
-                << "};\n";
+                     << "    wxLongLong(int) { }\n"
+                     << "    long GetValue() const;\n"
+                     << "};\n";
             }
 
             do

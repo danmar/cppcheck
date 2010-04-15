@@ -29,10 +29,10 @@
 SettingsDialog::SettingsDialog(QSettings *programSettings,
                                ApplicationList *list,
                                QWidget *parent) :
-        QDialog(parent),
-        mSettings(programSettings),
-        mApplications(list),
-        mTempApplications(new ApplicationList(this))
+    QDialog(parent),
+    mSettings(programSettings),
+    mApplications(list),
+    mTempApplications(new ApplicationList(this))
 {
     mUI.setupUi(this);
     mTempApplications->Copy(list);

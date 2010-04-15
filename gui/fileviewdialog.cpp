@@ -29,7 +29,7 @@
 FileViewDialog::FileViewDialog(const QString &file,
                                const QString &title,
                                QWidget *parent)
-        : QDialog(parent)
+    : QDialog(parent)
 {
     mUI.setupUi(this);
 

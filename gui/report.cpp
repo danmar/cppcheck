@@ -20,8 +20,8 @@
 #include "report.h"
 
 Report::Report(const QString &filename, QObject * parent) :
-        QObject(parent),
-        mFilename(filename)
+    QObject(parent),
+    mFilename(filename)
 {
 }
 

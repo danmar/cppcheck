@@ -42,7 +42,7 @@ public:
 
     /** @brief This constructor is used when running checks. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-            : Check(tokenizer, settings, errorLogger)
+        : Check(tokenizer, settings, errorLogger)
     { }
 
     /** @brief Run checks against the normal token list */

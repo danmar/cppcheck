@@ -29,10 +29,10 @@
 #include "xmlreport.h"
 
 ResultsTree::ResultsTree(QWidget * parent) :
-        QTreeView(parent),
-        mContextItem(0),
-        mCheckPath(""),
-        mVisibleErrors(false)
+    QTreeView(parent),
+    mContextItem(0),
+    mCheckPath(""),
+    mVisibleErrors(false)
 {
     for (int i = 0; i < SHOW_NONE; i++)
         mShowTypes[i] = false;

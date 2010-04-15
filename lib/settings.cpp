@@ -24,7 +24,7 @@
 #include <stdexcept>
 
 Settings::Settings()
-        : inconclusive(false)
+    : inconclusive(false)
 {
     _debug = false;
     _checkCodingStyle = false;
@@ -41,14 +41,14 @@ Settings::Settings()
 }
 
 Settings::Settings(const Settings &s)
-        : inconclusive(s.inconclusive)
+    : inconclusive(s.inconclusive)
 {
     *this = s;
 }
 
 // Constructor used in unit testing..
 Settings::Settings(bool all)
-        : inconclusive(all)
+    : inconclusive(all)
 {
     Settings s;
     *this = s;		// This assigns all members except "inconclusive"

@@ -885,7 +885,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char * a , char * b , char * c ) { g ( " <<
-            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -894,7 +894,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char a , char b , char c ) { g ( " <<
-            sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " ) ; }";
+                     sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -903,7 +903,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char * a , const char * b , const char * c ) { g ( " <<
-            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -912,7 +912,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char a [ 10 ] , char b [ 10 ] , char c [ 10 ] ) { g ( " <<
-            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -921,9 +921,9 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char a [ 10 ] , "
-            "const char b [ 10 ] , "
-            "const char c [ 10 ] ) { g ( " <<
-            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                     "const char b [ 10 ] , "
+                     "const char c [ 10 ] ) { g ( " <<
+                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -932,9 +932,9 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char * a [ 10 ] , "
-            "const char * b [ 10 ] , "
-            "const char * c [ 10 ] ) { g ( " <<
-            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                     "const char * b [ 10 ] , "
+                     "const char * c [ 10 ] ) { g ( " <<
+                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 
@@ -943,7 +943,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char * a [ 10 ] , char * b [ 10 ] , char * c [ 10 ] ) { g ( " <<
-            sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
 

@@ -30,7 +30,7 @@
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::vector<std::string> &filenames, const Settings &settings, ErrorLogger &errorLogger)
-        : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
+    : _filenames(filenames), _settings(settings), _errorLogger(errorLogger), _fileCount(0)
 {
 
 }
