@@ -41,6 +41,8 @@ protected:
 
     bool runTest(const char testname[]);
 
+    void assert(const char *filename, int linenr, bool condition);
+
     void assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual);
 
     // the vars expected and actual need to be of type double, in order to avoid overflow of unsigned int
@@ -66,6 +68,7 @@ public:
 
 
 #define TEST_CASE( NAME )  if ( runTest(#NAME) ) NAME ();
+#define ASSERT( CONDITION )  assert(__FILE__, __LINE__, CONDITION)
 #define ASSERT_EQUALS( EXPECTED , ACTUAL )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define ASSERT_THROW( CMD, EXCEPTION ) try { CMD ; assertThrowFail(__FILE__, __LINE__); } catch (EXCEPTION &) { } catch (...) { assertThrowFail(__FILE__, __LINE__); }
 #define TODO_ASSERT_EQUALS( EXPECTED , ACTUAL ) todoAssertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)

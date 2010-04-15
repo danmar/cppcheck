@@ -178,6 +178,8 @@ private:
         // define and then ifdef
         TEST_CASE(define_ifdef);
         TEST_CASE(endfile);
+
+        TEST_CASE(redundant_config);
     }
 
 
@@ -2067,6 +2069,38 @@ private:
             ASSERT_EQUALS(1, actual.size());
         }
     }
+
+    void redundant_config()
+    {
+        const char filedata[] = "int main() {\n"
+                                "#ifdef FOO\n"
+                                "#ifdef BAR\n"
+                                "    std::cout << 1;\n"
+                                "#endif\n"
+                                "#endif\n"
+                                "\n"
+                                "#ifdef BAR\n"
+                                "#ifdef FOO\n"
+                                "    std::cout << 2;\n"
+                                "#endif\n"
+                                "#endif\n"
+                                "}\n";
+
+
+        // Preprocess => actual result..
+        std::istringstream istr(filedata);
+        std::map<std::string, std::string> actual;
+        Preprocessor preprocessor;
+        preprocessor.preprocess(istr, actual, "file.c");
+
+        // Compare results..
+        ASSERT_EQUALS(4U, actual.size());
+        ASSERT(actual.find("") != actual.end());
+        ASSERT(actual.find("BAR") != actual.end());
+        ASSERT(actual.find("FOO") != actual.end());
+        ASSERT(actual.find("BAR;FOO") != actual.end());
+    }
+
 
     void endfile()
     {

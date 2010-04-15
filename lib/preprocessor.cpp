@@ -69,6 +69,41 @@ static unsigned char readChar(std::istream &istr)
     return ch;
 }
 
+// Splits a string that contains the specified separator into substrings
+static std::list<std::string> split(const std::string &s, char separator)
+{
+    std::list<std::string> parts;
+
+    std::string::size_type prevPos = 0;
+    for (std::string::size_type pos = 0; pos < s.length(); ++pos)
+    {
+        if (s[pos] == separator)
+        {
+            if (pos > prevPos)
+                parts.push_back(s.substr(prevPos, pos - prevPos));
+            prevPos = pos + 1;
+        }
+    }
+    if (prevPos < s.length())
+        parts.push_back(s.substr(prevPos));
+
+    return parts;
+}
+
+// Concatenates a list of strings, inserting a separator between parts
+static std::string join(const std::list<std::string> &list, char separator)
+{
+    std::string s;
+    for (std::list<std::string>::const_iterator it = list.begin(); it != list.end(); ++it)
+    {
+        if (!s.empty())
+            s += separator;
+
+        s += *it;
+    }
+    return s;
+}
+
 /** Just read the code into a string. Perform simple cleanup of the code */
 std::string Preprocessor::read(std::istream &istr, const std::string &filename, Settings *settings)
 {
@@ -743,6 +778,7 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
                 deflist.pop_back();
             deflist.push_back(def);
             def = "";
+
             for (std::list<std::string>::const_iterator it = deflist.begin(); it != deflist.end(); ++it)
             {
                 if (*it == "0")
@@ -891,18 +927,22 @@ std::list<std::string> Preprocessor::getcfgs(const std::string &filedata, const 
             }
 
             varList.sort();
-            s = "";
-            for (std::list<std::string>::iterator varIter = varList.begin(); varIter != varList.end(); ++varIter)
-            {
-                if (!s.empty())
-                    s += ";";
-
-                s += *varIter;
-            }
+            s = join(varList, ';');
 
             if (!s.empty())
                 *it = s;
         }
+    }
+
+    // Convert configurations into a canonical form: B;C;A or C;A;B => A;B;C
+    for (std::list<std::string>::iterator it = ret.begin(); it != ret.end(); ++it)
+    {
+        // Split the configuration into a list of defines
+        std::list<std::string> defs = split(*it, ';');
+
+        // Re-constitute the configuration after sorting the defines
+        defs.sort();
+        *it = join(defs, ';');
     }
 
     // Remove duplicates from the ret list..

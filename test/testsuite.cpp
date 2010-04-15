@@ -105,6 +105,15 @@ static std::string writestr(const std::string &str)
     return ostr.str();
 }
 
+void TestFixture::assert(const char *filename, int linenr, bool condition)
+{
+    if (!condition)
+    {
+        ++fails_counter;
+        errmsg << "Assertion failed in " << filename << " at line " << linenr << std::endl;
+    }
+}
+
 void TestFixture::assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual)
 {
     if (expected != actual)
