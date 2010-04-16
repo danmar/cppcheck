@@ -40,6 +40,7 @@ private:
         TEST_CASE(iterator4);
         TEST_CASE(iterator5);
         TEST_CASE(iterator6);
+        TEST_CASE(iterator7);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_member);
@@ -174,6 +175,45 @@ private:
               "    ints2.insert(it1, it2);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator7()
+    {
+        // Ticket #1600
+        check("void foo(std::vector<int> &r)\n"
+              "{\n"
+              "    std::vector<int>::iterator aI = r.begin();\n"
+              "    while(aI != r.end())\n"
+              "    {\n"
+              "        if (*aI == 0)\n"
+              "        {\n"
+              "            r.insert(aI, 42);\n"
+              "            return;\n"
+              "        }\n"
+              "        ++aI;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // Execution path checking..
+        check("void foo(std::vector<int> &r, int c)\n"
+              "{\n"
+              "    std::vector<int>::iterator aI = r.begin();\n"
+              "    while(aI != r.end())\n"
+              "    {\n"
+              "        if (*aI == 0)\n"
+              "        {\n"
+              "            r.insert(aI, 42);\n"
+              "            if (c)\n"
+              "            {\n"
+              "                return;\n"
+              "            }\n"
+              "        }\n"
+              "        ++aI;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:14] (error) After insert, the iterator 'aI' may be invalid", errout.str());
     }
 
     // Dereferencing invalid pointer

@@ -432,6 +432,11 @@ void CheckStl::pushback()
                 }
             }
 
+            else if (tok2->str() == "return")
+            {
+                invalidIterator.clear();
+            }
+
             // Using invalid iterator..
             if (!invalidIterator.empty())
             {
