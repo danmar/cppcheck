@@ -61,6 +61,7 @@ private:
         TEST_CASE(parseOutputtingArgs);
         TEST_CASE(parseOutputtingInvalidArgs);
         TEST_CASE(parseArgsAndCheck);
+        TEST_CASE(parseArgsAndCheckSettings);
     }
 
     bool argCheck(int argc, const char *argv[])
@@ -82,6 +83,57 @@ private:
             cppCheck.check();
 
         return result;
+    }
+
+    bool argCheckReturnSettings(int argc, const char *argv[], Settings &settings)
+    {
+        errout.str("");
+        output.str("");
+        CppCheck cppCheck(*this);
+        cppCheck.addFile("file.cpp", "void foo(){}");
+        bool result = cppCheck.parseFromArgs(argc, argv);
+        if (result)
+            settings = cppCheck.settings();
+
+        return result;
+    }
+
+    void parseArgsAndCheckSettings()
+    {
+        {
+            const char *argv[] = {"cppcheck", "--template", "gcc"};
+            Settings settings;
+            ASSERT_EQUALS(true, argCheckReturnSettings(3, argv, settings));
+            ASSERT_EQUALS("{file}:{line}: {severity}: {message}", settings._outputFormat);
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--template", "vs"};
+            Settings settings;
+            ASSERT_EQUALS(true, argCheckReturnSettings(3, argv, settings));
+            ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings._outputFormat);
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--template", "{file}<->{line}"};
+            Settings settings;
+            ASSERT_EQUALS(true, argCheckReturnSettings(3, argv, settings));
+            ASSERT_EQUALS("{file}<->{line}", settings._outputFormat);
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", output.str());
+        }
+
+        {
+            const char *argv[] = {"cppcheck", "--template"};
+            Settings settings;
+            ASSERT_EQUALS(false, argCheckReturnSettings(2, argv, settings));
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("cppcheck: argument to '--template' is missing\n", output.str());
+        }
     }
 
     void parseArgsAndCheck()
