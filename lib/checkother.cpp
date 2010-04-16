@@ -660,7 +660,7 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "%var% ="))
                 varUsage[tok->str()].write = true;
 
-            else if (Token::Match(tok, "%var% [ %any% ] ="))
+            else if (Token::Match(tok, "%var% [") && Token::Match(tok->next()->link(), "] ="))
                 varUsage[tok->str()].write = true;
 
             else if (Token::Match(tok, "else %var% ="))
