@@ -71,6 +71,7 @@ const Settings &Settings::operator=(const Settings & s)
     _showtime = s._showtime;
     _append = s._append;
     _terminate = s._terminate;
+    _outputFormat = s._outputFormat;
     return *this;
 }
 
