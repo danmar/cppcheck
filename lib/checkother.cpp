@@ -470,6 +470,7 @@ public:
         read = false;
         write = false;
         modified = false;
+        aliased = false;
     }
 
     /** variable is used.. set both read+write */
@@ -489,6 +490,7 @@ public:
     bool read;
     bool write;
     bool modified; // read/modify/write
+    bool aliased; // pointer or reference
 };
 
 void CheckOther::functionVariableUsage()
@@ -572,7 +574,19 @@ void CheckOther::functionVariableUsage()
                 {
                     varUsage[tok->strAt(3)].declare = true;
                     if (tok->tokAt(4)->str() == "=")
+                    {
                         varUsage[tok->strAt(3)].write = true;
+                        if (Token::Match(tok->tokAt(5), "%var% = &| %var%") &&
+                            tok->tokAt(5)->str() == tok->tokAt(3)->str())
+                        {
+                            varUsage[tok->strAt(3)].aliased = true;
+                        }
+                    }
+                    else if (Token::Match(tok->tokAt(5), "%var% = &| %var%") &&
+                             tok->tokAt(5)->str() == tok->tokAt(3)->str())
+                    {
+                        varUsage[tok->strAt(3)].aliased = true;
+                    }
                     tok = tok->tokAt(3);
                 }
             }
@@ -580,6 +594,7 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "[;{}] const %type% *|& %var% ;|="))
             {
                 varUsage[tok->strAt(4)].declare = true;
+                varUsage[tok->strAt(4)].aliased = true;
                 if (tok->tokAt(5)->str() == "=")
                     varUsage[tok->strAt(4)].write = true;
                 tok = tok->tokAt(4);
@@ -588,6 +603,7 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "[;{}] struct|union %type% *|& %var% ;|="))
             {
                 varUsage[tok->strAt(4)].declare = true;
+                varUsage[tok->strAt(4)].aliased = true;
                 if (tok->tokAt(5)->str() == "=")
                     varUsage[tok->strAt(4)].write = true;
                 tok = tok->tokAt(4);
@@ -596,6 +612,7 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "[;{}] const struct|union %type% *|& %var% ;|="))
             {
                 varUsage[tok->strAt(5)].declare = true;
+                varUsage[tok->strAt(5)].aliased = true;
                 if (tok->tokAt(6)->str() == "=")
                     varUsage[tok->strAt(5)].write = true;
                 tok = tok->tokAt(5);
@@ -605,6 +622,7 @@ void CheckOther::functionVariableUsage()
             {
                 varUsage[tok->strAt(3)].declare = true;
                 varUsage[tok->strAt(3)].write = true;
+                varUsage[tok->strAt(3)].aliased = true;
                 if (tok->tokAt(5)->varId() > 0)
                 {
                     if (varUsage.find(tok->tokAt(5)->str()) != varUsage.end())
@@ -621,6 +639,7 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "[;{}] %type% *|& %var% [ %num% ] ;|=") && (tok->next()->isStandardType() || tok->next()->str() == "void"))
             {
                 varUsage[tok->strAt(3)].declare = true;
+                varUsage[tok->strAt(3)].aliased = true;
                 if (tok->tokAt(7)->str() == "=")
                     varUsage[tok->strAt(3)].write = true;
                 tok = tok->tokAt(6);
@@ -629,6 +648,7 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, "[;{}] const %type% *|& %var% [ %num% ] ;|=") && (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void"))
             {
                 varUsage[tok->strAt(4)].declare = true;
+                varUsage[tok->strAt(4)].aliased = true;
                 if (tok->tokAt(8)->str() == "=")
                     varUsage[tok->strAt(4)].write = true;
                 tok = tok->tokAt(7);
@@ -697,7 +717,7 @@ void CheckOther::functionVariableUsage()
                 unassignedVariableError(tok1, varname);
             }
 
-            else if (!usage.read && !usage.modified)
+            else if (!usage.read && !usage.modified && !usage.aliased)
             {
                 unreadVariableError(tok1, varname);
             }
