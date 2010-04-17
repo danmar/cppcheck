@@ -995,6 +995,12 @@ void CheckOther::checkStructMemberUsage()
 
         if (Token::Match(tok, "struct|union %type% {"))
         {
+            structname.clear();
+            if (Token::simpleMatch(tok->previous(), "extern"))
+                continue;
+            if ((!tok->previous() || Token::simpleMatch(tok->previous(), ";")) && Token::Match(tok->tokAt(2)->link(), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
+                continue;
+
             structname = tok->strAt(1);
 
             // Bail out if struct/union contain any functions

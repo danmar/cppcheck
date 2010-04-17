@@ -60,6 +60,7 @@ private:
         TEST_CASE(structmember6);
         TEST_CASE(structmember7);
         TEST_CASE(structmember8);
+        TEST_CASE(structmember_extern);		// No false positives for extern structs
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -245,6 +246,48 @@ private:
               "    ((AB *)ab)->b = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember_extern()
+    {
+        // extern struct => no false positive
+        check("extern struct AB\n"
+              "{\n"
+              "    int a;\n"
+              "    int b;\n"
+              "} ab;\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    ab.b = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // global linkage => no false positive
+        check("struct AB\n"
+              "{\n"
+              "    int a;\n"
+              "    int b;\n"
+              "} ab;\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    ab.b = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // static linkage => error message
+        check("static struct AB\n"
+              "{\n"
+              "    int a;\n"
+              "    int b;\n"
+              "} ab;\n"
+              "\n"
+              "void foo()\n"
+              "{\n"
+              "    ab.b = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct or union member 'AB::a' is never used\n", errout.str());
     }
 
 
