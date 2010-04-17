@@ -536,6 +536,7 @@ private:
                               "    i = fgets();\n"
                               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS("", errout.str());   // current value - catch changes
 
         functionVariableUsage("void foo()\n"
                               "{\n"
