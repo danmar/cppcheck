@@ -57,12 +57,12 @@ class TimerResultsIntf
 public:
     virtual ~TimerResultsIntf() { }
 
-    virtual void AddResults(const std::string& str, clock_t clocks) = 0;
+    virtual void AddResults(const std::string& str, std::clock_t clocks) = 0;
 };
 
 struct TimerResultsData
 {
-    clock_t _clocks;
+    std::clock_t _clocks;
     unsigned int _numberOfResults;
 
     TimerResultsData()
@@ -81,7 +81,7 @@ public:
 
     void ShowResults()
     {
-        clock_t overallClocks = 0;
+        std::clock_t overallClocks = 0;
 
         std::map<std::string, struct TimerResultsData>::const_iterator I = _results.begin();
         const std::map<std::string, struct TimerResultsData>::const_iterator E = _results.end();
@@ -101,7 +101,7 @@ public:
         std::cout << "Overall time: " << secOverall << "s" << std::endl;
     }
 
-    virtual void AddResults(const std::string& str, clock_t clocks)
+    virtual void AddResults(const std::string& str, std::clock_t clocks)
     {
         _results[str]._clocks += clocks;
         _results[str]._numberOfResults++;
@@ -124,7 +124,7 @@ public:
         , _timerResults(timerResults)
     {
         if (showtimeMode != SHOWTIME_NONE)
-            _start = clock();
+            _start = std::clock();
     }
 
     ~Timer()
@@ -136,8 +136,8 @@ public:
     {
         if ((_showtimeMode != SHOWTIME_NONE) && !_stopped)
         {
-            const clock_t end = clock();
-            const clock_t diff = end - _start;
+            const std::clock_t end = std::clock();
+            const std::clock_t diff = end - _start;
 
             if (_showtimeMode == SHOWTIME_FILE)
             {
@@ -159,7 +159,7 @@ private:
 
     const std::string _str;
     const unsigned int _showtimeMode;
-    clock_t _start;
+    std::clock_t _start;
     bool _stopped;
     TimerResultsIntf* _timerResults;
 };
