@@ -47,9 +47,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings(Settings::testSettings());
-
-        // Check for unused variables..
+        // Check for incomplete statements..
+        Settings settings;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkIncompleteStatement();
     }

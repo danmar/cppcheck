@@ -1060,8 +1060,8 @@ private:
         std::istringstream istr(filedata);
         std::map<std::string, std::string> actual;
         Settings settings;
-        settings._verbose = true;
         settings._debug = true;
+        settings._verbose = true;
         Preprocessor preprocessor(&settings, this);
         preprocessor.preprocess(istr, actual, "file.c");
 

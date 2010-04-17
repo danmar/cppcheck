@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#ifndef settingsH
+#define settingsH
 
 #include <list>
 #include <string>
@@ -49,25 +49,14 @@ private:
     /** @brief terminate checking */
     bool _terminate;
 
-    Settings(bool all);
-
 public:
     Settings();
-    Settings(const Settings &s);
-    const Settings &operator=(const Settings &s);
-    virtual ~Settings();
-
-    /** @brief Return test settings where inconclusive is true */
-    static Settings testSettings()
-    {
-        return Settings(true);
-    }
 
     /** @brief Is --debug given? */
     bool _debug;
 
     /** @brief Inconclusive checks - for debugging of Cppcheck */
-    const bool inconclusive;
+    bool inconclusive;
 
     /** @brief Is --style given? */
     bool _checkCodingStyle;

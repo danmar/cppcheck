@@ -92,7 +92,8 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings(Settings::testSettings());
+        Settings settings;
+        settings.inconclusive = true;
         settings._checkCodingStyle = true;
         CheckStl checkStl;
         checkStl.runSimplifiedChecks(&tokenizer, &settings, this);

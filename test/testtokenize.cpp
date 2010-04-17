@@ -3114,7 +3114,8 @@ private:
     void checkSimplifyInitVar(const char code[], bool simplify = false)
     {
         // Tokenize..
-        Settings settings(Settings::testSettings());
+        Settings settings;
+        settings.inconclusive = true;
         settings._checkCodingStyle = true;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);

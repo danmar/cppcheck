@@ -24,7 +24,6 @@
 #include <stdexcept>
 
 Settings::Settings()
-    : inconclusive(false)
 {
     _debug = false;
     _checkCodingStyle = false;
@@ -38,46 +37,7 @@ Settings::Settings()
     _showtime = 0; // TODO: use enum
     _append = "";
     _terminate = false;
-}
-
-Settings::Settings(const Settings &s)
-    : inconclusive(s.inconclusive)
-{
-    *this = s;
-}
-
-// Constructor used in unit testing..
-Settings::Settings(bool all)
-    : inconclusive(all)
-{
-    Settings s;
-    *this = s;		// This assigns all members except "inconclusive"
-}
-
-const Settings &Settings::operator=(const Settings & s)
-{
-    if (&s == this)
-        return *this;
-
-    _debug = s._debug;
-    _checkCodingStyle = s._checkCodingStyle;
-    _errorsOnly = s._errorsOnly;
-    _inlineSuppressions = s._inlineSuppressions;
-    _verbose = s._verbose;
-    _force = s._force;
-    _xml = s._xml;
-    _jobs = s._jobs;
-    _exitCode = s._exitCode;
-    _showtime = s._showtime;
-    _append = s._append;
-    _terminate = s._terminate;
-    _outputFormat = s._outputFormat;
-    return *this;
-}
-
-Settings::~Settings()
-{
-
+    inconclusive = false;
 }
 
 

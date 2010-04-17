@@ -53,7 +53,8 @@ private:
         errout.str("");
 
         // Check for buffer overruns..
-        Settings settings(showAll ? Settings::testSettings() : Settings());
+        Settings settings;
+        settings.inconclusive = showAll;
         settings._checkCodingStyle = true;
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.bufferOverrun();

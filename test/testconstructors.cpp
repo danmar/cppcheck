@@ -46,7 +46,8 @@ private:
         errout.str("");
 
         // Check class constructors..
-        Settings settings(showAll ? Settings::testSettings() : Settings());
+        Settings settings;
+        settings.inconclusive = showAll;
         settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
