@@ -573,20 +573,9 @@ void CheckOther::functionVariableUsage()
                 if (tok->next()->str() != "return")
                 {
                     varUsage[tok->strAt(3)].declare = true;
+                    varUsage[tok->strAt(3)].aliased = true;
                     if (tok->tokAt(4)->str() == "=")
-                    {
                         varUsage[tok->strAt(3)].write = true;
-                        if (Token::Match(tok->tokAt(5), "%var% = &| %var%") &&
-                            tok->tokAt(5)->str() == tok->tokAt(3)->str())
-                        {
-                            varUsage[tok->strAt(3)].aliased = true;
-                        }
-                    }
-                    else if (Token::Match(tok->tokAt(5), "%var% = &| %var%") &&
-                             tok->tokAt(5)->str() == tok->tokAt(3)->str())
-                    {
-                        varUsage[tok->strAt(3)].aliased = true;
-                    }
                     tok = tok->tokAt(3);
                 }
             }
