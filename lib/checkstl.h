@@ -117,6 +117,7 @@ private:
     void eraseCheckLoop(const Token *it);
 
     void stlOutOfBoundsError(const Token *tok, const std::string &num, const std::string &var);
+    void invalidIteratorError(const Token *tok, const std::string &iteratorName);
     void iteratorsError(const Token *tok, const std::string &container1, const std::string &container2);
     void mismatchingContainersError(const Token *tok);
     void eraseError(const Token *tok);
@@ -128,6 +129,7 @@ private:
 
     void getErrorMessages()
     {
+        invalidIteratorError(0, "iterator");
         iteratorsError(0, "container1", "container2");
         mismatchingContainersError(0);
         dereferenceErasedError(0, "iter");

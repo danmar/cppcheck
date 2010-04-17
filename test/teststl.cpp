@@ -437,8 +437,7 @@ private:
               "    ints.erase(iter);\n"
               "    ints.erase(iter);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Erasing invalid iterator\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Invalid iterator: iter\n", errout.str());
     }
 
 

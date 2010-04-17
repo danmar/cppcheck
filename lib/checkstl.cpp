@@ -30,6 +30,11 @@ CheckStl instance;
 
 
 // Error message for bad iterator usage..
+void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
+{
+    reportError(tok, Severity::error, "invalidIterator", "Invalid iterator: " + iteratorName);
+}
+
 void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
 {
     reportError(tok, Severity::error, "iterators", "Same iterator is used with both " + container1 + " and " + container2);
@@ -66,6 +71,9 @@ void CheckStl::iterators()
             }
             else if (Token::Match(tok2, "%var% . insert|erase ( %varid% )|,", iteratorId))
             {
+                if (!validIterator)
+                    invalidIteratorError(tok2, tok2->strAt(4));
+
                 if (tok2->varId() != containerId && tok2->tokAt(5)->str() != ".")
                 {
                     // skip error message if container is a set..
