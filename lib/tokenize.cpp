@@ -2249,6 +2249,12 @@ void Tokenizer::setVarId()
         if (Token::Match(tok, "class|struct %type% :|{|;"))
             continue;
 
+        if (Token::Match(tok, "using namespace %type% ;"))
+        {
+            tok = tok->next();
+            continue;
+        }
+
         if (Token::Match(tok, "else|return|typedef|delete|sizeof"))
             continue;
 

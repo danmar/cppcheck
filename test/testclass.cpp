@@ -113,6 +113,7 @@ private:
         TEST_CASE(const16); // ticket #1551
         TEST_CASE(const17); // ticket #1552
         TEST_CASE(const18); // ticket #1563
+        TEST_CASE(const19); // ticket #1612
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3213,6 +3214,19 @@ private:
                    "static int x;\n"
                    "public:\n"
                    "    void set(int i) { x = i; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const19()
+    {
+        // ticket #1612
+        checkConst("using namespace std;\n"
+                   "class Fred {\n"
+                   "private:\n"
+                   "    std::string s;\n"
+                   "public:\n"
+                   "    void set(std::string ss) { s = ss; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
