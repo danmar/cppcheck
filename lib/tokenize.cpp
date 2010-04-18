@@ -495,6 +495,9 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
             }
             else if (tok->previous()->str() == ">")
             {
+                if (!Token::Match(tok->tokAt(-2), "%type%"))
+                    return false;
+
                 duplicateTypedefError(*tokPtr, name, "Template instantiation");
                 *tokPtr = end->link();
                 return true;

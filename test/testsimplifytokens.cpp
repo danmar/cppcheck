@@ -183,6 +183,7 @@ private:
         TEST_CASE(simplifyTypedef42); // ticket #1506
         TEST_CASE(simplifyTypedef43); // ticket #1588
         TEST_CASE(simplifyTypedef44);
+        TEST_CASE(simplifyTypedef45); // ticket #1613
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -3875,6 +3876,18 @@ private:
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyTypedef45()
+    {
+        // ticket # 1613
+        const char code[] = "void fn() {\n"
+                            "    typedef foo<> bar;\n"
+                            "    while (0 > bar(1)) {}\n"
+                            "}";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void reverseArraySyntax()
