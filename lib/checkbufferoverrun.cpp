@@ -1021,7 +1021,7 @@ void CheckBufferOverrun::checkStructVariable()
                         if (Token::simpleMatch(tok4, ") {"))
                         {
                             std::vector<std::string> v;
-                            checkScope(tok4->tokAt(2), v, arrayInfo.num[0], arrayInfo.num[0] * arrayInfo.type_size, arrayInfo.varid);
+                            checkScope(tok4->tokAt(2), v, arrayInfo.num[0], arrayInfo.num[0] * arrayInfo.element_size, arrayInfo.varid);
                             break;
                         }
                     }
@@ -1078,7 +1078,7 @@ void CheckBufferOverrun::checkStructVariable()
                     continue;
 
                 // Check variable usage..
-                checkScope(CheckTok, varname, arrayInfo.num[0], arrayInfo.num[0] * arrayInfo.type_size, 0);
+                checkScope(CheckTok, varname, arrayInfo.num[0], arrayInfo.num[0] * arrayInfo.element_size, 0);
             }
         }
     }
@@ -1275,14 +1275,14 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
 
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
-    :	num(_num), type_size(_typesize), varid(_varid), varname(_varname)
+    :	num(_num), element_size(_element_size), varid(_varid), varname(_varname)
 {
-    _typesize = 0;
+    _element_size = 0;
     _varid = 0;
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai)
-    :	num(_num), type_size(_typesize), varid(_varid), varname(_varname)
+    :	num(_num), element_size(_element_size), varid(_varid), varname(_varname)
 {
     *this = ai;
 }
@@ -1291,7 +1291,7 @@ const CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(c
 {
     if (&ai != this)
     {
-        _typesize = ai.type_size;
+        _element_size = ai.element_size;
         _num = ai.num;
         _varid = ai.varid;
         _varname = ai.varname;
@@ -1302,7 +1302,7 @@ const CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(c
 bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &tokenizer)
 {
     _num.clear();
-    _typesize = 0;
+    _element_size = 0;
     _varname.clear();
 
     if (!tok->isName())
@@ -1320,14 +1320,14 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
     const Token *vartok = tok->tokAt(ivar);
     if (vartok->str() == "*")
     {
-        _typesize = tokenizer.sizeOfType(vartok);
+        _element_size = tokenizer.sizeOfType(vartok);
         vartok = vartok->next();
     }
     else
     {
-        _typesize = tokenizer.sizeOfType(tok);
+        _element_size = tokenizer.sizeOfType(tok);
     }
-    if (_typesize == 0)
+    if (_element_size == 0)
         return false;
 
     _varname = vartok->str();

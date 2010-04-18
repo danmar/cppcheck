@@ -97,7 +97,6 @@ public:
     /** Check for buffer overruns - this is the function that performs the actual checking */
     void checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid);
 
-
     /** Information about N-dimensional array */
     class ArrayInfo
     {
@@ -106,7 +105,7 @@ public:
         std::vector<unsigned int> _num;
 
         /** size of each element in array */
-        unsigned int _typesize;
+        unsigned int _element_size;
 
         /** variable id */
         unsigned int _varid;
@@ -130,8 +129,8 @@ public:
         /** array size */
         const std::vector<unsigned int> &num;
 
-        /** type size in bytes */
-        const unsigned int &type_size;
+        /** size of each element */
+        const unsigned int &element_size;
 
         /** Variable name */
         const unsigned int &varid;
