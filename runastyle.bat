@@ -1,12 +1,12 @@
 
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren cli/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren cli/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren gui/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren gui/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren lib/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren lib/*.h
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren test/*.cpp
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren test/*.h
+astyle --style=ansi --min-conditional-indent=0 cli/*.cpp
+astyle --style=ansi --min-conditional-indent=0 cli/*.h
+astyle --style=ansi --min-conditional-indent=0 gui/*.cpp
+astyle --style=ansi --min-conditional-indent=0 gui/*.h
+astyle --style=ansi --min-conditional-indent=0 lib/*.cpp
+astyle --style=ansi --min-conditional-indent=0 lib/*.h
+astyle --style=ansi --min-conditional-indent=0 test/*.cpp
+astyle --style=ansi --min-conditional-indent=0 test/*.h
 
-astyle --style=ansi --min-conditional-indent=0 --pad=oper --unpad=paren tools/*.cpp
+astyle --style=ansi --min-conditional-indent=0 tools/*.cpp
 
