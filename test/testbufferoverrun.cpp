@@ -1015,6 +1015,13 @@ private:
               "    data[-1] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    char data[8][4];\n"
+              "    data[5][-1] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
     }
 
     void array_index_for_decr()
