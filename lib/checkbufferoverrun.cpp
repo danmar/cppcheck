@@ -1286,13 +1286,14 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
 
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo()
-    :	num(_num), type_size(_typesize), varname(_varname)
+    :	num(_num), type_size(_typesize), varid(_varid), varname(_varname)
 {
     _typesize = 0;
+    _varid = 0;
 }
 
 CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai)
-    :	num(_num), type_size(_typesize), varname(_varname)
+    :	num(_num), type_size(_typesize), varid(_varid), varname(_varname)
 {
     *this = ai;
 }
@@ -1301,18 +1302,49 @@ const CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(c
 {
     if (&ai != this)
     {
-        _typesize = ai._typesize;
-        _num = ai._num;
-        _varname = ai._varname;
+        _typesize = ai.type_size;
+        _num = ai.num;
+        _varid = ai.varid;
+        _varname = ai.varname;
     }
     return *this;
 }
 
-bool CheckBufferOverrun::ArrayInfo::declare(unsigned int typesize, const std::string &name, const Token *atok)
+bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &tokenizer)
 {
     _num.clear();
-    _typesize = typesize;
-    _varname = name;
+    _typesize = 0;
+    _varname.clear();
+
+    if (!tok->isName())
+        return false;
+
+    int ivar = 0;
+    if (Token::Match(tok, "%type% *| %var% ["))
+        ivar = 1;
+    else if (Token::Match(tok, "%type% %type% *| %var% ["))
+        ivar = 2;
+    else
+        return false;
+
+    // Goto variable name token, get element size..
+    const Token *vartok = tok->tokAt(ivar);
+    if (vartok->str() == "*")
+    {
+        _typesize = tokenizer.sizeOfType(vartok);
+        vartok = vartok->next();
+    }
+    else
+    {
+        _typesize = tokenizer.sizeOfType(tok);
+    }
+    if (_typesize == 0)
+        return false;
+
+    _varname = vartok->str();
+    _varid = vartok->varId();
+
+    const Token *atok = vartok->tokAt(2);
 
     if (!Token::Match(atok, "%num% ] ;|["))
         return false;
@@ -1464,13 +1496,12 @@ void CheckBufferOverrun::executionPaths()
     std::map<unsigned int, ArrayInfo> arrayInfo;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[;{}] %type% %var% [ %num% ]"))
+        if (Token::Match(tok, "[;{}] %type%"))
         {
-            const unsigned int varid(tok->tokAt(2)->varId());
             ArrayInfo ai;
-            if (!ai.declare(_tokenizer->sizeOfType(tok->next()), tok->strAt(2), tok->tokAt(4)))
+            if (!ai.declare(tok->next(), *_tokenizer))
                 continue;
-            arrayInfo[varid] = ai;
+            arrayInfo[ai.varid] = ai;
         }
     }
 

@@ -108,6 +108,9 @@ public:
         /** size of each element in array */
         unsigned int _typesize;
 
+        /** variable id */
+        unsigned int _varid;
+
         /** full name of variable as pattern */
         std::string _varname;
 
@@ -118,18 +121,20 @@ public:
 
         /**
          * Declare array - set info
-         * \param typesize type size in bytes
-         * \param varname variable name
-         * \param atok the index token
+         * \param tok first token in array declaration
+         * \param tokenizer The tokenizer (for type size)
          * \return success => true
          */
-        bool declare(unsigned int typesize, const std::string &varname, const Token *atok);
+        bool declare(const Token *tok, const Tokenizer &tokenizer);
 
         /** array size */
         const std::vector<unsigned int> &num;
 
         /** type size in bytes */
         const unsigned int &type_size;
+
+        /** Variable name */
+        const unsigned int &varid;
 
         /** Variable name */
         const std::string &varname;
