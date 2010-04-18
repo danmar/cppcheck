@@ -114,6 +114,7 @@ private:
         TEST_CASE(const17); // ticket #1552
         TEST_CASE(const18); // ticket #1563
         TEST_CASE(const19); // ticket #1612
+        TEST_CASE(const20); // ticket #1602
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3229,6 +3230,45 @@ private:
                    "    void set(std::string ss) { s = ss; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const20()
+    {
+        // ticket #1602
+        checkConst("class Fred {\n"
+                   "    int x : 3;\n"
+                   "public:\n"
+                   "    void set(int i) { x = i; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    list<int *> x;\n"
+                   "public:\n"
+                   "    list<int *> get() { return x; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    list<const int *> x;\n"
+                   "public:\n"
+                   "    list<const int *> get() { return x; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Fred::get' can be const\n", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    std::list<std::string &> x;\n"
+                   "public:\n"
+                   "    std::list<std::string &> get() { return x; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class Fred {\n"
+                   "    std::list<const std::string &> x;\n"
+                   "public:\n"
+                   "    std::list<const std::string &> get() { return x; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Fred::get' can be const\n", errout.str());
     }
 
     // increment/decrement => not const

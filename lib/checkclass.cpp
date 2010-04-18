@@ -121,7 +121,7 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         }
 
         // Is it a variable declaration?
-        if (Token::Match(next, "%type% %var% ;"))
+        if (Token::Match(next, "%type% %var% ;|:"))
         {
             if (withClasses)
                 varname = next->strAt(1);
@@ -1816,6 +1816,20 @@ bool CheckClass::isMemberFunc(const Token *tok)
                     {
                         tok = tok->next();
                         break;
+                    }
+                }
+
+                // check for templates returning pointers or references
+                else if (Token::Match(tok, "*|&"))
+                {
+                    int back = -2;
+                    if (tok->strAt(back) == "::")
+                        back -= 2;
+
+                    if (tok->strAt(back) != "const")
+                    {
+                        if (!isConst)
+                            return false;
                     }
                 }
                 tok = tok->next();
