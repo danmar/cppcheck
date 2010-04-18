@@ -1267,22 +1267,22 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
 
 void CheckBufferOverrun::negativeIndexError(const Token *tok, long index)
 {
-	std::ostringstream ostr;
-	ostr << "Array index " << index << " corresponds with " << (unsigned long)index << ", which is likely out of bounds";
-	reportError(tok, Severity::error, "negativeIndex", ostr.str());
+    std::ostringstream ostr;
+    ostr << "Array index " << index << " corresponds with " << (unsigned long)index << ", which is likely out of bounds";
+    reportError(tok, Severity::error, "negativeIndex", ostr.str());
 }
 
 void CheckBufferOverrun::negativeIndex()
 {
-	const char pattern[] = "[ %num% ]";
-	for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok; tok = Token::findmatch(tok->next(),pattern))
-	{
-		const long index = MathLib::toLongNumber(tok->next()->str());
-		if (index < 0)
-		{
-			negativeIndexError(tok, index);
-		}
-	}
+    const char pattern[] = "[ %num% ]";
+    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok; tok = Token::findmatch(tok->next(),pattern))
+    {
+        const long index = MathLib::toLongNumber(tok->next()->str());
+        if (index < 0)
+        {
+            negativeIndexError(tok, index);
+        }
+    }
 }
 
 
