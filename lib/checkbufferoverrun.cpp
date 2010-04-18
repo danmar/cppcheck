@@ -82,6 +82,16 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(int size, int index)
         reportError(_callStack, severity, "arrayIndexOutOfBounds", "Array index out of bounds");
 }
 
+void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, int index)
+{
+    std::ostringstream oss;
+    oss << "Array '" << arrayInfo.varname;
+    for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
+        oss << "[" << arrayInfo.num[i] << "]";
+    oss << "' index " << index << " out of bounds";
+    reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str().c_str());
+}
+
 void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varnames)
 {
     Severity::e severity;
@@ -1274,15 +1284,50 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
 /// @{
 
 
-class ArrayInfo
-{
-public:
-    /** type size in bytes */
-    unsigned int type_size;
 
-    /** number of elements of array */
-    unsigned int num;
-};
+CheckBufferOverrun::ArrayInfo::ArrayInfo()
+    :	num(_num), type_size(_typesize), varname(_varname)
+{
+    _typesize = 0;
+}
+
+CheckBufferOverrun::ArrayInfo::ArrayInfo(const CheckBufferOverrun::ArrayInfo &ai)
+    :	num(_num), type_size(_typesize), varname(_varname)
+{
+    *this = ai;
+}
+
+const CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(const CheckBufferOverrun::ArrayInfo &ai)
+{
+    if (&ai != this)
+    {
+        _typesize = ai._typesize;
+        _num = ai._num;
+        _varname = ai._varname;
+    }
+    return *this;
+}
+
+bool CheckBufferOverrun::ArrayInfo::declare(unsigned int typesize, const std::string &name, const Token *atok)
+{
+    _num.clear();
+    _typesize = typesize;
+    _varname = name;
+
+    if (!Token::Match(atok, "%num% ] ;|["))
+        return false;
+
+    while (Token::Match(atok, "%num% ] ;|["))
+    {
+        _num.push_back(MathLib::toLongNumber(atok->str()));
+        atok = atok->next();
+        if (Token::simpleMatch(atok, "] ["))
+            atok = atok->tokAt(2);
+    }
+
+    return (!_num.empty() && Token::simpleMatch(atok, "] ;"));
+}
+
 
 
 /**
@@ -1293,7 +1338,7 @@ class ExecutionPathBufferOverrun : public ExecutionPath
 {
 public:
     /** Startup constructor */
-    ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, ArrayInfo> &arrayinfo)
+    ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, CheckBufferOverrun::ArrayInfo> &arrayinfo)
         : ExecutionPath(c, 0), arrayInfo(arrayinfo)
     {
     }
@@ -1306,13 +1351,13 @@ private:
     }
 
     /** @brief buffer information */
-    const std::map<unsigned int, ArrayInfo> &arrayInfo;
+    const std::map<unsigned int, CheckBufferOverrun::ArrayInfo> &arrayInfo;
 
     /** no implementation => compiler error if used by accident */
     void operator=(const ExecutionPathBufferOverrun &);
 
     /** internal constructor for creating extra checks */
-    ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, ArrayInfo> &arrayinfo, unsigned int varid_)
+    ExecutionPathBufferOverrun(Check *c, const std::map<unsigned int, CheckBufferOverrun::ArrayInfo> &arrayinfo, unsigned int varid_)
         : ExecutionPath(c, varid_),
           arrayInfo(arrayinfo)
     {
@@ -1345,10 +1390,10 @@ private:
             return;
 
         // Locate array info corresponding to varid1
-        ArrayInfo ai;
+        CheckBufferOverrun::ArrayInfo ai;
         {
             ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(checks.front());
-            std::map<unsigned int, ArrayInfo>::const_iterator it;
+            std::map<unsigned int, CheckBufferOverrun::ArrayInfo>::const_iterator it;
             it = c->arrayInfo.find(varid1);
             if (it == c->arrayInfo.end())
                 return;
@@ -1360,13 +1405,13 @@ private:
         for (it = checks.begin(); it != checks.end(); ++it)
         {
             ExecutionPathBufferOverrun *c = dynamic_cast<ExecutionPathBufferOverrun *>(*it);
-            if (c && c->varId == varid2 && c->value >= ai.num)
+            if (c && c->varId == varid2 && c->value >= ai.num[0])
             {
                 // variable value is out of bounds, report error
                 CheckBufferOverrun *checkBufferOverrun = dynamic_cast<CheckBufferOverrun *>(c->owner);
                 if (checkBufferOverrun)
                 {
-                    checkBufferOverrun->arrayIndexOutOfBounds(tok, ai.num, c->value);
+                    checkBufferOverrun->arrayIndexOutOfBounds(tok, ai, c->value);
                     break;
                 }
             }
@@ -1419,12 +1464,12 @@ void CheckBufferOverrun::executionPaths()
     std::map<unsigned int, ArrayInfo> arrayInfo;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (Token::Match(tok, "[;{}] %type% %var% [ %num% ] ;"))
+        if (Token::Match(tok, "[;{}] %type% %var% [ %num% ]"))
         {
             const unsigned int varid(tok->tokAt(2)->varId());
             ArrayInfo ai;
-            ai.type_size = _tokenizer->sizeOfType(tok->next());
-            ai.num = MathLib::toLongNumber(tok->strAt(4));
+            if (!ai.declare(_tokenizer->sizeOfType(tok->next()), tok->strAt(2), tok->tokAt(4)))
+                continue;
             arrayInfo[varid] = ai;
         }
     }

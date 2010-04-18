@@ -97,11 +97,51 @@ public:
     /** Check for buffer overruns - this is the function that performs the actual checking */
     void checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid);
 
+
+    /** Information about N-dimensional array */
+    class ArrayInfo
+    {
+    private:
+        /** number of elements of array */
+        std::vector<unsigned int> _num;
+
+        /** size of each element in array */
+        unsigned int _typesize;
+
+        /** full name of variable as pattern */
+        std::string _varname;
+
+    public:
+        ArrayInfo();
+        ArrayInfo(const ArrayInfo &);
+        const ArrayInfo & operator=(const ArrayInfo &ai);
+
+        /**
+         * Declare array - set info
+         * \param typesize type size in bytes
+         * \param varname variable name
+         * \param atok the index token
+         * \return success => true
+         */
+        bool declare(unsigned int typesize, const std::string &varname, const Token *atok);
+
+        /** array size */
+        const std::vector<unsigned int> &num;
+
+        /** type size in bytes */
+        const unsigned int &type_size;
+
+        /** Variable name */
+        const std::string &varname;
+    };
+
+
     /** callstack - used during intra-function checking */
     std::list<const Token *> _callStack;
 
     void arrayIndexOutOfBounds(const Token *tok, int size, int index);
     void arrayIndexOutOfBounds(int size, int index);
+    void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, int index);
     void bufferOverrun(const Token *tok, const std::string &varnames = "");
     void dangerousStdCin(const Token *tok);
     void strncatUsage(const Token *tok);

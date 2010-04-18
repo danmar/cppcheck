@@ -2003,6 +2003,16 @@ private:
                 "    buf[i] = 0;\n"
                 "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' index 1000 out of bounds\n", errout.str());
+
+        epcheck("void f(int a)\n"
+                "{\n"
+                "    int buf[10][5];\n"
+                "    int i = 5;\n"
+                "    if (a == 1)\n"
+                "        i = 1000;\n"
+                "    buf[i][0] = 0;\n"
+                "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10][5]' index 1000 out of bounds\n", errout.str());
     }
 };
 
