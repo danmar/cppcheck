@@ -2700,7 +2700,12 @@ public:
     { }
 
 private:
-    void check(const char code[], bool showAll = false)
+    /**
+     * Tokenize and execute leak check for given code
+     * @param code Source code
+     * @param showAll Not used
+     */
+    void check(const char code[], bool = false)
     {
         // Tokenize..
         Tokenizer tokenizer;
