@@ -210,7 +210,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if (Token::Match(tok, "%varid% [ %num% ]", varid))
         {
             int index = MathLib::toLongNumber(tok->strAt(2));
-            if (index < 0 || index >= size)
+            if (index >= size)
             {
                 arrayIndexOutOfBounds(tok, size, index);
             }
@@ -219,7 +219,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
     else if (Token::Match(tok, (varnames + " [ %num% ]").c_str()))
     {
         int index = MathLib::toLongNumber(tok->strAt(2 + varc));
-        if (index < 0 || index >= size)
+        if (index >= size)
         {
             arrayIndexOutOfBounds(tok->tokAt(varc), size, index);
         }
@@ -264,7 +264,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         else if (!tok->isName() && !Token::Match(tok, "[.&]") && Token::Match(tok->next(), (varnames + " [ %num% ]").c_str()))
         {
             int index = MathLib::toLongNumber(tok->strAt(3 + varc));
-            if (index < 0 || index >= size)
+            if (index >= size)
             {
                 arrayIndexOutOfBounds(tok->tokAt(1 + varc), size, index);
             }
@@ -1262,6 +1262,27 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
     {
         bufferOverrun(tok);
     }
+}
+
+
+void CheckBufferOverrun::negativeIndexError(const Token *tok, long index)
+{
+	std::ostringstream ostr;
+	ostr << "Array index " << index << " corresponds with " << (unsigned long)index << ", which is likely out of bounds";
+	reportError(tok, Severity::error, "negativeIndex", ostr.str());
+}
+
+void CheckBufferOverrun::negativeIndex()
+{
+	const char pattern[] = "[ %num% ]";
+	for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok; tok = Token::findmatch(tok->next(),pattern))
+	{
+		const long index = MathLib::toLongNumber(tok->next()->str());
+		if (index < 0)
+		{
+			negativeIndexError(tok, index);
+		}
+	}
 }
 
 

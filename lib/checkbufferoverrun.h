@@ -61,6 +61,7 @@ public:
     {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.bufferOverrun();
+        checkBufferOverrun.negativeIndex();
 
         /** ExecutionPath checking.. */
         checkBufferOverrun.executionPaths();
@@ -93,6 +94,9 @@ public:
 
     /** Check for buffer overruns - locate global variables and local function variables and check them with the checkScope function */
     void checkGlobalAndLocalVariable();
+
+    /** Check for negative index */
+    void negativeIndex();
 
     /** Check for buffer overruns - this is the function that performs the actual checking */
     void checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid);
@@ -152,6 +156,7 @@ public:
     void outOfBounds(const Token *tok, const std::string &what);
     void sizeArgumentAsChar(const Token *tok);
     void terminateStrncpyError(const Token *tok);
+    void negativeIndexError(const Token *tok, long index);
 
     void getErrorMessages()
     {
@@ -162,6 +167,7 @@ public:
         outOfBounds(0, "index");
         sizeArgumentAsChar(0);
         terminateStrncpyError(0);
+        negativeIndexError(0, -1);
     }
 
     std::string name() const
