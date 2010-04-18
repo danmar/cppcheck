@@ -994,28 +994,17 @@ void CheckBufferOverrun::checkStructVariable()
             if (tok2->str() == "}")
                 break;
 
-            int ivar = 0;
-            if (Token::Match(tok2->next(), "%type% %var% [ %num% ] ;"))
-                ivar = 2;
-            else if (Token::Match(tok2->next(), "%type% %type% %var% [ %num% ] ;"))
-                ivar = 3;
-            else if (Token::Match(tok2->next(), "%type% * %var% [ %num% ] ;"))
-                ivar = 3;
-            else if (Token::Match(tok2->next(), "%type% %type% * %var% [ %num% ] ;"))
-                ivar = 4;
-            else
+            ArrayInfo arrayInfo;
+            if (!arrayInfo.declare(tok2->next(), *_tokenizer))
                 continue;
 
-            std::vector<std::string> varname(2, "");
-            const unsigned int varId = tok2->tokAt(ivar)->varId();
-            varname[1] = tok2->strAt(ivar);
-            int arrsize = MathLib::toLongNumber(tok2->strAt(ivar + 2));
-            int total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(1));
-            if (tok2->tokAt(2)->str() == "*")
-                total_size = arrsize * _tokenizer->sizeOfType(tok2->tokAt(2));
-            if (total_size == 0)
+            // Only handling 1-dimensional arrays yet..
+            if (arrayInfo.num.size() > 1)
                 continue;
 
+            std::vector<std::string> varname;
+            varname.push_back("");
+            varname.push_back(arrayInfo.varname);
 
             // Class member variable => Check functions
             if (tok->str() == "class")
@@ -1032,7 +1021,7 @@ void CheckBufferOverrun::checkStructVariable()
                         if (Token::simpleMatch(tok4, ") {"))
                         {
                             std::vector<std::string> v;
-                            checkScope(tok4->tokAt(2), v, arrsize, total_size, varId);
+                            checkScope(tok4->tokAt(2), v, arrayInfo.num[0], arrayInfo.num[0] * arrayInfo.type_size, arrayInfo.varid);
                             break;
                         }
                     }
@@ -1089,7 +1078,7 @@ void CheckBufferOverrun::checkStructVariable()
                     continue;
 
                 // Check variable usage..
-                checkScope(CheckTok, varname, arrsize, total_size, 0);
+                checkScope(CheckTok, varname, arrayInfo.num[0], arrayInfo.num[0] * arrayInfo.type_size, 0);
             }
         }
     }
