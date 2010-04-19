@@ -121,6 +121,7 @@ private:
         TEST_CASE(constReturnReference);
         TEST_CASE(constDelete);     // delete member variable => not const
         TEST_CASE(constLPVOID);     // a function that returns LPVOID can't be const
+        TEST_CASE(constFunc); // a function that calls const functions can be const
     }
 
     // Check the operator Equal
@@ -3315,6 +3316,27 @@ private:
                    "    HDC a() { return 0; };\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // a function that calls const functions can be const
+    void constFunc()
+    {
+        checkConst("class Fred {\n"
+                   "    void f() const { };\n"
+                   "    void a() { f(); };\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) The function 'Fred::a' can be const\n", errout.str());
+
+        // ticket #1593
+        checkConst("#include <vector>\n"
+                   "class A\n"
+                   "{\n"
+                   "   std::vector<int> m_v;\n"
+                   "public:\n"
+                   "   A(){}\n"
+                   "   unsigned int GetVecSize()  {return m_v.size();}\n"
+                   "}");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style) The function 'A::GetVecSize' can be const\n", errout.str());
     }
 };
 
