@@ -1280,7 +1280,17 @@ void CheckBufferOverrun::negativeIndex()
         const long index = MathLib::toLongNumber(tok->next()->str());
         if (index < 0)
         {
-            negativeIndexError(tok, index);
+            // Multidimension index => error
+            if (Token::simpleMatch(tok->previous(), "]") || Token::simpleMatch(tok->tokAt(3), "["))
+                negativeIndexError(tok, index);
+
+            // 1-dimensional array => error
+            else if (tok->previous() && tok->previous()->varId())
+            {
+                const Token *tok2 = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->previous()->varId());
+                if (tok2 && Token::Match(tok2->next(), "[ %any% ] ;"))
+                    negativeIndexError(tok, index);
+            }
         }
     }
 }

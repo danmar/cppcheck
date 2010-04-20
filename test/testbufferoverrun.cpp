@@ -1022,6 +1022,13 @@ private:
               "    data[5][-1] = 0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+
+        // #1614 - negative index is ok for pointers
+        check("void foo(char *p)\n"
+              "{\n"
+              "    p[-1] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_for_decr()
