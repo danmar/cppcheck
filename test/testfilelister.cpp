@@ -20,7 +20,7 @@
 #include "testsuite.h"
 
 #if defined(_WIN32)
-#include "../lib/fileLister_win32.h"
+#include "../lib/filelister_win32.h"
 #else // POSIX-style system
 #include "../lib/filelister_unix.h"
 #endif
