@@ -782,7 +782,7 @@ private:
                   "    a[128] = 0;\n"   // 128 > CHAR_MAX
                   "}\n");
             ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[128]' index 128 out of bounds\n"
-                          "[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+                          "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
         }
         else // plain char is unsigned
@@ -802,7 +802,7 @@ private:
               "    a[128] = 0;\n"   // 128 > SCHAR_MAX
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[128]' index 128 out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
         check("void f(unsigned char n) {\n"
               "    int a[n];\n"     // n <= UCHAR_MAX
@@ -810,7 +810,7 @@ private:
               "    a[256] = 0;\n"   // 256 > UCHAR_MAX
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[256]' index 256 out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
         check("void f(short n) {\n"
               "    int a[n];\n"     // n <= SHRT_MAX
@@ -818,7 +818,7 @@ private:
               "    a[32768] = 0;\n" // 32768 > SHRT_MAX
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' index 32768 out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
         check("void f(unsigned short n) {\n"
               "    int a[n];\n"     // n <= USHRT_MAX
@@ -826,7 +826,7 @@ private:
               "    a[65536] = 0;\n" // 65536 > USHRT_MAX
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[65536]' index 65536 out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
         check("void f(signed short n) {\n"
               "    int a[n];\n"     // n <= SHRT_MAX
@@ -834,7 +834,7 @@ private:
               "    a[32768] = 0;\n" // 32768 > SHRT_MAX
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[32768]' index 32768 out of bounds\n"
-                      "[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+                      "[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
         if (sizeof(int) == 4)
         {
@@ -842,19 +842,19 @@ private:
                   "    int a[n];\n"     // n <= INT_MAX
                   "    a[-1] = 0;\n"    // negative index
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
             check("void f(unsigned int n) {\n"
                   "    int a[n];\n"     // n <= UINT_MAX
                   "    a[-1] = 0;\n"    // negative index
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
 
             check("void f(signed int n) {\n"
                   "    int a[n];\n"     // n <= INT_MAX
                   "    a[-1] = 0;\n"    // negative index
                   "}\n");
-            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+            ASSERT_EQUALS("[test.cpp:3]: (error) Array index -1 is out of bounds\n", errout.str());
         }
     }
 
@@ -1014,14 +1014,14 @@ private:
               "    char data[8];\n"
               "    data[-1] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    char data[8][4];\n"
               "    data[5][-1] = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 corresponds with 4294967295, which is likely out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds\n", errout.str());
 
         // #1614 - negative index is ok for pointers
         check("void foo(char *p)\n"

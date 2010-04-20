@@ -1268,7 +1268,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
 void CheckBufferOverrun::negativeIndexError(const Token *tok, long index)
 {
     std::ostringstream ostr;
-    ostr << "Array index " << index << " corresponds with " << (unsigned long)index << ", which is likely out of bounds";
+    ostr << "Array index " << index << " is out of bounds";
     reportError(tok, Severity::error, "negativeIndex", ostr.str());
 }
 
