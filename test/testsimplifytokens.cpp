@@ -237,6 +237,9 @@ private:
         // register int var; => int var;
         // inline int foo() {} => int foo() {}
         TEST_CASE(removeUnwantedKeywords);
+
+        // remove calling convention __cdecl, __stdcall, ...
+        TEST_CASE(simplifyCallingConvention);
     }
 
     std::string tok(const char code[], bool simplify = true)
@@ -4611,6 +4614,20 @@ private:
         ASSERT_EQUALS("int foo ( ) { }", tok("inline int foo ( ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
+    }
+
+    void simplifyCallingConvention()
+    {
+        ASSERT_EQUALS("int f ( ) ;", tok("int __cdecl f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __stdcall f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __fastcall f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __pascal f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __fortran f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __clrcall f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __thiscall f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", true));
     }
 };
 

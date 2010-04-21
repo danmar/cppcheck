@@ -1284,6 +1284,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         }
     }
 
+    // remove calling conventions __cdecl, __stdcall..
+    simplifyCallingConvention();
+
     // typedef..
     simplifyTypedef();
 
@@ -7073,3 +7076,20 @@ void Tokenizer::simplifyStructDecl()
         }
     }
 }
+
+void Tokenizer::simplifyCallingConvention()
+{
+    const char * pattern = "__cdecl|__stdcall|__fastcall|__pascal|__thiscall|__fortran|__clrcall|WINAPI|APIENTRY|CALLBACK";
+    while (Token::Match(_tokens, pattern))
+    {
+        _tokens->deleteThis();
+    }
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        while (Token::Match(tok->next(), pattern))
+        {
+            tok->deleteNext();
+        }
+    }
+}
+

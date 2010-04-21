@@ -477,12 +477,12 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
         total_size["strncpy"] = 3;
         total_size["memset"] = 3;
     }
-    
+
     if (par == 2)
     {
         total_size["read"] = 3;
-        total_size["write"] = 3;		
-	}
+        total_size["write"] = 3;
+    }
 
     std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
     if (it != total_size.end())
