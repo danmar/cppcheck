@@ -477,6 +477,12 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
         total_size["strncpy"] = 3;
         total_size["memset"] = 3;
     }
+    
+    if (par == 2)
+    {
+        total_size["read"] = 3;
+        total_size["write"] = 3;		
+	}
 
     std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
     if (it != total_size.end())
@@ -1014,19 +1020,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             const unsigned int n = MathLib::toLongNumber(tok->strAt(4));
             if (n > total_size)
                 outOfBounds(tok->tokAt(4), "snprintf size");
-        }
-
-
-        // Writing data into array..
-        if (Token::Match(tok, "read|write ( %any% , %varid% , %num% )", arrayInfo.varid) &&
-            MathLib::isInt(tok->strAt(6)))
-        {
-            const unsigned long len = MathLib::toLongNumber(tok->strAt(6));
-            if (len > total_size)
-            {
-                bufferOverrun(tok, arrayInfo.varname);
-                continue;
-            }
         }
     }
 }
