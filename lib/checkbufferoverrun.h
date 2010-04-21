@@ -98,7 +98,7 @@ public:
     /** Check for negative index */
     void negativeIndex();
 
-    /** Check for buffer overruns - this is the function that performs the actual checking */
+    /** Check for buffer overruns */
     void checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid);
 
     /** Information about N-dimensional array */
@@ -123,6 +123,14 @@ public:
         const ArrayInfo & operator=(const ArrayInfo &ai);
 
         /**
+         * Create array info with specified data
+         * The intention is that this is only a temporary solution.. all
+         * checking should be based on ArrayInfo from the start and then
+         * this will not be needed as the declare can be used instead.
+         */
+        ArrayInfo(unsigned int id, const std::string &name, unsigned int size1, unsigned int n);
+
+        /**
          * Declare array - set info
          * \param tok first token in array declaration
          * \param tokenizer The tokenizer (for type size)
@@ -142,6 +150,13 @@ public:
         /** Variable name */
         const std::string &varname;
     };
+
+    /** Check for buffer overruns (based on ArrayInfo) */
+    void checkScope(const Token *tok, const ArrayInfo &arrayInfo);
+
+
+    /** Helper function used when parsing for-loops */
+    void parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value);
 
 
     /** callstack - used during intra-function checking */

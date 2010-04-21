@@ -189,6 +189,280 @@ private:
     const std::string value;
 };
 
+/**
+ * Parse for loop initialization statement. Look for a counter variable
+ * \param tok [in] first token inside the paranthesis
+ * \param varid [out] varid of counter variable
+ * \param init_value [out] init value of counter variable
+ * \return success => pointer to the for loop condition. fail => 0
+ */
+static const Token *for_init(const Token *tok, unsigned int &varid, std::string &init_value)
+{
+    if (Token::Match(tok, "%var% = %any% ;"))
+    {
+        if (tok->tokAt(2)->isNumber())
+        {
+            init_value = tok->strAt(2);
+        }
+
+        varid = tok->varId();
+        tok = tok->tokAt(4);
+    }
+    else if (Token::Match(tok, "%type% %var% = %any% ;"))
+    {
+        if (tok->tokAt(3)->isNumber())
+        {
+            init_value = tok->strAt(3);
+        }
+
+        varid = tok->next()->varId();
+        tok = tok->tokAt(5);
+    }
+    else if (Token::Match(tok, "%type% %type% %var% = %any% ;"))
+    {
+        if (tok->tokAt(4)->isNumber())
+        {
+            init_value = tok->strAt(4);
+        }
+
+        varid = tok->tokAt(2)->varId();
+        tok = tok->tokAt(6);
+    }
+    else
+        return 0;
+
+    return tok;
+}
+
+
+/** Parse for condition */
+static bool for_condition(const Token * const tok2, unsigned int varid, std::string &min_value, std::string &max_value, std::string &strindex, bool &maxMinFlipped)
+{
+    if (Token::Match(tok2, "%varid% < %num% ;", varid))
+    {
+        maxMinFlipped = false;
+        long value = MathLib::toLongNumber(tok2->strAt(2));
+        max_value = MathLib::toString<long>(value - 1);
+    }
+    else if (Token::Match(tok2, "%varid% <= %num% ;", varid))
+    {
+        maxMinFlipped = false;
+        max_value = tok2->strAt(2);
+    }
+    else if (Token::Match(tok2, " %num% < %varid% ;", varid))
+    {
+        maxMinFlipped = true;
+        long value = MathLib::toLongNumber(tok2->str());
+        max_value = min_value;
+        min_value = MathLib::toString<long>(value + 1);
+    }
+    else if (Token::Match(tok2, "%num% <= %varid% ;", varid))
+    {
+        maxMinFlipped = true;
+        max_value = min_value;
+        min_value = tok2->str();
+    }
+    else
+    {
+        return false;
+    }
+
+    strindex = tok2->isName() ? tok2->str() : tok2->strAt(2);
+
+    return true;
+}
+
+
+
+/**
+ * Parse the third substatement in for head
+ * \param tok first token
+ * \param varid variable id of counter
+ * \param min_value min value of counter
+ * \param max_value max value of counter
+ * \param maxMinFlipped counting from max to min
+ */
+static bool for3(const Token * const tok,
+                 unsigned int varid,
+                 std::string &min_value,
+                 std::string &max_value,
+                 const bool maxMinFlipped)
+{
+    assert(tok != 0);
+    if (Token::Match(tok, "%varid% += %num% )", varid) ||
+        Token::Match(tok, "%varid%  = %num% + %varid% )", varid))
+    {
+        if (!MathLib::isInt(tok->strAt(2)))
+            return false;
+
+        const int num = MathLib::toLongNumber(tok->strAt(2));
+
+        // We have for example code: "for(i=2;i<22;i+=6)
+        // We can calculate that max value for i is 20, not 21
+        // 21-2 = 19
+        // 19/6 = 3
+        // 6*3+2 = 20
+        long max = MathLib::toLongNumber(max_value);
+        long min = MathLib::toLongNumber(min_value);
+        max = ((max - min) / num) * num + min;
+        max_value = MathLib::toString<long>(max);
+    }
+    else if (Token::Match(tok, "%varid% = %varid% + %num% )", varid))
+    {
+        if (!MathLib::isInt(tok->strAt(4)))
+            return false;
+
+        const int num = MathLib::toLongNumber(tok->strAt(4));
+        long max = MathLib::toLongNumber(max_value);
+        long min = MathLib::toLongNumber(min_value);
+        max = ((max - min) / num) * num + min;
+        max_value = MathLib::toString<long>(max);
+    }
+    else if (Token::Match(tok, "%varid% -= %num% )", varid) ||
+             Token::Match(tok, "%varid%  = %num% - %varid% )", varid))
+    {
+        if (!MathLib::isInt(tok->strAt(2)))
+            return false;
+
+        const int num = MathLib::toLongNumber(tok->strAt(2));
+
+        long max = MathLib::toLongNumber(max_value);
+        long min = MathLib::toLongNumber(min_value);
+        max = ((max - min) / num) * num + min;
+        max_value = MathLib::toString<long>(max);
+    }
+    else if (Token::Match(tok, "%varid% = %varid% - %num% )", varid))
+    {
+        if (!MathLib::isInt(tok->strAt(4)))
+            return false;
+
+        const int num = MathLib::toLongNumber(tok->strAt(4));
+        long max = MathLib::toLongNumber(max_value);
+        long min = MathLib::toLongNumber(min_value);
+        max = ((max - min) / num) * num + min;
+        max_value = MathLib::toString<long>(max);
+    }
+    else if (Token::Match(tok, "--| %varid% --| )", varid))
+    {
+        if (!maxMinFlipped && MathLib::toLongNumber(min_value) < MathLib::toLongNumber(max_value))
+        {
+            // Code relies on the fact that integer will overflow:
+            // for (unsigned int i = 3; i < 5; --i)
+
+            // Set min value in this case to zero.
+            max_value = min_value;
+            min_value = "0";
+        }
+    }
+    else if (! Token::Match(tok, "++| %varid% ++| )", varid))
+    {
+        return false;
+    }
+    return true;
+}
+
+
+
+/**
+ * Check is the counter variable increased elsewhere inside the loop or used
+ * for anything else except reading
+ * \param tok first token of for-body
+ * \param varid counter variable id
+ * \return bailout needed => true
+ */
+static bool for_bailout(const Token * const tok1, unsigned int varid)
+{
+    for (const Token *loopTok = tok1; loopTok && loopTok != tok1->link(); loopTok = loopTok->next())
+    {
+        if (loopTok->varId() == varid)
+        {
+            // Counter variable used inside loop
+            if (Token::Match(loopTok->next(), "+=|-=|++|--|=") ||
+                Token::Match(loopTok->previous(), "++|--"))
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value)
+{
+    const std::string pattern("%varid% [ " + strindex + " ]");
+
+    int indentlevel2 = 0;
+    for (; tok2; tok2 = tok2->next())
+    {
+        if (tok2->str() == ";" && indentlevel2 == 0)
+            break;
+
+        if (tok2->str() == "{")
+            ++indentlevel2;
+
+        if (tok2->str() == "}")
+        {
+            --indentlevel2;
+            if (indentlevel2 <= 0)
+                break;
+        }
+
+        if (Token::Match(tok2, "if|switch"))
+        {
+            // Bailout
+            break;
+        }
+
+        if (condition_out_of_bounds && Token::Match(tok2, pattern.c_str(), arrayInfo.varid))
+        {
+            bufferOverrun(tok2, arrayInfo.varname);
+            break;
+        }
+
+        else if (counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty())
+        {
+            int min_index = 0;
+            int max_index = 0;
+
+            if (Token::Match(tok2, "%varid% [ %var% +|-|*|/ %num% ]", arrayInfo.varid) &&
+                tok2->tokAt(2)->varId() == counter_varid)
+            {
+                const char action = tok2->strAt(3)[0];
+                const std::string &second(tok2->tokAt(4)->str());
+
+                //printf("min_index: %s %c %s\n", min_counter_value.c_str(), action, second.c_str());
+                //printf("max_index: %s %c %s\n", max_counter_value.c_str(), action, second.c_str());
+
+                min_index = std::atoi(MathLib::calculate(min_counter_value, second, action).c_str());
+                max_index = std::atoi(MathLib::calculate(max_counter_value, second, action).c_str());
+            }
+            else if (Token::Match(tok2, "%varid% [ %num% +|-|*|/ %var% ]", arrayInfo.varid) &&
+                     tok2->tokAt(4)->varId() == counter_varid)
+            {
+                const char action = tok2->strAt(3)[0];
+                const std::string &first(tok2->tokAt(2)->str());
+
+                //printf("min_index: %s %c %s\n", first.c_str(), action, min_counter_value.c_str());
+                //printf("max_index: %s %c %s\n", first.c_str(), action, max_counter_value.c_str());
+
+                min_index = std::atoi(MathLib::calculate(first, min_counter_value, action).c_str());
+                max_index = std::atoi(MathLib::calculate(first, max_counter_value, action).c_str());
+            }
+
+            //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);
+            if (min_index >= (int)arrayInfo.num[0] || max_index >= (int)arrayInfo.num[0])
+            {
+                arrayIndexOutOfBounds(tok2, (int)arrayInfo.num[0], std::max(min_index, max_index));
+            }
+        }
+    }
+}
+
+
+
+
+
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid)
 {
     std::string varnames;
@@ -276,45 +550,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         // memset, memcmp, memcpy, strncpy, fgets..
         if (varid > 0)
         {
-            if (_settings->_checkCodingStyle)
-            {
-                // check for strncpy which is not terminated
-                if (Token::Match(tok, "strncpy ( %varid% , %any% , %num% )", varid))
-                {
-                    // strncpy takes entire variable length as input size
-                    if (MathLib::toLongNumber(tok->strAt(6)) == total_size)
-                    {
-                        const Token *tok2 = tok->next()->link()->next();
-                        for (; tok2; tok2 = tok2->next())
-                        {
-                            if (tok2->varId() == tok->tokAt(2)->varId())
-                            {
-                                if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
-                                {
-                                    terminateStrncpyError(tok);
-                                }
 
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", varid) ||
-                Token::Match(tok, "memset|memcpy|memmove|memcmp|fgets ( %var% , %varid% , %any% )", varid))
-            {
-                const Token *tokSz = tok->tokAt(6);
-                if (tokSz->str()[0] == '\'')
-                    sizeArgumentAsChar(tok);
-                else if (tokSz->isNumber())
-                {
-                    const std::string num = tok->strAt(6);
-                    if (MathLib::toLongNumber(num) < 0 || MathLib::toLongNumber(num) > total_size)
-                    {
-                        bufferOverrun(tok, varnames);
-                    }
-                }
-            }
         }
         else if (Token::Match(tok, ("memset|memcpy|memmove|memcmp|strncpy|fgets ( " + varnames + " , %num% , %num% )").c_str()) ||
                  Token::Match(tok, ("memcpy|memcmp ( %var% , " + varnames + " , %num% )").c_str()))
@@ -336,161 +572,25 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             std::string min_counter_value;
             std::string max_counter_value;
 
-            // for - setup..
-            if (Token::Match(tok2, "%var% = %any% ;"))
-            {
-                if (tok2->tokAt(2)->isNumber())
-                {
-                    min_counter_value = tok2->strAt(2);
-                }
-
-                counter_varid = tok2->varId();
-                tok2 = tok2->tokAt(4);
-            }
-            else if (Token::Match(tok2, "%type% %var% = %any% ;"))
-            {
-                if (tok2->tokAt(3)->isNumber())
-                {
-                    min_counter_value = tok2->strAt(3);
-                }
-
-                counter_varid = tok2->next()->varId();
-                tok2 = tok2->tokAt(5);
-            }
-            else if (Token::Match(tok2, "%type% %type% %var% = %any% ;"))
-            {
-                if (tok->tokAt(4)->isNumber())
-                {
-                    min_counter_value = tok2->strAt(4);
-                }
-
-                counter_varid = tok2->tokAt(2)->varId();
-                tok2 = tok2->tokAt(6);
-            }
-            else
-                continue;
-
-            if (counter_varid == 0)
+            tok2 = for_init(tok2, counter_varid, min_counter_value);
+            if (tok2 == 0 || counter_varid == 0)
                 continue;
 
             bool maxMinFlipped = false;
-            const Token *strindextoken = 0;
-            if (Token::Match(tok2, "%varid% < %num% ;", counter_varid))
-            {
-                long value = MathLib::toLongNumber(tok2->strAt(2));
-                max_counter_value = MathLib::toString<long>(value - 1);
-                strindextoken = tok2;
-            }
-            else if (Token::Match(tok2, "%varid% <= %num% ;", counter_varid))
-            {
-                max_counter_value = tok2->strAt(2);
-                strindextoken = tok2;
-            }
-            else if (Token::Match(tok2, " %num% < %varid% ;", counter_varid))
-            {
-                long value = MathLib::toLongNumber(tok2->str());
-                maxMinFlipped = true;
-                max_counter_value = min_counter_value;
-                min_counter_value = MathLib::toString<long>(value + 1);
-                strindextoken = tok2->tokAt(2);
-            }
-            else if (Token::Match(tok2, "%num% <= %varid% ;", counter_varid))
-            {
-                maxMinFlipped = true;
-                max_counter_value = min_counter_value;
-                min_counter_value = tok2->str();
-                strindextoken = tok2->tokAt(2);
-            }
-            else
-            {
+            std::string strindex;
+            if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, strindex, maxMinFlipped))
                 continue;
-            }
 
             // Get index variable and stopsize.
-            const std::string strindex = strindextoken->str();
             bool condition_out_of_bounds = true;
             if (MathLib::toLongNumber(max_counter_value) < size)
                 condition_out_of_bounds = false;
 
-            const Token *tok3 = tok2->tokAt(4);
-            assert(tok3 != NULL);
-            if (Token::Match(tok3, "%varid% += %num% )", counter_varid) ||
-                Token::Match(tok3, "%varid%  = %num% + %varid% )", counter_varid))
-            {
-                if (!MathLib::isInt(tok3->strAt(2)))
-                    continue;
-
-                const int num = MathLib::toLongNumber(tok3->strAt(2));
-
-                // We have for example code: "for(i=2;i<22;i+=6)
-                // We can calculate that max value for i is 20, not 21
-                // 21-2 = 19
-                // 19/6 = 3
-                // 6*3+2 = 20
-                long max = MathLib::toLongNumber(max_counter_value);
-                long min = MathLib::toLongNumber(min_counter_value);
-                max = ((max - min) / num) * num + min;
-                max_counter_value = MathLib::toString<long>(max);
-                if (max <= size)
-                    condition_out_of_bounds = false;
-            }
-            else if (Token::Match(tok3, "%varid% = %varid% + %num% )", counter_varid))
-            {
-                if (!MathLib::isInt(tok3->strAt(4)))
-                    continue;
-
-                const int num = MathLib::toLongNumber(tok3->strAt(4));
-                long max = MathLib::toLongNumber(max_counter_value);
-                long min = MathLib::toLongNumber(min_counter_value);
-                max = ((max - min) / num) * num + min;
-                max_counter_value = MathLib::toString<long>(max);
-                if (max <= size)
-                    condition_out_of_bounds = false;
-            }
-            else if (Token::Match(tok3, "%varid% -= %num% )", counter_varid) ||
-                     Token::Match(tok3, "%varid%  = %num% - %varid% )", counter_varid))
-            {
-                if (!MathLib::isInt(tok3->strAt(2)))
-                    continue;
-
-                const int num = MathLib::toLongNumber(tok3->strAt(2));
-
-                long max = MathLib::toLongNumber(max_counter_value);
-                long min = MathLib::toLongNumber(min_counter_value);
-                max = ((max - min) / num) * num + min;
-                max_counter_value = MathLib::toString<long>(max);
-                if (max <= size)
-                    condition_out_of_bounds = false;
-            }
-            else if (Token::Match(tok3, "%varid% = %varid% - %num% )", counter_varid))
-            {
-                if (!MathLib::isInt(tok3->strAt(4)))
-                    continue;
-
-                const int num = MathLib::toLongNumber(tok3->strAt(4));
-                long max = MathLib::toLongNumber(max_counter_value);
-                long min = MathLib::toLongNumber(min_counter_value);
-                max = ((max - min) / num) * num + min;
-                max_counter_value = MathLib::toString<long>(max);
-                if (max <= size)
-                    condition_out_of_bounds = false;
-            }
-            else if (Token::Match(tok3, "--| %varid% --| )", counter_varid))
-            {
-                if (!maxMinFlipped && MathLib::toLongNumber(min_counter_value) < MathLib::toLongNumber(max_counter_value))
-                {
-                    // Code relies on the fact that integer will overflow:
-                    // for (unsigned int i = 3; i < 5; --i)
-
-                    // Set min value in this case to zero.
-                    max_counter_value = min_counter_value;
-                    min_counter_value = "0";
-                }
-            }
-            else if (! Token::Match(tok3, "++| %varid% ++| )", counter_varid))
-            {
+            if (!for3(tok2->tokAt(4), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
                 continue;
-            }
+
+            if (Token::Match(tok2->tokAt(4), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= size)
+                condition_out_of_bounds = false;
 
             // Goto the end paranthesis of the for-statement: "for (x; y; z)" ..
             tok2 = tok->next()->link();
@@ -499,98 +599,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
             // Check is the counter variable increased elsewhere inside the loop or used
             // for anything else except reading
-            bool bailOut = false;
-            for (Token *loopTok = tok2->next(); loopTok && loopTok != tok2->next()->link(); loopTok = loopTok->next())
-            {
-                if (loopTok->varId() == counter_varid)
-                {
-                    // Counter variable used inside loop
-                    if (Token::Match(loopTok->next(), "+=|-=|++|--|=") ||
-                        Token::Match(loopTok->previous(), "++|--"))
-                    {
-                        bailOut = true;
-                        break;
-                    }
-                }
-            }
-
-            if (bailOut)
-            {
+            if (for_bailout(tok2->next(), counter_varid))
                 break;
-            }
 
-            std::ostringstream pattern;
-            if (varid > 0)
-                pattern << "%varid% [ " << strindex << " ]";
-            else
-                pattern << varnames << " [ " << strindex << " ]";
+            ArrayInfo arrayInfo(varid, varnames, size, total_size);
+            parse_for_body(tok2->next(), arrayInfo, strindex, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
 
-            int indentlevel2 = 0;
-            while ((tok2 = tok2->next()) != 0)
-            {
-                if (tok2->str() == ";" && indentlevel2 == 0)
-                    break;
-
-                if (tok2->str() == "{")
-                    ++indentlevel2;
-
-                if (tok2->str() == "}")
-                {
-                    --indentlevel2;
-                    if (indentlevel2 <= 0)
-                        break;
-                }
-
-                if (Token::Match(tok2, "if|switch"))
-                {
-                    // Bailout
-                    break;
-                }
-
-                if (condition_out_of_bounds && Token::Match(tok2, pattern.str().c_str(), varid))
-                {
-                    bufferOverrun(tok2, varid > 0 ? "" : varnames.c_str());
-                    break;
-                }
-
-                else if (varid > 0 && counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty())
-                {
-                    int min_index = 0;
-                    int max_index = 0;
-
-                    if (Token::Match(tok2, "%varid% [ %var% +|-|*|/ %num% ]", varid) &&
-                        tok2->tokAt(2)->varId() == counter_varid)
-                    {
-                        const char action = tok2->strAt(3)[0];
-                        const std::string &second(tok2->tokAt(4)->str());
-
-                        //printf("min_index: %s %c %s\n", min_counter_value.c_str(), action, second.c_str());
-                        //printf("max_index: %s %c %s\n", max_counter_value.c_str(), action, second.c_str());
-
-                        min_index = std::atoi(MathLib::calculate(min_counter_value, second, action).c_str());
-                        max_index = std::atoi(MathLib::calculate(max_counter_value, second, action).c_str());
-                    }
-                    else if (Token::Match(tok2, "%varid% [ %num% +|-|*|/ %var% ]", varid) &&
-                             tok2->tokAt(4)->varId() == counter_varid)
-                    {
-                        const char action = tok2->strAt(3)[0];
-                        const std::string &first(tok2->tokAt(2)->str());
-
-                        //printf("min_index: %s %c %s\n", first.c_str(), action, min_counter_value.c_str());
-                        //printf("max_index: %s %c %s\n", first.c_str(), action, max_counter_value.c_str());
-
-                        min_index = std::atoi(MathLib::calculate(first, min_counter_value, action).c_str());
-                        max_index = std::atoi(MathLib::calculate(first, max_counter_value, action).c_str());
-                    }
-
-                    //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);
-                    if (min_index >= size || max_index >= size)
-                    {
-                        arrayIndexOutOfBounds(tok2, size, min_index > max_index ? min_index : max_index);
-                    }
-                }
-
-            }
             continue;
         }
 
@@ -599,7 +613,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
         if ((varid > 0 && Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", varid)) ||
             (varid == 0 && Token::Match(tok, ("strcpy|strcat ( " + varnames + " , %str% )").c_str())))
         {
-            long len = Token::getStrLength(tok->tokAt(varc + 4));
+            const long len = Token::getStrLength(tok->tokAt(varc + 4));
             if (len < 0 || len >= total_size)
             {
                 bufferOverrun(tok, varid > 0 ? "" : varnames.c_str());
@@ -607,66 +621,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             }
         }
 
-        // Writing data into array..
-        if (varid > 0 &&
-            Token::Match(tok, "read|write ( %any% , %varid% , %num% )", varid) &&
-            MathLib::isInt(tok->strAt(6)))
-        {
-            long len = MathLib::toLongNumber(tok->strAt(6));
-            if (len < 0 || len > total_size)
-            {
-                bufferOverrun(tok);
-                continue;
-            }
-        }
-
-        // fread|frwite
-        // size_t fread ( void * ptr, size_t size, size_t count, FILE * stream );
-        // ptr    -> Pointer to a block of memory with a minimum size of (size*count) bytes.
-        // size   -> Size in bytes of each element to be read.
-        // count  -> Number of elements, each one with a size of size bytes.
-        // stream -> Pointer to a FILE object that specifies an input stream.
-        if (varid > 0 &&
-            Token::Match(tok, "fread|fwrite ( %varid% , %num% , %num% , %any% )", varid) &&
-            MathLib::isInt(tok->strAt(6)))
-        {
-            long len = MathLib::toLongNumber(tok->strAt(4)) * MathLib::toLongNumber(tok->strAt(6));
-            if (len < 0 || len > total_size)
-            {
-                bufferOverrun(tok);
-                continue;
-            }
-        }
-
-        // Writing data into array..
-        if (varid > 0 &&
-            Token::Match(tok, "fgets ( %varid% , %num% , %any% )", varid) &&
-            MathLib::isInt(tok->strAt(4)))
-        {
-            long len = MathLib::toLongNumber(tok->strAt(4));
-            if (len < 0 || len > total_size)
-            {
-                bufferOverrun(tok);
-                continue;
-            }
-        }
-
-        // Dangerous usage of strncat..
-        if (varid > 0 && Token::Match(tok, "strncat ( %varid% , %any% , %num% )", varid))
-        {
-            int n = MathLib::toLongNumber(tok->strAt(6));
-            if (n < 0 || n >= total_size)
-                strncatUsage(tok);
-        }
-
-
-        // Dangerous usage of strncpy + strncat..
-        if (varid > 0 && Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% ) ; strncat ( %varid% , %any% , %num% )", varid))
-        {
-            int n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
-            if (n > total_size)
-                strncatUsage(tok->tokAt(9));
-        }
 
         // Detect few strcat() calls
         if (varid > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", varid))
@@ -686,24 +640,21 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             }
         }
 
-        // sprintf..
-        if (varid > 0 && Token::Match(tok, "sprintf ( %varid% , %str% [,)]", varid))
+        // sprintf / snprintf..
+        if (varid > 0)
         {
-            checkSprintfCall(tok, total_size);
-        }
+            if (Token::Match(tok, "sprintf ( %varid% , %str% [,)]", varid))
+            {
+                checkSprintfCall(tok, total_size);
+            }
 
-        // snprintf..
-        if (varid > 0 && Token::Match(tok, "snprintf ( %varid% , %num% ,", varid))
-        {
-            int n = MathLib::toLongNumber(tok->strAt(4));
-            if (n > total_size)
-                outOfBounds(tok->tokAt(4), "snprintf size");
-        }
-
-        // cin..
-        if (varid > 0 && Token::Match(tok, "cin >> %varid% ;", varid))
-        {
-            dangerousStdCin(tok);
+            // snprintf..
+            if (Token::Match(tok, "snprintf ( %varid% , %num% ,", varid))
+            {
+                int n = MathLib::toLongNumber(tok->strAt(4));
+                if (n > total_size)
+                    outOfBounds(tok->tokAt(4), "snprintf size");
+            }
         }
 
         // Function call..
@@ -811,6 +762,243 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 }
 
 
+void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo)
+{
+    const unsigned int total_size = arrayInfo.num[0] * arrayInfo.element_size;
+
+    unsigned int indentlevel = 0;
+    for (; tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+        {
+            ++indentlevel;
+        }
+
+        else if (tok->str() == "}")
+        {
+            if (indentlevel == 0)
+                return;
+            --indentlevel;
+        }
+
+        else if (Token::Match(tok, "%varid% [ %num% ]", arrayInfo.varid))
+        {
+            const int index = MathLib::toLongNumber(tok->strAt(2));
+            if (index >= (int)arrayInfo.num[0])
+            {
+                // just taking the address?
+                const bool addr(Token::Match(tok->previous(), "[.&]") ||
+                                Token::simpleMatch(tok->tokAt(-2), "& ("));
+
+                // it's ok to take the address of the element past the array
+                if (!(addr && index == (int)arrayInfo.num[0]))
+                    arrayIndexOutOfBounds(tok, arrayInfo, index);
+            }
+        }
+
+        // cin..
+        else if (Token::Match(tok, "cin >> %varid% ;", arrayInfo.varid))
+        {
+            dangerousStdCin(tok);
+        }
+
+
+        // Loop..
+        else if (Token::simpleMatch(tok, "for ("))
+        {
+            const Token *tok2 = tok->tokAt(2);
+
+            unsigned int counter_varid = 0;
+            std::string min_counter_value;
+            std::string max_counter_value;
+
+            tok2 = for_init(tok2, counter_varid, min_counter_value);
+            if (tok2 == 0 || counter_varid == 0)
+                continue;
+
+            bool maxMinFlipped = false;
+            std::string strindex;
+            if (!for_condition(tok2, counter_varid, min_counter_value, max_counter_value, strindex, maxMinFlipped))
+                continue;
+
+            // Get index variable and stopsize.
+            bool condition_out_of_bounds = true;
+            if (MathLib::toLongNumber(max_counter_value) < (int)arrayInfo.num[0])
+                condition_out_of_bounds = false;
+
+            if (!for3(tok2->tokAt(4), counter_varid, min_counter_value, max_counter_value, maxMinFlipped))
+                continue;
+
+            if (Token::Match(tok2->tokAt(4), "%var% =|+=|-=") && MathLib::toLongNumber(max_counter_value) <= (int)arrayInfo.num[0])
+                condition_out_of_bounds = false;
+
+            // Goto the end paranthesis of the for-statement: "for (x; y; z)" ..
+            tok2 = tok->next()->link();
+            if (!tok2 || !tok2->tokAt(5))
+                break;
+
+            // Check is the counter variable increased elsewhere inside the loop or used
+            // for anything else except reading
+            if (for_bailout(tok2->next(), counter_varid))
+                break;
+
+            parse_for_body(tok2->next(), arrayInfo, strindex, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
+
+            continue;
+        }
+
+
+
+        // fread|frwite
+        // size_t fread ( void * ptr, size_t size, size_t count, FILE * stream );
+        // ptr    -> Pointer to a block of memory with a minimum size of (size*count) bytes.
+        // size   -> Size in bytes of each element to be read.
+        // count  -> Number of elements, each one with a size of size bytes.
+        // stream -> Pointer to a FILE object that specifies an input stream.
+        if (Token::Match(tok, "fread|fwrite ( %varid% , %num% , %num% , %any% )", arrayInfo.varid) &&
+            MathLib::isInt(tok->strAt(6)))
+        {
+            const unsigned long len = MathLib::toLongNumber(tok->strAt(4)) * MathLib::toLongNumber(tok->strAt(6));
+            if (len > total_size)
+            {
+                bufferOverrun(tok, arrayInfo.varname);
+                continue;
+            }
+        }
+
+
+        // Writing data into array..
+        if (Token::Match(tok, "fgets ( %varid% , %num% , %any% )", arrayInfo.varid) &&
+            MathLib::isInt(tok->strAt(4)))
+        {
+            const unsigned long len = MathLib::toLongNumber(tok->strAt(4));
+            if (len > total_size)
+            {
+                bufferOverrun(tok, arrayInfo.varname);
+                continue;
+            }
+        }
+
+
+        else if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", arrayInfo.varid) ||
+                 Token::Match(tok, "memset|memcpy|memmove|memcmp|fgets ( %var% , %varid% , %any% )", arrayInfo.varid))
+        {
+            const Token *tokSz = tok->tokAt(6);
+            if (tokSz->str()[0] == '\'')
+                sizeArgumentAsChar(tok);
+            else if (tokSz->isNumber())
+            {
+                const std::string num = tok->strAt(6);
+                if ((unsigned int)MathLib::toLongNumber(num) > total_size)
+                {
+                    bufferOverrun(tok, arrayInfo.varname);
+                }
+            }
+
+            if (_settings->_checkCodingStyle)
+            {
+                // check for strncpy which is not terminated
+                if (Token::Match(tok, "strncpy ( %varid% , %any% , %num% )", arrayInfo.varid))
+                {
+                    // strncpy takes entire variable length as input size
+                    if ((unsigned int)MathLib::toLongNumber(tok->strAt(6)) >= total_size)
+                    {
+                        const Token *tok2 = tok->next()->link()->next();
+                        for (; tok2; tok2 = tok2->next())
+                        {
+                            if (tok2->varId() == tok->tokAt(2)->varId())
+                            {
+                                if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
+                                {
+                                    terminateStrncpyError(tok);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Dangerous usage of strncat..
+        if (Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% )", arrayInfo.varid))
+        {
+            if (tok->str() == "strncat")
+            {
+                const unsigned int n = MathLib::toLongNumber(tok->strAt(6));
+                if (n >= total_size)
+                    strncatUsage(tok);
+            }
+
+            // Dangerous usage of strncpy + strncat..
+            if (Token::Match(tok->tokAt(8), "; strncat ( %varid% , %any% , %num% )", arrayInfo.varid))
+            {
+                const unsigned int n = MathLib::toLongNumber(tok->strAt(6)) + MathLib::toLongNumber(tok->strAt(15));
+                if (n > total_size)
+                    strncatUsage(tok->tokAt(9));
+            }
+        }
+
+        // Writing data into array..
+        if (Token::Match(tok, "strcpy|strcat ( %varid% , %str% )", arrayInfo.varid))
+        {
+            const unsigned long len = Token::getStrLength(tok->tokAt(4));
+            if (len >= total_size)
+            {
+                bufferOverrun(tok, arrayInfo.varname);
+                continue;
+            }
+        }
+
+        // Detect few strcat() calls
+        if (Token::Match(tok, "strcat ( %varid% , %str% ) ;", arrayInfo.varid))
+        {
+            size_t charactersAppend = 0;
+            const Token *tok2 = tok;
+
+            while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", arrayInfo.varid))
+            {
+                charactersAppend += Token::getStrLength(tok2->tokAt(4));
+                if (charactersAppend >= static_cast<size_t>(total_size))
+                {
+                    bufferOverrun(tok2, arrayInfo.varname);
+                    break;
+                }
+                tok2 = tok2->tokAt(7);
+            }
+        }
+
+
+        if (Token::Match(tok, "sprintf ( %varid% , %str% [,)]", arrayInfo.varid))
+        {
+            checkSprintfCall(tok, total_size);
+        }
+
+        // snprintf..
+        if (Token::Match(tok, "snprintf ( %varid% , %num% ,", arrayInfo.varid))
+        {
+            const unsigned int n = MathLib::toLongNumber(tok->strAt(4));
+            if (n > total_size)
+                outOfBounds(tok->tokAt(4), "snprintf size");
+        }
+
+
+        // Writing data into array..
+        if (Token::Match(tok, "read|write ( %any% , %varid% , %num% )", arrayInfo.varid) &&
+            MathLib::isInt(tok->strAt(6)))
+        {
+            const unsigned long len = MathLib::toLongNumber(tok->strAt(6));
+            if (len > total_size)
+            {
+                bufferOverrun(tok, arrayInfo.varname);
+                continue;
+            }
+        }
+    }
+}
+
+
 //---------------------------------------------------------------------------
 // Checking local variables in a scope
 //---------------------------------------------------------------------------
@@ -835,17 +1023,29 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         if (tok->previous() && (!tok->previous()->isName() && !Token::Match(tok->previous(), "[;{}]")))
             continue;
 
-        if (Token::Match(tok, "%type% *| %var% [ %num% ] [;=]"))
+        ArrayInfo arrayInfo;
+        if (arrayInfo.declare(tok, *_tokenizer))
         {
-            unsigned int varpos = 1;
-            if (tok->next()->str() == "*")
-                ++varpos;
-            size = MathLib::toLongNumber(tok->strAt(varpos + 2));
-            type = tok->strAt(varpos - 1);
-            varid = tok->tokAt(varpos)->varId();
-            nextTok = varpos + 5;
+            while (tok && tok->str() != ";")
+                tok = tok->next();
+            checkScope(tok, arrayInfo);
+            continue;
         }
-        else if (Token::Match(tok, "%type% *| %var% [ %var% ] [;=]"))
+
+        /*
+                if (Token::Match(tok, "%type% *| %var% [ %num% ] [;=]"))
+                {
+                    unsigned int varpos = 1;
+                    if (tok->next()->str() == "*")
+                        ++varpos;
+                    size = MathLib::toLongNumber(tok->strAt(varpos + 2));
+                    type = tok->strAt(varpos - 1);
+                    varid = tok->tokAt(varpos)->varId();
+                    nextTok = varpos + 5;
+                }
+                else
+         */
+        if (Token::Match(tok, "%type% *| %var% [ %var% ] [;=]"))
         {
             unsigned int varpos = 1;
             if (tok->next()->str() == "*")
@@ -1330,6 +1530,21 @@ const CheckBufferOverrun::ArrayInfo & CheckBufferOverrun::ArrayInfo::operator=(c
     return *this;
 }
 
+/**
+ * Create array info with specified data
+ * The intention is that this is only a temporary solution.. all
+ * checking should be based on ArrayInfo from the start and then
+ * this will not be needed as the declare can be used instead.
+ */
+CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &name, unsigned int size1, unsigned int n)
+    :	num(_num), element_size(_element_size), varid(_varid), varname(_varname)
+{
+    _element_size = size1;
+    _num.push_back(n);
+    _varid = id;
+    _varname = name;
+}
+
 bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &tokenizer)
 {
     _num.clear();
@@ -1366,10 +1581,10 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
 
     const Token *atok = vartok->tokAt(2);
 
-    if (!Token::Match(atok, "%num% ] ;|["))
+    if (!Token::Match(atok, "%num% ] ;|=|["))
         return false;
 
-    while (Token::Match(atok, "%num% ] ;|["))
+    while (Token::Match(atok, "%num% ] ;|=|["))
     {
         _num.push_back(MathLib::toLongNumber(atok->str()));
         atok = atok->next();
@@ -1377,7 +1592,7 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
             atok = atok->tokAt(2);
     }
 
-    return (!_num.empty() && Token::simpleMatch(atok, "] ;"));
+    return (!_num.empty() && Token::Match(atok, "] ;|="));
 }
 
 
