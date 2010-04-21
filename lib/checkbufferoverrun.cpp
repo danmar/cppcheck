@@ -461,24 +461,28 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
 
 
-
-void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo)
+void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, const ArrayInfo &arrayInfo)
 {
     std::map<std::string, unsigned int> total_size;
     total_size["fgets"] = 2;	// The second argument for fgets can't exceed the total size of the array
     total_size["memcmp"] = 3;
     total_size["memcpy"] = 3;
     total_size["memmove"] = 3;
-    total_size["memset"] = 3;
-    total_size["strncat"] = 3;
-    total_size["strncmp"] = 3;
-    total_size["strncpy"] = 3;
 
-    std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok->str());
+    if (par == 1)
+    {
+        // reading from array
+        // if it is zero terminated properly there won't be buffer overruns
+        total_size["strncat"] = 3;
+        total_size["strncpy"] = 3;
+        total_size["memset"] = 3;
+    }
+
+    std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok.str());
     if (it != total_size.end())
     {
         unsigned int arg = it->second;
-        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+        for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
         {
             if (tok2->str() == "(")
             {
@@ -500,7 +504,7 @@ void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &ar
                             elements *= arrayInfo.num[i];
                         if (sz < 0 || sz > int(elements * arrayInfo.element_size))
                         {
-                            bufferOverrun(tok, arrayInfo.varname);
+                            bufferOverrun(&tok, arrayInfo.varname);
                         }
                     }
                     break;
@@ -597,12 +601,13 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
 
         // memset, memcmp, memcpy, strncpy, fgets..
-        if (varid == 0 &&
-            (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()) ||
-             Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str())))
+        if (varid == 0)
         {
             ArrayInfo arrayInfo(0, varnames, 1, total_size);
-            checkFunctionCall(tok, arrayInfo);
+            if (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()))
+                checkFunctionCall(*tok, 1, arrayInfo);
+            if (Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str()))
+                checkFunctionCall(*tok, 2, arrayInfo);
         }
 
         // Loop..
@@ -910,10 +915,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
 
         // Check function call..
-        if (Token::Match(tok, "%var% ( %varid% ,", arrayInfo.varid) ||
-            Token::Match(tok, "%var% ( %var% , %varid% ,", arrayInfo.varid))
-            checkFunctionCall(tok, arrayInfo);
-
+        if (Token::Match(tok, "%var% ( %varid% ,", arrayInfo.varid))
+            checkFunctionCall(*tok, 1, arrayInfo);
+        if (Token::Match(tok, "%var% ( %var% , %varid% ,", arrayInfo.varid))
+            checkFunctionCall(*tok, 2, arrayInfo);
 
 
         if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", arrayInfo.varid) ||

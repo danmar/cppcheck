@@ -1845,7 +1845,7 @@ private:
               "    strcpy(a, \"hello\");\n"
               "    strncpy(c, a, sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: a\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1884,7 +1884,7 @@ private:
               "{\n"
               "    strncpy(x, ab->a, 100);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: ab.a\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void unknownType()

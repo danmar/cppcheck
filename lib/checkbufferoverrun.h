@@ -158,8 +158,13 @@ public:
     /** Helper function used when parsing for-loops */
     void parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value);
 
-    /** Helper function for checkScope - check a function call */
-    void checkFunctionCall(const Token *tok2, const ArrayInfo &arrayInfo);
+    /**
+     * Helper function for checkScope - check a function call
+     * \param tok token for the function name
+     * \param par on what parameter is the array used
+     * \param arrayInfo the array information
+     */
+    void checkFunctionCall(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
 
     /** callstack - used during intra-function checking */
     std::list<const Token *> _callStack;
