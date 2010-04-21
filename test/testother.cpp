@@ -109,8 +109,9 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // Check for redundant code..
+        // Check..
         Settings settings;
+        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.warningRedundantCode();
         checkOther.checkZeroDivision();
@@ -2051,6 +2052,7 @@ private:
         // Check for redundant code..
         Settings settings;
         settings._checkCodingStyle = true;
+        settings.inconclusive = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.postIncrement();
     }
@@ -2164,6 +2166,7 @@ private:
         errout.str("");
 
         Settings settings;
+        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkConstantFunctionParameter();
     }

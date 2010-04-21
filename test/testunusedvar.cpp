@@ -46,6 +46,7 @@ private:
 
         // Check for unused variables..
         Settings settings;
+        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkStructMemberUsage();
     }
@@ -310,6 +311,7 @@ private:
 
         // Check for unused variables..
         Settings settings;
+        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.functionVariableUsage();
     }

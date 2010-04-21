@@ -57,18 +57,14 @@ public:
     {
         CheckClass checkClass(tokenizer, settings, errorLogger);
 
-        if (settings->_checkCodingStyle)
-        {
-            checkClass.constructors();
-            checkClass.operatorEq();
-            checkClass.privateFunctions();
-            checkClass.operatorEqRetRefThis();
-            if (settings->inconclusive)
-            {
-                checkClass.thisSubtraction();
-                checkClass.operatorEqToSelf();
-            }
-        }
+        // Coding style checks
+        checkClass.constructors();
+        checkClass.operatorEq();
+        checkClass.privateFunctions();
+        checkClass.operatorEqRetRefThis();
+        checkClass.thisSubtraction();
+        checkClass.operatorEqToSelf();
+
         checkClass.virtualDestructor();
         checkClass.checkConst();
     }

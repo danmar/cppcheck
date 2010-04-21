@@ -54,6 +54,7 @@ private:
 
         // Check for dangerous functions..
         Settings settings;
+        settings._checkCodingStyle = true;
         settings.inconclusive = true;
         CheckDangerousFunctions checkDangerousFunctions(&tokenizer, &settings, this);
         checkDangerousFunctions.dangerousFunctions();

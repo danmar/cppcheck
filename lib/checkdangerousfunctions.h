@@ -46,10 +46,7 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
     {
         CheckDangerousFunctions checkDangerousFunctions(tokenizer, settings, errorLogger);
-        if (settings->_checkCodingStyle)
-        {
-            checkDangerousFunctions.dangerousFunctions();
-        }
+        checkDangerousFunctions.dangerousFunctions();
     }
 
     /** Check for dangerous functions */

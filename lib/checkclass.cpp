@@ -434,6 +434,9 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
 
 void CheckClass::constructors()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     const char pattern_class[] = "class|struct %var% [{:]";
 
     // Locate class
@@ -608,6 +611,9 @@ void CheckClass::checkConstructors(const Token *tok1, const std::string &funcnam
 
 void CheckClass::privateFunctions()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     // Locate some class
     for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), "class|struct %var% {"); tok1; tok1 = Token::findmatch(tok1->next(), "class|struct %var% {"))
     {
@@ -866,6 +872,9 @@ void CheckClass::noMemset()
 
 void CheckClass::operatorEq()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     const Token *tok2 = _tokenizer->tokens();
     const Token *tok;
 
@@ -960,6 +969,9 @@ void CheckClass::operatorEqRetRefThis_finderr(const Token *tok, const std::strin
 
 void CheckClass::operatorEqRetRefThis()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     const Token *tok2 = _tokenizer->tokens();
     const Token *tok;
 
@@ -1204,6 +1216,9 @@ static bool hasMultipleInheritanceGlobal(const Token * start, const std::string 
 
 void CheckClass::operatorEqToSelf()
 {
+    if (!_settings->_checkCodingStyle || !_settings->inconclusive)
+        return;
+
     const Token *tok2 = _tokenizer->tokens();
     const Token *tok;
 
@@ -1464,6 +1479,9 @@ void CheckClass::thisSubtractionError(const Token *tok)
 
 void CheckClass::thisSubtraction()
 {
+    if (!_settings->_checkCodingStyle || !_settings->inconclusive)
+        return;
+
     const Token *tok = _tokenizer->tokens();
     for (;;)
     {

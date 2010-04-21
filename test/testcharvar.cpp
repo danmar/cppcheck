@@ -56,6 +56,7 @@ private:
 
         // Check char variable usage..
         Settings settings;
+        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkCharVariable();
     }

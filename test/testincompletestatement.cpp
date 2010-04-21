@@ -49,6 +49,7 @@ private:
 
         // Check for incomplete statements..
         Settings settings;
+        settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkIncompleteStatement();
     }

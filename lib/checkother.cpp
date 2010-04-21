@@ -45,6 +45,9 @@ CheckOther instance;
 
 void CheckOther::warningOldStylePointerCast()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Old style pointer casting..
@@ -77,6 +80,8 @@ void CheckOther::warningOldStylePointerCast()
 
 void CheckOther::warningRedundantCode()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
 
     // if (p) delete p
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -219,6 +224,9 @@ void CheckOther::redundantCondition2()
 //---------------------------------------------------------------------------
 void CheckOther::checkEmptyStringTest()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Non-empty string tests
@@ -403,6 +411,9 @@ void CheckOther::checkUnsignedDivision()
 
 void CheckOther::unreachableCode()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     const Token *tok = _tokenizer->tokens();
     while ((tok = Token::findmatch(tok, "[;{}] return")) != NULL)
     {
@@ -495,6 +506,9 @@ public:
 
 void CheckOther::functionVariableUsage()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     // Parse all executing scopes..
     for (const Token *token = Token::findmatch(_tokenizer->tokens(), ") const| {"); token;)
     {
@@ -745,6 +759,9 @@ void CheckOther::unassignedVariableError(const Token *tok, const std::string &va
 
 void CheckOther::checkVariableScope()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     // Walk through all tokens..
     bool func = false;
     int indentlevel = 0;
@@ -919,6 +936,9 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
 
 void CheckOther::checkConstantFunctionParameter()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "[,(] const std :: %type% %var% [,)]"))
@@ -976,6 +996,9 @@ void CheckOther::checkConstantFunctionParameter()
 
 void CheckOther::checkStructMemberUsage()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     std::string structname;
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
@@ -1065,6 +1088,9 @@ void CheckOther::checkStructMemberUsage()
 
 void CheckOther::checkCharVariable()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         // Declaring the variable..
@@ -1143,6 +1169,9 @@ void CheckOther::checkCharVariable()
 
 void CheckOther::checkIncompleteStatement()
 {
+    if (!_settings->_checkCodingStyle)
+        return;
+
     int parlevel = 0;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -2754,6 +2783,9 @@ void CheckOther::checkMathFunctions()
 
 void CheckOther::postIncrement()
 {
+    if (!_settings->_checkCodingStyle || !_settings->inconclusive)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "for ("))

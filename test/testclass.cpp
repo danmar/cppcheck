@@ -138,6 +138,7 @@ private:
 
         // Check..
         Settings settings;
+        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.operatorEq();
     }
@@ -1397,6 +1398,7 @@ private:
         // Check..
         Settings settings;
         settings.inconclusive = true;
+        settings._checkCodingStyle = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
@@ -2113,6 +2115,7 @@ private:
         // Check..
         Settings settings;
         settings._checkCodingStyle = true;
+        settings.inconclusive = true;
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.thisSubtraction();
     }

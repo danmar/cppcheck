@@ -51,15 +51,14 @@ public:
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         checkOther.nullPointer();
-        if (settings->_checkCodingStyle)
-        {
-            checkOther.warningOldStylePointerCast();
-            checkOther.checkUnsignedDivision();
-            checkOther.checkCharVariable();
-            checkOther.functionVariableUsage();
-            checkOther.checkVariableScope();
-            checkOther.checkStructMemberUsage();
-        }
+
+        // Coding style checks
+        checkOther.warningOldStylePointerCast();
+        checkOther.checkUnsignedDivision();
+        checkOther.checkCharVariable();
+        checkOther.functionVariableUsage();
+        checkOther.checkVariableScope();
+        checkOther.checkStructMemberUsage();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -67,18 +66,13 @@ public:
     {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
-        if (settings->_checkCodingStyle)
-        {
-            checkOther.warningRedundantCode();
-            checkOther.checkConstantFunctionParameter();
-            checkOther.checkIncompleteStatement();
-            checkOther.unreachableCode();
-            checkOther.checkEmptyStringTest();
-            if (settings->inconclusive)
-            {
-                checkOther.postIncrement();
-            }
-        }
+        // Coding style checks
+        checkOther.warningRedundantCode();
+        checkOther.checkConstantFunctionParameter();
+        checkOther.checkIncompleteStatement();
+        checkOther.unreachableCode();
+        checkOther.checkEmptyStringTest();
+        checkOther.postIncrement();
 
         checkOther.strPlusChar();
         checkOther.invalidFunctionUsage();

@@ -55,10 +55,8 @@ public:
         checkStl.stlBoundries();
         checkStl.if_find();
 
-        if (settings->_checkCodingStyle && settings->inconclusive)
-        {
-            checkStl.size();
-        }
+        // Style check
+        checkStl.size();
     }
 
 

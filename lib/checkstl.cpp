@@ -619,6 +619,9 @@ bool CheckStl::isStlContainer(const Token *tok)
 
 void CheckStl::size()
 {
+    if (!_settings->_checkCodingStyle || !_settings->inconclusive)
+        return;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (Token::Match(tok, "%var% . size ( )"))
