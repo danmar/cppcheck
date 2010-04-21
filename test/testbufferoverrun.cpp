@@ -1840,12 +1840,12 @@ private:
     {
         check("void f()\n"
               "{\n"
-              " char a[6];\n"
-              " char c[7];\n"
-              " strcpy(a,\"hello\");\n"
-              " strncpy(c,a,sizeof(c));\n"
+              "    char a[6];\n"
+              "    char c[7];\n"
+              "    strcpy(a, \"hello\");\n"
+              "    strncpy(c, a, sizeof(c));\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds: a\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1874,8 +1874,8 @@ private:
 
         check("void f()\n"
               "{\n"
-              " char c[6];\n"
-              " strncpy(c,\"hello!\",sizeof(c)+1);\n"
+              "    char c[6];\n"
+              "    strncpy(c,\"hello!\",sizeof(c)+1);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: c\n", errout.str());
 
@@ -1884,7 +1884,7 @@ private:
               "{\n"
               "    strncpy(x, ab->a, 100);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds: ab.a\n", errout.str());
     }
 
     void unknownType()

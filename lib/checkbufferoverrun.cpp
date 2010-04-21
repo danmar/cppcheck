@@ -462,6 +462,55 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
 
 
 
+void CheckBufferOverrun::checkFunctionCall(const Token *tok, const ArrayInfo &arrayInfo)
+{
+    std::map<std::string, unsigned int> total_size;
+    total_size["fgets"] = 2;	// The second argument for fgets can't exceed the total size of the array
+    total_size["memcmp"] = 3;
+    total_size["memcpy"] = 3;
+    total_size["memmove"] = 3;
+    total_size["memset"] = 3;
+    total_size["strncat"] = 3;
+    total_size["strncmp"] = 3;
+    total_size["strncpy"] = 3;
+
+    std::map<std::string, unsigned int>::const_iterator it = total_size.find(tok->str());
+    if (it != total_size.end())
+    {
+        unsigned int arg = it->second;
+        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "(")
+            {
+                tok2 = tok2->link();
+                continue;
+            }
+            if (tok2->str() == ")")
+                break;
+            if (tok2->str() == ",")
+            {
+                --arg;
+                if (arg == 1)
+                {
+                    if (Token::Match(tok2, ", %num% ,|)"))
+                    {
+                        const long sz = MathLib::toLongNumber(tok2->strAt(1));
+                        unsigned int elements = 1;
+                        for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
+                            elements *= arrayInfo.num[i];
+                        if (sz < 0 || sz > int(elements * arrayInfo.element_size))
+                        {
+                            bufferOverrun(tok, arrayInfo.varname);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
 
 void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::string> &varname, const int size, const int total_size, unsigned int varid)
 {
@@ -548,19 +597,12 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
 
         // memset, memcmp, memcpy, strncpy, fgets..
-        if (varid > 0)
+        if (varid == 0 &&
+            (Token::Match(tok, ("%var% ( " + varnames + " ,").c_str()) ||
+             Token::Match(tok, ("%var% ( %var% , " + varnames + " ,").c_str())))
         {
-
-        }
-        else if (Token::Match(tok, ("memset|memcpy|memmove|memcmp|strncpy|fgets ( " + varnames + " , %num% , %num% )").c_str()) ||
-                 Token::Match(tok, ("memcpy|memcmp ( %var% , " + varnames + " , %num% )").c_str()))
-        {
-            const std::string num  = tok->strAt(varc + 6);
-            if (MathLib::toLongNumber(num) < 0 || MathLib::toLongNumber(num) > total_size)
-            {
-                bufferOverrun(tok, varnames);
-            }
-            continue;
+            ArrayInfo arrayInfo(0, varnames, 1, total_size);
+            checkFunctionCall(tok, arrayInfo);
         }
 
         // Loop..
@@ -867,33 +909,19 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         }
 
 
-        // Writing data into array..
-        if (Token::Match(tok, "fgets ( %varid% , %num% , %any% )", arrayInfo.varid) &&
-            MathLib::isInt(tok->strAt(4)))
-        {
-            const unsigned long len = MathLib::toLongNumber(tok->strAt(4));
-            if (len > total_size)
-            {
-                bufferOverrun(tok, arrayInfo.varname);
-                continue;
-            }
-        }
+        // Check function call..
+        if (Token::Match(tok, "%var% ( %varid% ,", arrayInfo.varid) ||
+            Token::Match(tok, "%var% ( %var% , %varid% ,", arrayInfo.varid))
+            checkFunctionCall(tok, arrayInfo);
 
 
-        else if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", arrayInfo.varid) ||
-                 Token::Match(tok, "memset|memcpy|memmove|memcmp|fgets ( %var% , %varid% , %any% )", arrayInfo.varid))
+
+        if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", arrayInfo.varid) ||
+            Token::Match(tok, "memset|memcpy|memmove|memcmp|fgets ( %var% , %varid% , %any% )", arrayInfo.varid))
         {
             const Token *tokSz = tok->tokAt(6);
             if (tokSz->str()[0] == '\'')
                 sizeArgumentAsChar(tok);
-            else if (tokSz->isNumber())
-            {
-                const std::string num = tok->strAt(6);
-                if ((unsigned int)MathLib::toLongNumber(num) > total_size)
-                {
-                    bufferOverrun(tok, arrayInfo.varname);
-                }
-            }
 
             if (_settings->_checkCodingStyle)
             {
