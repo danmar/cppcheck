@@ -932,10 +932,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             checkFunctionCall(*tok, 2, arrayInfo);
 
 
-        if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", arrayInfo.varid) ||
-            Token::Match(tok, "memset|memcpy|memmove|memcmp|fgets ( %var% , %varid% , %any% )", arrayInfo.varid))
-        {
-
             if (_settings->_checkCodingStyle)
             {
                 // check for strncpy which is not terminated
@@ -960,7 +956,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                     }
                 }
             }
-        }
 
         // Dangerous usage of strncat..
         if (Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% )", arrayInfo.varid))
@@ -1060,19 +1055,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
             continue;
         }
 
-        /*
-                if (Token::Match(tok, "%type% *| %var% [ %num% ] [;=]"))
-                {
-                    unsigned int varpos = 1;
-                    if (tok->next()->str() == "*")
-                        ++varpos;
-                    size = MathLib::toLongNumber(tok->strAt(varpos + 2));
-                    type = tok->strAt(varpos - 1);
-                    varid = tok->tokAt(varpos)->varId();
-                    nextTok = varpos + 5;
-                }
-                else
-         */
         if (Token::Match(tok, "%type% *| %var% [ %var% ] [;=]"))
         {
             unsigned int varpos = 1;
