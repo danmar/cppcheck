@@ -1030,7 +1030,7 @@ void Tokenizer::simplifyTypedef()
                                 {
                                     if (tok2->next()->str() == "(")
                                         tok2 = tok2->next()->link();
-                                    else if (tok2->next()->str() != "[")
+                                    else if (!Token::Match(tok2->next(), "[|>"))
                                     {
                                         tok2 = tok2->next();
 

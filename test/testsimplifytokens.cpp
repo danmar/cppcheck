@@ -184,6 +184,7 @@ private:
         TEST_CASE(simplifyTypedef43); // ticket #1588
         TEST_CASE(simplifyTypedef44);
         TEST_CASE(simplifyTypedef45); // ticket #1613
+        TEST_CASE(simplifyTypedef46); // ticket #1615
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -3888,6 +3889,21 @@ private:
                             "    typedef foo<> bar;\n"
                             "    while (0 > bar(1)) {}\n"
                             "}";
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef46()
+    {
+        // ticket # 1615
+        const char code[] = "typedef void (*my_func)(arg_class*);\n"
+                            "std::queue<my_func> func_queue;";
+
+        // The expected result..
+        const std::string expected("; "
+                                   "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
+        ASSERT_EQUALS(expected, sizeof_(code));
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());
