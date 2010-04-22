@@ -476,6 +476,8 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
         total_size["strncat"] = 3;
         total_size["strncpy"] = 3;
         total_size["memset"] = 3;
+        total_size["fread"] = 1001;     // parameter 2 * parameter 3
+        total_size["fwrite"] = 1001;    // parameter 2 * parameter 3
     }
 
     if (par == 2)
@@ -505,6 +507,22 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
                     if (Token::Match(tok2, ", %num% ,|)"))
                     {
                         const long sz = MathLib::toLongNumber(tok2->strAt(1));
+                        unsigned int elements = 1;
+                        for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
+                            elements *= arrayInfo.num[i];
+                        if (sz < 0 || sz > int(elements * arrayInfo.element_size))
+                        {
+                            bufferOverrun(&tok, arrayInfo.varname);
+                        }
+                    }
+                    break;
+                }
+
+                if (arg == 1000)  // special code. This parameter multiplied with the next must not exceed total_size
+                {
+                    if (Token::Match(tok2, ", %num% , %num% ,|)"))
+                    {
+                        const long sz = MathLib::toLongNumber(tok2->strAt(1)) * MathLib::toLongNumber(tok2->strAt(3));
                         unsigned int elements = 1;
                         for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
                             elements *= arrayInfo.num[i];
@@ -898,25 +916,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             parse_for_body(tok2->next(), arrayInfo, strindex, condition_out_of_bounds, counter_varid, min_counter_value, max_counter_value);
 
             continue;
-        }
-
-
-
-        // fread|frwite
-        // size_t fread ( void * ptr, size_t size, size_t count, FILE * stream );
-        // ptr    -> Pointer to a block of memory with a minimum size of (size*count) bytes.
-        // size   -> Size in bytes of each element to be read.
-        // count  -> Number of elements, each one with a size of size bytes.
-        // stream -> Pointer to a FILE object that specifies an input stream.
-        if (Token::Match(tok, "fread|fwrite ( %varid% , %num% , %num% , %any% )", arrayInfo.varid) &&
-            MathLib::isInt(tok->strAt(6)))
-        {
-            const unsigned long len = MathLib::toLongNumber(tok->strAt(4)) * MathLib::toLongNumber(tok->strAt(6));
-            if (len > total_size)
-            {
-                bufferOverrun(tok, arrayInfo.varname);
-                continue;
-            }
         }
 
 
