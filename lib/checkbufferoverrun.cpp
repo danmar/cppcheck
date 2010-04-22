@@ -932,30 +932,30 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             checkFunctionCall(*tok, 2, arrayInfo);
 
 
-            if (_settings->_checkCodingStyle)
+        if (_settings->_checkCodingStyle)
+        {
+            // check for strncpy which is not terminated
+            if (Token::Match(tok, "strncpy ( %varid% , %any% , %num% )", arrayInfo.varid))
             {
-                // check for strncpy which is not terminated
-                if (Token::Match(tok, "strncpy ( %varid% , %any% , %num% )", arrayInfo.varid))
+                // strncpy takes entire variable length as input size
+                if ((unsigned int)MathLib::toLongNumber(tok->strAt(6)) >= total_size)
                 {
-                    // strncpy takes entire variable length as input size
-                    if ((unsigned int)MathLib::toLongNumber(tok->strAt(6)) >= total_size)
+                    const Token *tok2 = tok->next()->link()->next();
+                    for (; tok2; tok2 = tok2->next())
                     {
-                        const Token *tok2 = tok->next()->link()->next();
-                        for (; tok2; tok2 = tok2->next())
+                        if (tok2->varId() == tok->tokAt(2)->varId())
                         {
-                            if (tok2->varId() == tok->tokAt(2)->varId())
+                            if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
                             {
-                                if (!Token::Match(tok2, "%varid% [ %any% ]  = 0 ;", tok->tokAt(2)->varId()))
-                                {
-                                    terminateStrncpyError(tok);
-                                }
-
-                                break;
+                                terminateStrncpyError(tok);
                             }
+
+                            break;
                         }
                     }
                 }
             }
+        }
 
         // Dangerous usage of strncat..
         if (Token::Match(tok, "strncpy|strncat ( %varid% , %any% , %num% )", arrayInfo.varid))
