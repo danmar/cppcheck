@@ -89,7 +89,6 @@ void CheckOther::warningRedundantCode()
         if (! Token::simpleMatch(tok, "if ("))
             continue;
 
-        std::string varname;
         const Token *tok2 = tok->tokAt(2);
 
         /*
@@ -100,18 +99,11 @@ void CheckOther::warningRedundantCode()
          *   if (Foo::var)
          *
          **/
-
-        while (Token::Match(tok2, "%var% .|::"))
-        {
-            varname.append(tok2->str());
-            varname.append(tok2->next()->str());
-            tok2 = tok2->tokAt(2);
-        }
+        std::string varname = concatNames(&tok2);
 
         if (!Token::Match(tok2, "%var% ) {"))
             continue;
 
-        varname.append(tok2->str());
         tok2 = tok2->tokAt(3);
 
         /*
@@ -147,15 +139,8 @@ void CheckOther::warningRedundantCode()
             }
         }
 
-        std::string varname2;
-        while (Token::Match(tok2, "%var% ::|."))
-        {
-            varname2.append(tok2->str());
-            varname2.append(tok2->next()->str());
-            tok2 = tok2->tokAt(2);
-        }
+        std::string varname2 = concatNames(&tok2);
 
-        varname2.append(tok2->str());
         if (Token::Match(tok2, "%var%") && varname == varname2)
             tok2 = tok2->next();
         else
@@ -173,12 +158,26 @@ void CheckOther::warningRedundantCode()
             }
         }
 
-        if (!Token::Match(tok2, "; } !!else"))
+        /*
+         * Possible constructions:
+         *
+         * - if (%var%) { delete %var%; }
+         * - if (%var%) { delete %var%; %var% = 0; }
+         *
+         **/
+        if (Token::Match(tok2, "; } !!else"))
         {
-            continue;
+            redundantIfDelete0Error(tok);
         }
-
-        redundantIfDelete0Error(tok);
+        else if (Token::Match(tok2, "; %var%"))
+        {
+            tok2 = tok2->next();
+            std::string varname3 = concatNames(&tok2);
+            if (Token::Match(tok2, "%var% = 0 ; } !!else") && varname2 == varname3)
+            {
+                redundantIfDelete0Error(tok);
+            }
+        }
     }
 
 

@@ -237,7 +237,7 @@ private:
               "    if (p)\n"
               "    {\n"
               "        delete p;\n"
-              "        p = 0;\n"
+              "        z = 0;\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -255,6 +255,16 @@ private:
               "{\n"
               "    if (0 != g->p)\n"
               "        delete this->p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (0 != g->p)\n"
+              "    {\n"
+              "        delete g->p;\n"
+              "        g->z = 0;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -280,6 +290,16 @@ private:
         check("void foo()\n"
               "{\n"
               "    if (p)\n"
+              "    {\n"
+              "        delete p;\n"
+              "        p = 0;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (p)\n"
               "        delete p;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
@@ -288,6 +308,16 @@ private:
               "{\n"
               "    if (p != NULL)\n"
               "        delete p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    if (p != NULL)\n"
+              "    {\n"
+              "        delete p;\n"
+              "        p = NULL;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
 
@@ -317,6 +347,16 @@ private:
               "{\n"
               "    if (Foo::instance != NULL)\n"
               "        delete Foo::instance;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
+
+        check("void Foo::deleteInstance()\n"
+              "{\n"
+              "    if (Foo::instance != NULL)\n"
+              "    {\n"
+              "        delete Foo::instance;\n"
+              "        Foo::instance = NULL;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
     }

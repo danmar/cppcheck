@@ -287,6 +287,26 @@ private:
      * -# dereference pointer
      */
     void nullPointerConditionalAssignment();
+
+    /**
+     * @brief Used in warningRedundantCode()
+     * Iterates through the %var% tokens in a fully qualified name and concatenates them.
+     */
+    std::string concatNames(const Token **tok) const
+    {
+        std::string varname;
+        while (Token::Match(*tok, "%var% ::|."))
+        {
+            varname.append((*tok)->str());
+            varname.append((*tok)->next()->str());
+            *tok = (*tok)->tokAt(2);
+        }
+
+        if (Token::Match(*tok, "%var%"))
+            varname.append((*tok)->str());
+
+        return varname;
+    }
 };
 /// @}
 //---------------------------------------------------------------------------
