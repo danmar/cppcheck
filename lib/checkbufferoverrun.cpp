@@ -515,6 +515,12 @@ void CheckBufferOverrun::checkFunctionCall(const Token &tok, unsigned int par, c
                             bufferOverrun(&tok, arrayInfo.varname);
                         }
                     }
+
+                    else if (Token::Match(tok2, ", %any% ,|)") && tok2->next()->str()[0] == '\'')
+                    {
+                        sizeArgumentAsChar(tok2->next());
+                    }
+
                     break;
                 }
 
@@ -929,9 +935,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (Token::Match(tok, "memset|memcpy|memmove|memcmp|strncpy|fgets ( %varid% , %any% , %any% )", arrayInfo.varid) ||
             Token::Match(tok, "memset|memcpy|memmove|memcmp|fgets ( %var% , %varid% , %any% )", arrayInfo.varid))
         {
-            const Token *tokSz = tok->tokAt(6);
-            if (tokSz->str()[0] == '\'')
-                sizeArgumentAsChar(tok);
 
             if (_settings->_checkCodingStyle)
             {
