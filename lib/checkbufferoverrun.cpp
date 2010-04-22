@@ -390,7 +390,7 @@ static bool for_bailout(const Token * const tok1, unsigned int varid)
 
 void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arrayInfo, const std::string &strindex, bool condition_out_of_bounds, unsigned int counter_varid, const std::string &min_counter_value, const std::string &max_counter_value)
 {
-    const std::string pattern("%varid% [ " + strindex + " ]");
+    const std::string pattern((arrayInfo.varid ? std::string("%varid%") : arrayInfo.varname) + " [ " + strindex + " ]");
 
     int indentlevel2 = 0;
     for (; tok2; tok2 = tok2->next())
@@ -420,7 +420,7 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
             break;
         }
 
-        else if (counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty())
+        else if (arrayInfo.varid && counter_varid > 0 && !min_counter_value.empty() && !max_counter_value.empty())
         {
             int min_index = 0;
             int max_index = 0;

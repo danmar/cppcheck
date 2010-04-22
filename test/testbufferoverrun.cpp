@@ -410,6 +410,19 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (possible error) Array 'str[1]' index 1 out of bounds\n", errout.str());
         TODO_ASSERT_EQUALS("", errout.str());
+
+        check("struct foo\n"
+              "{\n"
+              "    char str[10];\n"
+              "};\n"
+              "\n"
+              "void x()\n"
+              "{\n"
+              "    foo f;\n"
+              "    for ( unsigned int i = 0; i < 64; ++i )\n"
+              "        f.str[i] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Buffer access out-of-bounds: f.str\n", errout.str());
     }
 
 

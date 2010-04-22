@@ -415,6 +415,7 @@ bool Token::Match(const Token *tok, const char pattern[], unsigned int varid)
             {
                 if (varid == 0)
                 {
+                    // TODO: Report this through ErrorLogger instead so these messages appear in the unit testing
                     std::cerr << "\n###### If you see this, there is a bug ######" << std::endl
                               << "Token::Match(\"" << pattern << "\", 0)" << std::endl;
                 }
