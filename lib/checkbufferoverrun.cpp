@@ -82,13 +82,22 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(int size, int index)
         reportError(_callStack, severity, "arrayIndexOutOfBounds", "Array index out of bounds");
 }
 
-void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, int index)
+void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<int> &index)
 {
     std::ostringstream oss;
     oss << "Array '" << arrayInfo.varname;
     for (unsigned int i = 0; i < arrayInfo.num.size(); ++i)
         oss << "[" << arrayInfo.num[i] << "]";
-    oss << "' index " << index << " out of bounds";
+    oss << "' index ";
+    if (index.size() == 1)
+        oss << index[0];
+    else
+    {
+        oss << arrayInfo.varname;
+        for (unsigned int i = 0; i < index.size(); ++i)
+            oss << "[" << index[i] << "]";
+    }
+    oss << " out of bounds";
     reportError(tok, Severity::error, "arrayIndexOutOfBounds", oss.str().c_str());
 }
 
@@ -860,17 +869,49 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
         else if (Token::Match(tok, "%varid% [ %num% ]", arrayInfo.varid))
         {
-            const int index = MathLib::toLongNumber(tok->strAt(2));
-            if (index >= (int)arrayInfo.num[0])
+            std::vector<int> indexes;
+            for (const Token *tok2 = tok->next(); Token::Match(tok2, "[ %num% ]"); tok2 = tok2->tokAt(3))
             {
+                const int index = MathLib::toLongNumber(tok2->strAt(1));
+                if (index < 0)
+                {
+                    indexes.clear();
+                    break;
+                }
+                indexes.push_back(index);
+            }
+            if (indexes.size() == arrayInfo.num.size())
+            {
+                // Check if the indexes point outside the whole array..
+                // char a[10][10];
+                // a[0][20]  <-- ok.
+                // a[9][20]  <-- error.
+
+                // total number of elements of array..
+                unsigned int totalElements = 1;
+
+                // total index..
+                unsigned int totalIndex = 0;
+
+                // calculate the totalElements and totalIndex..
+                for (unsigned int i = 0; i < indexes.size(); ++i)
+                {
+                    unsigned int ri = indexes.size() - 1 - i;
+                    totalIndex += indexes[ri] * totalElements;
+                    totalElements *= arrayInfo.num[ri];
+                }
+
                 // just taking the address?
                 const bool addr(Token::Match(tok->previous(), "[.&]") ||
                                 Token::simpleMatch(tok->tokAt(-2), "& ("));
 
-                // it's ok to take the address of the element past the array
-                if (!(addr && index == (int)arrayInfo.num[0]))
-                    arrayIndexOutOfBounds(tok, arrayInfo, index);
+                // Is totalIndex in bounds?
+                if (totalIndex > totalElements || (!addr && totalIndex == totalElements))
+                {
+                    arrayIndexOutOfBounds(tok, arrayInfo, indexes);
+                }
             }
+
         }
 
         // cin..
@@ -1688,7 +1729,9 @@ private:
                 CheckBufferOverrun *checkBufferOverrun = dynamic_cast<CheckBufferOverrun *>(c->owner);
                 if (checkBufferOverrun)
                 {
-                    checkBufferOverrun->arrayIndexOutOfBounds(tok, ai, c->value);
+                    std::vector<int> index;
+                    index.push_back(c->value);
+                    checkBufferOverrun->arrayIndexOutOfBounds(tok, ai, index);
                     break;
                 }
             }

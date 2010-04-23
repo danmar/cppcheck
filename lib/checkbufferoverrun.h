@@ -171,7 +171,7 @@ public:
 
     void arrayIndexOutOfBounds(const Token *tok, int size, int index);
     void arrayIndexOutOfBounds(int size, int index);
-    void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, int index);
+    void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<int> &index);
     void bufferOverrun(const Token *tok, const std::string &varnames = "");
     void dangerousStdCin(const Token *tok);
     void strncatUsage(const Token *tok);

@@ -922,46 +922,35 @@ private:
               "  char a[2][2];\n"
               "  a[2][1] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index 2 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index a[2][1] out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2];\n"
               "  a[1][2] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());	// catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index 2 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2]' index a[1][2] out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[2][1][1] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index 2 out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[2][1][1] out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[1][2][1] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());	// catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][2][1] out of bounds\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "  char a[2][2][2];\n"
               "  a[1][1][2] = 'a';\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());	// catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
-
-        check("void f()\n"
-              "{\n"
-              "  char a[2][2][2];\n"
-              "  a[1][1][2] = 'a';\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());	// catch changes
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][1][2] out of bounds\n", errout.str());
     }
 
     void array_index_switch_in_for()
