@@ -951,6 +951,24 @@ private:
               "  a[1][1][2] = 'a';\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2]' index a[1][1][2] out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  char a[10][10][10];\n"
+              "  a[2*3][4*3][2] = 'a';\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][12][2] out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  int i=2;\n"
+              "  int ii=10;\n"
+              "  char a[ii][ii][ii];\n"
+              "  a[i*3][4*ii][ii] = 'a';\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds\n", errout.str());
+
+
     }
 
     void array_index_switch_in_for()
