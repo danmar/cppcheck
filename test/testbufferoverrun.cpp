@@ -966,7 +966,7 @@ private:
               "  char a[ii][ii][ii];\n"
               "  a[i*3][4*ii][ii] = 'a';\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds\n", errout.str());
 
 
     }
