@@ -947,6 +947,13 @@ private:
 
         check("void f()\n"
               "{\n"
+              "  char a[2][2][2][2];\n"
+              "  a[1][2][1][1] = 'a';\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[2][2][2][2]' index a[1][2][1][1] out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
               "  char a[2][2][2];\n"
               "  a[1][1][2] = 'a';\n"
               "}\n");
@@ -966,7 +973,25 @@ private:
               "  char a[ii][ii][ii];\n"
               "  a[i*3][4*ii][ii] = 'a';\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[10][10][10]' index a[6][40][10] out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  int i=2;\n"
+              "  int ii=1;\n"
+              "  char a[ii][ii][ii];\n"
+              "  a[i][i][i] = 'a';\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[1][1][1]' index a[2][2][2] out of bounds\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "  int i=2;\n"
+              "  int ii=i*3;\n"
+              "  char a[ii][ii][ii];\n"
+              "  a[i*3][i*3][i] = 'a';\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[6][6][6]' index a[6][6][2] out of bounds\n", errout.str());
 
 
     }
