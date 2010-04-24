@@ -1993,10 +1993,15 @@ private:
     void checkOldStylePointerCast(const char code[])
     {
         // Tokenize..
-        Tokenizer tokenizer;
+        Tokenizer tokenizerCpp;
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.setVarId();
+        tokenizerCpp.tokenize(istr, "test.cpp");
+        tokenizerCpp.setVarId();
+
+        Tokenizer tokenizerC;
+        std::istringstream istr2(code);
+        tokenizerC.tokenize(istr2, "test.c");
+        tokenizerC.setVarId();
 
         // Clear the error buffer..
         errout.str("");
@@ -2004,8 +2009,12 @@ private:
         // Check for redundant code..
         Settings settings;
         settings._checkCodingStyle = true;
-        CheckOther checkOther(&tokenizer, &settings, this);
-        checkOther.warningOldStylePointerCast();
+
+        CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
+        checkOtherCpp.warningOldStylePointerCast();
+
+        CheckOther checkOtherC(&tokenizerC, &settings, this);
+        checkOtherC.warningOldStylePointerCast();
     }
 
     void oldStylePointerCast()
