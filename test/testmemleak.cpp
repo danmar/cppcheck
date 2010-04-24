@@ -381,6 +381,9 @@ private:
         TEST_CASE(knownFunctions);
 
         TEST_CASE(same_function_name);
+
+        // #1440 - Check function parameters also..
+        TEST_CASE(functionParameter);
     }
 
 
@@ -2687,6 +2690,15 @@ private:
               "    abc.a(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void functionParameter()
+    {
+        check("void a(char *p)\n"
+              "{\n"
+              "    p = malloc(100);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", errout.str());
     }
 };
 

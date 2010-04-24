@@ -193,10 +193,11 @@ public:
 
     /**
      * @brief %Check all variables in function scope
-     * @param tok The first '{' token of the function scope
+     * @param tok The first '{' token of the function body
+     * @param tok1 The '(' token in the function declaration
      * @param classmember Is this function a class member?
      */
-    void parseFunctionScope(const Token *tok, const bool classmember);
+    void parseFunctionScope(const Token *tok, const Token *tok1, const bool classmember);
 
     /**
      * @brief %Check if there is a "p = foo(p, .." and foo returns the argument (p)

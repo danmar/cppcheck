@@ -2108,10 +2108,26 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 // Checks for memory leaks inside function..
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const bool classmember)
+void CheckMemoryLeakInFunction::parseFunctionScope(const Token *tok, const Token *tok1, const bool classmember)
 {
     // Check locking/unlocking of global resources..
     checkScope(tok->next(), "", 0, classmember, 1);
+
+    // Locate parameters and check their usage..
+    for (const Token *tok2 = tok1; tok2; tok2 = tok2->next())
+    {
+        if (tok2 == tok)
+            break;
+        if (tok2->str() == ")")
+            break;
+        if (Token::Match(tok2, "[(,] %type% * %var% [,)]") && tok2->next()->isStandardType())
+        {
+            const std::string varname(tok2->strAt(3));
+            const unsigned int varid = tok2->tokAt(3)->varId();
+            const unsigned int sz = _tokenizer->sizeOfType(tok->next());
+            checkScope(tok->next(), varname, varid, classmember, sz);
+        }
+    }
 
     // Locate variable declarations and check their usage..
     unsigned int indentlevel = 0;
@@ -2187,9 +2203,10 @@ void CheckMemoryLeakInFunction::check()
         // Found a function scope
         if (Token::Match(tok, ") const| {"))
         {
+            const Token * const tok1 = tok->link();
             while (tok->str() != "{")
                 tok = tok->next();
-            parseFunctionScope(tok, classmember);
+            parseFunctionScope(tok, tok1, classmember);
             tok = tok->link();
             continue;
         }
