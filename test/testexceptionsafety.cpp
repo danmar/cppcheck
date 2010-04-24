@@ -36,6 +36,7 @@ private:
     {
         TEST_CASE(destructors);
         TEST_CASE(newnew);
+        TEST_CASE(switchnewnew);
         TEST_CASE(realloc);
         TEST_CASE(deallocThrow);
     }
@@ -121,6 +122,25 @@ private:
               "    add(a1);\n"
               "    A *a2 = new A;\n"
               "}\n", "");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void switchnewnew()
+    {
+        check("int *f(int x)\n"
+              "{\n"
+              "    int *p = 0;\n"
+              "    switch(x)\n"
+              "    {\n"
+              "        case 1:\n"
+              "            p = new int(10);\n"
+              "            break;\n"
+              "        case 2:\n"
+              "            p = new int(100);\n"
+              "            break;\n"
+              "    };\n"
+              "    return p;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

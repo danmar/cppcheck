@@ -190,6 +190,10 @@ void CheckExceptionSafety::unsafeNew()
 
         else if (Token::Match(tok, "[;{}] %var% ("))
         {
+            // False negatives: we don't handle switch cases properly so we just bail out.
+            if (tok->strAt(1) == "switch")
+                break;
+
             for (tok = tok->next(); tok && !Token::Match(tok, "[;{}]"); tok = tok->next())
             {
                 if (tok->str() == varname)
