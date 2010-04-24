@@ -42,8 +42,6 @@ private:
         TEST_CASE(delete1);
         TEST_CASE(delete2);
 
-        TEST_CASE(unreachable1);
-
         TEST_CASE(sprintf1);        // Dangerous usage of sprintf
         TEST_CASE(sprintf2);
         TEST_CASE(sprintf3);
@@ -115,7 +113,6 @@ private:
         CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.warningRedundantCode();
         checkOther.checkZeroDivision();
-        checkOther.unreachableCode();
         checkOther.checkMathFunctions();
         checkOther.checkEmptyStringTest();
     }
@@ -360,21 +357,6 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Redundant condition. It is safe to deallocate a NULL pointer\n", errout.str());
     }
-
-    void unreachable1()
-    {
-        check("void foo()\n"
-              "{\n"
-              "    switch (p)\n"
-              "    {\n"
-              "    default:\n"
-              "        return 0;\n"
-              "        break;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Unreachable code below a 'return'\n", errout.str());
-    }
-
 
 
     void sprintfUsage(const char code[])

@@ -402,55 +402,6 @@ void CheckOther::checkUnsignedDivision()
 
 
 
-
-
-//---------------------------------------------------------------------------
-// Unreachable code below a 'return'
-//---------------------------------------------------------------------------
-
-void CheckOther::unreachableCode()
-{
-    if (!_settings->_checkCodingStyle)
-        return;
-
-    const Token *tok = _tokenizer->tokens();
-    while ((tok = Token::findmatch(tok, "[;{}] return")) != NULL)
-    {
-        // Goto the 'return' token
-        tok = tok->next();
-
-        // Locate the end of the 'return' statement
-        while (tok && tok->str() != ";")
-            tok = tok->next();
-        while (tok && tok->next() && tok->next()->str() == ";")
-            tok = tok->next();
-
-        if (!tok)
-            break;
-
-        // If there is a statement below the return it is unreachable
-        /* original:
-                if (!Token::Match(tok, "; case|default|}|#") &&
-                    !Token::Match(tok, "; %var% :") &&
-                    !Token::simpleMatch(tok, "; break"))
-        */
-        if (Token::simpleMatch(tok, "; break"))
-        {
-            unreachableCodeError(tok->next());
-        }
-    }
-}
-
-void CheckOther::unreachableCodeError(const Token *tok)
-{
-    reportError(tok, Severity::style, "unreachableCode", "Unreachable code below a 'return'");
-}
-
-//---------------------------------------------------------------------------
-
-
-
-
 //---------------------------------------------------------------------------
 // Usage of function variables
 //---------------------------------------------------------------------------

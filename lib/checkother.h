@@ -70,7 +70,6 @@ public:
         checkOther.warningRedundantCode();
         checkOther.checkConstantFunctionParameter();
         checkOther.checkIncompleteStatement();
-        checkOther.unreachableCode();
         checkOther.checkEmptyStringTest();
         checkOther.postIncrement();
 
@@ -109,10 +108,6 @@ public:
 
     /** @brief %Check for unsigned division */
     void checkUnsignedDivision();
-
-    /** @brief %Check for unreachable code */
-    void unreachableCode();
-    void unreachableCodeError(const Token *tok);
 
     /** @brief %Check for unused function variables */
     void functionVariableUsage();
