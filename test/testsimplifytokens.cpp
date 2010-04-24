@@ -573,7 +573,7 @@ private:
     void declareArray()
     {
         const char code[] = "void f ( ) { char str [ ] = \"100\" ; }";
-        const char expected[] = "void f ( ) { char * str ; str = \"100\" ; }";
+        const char expected[] = "void f ( ) { char str [ 4 ] = \"100\" ; }";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -638,7 +638,7 @@ private:
                                 " char a[] = \"p\";\n"
                                 " ++a[0];\n"
                                 "}\n";
-            ASSERT_EQUALS("void f ( ) { char * a ; a = \"p\" ; ++ a [ 0 ] ; }", tok(code));
+            ASSERT_EQUALS("void f ( ) { char a [ 2 ] = \"p\" ; ++ a [ 0 ] ; }", tok(code));
         }
     }
 
@@ -865,7 +865,7 @@ private:
             const char code[] = "; const char str[] = \"1\"; sizeof(str);";
 
             std::ostringstream expected;
-            expected << "; const char * str ; str = \"1\" ; " << sizeofFromTokenizer("char")*2 << " ;";
+            expected << "; const char str [ 2 ] = \"1\" ; " << sizeofFromTokenizer("char")*2 << " ;";
 
             ASSERT_EQUALS(expected.str(), sizeof_(code));
         }
@@ -1308,11 +1308,10 @@ private:
                                 "}\n";
             const char expected[] = "void f ( ) "
                                     "{"
-                                    " const char * s ;"
-                                    " s = \"abcd\" ;"
+                                    " const char s [ 5 ] = \"abcd\" ;"
                                     " 4 ; "
                                     "}";
-            ASSERT_EQUALS(expected, tok(code));
+            TODO_ASSERT_EQUALS(expected, tok(code));
         }
 
     }

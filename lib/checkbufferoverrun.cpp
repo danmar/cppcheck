@@ -967,11 +967,40 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
 
 
         // Check function call..
-        if (Token::Match(tok, "%var% ( %varid% ,", arrayInfo.varid))
-            checkFunctionCall(*tok, 1, arrayInfo);
-        if (Token::Match(tok, "%var% ( %var% , %varid% ,", arrayInfo.varid))
-            checkFunctionCall(*tok, 2, arrayInfo);
+        if (Token::Match(tok, "%var% ("))
+        {
+            // 1st parameter..
+            if (Token::Match(tok->tokAt(2), "%varid% ,", arrayInfo.varid))
+                checkFunctionCall(*tok, 1, arrayInfo);
+            else if (Token::Match(tok->tokAt(2), "%varid% + %num% ,", arrayInfo.varid))
+            {
+                const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok->strAt(4))));
+                checkFunctionCall(*tok, 1, ai);
+            }
 
+            // goto 2nd parameter and check it..
+            for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                {
+                    tok2 = tok2->link();
+                    continue;
+                }
+                if (tok2->str() == ";" || tok2->str() == ")")
+                    break;
+                if (tok2->str() == ",")
+                {
+                    if (Token::Match(tok2, ", %varid% ,", arrayInfo.varid))
+                        checkFunctionCall(*tok, 2, arrayInfo);
+                    else if (Token::Match(tok2, ", %varid% + %num% ,", arrayInfo.varid))
+                    {
+                        const ArrayInfo ai(arrayInfo.limit(MathLib::toLongNumber(tok2->strAt(3))));
+                        checkFunctionCall(*tok, 2, ai);
+                    }
+                    break;
+                }
+            }
+        }
 
         if (_settings->_checkCodingStyle)
         {
@@ -1594,6 +1623,14 @@ CheckBufferOverrun::ArrayInfo::ArrayInfo(unsigned int id, const std::string &nam
     _num.push_back(n);
     _varid = id;
     _varname = name;
+}
+
+CheckBufferOverrun::ArrayInfo CheckBufferOverrun::ArrayInfo::limit(long value) const
+{
+    unsigned int n = 1;
+    for (unsigned int i = 0; i < num.size(); ++i)
+        n *= num[i];
+    return ArrayInfo(varid, varname, element_size, value > (int)n ? 0 : n - value);
 }
 
 bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &tokenizer)

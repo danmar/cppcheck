@@ -130,6 +130,9 @@ public:
          */
         ArrayInfo(unsigned int id, const std::string &name, unsigned int size1, unsigned int n);
 
+        /** Create a copy ArrayInfo where the number of elements have been limited by a value */
+        ArrayInfo limit(long value) const;
+
         /**
          * Declare array - set info
          * \param tok first token in array declaration

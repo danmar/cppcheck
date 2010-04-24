@@ -1414,6 +1414,12 @@ void Tokenizer::arraySize()
             if (Token::Match(tok2, "%any% } ;"))
                 tok->next()->insertToken(MathLib::toString<long>(sz));
         }
+
+        else if (Token::Match(tok, "%var% [ ] = %str% ;"))
+        {
+            unsigned int sz = tok->strAt(4).length() - 1;
+            tok->next()->insertToken(MathLib::toString<long>(sz));
+        }
     }
 }
 

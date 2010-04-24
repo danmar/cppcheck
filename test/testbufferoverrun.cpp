@@ -117,6 +117,7 @@ private:
         TEST_CASE(buffer_overrun_10);
         TEST_CASE(buffer_overrun_11);
         TEST_CASE(buffer_overrun_12);
+        TEST_CASE(buffer_overrun_13);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -1449,6 +1450,22 @@ private:
               "  delete a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+
+    void buffer_overrun_13()
+    {
+        // ticket #836
+        check("void f() {\n"
+              "  char a[10];\n"
+              "  memset(a+5, 0, 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds: a\n", errout.str());
+
+        check("void f() {\n"
+              "  char a[10];\n"
+              "  memmove(a, a+5, 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds: a\n", errout.str());
     }
 
     void sprintf1()
