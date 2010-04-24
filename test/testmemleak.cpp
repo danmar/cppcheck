@@ -295,6 +295,7 @@ private:
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
+        TEST_CASE(allocfunc3);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1666,6 +1667,19 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+    void allocfunc3()
+    {
+        check("static char *a()\n"
+              "{\n"
+              "    char *data = malloc(10);;"
+              "    return data;\n"
+              "}\n"
+              "static void b()\n"
+              "{\n"
+              "    char *p = a();\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
+    }
 
 
 

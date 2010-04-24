@@ -423,6 +423,12 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
             continue;
         }
 
+        if (tok->str() == ";")
+        {
+            tok = tok->next();
+            continue;
+        }
+
         if (tok->str() == "return")
         {
             if (varid > 0 && Token::Match(tok->next(), "%varid% ;", varid))
