@@ -1274,15 +1274,8 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         }
     }
 
-    // Remove __declspec(dllexport)
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        if (Token::simpleMatch(tok, "__declspec ( dllexport )"))
-        {
-            Token::eraseTokens(tok, tok->tokAt(4));
-            tok->deleteThis();
-        }
-    }
+    // Remove __declspec()
+    simplifyDeclspec();
 
     // remove calling conventions __cdecl, __stdcall..
     simplifyCallingConvention();
@@ -7080,7 +7073,7 @@ void Tokenizer::simplifyStructDecl()
 
 void Tokenizer::simplifyCallingConvention()
 {
-    const char * pattern = "__cdecl|__stdcall|__fastcall|__pascal|__thiscall|__fortran|__clrcall|WINAPI|APIENTRY|CALLBACK";
+    const char * pattern = "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near|WINAPI|APIENTRY|CALLBACK";
     while (Token::Match(_tokens, pattern))
     {
         _tokens->deleteThis();
@@ -7090,6 +7083,23 @@ void Tokenizer::simplifyCallingConvention()
         while (Token::Match(tok->next(), pattern))
         {
             tok->deleteNext();
+        }
+    }
+}
+
+void Tokenizer::simplifyDeclspec()
+{
+    while (Token::simpleMatch(_tokens, "__declspec (") && _tokens->next()->link() && _tokens->next()->link()->next())
+    {
+        Token::eraseTokens(_tokens, _tokens->next()->link()->next());
+        _tokens->deleteThis();
+    }
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "__declspec (") && tok->next()->link() && tok->next()->link()->next())
+        {
+            Token::eraseTokens(tok, tok->next()->link()->next());
+            tok->deleteThis();
         }
     }
 }

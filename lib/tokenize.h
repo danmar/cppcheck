@@ -429,6 +429,11 @@ public:
     bool simplifyDoWhileAddBracesHelper(Token *tok);
 
     /**
+     * Remove __declspec()
+     */
+    void simplifyDeclspec();
+
+    /**
      * Remove calling convention
      */
     void simplifyCallingConvention();
