@@ -5010,8 +5010,9 @@ bool Tokenizer::simplifyKnownVariables()
 
                     // Variable is used in calculation..
                     if (Token::Match(tok3, "[=+-*/[] %varid% [?+-*/;]]", varid) ||
-                        Token::Match(tok3, "[=+-*/[] %varid% <<", varid) ||
-                        Token::Match(tok3, "<< %varid% [+-*/;]]", varid))
+                        Token::Match(tok3, "[(=+-*/[] %varid% <<|>>", varid) ||
+                        Token::Match(tok3, "<< %varid% [+-*/;])]", varid) ||
+                        Token::Match(tok3, ">> %varid% [+-*/])]", varid))
                     {
                         tok3 = tok3->next();
                         tok3->str(value);

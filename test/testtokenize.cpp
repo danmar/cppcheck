@@ -1063,21 +1063,50 @@ private:
     void simplifyKnownVariables22()
     {
         // This testcase is related to ticket #1169
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int n = 10;\n"
-                            "    i = (n >> 1);\n"
-                            "}\n";
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int n = 10;\n"
+                                "    i = (n >> 1);\n"
+                                "}\n";
 
-        // Wanted result - Ticket #1169 can probably be closed when this works
-        TODO_ASSERT_EQUALS(
-            "void foo ( ) { int n ; n = 10 ; i = ( 10 >> 1 ) ; }",
-            simplifyKnownVariables(code));
+            ASSERT_EQUALS(
+                "void foo ( ) { int n ; n = 10 ; i = ( 10 >> 1 ) ; }",
+                simplifyKnownVariables(code));
+        }
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int n = 10;\n"
+                                "    i = (n << 1);\n"
+                                "}\n";
 
-        // Current result
-        ASSERT_EQUALS(
-            "void foo ( ) { int n ; n = 10 ; i = ( n >> 1 ) ; }",
-            simplifyKnownVariables(code));
+            ASSERT_EQUALS(
+                "void foo ( ) { int n ; n = 10 ; i = ( 10 << 1 ) ; }",
+                simplifyKnownVariables(code));
+        }
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int n = 10;\n"
+                                "    i = (1 << n);\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void foo ( ) { int n ; n = 10 ; i = ( 1 << 10 ) ; }",
+                simplifyKnownVariables(code));
+        }
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int n = 10;\n"
+                                "    i = (1 >> n);\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void foo ( ) { int n ; n = 10 ; i = ( 1 >> 10 ) ; }",
+                simplifyKnownVariables(code));
+        }
     }
 
     void simplifyKnownVariables23()
