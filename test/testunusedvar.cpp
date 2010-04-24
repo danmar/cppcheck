@@ -73,6 +73,7 @@ private:
         TEST_CASE(localvar8);
         TEST_CASE(localvar9); // ticket #1605
         TEST_CASE(localvar10);
+        TEST_CASE(localvar11);
         TEST_CASE(localvaralias);
         TEST_CASE(localvarasm);
 
@@ -639,6 +640,38 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n"
                       "[test.cpp:5]: (style) Unused variable: i\n"
                       "[test.cpp:7]: (style) Unused variable: i\n", errout.str());
+    }
+
+    void localvar11()
+    {
+        functionVariableUsage("void foo(int x)\n"
+                              "{\n"
+                              "    int a = 0;\n"
+                              "    if (x == 1)\n"
+                              "    {\n"
+                              "        a = 123;\n"    // redundant assignment
+                              "        return;\n"
+                              "    }\n"
+                              "    x = a;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());	// catch changes
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+
+        // The variable 'a' is initialized. But the initialized value is
+        // never used. It is only initialized for security reasons.
+        functionVariableUsage("void foo(int x)\n"
+                              "{\n"
+                              "    int a = 0;\n"
+                              "    if (x == 1)\n"
+                              "        a = 123;\n"
+                              "    else if (x == 2)\n"
+                              "        a = 456;\n"
+                              "    else\n"
+                              "        return;\n"
+                              "    x = a;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void localvaralias()
