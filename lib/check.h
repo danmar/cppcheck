@@ -101,6 +101,8 @@ protected:
         std::list<const Token *> callstack;
         if (tok)
             callstack.push_back(tok);
+        else if (severity == Severity::possibleError || severity == Severity::possibleStyle)
+            return;		// don't list inconclusive checks in the --errorlist output
         reportError(callstack, severity, id, msg);
     }
 
