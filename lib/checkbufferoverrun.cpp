@@ -460,6 +460,10 @@ void CheckBufferOverrun::parse_for_body(const Token *tok2, const ArrayInfo &arra
             }
 
             //printf("min_index = %d, max_index = %d, size = %d\n", min_index, max_index, size);
+            if (min_index < 0 || max_index < 0)
+            {
+                arrayIndexOutOfBounds(tok2, (int)arrayInfo.num[0], std::min(min_index, max_index));
+            }
             if (min_index >= (int)arrayInfo.num[0] || max_index >= (int)arrayInfo.num[0])
             {
                 arrayIndexOutOfBounds(tok2, (int)arrayInfo.num[0], std::max(min_index, max_index));

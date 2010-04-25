@@ -98,6 +98,7 @@ private:
         TEST_CASE(array_index_24); // ticket #1492 and #1539
         TEST_CASE(array_index_25); // ticket #1536
         TEST_CASE(array_index_26);
+        TEST_CASE(array_index_27);
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -900,6 +901,17 @@ private:
               "        a[i] = i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_27()
+    {
+        check("void f()\n"
+              "{\n"
+              "    int a[10];\n"
+              "    for (int i = 0; i < 10; i++)\n"
+              "        a[i-1] = a[i];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' index -1 out of bounds\n", errout.str());
     }
 
     void array_index_multidim()
