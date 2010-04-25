@@ -1456,6 +1456,15 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: p\n", errout.str());
 
+        checkUninitVar("static void foo(int x)\n"
+                       "{\n"
+                       "    int a;\n"
+                       "    if (x==1);\n"
+                       "    if (x==2);\n"
+                       "    x = a;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
+
         checkUninitVar("int foo()\n"
                        "{\n"
                        "    int i;\n"

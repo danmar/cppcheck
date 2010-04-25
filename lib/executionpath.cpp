@@ -20,16 +20,12 @@
 #include "executionpath.h"
 #include "token.h"
 #include <memory>
+#include <set>
 
 
 // default : bail out if the condition is has variable handling
 bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> & checks)
 {
-    if (Token::Match(tok.tokAt(-3), "!!else if ("))
-    {
-        ++ifinfo;
-    }
-
     unsigned int parlevel = 0;
     for (const Token *tok2 = &tok; tok2; tok2 = tok2->next())
     {
@@ -45,10 +41,19 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
             break;
         if (tok2->varId() != 0)
         {
-            if (ifinfo > 1)
-                return true;
-            else
-                bailOutVar(checks, tok2->varId());
+            bailOutVar(checks, tok2->varId());
+            for (std::list<ExecutionPath *>::iterator it = checks.begin(); it != checks.end();)
+            {
+                if ((*it)->varId > 0 && (*it)->numberOfIf >= 1)
+                {
+                    delete *it;
+                    checks.erase(it++);
+                }
+                else
+                {
+                    ++it;
+                }
+            }
         }
     }
 
@@ -182,6 +187,9 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
 
         if (tok->str() == "if")
         {
+            // what variable ids should the numberOfIf be counted for?
+            std::set<unsigned int> countif;
+
             std::list<ExecutionPath *> newchecks;
             while (tok->str() == "if")
             {
@@ -211,16 +219,41 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
 
                 // Recursively check into the if ..
                 {
+                    std::set<unsigned int> countif2;
                     std::list<ExecutionPath *> c;
-                    std::list<ExecutionPath *>::iterator it;
-                    for (it = checks.begin(); it != checks.end(); ++it)
-                        c.push_back((*it)->copy());
+                    if (checks.size() == 1)
+                        c.push_back(checks.front()->copy());
+                    else if (!checks.empty())
+                    {
+                        std::list<ExecutionPath *>::const_iterator it;
+                        it = checks.begin();
+                        while (++it != checks.end())
+                        {
+                            c.push_back((*it)->copy());
+                            countif2.insert((*it)->varId);
+                        }
+                    }
                     checkExecutionPaths_(tok->next(), c);
                     while (!c.empty())
                     {
-                        newchecks.push_back(c.back());
+                        bool duplicate = false;
+                        std::list<ExecutionPath *>::const_iterator it;
+                        for (it = checks.begin(); it != checks.end(); ++it)
+                        {
+                            if (*(*it) == *c.back())
+                            {
+                                duplicate = true;
+                                countif2.erase((*it)->varId);
+                                break;
+                            }
+                        }
+                        if (!duplicate)
+                            newchecks.push_back(c.back());
                         c.pop_back();
                     }
+
+                    // Add countif2 ids to countif..
+                    countif.insert(countif2.begin(), countif2.end());
                 }
 
                 // goto "}"
@@ -245,9 +278,16 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
                 }
             }
 
+            // Add newchecks to checks..
+            std::copy(newchecks.begin(), newchecks.end(), std::back_inserter(checks));
+
+            // Increase numberOfIf
             std::list<ExecutionPath *>::iterator it;
-            for (it = newchecks.begin(); it != newchecks.end(); ++it)
-                checks.push_back(*it);
+            for (it = checks.begin(); it != checks.end(); ++it)
+            {
+                if (countif.find((*it)->varId) != countif.end())
+                    (*it)->numberOfIf++;
+            }
         }
 
 

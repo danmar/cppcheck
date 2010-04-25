@@ -1709,6 +1709,13 @@ private:
         return new ExecutionPathBufferOverrun(*this);
     }
 
+    /** is other execution path equal? */
+    bool is_equal(const ExecutionPath *e) const
+    {
+        const ExecutionPathBufferOverrun *c = static_cast<const ExecutionPathBufferOverrun *>(e);
+        return (value == c->value);
+    }
+
     /** @brief buffer information */
     const std::map<unsigned int, CheckBufferOverrun::ArrayInfo> &arrayInfo;
 

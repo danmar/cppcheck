@@ -1691,6 +1691,13 @@ private:
     /** no implementation => compiler error if used by accident */
     void operator=(const CheckNullpointer &);
 
+    /** is other execution path equal? */
+    bool is_equal(const ExecutionPath *e) const
+    {
+        const CheckNullpointer *c = static_cast<const CheckNullpointer *>(e);
+        return (varname == c->varname && null == c->null);
+    }
+
     /** variable name for this check (empty => dummy check) */
     const std::string varname;
 
@@ -1862,6 +1869,13 @@ private:
     CheckUninitVar(Check *c, unsigned int v, const std::string &name, bool p, bool a)
         : ExecutionPath(c, v), varname(name), pointer(p), array(a), alloc(false), strncpy_(false)
     {
+    }
+
+    /** is other execution path equal? */
+    bool is_equal(const ExecutionPath *e) const
+    {
+        const CheckUninitVar *c = static_cast<const CheckUninitVar *>(e);
+        return (varname == c->varname && pointer == c->pointer && array == c->array && alloc == c->alloc && strncpy_ == c->strncpy_);
     }
 
     /** variable name for this check */

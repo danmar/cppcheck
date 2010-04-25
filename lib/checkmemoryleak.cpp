@@ -2722,6 +2722,13 @@ private:
     {
     }
 
+    /** is other execution path equal? */
+    bool is_equal(const ExecutionPath *e) const
+    {
+        const CheckLocalLeaks *c = static_cast<const CheckLocalLeaks *>(e);
+        return (allocated == c->allocated && varname == c->varname);
+    }
+
     /** Is variable allocated? */
     bool allocated;
 
