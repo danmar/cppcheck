@@ -192,6 +192,7 @@ private:
         TEST_CASE(pointeralias1);
         TEST_CASE(pointeralias2);
         TEST_CASE(pointeralias3);
+        TEST_CASE(pointeralias4);
 
         TEST_CASE(reduceConstness);
 
@@ -4122,6 +4123,23 @@ private:
                                 " if ( ab ) { p = & i ; }"
                                 " else { p = & j ; }"
                                 " * p = 0 ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void pointeralias4()
+    {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int a[10];\n"
+                            "    int *p = &a[0];\n"
+                            "    *p = 0;\n"
+                            "}\n";
+        const char expected[] = "void f ( ) "
+                                "{"
+                                " int a [ 10 ] ;"
+                                " int * p ; p = & a [ 0 ] ;"
+                                " * a = 0 ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code));
     }

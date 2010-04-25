@@ -4896,7 +4896,8 @@ bool Tokenizer::simplifyKnownVariables()
                       Token::Match(tok2, "%var% [ ] = %str% ;") ||
                       Token::Match(tok2, "%var% = %bool% ;") ||
                       Token::Match(tok2, "%var% = %var% ;") ||
-                      Token::Match(tok2, "%var% = & %var% ;")))
+                      Token::Match(tok2, "%var% = & %var% ;") ||
+                      Token::Match(tok2, "%var% = & %var% [ 0 ] ;")))
             {
                 const unsigned int varid = tok2->varId();
                 if (varid == 0)
@@ -5008,7 +5009,7 @@ bool Tokenizer::simplifyKnownVariables()
                     }
 
                     // Variable is used in calculation..
-                    if (Token::Match(tok3, "[=+-*/[] %varid% [?+-*/;]]", varid) ||
+                    if (Token::Match(tok3, "[=+-*/[] %varid% [=?+-*/;]]", varid) ||
                         Token::Match(tok3, "[(=+-*/[] %varid% <<|>>", varid) ||
                         Token::Match(tok3, "<< %varid% [+-*/;])]", varid) ||
                         Token::Match(tok3, ">> %varid% [+-*/])]", varid))
