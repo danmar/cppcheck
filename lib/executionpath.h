@@ -41,7 +41,7 @@ protected:
     virtual bool is_equal(const ExecutionPath *) const = 0;
 
 public:
-    ExecutionPath(Check *c, unsigned int id) : varId(id), owner(c), numberOfIf(0)
+    ExecutionPath(Check *c, unsigned int id) : owner(c), numberOfIf(0), varId(id)
     { }
 
     virtual ~ExecutionPath()
