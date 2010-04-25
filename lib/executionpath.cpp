@@ -21,6 +21,7 @@
 #include "token.h"
 #include <memory>
 #include <set>
+#include <iterator>
 
 
 // default : bail out if the condition is has variable handling
