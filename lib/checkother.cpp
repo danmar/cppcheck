@@ -45,8 +45,8 @@ CheckOther instance;
 
 void CheckOther::warningOldStylePointerCast()
 {
-    if (!_settings->_checkCodingStyle || 
-		(_tokenizer->tokens() && _tokenizer->fileLine(_tokenizer->tokens()).find(".cpp") == std::string::npos))
+    if (!_settings->_checkCodingStyle ||
+        (_tokenizer->tokens() && _tokenizer->fileLine(_tokenizer->tokens()).find(".cpp") == std::string::npos))
         return;
 
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
