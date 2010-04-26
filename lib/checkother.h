@@ -59,6 +59,7 @@ public:
         checkOther.functionVariableUsage();
         checkOther.checkVariableScope();
         checkOther.checkStructMemberUsage();
+        checkOther.strPlusChar();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -73,7 +74,6 @@ public:
         checkOther.checkEmptyStringTest();
         checkOther.postIncrement();
 
-        checkOther.strPlusChar();
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
