@@ -72,6 +72,8 @@ private:
         TEST_CASE(sizeof2);
         TEST_CASE(sizeof3);
 
+        TEST_CASE(arrayInfo);
+
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
         TEST_CASE(array_index_3);
@@ -270,6 +272,25 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+
+    void arrayInfo()
+    {
+        // Tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr("XY(1) const int a[2] = { 1, 2 };");
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Clear the error buffer..
+        errout.str("");
+
+        tokenizer.simplifySizeof();
+
+        CheckBufferOverrun::ArrayInfo ai;
+        ASSERT_EQUALS(false, ai.declare(tokenizer.tokens()->tokAt(5), tokenizer));
+    }
+
 
     void array_index_1()
     {

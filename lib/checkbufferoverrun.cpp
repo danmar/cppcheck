@@ -1670,6 +1670,8 @@ bool CheckBufferOverrun::ArrayInfo::declare(const Token *tok, const Tokenizer &t
 
     _varname = vartok->str();
     _varid = vartok->varId();
+    if (!varid)
+        return false;
 
     const Token *atok = vartok->tokAt(2);
 
