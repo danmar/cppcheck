@@ -694,6 +694,12 @@ private:
 
         ASSERT_EQUALS(";", simplifycode("; do { dealloc ; alloc ; } while(var) ;"));
 
+        // scope..
+        // current result - ok
+        ASSERT_EQUALS("; assign ; dealloc ; if alloc ; }", simplifycode("; assign ; { dealloc ; if alloc ; } }"));
+        // wanted result - better
+        TODO_ASSERT_EQUALS("; assign ; if alloc ; }", simplifycode("; assign ; { dealloc ; if alloc ; } }"));
+
         // callfunc..
         ASSERT_EQUALS("; callfunc ;\n;", simplifycode(";callfunc;"));
 

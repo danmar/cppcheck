@@ -1283,6 +1283,34 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok, bool &all)
             tok2->deleteNext();
     }
 
+    // remove redundant braces..
+    for (Token *start = tok; start; start = start->next())
+    {
+        if (Token::simpleMatch(start, "; {"))
+        {
+            // the "link" doesn't work here. Find the end brace..
+            unsigned int indent = 0;
+            for (Token *end = start; end; end = end->next())
+            {
+                if (end->str() == "{")
+                    ++indent;
+                else if (end->str() == "}")
+                {
+                    if (indent <= 1)
+                    {
+                        if (indent == 1 && Token::Match(end->previous(), "[;{}] } %any%"))
+                        {
+                            start->deleteNext();
+                            end->deleteThis();
+                        }
+                        break;
+                    }
+                    --indent;
+                }
+            }
+        }
+    }
+
     // reduce the code..
     bool done = false;
     while (! done)
