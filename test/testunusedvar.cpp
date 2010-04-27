@@ -635,7 +635,7 @@ private:
                               "    } else {\n"
                               "        int i;\n"
                               "    }\n"
-                              "    int i = 0;\n"
+                              "    i = 0;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used\n"
                       "[test.cpp:5]: (style) Unused variable: i\n"

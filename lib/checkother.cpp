@@ -422,10 +422,10 @@ static bool isOp(const Token *tok)
                  Token::Match(tok, "[+-*/%&!~|^,[])?:]")));
 }
 
-class VariableScope
+class Variables
 {
 public:
-    /** Store information about variable usage in this scope */
+    /** Store information about variable usage */
     class VariableUsage
     {
     public:
@@ -465,29 +465,8 @@ public:
         bool _aliased;  // pointer or reference
     };
 
-    typedef std::map<std::string, VariableUsage> VariableMap;
+    typedef std::map<unsigned int, VariableUsage> VariableMap;
 
-private:
-    VariableMap _varUsage;
-    std::vector<VariableScope*> _varScope;
-    VariableScope *_varScopeBack;
-
-public:
-    VariableScope(VariableScope *back = 0) : _varScopeBack(back) { }
-    ~VariableScope()
-    {
-        for (unsigned int i = 0; i < _varScope.size(); i++)
-            delete _varScope[i];
-    }
-    VariableScope *addScope()
-    {
-        _varScope.push_back(new VariableScope(this));
-        return _varScope.back();
-    }
-    VariableScope *lastScope()
-    {
-        return _varScopeBack;
-    }
     void clear()
     {
         _varUsage.clear();
@@ -497,107 +476,72 @@ public:
                 bool write_ = false,
                 bool aliased = false)
     {
-        _varUsage.insert(std::make_pair(name->str(), VariableUsage(name, type, false, write_, false, aliased)));
+        _varUsage.insert(std::make_pair(name->varId(), VariableUsage(name, type, false, write_, false, aliased)));
     }
     const VariableMap &varUsage() const
     {
         return _varUsage;
     }
-    void read(const Token *tok);
-    void write(const Token *tok);
-    void use(const Token *tok);
-    void modified(const Token *tok);
-    void checkUsage(CheckOther * check);
+    void read(unsigned int varid);
+    void write(unsigned int varid);
+    void use(unsigned int varid);
+    void modified(unsigned int varid);
+    VariableUsage *find(unsigned int varid);
+
+private:
+    VariableMap _varUsage;
 };
 
-void VariableScope::read(const Token *tok)
+void Variables::read(unsigned int varid)
 {
-    VariableScope	* scope = this;
+    VariableUsage *usage = find(varid);
 
-    while (scope)
+    if (usage)
     {
-        VariableMap::iterator i = scope->_varUsage.find(tok->str());
-        if (i != scope->varUsage().end())
-        {
-            i->second._read = true;
-            return;
-        }
-
-        scope = scope->lastScope();
-    }
-}
-void VariableScope::write(const Token *tok)
-{
-    VariableScope	* scope = this;
-
-    while (scope)
-    {
-        VariableMap::iterator i = scope->_varUsage.find(tok->str());
-        if (i != scope->varUsage().end())
-        {
-            i->second._write = true;
-            return;
-        }
-
-        scope = scope->lastScope();
-    }
-}
-void VariableScope::use(const Token *tok)
-{
-    VariableScope	* scope = this;
-
-    while (scope)
-    {
-        VariableMap::iterator i = scope->_varUsage.find(tok->str());
-        if (i != scope->varUsage().end())
-        {
-            i->second.use();
-            return;
-        }
-
-        scope = scope->lastScope();
-    }
-}
-void VariableScope::modified(const Token *tok)
-{
-    VariableScope	* scope = this;
-
-    while (scope)
-    {
-        VariableMap::iterator i = scope->_varUsage.find(tok->str());
-        if (i != scope->varUsage().end())
-        {
-            i->second._modified = true;
-            return;
-        }
-
-        scope = scope->lastScope();
+        usage->_read = true;
     }
 }
 
-void VariableScope::checkUsage(CheckOther *checkOther)
+void Variables::write(unsigned int varid)
 {
-    VariableMap::const_iterator it;
-    for (it = _varUsage.begin(); it != _varUsage.end(); ++it)
+    VariableUsage *usage = find(varid);
+
+    if (usage)
     {
-        const std::string &varname = it->first;
-        const VariableUsage &usage = it->second;
+        usage->_write = true;
+    }
+}
 
-        if (usage.unused() && !usage._modified)
-            checkOther->unusedVariableError(usage._name, varname);
+void Variables::use(unsigned int varid)
+{
+    VariableUsage *usage = find(varid);
 
-        else if (usage._modified & !usage._write)
-            checkOther->unassignedVariableError(usage._name, varname);
+    if (usage)
+    {
+        usage->use();
+    }
+}
+void Variables::modified(unsigned int varid)
+{
+    VariableUsage *usage = find(varid);
 
-        else if (!usage._read && !usage._modified && !usage._aliased)
-            checkOther->unreadVariableError(usage._name, varname);
+    if (usage)
+    {
+        usage->_modified = true;
+    }
+}
 
-        else if (!usage._write)
-            checkOther->unassignedVariableError(usage._name, varname);
+Variables::VariableUsage *Variables::find(unsigned int varid)
+{
+    if (varid)
+    {
+        VariableMap::iterator i = _varUsage.find(varid);
+
+        if (i != _varUsage.end())
+            return &i->second;
     }
 
-    for (unsigned int i = 0 ; i < _varScope.size(); i++)
-        _varScope[i]->checkUsage(checkOther);
+    return 0;
 }
 
 void CheckOther::functionVariableUsage()
@@ -618,25 +562,19 @@ void CheckOther::functionVariableUsage()
         // Find next scope that will be checked next time..
         token = Token::findmatch(token->link(), ") const| {");
 
-        // Varname, usage {read, write, modified, ...}
-        // there can be multiple variables with the same name but in different scopes
-        VariableScope	rootScope;
-        VariableScope	* varScope = &rootScope;
+        // varId, usage {read, write, modified}
+        Variables    variables;
 
-        unsigned int indentlevel = 1;
+        unsigned int indentlevel = 0;
         for (const Token *tok = tok1; tok; tok = tok->next())
         {
-            if (tok->str() == "{" && tok != tok1)
-            {
+            if (tok->str() == "{")
                 ++indentlevel;
-                varScope = varScope->addScope();
-            }
             else if (tok->str() == "}")
             {
                 --indentlevel;
                 if (indentlevel == 0)
                     break;
-                varScope = varScope->lastScope();
             }
             else if (Token::Match(tok, "struct|union|class {") ||
                      Token::Match(tok, "struct|union|class %type% {"))
@@ -650,136 +588,168 @@ void CheckOther::functionVariableUsage()
 
             if (Token::Match(tok, "[;{}] asm ( ) ;"))
             {
-                varScope->clear();
+                variables.clear();
                 break;
             }
 
-            // standard type declaration: int i;
-            if (Token::Match(tok, "[;{}] %type% %var% ;|=") && tok->next()->isStandardType())
+            // standard type declaration with possible initialization
+            // int i; int j = 0;
+            if (Token::Match(tok, "[;{}] %type% %var% ;|=") &&
+                tok->next()->isStandardType())
             {
-                varScope->addVar(tok->tokAt(2), tok->next(), tok->tokAt(3)->str() == "=");
+                variables.addVar(tok->tokAt(2), tok->next(), tok->tokAt(3)->str() == "=");
                 tok = tok->tokAt(2);
             }
 
-            // standard type declaration and initialization using constructor: int i(0);
-            else if (Token::Match(tok, "[;{}] %type% %var% ( %any% ) ;") && tok->next()->isStandardType())
+            // standard type declaration and initialization using constructor
+            // int i(0);
+            else if (Token::Match(tok, "[;{}] %type% %var% ( %any% ) ;") &&
+                     tok->next()->isStandardType())
             {
-                varScope->addVar(tok->tokAt(2), tok->next(), true);
+                variables.addVar(tok->tokAt(2), tok->next(), true);
 
                 // check if a local variable is used to initialize this variable
                 if (tok->tokAt(4)->varId() > 0)
-                    varScope->read(tok->tokAt(4));
+                    variables.read(tok->tokAt(4)->varId());
                 tok = tok->tokAt(5);
             }
 
-            // standard type decelaration of array of with optional initialization: int i[10]; int j[2] = { 0, 1 };
-            else if (Token::Match(tok, "[;{}] %type% %var% [ %num% ] ;|=") && tok->next()->isStandardType())
+            // standard type decelaration of array of with possible initialization
+            // int i[10]; int j[2] = { 0, 1 };
+            else if (Token::Match(tok, "[;{}] %type% %var% [ %num% ] ;|=") &&
+                     tok->next()->isStandardType())
             {
-                varScope->addVar(tok->tokAt(2), tok->next(), tok->tokAt(6)->str() == "=", false);
+                variables.addVar(tok->tokAt(2), tok->next(), tok->tokAt(6)->str() == "=", false);
                 tok = tok->tokAt(5);
             }
 
-            // pointer or reference declaration with optional initialization: int * i; int * j = 0;
+            // pointer or reference declaration with possible initialization
+            // int * i; int * j = 0;
             else if (Token::Match(tok, "[;{}] %type% *|& %var% ;|="))
             {
                 if (tok->next()->str() != "return")
                 {
-                    varScope->addVar(tok->tokAt(3), tok->next(), tok->tokAt(4)->str() == "=", true);
+                    variables.addVar(tok->tokAt(3), tok->next(), tok->tokAt(4)->str() == "=", true);
                     tok = tok->tokAt(3);
                 }
             }
 
-            // const pointer or reference declaration with optional initialization: const int * i; const int * j = 0;
+            // const pointer or reference declaration with possible initialization
+            // const int * i; const int * j = 0;
             else if (Token::Match(tok, "[;{}] const %type% *|& %var% ;|="))
             {
-                varScope->addVar(tok->tokAt(4), tok->tokAt(2), tok->tokAt(5)->str() == "=", true);
+                variables.addVar(tok->tokAt(4), tok->tokAt(2), tok->tokAt(5)->str() == "=", true);
                 tok = tok->tokAt(4);
             }
 
-            // pointer or reference of struct or union declaration with optional initialization: struct s * i; struct s * j = 0;
+            // pointer or reference of struct or union declaration with possible initialization
+            // struct s * i; struct s * j = 0;
             else if (Token::Match(tok, "[;{}] struct|union %type% *|& %var% ;|="))
             {
-                varScope->addVar(tok->tokAt(4), tok->tokAt(2), tok->tokAt(5)->str() == "=", true);
+                variables.addVar(tok->tokAt(4), tok->tokAt(2), tok->tokAt(5)->str() == "=", true);
                 tok = tok->tokAt(4);
             }
 
-            // const pointer or reference of struct or union declaration with optional initialization: const struct s * i; const struct s * j = 0;
+            // const pointer or reference of struct or union declaration with possible initialization
+            // const struct s * i; const struct s * j = 0;
             else if (Token::Match(tok, "[;{}] const struct|union %type% *|& %var% ;|="))
             {
-                varScope->addVar(tok->tokAt(5), tok->tokAt(3), tok->tokAt(6)->str() == "=", true);
+                variables.addVar(tok->tokAt(5), tok->tokAt(3), tok->tokAt(6)->str() == "=", true);
                 tok = tok->tokAt(5);
             }
 
-            else if (Token::Match(tok, "[;{}] %type% &|* %var% ( %any% ) ;") && (tok->next()->isStandardType() || tok->next()->str() == "void"))
+            // pointer or reference declaration with initialization using constructor
+            // int * i(j); int * k(i);
+            else if (Token::Match(tok, "[;{}] %type% &|* %var% ( %any% ) ;") &&
+                     (tok->next()->isStandardType() || tok->next()->str() == "void"))
             {
-                varScope->addVar(tok->tokAt(3), tok->next(), true, true);
+                variables.addVar(tok->tokAt(3), tok->next(), true, true);
 
                 // check if a local variable is used to initialize this variable
                 if (tok->tokAt(5)->varId() > 0)
                 {
                     if (tok->tokAt(2)->str() == "&")
-                        varScope->read(tok->tokAt(5));
+                        variables.read(tok->tokAt(5)->varId());
                     else
-                        varScope->use(tok->tokAt(5));
+                        variables.use(tok->tokAt(5)->varId());
                 }
                 tok = tok->tokAt(6);
             }
 
-            else if (Token::Match(tok, "[;{}] %type% *|& %var% [ %num% ] ;|=") && (tok->next()->isStandardType() || tok->next()->str() == "void"))
+            else if (Token::Match(tok, "[;{}] %type% *|& %var% [ %num% ] ;|=") &&
+                     (tok->next()->isStandardType() || tok->next()->str() == "void"))
             {
-                varScope->addVar(tok->tokAt(3), tok->next(), tok->tokAt(7)->str() == "=", true);
+                variables.addVar(tok->tokAt(3), tok->next(), tok->tokAt(7)->str() == "=", true);
                 tok = tok->tokAt(6);
             }
 
-            else if (Token::Match(tok, "[;{}] const %type% *|& %var% [ %num% ] ;|=") && (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void"))
+            else if (Token::Match(tok, "[;{}] const %type% *|& %var% [ %num% ] ;|=") &&
+                     (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void"))
             {
-                varScope->addVar(tok->tokAt(4), tok->next(), tok->tokAt(8)->str() == "=", true);
+                variables.addVar(tok->tokAt(4), tok->next(), tok->tokAt(8)->str() == "=", true);
                 tok = tok->tokAt(7);
             }
 
             else if (Token::Match(tok, "delete|return %var%"))
-                varScope->read(tok->next());
+                variables.read(tok->next()->varId());
 
             else if (Token::Match(tok, "%var% ="))
-                varScope->write(tok);
+                variables.write(tok->varId());
 
             else if (Token::Match(tok, "%var% [") && Token::Match(tok->next()->link(), "] ="))
-                varScope->write(tok);
+                variables.write(tok->varId());
 
             else if (Token::Match(tok, "else %var% ="))
-                varScope->write(tok->next());
+                variables.write(tok->next()->varId());
 
             else if (Token::Match(tok, ">>|& %var%"))
-                varScope->use(tok->next());    // use = read + write
+                variables.use(tok->next()->varId());    // use = read + write
 
             else if (Token::Match(tok, "[(,] %var% [,)]"))
-                varScope->use(tok->next());   // use = read + write
+                variables.use(tok->next()->varId());   // use = read + write
 
             else if (Token::Match(tok, " %var% ."))
-                varScope->use(tok);   // use = read + write
+                variables.use(tok->varId());   // use = read + write
 
             else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) &&
                      (Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false")))
-                varScope->read(tok->next());
+                variables.read(tok->next()->varId());
 
             else if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
-                varScope->modified(tok->next());
+                variables.modified(tok->next()->varId());
 
             else if (Token::Match(tok, "%var%") && (tok->next()->str() == ")" || isOp(tok->next())))
-                varScope->read(tok);
+                variables.read(tok->varId());
 
             else if (Token::Match(tok, "; %var% ;"))
-                varScope->read(tok->next());
+                variables.read(tok->next()->varId());
 
             else if (Token::Match(tok, "++|-- %var%"))
-                varScope->modified(tok->next());
+                variables.modified(tok->next()->varId());
 
             else if (Token::Match(tok, "%var% ++|--"))
-                varScope->modified(tok);
+                variables.modified(tok->varId());
         }
 
         // Check usage of all variables in the current scope..
-        rootScope.checkUsage(this);
+        Variables::VariableMap::const_iterator it;
+        for (it = variables.varUsage().begin(); it != variables.varUsage().end(); ++it)
+        {
+            const Variables::VariableUsage &usage = it->second;
+            const std::string &varname = usage._name->str();
+
+            if (usage.unused() && !usage._modified)
+                unusedVariableError(usage._name, varname);
+
+            else if (usage._modified & !usage._write)
+                unassignedVariableError(usage._name, varname);
+
+            else if (!usage._read && !usage._modified && !usage._aliased)
+                unreadVariableError(usage._name, varname);
+
+            else if (!usage._write)
+                unassignedVariableError(usage._name, varname);
+        }
     }
 }
 
