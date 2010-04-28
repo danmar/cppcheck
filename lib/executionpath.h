@@ -50,6 +50,9 @@ public:
     /** Implement this in each derived class. This function must create a copy of the current instance */
     virtual ExecutionPath *copy() = 0;
 
+    /** print checkdata */
+    void print() const;
+
     /** number of if blocks */
     unsigned int numberOfIf;
 

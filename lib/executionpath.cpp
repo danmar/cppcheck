@@ -22,6 +22,7 @@
 #include <memory>
 #include <set>
 #include <iterator>
+#include <iostream>
 
 
 // default : bail out if the condition is has variable handling
@@ -59,6 +60,20 @@ bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> 
     }
 
     return false;
+}
+
+
+void ExecutionPath::print() const
+{
+    std::cout << " varId=" << varId
+              << " numberOfIf=" << numberOfIf
+              << "\n";
+}
+
+static void printchecks(const std::list<ExecutionPath *> &checks)
+{
+    for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
+        (*it)->print();
 }
 
 
@@ -222,16 +237,16 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
                 {
                     std::set<unsigned int> countif2;
                     std::list<ExecutionPath *> c;
-                    if (checks.size() == 1)
-                        c.push_back(checks.front()->copy());
-                    else if (!checks.empty())
+                    if (!checks.empty())
                     {
                         std::list<ExecutionPath *>::const_iterator it;
-                        it = checks.begin();
-                        while (++it != checks.end())
+                        for (it = checks.begin(); it != checks.end(); ++it)
                         {
-                            c.push_back((*it)->copy());
-                            countif2.insert((*it)->varId);
+                            if ((*it)->varId != 0)
+                            {
+                                c.push_back((*it)->copy());
+                                countif2.insert((*it)->varId);
+                            }
                         }
                     }
                     checkExecutionPaths_(tok->next(), c);

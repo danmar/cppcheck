@@ -1570,6 +1570,19 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void foo(long verbose,bool bFlag)\n"
+                       "{\n"
+                       "  double t;\n"
+                       "  if (bFlag)\n"
+                       "  {\n"
+                       "    if (verbose)\n"
+                       "      t = 1;\n"
+                       "    if (verbose)\n"
+                       "      std::cout << (12-t);\n"
+                       "  }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // switch..
         checkUninitVar("char * f()\n"
                        "{\n"
