@@ -1782,7 +1782,7 @@ private:
                 bailOutVar(checks, tok.varId());
         }
 
-        if (Token::simpleMatch(&tok, "* 0"))
+        else if (Token::simpleMatch(&tok, "* 0"))
         {
             if (Token::Match(tok.previous(), "[;{}=+-/(,]") ||
                 Token::Match(tok.previous(), "return|<<"))
@@ -1793,6 +1793,15 @@ private:
                     checkOther->nullPointerError(&tok);
                 }
             }
+        }
+
+        else if (tok.str() == "delete")
+        {
+            const Token *ret = tok.next();
+            if (Token::simpleMatch(ret, "[ ]"))
+                ret = ret->tokAt(2);
+            if (Token::Match(ret, "%var% ;"))
+                return ret->next();
         }
 
         return &tok;

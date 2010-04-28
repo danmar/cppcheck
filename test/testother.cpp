@@ -1020,6 +1020,16 @@ private:
                          "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
+        checkNullPointer("void f()\n"
+                         "{\n"
+                         "    char *c = 0;\n"
+                         "    {\n"
+                         "        delete c;\n"
+                         "    }\n"
+                         "    c[0] = 0;\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Possible null pointer dereference: c\n", errout.str());
+
         // no false positive..
         checkNullPointer("static void foo()\n"
                          "{\n"
