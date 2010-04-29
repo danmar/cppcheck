@@ -1325,15 +1325,53 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
         Token::createMutualLinks(tok->tokAt(2), tok->tokAt(3));
     }
 
-    // Remove "volatile" and "inline"
-    while (Token::Match(_tokens, "volatile|inline"))
+    // Remove "volatile", "inline" and register
+    while (Token::Match(_tokens, "volatile|inline|register"))
     {
         _tokens->deleteThis();
     }
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        while (Token::Match(tok->next(), "volatile|inline"))
+        while (Token::Match(tok->next(), "volatile|inline|register"))
         {
+            tok->deleteNext();
+        }
+    }
+
+    // Remove __builtin_expect, likely and unlikely
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
+        {
+            unsigned int parlevel = 0;
+            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
+            {
+                if (tok2->str() == "(")
+                    ++parlevel;
+                else if (tok2->str() == ")")
+                {
+                    if (parlevel <= 1)
+                        break;
+                    --parlevel;
+                }
+                if (parlevel == 1 && tok2->str() == ",")
+                {
+                    if (Token::Match(tok2, ", %num% )"))
+                    {
+                        tok->deleteNext();
+                        Token::eraseTokens(tok2->previous(), tok2->tokAt(2));
+                    }
+                    break;
+                }
+            }
+        }
+        else if (Token::Match(tok->next(), "likely|unlikely ("))
+        {
+            // remove closing ')'
+            tok->tokAt(2)->link()->previous()->deleteNext();
+
+            // remove "likely|unlikely ("
+            tok->deleteNext();
             tok->deleteNext();
         }
     }
@@ -3004,52 +3042,6 @@ bool Tokenizer::simplifyTokenList()
 
     // Convert e.g. atol("0") into 0
     simplifyMathFunctions();
-
-    // Remove unwanted keywords
-    static const char * const unwantedWords[] = { "unsigned", "unlikely", "likely", "register", "inline" };
-    for (unsigned ui = 0; ui < sizeof(unwantedWords) / sizeof(unwantedWords[0]) && _tokens; ui++)
-    {
-        if (_tokens->str() == unwantedWords[ui])
-        {
-            _tokens->deleteThis();
-            break;
-        }
-    }
-    for (Token *tok = _tokens; tok; tok = tok->next())
-    {
-        for (unsigned ui = 0; ui < sizeof(unwantedWords) / sizeof(unwantedWords[0]) && tok->next(); ui++)
-        {
-            if (tok->next()->str() == unwantedWords[ui])
-            {
-                tok->deleteNext();
-                break;
-            }
-        }
-        if (Token::simpleMatch(tok->next(), "__builtin_expect ("))
-        {
-            unsigned int parlevel = 0;
-            for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")")
-                {
-                    if (parlevel <= 1)
-                        break;
-                    --parlevel;
-                }
-                if (parlevel == 1 && tok2->str() == ",")
-                {
-                    if (Token::Match(tok2, ", %num% )"))
-                    {
-                        tok->deleteNext();
-                        Token::eraseTokens(tok2->previous(), tok2->tokAt(2));
-                    }
-                    break;
-                }
-            }
-        }
-    }
 
     // Convert + + into + and + - into -
     for (Token *tok = _tokens; tok; tok = tok->next())
