@@ -500,6 +500,15 @@ private:
 
 void Variables::alias(unsigned int varid1, unsigned int varid2)
 {
+    // alias to self
+    if (varid1 == varid2)
+    {
+        VariableUsage *var = find(varid1);
+        if (var)
+            var->use();
+        return;
+    }
+
     std::set<unsigned int>::iterator i;
 
     VariableUsage *var1 = find(varid1);
