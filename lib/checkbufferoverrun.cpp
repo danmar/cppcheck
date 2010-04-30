@@ -1009,7 +1009,7 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
         if (_settings->_checkCodingStyle)
         {
             // check for strncpy which is not terminated
-            if (Token::Match(tok, "strncpy ( %varid% , %any% , %num% )", arrayInfo.varid))
+            if ((Token::Match(tok, "strncpy ( %varid% , %var% , %num% )", arrayInfo.varid)))
             {
                 // strncpy takes entire variable length as input size
                 if ((unsigned int)MathLib::toLongNumber(tok->strAt(6)) >= total_size)
