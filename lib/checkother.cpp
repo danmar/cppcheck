@@ -702,44 +702,58 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer)
         Variables::VariableUsage *var2 = 0;
 
         if (Token::Match(tok->tokAt(2), "&| %var%") ||
-            Token::Match(tok->tokAt(2), "( %type% * ) &| %var%") ||
-            Token::Match(tok->tokAt(2), "( %type% * ) ( &| %var%") ||
-            Token::Match(tok->tokAt(2), "%any% < %type% * > ( &| %var%"))
+            Token::Match(tok->tokAt(2), "( const| struct|union| %type% * ) &| %var%") ||
+            Token::Match(tok->tokAt(2), "( const| struct|union| %type% * ) ( &| %var%") ||
+            Token::Match(tok->tokAt(2), "%any% < const| struct|union| %type% * > ( &| %var%"))
         {
+            unsigned int offset = 0;
             unsigned int varid2;
             bool addressOf = false;
 
             // check for C style cast
             if (tok->tokAt(2)->str() == "(")
             {
-                if (tok->tokAt(6)->str() == "&")
+                if (tok->tokAt(3)->str() == "const")
+                    offset++;
+
+                if (Token::Match(tok->tokAt(3 + offset), "struct|union"))
+                    offset++;
+
+                if (tok->tokAt(6 + offset)->str() == "&")
                 {
                     addressOf = true;
-                    next = 7;
+                    next = 7 + offset;
                 }
-                else if (tok->tokAt(6)->str() == "(")
+                else if (tok->tokAt(6 + offset)->str() == "(")
                 {
-                    if (tok->tokAt(7)->str() == "&")
+                    if (tok->tokAt(7 + offset)->str() == "&")
                     {
                         addressOf = true;
-                        next = 8;
+                        next = 8 + offset;
                     }
                     else
-                        next = 7;
+                        next = 7 + offset;
                 }
                 else
-                    next = 6;
+                    next = 6 + offset;
             }
+
             // check for C++ style cast
             else if (tok->tokAt(2)->str().find("cast") != std::string::npos)
             {
-                if (tok->tokAt(8)->str() == "&")
+                if (tok->tokAt(3)->str() == "const")
+                    offset++;
+
+                if (Token::Match(tok->tokAt(3 + offset), "struct|union"))
+                    offset++;
+
+                if (tok->tokAt(8 + offset)->str() == "&")
                 {
                     addressOf = true;
-                    next = 9;
+                    next = 9 + offset;
                 }
                 else
-                    next = 8;
+                    next = 8 + offset;
             }
 
             // no cast
@@ -876,9 +890,9 @@ void CheckOther::functionVariableUsage()
                 tok = tok->tokAt(5);
             }
 
-            // standard type decelaration of array of with possible initialization
+            // standard type declaration of array of with possible initialization
             // int i[10]; int j[2] = { 0, 1 };
-            else if (Token::Match(tok, "[;{}] %type% %var% [ %num% ] ;|=") &&
+            else if (Token::Match(tok, "[;{}] %type% %var% [ %any% ] ;|=") &&
                      tok->next()->isStandardType())
             {
                 variables.addVar(tok->tokAt(2), Variables::array,
@@ -932,7 +946,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(3), false);
+                    offset = doAssignment(variables, tok->tokAt(4), false);
 
                 tok = tok->tokAt(4 + offset);
             }
@@ -956,7 +970,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(3), false);
+                    offset = doAssignment(variables, tok->tokAt(4), false);
 
                 tok = tok->tokAt(4 + offset);
             }
@@ -980,7 +994,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(3), false);
+                    offset = doAssignment(variables, tok->tokAt(5), false);
 
                 tok = tok->tokAt(5 + offset);
             }
@@ -1030,7 +1044,7 @@ void CheckOther::functionVariableUsage()
 
             // array of pointer or reference declaration with possible initialization
             // int * p[10]; int * q[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] %type% *|& %var% [ %num% ] ;|="))
+            else if (Token::Match(tok, "[;{}] %type% *|& %var% [ %any% ] ;|="))
             {
                 if (tok->next()->str() != "return")
                 {
@@ -1043,7 +1057,7 @@ void CheckOther::functionVariableUsage()
 
             // const array of pointer or reference declaration with possible initialization
             // const int * p[10]; const int * q[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] const %type% *|& %var% [ %num% ] ;|="))
+            else if (Token::Match(tok, "[;{}] const %type% *|& %var% [ %any% ] ;|="))
             {
                 variables.addVar(tok->tokAt(4),
                                  tok->tokAt(3)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
@@ -1053,7 +1067,7 @@ void CheckOther::functionVariableUsage()
 
             // array of pointer or reference of struct or union declaration with possible initialization
             // struct S * p[10]; struct T * q[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] struct|union %type% *|& %var% [ %num% ] ;|="))
+            else if (Token::Match(tok, "[;{}] struct|union %type% *|& %var% [ %any% ] ;|="))
             {
                 variables.addVar(tok->tokAt(4),
                                  tok->tokAt(3)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
@@ -1063,7 +1077,7 @@ void CheckOther::functionVariableUsage()
 
             // const array of pointer or reference of struct or union declaration with possible initialization
             // const struct S * p[10]; const struct T * q[10] = { 0 };
-            else if (Token::Match(tok, "[;{}] const struct|union %type% *|& %var% [ %num% ] ;|="))
+            else if (Token::Match(tok, "[;{}] const struct|union %type% *|& %var% [ %any% ] ;|="))
             {
                 variables.addVar(tok->tokAt(5),
                                  tok->tokAt(4)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
@@ -1120,6 +1134,7 @@ void CheckOther::functionVariableUsage()
                 }
             }
 
+            // assignment
             else if (Token::Match(tok, "%var% [") && Token::Match(tok->next()->link(), "] ="))
             {
                 unsigned int varid = tok->varId();
@@ -1140,6 +1155,11 @@ void CheckOther::functionVariableUsage()
             else if (Token::Match(tok, ">>|& %var%"))
                 variables.use(tok->next()->varId());    // use = read + write
 
+            // function parameter
+            else if (Token::Match(tok, "[(,] %var% ["))
+                variables.use(tok->next()->varId());   // use = read + write
+
+            // function parameter
             else if (Token::Match(tok, "[(,] %var% [,)]"))
                 variables.use(tok->next()->varId());   // use = read + write
 
