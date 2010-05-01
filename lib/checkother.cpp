@@ -809,9 +809,12 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer)
             }
             else // not a local variable
             {
-                // aliased variables in a larger scope are not supported yet
-                if (varid2)
-                    variables.erase(varid1);
+                if (var1->_type == Variables::pointer && !pointer)
+                {
+                    // aliased variables in a larger scope are not supported yet
+                    if (varid2)
+                        variables.erase(varid1);
+                }
             }
         }
     }
