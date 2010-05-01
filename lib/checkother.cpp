@@ -435,16 +435,13 @@ public:
                       VariableType type = standard,
                       bool read = false,
                       bool write = false,
-                      bool modified = false,
-                      unsigned int alias = 0) :
+                      bool modified = false) :
             _name(name),
             _type(type),
             _read(read),
             _write(write),
             _modified(modified)
         {
-            if (alias)
-                _aliases.insert(alias);
         }
 
         /** variable is used.. set both read+write */
@@ -478,7 +475,7 @@ public:
     {
         return _varUsage;
     }
-    void addVar(const Token *name, VariableType type, bool write_ = false, unsigned int varid = 0);
+    void addVar(const Token *name, VariableType type, bool write_);
     void read(unsigned int varid);
     void readAliases(unsigned int varid);
     void readAll(unsigned int varid);
@@ -543,15 +540,9 @@ void Variables::alias(unsigned int varid1, unsigned int varid2)
 
 void Variables::addVar(const Token *name,
                        VariableType type,
-                       bool write_,
-                       unsigned int varid )
+                       bool write_)
 {
-    _varUsage.insert(std::make_pair(name->varId(), VariableUsage(name, type, false, write_, false, varid)));
-
-    VariableUsage *usage = find(varid);
-
-    if (usage)
-        usage->_aliases.insert(name->varId());
+    _varUsage.insert(std::make_pair(name->varId(), VariableUsage(name, type, false, write_, false)));
 }
 
 void Variables::read(unsigned int varid)
@@ -750,10 +741,10 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer)
             // check for C++ style cast
             else if (tok->tokAt(2)->str().find("cast") != std::string::npos)
             {
-                if (tok->tokAt(3)->str() == "const")
+                if (tok->tokAt(4)->str() == "const")
                     offset++;
 
-                if (Token::Match(tok->tokAt(3 + offset), "struct|union"))
+                if (Token::Match(tok->tokAt(4 + offset), "struct|union"))
                     offset++;
 
                 if (tok->tokAt(8 + offset)->str() == "&")
@@ -924,7 +915,7 @@ void CheckOther::functionVariableUsage()
 
                     bool written = tok->tokAt(4)->str() == "=";
 
-                    variables.addVar(tok->tokAt(3), type, written, 0);
+                    variables.addVar(tok->tokAt(3), type, written);
 
                     int offset = 0;
 
@@ -949,7 +940,7 @@ void CheckOther::functionVariableUsage()
 
                 bool written = tok->tokAt(5)->str() == "=";
 
-                variables.addVar(tok->tokAt(4), type, written, 0);
+                variables.addVar(tok->tokAt(4), type, written);
 
                 int offset = 0;
 
@@ -973,7 +964,7 @@ void CheckOther::functionVariableUsage()
 
                 bool written = tok->tokAt(5)->str() == "=";
 
-                variables.addVar(tok->tokAt(4), type, written, 0);
+                variables.addVar(tok->tokAt(4), type, written);
 
                 int offset = 0;
 
@@ -997,7 +988,7 @@ void CheckOther::functionVariableUsage()
 
                 bool written = tok->tokAt(6)->str() == "=";
 
-                variables.addVar(tok->tokAt(5), type, written, 0);
+                variables.addVar(tok->tokAt(5), type, written);
 
                 int offset = 0;
 
@@ -1026,7 +1017,7 @@ void CheckOther::functionVariableUsage()
                 if (Token::Match(tok->tokAt(5), "%var%"))
                     varid = tok->tokAt(5)->varId();
 
-                variables.addVar(tok->tokAt(3), type, true, varid);
+                variables.addVar(tok->tokAt(3), type, true);
 
                 // check if a local variable is used to initialize this variable
                 if (varid > 0)
@@ -1051,6 +1042,49 @@ void CheckOther::functionVariableUsage()
                 tok = tok->tokAt(6);
             }
 
+            // const pointer or reference declaration with initialization using constructor
+            // const int * i(j); const int * k(i);
+            else if (Token::Match(tok, "[;{}] const %type% &|* %var% ( %any% ) ;") &&
+                     (tok->tokAt(2)->isStandardType() || tok->tokAt(2)->str() == "void"))
+            {
+                Variables::VariableType type;
+
+                if (tok->tokAt(3)->str() == "*")
+                    type = Variables::pointer;
+                else
+                    type = Variables::reference;
+
+                unsigned int varid = 0;
+
+                // check for aliased variable
+                if (Token::Match(tok->tokAt(6), "%var%"))
+                    varid = tok->tokAt(6)->varId();
+
+                variables.addVar(tok->tokAt(4), type, true);
+
+                // check if a local variable is used to initialize this variable
+                if (varid > 0)
+                {
+                    Variables::VariableUsage	*var = variables.find(varid);
+
+                    if (type == Variables::pointer)
+                    {
+                        variables.use(tok->tokAt(6)->varId());
+
+                        if (var && (var->_type == Variables::array ||
+                                    var->_type == Variables::pointer))
+                            var->_aliases.insert(tok->varId());
+                    }
+                    else
+                    {
+                        variables.readAll(tok->tokAt(6)->varId());
+                        if (var)
+                            var->_aliases.insert(tok->varId());
+                    }
+                }
+                tok = tok->tokAt(7);
+            }
+
             // array of pointer or reference declaration with possible initialization
             // int * p[10]; int * q[10] = { 0 };
             else if (Token::Match(tok, "[;{}] %type% *|& %var% [ %any% ] ;|="))
@@ -1059,7 +1093,7 @@ void CheckOther::functionVariableUsage()
                 {
                     variables.addVar(tok->tokAt(3),
                                      tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
-                                     tok->tokAt(7)->str() == "=", false);
+                                     tok->tokAt(7)->str() == "=");
                     tok = tok->tokAt(6);
                 }
             }
@@ -1070,7 +1104,7 @@ void CheckOther::functionVariableUsage()
             {
                 variables.addVar(tok->tokAt(4),
                                  tok->tokAt(3)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
-                                 tok->tokAt(8)->str() == "=", false);
+                                 tok->tokAt(8)->str() == "=");
                 tok = tok->tokAt(7);
             }
 
@@ -1080,7 +1114,7 @@ void CheckOther::functionVariableUsage()
             {
                 variables.addVar(tok->tokAt(4),
                                  tok->tokAt(3)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
-                                 tok->tokAt(8)->str() == "=", false);
+                                 tok->tokAt(8)->str() == "=");
                 tok = tok->tokAt(6);
             }
 
@@ -1090,7 +1124,7 @@ void CheckOther::functionVariableUsage()
             {
                 variables.addVar(tok->tokAt(5),
                                  tok->tokAt(4)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
-                                 tok->tokAt(9)->str() == "=", false);
+                                 tok->tokAt(9)->str() == "=");
                 tok = tok->tokAt(7);
             }
 
