@@ -1400,6 +1400,8 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // Split up variable declarations.
     simplifyVarDecl();
 
+    simplifyVariableMultipleAssign();
+
     // Change initialisation of variable to assignment
     simplifyInitVar();
 
@@ -4644,6 +4646,43 @@ void Tokenizer::simplifyIfAssign()
     }
 }
 
+
+void Tokenizer::simplifyVariableMultipleAssign()
+{
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var% = %var% = %num% ;") ||
+            Token::Match(tok, "%var% = %var% = %var% ;"))
+        {
+
+            // skip intermediate assignments
+            Token *tok2 = tok->previous();
+            while (tok2 &&
+                   tok2->str() == "=" &&
+                   Token::Match(tok2->previous(), "%var%"))
+            {
+                tok2 = tok2->tokAt(-2);
+            }
+
+            if (tok2->str() != ";")
+            {
+                continue;
+            }
+
+            Token *stopAt = tok->tokAt(2);
+            const Token *valueTok = tok->tokAt(4);
+            const std::string value(valueTok->str());
+            tok2 = tok2->next();
+
+            while (tok2 != stopAt)
+            {
+                tok2->next()->insertToken(";");
+                tok2->next()->insertToken(value);
+                tok2 = tok2->tokAt(4);
+            }
+        }
+    }
+}
 
 
 void Tokenizer::simplifyIfNot()

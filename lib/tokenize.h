@@ -188,6 +188,12 @@ public:
     void simplifyIfAssign();
 
     /**
+     * Simplify multiple assignmetns.
+     * Example: "a = b = c = 0;" => "a = 0; b = 0; c = 0;"
+     */
+    void simplifyVariableMultipleAssign();
+
+    /**
      * simplify if-not
      * Example: "if(0==x);" => "if(!x);"
      */

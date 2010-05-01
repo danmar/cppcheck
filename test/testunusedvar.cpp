@@ -74,6 +74,7 @@ private:
         TEST_CASE(localvar9); // ticket #1605
         TEST_CASE(localvar10);
         TEST_CASE(localvar11);
+        TEST_CASE(localvar12);
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvarasm);
@@ -892,7 +893,11 @@ private:
                               "    int a, b, c;\n"
                               "    a = b = c = 0;\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
+        ASSERT_EQUALS(
+                "[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'b' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'c' is assigned a value that is never used\n",
+                errout.str());
 
         functionVariableUsage("int * foo()\n"
                               "{\n"
@@ -996,6 +1001,42 @@ private:
                               "    x = a;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar12()
+    {
+        // ticket #1574
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int a, b, c, d, e, f;\n"
+                              "    a = b = c = d = e = f = 0;\n"
+                              "\n"
+                              "}\n");
+        ASSERT_EQUALS(
+                "[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'b' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'c' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'd' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'e' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'f' is assigned a value that is never used\n",
+                errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int a, b, c = 0;\n"
+                              "    a = b = c;\n"
+                              "\n"
+                              "}\n");
+        ASSERT_EQUALS(
+                "[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'b' is assigned a value that is never used\n",
+                errout.str());
+
+        TODO_ASSERT_EQUALS(
+                "[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'b' is assigned a value that is never used\n"
+                "[test.cpp:3]: (style) Variable 'c' is assigned a value that is never used\n",
+                errout.str());
     }
 
     void localvaralias1()
