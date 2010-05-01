@@ -122,6 +122,7 @@ private:
         TEST_CASE(varid13);
         TEST_CASE(varid14);
         TEST_CASE(varid15);
+        TEST_CASE(varid16);
         TEST_CASE(varidStl);
         TEST_CASE(varid_delete);
         TEST_CASE(varid_functions);
@@ -1618,6 +1619,25 @@ private:
             ASSERT_EQUALS(expected, actual);
         }
     }
+
+    void varid16()
+    {
+        const std::string code("void foo()\n"
+                               "{\n"
+                               "    int x = 1;\n"
+                               "    y = (z * x);\n"
+                               "}\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void foo ( )\n"
+                                   "2: {\n"
+                                   "3: int x@1 ; x@1 = 1 ;\n"
+                                   "4: y = ( z * x@1 ) ;\n"
+                                   "5: }\n");
+
+        ASSERT_EQUALS(expected, tokenizeDebugListing(code));
+    }
+
 
     void varidStl()
     {
