@@ -76,6 +76,7 @@ private:
 
         // if (str.find("ab"))
         TEST_CASE(if_find);
+        TEST_CASE(if_str_find);
 
         TEST_CASE(size1);
     }
@@ -736,7 +737,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
+    void if_str_find()
+    {
+        // error
+        check("void f(const std::string &s)\n"
+              "{\n"
+              "    if (s.find(\"abc\")) { }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.\n", errout.str());
+    }
 
 
     void size1()

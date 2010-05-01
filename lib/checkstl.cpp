@@ -553,6 +553,8 @@ void CheckStl::if_find()
                 // stl container
                 if (Token::Match(decl, "const| std :: %var% < %type% > &|*| %varid%", varid))
                     if_findError(tok, false);
+                else if (Token::Match(decl, "const| std :: string &|*| %varid%", varid))
+                    if_findError(tok, true);
             }
         }
 
@@ -576,7 +578,7 @@ void CheckStl::if_find()
 void CheckStl::if_findError(const Token *tok, bool str)
 {
     if (str)
-        reportError(tok, Severity::possibleStyle, "stlIfStrFind", "Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.");
+        reportError(tok, Severity::style, "stlIfStrFind", "Suspicious condition. string::find will return 0 if the string is found at position 0. If this is what you want to check then string::compare is a faster alternative because it doesn't scan through the string.");
     else
         reportError(tok, Severity::style, "stlIfFind", "Suspicious condition. The result of find is an iterator, but it is not properly checked.");
 }
