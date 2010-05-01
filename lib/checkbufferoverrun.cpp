@@ -1125,6 +1125,8 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         {
             while (tok && tok->str() != ";")
                 tok = tok->next();
+            if (!tok)
+                break;
             checkScope(tok, arrayInfo);
             continue;
         }
