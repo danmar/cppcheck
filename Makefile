@@ -188,7 +188,7 @@ test/testdivision.o: test/testdivision.cpp lib/tokenize.h lib/classinfo.h lib/to
 test/testexceptionsafety.o: test/testexceptionsafety.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkexceptionsafety.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testexceptionsafety.o test/testexceptionsafety.cpp
 
-test/testfilelister.o: test/testfilelister.cpp test/testsuite.h lib/errorlogger.h lib/settings.h lib/filelister_unix.h lib/filelister.h
+test/testfilelister.o: test/testfilelister.cpp test/testsuite.h lib/errorlogger.h lib/settings.h lib/filelister_win32.h lib/filelister.h lib/filelister_unix.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testfilelister.o test/testfilelister.cpp
 
 test/testincompletestatement.o: test/testincompletestatement.cpp test/testsuite.h lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h lib/checkother.h lib/check.h
