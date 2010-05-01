@@ -1474,12 +1474,12 @@ void CheckClass::virtualDestructor()
 
 void CheckClass::thisSubtractionError(const Token *tok)
 {
-    reportError(tok, Severity::possibleStyle, "thisSubtraction", "Suspicious pointer subtraction");
+    reportError(tok, Severity::style, "thisSubtraction", "Suspicious pointer subtraction");
 }
 
 void CheckClass::thisSubtraction()
 {
-    if (!_settings->_checkCodingStyle || !_settings->inconclusive)
+    if (!_settings->_checkCodingStyle)
         return;
 
     const Token *tok = _tokenizer->tokens();

@@ -2123,20 +2123,20 @@ private:
     void this_subtraction()
     {
         checkThisSubtraction("; this-x ;");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Suspicious pointer subtraction\n", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;");
         ASSERT_EQUALS("", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;\n"
                              "this-x ;");
-        ASSERT_EQUALS("[test.cpp:2]: (possible style) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious pointer subtraction\n", errout.str());
 
         checkThisSubtraction("; *this = *this-x ;\n"
                              "this-x ;\n"
                              "this-x ;\n");
-        ASSERT_EQUALS("[test.cpp:2]: (possible style) Suspicious pointer subtraction\n"
-                      "[test.cpp:3]: (possible style) Suspicious pointer subtraction\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Suspicious pointer subtraction\n"
+                      "[test.cpp:3]: (style) Suspicious pointer subtraction\n", errout.str());
     }
 
     void checkConst(const char code[])
