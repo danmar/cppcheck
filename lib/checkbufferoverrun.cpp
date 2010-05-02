@@ -136,10 +136,10 @@ void CheckBufferOverrun::dangerousStdCin(const Token *tok)
 
 void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
-    if (_settings && _settings->inconclusive == false)
+    if (_settings && !_settings->_checkCodingStyle)
         return;
 
-    reportError(tok, Severity::possibleError, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
+    reportError(tok, Severity::style, "strncatUsage", "Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append");
 }
 
 void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
