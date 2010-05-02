@@ -1830,7 +1830,7 @@ private:
               "    char s[10];\n"
               "    memset(s, 5, '*');\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) The size argument is given as a char constant\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) The size argument is given as a char constant\n", errout.str());
 
         check("void foo()\n"
               "{\n"

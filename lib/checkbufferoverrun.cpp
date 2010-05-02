@@ -149,10 +149,9 @@ void CheckBufferOverrun::outOfBounds(const Token *tok, const std::string &what)
 
 void CheckBufferOverrun::sizeArgumentAsChar(const Token *tok)
 {
-    if (_settings && _settings->inconclusive == false)
+    if (_settings && !_settings->_checkCodingStyle)
         return;
-
-    reportError(tok, Severity::possibleError, "sizeArgumentAsChar", "The size argument is given as a char constant");
+    reportError(tok, Severity::style, "sizeArgumentAsChar", "The size argument is given as a char constant");
 }
 
 
