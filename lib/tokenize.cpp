@@ -4949,16 +4949,35 @@ bool Tokenizer::simplifyKnownVariables()
 
                 const bool pointeralias(tok2->tokAt(2)->isName() || tok2->tokAt(2)->str() == "&");
 
-                std::string value(tok2->strAt(2));
-                if (value == "]")
-                    value = tok2->strAt(4);
-                else if (value == "&")
-                    value = tok2->strAt(3);
+                std::string value;
+
+                Token *tok3 = NULL;
+
+                if (Token::Match(tok2->tokAt(-2), "for ( %varid% = %num% ; %varid% <|<= %num% ; ++| %varid% ++| ) {", varid))
+                {
+                    const std::string compareop = tok2->strAt(5);
+                    if (compareop == "<")
+                        value = tok2->strAt(6);
+                    else
+                        value = MathLib::toString(MathLib::toLongNumber(tok2->strAt(6)) + 1);
+
+                    // Skip for-body..
+                    tok3 = tok2->previous()->link()->next()->link()->next();
+                }
+                else
+                {
+                    value = tok2->strAt(2);
+                    if (value == "]")
+                        value = tok2->strAt(4);
+                    else if (value == "&")
+                        value = tok2->strAt(3);
+                    if (Token::simpleMatch(tok2->next(), "= &"))
+                        tok2 = tok2->tokAt(3);
+                    tok3 = tok2->next();
+                }
                 Token* bailOutFromLoop = 0;
-                if (Token::simpleMatch(tok2->next(), "= &"))
-                    tok2 = tok2->tokAt(3);
                 int indentlevel3 = indentlevel;     // indentlevel for tok3
-                for (Token *tok3 = tok2->next(); tok3; tok3 = tok3->next())
+                for (; tok3; tok3 = tok3->next())
                 {
                     if (tok3->str() == "{")
                     {
