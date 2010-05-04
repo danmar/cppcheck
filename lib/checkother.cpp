@@ -3596,5 +3596,5 @@ void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_n
 void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::possibleError,
-        "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
+                "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
 }

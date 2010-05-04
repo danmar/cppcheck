@@ -4998,6 +4998,10 @@ bool Tokenizer::simplifyKnownVariables()
                         }
                     }
 
+                    // Stop if label is found
+                    if (Token::Match(tok3, "; %type% : ;"))
+                        break;
+
                     if (pointeralias && Token::Match(tok3, ("!!= " + value).c_str()))
                         break;
 
