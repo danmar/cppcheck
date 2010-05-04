@@ -92,6 +92,8 @@ private:
         TEST_CASE(mathfunctionCall1);
 
         TEST_CASE(emptyStringTest);
+
+        TEST_CASE(fflushOnInputStreamTest);
     }
 
     void check(const char code[])
@@ -115,6 +117,7 @@ private:
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
         checkOther.checkEmptyStringTest();
+        checkOther.checkFflushOnInputStream();
     }
 
 
@@ -2470,6 +2473,21 @@ private:
 
         check("if (0 < strlen(str)) { }");
         ASSERT_EQUALS("[test.cpp:1]: (possible style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+    }
+
+    void fflushOnInputStreamTest()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    fflush(stdin);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (possible error) fflush() called on input stream \"stdin\" may result in undefined behaviour\n", errout.str());
+
+        check("void foo()\n"
+              "{\n"
+              "    fflush(stdout);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

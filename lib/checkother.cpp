@@ -254,6 +254,19 @@ void CheckOther::checkEmptyStringTest()
         }
     }
 }
+//---------------------------------------------------------------------------
+// fflush(stdin) <- fflush only applies to output streams in ANSI C
+//---------------------------------------------------------------------------
+void CheckOther::checkFflushOnInputStream()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "fflush ( stdin )"))
+        {
+            fflushOnInputStreamError(tok, tok->strAt(2));
+        }
+    }
+}
 
 //---------------------------------------------------------------------------
 // strtol(str, 0, radix)  <- radix must be 0 or 2-36
@@ -3501,4 +3514,10 @@ void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_n
         reportError(tok, Severity::possibleStyle,
                     "emptyStringTest", "Non-empty string test can be simplified to \"*" + var_name + " != '\\0'\"");
     }
+}
+
+void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::possibleError,
+        "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
 }

@@ -77,6 +77,7 @@ public:
         checkOther.invalidFunctionUsage();
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
+        checkOther.checkFflushOnInputStream();
 
         // New type of check: Check execution paths
         checkOther.executionPaths();
@@ -158,6 +159,9 @@ public:
     /** @brief %Check for inefficient empty string test*/
     void checkEmptyStringTest();
 
+    /** @brief %Check for using fflush() on an input stream*/
+    void checkFflushOnInputStream();
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void redundantIfDelete0Error(const Token *tok);
@@ -184,6 +188,7 @@ public:
     void mathfunctionCallError(const Token *tok, const unsigned int numParam = 1);
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
     void emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty);
+    void fflushOnInputStreamError(const Token *tok, const std::string &varname);
 
     void getErrorMessages()
     {
@@ -196,6 +201,7 @@ public:
         uninitvarError(0, "varname");
         zerodivError(0);
         mathfunctionCallError(0);
+        fflushOnInputStreamError(0, "stdin");
 
         // style
         cstyleCastError(0);
@@ -232,6 +238,9 @@ public:
                "* null pointer dereferencing\n"
                "* using uninitialized variables and data\n"
 
+               // possible error
+               "* using fflush() on an input stream\n"
+
                // style
                "* C-style pointer cast in cpp file\n"
                "* redundant if\n"
@@ -246,7 +255,8 @@ public:
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
 
                // optimisations
-               "* optimisation: detect post increment/decrement\n";
+               "* optimisation: detect post increment/decrement\n"
+               "* optimisation: simplify empty string tests\n";
     }
 
 private:
