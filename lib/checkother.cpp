@@ -453,7 +453,8 @@ public:
             _type(type),
             _read(read),
             _write(write),
-            _modified(modified)
+            _modified(modified),
+            _noAlias(false)
         {
         }
 
@@ -475,6 +476,7 @@ public:
         bool _read;
         bool _write;
         bool _modified; // read/modify/write
+        bool _noAlias;  // don't alias
         std::set<unsigned int> _aliases;
     };
 
@@ -506,6 +508,10 @@ public:
     void eraseAliases(unsigned int varid);
     void eraseAll(unsigned int varid);
 
+    // don't alias this variable because it's aliased to something undefined or unsupported
+    // or because it's aliased to something in a larger scope
+    void noAlias(unsigned int varid);
+
 private:
     VariableMap _varUsage;
 };
@@ -517,7 +523,10 @@ void Variables::alias(unsigned int varid1, unsigned int varid2)
     {
         VariableUsage *var = find(varid1);
         if (var)
+        {
+            var->_noAlias = false;
             var->use();
+        }
         return;
     }
 
@@ -535,6 +544,7 @@ void Variables::alias(unsigned int varid1, unsigned int varid2)
 
     // remove all aliases from var1
     var1->_aliases.clear();
+    var1->_noAlias = false;
 
     VariableUsage *var2 = find(varid2);
 
@@ -572,6 +582,14 @@ void Variables::eraseAll(unsigned int varid)
     erase(varid);
 }
 
+void Variables::noAlias(unsigned int varid)
+{
+    VariableUsage *usage = find(varid);
+
+    if (usage)
+        usage->_noAlias = true;
+}
+
 void Variables::addVar(const Token *name,
                        VariableType type,
                        bool write_)
@@ -593,14 +611,17 @@ void Variables::readAliases(unsigned int varid)
 
     if (usage)
     {
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+        if (!usage->_noAlias)
         {
-            VariableUsage *aliased = find(*aliases);
+            std::set<unsigned int>::iterator aliases;
 
-            if (aliased)
-                aliased->_read = true;
+            for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+            {
+                VariableUsage *aliased = find(*aliases);
+
+                if (aliased)
+                    aliased->_read = true;
+            }
         }
     }
 }
@@ -613,18 +634,20 @@ void Variables::readAll(unsigned int varid)
     {
         usage->_read = true;
 
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+        if (!usage->_noAlias)
         {
-            VariableUsage *aliased = find(*aliases);
+            std::set<unsigned int>::iterator aliases;
 
-            if (aliased)
-                aliased->_read = true;
+            for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+            {
+                VariableUsage *aliased = find(*aliases);
+
+                if (aliased)
+                    aliased->_read = true;
+            }
         }
     }
 }
-
 
 void Variables::write(unsigned int varid)
 {
@@ -640,14 +663,17 @@ void Variables::writeAliases(unsigned int varid)
 
     if (usage)
     {
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+        if (!usage->_noAlias)
         {
-            VariableUsage *aliased = find(*aliases);
+            std::set<unsigned int>::iterator aliases;
 
-            if (aliased)
-                aliased->_write = true;
+            for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+            {
+                VariableUsage *aliased = find(*aliases);
+
+                if (aliased)
+                    aliased->_write = true;
+            }
         }
     }
 }
@@ -660,14 +686,17 @@ void Variables::writeAll(unsigned int varid)
     {
         usage->_write = true;
 
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+        if (!usage->_noAlias)
         {
-            VariableUsage *aliased = find(*aliases);
+            std::set<unsigned int>::iterator aliases;
 
-            if (aliased)
-                aliased->_write = true;
+            for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+            {
+                VariableUsage *aliased = find(*aliases);
+
+                if (aliased)
+                    aliased->_write = true;
+            }
         }
     }
 }
@@ -680,14 +709,17 @@ void Variables::use(unsigned int varid)
     {
         usage->use();
 
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+        if (!usage->_noAlias)
         {
-            VariableUsage *aliased = find(*aliases);
+            std::set<unsigned int>::iterator aliases;
 
-            if (aliased)
-                aliased->use();
+            for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+            {
+                VariableUsage *aliased = find(*aliases);
+
+                if (aliased)
+                    aliased->use();
+            }
         }
     }
 }
@@ -700,14 +732,17 @@ void Variables::modified(unsigned int varid)
     {
         usage->_modified = true;
 
-        std::set<unsigned int>::iterator aliases;
-
-        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+        if (!usage->_noAlias)
         {
-            VariableUsage *aliased = find(*aliases);
+            std::set<unsigned int>::iterator aliases;
 
-            if (aliased)
-                aliased->_modified = true;
+            for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+            {
+                VariableUsage *aliased = find(*aliases);
+
+                if (aliased)
+                    aliased->_modified = true;
+            }
         }
     }
 }
@@ -840,14 +875,15 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer)
                 {
                     variables.alias(varid1, varid2);
                 }
+                else
+                    variables.read(varid2);
             }
-            else // not a local variable
+            else // not a local variable (or an unsupported local variable)
             {
                 if (var1->_type == Variables::pointer && !pointer)
                 {
-                    // aliased variables in a larger scope are not supported yet
-                    if (varid2)
-                        variables.erase(varid1);
+                    // aliased variables in a larger scope are not supported
+                    var1->_noAlias = true;
                 }
             }
         }
