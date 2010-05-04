@@ -503,6 +503,8 @@ public:
     {
         _varUsage.erase(varid);
     }
+    void eraseAliases(unsigned int varid);
+    void eraseAll(unsigned int varid);
 
 private:
     VariableMap _varUsage;
@@ -549,6 +551,25 @@ void Variables::alias(unsigned int varid1, unsigned int varid2)
 
     if (var2->_type == Variables::pointer)
         var2->_read = true;
+}
+
+void Variables::eraseAliases(unsigned int varid)
+{
+    VariableUsage *usage = find(varid);
+
+    if (usage)
+    {
+        std::set<unsigned int>::iterator aliases;
+
+        for (aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+            erase(*aliases);
+    }
+}
+
+void Variables::eraseAll(unsigned int varid)
+{
+    eraseAliases(varid);
+    erase(varid);
 }
 
 void Variables::addVar(const Token *name,
@@ -828,6 +849,26 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer)
                     if (varid2)
                         variables.erase(varid1);
                 }
+            }
+        }
+    }
+
+    // check for alias to struct member
+    // char c[10]; a.b = c;
+    else if (Token::Match(tok->tokAt(-2), "%var% ."))
+    {
+        if (Token::Match(tok->tokAt(2), "%var%"))
+        {
+            unsigned int varid2 = tok->tokAt(2)->varId();
+            Variables::VariableUsage *var2 = variables.find(varid2);
+
+            // struct member aliased to local variable
+            if (var2 && (var2->_type == Variables::array ||
+                         var2->_type == Variables::pointer))
+            {
+                // erase aliased variable and all variables that alias it
+                // to prevent false positives
+                variables.eraseAll(varid2);
             }
         }
     }

@@ -78,6 +78,7 @@ private:
         TEST_CASE(localvar13); // ticket #1640
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
+        TEST_CASE(localvaralias3); // ticket #1639
         TEST_CASE(localvarasm);
 
         // Don't give false positives for variables in structs/unions
@@ -1404,6 +1405,18 @@ private:
                               "{\n"
                               "    int * a;\n"
                               "    a = a;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvaralias3() // ticket 1639
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    BROWSEINFO    info;\n"
+                              "    char          szDisplayName[MAX_PATH];\n"
+                              "    info.pszDisplayName = szDisplayName;\n"
+                              "    SHBrowseForFolder(&info);\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }
