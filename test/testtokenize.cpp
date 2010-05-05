@@ -1170,31 +1170,55 @@ private:
 
     void simplifyKnownVariables25()
     {
-        // This testcase is related to ticket #1646
-        const char code[] = "void foo(char *str)\n"
-                            "{\n"
-                            "    int i;\n"
-                            "    for (i=0;i<10;++i) {\n"
-                            "        if (*str == 0) goto label;\n"
-                            "    }\n"
-                            "    return;\n"
-                            "label:\n"
-                            "    str[i] = 0;\n"
-                            "}\n";
+        {
+            // This testcase is related to ticket #1646
+            const char code[] = "void foo(char *str)\n"
+                                "{\n"
+                                "    int i;\n"
+                                "    for (i=0;i<10;++i) {\n"
+                                "        if (*str == 0) goto label;\n"
+                                "    }\n"
+                                "    return;\n"
+                                "label:\n"
+                                "    str[i] = 0;\n"
+                                "}\n";
 
-        // Current result
-        ASSERT_EQUALS(
-            "void foo ( char * str ) "
-            "{"
-            " int i ;"
-            " for ( i = 0 ; i < 10 ; ++ i ) {"
-            " if ( * str == 0 ) { goto label ; }"
-            " }"
-            " return ;"
-            " label : ;"
-            " str [ i ] = 0 ; "
-            "}",
-            simplifyKnownVariables(code));
+            // Current result
+            ASSERT_EQUALS(
+                "void foo ( char * str ) "
+                "{"
+                " int i ;"
+                " for ( i = 0 ; i < 10 ; ++ i ) {"
+                " if ( * str == 0 ) { goto label ; }"
+                " }"
+                " return ;"
+                " label : ;"
+                " str [ i ] = 0 ; "
+                "}",
+                simplifyKnownVariables(code));
+        }
+
+        {
+            // This testcase is related to ticket #1646
+            const char code[] = "void foo(char *str)\n"
+                                "{\n"
+                                "    int i;\n"
+                                "    for (i=0;i<10;++i) { }\n"
+                                "    return;\n"
+                                "    str[i] = 0;\n"
+                                "}\n";
+
+            // Current result
+            ASSERT_EQUALS(
+                "void foo ( char * str ) "
+                "{"
+                " int i ;"
+                " for ( i = 0 ; i < 10 ; ++ i ) { }"
+                " return ;"
+                " str [ i ] = 0 ; "
+                "}",
+                simplifyKnownVariables(code));
+        }
     }
 
 

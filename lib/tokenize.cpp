@@ -4977,6 +4977,7 @@ bool Tokenizer::simplifyKnownVariables()
                 }
                 Token* bailOutFromLoop = 0;
                 int indentlevel3 = indentlevel;     // indentlevel for tok3
+                bool ret3 = false;
                 for (; tok3; tok3 = tok3->next())
                 {
                     if (tok3->str() == "{")
@@ -5001,6 +5002,19 @@ bool Tokenizer::simplifyKnownVariables()
                     // Stop if label is found
                     if (Token::Match(tok3, "; %type% : ;"))
                         break;
+
+                    // Stop if return is found ..
+                    if (indentlevel3 == 1)
+                    {
+                        if (tok3->str() == "return")
+                            ret3 = true;
+                        else if (tok3->str() == ";")
+                        {
+                            if (ret3 && !Token::simpleMatch(tok3->next(), "}"))
+                                break;
+                            ret3 = false;
+                        }
+                    }
 
                     if (pointeralias && Token::Match(tok3, ("!!= " + value).c_str()))
                         break;
