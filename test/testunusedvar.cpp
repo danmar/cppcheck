@@ -80,6 +80,7 @@ private:
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
         TEST_CASE(localvaralias4); // ticket #1643
+        TEST_CASE(localvaralias5); // ticket #1647
         TEST_CASE(localvarasm);
 
         // Don't give false positives for variables in structs/unions
@@ -1525,6 +1526,45 @@ private:
                               "    struct AB ab;\n"
                               "    int * a = &ab.a;\n"
                               "    *a = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvaralias5() // ticket 1647
+    {
+        functionVariableUsage("char foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *p = &buf[0];\n"
+                              "    *p++ = 0;\n"
+                              "    return buf[0];\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        functionVariableUsage("char foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *p = &buf[1];\n"
+                              "    *p-- = 0;\n"
+                              "    return buf[0];\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        functionVariableUsage("char foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *p = &buf[0];\n"
+                              "    *++p = 0;\n"
+                              "    return buf[0];\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        functionVariableUsage("char foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *p = &buf[1];\n"
+                              "    *--p = 0;\n"
+                              "    return buf[0];\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

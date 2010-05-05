@@ -758,7 +758,7 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
     return 0;
 }
 
-static int doAssignment(Variables &variables, const Token *tok, bool pointer)
+static int doAssignment(Variables &variables, const Token *tok, bool pointer, bool post)
 {
     int next = 0;
 
@@ -769,72 +769,76 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer)
     if (var1)
     {
         Variables::VariableUsage *var2 = 0;
+        int start = 2;
 
-        if (Token::Match(tok->tokAt(2), "&| %var%") ||
-            Token::Match(tok->tokAt(2), "( const| struct|union| %type% * ) &| %var%") ||
-            Token::Match(tok->tokAt(2), "( const| struct|union| %type% * ) ( &| %var%") ||
-            Token::Match(tok->tokAt(2), "%any% < const| struct|union| %type% * > ( &| %var%"))
+        if (post)
+            start++;
+
+        if (Token::Match(tok->tokAt(start), "&| %var%") ||
+            Token::Match(tok->tokAt(start), "( const| struct|union| %type% * ) &| %var%") ||
+            Token::Match(tok->tokAt(start), "( const| struct|union| %type% * ) ( &| %var%") ||
+            Token::Match(tok->tokAt(start), "%any% < const| struct|union| %type% * > ( &| %var%"))
         {
             unsigned int offset = 0;
             unsigned int varid2;
             bool addressOf = false;
 
             // check for C style cast
-            if (tok->tokAt(2)->str() == "(")
+            if (tok->tokAt(start)->str() == "(")
             {
-                if (tok->tokAt(3)->str() == "const")
+                if (tok->tokAt(start + 1)->str() == "const")
                     offset++;
 
-                if (Token::Match(tok->tokAt(3 + offset), "struct|union"))
+                if (Token::Match(tok->tokAt(start + 1 + offset), "struct|union"))
                     offset++;
 
-                if (tok->tokAt(6 + offset)->str() == "&")
+                if (tok->tokAt(start + 4 + offset)->str() == "&")
                 {
                     addressOf = true;
-                    next = 7 + offset;
+                    next = start + 5 + offset;
                 }
-                else if (tok->tokAt(6 + offset)->str() == "(")
+                else if (tok->tokAt(start + 4 + offset)->str() == "(")
                 {
-                    if (tok->tokAt(7 + offset)->str() == "&")
+                    if (tok->tokAt(start + 5 + offset)->str() == "&")
                     {
                         addressOf = true;
-                        next = 8 + offset;
+                        next = start + 6 + offset;
                     }
                     else
-                        next = 7 + offset;
+                        next = start + 5 + offset;
                 }
                 else
-                    next = 6 + offset;
+                    next = start + 4 + offset;
             }
 
             // check for C++ style cast
-            else if (tok->tokAt(2)->str().find("cast") != std::string::npos)
+            else if (tok->tokAt(start)->str().find("cast") != std::string::npos)
             {
-                if (tok->tokAt(4)->str() == "const")
+                if (tok->tokAt(start + 2)->str() == "const")
                     offset++;
 
-                if (Token::Match(tok->tokAt(4 + offset), "struct|union"))
+                if (Token::Match(tok->tokAt(start + 2 + offset), "struct|union"))
                     offset++;
 
-                if (tok->tokAt(8 + offset)->str() == "&")
+                if (tok->tokAt(start + 6 + offset)->str() == "&")
                 {
                     addressOf = true;
-                    next = 9 + offset;
+                    next = start + 7 + offset;
                 }
                 else
-                    next = 8 + offset;
+                    next = start + 6 + offset;
             }
 
             // no cast
             else
             {
-                if (tok->tokAt(2)->str() == "&")
+                if (tok->tokAt(start)->str() == "&")
                 {
                     addressOf = true;
-                    next = 3;
+                    next = start + 1;
                 }
                 else
-                    next = 2;
+                    next = start;
             }
 
             // check if variable is local
@@ -1014,7 +1018,7 @@ void CheckOther::functionVariableUsage()
 
                     // check for assignment
                     if (written)
-                        offset = doAssignment(variables, tok->tokAt(3), false);
+                        offset = doAssignment(variables, tok->tokAt(3), false, false);
 
                     tok = tok->tokAt(3 + offset);
                 }
@@ -1039,7 +1043,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(4), false);
+                    offset = doAssignment(variables, tok->tokAt(4), false, false);
 
                 tok = tok->tokAt(4 + offset);
             }
@@ -1063,7 +1067,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(4), false);
+                    offset = doAssignment(variables, tok->tokAt(4), false, false);
 
                 tok = tok->tokAt(4 + offset);
             }
@@ -1087,7 +1091,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(5), false);
+                    offset = doAssignment(variables, tok->tokAt(5), false, false);
 
                 tok = tok->tokAt(5 + offset);
             }
@@ -1225,9 +1229,11 @@ void CheckOther::functionVariableUsage()
                 variables.readAll(tok->next()->varId());
 
             // assignment
-            else if (Token::Match(tok, "*| %var% ="))
+            else if (Token::Match(tok, "*| ++|--| %var% ++|--| ="))
             {
                 bool pointer = false;
+                bool pre = false;
+                bool post = false;
 
                 if (tok->str() == "*")
                 {
@@ -1235,10 +1241,24 @@ void CheckOther::functionVariableUsage()
                     tok = tok->next();
                 }
 
+                if (Token::Match(tok, "++|--"))
+                {
+                    pre = true;
+                    tok = tok->next();
+                }
+
+                if (Token::Match(tok->next(), "++|--"))
+                {
+                    post = true;
+                }
+
                 unsigned int varid1 = tok->varId();
                 const Token *start = tok;
 
-                tok = tok->tokAt(doAssignment(variables, tok, pointer));
+                tok = tok->tokAt(doAssignment(variables, tok, pointer, post));
+
+                if (pre || post)
+                    variables.use(varid1);
 
                 if (pointer)
                 {
