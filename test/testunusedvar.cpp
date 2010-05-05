@@ -895,13 +895,9 @@ private:
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int a, b, c;\n"
-                              "    a = b = c = 0;\n"
+                              "    a = b = c = f();\n"
                               "}\n");
-        ASSERT_EQUALS(
-            "[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n"
-            "[test.cpp:3]: (style) Variable 'b' is assigned a value that is never used\n"
-            "[test.cpp:3]: (style) Variable 'c' is assigned a value that is never used\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' is assigned a value that is never used\n", errout.str());
 
         functionVariableUsage("int * foo()\n"
                               "{\n"
