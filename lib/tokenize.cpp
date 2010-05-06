@@ -2282,11 +2282,13 @@ void Tokenizer::setVarId()
         if (tok != _tokens && !Token::Match(tok, "[,;{}(] %type%"))
             continue;
 
-        // If pattern is "( %type% * %var% )" then check if it's a
-        // variable declaration or a multiplication
-        if (Token::Match(tok, "( %type% * %var% )") && !tok->next()->isStandardType())
+        // If pattern is "( %type% *|& %var% )" then check if it's a
+        // variable declaration or a multiplication / mask
+        if (Token::Match(tok, "( %type% *|& %var% )") && !tok->next()->isStandardType())
         {
             if (!Token::Match(tok->previous(), "%type%"))
+                continue;
+            if (tok->strAt(-1) == "return")
                 continue;
             if (!Token::Match(tok->tokAt(5), "const|{|;"))
                 continue;

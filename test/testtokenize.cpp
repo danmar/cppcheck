@@ -115,7 +115,8 @@ private:
         TEST_CASE(varid5);
         TEST_CASE(varid6);
         TEST_CASE(varid7);
-        TEST_CASE(varidReturn);
+        TEST_CASE(varidReturn1);
+        TEST_CASE(varidReturn2);
         TEST_CASE(varid8);
         TEST_CASE(varid9);
         TEST_CASE(varid10);
@@ -1524,8 +1525,7 @@ private:
         ASSERT_EQUALS(expected, actual);
     }
 
-
-    void varidReturn()
+    void varidReturn1()
     {
         const std::string actual = tokenizeDebugListing(
                                        "int f()\n"
@@ -1539,6 +1539,25 @@ private:
                                    "2: {\n"
                                    "3: int a@1 ;\n"
                                    "4: return a@1 ;\n"
+                                   "5: }\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varidReturn2()
+    {
+        const std::string actual = tokenizeDebugListing(
+                                       "void foo()\n"
+                                       "{\n"
+                                       "    unsigned long mask = (1UL << size_) - 1;\n"
+                                       "    return (abits_val_ & mask);\n"
+                                       "}\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: void foo ( )\n"
+                                   "2: {\n"
+                                   "3: long mask@1 ; mask@1 = ( 1UL << size_ ) - 1 ;\n"
+                                   "4: return ( abits_val_ & mask@1 ) ;\n"
                                    "5: }\n");
 
         ASSERT_EQUALS(expected, actual);
