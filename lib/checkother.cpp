@@ -259,12 +259,11 @@ void CheckOther::checkEmptyStringTest()
 //---------------------------------------------------------------------------
 void CheckOther::checkFflushOnInputStream()
 {
-    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    const Token *tok = _tokenizer->tokens();
+    while (tok && (tok = Token::findmatch(tok, "fflush ( stdin )")))
     {
-        if (Token::Match(tok, "fflush ( stdin )"))
-        {
-            fflushOnInputStreamError(tok, tok->strAt(2));
-        }
+        fflushOnInputStreamError(tok, tok->strAt(2));
+        tok = tok->tokAt(4);
     }
 }
 
@@ -3615,6 +3614,6 @@ void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_n
 
 void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &varname)
 {
-    reportError(tok, Severity::possibleError,
+    reportError(tok, Severity::error,
                 "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
 }

@@ -237,8 +237,6 @@ public:
                "* division with zero\n"
                "* null pointer dereferencing\n"
                "* using uninitialized variables and data\n"
-
-               // possible error
                "* using fflush() on an input stream\n"
 
                // style

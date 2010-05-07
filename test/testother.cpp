@@ -2481,7 +2481,7 @@ private:
               "{\n"
               "    fflush(stdin);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (possible error) fflush() called on input stream \"stdin\" may result in undefined behaviour\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) fflush() called on input stream \"stdin\" may result in undefined behaviour\n", errout.str());
 
         check("void foo()\n"
               "{\n"
