@@ -5275,6 +5275,14 @@ bool Tokenizer::simplifyRedundantParanthesis()
             ret = true;
         }
 
+        if ((Token::simpleMatch(tok->previous(), "delete (") && Token::Match(tok->link(), ") ;|,")) ||
+            (Token::simpleMatch(tok->previous(), "; (") && Token::Match(tok->link(), ") ;")))
+        {
+            tok->link()->deleteThis();
+            tok->deleteThis();
+            ret = true;
+        }
+
         if (Token::Match(tok->previous(), "[(!*;{}] ( %var% )") && tok->next()->varId() != 0)
         {
             // We have "( var )", remove the paranthesis

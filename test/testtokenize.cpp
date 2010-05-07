@@ -157,6 +157,7 @@ private:
         TEST_CASE(removeParantheses4);       // Ticket #390
         TEST_CASE(removeParantheses5);       // Ticket #392
         TEST_CASE(removeParantheses6);
+        TEST_CASE(removeParantheses7);
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -186,7 +187,7 @@ private:
         // unsigned i; => unsigned int i;
         TEST_CASE(unsigned1);
         TEST_CASE(unsigned2);
-        TEST_CASE(unsigned3);	// template arguments
+        TEST_CASE(unsigned3);   // template arguments
 
         TEST_CASE(testUpdateClassList);
         TEST_CASE(createLinks);
@@ -2473,6 +2474,23 @@ private:
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
             ostr << " " << tok->str();
         ASSERT_EQUALS(" ( ! abc . a )", ostr.str());
+    }
+
+    void removeParantheses7()
+    {
+        const char code[] = ";(delete(p), (p)=0);";
+
+        // tokenize..
+        Tokenizer tokenizer;
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        tokenizer.simplifyTokenList();
+
+        std::ostringstream ostr;
+        for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
+            ostr << " " << tok->str();
+        ASSERT_EQUALS(" ; delete p ; ( p ) = 0 ;", ostr.str());
     }
 
     void tokenize_double()
