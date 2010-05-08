@@ -71,7 +71,7 @@
       <para>The output from cppcheck will then be:</para>
 
       <programlisting>Checking file1.c...
-[file1.c:4]: (error) Array index out of bounds</programlisting>
+[file1.c:4]: (error) Array 'a[10]' index 10 out of bounds</programlisting>
     </section>
 
     <section>
