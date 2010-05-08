@@ -50,6 +50,7 @@ private:
         TEST_CASE(erase);
         TEST_CASE(erase2);
         TEST_CASE(erase3);
+        TEST_CASE(erase4);
         TEST_CASE(eraseBreak);
         TEST_CASE(eraseReturn);
         TEST_CASE(eraseGoto);
@@ -374,6 +375,39 @@ private:
               "    if (it->b);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void erase4()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::list<int>::iterator it, it2;\n"
+              "    for (it = foo.begin(); it != i2; ++it)\n"
+              "    {\n"
+              "        foo.erase(it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int>::iterator it = foo.begin();\n"
+              "    for (; it != i2; ++it)\n"
+              "    {\n"
+              "        foo.erase(it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "    std::list<int>::iterator it = foo.begin();\n"
+              "    while (it != i2)\n"
+              "    {\n"
+              "        foo.erase(it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Dangerous iterator usage. After erase the iterator is invalid so dereferencing it or comparing it with another iterator is invalid.\n", errout.str());
     }
 
     void eraseBreak()
