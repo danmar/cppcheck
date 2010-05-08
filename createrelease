@@ -12,28 +12,36 @@
 # - man/manual.docbook
 # - win_installer/productInfo.wxs
 #
+# Update the Changelog..
+# wget http://josefsson.org/git2cl/git2cl
+# chmod 744 git2cl
+# ./git2cl > Changelog
+# git commit -a -m "Changelog: Updated for release"
+#
 # Update the Makefile:
 # dmake --release
+# git commit -a -m "Makefile: Set release mode"
 #
-# This script will not push any changes.
+# Create release:
+# ./createrelease 1.43
 #
+# Restore the Makefile:
+# ./dmake
+# git commit -a -m "Makefile: Set debug mode"
+#
+# Generate the manual.pdf and version.txt
+# make
+# ./cppcheck --version > version.txt
+# docbook2pdf man/manual.pdf
+#
+# Upload manual.pdf and version.txt...
+# sftp hyd_danmar,cppcheck@web.sourceforge.net
 
 # Tag to use
 tag=$1
 
 # Name of release
 releasename=cppcheck-$tag
-
-# Update Changelog..
-wget http://josefsson.org/git2cl/git2cl
-chmod 744 git2cl
-./git2cl > Changelog
-git commit -a -m "Changelog: Updated for release"
-
-# Update Makefile..
-g++ -o dmake tools/dmake.cpp lib/filelister.cpp
-./dmake --release
-git commit -a -m "Makefile: Set release mode"
 
 # Tagging..
 git tag $tag
@@ -43,14 +51,4 @@ git archive --format=tar --prefix=$releasename/ $tag | gzip > ~/$releasename.tar
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > ~/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > ~/$releasename.zip
 
-# Restore Makefile..
-./dmake
-git commit -a -m "Makefile: Set debug mode"
 
-# Generate the manual.pdf and version.txt
-make
-./cppcheck --version > version.txt
-docbook2pdf man/manual.pdf
-
-# Upload manual.pdf and version.txt...
-# sftp hyd_danmar,cppcheck@web.sourceforge.net
