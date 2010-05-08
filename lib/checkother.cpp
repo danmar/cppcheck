@@ -3602,12 +3602,12 @@ void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_n
 {
     if (isTestForEmpty)
     {
-        reportError(tok, Severity::possibleStyle,
+        reportError(tok, Severity::style,
                     "emptyStringTest", "Empty string test can be simplified to \"*" + var_name + " == '\\0'\"");
     }
     else
     {
-        reportError(tok, Severity::possibleStyle,
+        reportError(tok, Severity::style,
                     "emptyStringTest", "Non-empty string test can be simplified to \"*" + var_name + " != '\\0'\"");
     }
 }

@@ -2448,31 +2448,31 @@ private:
               "        std::cout << str;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (possible style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
 
         check("if (!strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
 
         check("if (strlen(str) == 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
 
         check("if (strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
 
         check("if (strlen(str) > 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
 
         check("if (strlen(str) != 0) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
 
         check("if (0 != strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
 
         check("if (0 == strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Empty string test can be simplified to \"*str == '\\0'\"\n", errout.str());
 
         check("if (0 < strlen(str)) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (possible style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Non-empty string test can be simplified to \"*str != '\\0'\"\n", errout.str());
     }
 
     void fflushOnInputStreamTest()
