@@ -199,7 +199,7 @@ private:
 
 /**
  * Parse for loop initialization statement. Look for a counter variable
- * \param tok [in] first token inside the paranthesis
+ * \param tok [in] first token inside the parentheses
  * \param varid [out] varid of counter variable
  * \param init_value [out] init value of counter variable
  * \return success => pointer to the for loop condition. fail => 0
@@ -283,7 +283,7 @@ static bool for_condition(const Token * const tok2, unsigned int varid, std::str
 
 
 /**
- * Parse the third substatement in for head
+ * Parse the third sub-statement in for head
  * \param tok first token
  * \param varid variable id of counter
  * \param min_value min value of counter
@@ -1565,7 +1565,7 @@ void CheckBufferOverrun::negativeIndex()
         const long index = MathLib::toLongNumber(tok->next()->str());
         if (index < 0)
         {
-            // Multidimension index => error
+            // Multidimensional index => error
             if (Token::simpleMatch(tok->previous(), "]") || Token::simpleMatch(tok->tokAt(3), "["))
                 negativeIndexError(tok, index);
 
