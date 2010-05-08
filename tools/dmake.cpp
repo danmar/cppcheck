@@ -145,11 +145,26 @@ int main(int argc, char **argv)
     std::ofstream fout("Makefile");
 
     // Makefile settings..
-    // TODO: add more compiler warnings.
-    // -Wsign-conversion : generates too many compiler warnings currently
-    // -Wlogical-op      : doesn't work on older GCC
-    fout << "CXXFLAGS=-Wall -Wextra -Wshadow -pedantic -Wno-long-long -Wfloat-equal -Wcast-qual ";
-    fout << (release ? "-O2 -DNDEBUG" : "-g -D_GLIBCXX_DEBUG") << "\n";
+    if (release)
+    {
+        fout << "CXXFLAGS=-O2 -DNDEBUG -Wall\n";
+    }
+    else
+    {
+        // TODO: add more compiler warnings.
+        // -Wsign-conversion : generates too many compiler warnings currently
+        // -Wlogical-op      : doesn't work on older GCC
+
+        fout << "CXXFLAGS="
+             << "-Wall "
+             << "-Wextra "
+             << "-Wshadow "
+             << "-pedantic "
+             << "-Wno-long-long "
+             << "-Wfloat-equal "
+             << "-Wcast-qual "
+             << "-g -D_GLIBCXX_DEBUG\n";
+    }
     fout << "CXX=g++\n";
     fout << "BIN=${DESTDIR}/usr/bin\n\n";
     fout << "# For 'make man': sudo apt-get install xsltproc docbook-xsl docbook-xml\n";
