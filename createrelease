@@ -12,6 +12,9 @@
 # - man/manual.docbook
 # - win_installer/productInfo.wxs
 #
+# Update the Makefile:
+# dmake --release
+#
 # This script will not push any changes.
 #
 
