@@ -2697,6 +2697,7 @@ private:
      * Bad pointer usage. If the variable is not a pointer then the usage is ok.
      * @param checks all available checks
      * @param tok variable token
+     * @return if error is found, true is returned
      */
     static bool use_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
     {
@@ -2707,6 +2708,7 @@ private:
      * Using variable.. if it's a dead pointer the usage is invalid.
      * @param checks all available checks
      * @param tok variable token
+     * @return if error is found, true is returned
      */
     static bool use_dead_pointer(std::list<ExecutionPath *> &checks, const Token *tok)
     {
@@ -2718,6 +2720,7 @@ private:
      * Example: = x[0];
      * @param checks all available checks
      * @param tok variable token
+     * @return if error is found, true is returned
      */
     static bool use_array_or_pointer_data(std::list<ExecutionPath *> &checks, const Token *tok)
     {
@@ -2948,6 +2951,15 @@ private:
                 parseFunctionCall(tok, var, 1);
                 for (std::list<const Token *>::const_iterator it = var.begin(); it != var.end(); ++it)
                     use_array(checks, *it);
+
+                // Using uninitialized pointer is bad if using null pointer is bad
+                std::list<const Token *> var2;
+                parseFunctionCall(tok, var2, 0);
+                for (std::list<const Token *>::const_iterator it = var2.begin(); it != var2.end(); ++it)
+                {
+                    if (std::find(var.begin(), var.end(), *it) == var.end())
+                        use_pointer(checks, *it);
+                }
             }
 
             // strncpy doesn't 0-terminate first parameter

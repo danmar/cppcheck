@@ -2015,6 +2015,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: x\n", errout.str());
 
+        checkUninitVar("void foo(const char *s)\n"
+                       "{\n"
+                       "    char *p;\n"
+                       "    memcpy(p, s, 100);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
+
         // using uninitialized function pointer..
         checkUninitVar("void foo()\n"
                        "{\n"
