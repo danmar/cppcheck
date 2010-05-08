@@ -202,7 +202,7 @@ void CppCheck::clearFiles()
 
 const char * CppCheck::version()
 {
-    return "1.42";
+    return "1.43";
 }
 
 
