@@ -19,7 +19,8 @@
 # git commit -a -m "Changelog: Updated for release"
 #
 # Update the Makefile:
-# dmake --release
+# g++ -o dmake tools/dmake.cpp lib/filelister*.cpp
+# ./dmake --release
 # git commit -a -m "Makefile: Set release mode"
 #
 # Create release:
