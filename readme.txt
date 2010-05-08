@@ -53,7 +53,7 @@ Cross compiling Win32 (CLI) version of Cppcheck in Linux
 
 Usage
 
-    Run the cppcheck program without parameters and a help text will be shown.
+    A manual is available online: http://cppcheck.sf.net/manual.pdf
 
 Webpage
 
