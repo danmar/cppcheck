@@ -76,6 +76,7 @@ private:
         TEST_CASE(localvar11);
         TEST_CASE(localvar12);
         TEST_CASE(localvar13); // ticket #1640
+        TEST_CASE(localvar14); // ticket #5
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1047,6 +1048,16 @@ private:
                               "    x = obj->ySize / 8;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' is assigned a value that is never used\n", errout.str());
+    }
+
+    void localvar14()
+    {
+        // ticket #5
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    int a[10];\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
     }
 
     void localvaralias1()
