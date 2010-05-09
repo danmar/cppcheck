@@ -296,6 +296,7 @@ private:
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
         TEST_CASE(allocfunc3);
+        TEST_CASE(allocfunc4);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1625,7 +1626,7 @@ private:
               "{\n"
               "    FILE *p = a();\n"
               "}\n");
-        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
+        ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Resource leak: p\n"), errout.str());
 
         check("char *a()\n"
               "{\n"
@@ -1688,6 +1689,36 @@ private:
               "    char *p = a();\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:8]: (error) Memory leak: p\n"), errout.str());
+    }
+
+    void allocfunc4()
+    {
+        check("char* foo()\n"
+              "{\n"
+              "   char *str = NULL;\n"
+              "   str = realloc( str, 20 );\n"
+              "   return str;\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *p = foo();\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), errout.str());
+
+        check("char* foo()\n"
+              "{\n"
+              "   char *str = NULL;\n"
+              "   str = realloc( str, 20 );\n"
+              "   return str;\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *p = foo();\n"
+              "   delete p;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Mismatching allocation and deallocation: p\n"), errout.str());
     }
 
 

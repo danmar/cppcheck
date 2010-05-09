@@ -397,47 +397,57 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
 
     while (tok->str() != "{")
         tok = tok->next();
-    tok = tok ? tok->next() : 0;
 
-    // Inspect the statements..
+    // Get return pointer..
     unsigned int varid = 0;
-    AllocType allocType = No;
-    while (tok)
+    unsigned int indentlevel = 0;
+    for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
     {
-        // variable declaration..
-        if (Token::Match(tok, "%type% * %var% ;"))
+        if (tok2->str() == "{")
+            ++indentlevel;
+        else if (tok2->str() == "}")
         {
-            tok = tok->tokAt(4);
-            continue;
+            if (indentlevel <= 1)
+                return No;
         }
-
-        if (varid == 0 && tok->varId() && Token::Match(tok, "%var% ="))
+        if (Token::Match(tok2, "return %var% ;"))
         {
-            varid = tok->varId();
+            if (indentlevel != 1)
+                return No;
+            varid = tok2->next()->varId();
+            break;
+        }
+        else if (tok2->str() == "return")
+        {
+            AllocType allocType = getAllocationType(tok2->next(), 0);
+            if (allocType != No)
+                return allocType;
+            allocType = getReallocationType(tok2->next(), 0);
+            if (allocType != No)
+                return allocType;
+        }
+    }
+
+    // Not returning pointer value..
+    if (varid == 0)
+        return No;
+
+    // Check if return pointer is allocated..
+    AllocType allocType = No;
+    while (0 != (tok = tok->next()))
+    {
+        if (Token::Match(tok, "%varid% =", varid))
+        {
             allocType = getAllocationType(tok->tokAt(2), varid);
             if (allocType == No)
-                return No;
-            while (tok && tok->str() != ";")
-                tok = tok->next();
-            tok = tok ? tok->next() : 0;
-            continue;
-        }
-
-        if (tok->str() == ";")
-        {
-            tok = tok->next();
-            continue;
-        }
-
-        if (tok->str() == "return")
-        {
-            if (varid > 0 && Token::Match(tok->next(), "%varid% ;", varid))
+            {
+                allocType = getReallocationType(tok->tokAt(2), varid);
+            }
+            if (allocType != No)
                 return allocType;
-
-            return getAllocationType(tok->next(), varid);
         }
-
-        return No;
+        if (tok->str() == "return")
+            return allocType;
     }
 
     return No;
@@ -587,7 +597,13 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
         const Token *ftok = _tokenizer->getFunctionTokenByName(funcname.c_str());
         AllocType a = functionReturnType(ftok);
         if (a != No)
+        {
+            if (alloctype == No)
+                alloctype = a;
+            else if (alloctype != a)
+                alloctype = Many;
             return "alloc";
+        }
     }
 
     // how many parameters is there in the function call?
