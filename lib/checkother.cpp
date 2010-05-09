@@ -2965,7 +2965,7 @@ private:
                 for (std::list<const Token *>::const_iterator it = var2.begin(); it != var2.end(); ++it)
                 {
                     if (std::find(var.begin(), var.end(), *it) == var.end())
-                        use_pointer(checks, *it);
+                        use_dead_pointer(checks, *it);
                 }
             }
 
