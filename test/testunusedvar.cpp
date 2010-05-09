@@ -97,6 +97,7 @@ private:
         TEST_CASE(localvarOpAssign);    // a |= b;
         TEST_CASE(localvarFor);         // for ( ; var; )
         TEST_CASE(localvarShift);       // 1 >> var
+        TEST_CASE(localvarCast);
     }
 
     void structmember1()
@@ -1709,6 +1710,17 @@ private:
                               "{\n"
                               "    int var = 1;\n"
                               "    return 1 >> var;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvarCast()
+    {
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    int a = 1;\n"
+                              "    int b = static_cast<int>(a);\n"
+                              "    return b;\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

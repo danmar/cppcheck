@@ -774,9 +774,9 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer, bo
             start++;
 
         if (Token::Match(tok->tokAt(start), "&| %var%") ||
-            Token::Match(tok->tokAt(start), "( const| struct|union| %type% * ) &| %var%") ||
-            Token::Match(tok->tokAt(start), "( const| struct|union| %type% * ) ( &| %var%") ||
-            Token::Match(tok->tokAt(start), "%any% < const| struct|union| %type% * > ( &| %var%"))
+            Token::Match(tok->tokAt(start), "( const| struct|union| %type% *| ) &| %var%") ||
+            Token::Match(tok->tokAt(start), "( const| struct|union| %type% *| ) ( &| %var%") ||
+            Token::Match(tok->tokAt(start), "%any% < const| struct|union| %type% *| > ( &| %var%"))
         {
             unsigned int offset = 0;
             unsigned int varid2;
@@ -791,27 +791,31 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer, bo
                 if (Token::Match(tok->tokAt(start + 1 + offset), "struct|union"))
                     offset++;
 
-                if (tok->tokAt(start + 4 + offset)->str() == "&")
+                if (tok->tokAt(start + 2 + offset)->str() == "*")
+                    offset++;
+
+                if (tok->tokAt(start + 3 + offset)->str() == "&")
                 {
                     addressOf = true;
-                    next = start + 5 + offset;
+                    next = start + 4 + offset;
                 }
-                else if (tok->tokAt(start + 4 + offset)->str() == "(")
+                else if (tok->tokAt(start + 3 + offset)->str() == "(")
                 {
-                    if (tok->tokAt(start + 5 + offset)->str() == "&")
+                    if (tok->tokAt(start + 4 + offset)->str() == "&")
                     {
                         addressOf = true;
-                        next = start + 6 + offset;
+                        next = start + 5 + offset;
                     }
                     else
-                        next = start + 5 + offset;
+                        next = start + 4 + offset;
                 }
                 else
-                    next = start + 4 + offset;
+                    next = start + 3 + offset;
             }
 
             // check for C++ style cast
-            else if (tok->tokAt(start)->str().find("cast") != std::string::npos)
+            else if (tok->tokAt(start)->str().find("cast") != std::string::npos &&
+                     tok->tokAt(start + 1)->str() == "<")
             {
                 if (tok->tokAt(start + 2)->str() == "const")
                     offset++;
@@ -819,13 +823,16 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer, bo
                 if (Token::Match(tok->tokAt(start + 2 + offset), "struct|union"))
                     offset++;
 
-                if (tok->tokAt(start + 6 + offset)->str() == "&")
+                if (tok->tokAt(start + 3 + offset)->str() == "*")
+                    offset++;
+
+                if (tok->tokAt(start + 5 + offset)->str() == "&")
                 {
                     addressOf = true;
-                    next = start + 7 + offset;
+                    next = start + 6 + offset;
                 }
                 else
-                    next = start + 6 + offset;
+                    next = start + 5 + offset;
             }
 
             // no cast
