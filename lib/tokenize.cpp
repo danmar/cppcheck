@@ -729,6 +729,7 @@ void Tokenizer::simplifyTypedef()
         Token *arrayEnd = 0;
         Token *typeDef = tok;
         int offset = 1;
+        bool function = false;
         bool functionPtr = false;
         bool functionRef = false;
 
@@ -747,7 +748,7 @@ void Tokenizer::simplifyTypedef()
                     typeEnd = tok->tokAt(offset++);
 
                 if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
-                    tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,"))
+                    tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,|("))
                     typeEnd = tok->tokAt(offset++);
                 else
                     atEnd = true;
@@ -833,6 +834,23 @@ void Tokenizer::simplifyTypedef()
             // check for end or another
             if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
                 tok = tok->tokAt(offset);
+
+            // or a function typedef
+            else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "("))
+            {
+                function = true;
+                if (tok->tokAt(offset)->link()->next())
+                {
+                    argStart = tok->tokAt(offset);
+                    argEnd = tok->tokAt(offset)->link();
+                    tok = argEnd->next();
+                }
+                else
+                {
+                    // internal error
+                    continue;
+                }
+            }
             else
             {
                 // unhandled typedef, skip it and continue
@@ -840,15 +858,18 @@ void Tokenizer::simplifyTypedef()
                 continue;
             }
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( *|& %type% ) ("))
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( *|&| %type% ) ("))
         {
-            if (tok->tokAt(offset + 4)->link()->next())
+            functionPtr = tok->tokAt(offset + 1)->str() == "*";
+            functionRef = tok->tokAt(offset + 1)->str() == "&";
+            function = tok->tokAt(offset + 2)->str() == ")";
+            if (!function)
+                offset++;
+            if (tok->tokAt(offset + 3)->link()->next())
             {
-                functionPtr = tok->tokAt(offset + 1)->str() == "*";
-                functionRef = tok->tokAt(offset + 1)->str() == "&";
-                typeName = tok->tokAt(offset + 2);
-                argStart = tok->tokAt(offset + 4);
-                argEnd = tok->tokAt(offset + 4)->link();
+                typeName = tok->tokAt(offset + 1);
+                argStart = tok->tokAt(offset + 3);
+                argEnd = tok->tokAt(offset + 3)->link();
                 tok = argEnd->next();
             }
             else
@@ -1009,14 +1030,14 @@ void Tokenizer::simplifyTypedef()
                         tok2 = tok2->next();
                     }
 
-                    if (functionPtr || functionRef)
+                    if (functionPtr || functionRef || function)
                     {
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         Token *tok3 = tok2;
                         if (functionPtr)
                             tok2->insertToken("*");
-                        else
+                        else if (functionRef)
                             tok2->insertToken("&");
                         tok2 = tok2->next();
 
