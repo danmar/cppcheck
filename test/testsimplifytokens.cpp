@@ -3932,6 +3932,16 @@ private:
                                        "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
         }
+
+        {
+            const char code[] = "typedef void (my_func(arg_class*));\n"
+                                "std::queue<my_func *> func_queue;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 
     void reverseArraySyntax()

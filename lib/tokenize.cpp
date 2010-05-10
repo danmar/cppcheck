@@ -878,6 +878,22 @@ void Tokenizer::simplifyTypedef()
                 continue;
             }
         }
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %type% ("))
+        {
+            function = true;
+            if (tok->tokAt(offset)->link()->next())
+            {
+                typeName = tok->tokAt(offset + 1);
+                argStart = tok->tokAt(offset + 2);
+                argEnd = tok->tokAt(offset + 2)->link();
+                tok = tok->tokAt(offset)->link()->next();
+            }
+            else
+            {
+                // internal error
+                continue;
+            }
+        }
         else
         {
             // unhandled typedef, skip it and continue
