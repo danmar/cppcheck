@@ -76,7 +76,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
       </author>
     </authorgroup>
     <copyright>
-      <year>2009</year>
+      <year>2009 - 2010</year>
       <holder>&dhusername;</holder>
     </copyright>
     <legalnotice>
@@ -102,9 +102,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
-      <arg choice="opt"><option>--all</option></arg>
       <arg choice="opt"><option>--append [file]</option></arg>
-      <arg choice="opt"><option>--auto-dealloc [file]</option></arg>
       <arg choice="opt"><option>--enable=[id]</option></arg>
       <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
       <arg choice="opt"><option>--force</option></arg>
@@ -138,26 +136,11 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
            variablelist.term.break.after parameters to
            control the term elements. -->
       <varlistentry>
-        <term><option>-a</option></term>
-        <term><option>--all</option></term>
-        <listitem>
-          <para>Deprecated, use --enable=possibleError</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
         <term><option>--append=[file]</option></term>
         <listitem>
           <para>This allows you to provide information about functions by providing an implementation for these.</para>
         </listitem>
       </varlistentry>      
-      <varlistentry>
-        <term><option>--auto-dealloc [file]</option></term>
-        <listitem>
-          <para>Suppress warnings about classes that have automatic deallocation</para>
-          <para>The classnames must be provided in plain text - one classname / line - in a .lst file. </para>
-          <para>This option can be given several times, allowing you to provide several .lst files.</para>
-        </listitem>
-      </varlistentry>
       <varlistentry>
         <term><option>--enable=[id]</option></term>
         <listitem>
@@ -184,14 +167,6 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </para>
         </glossdef>
         </glossentry>
-        <glossentry><glossterm>possibleError</glossterm>
-        <glossdef>
-        <para>
-        Make the checking more sensitive. More bugs are detected, 
-        but there are also more false positives.
-        </para>
-        </glossdef>
-        </glossentry>
         <glossentry><glossterm>style</glossterm>
         <glossdef>
         <para>
@@ -207,7 +182,7 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </glossdef>
         </glossentry>
         </glosslist>          
-         Several ids can be given if you separate them with commas, e.g. --enable=style,possibleError.</para>
+         Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunctions.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
