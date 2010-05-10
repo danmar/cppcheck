@@ -1660,8 +1660,11 @@ private:
               "static void b()\n"
               "{\n"
               "    char *p = a(0);\n"
-              "    char *p = a(p);\n"
-              "    free(p);\n"
+              "    char *q = a(p);\n"
+              "    if (q)\n"
+              "        free(q);\n"
+              "    else\n"
+              "        free(p);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
 
