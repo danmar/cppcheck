@@ -1216,7 +1216,7 @@ static bool hasMultipleInheritanceGlobal(const Token * start, const std::string 
 
 void CheckClass::operatorEqToSelf()
 {
-    if (!_settings->_checkCodingStyle || !_settings->inconclusive)
+    if (!_settings->_checkCodingStyle)
         return;
 
     const Token *tok2 = _tokenizer->tokens();
@@ -1994,7 +1994,7 @@ void CheckClass::uninitVarError(const Token *tok, const std::string &classname, 
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, Severity::possibleStyle, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
+    reportError(tok, Severity::style, "operatorEqVarError", "Member variable '" + classname + "::" + varname + "' is not assigned a value in '" + classname + "::operator=" + "'");
 }
 
 void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
@@ -2029,5 +2029,5 @@ void CheckClass::operatorEqRetRefThisError(const Token *tok)
 
 void CheckClass::operatorEqToSelfError(const Token *tok)
 {
-    reportError(tok, Severity::possibleStyle, "operatorEqToSelf", "'operator=' should check for assignment to self");
+    reportError(tok, Severity::style, "operatorEqToSelf", "'operator=' should check for assignment to self");
 }

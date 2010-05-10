@@ -390,7 +390,7 @@ private:
               "    void operator=(const Fred &fred) { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
@@ -398,7 +398,7 @@ private:
               "    void operator=(const Fred &fred) { }\n"
               "    int i;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Member variable 'Fred::i' is not assigned a value in 'Fred::operator='\n", errout.str());
     }
 
     void initvar_operator_eq3()
@@ -706,7 +706,7 @@ private:
               "\n"
               "void Fred::operator=(const Fred &f)\n"
               "{ }", true);
-        ASSERT_EQUALS("[test.cpp:13]: (possible style) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (style) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='\n", errout.str());
     }
 };
 

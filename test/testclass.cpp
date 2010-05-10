@@ -479,7 +479,7 @@ private:
             "        return *this;\n"
             "    }\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:5]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'operator=' should check for assignment to self\n", errout.str());
 
         // this test has an assignment test but doesn't need it
         checkOpertorEqToSelf(
@@ -534,7 +534,7 @@ private:
             "    s = strdup(a.s);\n"
             "    return *this;\n"
             "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) 'operator=' should check for assignment to self\n", errout.str());
 
         // ticket #1224
         checkOpertorEqToSelf(
@@ -621,7 +621,7 @@ private:
             "        }\n"
             "    };\n"
             "};\n");
-        ASSERT_EQUALS("[test.cpp:8]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should check for assignment to self\n", errout.str());
 
         // this test has an assignment test but doesn't need it
         checkOpertorEqToSelf(
@@ -692,7 +692,7 @@ private:
             "    s = strdup(b.s);\n"
             "    return *this;\n"
             " }\n");
-        ASSERT_EQUALS("[test.cpp:11]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) 'operator=' should check for assignment to self\n", errout.str());
     }
 
     void operatorEqToSelf3()
@@ -1118,7 +1118,7 @@ private:
             "private:\n"
             "    char * data;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:4]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should check for assignment to self\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1135,7 +1135,7 @@ private:
             "    strcpy(data, a.data);\n"
             "    return *this;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:8]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should check for assignment to self\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1151,7 +1151,7 @@ private:
             "private:\n"
             "    char * data;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:4]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'operator=' should check for assignment to self\n", errout.str());
 
         checkOpertorEqToSelf(
             "class A\n"
@@ -1168,7 +1168,7 @@ private:
             "    *data = *a.data;\n"
             "    return *this;\n"
             "};");
-        ASSERT_EQUALS("[test.cpp:8]: (possible style) 'operator=' should check for assignment to self\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should check for assignment to self\n", errout.str());
     }
 
     // Check that base classes have virtual destructors
@@ -1763,8 +1763,13 @@ private:
                        "    Foo(int _i) { }\n"
                        "};\n");
 
+        // actual results - "possible style" for both messages
         ASSERT_EQUALS("[test.cpp:5]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n"
                       "[test.cpp:7]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
+
+        // wanted results - "style" for the public constructor
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n"
+                           "[test.cpp:7]: (style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
     }
 
 
