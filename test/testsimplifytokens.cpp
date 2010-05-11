@@ -185,6 +185,7 @@ private:
         TEST_CASE(simplifyTypedef44);
         TEST_CASE(simplifyTypedef45); // ticket #1613
         TEST_CASE(simplifyTypedef46); // ticket #1615
+        TEST_CASE(simplifyTypedef47);
 
         TEST_CASE(simplifyTypedefFunction);
 
@@ -3909,6 +3910,29 @@ private:
 
         checkSimplifyTypedef(code);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedef47()
+    {
+        {
+            const char code[] = "typedef std::pair<int, int> const I;\n"
+                                "I i;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "std :: pair < int , int > const i ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "typedef void (X:: *F)();\n"
+                                "F f;";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "void ( X :: * f ) ( ) ;");
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 
     void simplifyTypedefFunction()

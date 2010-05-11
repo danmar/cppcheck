@@ -732,6 +732,7 @@ void Tokenizer::simplifyTypedef()
         bool function = false;
         bool functionPtr = false;
         bool functionRef = false;
+        Token *functionNamespace = 0;
 
         if (Token::Match(tok->next(), "::") ||
             Token::Match(tok->next(), "%type%"))
@@ -793,6 +794,9 @@ void Tokenizer::simplifyTypedef()
                 // internal error
                 return;
             }
+
+            while (Token::Match(typeEnd->next(), "const|volatile"))
+                typeEnd = typeEnd->next();
 
             tok = typeEnd;
             offset = 1;
@@ -870,6 +874,27 @@ void Tokenizer::simplifyTypedef()
                 typeName = tok->tokAt(offset + 1);
                 argStart = tok->tokAt(offset + 3);
                 argEnd = tok->tokAt(offset + 3)->link();
+                tok = argEnd->next();
+            }
+            else
+            {
+                // internal error
+                continue;
+            }
+        }
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %var% :: *|&| %type% ) ("))
+        {
+            functionNamespace = tok->tokAt(offset + 1);
+            functionPtr = tok->tokAt(offset + 3)->str() == "*";
+            functionRef = tok->tokAt(offset + 3)->str() == "&";
+            function = tok->tokAt(offset + 4)->str() == ")";
+            if (!function)
+                offset++;
+            if (tok->tokAt(offset + 5)->link()->next())
+            {
+                typeName = tok->tokAt(offset + 3);
+                argStart = tok->tokAt(offset + 5);
+                argEnd = tok->tokAt(offset + 5)->link();
                 tok = argEnd->next();
             }
             else
@@ -1051,6 +1076,13 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         Token *tok3 = tok2;
+                        if (functionNamespace)
+                        {
+                            tok2->insertToken(functionNamespace->str());
+                            tok2 = tok2->next();
+                            tok2->insertToken("::");
+                            tok2 = tok2->next();
+                        }
                         if (functionPtr)
                             tok2->insertToken("*");
                         else if (functionRef)
