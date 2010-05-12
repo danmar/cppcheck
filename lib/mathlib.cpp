@@ -184,9 +184,18 @@ bool MathLib::isInt(const std::string & s)
     }
     else if (Mode == eDefault)
     {
-        while (std::isdigit(s[n])) ++n;
+        // starts with digit
+        bool bStartsWithDigit=false;
+        while (std::isdigit(s[n]))
+        {
+            bStartsWithDigit=true;
+            ++n;
+        };
         // unsigned or long
         while (std::tolower(s[n]) == 'u' || std::tolower(s[n]) == 'l') ++n;
+    
+        if(bStartsWithDigit==false)
+            return false;
     }
     // eat up whitespace
     while (std::isspace(s[n]))

@@ -213,6 +213,15 @@ private:
         ASSERT_EQUALS(false, MathLib::isInt("+1.0E-1  "));
         ASSERT_EQUALS(false, MathLib::isInt("-1.E+1  "));
         ASSERT_EQUALS(false, MathLib::isInt("+1.E-1  "));
+        // test some garbage
+        ASSERT_EQUALS(false, MathLib::isInt("u"));
+        ASSERT_EQUALS(false, MathLib::isInt("l"));
+        ASSERT_EQUALS(false, MathLib::isInt("ul"));
+        ASSERT_EQUALS(false, MathLib::isInt("ll"));
+        ASSERT_EQUALS(false, MathLib::isInt("U"));
+        ASSERT_EQUALS(false, MathLib::isInt("L"));
+        ASSERT_EQUALS(false, MathLib::isInt("uL"));
+        ASSERT_EQUALS(false, MathLib::isInt("LL"));
     }
 
     void isnegative()
