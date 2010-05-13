@@ -118,6 +118,9 @@ private:
         // Simplify "and" to "&&" (#620)
         TEST_CASE(and1);
 
+        // Simplify "or" to "||"
+        TEST_CASE(or1);
+
         TEST_CASE(comma_keyword);
         TEST_CASE(remove_comma);
 
@@ -1978,8 +1981,6 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        tokenizer.simplifyLogicalOperators();
-
         std::ostringstream ostr;
         for (const Token *tok1 = tokenizer.tokens(); tok1; tok1 = tok1->next())
             ostr << (tok1->previous() ? " " : "") << tok1->str();
@@ -2007,6 +2008,27 @@ private:
 
         ASSERT_EQUALS("if ( p && bar ( ) ) { ; }",
                       simplifyLogicalOperators("if (p and bar()) ;"));
+
+        ASSERT_EQUALS("if ( p && ! q )",
+                      simplifyLogicalOperators("if (p and not q)"));
+    }
+
+    void or1()
+    {
+        ASSERT_EQUALS("if ( p || q ) { ; }",
+                      simplifyLogicalOperators("if (p or q) ;"));
+
+        ASSERT_EQUALS("if ( foo ( ) || q ) { ; }",
+                      simplifyLogicalOperators("if (foo() or q) ;"));
+
+        ASSERT_EQUALS("if ( foo ( ) || bar ( ) ) { ; }",
+                      simplifyLogicalOperators("if (foo() or bar()) ;"));
+
+        ASSERT_EQUALS("if ( p || bar ( ) ) { ; }",
+                      simplifyLogicalOperators("if (p or bar()) ;"));
+
+        ASSERT_EQUALS("if ( p || ! q )",
+                      simplifyLogicalOperators("if (p or not q)"));
     }
 
     void comma_keyword()

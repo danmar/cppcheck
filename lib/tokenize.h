@@ -215,7 +215,7 @@ public:
      * - "if (not p)" => "if (!p)"
      * - "if (p and q)" => "if (p && q)"
      */
-    void simplifyLogicalOperators();
+    bool simplifyLogicalOperators();
 
     /**
      * Simplify comma into a semicolon when possible:

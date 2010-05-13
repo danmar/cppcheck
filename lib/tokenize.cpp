@@ -1494,6 +1494,12 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
 
     // simplify function pointers
     simplifyFunctionPointers();
+
+    // "if (not p)" => "if (!p)"
+    // "if (p and q)" => "if (p && q)"
+    // "if (p or q)" => "if (p || q)"
+    while (simplifyLogicalOperators());
+
 //updateClassList();
     setVarId();
 
@@ -3238,7 +3244,6 @@ bool Tokenizer::simplifyTokenList()
         }
     }
 
-    simplifyLogicalOperators();
     simplifyCasts();
 
     // simplify "x=realloc(y,0);" => "free(y); x=0;"..
@@ -4895,32 +4900,43 @@ void Tokenizer::simplifyIfSameInnerCondition()
 }
 
 
-void Tokenizer::simplifyLogicalOperators()
+bool Tokenizer::simplifyLogicalOperators()
 {
+    bool ret = false;
+
     // "if (not p)" => "if (!p)"
-    // "if (p and q)" => "if (p and q)"
+    // "if (p and q)" => "if (p && q)"
+    // "if (p or q)" => "if (p || q)"
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::Match(tok, "if|while ( not %var%"))
         {
             tok->tokAt(2)->str("!");
+            ret = true;
         }
         else if (Token::Match(tok, "&& not %var%"))
         {
             tok->next()->str("!");
+            ret = true;
         }
         else if (Token::Match(tok, "|| not %var%"))
         {
             tok->next()->str("!");
+            ret = true;
         }
         // "%var%|) and %var%|("
-        else if (tok->str() == "and" &&
+        else if (Token::Match(tok, "and|or") &&
                  ((Token::Match(tok->previous(), "%var%") || tok->previous()->str() == ")") ||
                   (Token::Match(tok->next(), "%var%") || tok->next()->str() == "(")))
         {
-            tok->str("&&");
+            if (tok->str() == "and")
+                tok->str("&&");
+            else
+                tok->str("||");
+            ret = true;
         }
     }
+    return ret;
 }
 
 // int i(0); => int i; i = 0;
