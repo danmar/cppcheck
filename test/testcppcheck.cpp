@@ -28,6 +28,9 @@
 #include <string>
 #include <stdexcept>
 
+// use tinyxml with STL
+#include "tinyxml/tinyxml.h"
+
 extern std::ostringstream errout;
 extern std::ostringstream output;
 
@@ -70,6 +73,33 @@ private:
         output.str("");
         CppCheck cppCheck(*this);
         return cppCheck.parseFromArgs(argc, argv);
+    }
+
+    bool argCheckWithCoutCerrRedirect(int argc, const char * argv[])
+    {
+        // redirect cout and cerr
+        std::stringstream out, err;
+        std::streambuf* oldCout, *oldCerr;
+
+        // flush all old output
+        std::cout.flush();
+        std::cerr.flush();
+
+        oldCout = std::cout.rdbuf(); // back up cout's streambuf
+        oldCerr = std::cerr.rdbuf(); // back up cerr's streambuf
+
+        std::cout.rdbuf(out.rdbuf()); // assign streambuf to cout
+        std::cerr.rdbuf(err.rdbuf()); // assign streambuf to cerr
+
+        bool result = argCheck(argc, argv);
+
+        std::cout.rdbuf(oldCout); // restore cout's original streambuf
+        std::cerr.rdbuf(oldCerr); // restore cerrs's original streambuf
+
+        errout << err.str();
+        output << out.str();
+
+        return result;
     }
 
     bool argCheckWithCheck(int argc, const char *argv[], const std::string &data)
@@ -147,8 +177,47 @@ private:
         }
     }
 
+    void parseErrorList(const char* xmlData)
+    {
+        TiXmlDocument doc;
+        doc.Parse(xmlData);
+        // parsing must be successfull
+        ASSERT_EQUALS(false, doc.Error());
+        // root element must be "results"
+        TiXmlElement* root = doc.FirstChildElement();
+        ASSERT_EQUALS("results", root->Value());
+
+        TiXmlElement* error = root->FirstChildElement();
+        std::list<std::string> idList;
+
+        while (error)
+        {
+            // only childs of type "error"
+            ASSERT_EQUALS("error", error->Value());
+            // attributes id, msg, severity
+            ASSERT_EQUALS(error->Attribute("msg") == NULL, false);
+            ASSERT_EQUALS(error->Attribute("severity") == NULL, false);
+            const char* id = error->Attribute("id");
+            ASSERT_EQUALS(id == NULL, false);
+            // no duplicate ids
+            std::stringstream msg;
+            msg << "Duplicate id " << id;
+            ASSERT_EQUALS_MSG(idList.end() == std::find(idList.begin(), idList.end(), id), true, msg.str());
+            idList.push_back(id);
+            error = error->NextSiblingElement();
+        }
+    }
+
+
     void parseOutputtingArgs()
     {
+        {
+            const char *argv[] = { "cppcheck", "--errorlist" };
+            ASSERT_EQUALS(true, argCheckWithCoutCerrRedirect(2, argv));
+            ASSERT_EQUALS("", errout.str());
+            parseErrorList(output.str().c_str());
+        }
+
         {
             const char *argv[] = {"cppcheck", "--help"};
             ASSERT_EQUALS(true, argCheck(2, argv));

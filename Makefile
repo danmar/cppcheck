@@ -60,7 +60,11 @@ TESTOBJ =     test/testautovariables.o \
               test/testtokenize.o \
               test/testunusedfunctions.o \
               test/testunusedprivfunc.o \
-              test/testunusedvar.o
+              test/testunusedvar.o \
+              test/tinyxml/tinystr.o \
+              test/tinyxml/tinyxml.o \
+              test/tinyxml/tinyxmlerror.o \
+              test/tinyxml/tinyxmlparser.o
 
 
 ###### Targets
@@ -176,7 +180,7 @@ test/testclass.o: test/testclass.cpp lib/tokenize.h lib/classinfo.h lib/token.h 
 test/testconstructors.o: test/testconstructors.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkclass.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testconstructors.o test/testconstructors.cpp
 
-test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h test/testsuite.h
+test/testcppcheck.o: test/testcppcheck.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h test/testsuite.h test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testcppcheck.o test/testcppcheck.cpp
 
 test/testdangerousfunctions.o: test/testdangerousfunctions.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/checkdangerousfunctions.h lib/check.h lib/settings.h lib/errorlogger.h test/testsuite.h
@@ -235,4 +239,16 @@ test/testunusedprivfunc.o: test/testunusedprivfunc.cpp lib/tokenize.h lib/classi
 
 test/testunusedvar.o: test/testunusedvar.cpp test/testsuite.h lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h lib/checkother.h lib/check.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testunusedvar.o test/testunusedvar.cpp
+
+test/tinyxml/tinystr.o: test/tinyxml/tinystr.cpp test/tinyxml/tinystr.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o test/tinyxml/tinystr.o test/tinyxml/tinystr.cpp
+
+test/tinyxml/tinyxml.o: test/tinyxml/tinyxml.cpp test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o test/tinyxml/tinyxml.o test/tinyxml/tinyxml.cpp
+
+test/tinyxml/tinyxmlerror.o: test/tinyxml/tinyxmlerror.cpp test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o test/tinyxml/tinyxmlerror.o test/tinyxml/tinyxmlerror.cpp
+
+test/tinyxml/tinyxmlparser.o: test/tinyxml/tinyxmlparser.cpp test/tinyxml/tinyxml.h test/tinyxml/tinystr.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o test/tinyxml/tinyxmlparser.o test/tinyxml/tinyxmlparser.cpp
 

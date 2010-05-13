@@ -489,6 +489,7 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
         else if (strcmp(argv[i], "--errorlist") == 0)
         {
             getErrorMessages();
+            return true;
         }
 
         // documentation..

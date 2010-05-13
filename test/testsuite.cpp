@@ -114,7 +114,7 @@ void TestFixture::assert(const char *filename, int linenr, bool condition)
     }
 }
 
-void TestFixture::assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual)
+void TestFixture::assertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual, const std::string &msg)
 {
     if (expected != actual)
     {
@@ -125,16 +125,19 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
                << writestr(expected) << std::endl
                << "Actual:" << std::endl
                << writestr(actual) << std::endl;
+        if (!msg.empty()) {
+        	errmsg << msg << std::endl;
+        }
     }
 }
 
-void TestFixture::assertEquals(const char *filename, int linenr, double expected, double actual)
+void TestFixture::assertEquals(const char *filename, int linenr, double expected, double actual, const std::string &msg)
 {
     std::ostringstream ostr1;
     ostr1 << expected;
     std::ostringstream ostr2;
     ostr2 << actual;
-    assertEquals(filename, linenr, ostr1.str(), ostr2.str());
+    assertEquals(filename, linenr, ostr1.str(), ostr2.str(), msg);
 }
 
 void TestFixture::todoAssertEquals(const char *filename, int linenr, const std::string &expected, const std::string &actual)
@@ -203,9 +206,12 @@ size_t TestFixture::runTests(const char cmd[])
 
     std::cout << "\n\nTesting Complete\nNumber of tests: " << countTests << "\n";
     std::cout << "Number of todos: " << todos_counter << "\n";
+    // calling flush here, to do all output before the error messages (in case the output is buffered)
+    std::cout.flush();
 
+    std::cerr << "Tests failed: " << fails_counter << "\n";
     std::cerr << errmsg.str();
-
+    std::cerr.flush();
     return fails_counter;
 }
 

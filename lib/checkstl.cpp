@@ -32,7 +32,7 @@ CheckStl instance;
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &iteratorName)
 {
-    reportError(tok, Severity::error, "invalidIterator", "Invalid iterator: " + iteratorName);
+    reportError(tok, Severity::error, "invalidIterator1", "Invalid iterator: " + iteratorName);
 }
 
 void CheckStl::iteratorsError(const Token *tok, const std::string &container1, const std::string &container2)
@@ -474,7 +474,7 @@ void CheckStl::pushback()
 // Error message for bad iterator usage..
 void CheckStl::invalidIteratorError(const Token *tok, const std::string &func, const std::string &iterator_name)
 {
-    reportError(tok, Severity::error, "invalidIterator", "After " + func + ", the iterator '" + iterator_name + "' may be invalid");
+    reportError(tok, Severity::error, "invalidIterator2", "After " + func + ", the iterator '" + iterator_name + "' may be invalid");
 }
 
 
