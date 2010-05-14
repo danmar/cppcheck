@@ -125,8 +125,9 @@ void TestFixture::assertEquals(const char *filename, int linenr, const std::stri
                << writestr(expected) << std::endl
                << "Actual:" << std::endl
                << writestr(actual) << std::endl;
-        if (!msg.empty()) {
-        	errmsg << msg << std::endl;
+        if (!msg.empty())
+        {
+            errmsg << msg << std::endl;
         }
     }
 }
