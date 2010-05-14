@@ -2900,6 +2900,9 @@ void Tokenizer::simplifySizeof()
         if (tok->str() != "sizeof")
             continue;
 
+        if (Token::simpleMatch(tok->next(), "sizeof"))
+            continue;
+
         // sizeof "text"
         if (Token::Match(tok->next(), "%str%"))
         {

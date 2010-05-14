@@ -73,6 +73,7 @@ private:
         TEST_CASE(sizeof16);
         TEST_CASE(sizeof17);
         TEST_CASE(sizeof18);
+        TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
 
         TEST_CASE(strlen1);
@@ -1249,6 +1250,17 @@ private:
             ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void sizeofsizeof()
+    {
+        // ticket #1682
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    sizeof sizeof 1;\n"
+                            "}\n";
+        ASSERT_EQUALS("void f ( ) { sizeof sizeof ( 1 ) ; }", tok(code));
+        ASSERT_EQUALS("", errout.str());
     }
 
     void casting()
