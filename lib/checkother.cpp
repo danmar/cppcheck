@@ -3636,3 +3636,21 @@ void CheckOther::fflushOnInputStreamError(const Token *tok, const std::string &v
     reportError(tok, Severity::error,
                 "fflushOnInputStream", "fflush() called on input stream \"" + varname + "\" may result in undefined behaviour");
 }
+
+
+void CheckOther::sizeofsizeof()
+{
+    if (!_settings->_checkCodingStyle)
+        return;
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "sizeof sizeof"))
+            sizeofsizeofError(tok);
+    }
+}
+
+void CheckOther::sizeofsizeofError(const Token *tok)
+{
+    reportError(tok, Severity::style,
+                "sizeofsizeof", "Suspicios code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent with 'sizeof(size_t)'.");
+}

@@ -94,6 +94,8 @@ private:
         TEST_CASE(emptyStringTest);
 
         TEST_CASE(fflushOnInputStreamTest);
+
+        TEST_CASE(sizeofsizeof);
     }
 
     void check(const char code[])
@@ -103,16 +105,19 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        // Simplify token list..
-        tokenizer.simplifyTokenList();
-
-        // Clear the error buffer..
-        errout.str("");
-
         // Check..
         Settings settings;
         settings._checkCodingStyle = true;
         CheckOther checkOther(&tokenizer, &settings, this);
+
+        // Clear the error buffer..
+        errout.str("");
+
+        checkOther.sizeofsizeof();
+
+        // Simplify token list..
+        tokenizer.simplifyTokenList();
+
         checkOther.warningRedundantCode();
         checkOther.checkZeroDivision();
         checkOther.checkMathFunctions();
@@ -2502,6 +2507,15 @@ private:
               "    fflush(stdout);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void sizeofsizeof()
+    {
+        check("void foo()\n"
+              "{\n"
+              "    int i = sizeof sizeof char;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Suspicios code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent with 'sizeof(size_t)'.\n", errout.str());
     }
 };
 

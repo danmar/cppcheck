@@ -60,6 +60,7 @@ public:
         checkOther.checkVariableScope();
         checkOther.checkStructMemberUsage();
         checkOther.strPlusChar();
+        checkOther.sizeofsizeof();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -162,6 +163,10 @@ public:
     /** @brief %Check for using fflush() on an input stream*/
     void checkFflushOnInputStream();
 
+    /** @brief %Check for 'sizeof sizeof ..' */
+    void sizeofsizeof();
+    void sizeofsizeofError(const Token *tok);
+
     // Error messages..
     void cstyleCastError(const Token *tok);
     void redundantIfDelete0Error(const Token *tok);
@@ -217,6 +222,7 @@ public:
         variableScopeError(0, "varname");
         conditionAlwaysTrueFalse(0, "true/false");
         strPlusChar(0);
+        sizeofsizeofError(0);
 
         // optimisations
         postIncrementError(0, "varname", true);
