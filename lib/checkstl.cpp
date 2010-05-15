@@ -64,9 +64,12 @@ void CheckStl::iterators()
             continue;
 
         bool validIterator = true;
+        unsigned int indent = 0;
         for (const Token *tok2 = tok->tokAt(7); tok2; tok2 = tok2->next())
         {
-            if (tok2->str() == "}")
+            if (tok2->str() == "{" && ++indent)
+                continue;
+            if (tok2->str() == "}" && --indent == 0)
                 break;
 
             if (Token::Match(tok2, "%varid% != %var% . end ( )", iteratorId) && tok2->tokAt(2)->varId() != containerId)

@@ -41,6 +41,7 @@ private:
         TEST_CASE(iterator5);
         TEST_CASE(iterator6);
         TEST_CASE(iterator7);
+        TEST_CASE(iterator8);
 
         TEST_CASE(dereference);
         TEST_CASE(dereference_member);
@@ -218,6 +219,22 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
         TODO_ASSERT_EQUALS("[test.cpp:14] (error) After insert, the iterator 'aI' may be invalid", errout.str());
+    }
+
+    void iterator8()
+    {
+        // Ticket #1679
+        check("void foo()\n"
+              "{\n"
+              "    std::set<int> s1;\n"
+              "    std::set<int> s2;\n"
+              "    for (std::set<int>::iterator it = s1.begin(); it != s1.end(); ++it)\n"
+              "    {\n"
+              "        if (true) { }\n"
+              "        if (it != s2.end()) continue;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Same iterator is used with both s1 and s2\n", errout.str());
     }
 
     // Dereferencing invalid pointer
