@@ -124,6 +124,7 @@ private:
     void stlBoundriesError(const Token *tok, const std::string &container_name);
     void if_findError(const Token *tok, bool str);
     void sizeError(const Token *tok);
+    void eraseByValueError(const Token *tok, const std::string &containername, const std::string &itername);
 
     void getErrorMessages()
     {
@@ -139,6 +140,7 @@ private:
         if_findError(0, false);
         if_findError(0, true);
         sizeError(0);
+        eraseByValueError(0, "container", "iterator");
     }
 
     std::string name() const

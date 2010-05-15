@@ -56,6 +56,7 @@ private:
         TEST_CASE(eraseGoto);
         TEST_CASE(eraseAssign);
         TEST_CASE(eraseErase);
+        TEST_CASE(eraseByValue);
 
         TEST_CASE(pushback1);
         TEST_CASE(pushback2);
@@ -475,6 +476,18 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Invalid iterator: iter\n", errout.str());
     }
 
+    void eraseByValue()
+    {
+        check("void f()\n"
+              "{\n"
+              "    std::set<int> foo;\n"
+              "    for (std::set<int> it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        foo.erase(*it);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterator 'it' becomes invalid when deleted by value from 'foo'\n", errout.str());
+    }
 
 
     void pushback1()

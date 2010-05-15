@@ -46,6 +46,11 @@ void CheckStl::dereferenceErasedError(const Token *tok, const std::string &itern
     reportError(tok, Severity::error, "eraseDereference", "Dereferenced iterator '" + itername + "' has been erased");
 }
 
+void CheckStl::eraseByValueError(const Token *tok, const std::string &containername, const std::string &itername)
+{
+    reportError(tok, Severity::error, "eraseByValue", "Iterator '" +  itername + "' becomes invalid when deleted by value from '" + containername +  "'");
+}
+
 void CheckStl::iterators()
 {
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
@@ -110,6 +115,10 @@ void CheckStl::iterators()
             {
                 dereferenceErasedError(tok2, tok2->strAt(0));
                 tok2 = tok2->tokAt(2);
+            }
+            else if (Token::Match(tok2, "%var% . erase ( * %varid%", iteratorId) && tok2->varId() == containerId)
+            {
+                eraseByValueError(tok2, tok2->strAt(0), tok2->strAt(5));
             }
         }
     }
