@@ -152,10 +152,9 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         // Array?
         else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
         {
-            if (!withClasses)
+            if (!withClasses && !next->isStandardType())
             {
-                if (Token::findmatch(_tokenizer->tokens(), ("class|struct " + next->str()).c_str()))
-                    continue;
+                continue;
             }
             varname = next->strAt(1);
         }
@@ -545,7 +544,7 @@ void CheckClass::checkConstructors(const Token *tok1, const std::string &funcnam
     const std::string className = tok1->strAt(1);
 
     // Check that all member variables are initialized..
-    bool withClasses = bool(_settings->inconclusive && funcname == "operator =");
+    const bool withClasses = bool(_settings->inconclusive && funcname == "operator =");
     Var *varlist = getVarList(tok1, withClasses, isStruct);
 
     int indentlevel = 0;
