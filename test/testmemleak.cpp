@@ -2786,6 +2786,7 @@ private:
         // Check for memory leaks..
         Settings settings;
         settings.inconclusive = true;
+        settings._checkCodingStyle = true;
         tokenizer.fillFunctionList();
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.check();
@@ -2815,6 +2816,10 @@ private:
         TEST_CASE(free_member_in_sub_func);
 
         TEST_CASE(mismatch1);
+
+        // allocating member variable in public function
+        TEST_CASE(func1);
+        TEST_CASE(func2);
     }
 
 
@@ -3223,7 +3228,48 @@ private:
         ASSERT_EQUALS("[test.cpp:14]: (possible error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
     }
 
+    void func1()
+    {
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    char *s;\n"
+              "public:\n"
+              "    Fred() { s = 0; }\n"
+              "    ~Fred() { free(s); }\n"
+              "    void xy()\n"
+              "    { s = malloc(100); }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
 
+        check("class Fred\n"
+              "{\n"
+              "public:\n"
+              "    Fred() { s = 0; }\n"
+              "    ~Fred() { free(s); }\n"
+              "    void xy()\n"
+              "    { s = malloc(100); }\n"
+              "private:\n"
+              "    char *s;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("publicAllocation", errout.str());
+    }
+
+    void func2()
+    {
+        check("class Fred\n"
+              "{\n"
+              "private:\n"
+              "    char *s;\n"
+              "public:\n"
+              "    Fred() { s = 0; }\n"
+              "    ~Fred() { free(s); }\n"
+              "    const Fred & operator = (const Fred &f)\n"
+              "    { s = malloc(100); }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style) Possible leak in public function. The pointer 's' is not deallocated before it is allocated.\n", errout.str());
+    }
 };
 
 static TestMemleakInClass testMemleakInClass;

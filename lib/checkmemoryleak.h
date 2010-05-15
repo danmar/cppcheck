@@ -356,6 +356,10 @@ private:
     void parseClass(const Token *tok1, std::vector<std::string> &classname);
     void variable(const std::string &classname, const Token *tokVarname);
 
+    /** Public functions: possible double-allocation */
+    void checkPublicFunctions(const Token *classtok, const unsigned int varid);
+    void publicAllocationError(const Token *tok, const std::string &varname);
+
     void getErrorMessages()
     { }
 

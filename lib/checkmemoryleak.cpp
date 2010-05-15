@@ -2322,6 +2322,9 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
         tok1 = tok1->next();
     tok1 = tok1 ? tok1->next() : 0;
 
+    // are we parsing the private scope of the class?
+    bool privateScope = true;
+
     unsigned int indentlevel = 0;
     for (const Token *tok = tok1; tok; tok = tok->next())
     {
@@ -2334,6 +2337,9 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
                 return;
             --indentlevel;
         }
+
+        else if (tok->isName() && tok->str().find(":") != std::string::npos)
+            privateScope = bool(tok->str() == "private:");
 
         // Only parse this particular class.. not subclasses
         if (indentlevel > 0)
@@ -2356,6 +2362,10 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
         // Declaring member variable.. check allocations and deallocations
         if (Token::Match(tok->previous(), ";|{|}|private:|protected:|public: %type% * %var% ;"))
         {
+            // allocation but no deallocation of private variables in public function..
+            if (privateScope && tok->isStandardType())
+                checkPublicFunctions(tok1, tok->tokAt(2)->varId());
+
             // No false positives for auto deallocated classes..
             if (_settings->isAutoDealloc(tok->str().c_str()))
                 continue;
@@ -2494,9 +2504,51 @@ void CheckMemoryLeakInClass::variable(const std::string &classname, const Token 
 }
 
 
+void CheckMemoryLeakInClass::checkPublicFunctions(const Token *classtok, const unsigned int varid)
+{
+    // Check that public functions deallocate the pointers that they allocate.
+    // There is no checking how these functions are used and therefore it
+    // isn't established if there is real leaks or not.
+    if (!_settings->_checkCodingStyle)
+        return;
 
+    // Parse public functions..
+    // If they allocate member variables, they should also deallocate
+    bool publicScope = false;
+    for (const Token *tok = classtok; tok; tok = tok->next())
+    {
+        if (tok->str() == "{")
+            tok = tok->link();
+        else if (tok->str() == "}")
+            break;
+        else if (tok->isName() && tok->str().find(":") != std::string::npos)
+            publicScope = bool(tok->str() == "public:");
 
+        // scope of public function..
+        // TODO: parse into any function scope that is not a constructor
+        else if (publicScope && (Token::Match(tok, "void %type% (") || Token::simpleMatch(tok, "operator = (")))
+        {
+            tok = tok->tokAt(2)->link();
+            if (Token::Match(tok, ") const| {"))
+            {
+                const Token *tok2 = tok;
+                while (tok2->str() != "{")
+                    tok2 = tok2->next();
+                if (Token::Match(tok2, "{ %varid% =", varid))
+                {
+                    const CheckMemoryLeak::AllocType alloc = getAllocationType(tok2->tokAt(3), varid);
+                    if (alloc != CheckMemoryLeak::No)
+                        publicAllocationError(tok2, tok2->strAt(1));
+                }
+            }
+        }
+    }
+}
 
+void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::string &varname)
+{
+    reportError(tok, Severity::style, "publicAllocationError", "Possible leak in public function. The pointer '" + varname + "' is not deallocated before it is allocated.");
+}
 
 
 
