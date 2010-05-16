@@ -322,7 +322,7 @@ private:
 class Severity
 {
 public:
-    enum e { error, style, possibleError };
+    enum e { error, style };
     static std::string stringify(e severity)
     {
         switch (severity)
@@ -331,8 +331,6 @@ public:
             return "error";
         case style:
             return "style";
-        case possibleError:
-            return "possible error";
         };
         return "???";
     }
