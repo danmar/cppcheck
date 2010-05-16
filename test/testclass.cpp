@@ -1762,8 +1762,7 @@ private:
                        "    int foo;\n"
                        "    Foo() { }\n"
                        "};\n");
-
-        ASSERT_EQUALS("[test.cpp:3]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void privateCtor2()
@@ -1777,13 +1776,11 @@ private:
                        "    Foo(int _i) { }\n"
                        "};\n");
 
-        // actual results - "possible style" for both messages
-        ASSERT_EQUALS("[test.cpp:5]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n"
-                      "[test.cpp:7]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
+        // actual results
+        ASSERT_EQUALS("", errout.str());
 
-        // wanted results - "style" for the public constructor
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (possible style) Member variable not initialized in the constructor 'Foo::foo'\n"
-                           "[test.cpp:7]: (style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
+        // wanted results - warning for the public constructor
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style) Member variable not initialized in the constructor 'Foo::foo'\n", errout.str());
     }
 
 

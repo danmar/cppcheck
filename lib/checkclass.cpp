@@ -582,8 +582,8 @@ void CheckClass::checkConstructors(const Token *tok1, const std::string &funcnam
                 if (classNameUsed)
                     operatorEqVarError(constructor_token, className, var->name);
             }
-            else if (!var->isStatic)
-                uninitVarError(constructor_token, className, var->name, hasPrivateConstructor);
+            else if (!hasPrivateConstructor && !var->isStatic)
+                uninitVarError(constructor_token, className, var->name);
         }
 
         for (Var *var = varlist; var; var = var->next)
@@ -1986,9 +1986,9 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
     reportError(tok, Severity::style, "noConstructor", "The " + std::string(isStruct ? "struct" : "class") + " '" + classname + "' has no constructor. Member variables not initialized.");
 }
 
-void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool hasPrivateConstructor)
+void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
-    reportError(tok, hasPrivateConstructor ? Severity::possibleStyle : Severity::style, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
+    reportError(tok, Severity::style, "uninitVar", "Member variable not initialized in the constructor '" + classname + "::" + varname + "'");
 }
 
 void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname)

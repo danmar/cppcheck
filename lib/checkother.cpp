@@ -356,7 +356,7 @@ void CheckOther::invalidFunctionUsage()
 
 void CheckOther::checkUnsignedDivision()
 {
-    if (!_settings->inconclusive || !_settings->_checkCodingStyle)
+    if (!_settings->_checkCodingStyle)
         return;
 
     // Check for "ivar / uvar" and "uvar / ivar"
@@ -371,24 +371,9 @@ void CheckOther::checkUnsignedDivision()
                 varsign[tok->tokAt(2)->varId()] = 's';
         }
 
-        else if (!Token::Match(tok, "[).]") &&
-                 Token::Match(tok->next(), "%var% / %var%") &&
-                 tok->tokAt(1)->varId() != 0 &&
-                 tok->tokAt(3)->varId() != 0)
-        {
-            char sign1 = varsign[tok->tokAt(1)->varId()];
-            char sign2 = varsign[tok->tokAt(3)->varId()];
-
-            if (sign1 && sign2 && sign1 != sign2)
-            {
-                // One of the operands are signed, the other is unsigned..
-                udivWarning(tok->next());
-            }
-        }
-
         else if (!Token::Match(tok, "[).]") && Token::Match(tok->next(), "%var% / %num%"))
         {
-            if (tok->strAt(3)[0] == '-' && ErrorLogger::udivError())
+            if (tok->strAt(3)[0] == '-')
             {
                 char sign1 = varsign[tok->tokAt(1)->varId()];
                 if (sign1 == 'u')
@@ -400,7 +385,7 @@ void CheckOther::checkUnsignedDivision()
 
         else if (Token::Match(tok, "[([=*/+-,] %num% / %var%"))
         {
-            if (tok->strAt(1)[0] == '-' && ErrorLogger::udivError())
+            if (tok->strAt(1)[0] == '-')
             {
                 char sign2 = varsign[tok->tokAt(3)->varId()];
                 if (sign2 == 'u')
@@ -3518,11 +3503,6 @@ void CheckOther::udivError(const Token *tok)
     reportError(tok, Severity::error, "udivError", "Unsigned division. The result will be wrong.");
 }
 
-void CheckOther::udivWarning(const Token *tok)
-{
-    reportError(tok, Severity::possibleStyle, "udivWarning", "Division with signed and unsigned operators");
-}
-
 void CheckOther::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname)
 {
     reportError(tok, Severity::style, "unusedStructMember", "struct or union member '" + structname + "::" + varname + "' is never used");
@@ -3614,7 +3594,7 @@ void CheckOther::mathfunctionCallError(const Token *tok, const unsigned int numP
 void CheckOther::postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement)
 {
     std::string type = (isIncrement ? "Incrementing" : "Decrementing");
-    reportError(tok, Severity::possibleStyle, "postIncrementDecrement", ("Pre-" + type + " variable '" + var_name + "' is preferred to Post-" + type));
+    reportError(tok, Severity::style, "postIncrementDecrement", ("Pre-" + type + " variable '" + var_name + "' is preferred to Post-" + type));
 }
 
 void CheckOther::emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty)

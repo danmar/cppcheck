@@ -180,7 +180,7 @@ private:
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
-    void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname, bool hasPrivateConstructor);
+    void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetClassError(const Token *tok, const std::string &memfunc);
@@ -197,7 +197,7 @@ private:
     void getErrorMessages()
     {
         noConstructorError(0, "classname", false);
-        uninitVarError(0, "classname", "varname", false);
+        uninitVarError(0, "classname", "varname");
         operatorEqVarError(0, "classname", "");
         unusedPrivateFunctionError(0, "classname", "funcname");
         memsetClassError(0, "memfunc");

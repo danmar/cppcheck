@@ -819,28 +819,28 @@ private:
               "    std::list<int> x;\n"
               "    if (x.size() == 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size() != 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size() > 0) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
 
         check("void f()\n"
               "{\n"
               "    std::list<int> x;\n"
               "    if (x.size()) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (possible style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Use x.empty() instead of x.size() to guarantee fast code.\n", errout.str());
 
         check("void f()\n"
               "{\n"

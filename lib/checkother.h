@@ -174,7 +174,6 @@ public:
     void dangerousUsageStrtolError(const Token *tok);
     void sprintfOverlappingDataError(const Token *tok, const std::string &varname);
     void udivError(const Token *tok);
-    void udivWarning(const Token *tok);
     void unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname);
     void passedByValueError(const Token *tok, const std::string &parname);
     void constStatementError(const Token *tok, const std::string &type);
@@ -213,7 +212,6 @@ public:
         redundantIfDelete0Error(0);
         redundantIfRemoveError(0);
         dangerousUsageStrtolError(0);
-        udivWarning(0);
         unusedStructMemberError(0, "structname", "variable");
         passedByValueError(0, "parametername");
         constStatementError(0, "type");
