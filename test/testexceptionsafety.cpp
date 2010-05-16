@@ -41,7 +41,7 @@ private:
         TEST_CASE(deallocThrow);
     }
 
-    void check(const std::string &code, const std::string &autodealloc = "")
+    void check(const std::string &code)
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -55,8 +55,6 @@ private:
         // Check char variable usage..
         Settings settings;
         settings.addEnabled("all");
-        std::istringstream istr2(autodealloc.c_str());
-        settings.autoDealloc(istr2);
         CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
         checkExceptionSafety.runSimplifiedChecks(&tokenizer, &settings, this);
     }
@@ -73,24 +71,24 @@ private:
     void newnew()
     {
         check("C::C() : a(new A), b(new B) { }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Upon exception there is memory leak: a\n", errout.str());
-
-        check("C::C() : a(new A), b(new B) { }", "A\nB\n");
         ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:1]: (style) Upon exception there is memory leak: a\n", errout.str());
 
         check("C::C()\n"
               "{\n"
               "    a = new A;\n"
               "    b = new B;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leak: a\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leak: a\n", errout.str());
 
         check("void a()\n"
               "{\n"
               "    A *a1 = new A;\n"
               "    A *a2 = new A;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leak: a1\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Upon exception there is memory leak: a1\n", errout.str());
 
         check("void a()\n"
               "{\n"
@@ -112,7 +110,7 @@ private:
               "{\n"
               "    A *a = new A;\n"
               "    B *b = new B;\n"
-              "}\n", "A\n");
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // passing pointer to unknown function.. the pointer may be added to some list etc..
@@ -121,7 +119,7 @@ private:
               "    A *a1 = new A;\n"
               "    add(a1);\n"
               "    A *a2 = new A;\n"
-              "}\n", "");
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

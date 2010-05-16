@@ -40,21 +40,6 @@ Settings::Settings()
     inconclusive = false;
 }
 
-
-void Settings::autoDealloc(std::istream &istr)
-{
-    std::string line;
-    while (getline(istr, line))
-    {
-        // Check if line has a valid classname..
-        if (line.empty())
-            continue;
-
-        // Add classname to list
-        _autoDealloc.insert(line);
-    }
-}
-
 bool Settings::Suppressions::parseFile(std::istream &istr)
 {
     std::string line;
@@ -166,16 +151,6 @@ void Settings::addEnabled(const std::string &str)
 bool Settings::isEnabled(const std::string &str) const
 {
     return bool(_enabled.find(str) != _enabled.end());
-}
-
-void Settings::addAutoAllocClass(const std::string &name)
-{
-    _autoDealloc.insert(name);
-}
-
-bool Settings::isAutoDealloc(const std::string &classname) const
-{
-    return (_autoDealloc.find(classname) != _autoDealloc.end());
 }
 
 

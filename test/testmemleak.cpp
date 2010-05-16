@@ -340,10 +340,6 @@ private:
         TEST_CASE(unknownFunction4);
         TEST_CASE(unknownFunction5);
 
-        // VCL..
-        TEST_CASE(vcl1);
-        TEST_CASE(vcl2);
-
         // detect leak in class member function..
         TEST_CASE(class1);
 
@@ -2084,12 +2080,6 @@ private:
               "    Fred *f = new Fred;\n"
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
-
-        check("void foo()\n"
-              "{\n"
-              "    Fred *f = new Fred;\n"
-              "}\n", true);
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: f\n", errout.str());
     }
 
 
@@ -2184,7 +2174,7 @@ private:
     }
 
 
-    void checkvcl(const char code[], const char _autoDealloc[])
+    void checkvcl(const char code[])
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -2202,42 +2192,8 @@ private:
         Settings settings;
         settings.inconclusive = true;
 
-        {
-            std::istringstream istr(_autoDealloc);
-            settings.autoDealloc(istr);
-        }
-
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
         checkMemoryLeak.check();
-    }
-
-
-
-    void vcl1()
-    {
-        checkvcl("void Form1::foo()\n"
-                 "{\n"
-                 "    TEdit *Edit1 = new TEdit(this);\n"
-                 "}\n", "TEdit\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void vcl2()
-    {
-        checkvcl("class Fred\n"
-                 "{\n"
-                 "private:\n"
-                 "    TButton *button;\n"
-                 "public:\n"
-                 "    Fred();\n"
-                 "};\n"
-                 "\n"
-                 "Fred::Fred()\n"
-                 "{\n"
-                 "    button = new TButton(this);\n"
-                 "}\n", "TButton\n");
-        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -2811,8 +2767,6 @@ private:
 
         TEST_CASE(staticvar);
 
-        TEST_CASE(use);
-
         TEST_CASE(free_member_in_sub_func);
 
         TEST_CASE(mismatch1);
@@ -3123,23 +3077,6 @@ private:
               "    }\n"
               "};\n", true);
         ASSERT_EQUALS("", errout.str());
-    }
-
-
-    void use()
-    {
-        check("class A\n"
-              "{\n"
-              "public:\n"
-              "    Fred * fred;\n"
-              "    A();\n"
-              "};\n"
-              "A::A()\n"
-              "{\n"
-              "    fred = new Fred;\n"
-              "    list->push_back(fred);\n"
-              "}", true);
-        TODO_ASSERT_EQUALS("", errout.str());
     }
 
 

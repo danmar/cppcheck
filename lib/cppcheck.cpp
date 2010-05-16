@@ -464,25 +464,10 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             }
         }
 
-        // auto deallocated classes..
+        // deprecated: auto deallocated classes..
         else if (strcmp(argv[i], "--auto-dealloc") == 0)
         {
             ++i;
-
-            if (i >= argc || !strstr(argv[i], ".lst"))
-            {
-                reportOut("cppcheck: No .lst file specified for the --auto-dealloc option");
-                return false;
-            }
-
-            std::ifstream f(argv[i]);
-            if (!f.is_open())
-            {
-                reportOut("cppcheck: couldn't open the file \"" + std::string(argv[i+1]) + "\"");
-                return false;
-            }
-
-            _settings.autoDealloc(f);
         }
 
         // print all possible error messages..

@@ -37,9 +37,6 @@
 class Settings
 {
 private:
-    /** @brief classes that are automaticly deallocated */
-    std::set<std::string> _autoDealloc;
-
     /** @brief Code to append in the checks */
     std::string _append;
 
@@ -106,15 +103,6 @@ public:
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> _includePaths;
-
-    /** @brief Fill list of automaticly deallocated classes (--auto-dealloc) */
-    void autoDealloc(std::istream &istr);
-
-    /** @brief Add class to list of automatically deallocated classes */
-    void addAutoAllocClass(const std::string &name);
-
-    /** @brief is a class automaticly deallocated? */
-    bool isAutoDealloc(const std::string &classname) const;
 
     /** @brief assign append code (--append) */
     void append(const std::string &filename);

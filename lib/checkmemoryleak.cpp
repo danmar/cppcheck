@@ -815,29 +815,14 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
                 }
 
-                // If "--all" hasn't been given, don't check classes..
+                // don't check classes..
                 if (alloc == CheckMemoryLeak::New)
                 {
                     if (Token::Match(tok->tokAt(2), "new %type% [(;]"))
                     {
                         if (isclass(_tokenizer, tok->tokAt(3)))
                         {
-                            if (_settings->inconclusive)
-                            {
-
-                                if (_settings->isAutoDealloc(tok->strAt(3)))
-                                {
-                                    // This class has automatic deallocation
-                                    alloc = No;
-                                }
-                                else
-                                {
-                                    // The checking will proceed.. but any error messages that are shown are shown thanks to "--all"
-                                    all = true;
-                                }
-                            }
-                            else
-                                alloc = No;
+                            alloc = No;
                         }
                     }
                 }
@@ -2366,11 +2351,7 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
             if (privateScope && tok->isStandardType())
                 checkPublicFunctions(tok1, tok->tokAt(2)->varId());
 
-            // No false positives for auto deallocated classes..
-            if (_settings->isAutoDealloc(tok->str().c_str()))
-                continue;
-
-            if (_settings->inconclusive || !isclass(_tokenizer, tok))
+            if (!isclass(_tokenizer, tok))
                 variable(classname.back(), tok->tokAt(2));
         }
     }

@@ -105,10 +105,13 @@ void CheckExceptionSafety::unsafeNew()
                     unsafeNewError(tok->previous(), varname);
                     break;
                 }
+                /*
+                // TODO: check if class is autodeallocated+might throw exception in constructor
                 if (!_settings->isAutoDealloc(tok->strAt(2)))
                 {
                     varname = tok->strAt(-1);
                 }
+                */
             }
             tok = tok->link();
             tok = tok ? tok->next() : 0;
@@ -152,8 +155,11 @@ void CheckExceptionSafety::unsafeNew()
                     unsafeNewError(tok, varname);
                     break;
                 }
+                /*
+                TODO: check is class is autodeallocated + might throw exceptions in the constructor
                 if (!_settings->isAutoDealloc(tok->strAt(3)))
                     varname = tok->str();
+                */
             }
         }
     }
@@ -170,7 +176,7 @@ void CheckExceptionSafety::unsafeNew()
         }
 
         if (Token::Match(tok, "[;{}] %type% * %var% ;") &&
-            !_settings->isAutoDealloc(tok->strAt(1)))
+            tok->tokAt(1)->isStandardType())
         {
             tok = tok->tokAt(3);
             if (tok->varId())
