@@ -48,7 +48,7 @@ CheckBufferOverrun instance;
 
 void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, int size, int index)
 {
-    if (size <= 1)
+    if (size == 1)
         return;
 
     std::ostringstream errmsg;
@@ -779,6 +779,17 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             }
 
         }
+		
+		// in case %var% is declared as a pointer
+		else if (Token::Match(tok, "%var% [ %num% ]"))
+		{
+			const int index = MathLib::toLongNumber(tok->strAt(2));
+			if (index < 0)
+			{
+				arrayIndexOutOfBounds(tok, index, index);
+			}
+			
+		}
 
         // Loop..
         else if (Token::simpleMatch(tok, "for ("))
