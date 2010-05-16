@@ -402,8 +402,7 @@ private:
         callstack.push_back(0);
         CheckMemoryLeak::AllocType allocType, deallocType;
         allocType = deallocType = CheckMemoryLeak::No;
-        bool all = false;
-        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varId, allocType, deallocType, false, all, 1);
+        Token *tokens = checkMemoryLeak.getcode(tokenizer.tokens(), callstack, varId, allocType, deallocType, false, 1);
 
         // stringify..
         std::ostringstream ret;
@@ -577,7 +576,7 @@ private:
     }
 
 
-    std::string simplifycode(const char code[], bool &all) const
+    std::string simplifycode(const char code[]) const
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -602,10 +601,8 @@ private:
         }
 
         Settings settings;
-        settings.inconclusive = all;
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, NULL);
-        all = false;
-        checkMemoryLeak.simplifycode(tokens, all);
+        checkMemoryLeak.simplifycode(tokens);
 
         std::ostringstream ret;
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next())
@@ -613,20 +610,6 @@ private:
 
         return ret.str();
     }
-
-    std::string simplifycode(const char code[])
-    {
-        bool all = false;
-        const std::string str1 = simplifycode(code, all);
-        ASSERT_EQUALS(0, (unsigned int)(all ? 1 : 0));
-
-        all = true;
-        const std::string str2 = simplifycode(code, all);
-        ASSERT_EQUALS((unsigned int)(all ? 1 : 0), (unsigned int)((str1 != str2) ? 1 : 0));
-
-        return all ? (str1 + "\n" + str2) : str1;
-    }
-
 
 
     // Test that the CheckMemoryLeaksInFunction::simplifycode works
@@ -649,7 +632,7 @@ private:
         ASSERT_EQUALS("; alloc ; if return ;", simplifycode("; alloc ; loop { if return ; if continue ; }"));
         ASSERT_EQUALS("; alloc ; if return ;", simplifycode("; alloc ; loop { if continue ; else return ; }"));
 
-        ASSERT_EQUALS("; alloc ; dealloc ;\n; alloc ;", simplifycode("; alloc ; if(!var) { return ; } if { dealloc ; }"));
+        ASSERT_EQUALS("; alloc ; if dealloc ;", simplifycode("; alloc ; if(!var) { return ; } if { dealloc ; }"));
         ASSERT_EQUALS("; if alloc ; else assign ; return use ;", simplifycode("; callfunc ; if callfunc { alloc ; } else { assign ; } return use ;"));
 
         ASSERT_EQUALS("; dealloc ; return ;", simplifycode("; while1 { if callfunc { dealloc ; return ; } else { continue ; } }"));
@@ -662,7 +645,7 @@ private:
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { dealloc; return; }"));
         ASSERT_EQUALS("; alloc ;", simplifycode("; alloc; if { return use; }"));
         ASSERT_EQUALS("; alloc ; return ;", simplifycode(";alloc;if{return;}return;"));
-        ASSERT_EQUALS("; alloc ; assign ; dealloc ;", simplifycode(";alloc;if{assign;}dealloc;"));
+        ASSERT_EQUALS("; alloc ; if assign ; dealloc ;", simplifycode(";alloc;if{assign;}dealloc;"));
 
         // if(var)
         ASSERT_EQUALS("; alloc ; return use ;", simplifycode("; alloc ; return use ;"));
@@ -698,7 +681,7 @@ private:
         TODO_ASSERT_EQUALS("; assign ; if alloc ; }", simplifycode("; assign ; { dealloc ; if alloc ; } }"));
 
         // callfunc..
-        ASSERT_EQUALS("; callfunc ;\n;", simplifycode(";callfunc;"));
+        ASSERT_EQUALS("; callfunc ;", simplifycode(";callfunc;"));
 
         // exit..
         ASSERT_EQUALS("; exit ;", simplifycode("; alloc; exit;"));
@@ -710,13 +693,13 @@ private:
         TODO_ASSERT_EQUALS(";\n; alloc ;", simplifycode("; alloc ; ifv { exit; }"));
 
         // dealloc; dealloc;
-        ASSERT_EQUALS("; alloc ; dealloc ; dealloc ;", simplifycode("; alloc ; if { dealloc ; } dealloc ;"));
+        ASSERT_EQUALS("; alloc ; if dealloc ; dealloc ;", simplifycode("; alloc ; if { dealloc ; } dealloc ;"));
     }
 
 
 
     // is there a leak in given code? if so, return the linenr
-    unsigned int dofindleak(const char code[], bool all = false) const
+    unsigned int dofindleak(const char code[]) const
     {
         // Tokenize..
         Settings settings;
@@ -746,7 +729,7 @@ private:
             }
         }
 
-        const Token *tok = CheckMemoryLeakInFunction::findleak(tokenizer.tokens(), all);
+        const Token *tok = CheckMemoryLeakInFunction::findleak(tokenizer.tokens());
         return (tok ? tok->linenr() : (unsigned int)(-1));
     }
 
@@ -1247,8 +1230,6 @@ private:
                                "}\n");
         check(code.c_str(), false);
         ASSERT_EQUALS("", errout.str());
-        check(code.c_str(), true);
-        ASSERT_EQUALS("[test.cpp:12]: (possible error) Memory leak: str\n", errout.str());
     }
 
     void switch3()
@@ -1863,14 +1844,8 @@ private:
               "        free(buf);\n"
               "    else\n"
               "        free(new_buf);\n"
-              "}\n", true);
-
-        // There isn't a memory leak in the code
-        TODO_ASSERT_EQUALS("", errout.str());
-
-        // This assertion checks that the message stays the same. Upon changes in the error message
-        // we will be notified
-        ASSERT_EQUALS("[test.cpp:11]: (possible error) Memory leak: buf\n", errout.str());
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void realloc6()
@@ -2725,9 +2700,9 @@ private:
     /**
      * Tokenize and execute leak check for given code
      * @param code Source code
-     * @param showAll Not used
+     * @param inconclusive inconclusive checking
      */
-    void check(const char code[], bool = false)
+    void check(const char code[], bool inconclusive = false)
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -2741,7 +2716,7 @@ private:
 
         // Check for memory leaks..
         Settings settings;
-        settings.inconclusive = true;
+        settings.inconclusive = inconclusive;
         settings._checkCodingStyle = true;
         tokenizer.fillFunctionList();
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
@@ -2800,7 +2775,7 @@ private:
               "    delete [] str2;\n"
               "}\n", true);
 
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: Fred::str1\n", errout.str());
     }
 
 
@@ -2825,7 +2800,7 @@ private:
               "    free(str1);\n"
               "}\n", true);
 
-        ASSERT_EQUALS("[test.cpp:17]: (possible error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
     }
 
     void class3()
@@ -2972,7 +2947,7 @@ private:
               "    int * p;\n"
               "    A() { p = new int; }\n"
               "};\n", true);
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class11()
@@ -2985,7 +2960,7 @@ private:
               "};\n"
               "A::A() : p(new int[10])\n"
               "{ }", true);
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class12()
@@ -3008,7 +2983,7 @@ private:
               "\n"
               "void A::cleanup()\n"
               "{ delete [] p; }\n", true);
-        ASSERT_EQUALS("[test.cpp:4]: (possible error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class13()
@@ -3045,7 +3020,7 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = new int[10]; }\n", true);
-        ASSERT_EQUALS("[test.cpp:3]: (possible error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class15()
@@ -3162,7 +3137,7 @@ private:
               "A::~A() {\n"
               "    delete [] pkt_buffer;\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:14]: (possible error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
     }
 
     void func1()

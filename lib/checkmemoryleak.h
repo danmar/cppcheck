@@ -92,7 +92,7 @@ public:
     /** @brief What type of allocation are used.. the "Many" means that several types of allocation and deallocation are used */
     enum AllocType { No, Malloc, gMalloc, New, NewArray, File, Fd, Pipe, Dir, Many };
 
-    void memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype, bool all);
+    void memoryLeak(const Token *tok, const std::string &varname, AllocType alloctype);
 
     /**
      * @brief Get type of deallocation at given position
@@ -128,8 +128,8 @@ public:
      */
     bool isclass(const Tokenizer *_tokenizer, const Token *typestr) const;
 
-    void memleakError(const Token *tok, const std::string &varname, bool all);
-    void resourceLeakError(const Token *tok, const std::string &varname, bool all);
+    void memleakError(const Token *tok, const std::string &varname);
+    void resourceLeakError(const Token *tok, const std::string &varname);
 
     /**
      * @brief Report error: deallocating a deallocated pointer
@@ -139,7 +139,7 @@ public:
     void deallocDeallocError(const Token *tok, const std::string &varname);
     void deallocuseError(const Token *tok, const std::string &varname);
     void mismatchSizeError(const Token *tok, const std::string &sz);
-    void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname, bool all);
+    void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname);
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Token *tok) const;
@@ -222,7 +222,6 @@ public:
      * @param varid        variable id to check
      * @param alloctype    if memory is allocated, this indicates the type of allocation
      * @param dealloctype  if memory is deallocated, this indicates the type of deallocation
-     * @param all          is the code simplified according to the "--all" rules or not?
      * @param sz           not used by call_func - see getcode
      * @return These are the possible return values:
      * - NULL : no significant code
@@ -234,7 +233,7 @@ public:
      * - "callfunc" : a function call with unknown side effects
      * - "&use"
      */
-    const char * call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &all, unsigned int sz);
+    const char * call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, unsigned int sz);
 
     /**
      * Extract a new tokens list that is easier to parse than the "_tokenizer->tokens()", the
@@ -246,7 +245,6 @@ public:
      * @param alloctype keep track of what type of allocation is used
      * @param dealloctype keeps track of what type of deallocation is used
      * @param classmember should be set if the inspected function is a class member
-     * @param all has the getcode been simplified according to the "--all" rules?
      * @param sz size of type, used to check for mismatching size of allocation. for example "int *a;" => the sz is "sizeof(int)"
      * @return Newly allocated token array. Caller needs to release reserved
      * memory by calling Tokenizer::deleteTokens(returnValue);
@@ -269,16 +267,15 @@ public:
      * - &use : the address of the variable is taken
      * - ::use : calling member function of class
      */
-    Token *getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, bool &all, unsigned int sz);
+    Token *getcode(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool classmember, unsigned int sz);
 
     /**
      * Simplify code e.g. by replacing empty "{ }" with ";"
      * @param tok first token. The tokens list can be modified.
-     * @param all is the code simplified according to the "--all" rules or not
      */
-    void simplifycode(Token *tok, bool &all);
+    void simplifycode(Token *tok);
 
-    static const Token *findleak(const Token *tokens, bool all);
+    static const Token *findleak(const Token *tokens);
 
     /**
      * Checking the variable varname
@@ -293,14 +290,14 @@ public:
     /** Report all possible errors (for the --errorlist) */
     void getErrorMessages()
     {
-        memleakError(0, "varname", false);
-        resourceLeakError(0, "varname", false);
+        memleakError(0, "varname");
+        resourceLeakError(0, "varname");
 
         deallocDeallocError(0, "varname");
         deallocuseError(0, "varname");
         mismatchSizeError(0, "sz");
         std::list<const Token *> callstack;
-        mismatchAllocDealloc(callstack, "varname", false);
+        mismatchAllocDealloc(callstack, "varname");
     }
 
     /**
