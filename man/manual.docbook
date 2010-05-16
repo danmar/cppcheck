@@ -156,6 +156,23 @@ Checking path/file2.cpp...
   </chapter>
 
   <chapter>
+    <title>Preprocessor configurations</title>
+
+    <para>By default Cppcheck will check all preprocessor configurations
+    (except those that has #error in them). This is the recommended
+    behaviour.</para>
+
+    <para>But if you want to manually limit the checking you can do so with
+    <literal>-D</literal>.</para>
+
+    <para>For example, if you want to limit the checking so the only
+    configuration to check should be "DEBUG=1;__cplusplus" then something like
+    this can be used:</para>
+
+    <programlisting>cppcheck -DDEBUG=1 -D__cplusplus path</programlisting>
+  </chapter>
+
+  <chapter>
     <title>XML output</title>
 
     <para>Cppcheck can generate the output in XML format.</para>
