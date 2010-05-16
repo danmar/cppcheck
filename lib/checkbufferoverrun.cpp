@@ -93,14 +93,6 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varn
     reportError(tok, Severity::error, "bufferAccessOutOfBounds",  errmsg);
 }
 
-void CheckBufferOverrun::dangerousStdCin(const Token *tok)
-{
-    if (_settings && _settings->inconclusive == false)
-        return;
-
-    reportError(tok, Severity::possibleError, "dangerousStdCin", "Dangerous usage of std::cin, possible buffer overrun");
-}
-
 void CheckBufferOverrun::strncatUsage(const Token *tok)
 {
     if (_settings && !_settings->_checkCodingStyle)
@@ -787,13 +779,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
             }
 
         }
-
-        // cin..
-        else if (Token::Match(tok, "cin >> %varid% ;", arrayInfo.varid))
-        {
-            dangerousStdCin(tok);
-        }
-
 
         // Loop..
         else if (Token::simpleMatch(tok, "for ("))

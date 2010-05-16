@@ -139,8 +139,6 @@ private:
 
         TEST_CASE(memfunc);		// memchr/memset/memcpy
 
-        TEST_CASE(cin1);
-
         TEST_CASE(varid1);
         TEST_CASE(varid2);
 
@@ -1689,21 +1687,6 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
         ASSERT_EQUALS("", errout.str());
     }
-
-
-
-    void cin1()
-    {
-        check("#include <iostream>\n"
-              "using namespace std;\n"
-              "void f()\n"
-              "{\n"
-              "    char str[10];\n"
-              "    cin >> str;\n"
-              "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (possible error) Dangerous usage of std::cin, possible buffer overrun\n", errout.str());
-    }
-
 
 
     void varid1()

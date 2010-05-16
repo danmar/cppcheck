@@ -172,7 +172,6 @@ public:
     void arrayIndexOutOfBounds(const Token *tok, int size, int index);
     void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<int> &index);
     void bufferOverrun(const Token *tok, const std::string &varnames = "");
-    void dangerousStdCin(const Token *tok);
     void strncatUsage(const Token *tok);
     void outOfBounds(const Token *tok, const std::string &what);
     void sizeArgumentAsChar(const Token *tok);
@@ -183,7 +182,6 @@ public:
     {
         arrayIndexOutOfBounds(0, 2, 2);
         bufferOverrun(0, std::string("buffer"));
-        dangerousStdCin(0);
         strncatUsage(0);
         outOfBounds(0, "index");
         sizeArgumentAsChar(0);
