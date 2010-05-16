@@ -5042,6 +5042,7 @@ bool Tokenizer::simplifyKnownVariables()
                 std::string value;
 
                 Token *tok3 = NULL;
+                bool valueIsPointer = false;
 
                 if (Token::Match(tok2->tokAt(-2), "for ( %varid% = %num% ; %varid% <|<= %num% ; ++| %varid% ++| ) {", varid))
                 {
@@ -5060,7 +5061,15 @@ bool Tokenizer::simplifyKnownVariables()
                     if (value == "]")
                         value = tok2->strAt(4);
                     else if (value == "&")
+                    {
                         value = tok2->strAt(3);
+
+                        // *ptr = &var; *ptr = 5;
+                        // equals
+                        // var = 5; not *var = 5;
+                        if (tok2->strAt(4) == ";")
+                            valueIsPointer = true;
+                    }
                     if (Token::simpleMatch(tok2->next(), "= &"))
                         tok2 = tok2->tokAt(3);
                     tok3 = tok2->next();
@@ -5184,6 +5193,8 @@ bool Tokenizer::simplifyKnownVariables()
                     {
                         tok3 = tok3->next();
                         tok3->str(value);
+                        if (tok3->previous()->str() == "*" && valueIsPointer)
+                            tok3->previous()->deleteThis();
                         ret = true;
                     }
 

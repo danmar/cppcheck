@@ -200,6 +200,7 @@ private:
         TEST_CASE(pointeralias2);
         TEST_CASE(pointeralias3);
         TEST_CASE(pointeralias4);
+        TEST_CASE(pointeralias5);
 
         TEST_CASE(reduceConstness);
 
@@ -4237,6 +4238,25 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
+    void pointeralias5()
+    {
+        const char code[] = "int f()\n"
+                            "{\n"
+                            "    int i;\n"
+                            "    int *p = &i;\n"
+                            "    *p = 5;\n"
+                            "    return i;\n"
+                            "}\n";
+        const char expected[] = "int f ( ) "
+                                "{"
+                                " int i ;"
+                                " int * p ;"
+                                " p = & i ;"
+                                " i = 5 ;"
+                                " return 5 ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code));
+    }
 
     void reduceConstness()
     {
