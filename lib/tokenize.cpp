@@ -4381,12 +4381,18 @@ void Tokenizer::simplifyVarDecl()
             }
         }
 
-        else if (Token::Match(tok2, "%type% %var% [ %num% ] ,|=") ||
-                 Token::Match(tok2, "%type% %var% [ %var% ] ,|="))
+        else if (Token::Match(tok2, "%type% %var% [ %num% ] ,|=|[") ||
+                 Token::Match(tok2, "%type% %var% [ %var% ] ,|=|["))
         {
             tok2 = tok2->tokAt(5);    // The ',' token
+            while (Token::Match(tok2, "[ %num% ]") || Token::Match(tok2, "[ %var% ]"))
+                tok2 = tok2->tokAt(3);
+            if (!Token::Match(tok2, "=|,"))
+            {
+                tok2 = NULL;
+            }
 
-            if (tok2->str() == "=")
+            if (tok2 && tok2->str() == "=")
             {
                 while (tok2 && tok2->str() != ",")
                 {
