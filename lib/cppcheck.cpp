@@ -367,6 +367,14 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             }
         }
 
+        // User define
+        else if (strncmp(argv[i], "-D", 2) == 0)
+        {
+            if (!_settings.userDefines.empty())
+                _settings.userDefines += ";";
+            _settings.userDefines += 2 + argv[i];
+        }
+
         // Include paths
         else if (strcmp(argv[i], "-I") == 0 || strncmp(argv[i], "-I", 2) == 0)
         {
@@ -630,6 +638,12 @@ unsigned int CppCheck::check()
                 std::ifstream fin(fname.c_str());
                 Timer t("Preprocessor::preprocess", _settings._showtime, &S_timerResults);
                 preprocessor.preprocess(fin, filedata, configurations, fname, _settings._includePaths);
+            }
+
+            if (!_settings.userDefines.empty())
+            {
+                configurations.clear();
+                configurations.push_back(_settings.userDefines);
             }
 
             int checkCount = 0;

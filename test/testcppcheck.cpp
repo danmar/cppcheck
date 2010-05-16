@@ -65,6 +65,8 @@ private:
         TEST_CASE(parseOutputtingInvalidArgs);
         TEST_CASE(parseArgsAndCheck);
         TEST_CASE(parseArgsAndCheckSettings);
+
+        TEST_CASE(userdefines);
     }
 
     bool argCheck(int argc, const char *argv[])
@@ -405,6 +407,18 @@ private:
         errout.str("");
         CppCheck cppCheck(*this);
         cppCheck.getErrorMessages();
+    }
+
+    void userdefines()
+    {
+        {
+            const char *argv[] = {"cppcheck", "-DA", "-DB"};
+            Settings settings;
+            ASSERT_EQUALS(true, argCheckReturnSettings(3, argv, settings));
+            ASSERT_EQUALS("A;B", settings.userDefines);
+            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("", output.str());
+        }
     }
 };
 

@@ -156,7 +156,6 @@ public:
          * @return true if this error is suppressed.
          */
         bool isSuppressed(const std::string &errorId, const std::string &file, unsigned int line);
-
     };
 
     /** @brief suppress message (--suppressions) */
@@ -164,6 +163,9 @@ public:
 
     /** @brief suppress exitcode */
     Suppressions nofail;
+
+    /** @brief defines given by the user */
+    std::string userDefines;
 };
 
 /// @}
