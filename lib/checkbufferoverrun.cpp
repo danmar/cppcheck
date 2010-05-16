@@ -48,38 +48,17 @@ CheckBufferOverrun instance;
 
 void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, int size, int index)
 {
-    if (!tok)
-        arrayIndexOutOfBounds(size, index);
-    else
-    {
-        _callStack.push_back(tok);
-        arrayIndexOutOfBounds(size, index);
-        _callStack.pop_back();
-    }
-}
+    if (size <= 1)
+        return;
 
-void CheckBufferOverrun::arrayIndexOutOfBounds(int size, int index)
-{
-    Severity::e severity;
-    if (size <= 1 || _callStack.size() > 1)
-    {
-        severity = Severity::possibleError;
-        if (_settings->inconclusive == false)
-            return;
-    }
+    std::ostringstream errmsg;
+    errmsg << "Array '";
+    if (tok)
+        errmsg << tok->str();
     else
-    {
-        severity = Severity::error;
-    }
-
-    if (_callStack.size() == 1)
-    {
-        std::ostringstream oss;
-        oss << "Array '" << (*_callStack.begin())->str() << "[" << size << "]' index " << index << " out of bounds";
-        reportError(_callStack, severity, "arrayIndexOutOfBounds", oss.str().c_str());
-    }
-    else
-        reportError(_callStack, severity, "arrayIndexOutOfBounds", "Array index out of bounds");
+        errmsg << "array";
+    errmsg << "[" << size << "]' index " << index << " out of bounds";
+    reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str().c_str());
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<int> &index)
@@ -103,18 +82,6 @@ void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo
 
 void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varnames)
 {
-    Severity::e severity;
-    if (_callStack.size() > 0)
-    {
-        severity = Severity::possibleError;
-        if (_settings->inconclusive == false)
-            return;
-    }
-    else
-    {
-        severity = Severity::error;
-    }
-
     std::string v = varnames;
     while (v.find(" ") != std::string::npos)
         v.erase(v.find(" "), 1);
@@ -123,7 +90,7 @@ void CheckBufferOverrun::bufferOverrun(const Token *tok, const std::string &varn
     if (!v.empty())
         errmsg += ": " + v;
 
-    reportError(tok, severity, "bufferAccessOutOfBounds",  errmsg);
+    reportError(tok, Severity::error, "bufferAccessOutOfBounds",  errmsg);
 }
 
 void CheckBufferOverrun::dangerousStdCin(const Token *tok)
@@ -746,106 +713,10 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
             }
         }
 
-        // Function call..
-        // It's not interesting to check what happens when the whole struct is
-        // sent as the parameter, that is checked separately anyway.
+        // Function calls not handled
         if (Token::Match(tok, "%var% ("))
         {
-            // Only perform this checking if showAll setting is enabled..
-            if (!_settings->inconclusive)
-                continue;
-
-            unsigned int parlevel = 0, par = 0;
-            const Token * tok1 = tok;
-            for (const Token *tok2 = tok; tok2; tok2 = tok2->next())
-            {
-                if (tok2->str() == "(")
-                {
-                    ++parlevel;
-                }
-
-                else if (tok2->str() == ")")
-                {
-                    --parlevel;
-                    if (parlevel < 1)
-                    {
-                        par = 0;
-                        break;
-                    }
-                }
-
-                else if (parlevel == 1 && (tok2->str() == ","))
-                {
-                    ++par;
-                }
-
-                if (parlevel == 1)
-                {
-                    if (varid > 0 && Token::Match(tok2, "[(,] %varid% [,)]", varid))
-                    {
-                        ++par;
-                        tok1 = tok2->next();
-                        break;
-                    }
-                    else if (varid == 0 &&  Token::Match(tok2, ("[(,] " + varnames + " [,)]").c_str()))
-                    {
-                        ++par;
-                        tok1 = tok2->tokAt(varc + 1);
-                        break;
-                    }
-                }
-            }
-
-            if (par == 0)
-                continue;
-
-            // Find function..
-            const Token *ftok = _tokenizer->getFunctionTokenByName(tok->str().c_str());
-            if (!ftok)
-                continue;
-
-            // Parse head of function..
-            ftok = ftok->tokAt(2);
-            parlevel = 1;
-            while (ftok && parlevel == 1 && par >= 1)
-            {
-                if (ftok->str() == "(")
-                    ++parlevel;
-
-                else if (ftok->str() == ")")
-                    --parlevel;
-
-                else if (ftok->str() == ",")
-                    --par;
-
-                else if (par == 1 && parlevel == 1 && Token::Match(ftok, "%var% [,)]"))
-                {
-                    // Parameter name..
-                    std::vector<std::string> parname;
-                    parname.push_back(ftok->str());
-
-                    const unsigned int parId = ftok->varId();
-
-                    // Goto function body..
-                    while (ftok && (ftok->str() != "{"))
-                        ftok = ftok->next();
-                    ftok = ftok ? ftok->next() : 0;
-
-                    // Don't make recursive checking..
-                    if (std::find_if(_callStack.begin(), _callStack.end(), TokenStrEquals(tok1->str())) != _callStack.end())
-                        continue;
-
-                    // Check variable usage in the function..
-                    _callStack.push_back(tok1);
-                    checkScope(ftok, parname, size, total_size, parId);
-                    _callStack.pop_back();
-
-                    // break out..
-                    break;
-                }
-
-                ftok = ftok->next();
-            }
+            continue;
         }
     }
 }
@@ -1245,8 +1116,6 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
         if (total_size == 0)
             continue;
 
-        // The callstack is empty
-        _callStack.clear();
         std::vector<std::string> v;
         checkScope(tok->tokAt(nextTok), v, size, total_size, varid);
     }

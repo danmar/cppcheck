@@ -431,8 +431,7 @@ private:
               "    struct ABC* x = (struct ABC *)malloc(sizeof(struct ABC) + 10);\n"
               "    x->str[1] = 0;"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (possible error) Array 'str[1]' index 1 out of bounds\n", errout.str());
-        TODO_ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("struct foo\n"
               "{\n"
@@ -554,7 +553,8 @@ private:
               "{\n"
               "    memclr(abc->str);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (possible error) Array index out of bounds\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:8]: (possible error) Array index out of bounds\n", errout.str());
     }
 
 

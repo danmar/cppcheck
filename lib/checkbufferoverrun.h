@@ -169,11 +169,7 @@ public:
      */
     void checkFunctionCall(const Token &tok, const unsigned int par, const ArrayInfo &arrayInfo);
 
-    /** callstack - used during intra-function checking */
-    std::list<const Token *> _callStack;
-
     void arrayIndexOutOfBounds(const Token *tok, int size, int index);
-    void arrayIndexOutOfBounds(int size, int index);
     void arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<int> &index);
     void bufferOverrun(const Token *tok, const std::string &varnames = "");
     void dangerousStdCin(const Token *tok);
