@@ -120,6 +120,12 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
             next = next->next();
         }
 
+        // Is it const..?
+        if (next->str() == "const")
+        {
+            next = next->next();
+        }
+
         // Is it a variable declaration?
         if (Token::Match(next, "%type% %var% ;|:"))
         {

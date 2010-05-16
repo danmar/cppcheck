@@ -116,6 +116,7 @@ private:
         TEST_CASE(const18); // ticket #1563
         TEST_CASE(const19); // ticket #1612
         TEST_CASE(const20); // ticket #1602
+        TEST_CASE(const21); // ticket #1683
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3289,6 +3290,23 @@ private:
                    "    std::list<const std::string &> get() { return x; }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Fred::get' can be const\n", errout.str());
+    }
+
+    void const21()
+    {
+        // ticket #1683
+        checkConst("class A\n"
+                   "{\n"
+                   "private:\n"
+                   "    const char * l1[10];\n"
+                   "public:\n"
+                   "    A()\n"
+                   "    {\n"
+                   "        for (int i = 0 ; i < 10; l1[i] = NULL, i++);\n"
+                   "    }\n"
+                   "    void f1() { l1[0] = \"Hello\"; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // increment/decrement => not const
