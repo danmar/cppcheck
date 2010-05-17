@@ -1019,7 +1019,7 @@ void Tokenizer::simplifyTypedef()
                                 }
                             }
                         }
-                        else
+                        else if (tok2->previous()->str() != ".")
                         {
                             simplifyType = true;
                         }

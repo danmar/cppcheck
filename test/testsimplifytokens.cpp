@@ -190,6 +190,7 @@ private:
         TEST_CASE(simplifyTypedef45); // ticket #1613
         TEST_CASE(simplifyTypedef46); // ticket #1615
         TEST_CASE(simplifyTypedef47);
+        TEST_CASE(simplifyTypedef48); // ticket #1673
 
         TEST_CASE(simplifyTypedefFunction);
 
@@ -3968,6 +3969,23 @@ private:
                                        "void ( X :: * f ) ( ) ;");
             ASSERT_EQUALS(expected, sizeof_(code));
         }
+    }
+
+    void simplifyTypedef48() // ticket #1673
+    {
+        const char code[] = "typedef struct string { } string;\n"
+                            "void foo (LIST *module_name)\n"
+                            "{\n"
+                            "    bar(module_name ? module_name->string : 0);\n"
+                            "}\n";
+
+        // The expected result..
+        const std::string expected("struct string { } ; ; "
+                                   "void foo ( LIST * module_name ) "
+                                   "{ "
+                                   "bar ( module_name ? module_name . string : 0 ) ; "
+                                   "}");
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
     void simplifyTypedefFunction()
