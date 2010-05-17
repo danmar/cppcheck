@@ -313,7 +313,8 @@ Settings MainWindow::GetCppcheckSettings()
             QString classname;
             foreach(classname, classes)
             {
-                result.addAutoAllocClass(classname.toStdString());
+                // the auto-dealloc is deprecated
+                //result.addAutoAllocClass(classname.toStdString());
             }
 
             QStringList dirs = pfile.GetIncludeDirs();
