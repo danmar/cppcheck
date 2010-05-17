@@ -5200,7 +5200,10 @@ bool Tokenizer::simplifyKnownVariables()
                         tok3 = tok3->next();
                         tok3->str(value);
                         if (tok3->previous()->str() == "*" && valueIsPointer)
-                            tok3->previous()->deleteThis();
+                        {
+                            tok3 = tok3->previous();
+                            tok3->deleteThis();
+                        }
                         ret = true;
                     }
 
