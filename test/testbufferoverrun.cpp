@@ -933,17 +933,17 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[10]' index -1 out of bounds\n", errout.str());
     }
-	
-	void array_index_28()
+
+    void array_index_28()
     {
-		// ticket #1418
+        // ticket #1418
         check("void f()\n"
               "{\n"
               "    int i[2];\n"
               "    int *ip = &i[1];\n"
               "    ip[-10] = 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'ip[-10]' index -10 out of bounds\n", errout.str());   
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'ip[-10]' index -10 out of bounds\n", errout.str());
     }
 
     void array_index_multidim()
