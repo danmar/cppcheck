@@ -24,6 +24,7 @@
 #include "cppcheck.h"
 #include "testsuite.h"
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <stdexcept>
