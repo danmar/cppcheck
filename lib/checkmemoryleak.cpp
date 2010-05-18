@@ -337,6 +337,11 @@ void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname)
     reportErr(tok, Severity::error, "memleak", "Memory leak: " + varname);
 }
 
+void CheckMemoryLeak::memleakUponReallocFailureError(const Token *tok, const std::string &varname)
+{
+    reportErr(tok, Severity::error, "memleakOnRealloc", "Memory leak: \"" + varname + "\" nulled but not freed upon failure");
+}
+
 void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &varname)
 {
     std::string errmsg("Resource leak");
@@ -2101,6 +2106,29 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 
 
 
+
+
+//---------------------------------------------------------------------------
+// Check for memory leaks due to improper realloc() usage.
+//   Below, "a" may be set to null without being freed if realloc() cannot
+//   allocate the requested memory:
+//     a = malloc(10); a = realloc(a, 100);  
+//---------------------------------------------------------------------------
+void CheckMemoryLeakInFunction::checkReallocUsage()
+{
+    const Token *tok = _tokenizer->tokens();
+    for (; tok; tok = tok->next())
+    {
+        if (Token::Match(tok, "%var% = realloc|g_try_realloc ( %var% ,"))
+        {
+            if (tok->varId() == tok->tokAt(4)->varId())
+            {
+                memleakUponReallocFailureError(tok, tok->str());
+            }
+        }
+    }
+}
+//---------------------------------------------------------------------------
 
 
 

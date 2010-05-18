@@ -140,6 +140,7 @@ public:
     void deallocuseError(const Token *tok, const std::string &varname);
     void mismatchSizeError(const Token *tok, const std::string &sz);
     void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname);
+    void memleakUponReallocFailureError(const Token *tok, const std::string &varname);
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Token *tok) const;
@@ -179,6 +180,7 @@ public:
     void runSimplifiedChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog)
     {
         CheckMemoryLeakInFunction checkMemoryLeak(tokenizr, settings, errLog);
+        checkMemoryLeak.checkReallocUsage();
         checkMemoryLeak.check();
     }
 
@@ -190,6 +192,11 @@ public:
 
     /** @brief experimental: checking via ExecutionPath */
     void localleaks();
+
+    /**
+     * Checking for a memory leak caused by improper realloc usage.
+     */
+    void checkReallocUsage();
 
     /**
      * @brief %Check all variables in function scope
@@ -298,6 +305,7 @@ public:
         mismatchSizeError(0, "sz");
         std::list<const Token *> callstack;
         mismatchAllocDealloc(callstack, "varname");
+        memleakUponReallocFailureError(0, "varname");
     }
 
     /**

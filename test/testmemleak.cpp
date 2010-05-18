@@ -216,7 +216,7 @@ private:
         settings.inconclusive = showAll;
         tokenizer.fillFunctionList();
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.check();
+        checkMemoryLeak.runSimplifiedChecks(&tokenizer, &settings, this);
     }
 
 
@@ -1085,7 +1085,7 @@ private:
               "        ;\n"
               "    free(buf);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: buf\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: \"buf\" nulled but not freed upon failure\n", errout.str());
     }
 
     void if11()
@@ -1174,7 +1174,7 @@ private:
               "\n"
               "    return a;\n"
               "}\n", true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: \"a\" nulled but not freed upon failure\n", errout.str());
     }
 
 
@@ -1195,7 +1195,8 @@ private:
               "\n"
               "    return a;\n"
               "}\n", true);
-        ASSERT_EQUALS("[test.cpp:11]: (error) Memory leak: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Memory leak: \"a\" nulled but not freed upon failure\n"
+                      "[test.cpp:11]: (error) Memory leak: a\n", errout.str());
     }
 
 
@@ -1791,7 +1792,8 @@ private:
               "    char *a = (char *)malloc(10);\n"
               "    a = realloc(a, 100);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: \"a\" nulled but not freed upon failure\n"
+                      "[test.cpp:5]: (error) Memory leak: a\n", errout.str());
     }
 
     void realloc2()
@@ -1803,7 +1805,7 @@ private:
               "    free(a);\n"
               "}\n");
 
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: \"a\" nulled but not freed upon failure\n", errout.str());
     }
 
     void realloc3()

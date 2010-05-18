@@ -5187,6 +5187,15 @@ bool Tokenizer::simplifyKnownVariables()
                         break;
                     }
 
+                    // Variable used in realloc (see Ticket #1649)
+                    if (Token::Match(tok3, "%var% = realloc ( %var% ,") &&
+                        tok3->varId() == varid &&
+                        tok3->tokAt(4)->varId() == varid)
+                    {
+                        tok3->tokAt(4)->str(value);
+                        ret = true;
+                    }
+
                     // Variable is used somehow in a non-defined pattern => bail out
                     if (tok3->varId() == varid)
                         break;
