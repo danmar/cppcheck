@@ -1152,23 +1152,48 @@ private:
 
     void simplifyKnownVariables24()
     {
-        // This testcase is related to ticket #1596
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int c;\n"
-                            "    for (c=0;c<10;++c) { }\n"
-                            "    a[c] = 0;\n"
-                            "}\n";
+        {
+            // This testcase is related to ticket #1596
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int c;\n"
+                                "    for (c=0;c<10;++c) { }\n"
+                                "    a[c] = 0;\n"
+                                "}\n";
 
-        // Current result
-        ASSERT_EQUALS(
-            "void foo ( ) "
-            "{"
-            " int c ;"
-            " for ( c = 0 ; c < 10 ; ++ c ) { }"
-            " a [ 10 ] = 0 ; "
-            "}",
-            simplifyKnownVariables(code));
+            ASSERT_EQUALS(
+                "void foo ( ) "
+                "{"
+                " int c ;"
+                " for ( c = 0 ; c < 10 ; ++ c ) { }"
+                " a [ 10 ] = 0 ; "
+                "}",
+                simplifyKnownVariables(code));
+        }
+
+        {
+            // #1692 - unknown counter value after for loop
+            const char code[] = "void foo(const char s[])\n"
+                                "{\n"
+                                "    int x[3];\n"
+                                "    int i;\n"
+                                "    for (i = 0; i < 3; ++i) {\n"
+                                "        if (s[i]) break;\n"
+                                "    }"
+                                "    if (i < 3) x[i] = 0;\n"
+                                "}\n";
+            ASSERT_EQUALS(
+                "void foo ( const char s [ ] ) "
+                "{"
+                " int x [ 3 ] ;"
+                " int i ;"
+                " for ( i = 0 ; i < 3 ; ++ i ) {"
+                " if ( s [ i ] ) { break ; }"
+                " }"
+                " if ( i < 3 ) { x [ i ] = 0 ; } "
+                "}",
+                simplifyKnownVariables(code));
+        }
     }
 
     void simplifyKnownVariables25()

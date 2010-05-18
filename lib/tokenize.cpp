@@ -5067,6 +5067,29 @@ bool Tokenizer::simplifyKnownVariables()
 
                 if (Token::Match(tok2->tokAt(-2), "for ( %varid% = %num% ; %varid% <|<= %num% ; ++| %varid% ++| ) {", varid))
                 {
+                    // is there a "break" in the for loop?
+                    bool hasbreak = false;
+                    unsigned int indentlevel4 = 0;   // indentlevel for tok4
+                    for (const Token *tok4 = tok2->previous()->link(); tok4; tok4 = tok4->next())
+                    {
+                        if (tok4->str() == "{")
+                            ++indentlevel4;
+                        else if (tok4->str() == "}")
+                        {
+                            if (indentlevel4 <= 1)
+                                break;
+                            --indentlevel4;
+                        }
+                        else if (tok4->str() == "break")
+                        {
+                            hasbreak = true;
+                            break;
+                        }
+                    }
+                    if (hasbreak)
+                        break;
+
+                    // no break => the value of the counter value is known after the for loop..
                     const std::string compareop = tok2->strAt(5);
                     if (compareop == "<")
                         value = tok2->strAt(6);
