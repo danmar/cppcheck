@@ -32,3 +32,4 @@ doxyoutput/
 src/Makefile
 
 *.sdf
+ipch
