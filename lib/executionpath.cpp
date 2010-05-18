@@ -70,11 +70,13 @@ void ExecutionPath::print() const
               << "\n";
 }
 
+#if 0
 static void printchecks(const std::list<ExecutionPath *> &checks)
 {
     for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
         (*it)->print();
 }
+#endif
 
 
 static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)

@@ -260,7 +260,7 @@ void CheckOther::checkEmptyStringTest()
 void CheckOther::checkFflushOnInputStream()
 {
     const Token *tok = _tokenizer->tokens();
-    while (tok && (tok = Token::findmatch(tok, "fflush ( stdin )")))
+    while (tok && ((tok = Token::findmatch(tok, "fflush ( stdin )")) != NULL))
     {
         fflushOnInputStreamError(tok, tok->strAt(2));
         tok = tok->tokAt(4);
