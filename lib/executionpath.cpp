@@ -70,7 +70,8 @@ void ExecutionPath::print() const
               << "\n";
 }
 
-#if 0
+// I use this function when debugging ExecutionPaths with GDB
+#ifdef __GNUC__
 static void printchecks(const std::list<ExecutionPath *> &checks)
 {
     for (std::list<ExecutionPath *>::const_iterator it = checks.begin(); it != checks.end(); ++it)
