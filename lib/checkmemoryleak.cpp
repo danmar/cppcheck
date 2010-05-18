@@ -2112,7 +2112,7 @@ void CheckMemoryLeakInFunction::checkScope(const Token *Tok1, const std::string 
 // Check for memory leaks due to improper realloc() usage.
 //   Below, "a" may be set to null without being freed if realloc() cannot
 //   allocate the requested memory:
-//     a = malloc(10); a = realloc(a, 100);  
+//     a = malloc(10); a = realloc(a, 100);
 //---------------------------------------------------------------------------
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
