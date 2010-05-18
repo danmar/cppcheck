@@ -191,6 +191,7 @@ private:
         TEST_CASE(simplifyTypedef46); // ticket #1615
         TEST_CASE(simplifyTypedef47);
         TEST_CASE(simplifyTypedef48); // ticket #1673
+        TEST_CASE(simplifyTypedef49); // ticket #1691
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3985,6 +3986,23 @@ private:
                                    "void foo ( LIST * module_name ) "
                                    "{ "
                                    "bar ( module_name ? module_name . string : 0 ) ; "
+                                   "}");
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef49() // ticket #1691
+    {
+        const char code[] = "class Class2 {\n"
+                            "typedef const Class & Const_Reference;\n"
+                            "void some_method (Const_Reference x) const {}\n"
+                            "void another_method (Const_Reference x) const {}\n"
+                            "}";
+
+        // The expected result..
+        const std::string expected("class Class2 { "
+                                   "; "
+                                   "void some_method ( const Class & x ) const { } "
+                                   "void another_method ( const Class & x ) const { } "
                                    "}");
         ASSERT_EQUALS(expected, sizeof_(code));
     }

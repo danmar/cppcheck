@@ -1064,11 +1064,14 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
 
-                    while (!pointers.empty())
+                    if (!pointers.empty())
                     {
-                        tok2->insertToken(pointers.front().c_str());
-                        pointers.pop_front();
-                        tok2 = tok2->next();
+                        std::list<std::string>::const_iterator iter;
+                        for (iter = pointers.begin(); iter != pointers.end(); ++iter)
+                        {
+                            tok2->insertToken(*iter);
+                            tok2 = tok2->next();
+                        }
                     }
 
                     if (functionPtr || functionRef || function)
@@ -1198,6 +1201,7 @@ void Tokenizer::simplifyTypedef()
                 arrayStart = 0;
                 arrayEnd = 0;
                 offset = 1;
+                pointers.clear();
 
                 while (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "*|&"))
                     pointers.push_back(tok->tokAt(offset++)->str());
