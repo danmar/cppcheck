@@ -192,7 +192,8 @@ private:
         TEST_CASE(simplifyTypedef47);
         TEST_CASE(simplifyTypedef48); // ticket #1673
 
-        TEST_CASE(simplifyTypedefFunction);
+        TEST_CASE(simplifyTypedefFunction1);
+        TEST_CASE(simplifyTypedefFunction2); // ticket #1685
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -3988,7 +3989,7 @@ private:
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 
-    void simplifyTypedefFunction()
+    void simplifyTypedefFunction1()
     {
         {
             const char code[] = "typedef void (my_func)(arg_class*);\n"
@@ -4019,6 +4020,17 @@ private:
                                        "std :: queue < void ( * ) ( arg_class * ) > func_queue ;");
             ASSERT_EQUALS(expected, sizeof_(code));
         }
+    }
+
+    void simplifyTypedefFunction2() // ticket #1685
+    {
+        const char code[] = "typedef void voidfn (int);\n"
+                            "voidfn xxx;";
+
+        // The expected result..
+        const std::string expected("; "
+                                   "void xxx ( int ) ;");
+        ASSERT_EQUALS(expected, sizeof_(code));
     }
 
     void reverseArraySyntax()

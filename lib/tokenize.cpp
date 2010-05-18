@@ -1073,8 +1073,16 @@ void Tokenizer::simplifyTypedef()
 
                     if (functionPtr || functionRef || function)
                     {
-                        tok2->insertToken("(");
-                        tok2 = tok2->next();
+                        // don't add parenthesis around function names because it
+                        // confuses other simplifications
+                        bool needParen = true;
+                        if (function && tok2->next()->str() != "*")
+                            needParen = false;
+                        if (needParen)
+                        {
+                            tok2->insertToken("(");
+                            tok2 = tok2->next();
+                        }
                         Token *tok3 = tok2;
                         if (functionNamespace)
                         {
@@ -1091,7 +1099,7 @@ void Tokenizer::simplifyTypedef()
 
                         if (!inCast)
                         {
-                            if (tok2->next()->str() != ")" && tok2->next()->str() != ",")
+                            if (tok2->next() && tok2->next()->str() != ")" && tok2->next()->str() != ",")
                             {
                                 if (Token::Match(tok2->next(), "( * %type% ) ("))
                                     tok2 = tok2->tokAt(5)->link();
@@ -1099,7 +1107,7 @@ void Tokenizer::simplifyTypedef()
                                 {
                                     if (tok2->next()->str() == "(")
                                         tok2 = tok2->next()->link();
-                                    else if (!Token::Match(tok2->next(), "[|>"))
+                                    else if (!Token::Match(tok2->next(), "[|>|;"))
                                     {
                                         tok2 = tok2->next();
 
@@ -1119,9 +1127,12 @@ void Tokenizer::simplifyTypedef()
                             }
                         }
 
-                        tok2->insertToken(")");
-                        tok2 = tok2->next();
-                        Token::createMutualLinks(tok2, tok3);
+                        if (needParen)
+                        {
+                            tok2->insertToken(")");
+                            tok2 = tok2->next();
+                            Token::createMutualLinks(tok2, tok3);
+                        }
                         tok2->insertToken("(");
                         tok2 = tok2->next();
                         tok3 = tok2;
