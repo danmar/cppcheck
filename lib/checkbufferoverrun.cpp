@@ -48,17 +48,17 @@ CheckBufferOverrun instance;
 
 void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, int size, int index)
 {
-    if (size == 1)
-        return;
-
-    std::ostringstream errmsg;
-    errmsg << "Array '";
-    if (tok)
-        errmsg << tok->str();
-    else
-        errmsg << "array";
-    errmsg << "[" << size << "]' index " << index << " out of bounds";
-    reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str().c_str());
+    if (size > 1)
+    {
+        std::ostringstream errmsg;
+        errmsg << "Array '";
+        if (tok)
+            errmsg << tok->str();
+        else
+            errmsg << "array";
+        errmsg << "[" << size << "]' index " << index << " out of bounds";
+        reportError(tok, Severity::error, "arrayIndexOutOfBounds", errmsg.str().c_str());
+    }
 }
 
 void CheckBufferOverrun::arrayIndexOutOfBounds(const Token *tok, const ArrayInfo &arrayInfo, const std::vector<int> &index)
@@ -776,17 +776,6 @@ void CheckBufferOverrun::checkScope(const Token *tok, const ArrayInfo &arrayInfo
                 {
                     arrayIndexOutOfBounds(tok, arrayInfo, indexes);
                 }
-            }
-
-        }
-
-        // in case %var% is declared as a pointer
-        else if (Token::Match(tok, "%var% [ %num% ]"))
-        {
-            const int index = MathLib::toLongNumber(tok->strAt(2));
-            if (index < 0)
-            {
-                arrayIndexOutOfBounds(tok, index, index);
             }
 
         }
