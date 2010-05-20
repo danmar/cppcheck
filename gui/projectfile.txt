@@ -22,6 +22,11 @@ program. The format is:
         <dir name="c:/projects/framework/" />
         <dir name="c:/Program Files/Visual Studio 8/VC/include/" />
     </includedir>
+    <defines>
+        <define name="__cplusplus" />
+        <define name="_MSC_VER=1400" />
+        <define name="_WIN32" />
+    </defines>
 </project>
 
 See also gui.cppcheck file in gui-directory of cppcheck sources.

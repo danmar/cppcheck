@@ -332,6 +332,15 @@ Settings MainWindow::GetCppcheckSettings()
                     incdir += "/";
                 result._includePaths.push_back(incdir.toStdString());
             }
+
+            QStringList defines = pfile.GetDefines();
+            QString define;
+            foreach(define, defines)
+            {
+                if (!result.userDefines.empty())
+                    result.userDefines += ";";
+                result.userDefines += define.toStdString();
+            }
         }
     }
 

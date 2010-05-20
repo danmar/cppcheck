@@ -29,6 +29,9 @@ static const char ClassNameAttrib[] = "name";
 static const char IncludDirElementName[] = "includedir";
 static const char DirElementName[] = "dir";
 static const char DirNameAttrib[] = "name";
+static const char DefinesElementName[] = "defines";
+static const char DefineName[] = "define";
+static const char DefineNameAttrib[] = "name";
 
 ProjectFile::ProjectFile(QObject *parent) :
     QObject(parent)
@@ -66,6 +69,10 @@ bool ProjectFile::Read(const QString &filename)
 
             if (insideProject && xmlReader.name() == IncludDirElementName)
                 ReadIncludeDirs(xmlReader);
+
+            if (insideProject && xmlReader.name() == DefinesElementName)
+                ReadDefines(xmlReader);
+
             break;
 
         case QXmlStreamReader::EndElement:
@@ -99,6 +106,11 @@ QStringList ProjectFile::GetDeAllocatedClasses() const
 QStringList ProjectFile::GetIncludeDirs() const
 {
     return mIncludeDirs;
+}
+
+QStringList ProjectFile::GetDefines() const
+{
+    return mDefines;
 }
 
 void ProjectFile::ReadAutoAllocClasses(QXmlStreamReader &reader)
@@ -166,6 +178,47 @@ void ProjectFile::ReadIncludeDirs(QXmlStreamReader &reader)
 
         case QXmlStreamReader::EndElement:
             if (reader.name().toString() == IncludDirElementName)
+                allRead = true;
+            break;
+
+            // Not handled
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Characters:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    }
+    while (!allRead);
+}
+
+void ProjectFile::ReadDefines(QXmlStreamReader &reader)
+{
+    QXmlStreamReader::TokenType type;
+    bool allRead = false;
+    do
+    {
+        type = reader.readNext();
+        switch (type)
+        {
+        case QXmlStreamReader::StartElement:
+            // Read define-elements
+            if (reader.name().toString() == DefineName)
+            {
+                QXmlStreamAttributes attribs = reader.attributes();
+                QString name = attribs.value("", DefineNameAttrib).toString();
+                if (!name.isEmpty())
+                    mDefines << name;
+            }
+            break;
+
+        case QXmlStreamReader::EndElement:
+            if (reader.name().toString() == DefinesElementName)
                 allRead = true;
             break;
 

@@ -59,6 +59,12 @@ public:
     */
     QStringList GetIncludeDirs() const;
 
+    /**
+    * @brief Get list of defines.
+    * @return list of defines.
+    */
+    QStringList GetDefines() const;
+
 protected:
     /**
     * @brief Read list of automatically deallocated classes from XML.
@@ -71,6 +77,12 @@ protected:
     * @param reader XML stream reader.
     */
     void ReadIncludeDirs(QXmlStreamReader &reader);
+
+    /**
+    * @brief Read list of defines from XML.
+    * @param reader XML stream reader.
+    */
+    void ReadDefines(QXmlStreamReader &reader);
 
 private:
 
@@ -88,6 +100,11 @@ private:
     * @brief List of include directories used to search include files.
     */
     QStringList mIncludeDirs;
+
+    /**
+    * @brief List of defines.
+    */
+    QStringList mDefines;
 };
 /// @}
 #endif  // PROJECT_FILE_H
