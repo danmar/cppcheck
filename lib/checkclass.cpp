@@ -145,15 +145,11 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
 
         // Pointer?
         else if (Token::Match(next, "%type% * %var% ;"))
-        {
             varname = next->strAt(2);
-        }
-
-        // Pointer?
         else if (Token::Match(next, "%type% %type% * %var% ;"))
-        {
             varname = next->strAt(3);
-        }
+        else if (Token::Match(next, "%type% :: %type% * %var% ;"))
+            varname = next->strAt(4);
 
         // Array?
         else if (Token::Match(next, "%type% %var% [") && next->next()->str() != "operator")
@@ -167,9 +163,9 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
 
         // Pointer array?
         else if (Token::Match(next, "%type% * %var% ["))
-        {
             varname = next->strAt(2);
-        }
+        else if (Token::Match(next, "%type% :: %type% * %var% ["))
+            varname = next->strAt(4);
 
         // std::string..
         else if (withClasses && Token::Match(next, "%type% :: %type% %var% ;"))

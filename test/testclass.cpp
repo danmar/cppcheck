@@ -117,6 +117,7 @@ private:
         TEST_CASE(const19); // ticket #1612
         TEST_CASE(const20); // ticket #1602
         TEST_CASE(const21); // ticket #1683
+        TEST_CASE(const22);
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3305,6 +3306,27 @@ private:
                    "        for (int i = 0 ; i < 10; l1[i] = NULL, i++);\n"
                    "    }\n"
                    "    void f1() { l1[0] = \"Hello\"; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const22()
+    {
+        checkConst("class A\n"
+                   "{\n"
+                   "private:\n"
+                   "    B::C * v1;\n"
+                   "public:\n"
+                   "    void f1() { v1 = 0; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A\n"
+                   "{\n"
+                   "private:\n"
+                   "    B::C * v1[0];\n"
+                   "public:\n"
+                   "    void f1() { v1[0] = 0; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
