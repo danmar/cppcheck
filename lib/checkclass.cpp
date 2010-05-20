@@ -177,9 +177,20 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
         else if (withClasses && (Token::Match(next, "%type% :: %type% <") ||
                                  Token::Match(next, "%type% <")))
         {
-            while (next && next->str() != ">")
-                next = next->next();
-            if (Token::Match(next, "> %var% ;"))
+            // find matching ">"
+            int level = 0;
+            for (; next; next = next->next())
+            {
+                if (next->str() == "<")
+                    level++;
+                else if (next->str() == ">")
+                {
+                    level--;
+                    if (level == 0)
+                        break;
+                }
+            }
+            if (next && Token::Match(next, "> %var% ;"))
                 varname = next->strAt(1);
         }
 

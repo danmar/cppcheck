@@ -118,6 +118,7 @@ private:
         TEST_CASE(const20); // ticket #1602
         TEST_CASE(const21); // ticket #1683
         TEST_CASE(const22);
+        TEST_CASE(const23); // ticket #1699
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3327,6 +3328,19 @@ private:
                    "    B::C * v1[0];\n"
                    "public:\n"
                    "    void f1() { v1[0] = 0; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const23()
+    {
+        checkConst("class Class {\n"
+                   "public:\n"
+                   "    typedef Template<double> Type;\n"
+                   "    typedef Template2<Type> Type2;\n"
+                   "    void set_member(Type2 m) { _m = m; }\n"
+                   "private:\n"
+                   "    Type2 _m;\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
