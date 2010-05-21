@@ -130,7 +130,13 @@ public:
      */
     void getErrorMessages();
 
+    /**
+     * @brief Analyse file - It's public so unit tests can be written
+     */
+    void analyseFile(std::istream &f, const std::string &filename);
+
 private:
+    /** @brief Check file */
     void checkFile(const std::string &code, const char FileName[]);
 
     /**
