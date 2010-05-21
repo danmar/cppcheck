@@ -3891,23 +3891,38 @@ bool Tokenizer::simplifyConditions()
             if (Token::Match(tok->tokAt(1), "%num%"))
             {
                 // Compare numbers
-                double op1 = MathLib::toDoubleNumber(tok->strAt(1));
-                double op2 = MathLib::toDoubleNumber(tok->strAt(3));
 
-                if (cmp == "==")
-                    result = (op1 == op2);
-                else if (cmp == "!=")
-                    result = (op1 != op2);
-                else if (cmp == ">=")
-                    result = (op1 >= op2);
-                else if (cmp == ">")
-                    result = (op1 > op2);
-                else if (cmp == "<=")
-                    result = (op1 <= op2);
-                else if (cmp == "<")
-                    result = (op1 < op2);
+                if (cmp == "==" || cmp == "!=")
+                {
+                    const std::string op1(tok->strAt(1));
+                    const std::string op2(tok->strAt(3));
+
+                    bool eq = false;
+                    if (MathLib::isInt(op1) && MathLib::isInt(op2))
+                        eq = (MathLib::toLongNumber(op1) == MathLib::toLongNumber(op2));
+                    else
+                        eq = (op1 == op2);
+
+                    if (cmp == "==")
+                        result = eq;
+                    else
+                        result = !eq;
+                }
                 else
-                    cmp = "";
+                {
+                    double op1 = MathLib::toDoubleNumber(tok->strAt(1));
+                    double op2 = MathLib::toDoubleNumber(tok->strAt(3));
+                    if (cmp == ">=")
+                        result = (op1 >= op2);
+                    else if (cmp == ">")
+                        result = (op1 > op2);
+                    else if (cmp == "<=")
+                        result = (op1 <= op2);
+                    else if (cmp == "<")
+                        result = (op1 < op2);
+                    else
+                        cmp = "";
+                }
             }
             else
             {
