@@ -621,7 +621,8 @@ void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processe
     processedFile = replaceIfDefined(processedFile);
 
     // Get all possible configurations..
-    resultConfigurations = getcfgs(processedFile, filename);
+    if (!_settings || (_settings && _settings->userDefines.empty()))
+        resultConfigurations = getcfgs(processedFile, filename);
 }
 
 
