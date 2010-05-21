@@ -166,6 +166,9 @@ public:
 
     /** @brief defines given by the user */
     std::string userDefines;
+
+    /** @brief Experimentat 2 pass checking of files */
+    bool test_2_pass;
 };
 
 /// @}

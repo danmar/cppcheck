@@ -1940,7 +1940,8 @@ private:
         tokenizer.tokenize(istr, "test.cpp");
 
         std::set<std::string> f;
-        CheckOther::analyseFunctions(tokenizer.tokens(), f, true);
+        const CheckOther checkOther((const Tokenizer *)0, (const Settings *)0, (ErrorLogger *)0);
+        checkOther.analyse(tokenizer.tokens(), f);
 
         std::string ret;
         for (std::set<std::string>::const_iterator it = f.begin(); it != f.end(); ++it)

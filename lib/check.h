@@ -64,6 +64,20 @@ public:
         return _instances;
     }
 
+    /**
+     * analyse code - must be thread safe
+     * @param tokens The tokens to analyse
+     * @param result container where results are stored
+     */
+    virtual void analyse(const Token * /*tokens*/, std::set<std::string> & /*result*/) const
+    {
+    }
+
+    /** Save analysis data - the caller ensures thread safety */
+    virtual void saveAnalysisData(const std::set<std::string> & /*data*/) const
+    {
+    }
+
     /** run checks, the token list is not simplified */
     virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *)
     { }

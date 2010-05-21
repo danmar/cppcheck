@@ -3208,7 +3208,7 @@ public:
     /** Functions that don't handle uninitialized variables well */
     static std::set<std::string> uvarFunctions;
 
-    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func, bool showAll)
+    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func)
     {
         for (const Token *tok = tokens; tok; tok = tok->next())
         {
@@ -3262,18 +3262,6 @@ public:
                                     r = true;
                                 }
 
-                                // --all
-                                else if (showAll)
-                                {
-                                    if (!Token::simpleMatch(tok3->next(), "="))
-                                        r = true;
-                                    else
-                                    {
-                                        w = true;
-                                        break;
-                                    }
-                                }
-
                                 else
                                 {
                                     w = true;
@@ -3315,12 +3303,15 @@ std::set<std::string> CheckUninitVar::uvarFunctions;
 /// @}
 
 
-void CheckOther::analyseFunctions(const Token * const tokens, std::set<std::string> &func, bool showAll)
+void CheckOther::analyse(const Token * const tokens, std::set<std::string> &func) const
 {
-    CheckUninitVar::analyseFunctions(tokens, func, showAll);
+    CheckUninitVar::analyseFunctions(tokens, func);
 }
 
-
+void CheckOther::saveAnalysisData(const std::set<std::string> &data) const
+{
+    CheckUninitVar::uvarFunctions.insert(data.begin(), data.end());
+}
 
 void CheckOther::executionPaths()
 {
@@ -3334,7 +3325,7 @@ void CheckOther::executionPaths()
     {
         // no writing if multiple threads are used (TODO: thread safe analysis?)
         if (_settings->_jobs == 1)
-            CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions, _settings->inconclusive);
+            CheckUninitVar::analyseFunctions(_tokenizer->tokens(), CheckUninitVar::uvarFunctions);
 
         CheckUninitVar c(this);
         checkExecutionPaths(_tokenizer->tokens(), &c);

@@ -91,7 +91,10 @@ public:
      * @param func [out] names of functions that don't handle uninitialized variables well. the function names are added to the set. No clearing is made.
      * @param showAll [in] enable --all checking
      */
-    static void analyseFunctions(const Token * const tokens, std::set<std::string> &func, bool showAll);
+    void analyse(const Token * const tokens, std::set<std::string> &func) const;
+
+    /** Save analysis results */
+    void saveAnalysisData(const std::set<std::string> &data) const;
 
     /** @brief Are there C-style pointer casts in a c++ file? */
     void warningOldStylePointerCast();

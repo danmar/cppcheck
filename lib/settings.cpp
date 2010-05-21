@@ -38,6 +38,7 @@ Settings::Settings()
     _append = "";
     _terminate = false;
     inconclusive = false;
+    test_2_pass = false;
 }
 
 bool Settings::Suppressions::parseFile(std::istream &istr)

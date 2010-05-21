@@ -503,6 +503,13 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             return true;
         }
 
+        // --test-2-pass Experimental 2-pass checking of files
+        // This command line flag will be removed
+        else if (strcmp(argv[i], "--test-2-pass") == 0)
+        {
+            _settings.test_2_pass = true;
+        }
+
         else if (strncmp(argv[i], "-", 1) == 0 || strncmp(argv[i], "--", 2) == 0)
         {
             reportOut("cppcheck: error: unrecognized command line option \"" + std::string(argv[i]) + "\"");
@@ -516,6 +523,12 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
     if (_settings.isEnabled("unusedFunctions") && _settings._jobs > 1)
     {
         reportOut("unusedFunctions check can't be used with -j option, so it was disabled.");
+    }
+
+    // FIXME: Make the _settings.test_2_pass thread safe
+    if (_settings.test_2_pass && _settings._jobs > 1)
+    {
+        reportOut("--test-2-pass doesn't work with -j option yet.");
     }
 
     if (!pathnames.empty())
@@ -613,6 +626,50 @@ unsigned int CppCheck::check()
 
     _checkUnusedFunctions.setErrorLogger(this);
     std::sort(_filenames.begin(), _filenames.end());
+
+    // TODO: Should this be moved out to its own function so all the files can be
+    // analysed before any files are checked?
+    if (_settings.test_2_pass && _settings._jobs == 1)
+    {
+        for (unsigned int c = 0; c < _filenames.size(); c++)
+        {
+            const std::string fname = _filenames[c];
+            if (_settings.terminated())
+                break;
+
+            reportOut("Analysing " + fname + "..");
+
+            // Preprocess file..
+            Preprocessor preprocessor(&_settings, this);
+            std::list<std::string> configurations;
+            std::string filedata = "";
+            std::ifstream fin(fname.c_str());
+            preprocessor.preprocess(fin, filedata, configurations, fname, _settings._includePaths);
+            const std::string code = Preprocessor::getcode(filedata, "", fname, &_errorLogger);
+
+            // Tokenize..
+            Tokenizer tokenizer(&_settings, this);
+            std::istringstream istr(code);
+            tokenizer.tokenize(istr, fname.c_str(), "");
+            tokenizer.simplifyTokenList();
+
+            // Analyse the tokens..
+            std::set<std::string> data;
+            for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+            {
+                (*it)->analyse(tokenizer.tokens(), data);
+            }
+
+            // Save analysis results..
+            // TODO: This loop should be protected by a mutex or something like that
+            //       The saveAnalysisData must _not_ be called from many threads at the same time.
+            for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+            {
+                (*it)->saveAnalysisData(data);
+            }
+        }
+    }
+
     for (unsigned int c = 0; c < _filenames.size(); c++)
     {
         _errout.str("");
