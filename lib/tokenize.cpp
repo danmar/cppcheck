@@ -1513,7 +1513,7 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // "if (not p)" => "if (!p)"
     // "if (p and q)" => "if (p && q)"
     // "if (p or q)" => "if (p || q)"
-    while (simplifyLogicalOperators());
+    while (simplifyLogicalOperators()) { }
 
 //updateClassList();
     setVarId();
