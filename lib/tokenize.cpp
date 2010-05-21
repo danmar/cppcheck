@@ -6887,6 +6887,7 @@ void Tokenizer::simplifyComma()
 
                 // delete old "return"
                 startFrom->previous()->deleteThis();
+                startFrom = 0;   // give dead pointer a value
 
                 tok = endAt;
                 if (!tok)
