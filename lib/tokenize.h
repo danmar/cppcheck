@@ -326,12 +326,6 @@ public:
     void simplifyFunctionParameters();
 
     /**
-     * Simplify namespaces by removing them, e.g.
-     * "namespace b{ void f(){} }" becomes "void f(){}"
-     */
-    void simplifyNamespaces();
-
-    /**
      * Simplify templates
      */
     void simplifyTemplates();

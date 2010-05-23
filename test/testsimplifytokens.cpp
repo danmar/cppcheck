@@ -1862,7 +1862,7 @@ private:
         {
             const char code[] = "using namespace std; namespace a{ namespace b{ void f(){} } }";
 
-            const std::string expected("using namespace std ; void f ( ) { }");
+            const std::string expected("using namespace std ; namespace a { namespace b { void f ( ) { } } }");
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
@@ -1870,7 +1870,7 @@ private:
         {
             const char code[] = "namespace b{ void f(){} }";
 
-            const std::string expected("void f ( ) { }");
+            const std::string expected("namespace b { void f ( ) { } }");
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }
@@ -1878,7 +1878,7 @@ private:
         {
             const char code[] = "int a; namespace b{ }";
 
-            const std::string expected("int a ;");
+            const std::string expected("int a ; namespace b { }");
 
             ASSERT_EQUALS(expected, sizeof_(code));
         }

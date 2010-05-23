@@ -2728,55 +2728,6 @@ void Tokenizer::setVarId()
     }
 }
 
-
-//---------------------------------------------------------------------------
-// Simplify token list
-//---------------------------------------------------------------------------
-
-void Tokenizer::simplifyNamespaces()
-{
-    for (Token *token = _tokens; token; token = token->next())
-    {
-        while (token && token->str() == "namespace" && token->varId() == 0 &&
-               (!token->previous() || token->previous()->str() != "using"))
-        {
-            // Token is namespace and there is no "using" before it.
-            Token *start = token;
-            Token *tok = token->tokAt(2);
-            if (!tok)
-                return;
-
-            tok = tok->link();
-            if (tok && tok->str() == "}")
-            {
-                tok = tok->previous();
-                tok->deleteNext();
-                start->deleteNext();
-                start->deleteNext();
-                if (start->previous())
-                {
-                    token = start->next();
-                    start = start->previous();
-                    start->deleteNext();
-                }
-                else
-                {
-                    // First token in the list, don't delete
-                    // as _tokens is attached to it.
-                    start->deleteThis();
-                }
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        if (!token)
-            break;
-    }
-}
-
 bool Tokenizer::createLinks()
 {
     std::list<const Token*> type;
@@ -3160,8 +3111,6 @@ bool Tokenizer::simplifyTokenList()
     simplifyReference();
 
     simplifyStd();
-
-    simplifyNamespaces();
 
     simplifyGoto();
 
