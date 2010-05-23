@@ -21,6 +21,8 @@ SET(CHECKLIB_HDRS
   errorlogger.h
   executionpath.h
   filelister.h
+  filelister_unix.h
+  filelister_win32.h
   mathlib.h
   preprocessor.h
   settings.h
@@ -43,6 +45,8 @@ SET(CHECKLIB_SRCS
   errorlogger.cpp
   executionpath.cpp
   filelister.cpp
+  filelister_unix.cpp
+  filelister_win32.cpp
   mathlib.cpp
   preprocessor.cpp
   settings.cpp
