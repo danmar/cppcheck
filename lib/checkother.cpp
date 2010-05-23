@@ -985,6 +985,11 @@ void CheckOther::functionVariableUsage()
             {
                 variables.addVar(tok->tokAt(2), Variables::array,
                                  tok->tokAt(6)->str() == "=");
+
+                // check for reading array size from local variable
+                if (tok->tokAt(4)->varId() != 0)
+                    variables.read(tok->tokAt(4)->varId());
+
                 tok = tok->tokAt(5);
             }
 
@@ -1182,6 +1187,11 @@ void CheckOther::functionVariableUsage()
                     variables.addVar(tok->tokAt(3),
                                      tok->tokAt(2)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
                                      tok->tokAt(7)->str() == "=");
+
+                    // check for reading array size from local variable
+                    if (tok->tokAt(5)->varId() != 0)
+                        variables.read(tok->tokAt(5)->varId());
+
                     tok = tok->tokAt(6);
                 }
             }
@@ -1193,6 +1203,11 @@ void CheckOther::functionVariableUsage()
                 variables.addVar(tok->tokAt(4),
                                  tok->tokAt(3)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
                                  tok->tokAt(8)->str() == "=");
+
+                // check for reading array size from local variable
+                if (tok->tokAt(6)->varId() != 0)
+                    variables.read(tok->tokAt(6)->varId());
+
                 tok = tok->tokAt(7);
             }
 
@@ -1203,7 +1218,12 @@ void CheckOther::functionVariableUsage()
                 variables.addVar(tok->tokAt(4),
                                  tok->tokAt(3)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
                                  tok->tokAt(8)->str() == "=");
-                tok = tok->tokAt(6);
+
+                // check for reading array size from local variable
+                if (tok->tokAt(6)->varId() != 0)
+                    variables.read(tok->tokAt(6)->varId());
+
+                tok = tok->tokAt(7);
             }
 
             // const array of pointer or reference of struct or union declaration with possible initialization
@@ -1213,7 +1233,12 @@ void CheckOther::functionVariableUsage()
                 variables.addVar(tok->tokAt(5),
                                  tok->tokAt(4)->str() == "*" ? Variables::pointerArray : Variables::referenceArray,
                                  tok->tokAt(9)->str() == "=");
-                tok = tok->tokAt(7);
+
+                // check for reading array size from local variable
+                if (tok->tokAt(7)->varId() != 0)
+                    variables.read(tok->tokAt(7)->varId());
+
+                tok = tok->tokAt(8);
             }
 
             else if (Token::Match(tok, "delete|return %var%"))

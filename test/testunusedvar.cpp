@@ -77,6 +77,7 @@ private:
         TEST_CASE(localvar12);
         TEST_CASE(localvar13); // ticket #1640
         TEST_CASE(localvar14); // ticket #5
+        TEST_CASE(localvar15);
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1059,6 +1060,64 @@ private:
                               "    int a[10];\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n", errout.str());
+    }
+
+    void localvar15()
+    {
+        {
+            functionVariableUsage("int foo()\n"
+                                  "{\n"
+                                  "    int a = 5;\n"
+                                  "    int b[a];\n"
+                                  "    b[0] = 0;\n"
+                                  "    return b[0];\n"
+                                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            functionVariableUsage("int foo()\n"
+                                  "{\n"
+                                  "    int a = 5;\n"
+                                  "    int * b[a];\n"
+                                  "    b[0] = &c;\n"
+                                  "    return *b[0];\n"
+                                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            functionVariableUsage("int * foo()\n"
+                                  "{\n"
+                                  "    int a = 5;\n"
+                                  "    const int * b[a];\n"
+                                  "    b[0] = &c;\n"
+                                  "    return b[0];\n"
+                                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            functionVariableUsage("struct B * foo()\n"
+                                  "{\n"
+                                  "    int a = 5;\n"
+                                  "    struct B * b[a];\n"
+                                  "    b[0] = &c;\n"
+                                  "    return b[0];\n"
+                                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            functionVariableUsage("const struct B * foo()\n"
+                                  "{\n"
+                                  "    int a = 5;\n"
+                                  "    const struct B * b[a];\n"
+                                  "    b[0] = &c;\n"
+                                  "    return b[0];\n"
+                                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void localvaralias1()
