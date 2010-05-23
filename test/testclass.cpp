@@ -1953,6 +1953,26 @@ private:
                        "    i = 0;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // Ticket #1700
+        checkUninitVar("namespace n1\n"
+                       "{\n"
+                       "class Foo {"
+                       "public:\n"
+                       "    Foo() : i(0) { };\n"
+                       "private:\n"
+                       "    int i;\n"
+                       "};\n"
+                       "}\n"
+                       "\n"
+                       "namespace n2\n"
+                       "{\n"
+                       "class Foo {"
+                       "public:\n"
+                       "    Foo() { };\n"
+                       "};\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
