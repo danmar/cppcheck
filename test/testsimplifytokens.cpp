@@ -195,6 +195,7 @@ private:
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
+        TEST_CASE(simplifyTypedefFunction3);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -4049,6 +4050,197 @@ private:
         const std::string expected("; "
                                    "void xxx ( int ) ;");
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedefFunction3()
+    {
+        {
+            const char code[] = "typedef C func1();\n"
+                                "typedef C (* func2)();\n"
+                                "typedef C (& func3)();\n"
+                                "typedef C (C::* func4)();\n"
+                                "typedef C (C::* func5)() const;\n"
+                                "typedef C (C::* func6)() volatile;\n"
+                                "typedef C (C::* func7)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;\n"
+                                "func5 f5;\n"
+                                "func6 f6;\n"
+                                "func7 f7;";
+
+            // The expected result..
+            const std::string expected("; ; ; ; ; ; ; "
+                                       "C f1 ( ) ; "
+                                       "C * f2 ; " // this gets simplified to a regular pointer
+                                       "C ( & f3 ) ( ) ; "
+                                       "C ( C :: * f4 ) ( ) ; "
+                                       "C ( C :: * f5 ) ( ) const ; "
+                                       "C ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "C ( C :: * f7 ) ( ) const ;"); // volatile is removed
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef C const func1();\n"
+                                "typedef C const (* func2)();\n"
+                                "typedef C const (& func3)();\n"
+                                "typedef C const (C::* func4)();\n"
+                                "typedef C const (C::* func5)() const;\n"
+                                "typedef C const (C::* func6)() volatile;\n"
+                                "typedef C const (C::* func7)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;\n"
+                                "func5 f5;\n"
+                                "func6 f6;\n"
+                                "func7 f7;";
+
+            // The expected result..
+            // C const -> const C
+            const std::string expected("; ; ; ; ; ; ; "
+                                       "const C f1 ( ) ; "
+                                       "const C * f2 ; " // this gets simplified to a regular pointer
+                                       "const C ( & f3 ) ( ) ; "
+                                       "const C ( C :: * f4 ) ( ) ; "
+                                       "const C ( C :: * f5 ) ( ) const ; "
+                                       "const C ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "const C ( C :: * f7 ) ( ) const ;"); // volatile is removed
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef const C func1();\n"
+                                "typedef const C (* func2)();\n"
+                                "typedef const C (& func3)();\n"
+                                "typedef const C (C::* func4)();\n"
+                                "typedef const C (C::* func5)() const;\n"
+                                "typedef const C (C::* func6)() volatile;\n"
+                                "typedef const C (C::* func7)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;\n"
+                                "func5 f5;\n"
+                                "func6 f6;\n"
+                                "func7 f7;";
+
+            // The expected result..
+            const std::string expected("; ; ; ; ; ; ; "
+                                       "const C f1 ( ) ; "
+                                       "const C * f2 ; " // this gets simplified to a regular pointer
+                                       "const C ( & f3 ) ( ) ; "
+                                       "const C ( C :: * f4 ) ( ) ; "
+                                       "const C ( C :: * f5 ) ( ) const ; "
+                                       "const C ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "const C ( C :: * f7 ) ( ) const ;"); // volatile is removed
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef C * func1();\n"
+                                "typedef C * (* func2)();\n"
+                                "typedef C * (& func3)();\n"
+                                "typedef C * (C::* func4)();\n"
+                                "typedef C * (C::* func5)() const;\n"
+                                "typedef C * (C::* func6)() volatile;\n"
+                                "typedef C * (C::* func7)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;\n"
+                                "func5 f5;\n"
+                                "func6 f6;\n"
+                                "func7 f7;";
+
+            // The expected result..
+            const std::string expected("; ; ; ; ; ; ; "
+                                       "C * f1 ( ) ; "
+                                       "C * * f2 ; " // this gets simplified to a regular pointer
+                                       "C * ( & f3 ) ( ) ; "
+                                       "C * ( C :: * f4 ) ( ) ; "
+                                       "C * ( C :: * f5 ) ( ) const ; "
+                                       "C * ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef const C * func1();\n"
+                                "typedef const C * (* func2)();\n"
+                                "typedef const C * (& func3)();\n"
+                                "typedef const C * (C::* func4)();\n"
+                                "typedef const C * (C::* func5)() const;\n"
+                                "typedef const C * (C::* func6)() volatile;\n"
+                                "typedef const C * (C::* func7)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;\n"
+                                "func5 f5;\n"
+                                "func6 f6;\n"
+                                "func7 f7;";
+
+            // The expected result..
+            const std::string expected("; ; ; ; ; ; ; "
+                                       "const C * f1 ( ) ; "
+                                       "const C * * f2 ; " // this gets simplified to a regular pointer
+                                       "const C * ( & f3 ) ( ) ; "
+                                       "const C * ( C :: * f4 ) ( ) ; "
+                                       "const C * ( C :: * f5 ) ( ) const ; "
+                                       "const C * ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "const C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef C const * func1();\n"
+                                "typedef C const * (* func2)();\n"
+                                "typedef C const * (& func3)();\n"
+                                "typedef C const * (C::* func4)();\n"
+                                "typedef C const * (C::* func5)() const;\n"
+                                "typedef C const * (C::* func6)() volatile;\n"
+                                "typedef C const * (C::* func7)() const volatile;\n"
+                                "func1 f1;\n"
+                                "func2 f2;\n"
+                                "func3 f3;\n"
+                                "func4 f4;\n"
+                                "func5 f5;\n"
+                                "func6 f6;\n"
+                                "func7 f7;";
+
+            // The expected result..
+            // C const -> const C
+            const std::string expected("; ; ; ; ; ; ; "
+                                       "const C * f1 ( ) ; "
+                                       "const C * * f2 ; " // this gets simplified to a regular pointer
+                                       "const C * ( & f3 ) ( ) ; "
+                                       "const C * ( C :: * f4 ) ( ) ; "
+                                       "const C * ( C :: * f5 ) ( ) const ; "
+                                       "const C * ( C :: * f6 ) ( ) ; " // volatile is removed
+                                       "const C * ( C :: * f7 ) ( ) const ;"); // volatile is removed
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void reverseArraySyntax()

@@ -727,6 +727,8 @@ void Tokenizer::simplifyTypedef()
         Token *argEnd = 0;
         Token *arrayStart = 0;
         Token *arrayEnd = 0;
+        Token *specStart = 0;
+        Token *specEnd = 0;
         Token *typeDef = tok;
         int offset = 1;
         bool function = false;
@@ -740,6 +742,9 @@ void Tokenizer::simplifyTypedef()
             typeStart = tok->next();
             offset = 1;
 
+            if (Token::Match(typeStart, "const"))
+                offset++;
+
             typeEnd = tok->tokAt(offset++);
 
             bool atEnd = false;
@@ -751,6 +756,11 @@ void Tokenizer::simplifyTypedef()
                 if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
                     tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,|("))
                     typeEnd = tok->tokAt(offset++);
+                else if (Token::Match(tok->tokAt(offset), "const ("))
+                {
+                    typeEnd = tok->tokAt(offset++);
+                    atEnd = true;
+                }
                 else
                     atEnd = true;
             }
@@ -881,6 +891,18 @@ void Tokenizer::simplifyTypedef()
                 // internal error
                 continue;
             }
+            Token *spec = tok;
+            if (Token::Match(spec, "const|volatile"))
+            {
+                specStart = spec;
+                specEnd = spec;
+                while (Token::Match(spec->next(), "const|volatile"))
+                {
+                    specEnd = spec->next();
+                    spec = specEnd;
+                }
+                tok = specEnd->next();
+            }
         }
         else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %var% :: *|&| %type% ) ("))
         {
@@ -901,6 +923,18 @@ void Tokenizer::simplifyTypedef()
             {
                 // internal error
                 continue;
+            }
+            Token *spec = tok;
+            if (Token::Match(spec, "const|volatile"))
+            {
+                specStart = spec;
+                specEnd = spec;
+                while (Token::Match(spec->next(), "const|volatile"))
+                {
+                    specEnd = spec->next();
+                    spec = specEnd;
+                }
+                tok = specEnd->next();
             }
         }
         else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %type% ("))
@@ -1162,6 +1196,18 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken(")");
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok3);
+                        if (specStart)
+                        {
+                            Token *spec = specStart;
+                            tok2->insertToken(spec->str());
+                            tok2 = tok2->next();
+                            while (spec != specEnd)
+                            {
+                                spec = spec->next();
+                                tok2->insertToken(spec->str());
+                                tok2 = tok2->next();
+                            }
+                        }
                     }
 
                     if (arrayStart && arrayEnd)
