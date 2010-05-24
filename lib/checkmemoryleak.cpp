@@ -960,6 +960,28 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             dep = true;
                             break;
                         }
+                        if (innerParlevel > 0 && Token::Match(tok2, "%var% ("))
+                        {
+                            bool use = false;
+                            for (const Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next())
+                            {
+                                if (tok3->str() == "(")
+                                    tok3 = tok3->link();
+                                else if (tok3->str() == ")")
+                                    break;
+                                else if (Token::Match(tok3->previous(), "(|, %varid% ,|)", varid))
+                                {
+                                    use = true;
+                                    break;
+                                }
+                            }
+                            if (use)
+                            {
+                                addtoken("use");
+                                addtoken(";");
+                                break;
+                            }
+                        }
                     }
 
                     if (Token::Match(tok, "if ( ! %varid% &&", varid))
