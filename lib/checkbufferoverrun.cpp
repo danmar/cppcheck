@@ -1361,7 +1361,6 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
                 else if (Token::Match(tok2->next(), "%num%"))
                     parameters.push_back(tok2->next());
 
-                // TODO, get value of the variable if possible and use that instead of 0
                 else
                     parameters.push_back(0);
             }
