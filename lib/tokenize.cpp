@@ -730,10 +730,14 @@ void Tokenizer::simplifyTypedef()
         Token *specStart = 0;
         Token *specEnd = 0;
         Token *typeDef = tok;
+        Token *argFuncRetStart = 0;
+        Token *argFuncRetEnd = 0;
         int offset = 1;
         bool function = false;
         bool functionPtr = false;
         bool functionRef = false;
+        bool functionRetFuncPtr = false;
+        bool functionPtrRetFuncPtr = false;
         Token *functionNamespace = 0;
 
         if (Token::Match(tok->next(), "::") ||
@@ -953,9 +957,53 @@ void Tokenizer::simplifyTypedef()
                 continue;
             }
         }
+
+        // pointer to function returning pointer to function
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * ( * %type% ) ("))
+        {
+            functionPtrRetFuncPtr = true;
+
+            typeName = tok->tokAt(offset + 4);
+            argStart = tok->tokAt(offset + 6);
+            argEnd = tok->tokAt(offset + 6)->link();
+
+            argFuncRetStart = argEnd->tokAt(2);
+            argFuncRetEnd = argEnd->tokAt(2)->link();
+
+            tok = argFuncRetEnd->next();
+        }
+
+        // function returning pointer to function
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * %type% ("))
+        {
+            functionRetFuncPtr = true;
+
+            typeName = tok->tokAt(offset + 2);
+            argStart = tok->tokAt(offset + 3);
+            argEnd = tok->tokAt(offset + 3)->link();
+
+            argFuncRetStart = argEnd->tokAt(2);
+            argFuncRetEnd = argEnd->tokAt(2)->link();
+
+            tok = argFuncRetEnd->next();
+        }
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * ( %type% ) ("))
+        {
+            functionRetFuncPtr = true;
+
+            typeName = tok->tokAt(offset + 3);
+            argStart = tok->tokAt(offset + 5);
+            argEnd = tok->tokAt(offset + 5)->link();
+
+            argFuncRetStart = argEnd->tokAt(2);
+            argFuncRetEnd = argEnd->tokAt(2)->link();
+
+            tok = argFuncRetEnd->next();
+        }
+
+        // unhandled typedef, skip it and continue
         else
         {
-            // unhandled typedef, skip it and continue
             continue;
         }
 
@@ -1208,6 +1256,93 @@ void Tokenizer::simplifyTypedef()
                                 tok2 = tok2->next();
                             }
                         }
+                    }
+                    else if (functionRetFuncPtr || functionPtrRetFuncPtr)
+                    {
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        Token *tok3 = tok2;
+                        tok2->insertToken("*");
+                        tok2 = tok2->next();
+
+                        Token * tok4 = 0;
+                        if (functionPtrRetFuncPtr)
+                        {
+                            tok2->insertToken("(");
+                            tok2 = tok2->next();
+                            tok4 = tok2;
+                            tok2->insertToken("*");
+                            tok2 = tok2->next();
+                        }
+
+                        // skip over variable name
+                        tok2 = tok2->next();
+
+                        if (tok4 && functionPtrRetFuncPtr)
+                        {
+                            tok2->insertToken(")");
+                            tok2 = tok2->next();
+                            Token::createMutualLinks(tok2, tok4);
+                        }
+
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        Token *tok5 = tok2;
+
+                        Token *nextArgTok;
+                        std::stack<Token *> argLinks;
+                        for (nextArgTok = argStart->next(); nextArgTok != argEnd; nextArgTok = nextArgTok->next())
+                        {
+                            tok2->insertToken(nextArgTok->str());
+                            tok2 = tok2->next();
+
+                            // Check for links and fix them up
+                            if (tok2->str() == "(" || tok2->str() == "[")
+                                argLinks.push(tok2);
+                            if (tok2->str() == ")" || tok2->str() == "]")
+                            {
+                                Token * link = argLinks.top();
+
+                                tok2->link(link);
+                                link->link(tok2);
+
+                                argLinks.pop();
+                            }
+                        }
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok5);
+
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok3);
+
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        Token *tok6 = tok2;
+
+                        for (nextArgTok = argFuncRetStart->next(); nextArgTok != argFuncRetEnd; nextArgTok = nextArgTok->next())
+                        {
+                            tok2->insertToken(nextArgTok->str());
+                            tok2 = tok2->next();
+
+                            // Check for links and fix them up
+                            if (tok2->str() == "(" || tok2->str() == "[")
+                                argLinks.push(tok2);
+                            if (tok2->str() == ")" || tok2->str() == "]")
+                            {
+                                Token * link = argLinks.top();
+
+                                tok2->link(link);
+                                link->link(tok2);
+
+                                argLinks.pop();
+                            }
+                        }
+
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok6);
                     }
 
                     if (arrayStart && arrayEnd)

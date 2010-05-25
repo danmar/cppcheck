@@ -196,6 +196,7 @@ private:
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
         TEST_CASE(simplifyTypedefFunction3);
+        TEST_CASE(simplifyTypedefFunction4);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -4241,6 +4242,26 @@ private:
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyTypedefFunction4()
+    {
+        const char code[] = "typedef int ( * ( * type1 ) ( bool ) ) ( int , int ) ;\n"
+                            "typedef int ( * ( type2 ) ( bool ) ) ( int , int ) ;\n"
+                            "typedef int ( * type3 ( bool ) ) ( int , int ) ;\n"
+                            "type1 t1;\n"
+                            "type2 t2;\n"
+                            "type3 t3;";
+
+        // The expected result..
+        const std::string expected("; ; ; "
+                                   "int ( * ( * t1 ) ( bool ) ) ( int , int ) ; "
+                                   "int ( * t2 ( bool ) ) ( int , int ) ; "
+                                   "int ( * t3 ( bool ) ) ( int , int ) ;");
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void reverseArraySyntax()
