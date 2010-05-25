@@ -192,9 +192,11 @@ CheckClass::Var *CheckClass::getVarList(const Token *tok1, bool withClasses, boo
             }
             if (next && Token::Match(next, "> %var% ;"))
                 varname = next->strAt(1);
+            else if (next && Token::Match(next, "> * %var% ;"))
+                varname = next->strAt(2);
         }
 
-        // If the varname was set in one of the two if-block above, create a entry for this variable..
+        // If the varname was set in the if-blocks above, create a entry for this variable..
         if (!varname.empty() && varname != "operator")
         {
             Var *var = new Var(varname, false, priv, isMutable, isStatic, varlist);
@@ -1904,6 +1906,9 @@ bool CheckClass::isMemberVar(const std::string &classname, const Var *varlist, c
 
     if (tok->str() == "this")
         return true;
+
+    if (Token::Match(tok, "( * %var% ) ["))
+        tok = tok->tokAt(2);
 
     // ignore class namespace
     if (tok->str() == classname && tok->next()->str() == "::")

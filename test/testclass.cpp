@@ -119,6 +119,7 @@ private:
         TEST_CASE(const21); // ticket #1683
         TEST_CASE(const22);
         TEST_CASE(const23); // ticket #1699
+        TEST_CASE(const24); // ticket #1708
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3406,6 +3407,20 @@ private:
                    "    void set_member(Type2 m) { _m = m; }\n"
                    "private:\n"
                    "    Type2 _m;\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const24()
+    {
+        checkConst("class Class {\n"
+                   "public:\n"
+                   "void Settings::SetSetting(QString strSetting, QString strNewVal)\n"
+                   "{\n"
+                   "    (*m_pSettings)[strSetting] = strNewVal;\n"
+                   "}\n"
+                   "private:\n"
+                   "    std::map<QString, QString> *m_pSettings;\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
