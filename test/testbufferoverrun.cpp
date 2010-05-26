@@ -122,6 +122,7 @@ private:
         TEST_CASE(buffer_overrun_11);
         TEST_CASE(buffer_overrun_12);
         TEST_CASE(buffer_overrun_13);
+        TEST_CASE(buffer_overrun_14);
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -1519,6 +1520,83 @@ private:
               "  memmove(a, a+5, 10);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds: a\n", errout.str());
+    }
+
+    void buffer_overrun_14()
+    {
+        check("void f(char *a) {\n"
+              "  char *b = new char[strlen(a)];\n"
+              "  strcpy(b, a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        
+        check("void f(char *a) {\n"
+              "  char *b = new char[strlen(a) + 1];\n"
+              "  strcpy(b, a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        
+        check("void f(char *a) {\n"
+              "  char *b = new char[strlen(a)];\n"
+              "  a[0] = '\\0';\n"
+              "  strcpy(b, a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        
+        check("void f(char *a) {\n"
+              "  char *b = malloc(strlen(a));\n"
+              "  b = realloc(b, 10000);\n"
+              "  strcpy(b, a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char *a) {\n"
+              "  char *b = malloc(strlen(a));\n"
+              "  strcpy(b, a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        
+        check("void f(char *a) {\n"
+              "  char *b = malloc(strlen(a));\n"
+              "  if (1) {\n"
+              "    strcpy(b, a);\n"
+              "  }\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
+              
+        check("void f(char *a) {\n"
+              "  char *b = malloc(strlen(a) + 1);\n"
+              "  strcpy(b, a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        
+        check("void f(char *a, char *c) {\n"
+              "  char *b = realloc(c, strlen(a));\n"
+              "  strcpy(b, a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+        
+        check("void f(char *a, char *c) {\n"
+              "  char *b = realloc(c, strlen(a) + 1);\n"
+              "  strcpy(b, a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        
+        check("void f(char *a) {\n"
+              "  char *b = malloc(strlen(a));\n"
+              "  sprintf(b, \"%s\", a);\n"
+              "  return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
     }
 
     void sprintf1()

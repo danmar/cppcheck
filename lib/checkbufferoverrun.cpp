@@ -1228,6 +1228,7 @@ void CheckBufferOverrun::bufferOverrun()
 {
     checkGlobalAndLocalVariable();
     checkStructVariable();
+    checkBufferAllocatedWithStrlen();
 }
 //---------------------------------------------------------------------------
 
@@ -1401,6 +1402,85 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
         bufferOverrun(tok);
     }
 }
+
+
+
+//---------------------------------------------------------------------------
+// Checking for allocating insufficient memory for copying a string by
+// allocating only strlen(src) bytes instead of strlen(src) + 1 bytes (one
+// extra for the terminating null character).
+// Example:
+//   char *b = malloc(strlen(a));   // Should be malloc(strlen(a) + 1);
+//   strcpy(b, a);                  // <== Buffer overrun
+//---------------------------------------------------------------------------
+void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
+{
+    const char pattern[] = "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc";
+    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok; tok = Token::findmatch(tok->next(),pattern))
+    {
+        unsigned int dstVarId;
+        unsigned int srcVarId;
+              
+        // Look for allocation of a buffer based on the size of a string
+        if (Token::Match(tok, "%var% = malloc|g_malloc|g_try_malloc ( strlen ( %var% ) )"))
+        {
+            dstVarId = tok->varId();
+            srcVarId = tok->tokAt(6)->varId();
+            tok      = tok->tokAt(8);
+        }
+        else if (Token::Match(tok, "%var% = new char [ strlen ( %var% ) ]"))
+        {
+            dstVarId = tok->varId();
+            srcVarId = tok->tokAt(7)->varId();
+            tok      = tok->tokAt(9);
+        }
+        else if (Token::Match(tok, "%var% = realloc|g_realloc|g_try_realloc ( %var% , strlen ( %var% ) )"))
+        {
+            dstVarId = tok->varId();
+            srcVarId = tok->tokAt(8)->varId();
+            tok      = tok->tokAt(10);
+        }
+        else
+            continue;
+        
+        int indentlevel = 0;
+        for (; tok && tok->next(); tok = tok->next())
+        {
+            // To avoid false positives and added complexity, we will only look for
+            // improper usage of the buffer within the block that it was allocated
+            if (tok->str() == "{")
+            {
+                ++indentlevel;
+            }
+
+            else if (tok->str() == "}")
+            {
+                --indentlevel;
+                if (indentlevel < 0)
+                    return;
+            }
+                       
+            // If the buffers are modified, we can't be sure of their sizes
+            if (tok->varId() == srcVarId || tok->varId() == dstVarId)
+                break;
+            
+            if (Token::Match(tok, "strcpy ( %varid% , %var% )", dstVarId) &&
+                tok->tokAt(4)->varId() == srcVarId)
+            {
+                bufferOverrun(tok);
+            }
+            else if (Token::Match(tok, "sprintf ( %varid% , %str% , %var% )", dstVarId) &&
+                tok->tokAt(6)->varId() == srcVarId &&
+                tok->tokAt(4)->str().find("%s") != std::string::npos)
+            {
+                bufferOverrun(tok);
+            }
+                
+        }
+        
+    }
+}
+//---------------------------------------------------------------------------
 
 
 void CheckBufferOverrun::negativeIndexError(const Token *tok, long index)

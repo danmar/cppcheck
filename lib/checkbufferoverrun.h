@@ -95,6 +95,9 @@ public:
     /** Check for buffer overruns - locate global variables and local function variables and check them with the checkScope function */
     void checkGlobalAndLocalVariable();
 
+    /** Check for buffer overruns due to allocating strlen(src) bytes instead of (strlen(src)+1) bytes before copying a string */
+    void checkBufferAllocatedWithStrlen();
+
     /** Check for negative index */
     void negativeIndex();
 
