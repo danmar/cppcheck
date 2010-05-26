@@ -742,7 +742,7 @@ Variables::VariableUsage *Variables::find(unsigned int varid)
     return 0;
 }
 
-static int doAssignment(Variables &variables, const Token *tok, bool pointer, bool post)
+static int doAssignment(Variables &variables, const Token *tok, bool pointer, bool post, bool paren)
 {
     int next = 0;
 
@@ -756,6 +756,9 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer, bo
         int start = 2;
 
         if (post)
+            start++;
+
+        if (paren)
             start++;
 
         if (Token::Match(tok->tokAt(start), "&| %var%") ||
@@ -1014,7 +1017,7 @@ void CheckOther::functionVariableUsage()
 
                     // check for assignment
                     if (written)
-                        offset = doAssignment(variables, tok->tokAt(3), false, false);
+                        offset = doAssignment(variables, tok->tokAt(3), false, false, false);
 
                     tok = tok->tokAt(3 + offset);
                 }
@@ -1039,7 +1042,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(4), false, false);
+                    offset = doAssignment(variables, tok->tokAt(4), false, false, false);
 
                 tok = tok->tokAt(4 + offset);
             }
@@ -1063,7 +1066,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(4), false, false);
+                    offset = doAssignment(variables, tok->tokAt(4), false, false, false);
 
                 tok = tok->tokAt(4 + offset);
             }
@@ -1087,7 +1090,7 @@ void CheckOther::functionVariableUsage()
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(5), false, false);
+                    offset = doAssignment(variables, tok->tokAt(5), false, false, false);
 
                 tok = tok->tokAt(5 + offset);
             }
@@ -1245,15 +1248,22 @@ void CheckOther::functionVariableUsage()
                 variables.readAll(tok->next()->varId());
 
             // assignment
-            else if (Token::Match(tok, "*| ++|--| %var% ++|--| ="))
+            else if (Token::Match(tok, "*| (| ++|--| %var% ++|--| )| ="))
             {
                 bool pointer = false;
                 bool pre = false;
                 bool post = false;
+                bool paren = false;
 
                 if (tok->str() == "*")
                 {
                     pointer = true;
+                    tok = tok->next();
+                }
+
+                if (tok->str() == "(")
+                {
+                    paren = true;
                     tok = tok->next();
                 }
 
@@ -1271,7 +1281,7 @@ void CheckOther::functionVariableUsage()
                 unsigned int varid1 = tok->varId();
                 const Token *start = tok;
 
-                tok = tok->tokAt(doAssignment(variables, tok, pointer, post));
+                tok = tok->tokAt(doAssignment(variables, tok, pointer, post, paren));
 
                 if (pre || post)
                     variables.use(varid1);

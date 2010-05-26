@@ -78,6 +78,7 @@ private:
         TEST_CASE(localvar13); // ticket #1640
         TEST_CASE(localvar14); // ticket #5
         TEST_CASE(localvar15);
+        TEST_CASE(localvar16); // ticket #1709
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1115,6 +1116,29 @@ private:
                                   "    const struct B * b[a];\n"
                                   "    b[0] = &c;\n"
                                   "    return b[0];\n"
+                                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void localvar16() // ticket #1709
+    {
+        {
+            functionVariableUsage("int foo()\n"
+                                  "{\n"
+                                  "    char buf[5];\n"
+                                  "    char *ptr = buf;\n"
+                                  "    *(ptr++) = 0;\n"
+                                  "}\n");
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            functionVariableUsage("int foo()\n"
+                                  "{\n"
+                                  "    char buf[5];\n"
+                                  "    char *ptr = buf - 1;\n"
+                                  "    *(++ptr) = 0;\n"
                                   "}\n");
             ASSERT_EQUALS("", errout.str());
         }
