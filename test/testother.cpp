@@ -702,6 +702,7 @@ private:
         checkOther.nullPointer();
 
         tokenizer.simplifyTokenList();
+        checkOther.nullConstantDereference();
         checkOther.executionPaths();
     }
 
@@ -978,6 +979,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    // Execution paths..
     void nullpointer6()
     {
         // errors..
@@ -1037,6 +1039,15 @@ private:
                          "    c[0] = 0;\n"
                          "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Possible null pointer dereference: c\n", errout.str());
+
+        checkNullPointer("void f()\n"
+                         "{\n"
+                         "    if (x) {\n"
+                         "        char *c = 0;\n"
+                         "        *c = 0;\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference\n", errout.str());
 
         // no false positive..
         checkNullPointer("static void foo()\n"

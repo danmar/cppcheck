@@ -2188,7 +2188,34 @@ void CheckOther::nullPointer()
     nullPointerByDeRefAndChec();
 }
 
+/** Derefencing null constant (simplified token list) */
+void CheckOther::nullConstantDereference()
+{
+    for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
+    {
+        if (tok->str() == "(" && Token::simpleMatch(tok->previous(), "sizeof"))
+            tok = tok->link();
 
+        else if (Token::simpleMatch(tok, "exit ( )"))
+        {
+            while (tok && tok->str() != "}")
+            {
+                if (tok->str() == "{")
+                    tok = tok->link();
+                tok = tok->next();
+            }
+        }
+
+        else if (Token::simpleMatch(tok, "* 0"))
+        {
+            if (Token::Match(tok->previous(), "[;{}=+-/(,]") ||
+                Token::Match(tok->previous(), "return|<<"))
+            {
+                nullPointerError(tok);
+            }
+        }
+    }
+}
 
 /**
  * \brief parse a function call and extract information about variable usage
@@ -2407,19 +2434,6 @@ private:
                 dereference(checks, &tok);
             else
                 bailOutVar(checks, tok.varId());
-        }
-
-        else if (Token::simpleMatch(&tok, "* 0"))
-        {
-            if (Token::Match(tok.previous(), "[;{}=+-/(,]") ||
-                Token::Match(tok.previous(), "return|<<"))
-            {
-                CheckOther *checkOther = dynamic_cast<CheckOther *>(owner);
-                if (checkOther)
-                {
-                    checkOther->nullPointerError(&tok);
-                }
-            }
         }
 
         else if (tok.str() == "delete")

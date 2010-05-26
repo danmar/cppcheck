@@ -80,6 +80,8 @@ public:
         checkOther.checkMathFunctions();
         checkOther.checkFflushOnInputStream();
 
+        checkOther.nullConstantDereference();
+
         // New type of check: Check execution paths
         checkOther.executionPaths();
     }
@@ -140,6 +142,9 @@ public:
 
     /** @brief possible null pointer dereference */
     void nullPointer();
+
+    /** @brief dereferencing null constant (after Tokenizer::simplifyKnownVariables) */
+    void nullConstantDereference();
 
     /** @brief new type of check: check execution paths */
     void executionPaths();
