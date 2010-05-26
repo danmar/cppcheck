@@ -1530,14 +1530,14 @@ private:
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
-        
+
         check("void f(char *a) {\n"
               "  char *b = new char[strlen(a) + 1];\n"
               "  strcpy(b, a);\n"
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("void f(char *a) {\n"
               "  char *b = new char[strlen(a)];\n"
               "  a[0] = '\\0';\n"
@@ -1545,7 +1545,7 @@ private:
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("void f(char *a) {\n"
               "  char *b = malloc(strlen(a));\n"
               "  b = realloc(b, 10000);\n"
@@ -1560,7 +1560,7 @@ private:
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
-        
+
         check("void f(char *a) {\n"
               "  char *b = malloc(strlen(a));\n"
               "  if (1) {\n"
@@ -1569,28 +1569,28 @@ private:
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
-              
+
         check("void f(char *a) {\n"
               "  char *b = malloc(strlen(a) + 1);\n"
               "  strcpy(b, a);\n"
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("void f(char *a, char *c) {\n"
               "  char *b = realloc(c, strlen(a));\n"
               "  strcpy(b, a);\n"
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
-        
+
         check("void f(char *a, char *c) {\n"
               "  char *b = realloc(c, strlen(a) + 1);\n"
               "  strcpy(b, a);\n"
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("void f(char *a) {\n"
               "  char *b = malloc(strlen(a));\n"
               "  sprintf(b, \"%s\", a);\n"

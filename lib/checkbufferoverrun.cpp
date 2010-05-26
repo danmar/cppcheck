@@ -1420,7 +1420,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
     {
         unsigned int dstVarId;
         unsigned int srcVarId;
-              
+
         // Look for allocation of a buffer based on the size of a string
         if (Token::Match(tok, "%var% = malloc|g_malloc|g_try_malloc ( strlen ( %var% ) )"))
         {
@@ -1442,7 +1442,7 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
         }
         else
             continue;
-        
+
         int indentlevel = 0;
         for (; tok && tok->next(); tok = tok->next())
         {
@@ -1459,25 +1459,25 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
                 if (indentlevel < 0)
                     return;
             }
-                       
+
             // If the buffers are modified, we can't be sure of their sizes
             if (tok->varId() == srcVarId || tok->varId() == dstVarId)
                 break;
-            
+
             if (Token::Match(tok, "strcpy ( %varid% , %var% )", dstVarId) &&
                 tok->tokAt(4)->varId() == srcVarId)
             {
                 bufferOverrun(tok);
             }
             else if (Token::Match(tok, "sprintf ( %varid% , %str% , %var% )", dstVarId) &&
-                tok->tokAt(6)->varId() == srcVarId &&
-                tok->tokAt(4)->str().find("%s") != std::string::npos)
+                     tok->tokAt(6)->varId() == srcVarId &&
+                     tok->tokAt(4)->str().find("%s") != std::string::npos)
             {
                 bufferOverrun(tok);
             }
-                
+
         }
-        
+
     }
 }
 //---------------------------------------------------------------------------
