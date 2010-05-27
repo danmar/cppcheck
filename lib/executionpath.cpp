@@ -245,16 +245,20 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
                         std::list<ExecutionPath *>::const_iterator it;
                         for (it = checks.begin(); it != checks.end(); ++it)
                         {
+                            c.push_back((*it)->copy());
                             if ((*it)->varId != 0)
-                            {
-                                c.push_back((*it)->copy());
                                 countif2.insert((*it)->varId);
-                            }
                         }
                     }
                     checkExecutionPaths_(tok->next(), c);
                     while (!c.empty())
                     {
+                        if (c.back()->varId == 0)
+                        {
+                            c.pop_back();
+                            continue;
+                        }
+
                         bool duplicate = false;
                         std::list<ExecutionPath *>::const_iterator it;
                         for (it = checks.begin(); it != checks.end(); ++it)

@@ -1411,6 +1411,15 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNullPointer("void f(int a)\n"
+                         "{\n"
+                         "    if (a) {\n"
+                         "        char *p;\n"
+                         "        *p = 0;\n"
+                         "    }\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: p\n", errout.str());
+
         // +=
         checkUninitVar("void f()\n"
                        "{\n"
