@@ -208,6 +208,7 @@ private:
         TEST_CASE(removeRedundantAssignment);
 
         TEST_CASE(removedeclspec);
+        TEST_CASE(removeattribute);
         TEST_CASE(cpp0xtemplate);
 
         TEST_CASE(arraySize);
@@ -3262,6 +3263,12 @@ private:
         ASSERT_EQUALS("int i ;", tokenizeAndStringify("__declspec(allocate(\"mycode\")) int i;"));
         ASSERT_EQUALS("struct IUnknown ;", tokenizeAndStringify("struct __declspec(uuid(\"00000000-0000-0000-c000-000000000046\")) IUnknown;"));
         ASSERT_EQUALS("int x [ ] ;", tokenizeAndStringify("__declspec(property(get=GetX, put=PutX)) int x[];"));
+    }
+
+    void removeattribute()
+    {
+        ASSERT_EQUALS("short array [ 3 ] ;", tokenizeAndStringify("short array[3] __attribute__ ((aligned));"));
+        ASSERT_EQUALS("int x [ 2 ] ;", tokenizeAndStringify("int x[2] __attribute__ ((packed));"));
     }
 
     void cpp0xtemplate()

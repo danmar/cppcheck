@@ -1582,6 +1582,9 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
     // remove calling conventions __cdecl, __stdcall..
     simplifyCallingConvention();
 
+    // remove __attribute__((?))
+    simplifyAttribute();
+
     // typedef..
     simplifyTypedef();
 
@@ -7530,6 +7533,23 @@ void Tokenizer::simplifyDeclspec()
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
         if (Token::simpleMatch(tok, "__declspec (") && tok->next()->link() && tok->next()->link()->next())
+        {
+            Token::eraseTokens(tok, tok->next()->link()->next());
+            tok->deleteThis();
+        }
+    }
+}
+
+void Tokenizer::simplifyAttribute()
+{
+    while (Token::simpleMatch(_tokens, "__attribute__ (") && _tokens->next()->link() && _tokens->next()->link()->next())
+    {
+        Token::eraseTokens(_tokens, _tokens->next()->link()->next());
+        _tokens->deleteThis();
+    }
+    for (Token *tok = _tokens; tok; tok = tok->next())
+    {
+        if (Token::simpleMatch(tok, "__attribute__ (") && tok->next()->link() && tok->next()->link()->next())
         {
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
