@@ -732,6 +732,8 @@ void Tokenizer::simplifyTypedef()
         Token *typeDef = tok;
         Token *argFuncRetStart = 0;
         Token *argFuncRetEnd = 0;
+        Token *const1= 0;
+        Token *const2= 0;
         int offset = 1;
         bool function = false;
         bool functionPtr = false;
@@ -876,13 +878,25 @@ void Tokenizer::simplifyTypedef()
                 continue;
             }
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( *|&| %type% ) ("))
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( *|&| const|volatile| const|volatile| %type% ) ("))
         {
             functionPtr = tok->tokAt(offset + 1)->str() == "*";
             functionRef = tok->tokAt(offset + 1)->str() == "&";
             function = tok->tokAt(offset + 2)->str() == ")";
             if (!function)
+            {
                 offset++;
+                if (Token::Match(tok->tokAt(offset + 1), "const|volatile"))
+                {
+                    const1= tok->tokAt(offset + 1);
+                    offset++;
+                    if (Token::Match(tok->tokAt(offset + 1), "const|volatile"))
+                    {
+                        const2 = tok->tokAt(offset + 1);
+                        offset++;
+                    }
+                }
+            }
             if (tok->tokAt(offset + 3)->link()->next())
             {
                 typeName = tok->tokAt(offset + 1);
@@ -908,14 +922,26 @@ void Tokenizer::simplifyTypedef()
                 tok = specEnd->next();
             }
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %var% :: *|&| %type% ) ("))
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %var% :: *|&| const|volatile| const|volatile| %type% ) ("))
         {
             functionNamespace = tok->tokAt(offset + 1);
             functionPtr = tok->tokAt(offset + 3)->str() == "*";
             functionRef = tok->tokAt(offset + 3)->str() == "&";
             function = tok->tokAt(offset + 4)->str() == ")";
             if (!function)
+            {
                 offset++;
+                if (Token::Match(tok->tokAt(offset + 3), "const|volatile"))
+                {
+                    const1 = tok->tokAt(offset + 3);
+                    offset++;
+                    if (Token::Match(tok->tokAt(offset + 3), "const|volatile"))
+                    {
+                        const2 = tok->tokAt(offset + 3);
+                        offset++;
+                    }
+                }
+            }
             if (tok->tokAt(offset + 5)->link()->next())
             {
                 typeName = tok->tokAt(offset + 3);
@@ -1181,6 +1207,17 @@ void Tokenizer::simplifyTypedef()
                         else if (functionRef)
                             tok2->insertToken("&");
                         tok2 = tok2->next();
+
+                        if (const1)
+                        {
+                            tok2->insertToken(const1->str());
+                            tok2 = tok2->next();
+                            if (const2)
+                            {
+                                tok2->insertToken(const2->str());
+                                tok2 = tok2->next();
+                            }
+                        }
 
                         if (!inCast)
                         {

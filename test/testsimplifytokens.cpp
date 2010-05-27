@@ -197,6 +197,7 @@ private:
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
         TEST_CASE(simplifyTypedefFunction3);
         TEST_CASE(simplifyTypedefFunction4);
+        TEST_CASE(simplifyTypedefFunction5);
 
         TEST_CASE(reverseArraySyntax)
         TEST_CASE(simplify_numeric_condition)
@@ -4258,6 +4259,41 @@ private:
                                    "int ( * ( * t1 ) ( bool ) ) ( int , int ) ; "
                                    "int ( * t2 ( bool ) ) ( int , int ) ; "
                                    "int ( * t3 ( bool ) ) ( int , int ) ;");
+        ASSERT_EQUALS(expected, tok(code, false));
+
+        checkSimplifyTypedef(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyTypedefFunction5()
+    {
+        const char code[] = "typedef int ( * type1 ) ( float ) ;\n"
+                            "typedef int ( * const type2 ) ( float ) ;\n"
+                            "typedef int ( * volatile type3 ) ( float ) ;\n"
+                            "typedef int ( * const volatile type4 ) ( float ) ;\n"
+                            "typedef int ( C :: * type5 ) ( float ) ;\n"
+                            "typedef int ( C :: * const type6 ) ( float ) ;\n"
+                            "typedef int ( C :: * volatile type7 ) ( float ) ;\n"
+                            "typedef int ( C :: * const volatile type8 ) ( float ) ;\n"
+                            "type1 t1;\n"
+                            "type2 t2;\n"
+                            "type3 t3;\n"
+                            "type4 t4;\n"
+                            "type5 t5;\n"
+                            "type6 t6;\n"
+                            "type7 t7;\n"
+                            "type8 t8;";
+
+        // The expected result..
+        const std::string expected("; ; ; ; ; ; ; ; "
+                                   "int * t1 ; " // simplified to regular pointer
+                                   "int ( * const t2 ) ( float ) ; "
+                                   "int * t3 ; " // volatile removed, gets simplified to regular pointer
+                                   "int ( * const t4 ) ( float ) ; " // volatile removed
+                                   "int ( C :: * t5 ) ( float ) ; "
+                                   "int ( C :: * const t6 ) ( float ) ; "
+                                   "int ( C :: * t7 ) ( float ) ; " // volatile removed
+                                   "int ( C :: * const t8 ) ( float ) ;"); // volatile removed
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
