@@ -192,6 +192,8 @@ private:
         TEST_CASE(simplifyTypedef47);
         TEST_CASE(simplifyTypedef48); // ticket #1673
         TEST_CASE(simplifyTypedef49); // ticket #1691
+        TEST_CASE(simplifyTypedef50);
+        TEST_CASE(simplifyTypedef51);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4007,6 +4009,38 @@ private:
                                    "void some_method ( const Class & x ) const { } "
                                    "void another_method ( const Class & x ) const { } "
                                    "}");
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef50()
+    {
+        const char code[] = "typedef char (* type1)[10];\n"
+                            "typedef char (& type2)[10];\n"
+                            "typedef char (& type3)[x];\n"
+                            "typedef char (& type4)[x + 2];\n"
+                            "type1 t1;\n"
+                            "type2 t2;\n"
+                            "type3 t3;\n"
+                            "type4 t4;";
+
+        // The expected result..
+        const std::string expected("; ; ; ; "
+                                   "char ( * t1 ) [ 10 ] ; "
+                                   "char ( & t2 ) [ 10 ] ; "
+                                   "char ( & t3 ) [ x ] ; "
+                                   "char ( & t4 ) [ x + 2 ] ;");
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef51()
+    {
+        const char code[] = "class A { public: int i; };\n"
+                            "typedef const char (A :: * type1);\n"
+                            "type1 t1 = &A::i;";
+
+        // The expected result..
+        const std::string expected("class A { public: int i ; } ; ; "
+                                   "const char ( A :: * t1 ) = & A :: i ;");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 

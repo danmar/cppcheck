@@ -732,14 +732,17 @@ void Tokenizer::simplifyTypedef()
         Token *typeDef = tok;
         Token *argFuncRetStart = 0;
         Token *argFuncRetEnd = 0;
-        Token *const1= 0;
-        Token *const2= 0;
+        Token *const1 = 0;
+        Token *const2 = 0;
         int offset = 1;
         bool function = false;
         bool functionPtr = false;
         bool functionRef = false;
         bool functionRetFuncPtr = false;
         bool functionPtrRetFuncPtr = false;
+        bool ptrToArray = false;
+        bool refToArray = false;
+        bool ptrMember = false;
         Token *functionNamespace = 0;
 
         if (Token::Match(tok->next(), "::") ||
@@ -1025,6 +1028,26 @@ void Tokenizer::simplifyTypedef()
             argFuncRetEnd = argEnd->tokAt(2)->link();
 
             tok = argFuncRetEnd->next();
+        }
+
+        // pointer/reference to array
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( *|& %type% ) ["))
+        {
+            ptrToArray = (tok->tokAt(offset + 1)->str() == "*");
+            refToArray = (tok->tokAt(offset + 1)->str() == "&");
+            typeName = tok->tokAt(offset + 2);
+            arrayStart = tok->tokAt(offset + 4);
+            arrayEnd = arrayStart->link();
+            tok = arrayEnd->next();
+        }
+
+        // pointer to class member
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %type% :: * %type% ) ;"))
+        {
+            functionNamespace = tok->tokAt(offset + 1);
+            ptrMember = true;
+            typeName = tok->tokAt(offset + 4);
+            tok = tok->tokAt(offset + 6);
         }
 
         // unhandled typedef, skip it and continue
@@ -1380,6 +1403,46 @@ void Tokenizer::simplifyTypedef()
                         tok2->insertToken(")");
                         tok2 = tok2->next();
                         Token::createMutualLinks(tok2, tok6);
+                    }
+                    else if (ptrToArray || refToArray)
+                    {
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        Token *tok3 = tok2;
+
+                        if (ptrToArray)
+                            tok2->insertToken("*");
+                        else
+                            tok2->insertToken("&");
+                        tok2 = tok2->next();
+
+                        // skip over name
+                        tok2 = tok2->next();
+
+                        tok2->insertToken(")");
+                        Token::createMutualLinks(tok2->next(), tok3);
+                    }
+                    else if (ptrMember)
+                    {
+                        tok2->insertToken("(");
+                        tok2 = tok2->next();
+                        Token *tok3 = tok2;
+
+                        tok2->insertToken(functionNamespace->str());
+                        tok2 = tok2->next();
+
+                        tok2->insertToken("::");
+                        tok2 = tok2->next();
+
+                        tok2->insertToken("*");
+                        tok2 = tok2->next();
+
+                        // skip over name
+                        tok2 = tok2->next();
+
+                        tok2->insertToken(")");
+                        tok2 = tok2->next();
+                        Token::createMutualLinks(tok2, tok3);
                     }
 
                     if (arrayStart && arrayEnd)
