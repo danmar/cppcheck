@@ -5783,7 +5783,7 @@ bool Tokenizer::simplifyCalculations()
         // (1-2)
         while (Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% [],);=<>+-*/]") ||
                Token::Match(tok, "<< %num% [+-*/] %num% [],);=<>+-*/]") ||
-               Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<") ||
+               Token::Match(tok, "[[,(=<>+-*] %num% [+-*/] %num% <<|>>") ||
                Token::Match(tok, "<< %num% [+-*/] %num% <<"))
         {
             tok = tok->next();
@@ -5884,7 +5884,7 @@ bool Tokenizer::simplifyCalculations()
             }
         }
 
-        if (Token::Match(tok, "%num% <<|>> %num%"))
+        if (Token::Match(tok->previous(), "[([,=] %num% <<|>> %num%"))
         {
             const int op1(MathLib::toLongNumber(tok->str()));
             const int op2(MathLib::toLongNumber(tok->tokAt(2)->str()));
