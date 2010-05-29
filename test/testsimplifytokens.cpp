@@ -5089,6 +5089,8 @@ private:
         ASSERT_EQUALS("int var ;", tok("register int var ;", true));
         ASSERT_EQUALS("short var ;", tok("register short int var ;", true));
         ASSERT_EQUALS("int foo ( ) { }", tok("inline int foo ( ) { }", true));
+        ASSERT_EQUALS("int foo ( ) { }", tok("__inline int foo ( ) { }", true));
+        ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( likely ( a ) ) { }", true));
         ASSERT_EQUALS("if ( a ) { }", tok("if ( unlikely ( a ) ) { }", true));
     }
