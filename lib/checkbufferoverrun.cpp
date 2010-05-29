@@ -671,38 +671,38 @@ void CheckBufferOverrun::checkScope(const Token *tok, const std::vector<std::str
 
 
         // Detect few strcat() calls
-        if (varid > 0 && Token::Match(tok, "strcat ( %varid% , %str% ) ;", varid))
+        const std::string strcatPattern = varid > 0 ? "strcat ( %varid% , %str% ) ;" : ("strcat ( " + varnames + " , %str% ) ;");
+        if (Token::Match(tok, strcatPattern.c_str(), varid))
         {
             size_t charactersAppend = 0;
             const Token *tok2 = tok;
 
-            while (tok2 && Token::Match(tok2, "strcat ( %varid% , %str% ) ;", varid))
+            while (tok2 && Token::Match(tok2, strcatPattern.c_str(), varid))
             {
-                charactersAppend += Token::getStrLength(tok2->tokAt(4));
+                charactersAppend += Token::getStrLength(tok2->tokAt(4 + varc));
                 if (charactersAppend >= static_cast<size_t>(total_size))
                 {
                     bufferOverrun(tok2);
                     break;
                 }
-                tok2 = tok2->tokAt(7);
+                tok2 = tok2->tokAt(7 + varc);
             }
         }
 
-        // sprintf / snprintf..
-        if (varid > 0)
+        // sprintf..
+        const std::string sprintfPattern = varid > 0 ? "sprintf ( %varid% , %str% [,)]" : ("sprintf ( " + varnames + " , %str% [,)]");
+        if (Token::Match(tok, sprintfPattern.c_str(), varid))
         {
-            if (Token::Match(tok, "sprintf ( %varid% , %str% [,)]", varid))
-            {
-                checkSprintfCall(tok, total_size);
-            }
+            checkSprintfCall(tok, total_size);
+        }
 
-            // snprintf..
-            if (Token::Match(tok, "snprintf ( %varid% , %num% ,", varid))
-            {
-                int n = MathLib::toLongNumber(tok->strAt(4));
-                if (n > total_size)
-                    outOfBounds(tok->tokAt(4), "snprintf size");
-            }
+        // snprintf..
+        const std::string snprintfPattern = varid > 0 ? "snprintf ( %varid% , %num% ," : ("snprintf ( " + varnames + " , %num% ,");
+        if (Token::Match(tok, snprintfPattern.c_str(), varid))
+        {
+            int n = MathLib::toLongNumber(tok->strAt(4 + varc));
+            if (n > total_size)
+                outOfBounds(tok->tokAt(4 + varc), "snprintf size");
         }
 
         // Function calls not handled
@@ -1344,14 +1344,23 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
     return input_string_size;
 }
 
-
 void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
 {
-    std::list<const Token*> parameters;
-    if (tok->tokAt(5)->str() == ",")
+    const Token *end = tok->next()->link();
+        
+    // Count the number of tokens in the buffer variable's name
+    int varc = 0;
+    for (const Token *tok1 = tok->tokAt(3); tok1 != end; tok1 = tok1->next())
     {
-        const Token *end = tok->next()->link();
-        for (const Token *tok2 = tok->tokAt(5); tok2 && tok2 != end; tok2 = tok2->next())
+        if (tok1->str() == ",")
+            break;
+        ++ varc;
+    }
+    
+    std::list<const Token*> parameters;
+    if (tok->tokAt(5 + varc)->str() == ",")
+    {
+        for (const Token *tok2 = tok->tokAt(5 + varc); tok2 && tok2 != end; tok2 = tok2->next())
         {
             if (Token::Match(tok2, ", %any% [,)]"))
             {
@@ -1396,7 +1405,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
         }
     }
 
-    int len = countSprintfLength(tok->tokAt(4)->strValue(), parameters);
+    int len = countSprintfLength(tok->tokAt(4 + varc)->strValue(), parameters);
     if (len > size)
     {
         bufferOverrun(tok);

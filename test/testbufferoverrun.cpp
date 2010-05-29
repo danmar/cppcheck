@@ -130,14 +130,22 @@ private:
         TEST_CASE(sprintf4);
         TEST_CASE(sprintf5);
         TEST_CASE(sprintf6);
+        TEST_CASE(sprintf7);
+        TEST_CASE(sprintf8);
 
         TEST_CASE(snprintf1);
         TEST_CASE(snprintf2);
         TEST_CASE(snprintf3);
         TEST_CASE(snprintf4);
+        TEST_CASE(snprintf5);
+        TEST_CASE(snprintf6);
 
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
+        TEST_CASE(strncat3);
+        
+        TEST_CASE(strcat1);
+        TEST_CASE(strcat2);
 
         TEST_CASE(memfunc);		// memchr/memset/memcpy
 
@@ -1677,6 +1685,28 @@ private:
         ASSERT_EQUALS("", errout.str());	// catch changes
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
     }
+    
+    void sprintf7()
+    {
+        check("struct Foo { char a[1]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo x;\n"
+              "  sprintf(x.a, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+    
+    void sprintf8()
+    {
+        check("struct Foo { char a[3]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo x;\n"
+              "  sprintf(x.a, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void snprintf1()
     {
@@ -1718,8 +1748,27 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-
+    void snprintf5()
+    {
+        check("struct Foo { char a[1]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo x;\n"
+              "  snprintf(x.a, 2, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds\n", errout.str());
+    }
+    
+    void snprintf6()
+    {
+        check("struct Foo { char a[3]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo x;\n"
+              "  snprintf(x.a, 2, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
     void strncat1()
     {
@@ -1742,6 +1791,41 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Dangerous usage of strncat. Tip: the 3rd parameter means maximum number of characters to append\n", errout.str());
     }
 
+    void strncat3()
+    {
+        check("struct Foo { char a[4]; };\n"
+              "void f(char *a)\n"
+              "{\n"
+              "  struct Foo x;\n"
+              "  strncat(x.a, a, 5);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds: x.a\n", errout.str());
+    }
+
+
+    void strcat1()
+    {
+        check("struct Foo { char a[4]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo x;\n"
+              "  strcat(x.a, \"aa\");\n"
+              "  strcat(x.a, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+    
+    void strcat2()
+    {
+        check("struct Foo { char a[5]; };\n"
+              "void f()\n"
+              "{\n"
+              "  struct Foo x;\n"
+              "  strcat(x.a, \"aa\");\n"
+              "  strcat(x.a, \"aa\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 
     // memchr/memset/memcpy/etc
