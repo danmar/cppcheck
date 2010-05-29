@@ -1036,6 +1036,12 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 continue;
             }
 
+            else if (varid && getDeallocationType(tok->tokAt(2), varid) != No)
+            {
+                addtoken("dealloc");
+                addtoken(";");
+            }
+
             else if (alloctype == Fd && varid)
             {
                 if (Token::Match(tok, "while ( 0 <= %varid% )", varid) ||
