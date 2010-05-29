@@ -2383,9 +2383,6 @@ void CheckMemoryLeakInClass::parseClass(const Token *tok1, std::vector<std::stri
 
 void CheckMemoryLeakInClass::variable(const std::string &classname, const Token *tokVarname)
 {
-    if (!_settings->inconclusive)
-        return;
-
     const std::string varname = tokVarname->strAt(0);
 
     // Check if member variable has been allocated and deallocated..

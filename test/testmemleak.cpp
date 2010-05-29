@@ -2705,7 +2705,7 @@ private:
      * @param code Source code
      * @param inconclusive inconclusive checking
      */
-    void check(const char code[], bool inconclusive = false)
+    void check(const char code[])
     {
         // Tokenize..
         Tokenizer tokenizer;
@@ -2719,7 +2719,6 @@ private:
 
         // Check for memory leaks..
         Settings settings;
-        settings.inconclusive = inconclusive;
         settings._checkCodingStyle = true;
         tokenizer.fillFunctionList();
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
@@ -2776,7 +2775,7 @@ private:
               "Fred::~Fred()\n"
               "{\n"
               "    delete [] str2;\n"
-              "}\n", true);
+              "}\n");
 
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: Fred::str1\n", errout.str());
     }
@@ -2801,7 +2800,7 @@ private:
               "Fred::~Fred()\n"
               "{\n"
               "    free(str1);\n"
-              "}\n", true);
+              "}\n");
 
         ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
     }
@@ -2839,7 +2838,7 @@ private:
               "        delete tok;\n"
               "        tok = next;\n"
               "    }\n"
-              "}\n", true);
+              "}\n");
 
         ASSERT_EQUALS("", errout.str());
     }
@@ -2902,7 +2901,7 @@ private:
               "Fred::~Fred()\n"
               "{\n"
               "    delete this->i;\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2938,7 +2937,7 @@ private:
               "{ p = new int; }\n"
               "\n"
               "A::~A()\n"
-              "{ delete (p); }\n", true);
+              "{ delete (p); }\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2949,7 +2948,7 @@ private:
               "public:\n"
               "    int * p;\n"
               "    A() { p = new int; }\n"
-              "};\n", true);
+              "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
@@ -2962,7 +2961,7 @@ private:
               "    A();\n"
               "};\n"
               "A::A() : p(new int[10])\n"
-              "{ }", true);
+              "{ }");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
@@ -2985,7 +2984,7 @@ private:
               "{ }\n"
               "\n"
               "void A::cleanup()\n"
-              "{ delete [] p; }\n", true);
+              "{ delete [] p; }\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
@@ -3008,7 +3007,7 @@ private:
               "{ }\n"
               "\n"
               "void A::foo()\n"
-              "{ p = new int[10]; delete [] p; }\n", true);
+              "{ p = new int[10]; delete [] p; }\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3022,7 +3021,7 @@ private:
               "};\n"
               "\n"
               "void A::init()\n"
-              "{ p = new int[10]; }\n", true);
+              "{ p = new int[10]; }\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
     }
 
@@ -3036,7 +3035,7 @@ private:
               "    ~A() { delete [] p; }\n"
               "};\n"
               "A::A()\n"
-              "{ p = new int[10]; }", true);
+              "{ p = new int[10]; }");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3053,7 +3052,7 @@ private:
               "        if (!p)\n"
               "            p = new int[100];\n"
               "    }\n"
-              "};\n", true);
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3086,7 +3085,7 @@ private:
               "void Tokenizer::deleteTokens(int *tok)\n"
               "{\n"
               "    delete tok;\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // Global function
@@ -3113,7 +3112,7 @@ private:
               "{\n"
               "    deleteTokens(_tokens);\n"
               "    _tokens = 0;\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3139,7 +3138,7 @@ private:
               "\n"
               "A::~A() {\n"
               "    delete [] pkt_buffer;\n"
-              "}\n", true);
+              "}\n");
         ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
     }
 
