@@ -658,6 +658,7 @@ private:
         ASSERT_EQUALS("; if return ;", simplifycode("; switch { case ; if { return ; } break ; default ; break ; }"));
         ASSERT_EQUALS("; if return ; else use ;", simplifycode("; switch { case ; return ; default ; use ; break ; }"));
         ASSERT_EQUALS("; use ;", simplifycode("; while1 { loop { ; } switch { case ; dealloc ; return ; default ; break ; } }"));
+        ASSERT_EQUALS("; { dealloc ; return ; } }", simplifycode("switch { case ; case ; dealloc ; return ; default ; dealloc ; return ; } }"));
 
         // loops..
         ASSERT_EQUALS(";", simplifycode("; loop { ; }"));

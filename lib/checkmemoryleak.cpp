@@ -1766,13 +1766,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Reduce "[;{}] return ; %var%" => "[;{}] return ;"
-            if (Token::Match(tok2, "[;{}] return ; %var%"))
-            {
-                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(4));
-                done = false;
-            }
-
             // Reduce "[;{}] return use ; %var%" => "[;{}] return use ;"
             if (Token::Match(tok2, "[;{}] return use ; %var%"))
             {
