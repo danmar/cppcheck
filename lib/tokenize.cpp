@@ -743,7 +743,8 @@ void Tokenizer::simplifyTypedef()
         bool ptrToArray = false;
         bool refToArray = false;
         bool ptrMember = false;
-        Token *functionNamespace = 0;
+        Token *namespaceStart = 0;
+        Token *namespaceEnd = 0;
 
         if (Token::Match(tok->next(), "::") ||
             Token::Match(tok->next(), "%type%"))
@@ -925,9 +926,12 @@ void Tokenizer::simplifyTypedef()
                 tok = specEnd->next();
             }
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %var% :: *|&| const|volatile| const|volatile| %type% ) ("))
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( ::| %var% :: *|&| const|volatile| const|volatile| %type% ) ("))
         {
-            functionNamespace = tok->tokAt(offset + 1);
+            namespaceStart = tok->tokAt(offset + 1);
+            if (tok->tokAt(offset + 1)->str() == "::")
+                offset++;
+            namespaceEnd = tok->tokAt(offset + 2);
             functionPtr = tok->tokAt(offset + 3)->str() == "*";
             functionRef = tok->tokAt(offset + 3)->str() == "&";
             function = tok->tokAt(offset + 4)->str() == ")";
@@ -1044,7 +1048,8 @@ void Tokenizer::simplifyTypedef()
         // pointer to class member
         else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %type% :: * %type% ) ;"))
         {
-            functionNamespace = tok->tokAt(offset + 1);
+            namespaceStart = tok->tokAt(offset + 1);
+            namespaceEnd = tok->tokAt(offset + 2);
             ptrMember = true;
             typeName = tok->tokAt(offset + 4);
             tok = tok->tokAt(offset + 6);
@@ -1218,11 +1223,17 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->next();
                         }
                         Token *tok3 = tok2;
-                        if (functionNamespace)
+                        if (namespaceStart)
                         {
-                            tok2->insertToken(functionNamespace->str());
-                            tok2 = tok2->next();
-                            tok2->insertToken("::");
+                            const Token *tok4 = namespaceStart;
+
+                            while (tok4 != namespaceEnd)
+                            {
+                                tok2->insertToken(tok4->str());
+                                tok2 = tok2->next();
+                                tok4 = tok4->next();
+                            }
+                            tok2->insertToken(namespaceEnd->str());
                             tok2 = tok2->next();
                         }
                         if (functionPtr)
@@ -1428,10 +1439,15 @@ void Tokenizer::simplifyTypedef()
                         tok2 = tok2->next();
                         Token *tok3 = tok2;
 
-                        tok2->insertToken(functionNamespace->str());
-                        tok2 = tok2->next();
+                        const Token *tok4 = namespaceStart;
 
-                        tok2->insertToken("::");
+                        while (tok4 != namespaceEnd)
+                        {
+                            tok2->insertToken(tok4->str());
+                            tok2 = tok2->next();
+                            tok4 = tok4->next();
+                        }
+                        tok2->insertToken(namespaceEnd->str());
                         tok2 = tok2->next();
 
                         tok2->insertToken("*");

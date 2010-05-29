@@ -4309,6 +4309,10 @@ private:
                             "typedef int ( C :: * const type6 ) ( float ) ;\n"
                             "typedef int ( C :: * volatile type7 ) ( float ) ;\n"
                             "typedef int ( C :: * const volatile type8 ) ( float ) ;\n"
+                            "typedef int ( :: C :: * type9 ) ( float ) ;\n"
+                            "typedef int ( :: C :: * const type10 ) ( float ) ;\n"
+                            "typedef int ( :: C :: * volatile type11 ) ( float ) ;\n"
+                            "typedef int ( :: C :: * const volatile type12 ) ( float ) ;\n"
                             "type1 t1;\n"
                             "type2 t2;\n"
                             "type3 t3;\n"
@@ -4316,10 +4320,14 @@ private:
                             "type5 t5;\n"
                             "type6 t6;\n"
                             "type7 t7;\n"
-                            "type8 t8;";
+                            "type8 t8;\n"
+                            "type9 t9;\n"
+                            "type10 t10;\n"
+                            "type11 t11;\n"
+                            "type12 t12;";
 
         // The expected result..
-        const std::string expected("; ; ; ; ; ; ; ; "
+        const std::string expected("; ; ; ; ; ; ; ; ; ; ; ; "
                                    "int * t1 ; " // simplified to regular pointer
                                    "int ( * const t2 ) ( float ) ; "
                                    "int * t3 ; " // volatile removed, gets simplified to regular pointer
@@ -4327,7 +4335,11 @@ private:
                                    "int ( C :: * t5 ) ( float ) ; "
                                    "int ( C :: * const t6 ) ( float ) ; "
                                    "int ( C :: * t7 ) ( float ) ; " // volatile removed
-                                   "int ( C :: * const t8 ) ( float ) ;"); // volatile removed
+                                   "int ( C :: * const t8 ) ( float ) ; " // volatile removed
+                                   "int ( :: C :: * t9 ) ( float ) ; "
+                                   "int ( :: C :: * const t10 ) ( float ) ; "
+                                   "int ( :: C :: * t11 ) ( float ) ; " // volatile removed
+                                   "int ( :: C :: * const t12 ) ( float ) ;"); // volatile removed
         ASSERT_EQUALS(expected, tok(code, false));
 
         checkSimplifyTypedef(code);
