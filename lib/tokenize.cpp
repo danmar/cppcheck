@@ -5666,7 +5666,7 @@ bool Tokenizer::simplifyRedundantParanthesis()
             ret = true;
         }
 
-        while (Token::Match(tok->previous(), "[;{] ( %var% (") &&
+        while (Token::Match(tok->previous(), "[;{(] ( %var% (") &&
                tok->link()->previous() == tok->tokAt(2)->link())
         {
             // We have "( func ( *something* ))", remove the outer

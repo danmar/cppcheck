@@ -553,6 +553,7 @@ private:
     void parantheses1()
     {
         ASSERT_EQUALS("<= 110 ;", tok("<= (10+100);"));
+        ASSERT_EQUALS("while ( x ( ) == -1 ) { }", tok("while((x()) == -1){ }"));
     }
 
     void paranthesesVar()
