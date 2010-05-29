@@ -143,7 +143,7 @@ private:
         TEST_CASE(strncat1);
         TEST_CASE(strncat2);
         TEST_CASE(strncat3);
-        
+
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
 
@@ -1685,7 +1685,7 @@ private:
         ASSERT_EQUALS("", errout.str());	// catch changes
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Buffer access out-of-bounds\n", errout.str());
     }
-    
+
     void sprintf7()
     {
         check("struct Foo { char a[1]; };\n"
@@ -1696,7 +1696,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Buffer access out-of-bounds\n", errout.str());
     }
-    
+
     void sprintf8()
     {
         check("struct Foo { char a[3]; };\n"
@@ -1758,7 +1758,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) snprintf size is out of bounds\n", errout.str());
     }
-    
+
     void snprintf6()
     {
         check("struct Foo { char a[3]; };\n"
@@ -1814,7 +1814,7 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Buffer access out-of-bounds\n", errout.str());
     }
-    
+
     void strcat2()
     {
         check("struct Foo { char a[5]; };\n"

@@ -1347,7 +1347,7 @@ int CheckBufferOverrun::countSprintfLength(const std::string &input_string, cons
 void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
 {
     const Token *end = tok->next()->link();
-        
+
     // Count the number of tokens in the buffer variable's name
     int varc = 0;
     for (const Token *tok1 = tok->tokAt(3); tok1 != end; tok1 = tok1->next())
@@ -1356,7 +1356,7 @@ void CheckBufferOverrun::checkSprintfCall(const Token *tok, int size)
             break;
         ++ varc;
     }
-    
+
     std::list<const Token*> parameters;
     if (tok->tokAt(5 + varc)->str() == ",")
     {
