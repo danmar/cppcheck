@@ -1352,6 +1352,13 @@ void CheckClass::operatorEqToSelf()
 
 void CheckClass::virtualDestructor()
 {
+    // This error should only be given if:
+    // * base class doesn't have virtual destructor
+    // * derived class has non-empty destructor
+    // * base class is deleted
+    if (!_settings->inconclusive)
+        return;
+
     const char pattern_classdecl[] = "class %var% : %var%";
 
     const Token *derived = _tokenizer->tokens();
