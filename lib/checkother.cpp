@@ -3054,10 +3054,14 @@ private:
                 else if (tok2->varId())
                 {
                     if (Token::Match(tok2->tokAt(-2), "[(,] *") || Token::Match(tok2->next(), ". %var%"))
-                        use_dead_pointer(checks, tok2);
+                    {
+                        if (use_dead_pointer(checks, tok2))
+                            ExecutionPath::bailOutVar(checks, tok2->varId());
+                    }
 
                     // it is possible that the variable is initialized here
-                    bailouts.insert(tok2->varId());
+                    if (Token::Match(tok2->previous(), "[(,] %var% [,)]"))
+                        bailouts.insert(tok2->varId());
                 }
             }
 
