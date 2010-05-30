@@ -93,7 +93,7 @@ public:
      * @param func [out] names of functions that don't handle uninitialized variables well. the function names are added to the set. No clearing is made.
      * @param showAll [in] enable --all checking
      */
-    void analyse(const Token * const tokens, std::set<std::string> &func) const;
+    void analyse(const Token * tokens, std::set<std::string> &func) const;
 
     /** Save analysis results */
     void saveAnalysisData(const std::set<std::string> &data) const;
