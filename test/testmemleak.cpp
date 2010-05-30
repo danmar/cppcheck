@@ -292,6 +292,7 @@ private:
         TEST_CASE(func15);
         TEST_CASE(func16);
         TEST_CASE(func17);
+        TEST_CASE(func18);
 
         TEST_CASE(allocfunc1);
         TEST_CASE(allocfunc2);
@@ -1585,6 +1586,36 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
+
+
+    void func18()
+    {
+        // No false positive
+        // The "free_pointers" will deallocate all pointers
+        check("static void free_pointers(int arg_count, ...)\n"
+              "{\n"
+              "    va_list a;\n"
+              "    va_start(a, arg_count);\n"
+              "    for (int i = 0; i < arg_count; i++)\n"
+              "    {\n"
+              "        free(va_arg(a, void *));\n"
+              "    }\n"
+              "    va_end(a);\n"
+              "}\n"
+              "\n"
+              "static char* foo()\n"
+              "{\n"
+              "    return strdup("");\n"
+              "}\n"
+              "\n"
+              "static void bar()\n"
+              "{\n"
+              "    int *p = malloc(16);\n"
+              "    free_pointers(1, p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
 
 

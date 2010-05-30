@@ -414,6 +414,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
         {
             if (indentlevel <= 1)
                 return No;
+            --indentlevel;
         }
         if (Token::Match(tok2, "return %var% ;"))
         {
@@ -542,7 +543,9 @@ static int countParameters(const Token *tok)
         }
 
         else if (parlevel == 1 && tok->str() == ",")
+        {
             ++numpar;
+        }
     }
 
     return -1;
