@@ -1367,6 +1367,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkUninitVar("void a()\n"
+                       "{\n"
+                       "    struct S *s;\n"
+                       "    s->x = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
+
         // #1533
         checkUninitVar("char a()\n"
                        "{\n"

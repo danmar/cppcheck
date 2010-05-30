@@ -2832,6 +2832,16 @@ private:
                 return vartok;
             }
 
+            if (Token::Match(tok.previous(), "[;{}] struct %type% *| %var% ;"))
+            {
+                const Token * vartok = tok.tokAt(2);
+                const bool p(vartok->str() == "*");
+                if (p)
+                    vartok = vartok->next();
+                declare(checks, vartok, tok, p, false);
+                return vartok;
+            }
+
             // Variable declaration for array..
             if (Token::Match(tok.previous(), "[;{}] %type% %var% [ %num% ] ;"))
             {
@@ -2875,29 +2885,39 @@ private:
                 return &tok;
             }
 
-            if (Token::Match(tok.previous(), "[;{}] %var% =|["))
+            if (Token::Match(tok.previous(), "[;{}] %var% =|[|."))
             {
-                // check variable usages in rhs/index
-                for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
+                if (tok.next()->str() == ".")
                 {
-                    if (Token::Match(tok2, ";|)|="))
-                        break;
-                    if (Token::Match(tok2, "%var% ("))
-                        break;
-                    if (tok2->varId() &&
-                        !Token::Match(tok2->previous(), "&|::") &&
-                        !Token::simpleMatch(tok2->next(), "="))
+                    if (use_dead_pointer(checks, &tok))
                     {
-                        bool foundError;
-                        if (tok2->next()->str() == "[")
-                            foundError = use_array_or_pointer_data(checks, tok2);
-                        else
-                            foundError = use(checks, tok2);
-
-                        // prevent duplicate error messages
-                        if (foundError)
+                        return &tok;
+                    }
+                }
+                else
+                {
+                    // check variable usages in rhs/index
+                    for (const Token *tok2 = tok.tokAt(2); tok2; tok2 = tok2->next())
+                    {
+                        if (Token::Match(tok2, ";|)|="))
+                            break;
+                        if (Token::Match(tok2, "%var% ("))
+                            break;
+                        if (tok2->varId() &&
+                            !Token::Match(tok2->previous(), "&|::") &&
+                            !Token::simpleMatch(tok2->next(), "="))
                         {
-                            bailOutVar(checks, tok2->varId());
+                            bool foundError;
+                            if (tok2->next()->str() == "[")
+                                foundError = use_array_or_pointer_data(checks, tok2);
+                            else
+                                foundError = use(checks, tok2);
+
+                            // prevent duplicate error messages
+                            if (foundError)
+                            {
+                                bailOutVar(checks, tok2->varId());
+                            }
                         }
                     }
                 }
