@@ -2817,24 +2817,18 @@ private:
     const Token *parse(const Token &tok, std::list<ExecutionPath *> &checks) const
     {
         // Variable declaration..
-        if (tok.isName() && tok.str() != "return")
+        if (Token::Match(tok.previous(), "[;{}] %var%") && tok.str() != "return")
         {
             if (Token::Match(&tok, "enum %type% {"))
                 return tok.tokAt(2)->link();
 
-            if (Token::Match(tok.previous(), "[;{}] %type% *| %var% ;"))
-            {
-                const Token * vartok = tok.next();
-                const bool p(vartok->str() == "*");
-                if (p)
-                    vartok = vartok->next();
-                declare(checks, vartok, tok, p, false);
-                return vartok;
-            }
+            const Token * vartok = &tok;
+            while (Token::Match(vartok, "const|struct"))
+                vartok = vartok->next();
 
-            if (Token::Match(tok.previous(), "[;{}] struct %type% *| %var% ;"))
+            if (Token::Match(vartok, "%type% *| %var% ;"))
             {
-                const Token * vartok = tok.tokAt(2);
+                vartok = vartok->next();
                 const bool p(vartok->str() == "*");
                 if (p)
                     vartok = vartok->next();
@@ -2843,17 +2837,16 @@ private:
             }
 
             // Variable declaration for array..
-            if (Token::Match(tok.previous(), "[;{}] %type% %var% [ %num% ] ;"))
+            if (Token::Match(vartok, "%type% %var% [ %num% ] ;"))
             {
-                const Token * vartok = tok.next();
+                vartok = vartok->next();
                 declare(checks, vartok, tok, false, true);
                 return vartok->next()->link();
             }
 
             // Template pointer variable..
-            if (Token::Match(tok.previous(), "[;{}] %type% ::|<"))
+            if (Token::Match(vartok, "%type% ::|<"))
             {
-                const Token * vartok = &tok;
                 while (Token::Match(vartok, "%type% ::"))
                     vartok = vartok->tokAt(2);
                 if (Token::Match(vartok, "%type% < %type%"))
