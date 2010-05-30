@@ -157,6 +157,29 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
             continue;
         }
 
+        // bailout used variables in '; FOREACH ( .. ) { .. }'
+        else if (Token::Match(tok->previous(), "[;{}] %var% ("))
+        {
+            // goto {
+            const Token *tok2 = tok->tokAt(2);
+            if (tok2 && tok2->str() == "(")
+                tok2 = tok2->link();
+            if (tok2 && tok2->str() == ")")
+                tok2 = tok2->next();
+            if (tok2 && tok2->str() == "{")
+            {
+                // goto "}"
+                tok2 = tok2->link();
+
+                // bail out all variables used in "{ .. }"
+                for (; tok && tok != tok2; tok = tok->next())
+                {
+                    if (tok->varId())
+                        ExecutionPath::bailOutVar(checks, tok->varId());
+                }
+            }
+        }
+
         // .. ) { ... }  => bail out
         if (Token::simpleMatch(tok, ") {"))
         {
