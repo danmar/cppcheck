@@ -1382,6 +1382,15 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: s\n", errout.str());
 
+        checkUninitVar("void a()\n"
+                       "{\n"
+                       "    struct S *s1;\n"
+                       "    struct S *s2;\n"
+                       "    FOREACH(s1) { }\n"
+                       "    s2->x = 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: s2\n", errout.str());
+
         // #1533
         checkUninitVar("char a()\n"
                        "{\n"
