@@ -3590,6 +3590,7 @@ bool Tokenizer::simplifyTokenList()
 
     simplifyFunctionParameters();
     elseif();
+    simplifyErrNoInWhile();
     simplifyIfAssign();
     simplifyRedundantParanthesis();
     simplifyIfNot();
@@ -3598,7 +3599,6 @@ bool Tokenizer::simplifyTokenList()
     simplifyComparisonOrder();
     simplifyNestedStrcat();
     simplifyWhile0();
-    simplifyErrNoInWhile();
     simplifyFuncInWhile();
 
     simplifyIfAssign();    // could be affected by simplifyIfNot

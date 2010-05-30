@@ -37,6 +37,12 @@ private:
 
     void run()
     {
+        // Make sure the Tokenizer::simplifyTokenList works.
+        // The order of the simplifications is important. So this test
+        // case shall make sure the simplifications are done in the
+        // correct order
+        TEST_CASE(simplifyTokenList1);
+
         TEST_CASE(cast);
         TEST_CASE(iftruefalse);
         TEST_CASE(combine_strings);
@@ -296,6 +302,15 @@ private:
 
         return ret;
     }
+
+
+    void simplifyTokenList1()
+    {
+        // #1717 : The simplifyErrNoInWhile needs to be used before simplifyIfAssign..
+        ASSERT_EQUALS("; x = f ( ) ; while ( ( x ) == -1 ) { x = f ( ) ; }",
+                      tok(";while((x=f())==-1 && errno==EINTR){}",true));
+    }
+
 
     void cast()
     {
