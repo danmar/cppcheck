@@ -367,6 +367,11 @@ public:
     void simplifyWhile0();
 
     /**
+     * Simplify while(func() && errno==EINTR)
+     */
+    void simplifyErrNoInWhile();
+
+    /**
      * Simplify while(func(f))
      */
     void simplifyFuncInWhile();

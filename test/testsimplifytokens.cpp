@@ -243,6 +243,9 @@ private:
         // x = realloc(y,0);  =>  free(y);x=0;
         TEST_CASE(simplifyRealloc);
 
+        // while(f() && errno==EINTR) { } => while (f()) { }
+        TEST_CASE(simplifyErrNoInWhile);
+
         // while(fclose(f)); => r = fclose(f); while(r){r=fclose(f);}
         TEST_CASE(simplifyFuncInWhile);
 
@@ -4936,6 +4939,14 @@ private:
     {
         ASSERT_EQUALS("; free ( p ) ; p = 0 ;",
                       tok("; p = realloc(p,0);"));
+    }
+
+    void simplifyErrNoInWhile()
+    {
+        ASSERT_EQUALS("; while ( f ( ) ) { }",
+                      tok("; while (f() && errno == EINTR) { }"));
+        ASSERT_EQUALS("; while ( f ( ) ) { }",
+                      tok("; while (f() && (errno == EINTR)) { }"));
     }
 
     void simplifyFuncInWhile()
