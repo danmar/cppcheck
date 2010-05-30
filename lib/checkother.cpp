@@ -2960,7 +2960,7 @@ private:
             {
                 alloc_pointer(checks, tok.varId());
                 if (tok.tokAt(3)->str() == "(")
-                    return tok.tokAt(3)->link();
+                    return tok.tokAt(3);
             }
 
             else if (Token::simpleMatch(tok.previous(), ">>") || Token::simpleMatch(tok.next(), "="))

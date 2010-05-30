@@ -1176,6 +1176,13 @@ private:
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: p\n", errout.str());
 
+        checkUninitVar("void f(Foo *p)\n"
+                       "{\n"
+                       "    int a;\n"
+                       "    p->a = malloc(4 * a);\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+
         checkUninitVar("static void foo()\n"
                        "{\n"
                        "    int *p;\n"
