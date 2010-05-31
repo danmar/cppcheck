@@ -963,7 +963,7 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                             dep = true;
                             break;
                         }
-                        if (innerParlevel > 0 && Token::Match(tok2, "%var% ("))
+                        if (innerParlevel > 0 && Token::Match(tok2, "%var% (") && !test_white_list(tok2->str()))
                         {
                             bool use = false;
                             for (const Token *tok3 = tok2->tokAt(2); tok3; tok3 = tok3->next())
@@ -1972,6 +1972,12 @@ const Token *CheckMemoryLeakInFunction::findleak(const Token *tokens)
     if ((result = Token::findmatch(tokens, "alloc ; if assign ;")) != NULL)
     {
         return result->tokAt(3);
+    }
+
+    if (((result = Token::findmatch(tokens, "; alloc ; if dealloc ; }")) != NULL) &&
+        !result->tokAt(7))
+    {
+        return result->tokAt(6);
     }
 
     if ((result = Token::findmatch(tokens, "alloc ; }")) != NULL)

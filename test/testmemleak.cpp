@@ -248,7 +248,6 @@ private:
         TEST_CASE(ifelse6);
         TEST_CASE(ifelse7);
         TEST_CASE(ifelse8);
-        TEST_CASE(ifelse9);
         TEST_CASE(ifelse10);
 
         TEST_CASE(if4);
@@ -463,6 +462,7 @@ private:
         ASSERT_EQUALS(";;if(!var){}", getcode("char *s; if (a && !s) { }", "s"));
         ASSERT_EQUALS(";;ifv{}", getcode("char *s; if (foo(!s)) { }", "s"));
         ASSERT_EQUALS(";;;if{dealloc;};if{dealloc;return;}assign;returnuse;", getcode("char *buf, *tmp; tmp = realloc(buf, 40); if (!(tmp)) { free(buf); return; } buf = tmp; return buf;", "buf"));
+        ASSERT_EQUALS(";;if{}", getcode("FILE *f; if (fgets(buf,100,f)){}", "f"));
 
         // switch..
         ASSERT_EQUALS(";;switch{case;;break;};", getcode("char *s; switch(a){case 1: break;};", "s"));
@@ -770,6 +770,8 @@ private:
         ASSERT_EQUALS(notfound, dofindleak("alloc; if { return use; } dealloc;"));
         ASSERT_EQUALS(notfound, dofindleak("alloc; if { dealloc; return; } dealloc;"));
 
+        ASSERT_EQUALS(5, dofindleak("{\n;\n alloc;\n if dealloc;\n}"));
+
         // assign..
         ASSERT_EQUALS(2,  dofindleak("alloc;\n assign;\n dealloc;"));
         ASSERT_EQUALS(notfound, dofindleak("alloc;\n if(!var) assign;\n dealloc;"));
@@ -781,10 +783,6 @@ private:
         ASSERT_EQUALS(notfound, dofindleak("; loop { alloc ; if break; } dealloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ;"));
         ASSERT_EQUALS(1, dofindleak("; loop alloc ; dealloc ;"));
-
-        // Todo..
-        ASSERT_EQUALS(notfound, dofindleak("; alloc;\n if { dealloc; }\n ;"));
-        TODO_ASSERT_EQUALS(3,  dofindleak("; alloc;\n if { dealloc; }\n ;"));
     }
 
 
@@ -978,21 +976,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
-
-
-    void ifelse9()
-    {
-        check("static char *f()\n"
-              "{\n"
-              "    char *s = new char[10];\n"
-              "    if ( ghfgf )\n"
-              "    {\n"
-              "        delete [] s;\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-    }
-
 
     void ifelse10()
     {
@@ -1235,7 +1218,7 @@ private:
                                "    };\n"
                                "}\n");
         check(code.c_str(), false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Memory leak: str\n", errout.str());
     }
 
     void switch3()
