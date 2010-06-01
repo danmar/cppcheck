@@ -79,6 +79,7 @@ private:
         TEST_CASE(localvar14); // ticket #5
         TEST_CASE(localvar15);
         TEST_CASE(localvar16); // ticket #1709
+        TEST_CASE(localvar17); // ticket #1720
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1142,6 +1143,24 @@ private:
                                   "}\n");
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void localvar17() // ticket #1720
+    {
+        // FIXME: Don't crash when checking the code below!
+        /*
+                functionVariableUsage("void foo()\n"
+                                      "{\n"
+                                      "    struct DATA *data;\n"
+                                      "    char *k = data->req;\n"
+                                      "    char *ptr;\n"
+                                      "    char *line_start;\n"
+                                      "    ptr = data->buffer;\n"
+                                      "    line_start = ptr;\n"
+                                      "    data->info = k;\n"
+                                      "    line_start = ptr;\n"
+                                      "}\n");
+        */
     }
 
     void localvaralias1()
