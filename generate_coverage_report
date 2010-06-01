@@ -4,11 +4,12 @@ make clean
 rm -rf coverage_report
 make test CXXFLAGS="-Wall -Wextra -pedantic -g -fprofile-arcs -ftest-coverage"
 gcov lib/*.cpp -o lib/
-lcov --directory ./ --capture --output-file lcov.info -b ./
+lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
+lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
 genhtml lcov.info -o coverage_report
 rm lib/*.gcda
 rm lib/*.gcno
 rm test/*.gcda
 rm test/*.gcno
-rm lcov.info
+rm lcov.info lcov_tmp.info
 make clean
