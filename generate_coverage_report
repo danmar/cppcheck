@@ -1,6 +1,7 @@
 #!/bin/bash
+set -e
 make clean
-rm -r coverage_report
+rm -rf coverage_report
 make test CXXFLAGS="-Wall -Wextra -pedantic -g -fprofile-arcs -ftest-coverage"
 gcov lib/*.cpp -o lib/
 lcov --directory ./ --capture --output-file lcov.info -b ./
