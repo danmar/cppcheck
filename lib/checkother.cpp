@@ -2235,6 +2235,8 @@ void CheckOther::nullConstantDereference()
                         tok = tok->link();
                     tok = tok->next();
                 }
+                if (!tok)
+                    break;
             }
 
             else if (Token::simpleMatch(tok, "* 0"))
