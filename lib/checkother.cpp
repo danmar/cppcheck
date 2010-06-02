@@ -523,7 +523,8 @@ void Variables::alias(unsigned int varid1, unsigned int varid2)
     {
         VariableUsage *temp = find(*i);
 
-        temp->_aliases.erase(var1->_name->varId());
+        if (temp)
+            temp->_aliases.erase(var1->_name->varId());
     }
 
     // remove all aliases from var1
