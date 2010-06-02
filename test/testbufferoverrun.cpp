@@ -170,7 +170,7 @@ private:
         TEST_CASE(crash);	// Ticket #1587 - crash
 
         TEST_CASE(executionPaths1);
-        
+
         TEST_CASE(cmdLineArgs1);
     }
 
@@ -2293,114 +2293,114 @@ private:
                 "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10][5]' index 1000 out of bounds\n", errout.str());
     }
-    
+
     void cmdLineArgs1()
     {
         check("int main(int argc, char* argv[])\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    strcpy(prog, argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char* argv[])\n"
-            "{\n"
-            "    char prog[10] = {'\\0'};\n"
-            "    strcat(prog, argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char* argv[])\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    sprintf(prog, \"%s\", argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    sprintf(prog, \"%s\", argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char **argv, char **envp)\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    strcpy(prog, argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char **argv, char **envp)\n"
-            "{\n"
-            "    char prog[10] = {'\\0'};\n"
-            "    strcat(prog, argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char **argv, char **envp)\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    sprintf(prog, \"%s\", argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    sprintf(prog, \"%s\", argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char **options)\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    strcpy(prog, options[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    strcpy(prog, options[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char **options)\n"
-            "{\n"
-            "    char prog[10] = {'\\0'};\n"
-            "    strcat(prog, options[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    strcat(prog, options[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char **options)\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    sprintf(prog, \"%s\", *options);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    sprintf(prog, \"%s\", *options);\n"
+              "}\n");
+
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer overrun possible for long cmd-line args\n", errout.str());
-        
+
         check("int main(int argc, char **argv, char **envp)\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    if (strlen(argv[0]) < 10)\n"
-            "        strcpy(prog, argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    if (strlen(argv[0]) < 10)\n"
+              "        strcpy(prog, argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("", errout.str());
-        
+
         check("int main(int argc, char **argv, char **envp)\n"
-            "{\n"
-            "    char prog[10] = {'\\0'};\n"
-            "    if (10 > strlen(argv[0]))\n"
-            "        strcat(prog, argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10] = {'\\0'};\n"
+              "    if (10 > strlen(argv[0]))\n"
+              "        strcat(prog, argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("", errout.str());
-        
+
         check("int main(int argc, char **argv, char **envp)\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    sprintf(prog, \"%p\", argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    sprintf(prog, \"%p\", argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("", errout.str());
-        
+
         check("int main(int argc, char **argv, char **envp)\n"
-            "{\n"
-            "    char prog[10];\n"
-            "    argv[0][0] = '\\0';\n"
-            "    strcpy(prog, argv[0]);\n"
-            "}\n");
-            
+              "{\n"
+              "    char prog[10];\n"
+              "    argv[0][0] = '\\0';\n"
+              "    strcpy(prog, argv[0]);\n"
+              "}\n");
+
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -97,7 +97,7 @@ public:
 
     /** Check for buffer overruns due to allocating strlen(src) bytes instead of (strlen(src)+1) bytes before copying a string */
     void checkBufferAllocatedWithStrlen();
-    
+
     /** Check for buffer overruns due to copying command-line args to fixed-sized buffers without bounds checking */
     void checkInsecureCmdLineArgs();
 

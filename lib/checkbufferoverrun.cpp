@@ -1525,13 +1525,13 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
         }
         if (varid == 0)
             continue;
-        
+
         // Jump to the opening curly brace
         tok = tok->next()->link();
         if (!tok || !tok->next())
             continue;
         tok = tok->next();
-        
+
         // Search within main() for possible buffer overruns involving argv
         int indentlevel = -1;
         for (; tok && tok->next(); tok = tok->next())
@@ -1560,16 +1560,16 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
                 cmdLineArgsError(tok);
             }
             else if (Token::Match(tok, "sprintf ( %var% , %str% , %varid% [", varid) &&
-                tok->tokAt(4)->str().find("%s") != std::string::npos)
+                     tok->tokAt(4)->str().find("%s") != std::string::npos)
             {
                 cmdLineArgsError(tok);
             }
             else if (Token::Match(tok, "sprintf ( %var% , %str% , * %varid%", varid) &&
-                tok->tokAt(4)->str().find("%s") != std::string::npos)
+                     tok->tokAt(4)->str().find("%s") != std::string::npos)
             {
                 cmdLineArgsError(tok);
             }
-           
+
         }
 
     }
