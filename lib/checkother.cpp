@@ -2201,27 +2201,49 @@ void CheckOther::nullPointer()
 /** Derefencing null constant (simplified token list) */
 void CheckOther::nullConstantDereference()
 {
+    // this is kept at 0 for all scopes that are not executing
+    unsigned int indentlevel = 0;
+
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
-        if (tok->str() == "(" && Token::simpleMatch(tok->previous(), "sizeof"))
-            tok = tok->link();
+        // start of executable scope..
+        if (indentlevel == 0 && Token::Match(tok, ") const| {"))
+            indentlevel = 1;
 
-        else if (Token::simpleMatch(tok, "exit ( )"))
+        else if (indentlevel >= 1)
         {
-            while (tok && tok->str() != "}")
+            if (tok->str() == "{")
+                ++indentlevel;
+
+            else if (tok->str() == "}")
             {
-                if (tok->str() == "{")
-                    tok = tok->link();
-                tok = tok->next();
+                if (indentlevel <= 2)
+                    indentlevel = 0;
+                else
+                    --indentlevel;
             }
-        }
 
-        else if (Token::simpleMatch(tok, "* 0"))
-        {
-            if (Token::Match(tok->previous(), "[;{}=+-/(,]") ||
-                Token::Match(tok->previous(), "return|<<"))
+            if (tok->str() == "(" && Token::simpleMatch(tok->previous(), "sizeof"))
+                tok = tok->link();
+
+            else if (Token::simpleMatch(tok, "exit ( )"))
             {
-                nullPointerError(tok);
+                // Goto end of scope
+                while (tok && tok->str() != "}")
+                {
+                    if (tok->str() == "{")
+                        tok = tok->link();
+                    tok = tok->next();
+                }
+            }
+
+            else if (Token::simpleMatch(tok, "* 0"))
+            {
+                if (Token::Match(tok->previous(), "[;{}=+-/(,]") ||
+                    Token::Match(tok->previous(), "return|<<"))
+                {
+                    nullPointerError(tok);
+                }
             }
         }
     }
