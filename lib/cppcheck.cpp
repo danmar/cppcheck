@@ -560,7 +560,7 @@ bool CppCheck::parseFromArgs(int argc, const char* const argv[])
             "                         Use -D to limit the checking. When -D is used the\n"
             "                         checking is limited to the given configuration.\n"
             "                         Example: -DDEBUG=1 -D__cplusplus\n"
-            "    --enable=id          Enable specific checks. The available ids are:\n"
+            "    --enable=id          Enable additional checks. The available ids are:\n"
             "                          * all - enable all checks\n"
             "                          * exceptNew - exception safety when using new\n"
             "                          * exceptRealloc - exception safety when reallocating\n"
