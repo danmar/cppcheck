@@ -119,6 +119,11 @@ void CheckBufferOverrun::terminateStrncpyError(const Token *tok)
     reportError(tok, Severity::style, "terminateStrncpy", "After a strncpy() the buffer should be zero-terminated");
 }
 
+void CheckBufferOverrun::cmdLineArgsError(const Token *tok)
+{
+    reportError(tok, Severity::error, "insecureCmdLineArgs", "Buffer overrun possible for long cmd-line args");
+}
+
 
 //---------------------------------------------------------------------------
 
@@ -1229,6 +1234,7 @@ void CheckBufferOverrun::bufferOverrun()
     checkGlobalAndLocalVariable();
     checkStructVariable();
     checkBufferAllocatedWithStrlen();
+    checkInsecureCmdLineArgs();
 }
 //---------------------------------------------------------------------------
 
@@ -1485,6 +1491,85 @@ void CheckBufferOverrun::checkBufferAllocatedWithStrlen()
                 bufferOverrun(tok);
             }
 
+        }
+
+    }
+}
+
+//---------------------------------------------------------------------------
+// Checking for buffer overflow caused by copying command line arguments
+// into fixed-sized buffers without checking to make sure that the command
+// line arguments will not overflow the buffer.
+//
+// int main(int argc, char* argv[])
+// {
+//   char prog[10];
+//   strcpy(prog, argv[0]);      <-- Possible buffer overrun
+// }
+//---------------------------------------------------------------------------
+void CheckBufferOverrun::checkInsecureCmdLineArgs()
+{
+    const char pattern[] = "main ( int %var% , char *";
+    for (const Token *tok = Token::findmatch(_tokenizer->tokens(), pattern); tok; tok = Token::findmatch(tok->next(),pattern))
+    {
+        // Get the name of the argv variable
+        unsigned int varid = 0;
+        if (Token::Match(tok, "main ( int %var% , char * %var% [ ] ,|)"))
+        {
+            varid = tok->tokAt(7)->varId();
+
+        }
+        else if (Token::Match(tok, "main ( int %var% , char * * %var% ,|)"))
+        {
+            varid = tok->tokAt(8)->varId();
+        }
+        if (varid == 0)
+            continue;
+        
+        // Jump to the opening curly brace
+        tok = tok->next()->link();
+        if (!tok || !tok->next())
+            continue;
+        tok = tok->next();
+        
+        // Search within main() for possible buffer overruns involving argv
+        int indentlevel = -1;
+        for (; tok && tok->next(); tok = tok->next())
+        {
+            if (tok->str() == "{")
+            {
+                ++indentlevel;
+            }
+
+            else if (tok->str() == "}")
+            {
+                --indentlevel;
+                if (indentlevel < 0)
+                    return;
+            }
+
+            // If argv is modified or tested, its size may be being limited properly
+            if (tok->varId() == varid)
+                break;
+
+            // Match common patterns that can result in a buffer overrun
+            // e.g. strcpy(buffer, argv[0])
+            if (Token::Match(tok, "strcpy|strcat ( %var% , * %varid%", varid) ||
+                Token::Match(tok, "strcpy|strcat ( %var% , %varid% [", varid))
+            {
+                cmdLineArgsError(tok);
+            }
+            else if (Token::Match(tok, "sprintf ( %var% , %str% , %varid% [", varid) &&
+                tok->tokAt(4)->str().find("%s") != std::string::npos)
+            {
+                cmdLineArgsError(tok);
+            }
+            else if (Token::Match(tok, "sprintf ( %var% , %str% , * %varid%", varid) &&
+                tok->tokAt(4)->str().find("%s") != std::string::npos)
+            {
+                cmdLineArgsError(tok);
+            }
+           
         }
 
     }

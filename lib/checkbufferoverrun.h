@@ -97,6 +97,9 @@ public:
 
     /** Check for buffer overruns due to allocating strlen(src) bytes instead of (strlen(src)+1) bytes before copying a string */
     void checkBufferAllocatedWithStrlen();
+    
+    /** Check for buffer overruns due to copying command-line args to fixed-sized buffers without bounds checking */
+    void checkInsecureCmdLineArgs();
 
     /** Check for negative index */
     void negativeIndex();
@@ -180,6 +183,7 @@ public:
     void sizeArgumentAsChar(const Token *tok);
     void terminateStrncpyError(const Token *tok);
     void negativeIndexError(const Token *tok, long index);
+    void cmdLineArgsError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -190,6 +194,7 @@ public:
         sizeArgumentAsChar(0);
         terminateStrncpyError(0);
         negativeIndexError(0, -1);
+        cmdLineArgsError(0);
     }
 
     std::string name() const
