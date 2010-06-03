@@ -132,6 +132,7 @@ private:
         TEST_CASE(varid_reference_to_containers);
         TEST_CASE(varid_in_class);
         TEST_CASE(varid_operator);
+        TEST_CASE(varid_throw);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -1968,6 +1969,19 @@ private:
                                    "3: public:\n"
                                    "4: void operator = ( const Foo & ) ;\n"
                                    "5: } ;\n");
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void varid_throw()    // ticket #1723
+    {
+        const std::string actual = tokenizeDebugListing(
+                                       "UserDefinedException* pe = new UserDefinedException();\n"
+                                       "throw pe;\n");
+
+        const std::string expected("\n\n##file 0\n"
+                                   "1: UserDefinedException * pe@1 ; pe@1 = new UserDefinedException ( ) ;\n"
+                                   "2: throw pe@1 ;\n");
 
         ASSERT_EQUALS(expected, actual);
     }

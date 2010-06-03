@@ -80,6 +80,7 @@ private:
         TEST_CASE(localvar15);
         TEST_CASE(localvar16); // ticket #1709
         TEST_CASE(localvar17); // ticket #1720
+        TEST_CASE(localvar18); // ticket #1723
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1160,6 +1161,15 @@ private:
                               "    line_start = ptr;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'line_start' is assigned a value that is never used\n", errout.str());
+    }
+
+    void localvar18() // ticket #1723
+    {
+        functionVariableUsage("A::A(int iValue) {\n"
+                              "    UserDefinedException* pe = new UserDefinedException();\n"
+                              "    throw pe;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void localvaralias1()

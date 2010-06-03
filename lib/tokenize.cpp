@@ -2690,6 +2690,9 @@ void Tokenizer::setVarId()
         if (tok->str() == "new")
             continue;
 
+        if (tok->str() == "throw")
+            continue;
+
         if (tok->str() == "unsigned")
             tok = tok->next();
 

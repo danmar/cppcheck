@@ -832,6 +832,8 @@ static int doAssignment(Variables &variables, const Token *tok, bool pointer, bo
                     addressOf = true;
                     next = start + 1;
                 }
+                else if (tok->tokAt(start)->str() == "new")
+                    return 0;
                 else
                     next = start;
             }
@@ -1245,7 +1247,7 @@ void CheckOther::functionVariableUsage()
                 tok = tok->tokAt(8);
             }
 
-            else if (Token::Match(tok, "delete|return %var%"))
+            else if (Token::Match(tok, "delete|return|throw %var%"))
                 variables.readAll(tok->next()->varId());
 
             // assignment
@@ -1350,7 +1352,7 @@ void CheckOther::functionVariableUsage()
                 variables.use(tok->varId());   // use = read + write
 
             else if ((Token::Match(tok, "[(=&!]") || isOp(tok)) &&
-                     (Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false")))
+                     (Token::Match(tok->next(), "%var%") && !Token::Match(tok->next(), "true|false|new")))
                 variables.readAll(tok->next()->varId());
 
             else if (Token::Match(tok, "-=|+=|*=|/=|&=|^= %var%") || Token::Match(tok, "|= %var%"))
