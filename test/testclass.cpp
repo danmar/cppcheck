@@ -3456,7 +3456,7 @@ private:
         checkConst("class A{\n"
                     "public:\n"
                     "A(){m_strVal="";}\n"
-                    "const std::string strGetString1() const\n" 
+                    "const std::string strGetString1()\n" 
                     "{return m_strVal.c_str();}\n"
                     "private:\n"
                     "std::string m_strVal;\n"
