@@ -120,6 +120,7 @@ private:
         TEST_CASE(const22);
         TEST_CASE(const23); // ticket #1699
         TEST_CASE(const24); // ticket #1708
+        TEST_CASE(const25); // ticket #1724
         TEST_CASE(constoperator1);  // operator< can often be const
         TEST_CASE(constoperator2);	// operator<<
         TEST_CASE(constincdec);     // increment/decrement => non-const
@@ -3423,6 +3424,45 @@ private:
                    "    std::map<QString, QString> *m_pSettings;\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void const25() // ticket #1724
+    {
+        checkConst("class A{\n"
+                    "public:\n"
+                    "A(){m_strVal="";}\n"
+                    "std::string strGetString() const\n" 
+                    "{return m_strVal.c_str();}\n"
+                    "const std::string strGetString1() const\n" 
+                    "{return m_strVal.c_str();}\n"
+                    "private:\n"
+                    "std::string m_strVal;\n"
+                    "};\n"
+                    );
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("class A{\n"
+                    "public:\n"
+                    "A(){m_strVal="";}\n"
+                    "std::string strGetString()\n" 
+                    "{return m_strVal.c_str();}\n"
+                    "private:\n"
+                    "std::string m_strVal;\n"
+                    "};\n"
+                    );
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString' can be const\n", errout.str());
+
+        checkConst("class A{\n"
+                    "public:\n"
+                    "A(){m_strVal="";}\n"
+                    "const std::string strGetString1() const\n" 
+                    "{return m_strVal.c_str();}\n"
+                    "private:\n"
+                    "std::string m_strVal;\n"
+                    "};\n"
+                    );
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString1' can be const\n", errout.str());
     }
 
     // increment/decrement => not const
