@@ -3430,38 +3430,38 @@ private:
     void const25() // ticket #1724
     {
         checkConst("class A{\n"
-                    "public:\n"
-                    "A(){m_strVal="";}\n"
-                    "std::string strGetString() const\n" 
-                    "{return m_strVal.c_str();}\n"
-                    "const std::string strGetString1() const\n" 
-                    "{return m_strVal.c_str();}\n"
-                    "private:\n"
-                    "std::string m_strVal;\n"
-                    "};\n"
-                    );
+                   "public:\n"
+                   "A(){m_strVal="";}\n"
+                   "std::string strGetString() const\n"
+                   "{return m_strVal.c_str();}\n"
+                   "const std::string strGetString1() const\n"
+                   "{return m_strVal.c_str();}\n"
+                   "private:\n"
+                   "std::string m_strVal;\n"
+                   "};\n"
+                  );
         ASSERT_EQUALS("", errout.str());
 
         checkConst("class A{\n"
-                    "public:\n"
-                    "A(){m_strVal="";}\n"
-                    "std::string strGetString()\n" 
-                    "{return m_strVal.c_str();}\n"
-                    "private:\n"
-                    "std::string m_strVal;\n"
-                    "};\n"
-                    );
+                   "public:\n"
+                   "A(){m_strVal="";}\n"
+                   "std::string strGetString()\n"
+                   "{return m_strVal.c_str();}\n"
+                   "private:\n"
+                   "std::string m_strVal;\n"
+                   "};\n"
+                  );
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString' can be const\n", errout.str());
 
         checkConst("class A{\n"
-                    "public:\n"
-                    "A(){m_strVal="";}\n"
-                    "const std::string strGetString1()\n" 
-                    "{return m_strVal.c_str();}\n"
-                    "private:\n"
-                    "std::string m_strVal;\n"
-                    "};\n"
-                    );
+                   "public:\n"
+                   "A(){m_strVal="";}\n"
+                   "const std::string strGetString1()\n"
+                   "{return m_strVal.c_str();}\n"
+                   "private:\n"
+                   "std::string m_strVal;\n"
+                   "};\n"
+                  );
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString1' can be const\n", errout.str());
     }
 
