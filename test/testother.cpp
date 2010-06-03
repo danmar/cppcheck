@@ -75,7 +75,8 @@ private:
         TEST_CASE(uninitvar_arrays);    // arrays
         TEST_CASE(uninitvar_class);     // class/struct
         TEST_CASE(uninitvar_enum);      // enum variables
-        TEST_CASE(uninitvar_if);        // handling if/while/switch
+        TEST_CASE(uninitvar_if);        // handling if/while
+        TEST_CASE(uninitvar_switch);    // handling switch
         TEST_CASE(uninitvar_references); // references
         TEST_CASE(uninitvar_strncpy);   // strncpy doesn't always 0-terminate
         TEST_CASE(uninitvar_func);      // analyse functions
@@ -1659,44 +1660,6 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        // switch..
-        checkUninitVar("char * f()\n"
-                       "{\n"
-                       "    static char ret[200];\n"
-                       "    memset(ret, 0, sizeof(ret));\n"
-                       "    switch (x)\n"
-                       "    {\n"
-                       "        case 1: return ret;\n"
-                       "        case 2: return ret;\n"
-                       "    }\n"
-                       "    return 0;\n"
-                       "}\n");
-        ASSERT_EQUALS("", errout.str());
-
-        checkUninitVar("int foo(const int iVar, unsigned int slot, unsigned int pin)\n"
-                       "{\n"
-                       "    int i;\n"
-                       "\n"
-                       "    if (iVar == 0)\n"
-                       "    {\n"
-                       "        switch (slot)\n"
-                       "        {\n"
-                       "            case 4:  return 5;\n"
-                       "            default: return -1;\n"
-                       "        }\n"
-                       "    }\n"
-                       "    else\n"
-                       "    {\n"
-                       "        switch (pin)\n"
-                       "        {\n"
-                       "            case 0:   i =  2; break;\n"
-                       "            default:  i = -1; break;\n"
-                       "        }\n"
-                       "    }\n"
-                       "    return i;\n"
-                       "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         // while..
         checkUninitVar("int f()\n"
                        "{\n"
@@ -1737,6 +1700,58 @@ private:
                        "  }\n"
                        "\n"
                        "  { }\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // switch..
+    void uninitvar_switch()
+    {
+        checkUninitVar("void f(int x)\n"
+                       "{\n"
+                       "    short c;\n"
+                       "    switch(x) {\n"
+                       "    case 1:\n"
+                       "        c++;\n"
+                       "        break;\n"
+                       "    };\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: c\n", errout.str());
+
+        checkUninitVar("char * f()\n"
+                       "{\n"
+                       "    static char ret[200];\n"
+                       "    memset(ret, 0, sizeof(ret));\n"
+                       "    switch (x)\n"
+                       "    {\n"
+                       "        case 1: return ret;\n"
+                       "        case 2: return ret;\n"
+                       "    }\n"
+                       "    return 0;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int foo(const int iVar, unsigned int slot, unsigned int pin)\n"
+                       "{\n"
+                       "    int i;\n"
+                       "\n"
+                       "    if (iVar == 0)\n"
+                       "    {\n"
+                       "        switch (slot)\n"
+                       "        {\n"
+                       "            case 4:  return 5;\n"
+                       "            default: return -1;\n"
+                       "        }\n"
+                       "    }\n"
+                       "    else\n"
+                       "    {\n"
+                       "        switch (pin)\n"
+                       "        {\n"
+                       "            case 0:   i =  2; break;\n"
+                       "            default:  i = -1; break;\n"
+                       "        }\n"
+                       "    }\n"
+                       "    return i;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -89,7 +89,7 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
 
     for (; tok; tok = tok->next())
     {
-        if (tok->str() == "}")
+        if (tok->str() == "}" || tok->str() == "break")
             return;
 
         if (Token::simpleMatch(tok, "while ("))
@@ -120,6 +120,82 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
         {
             ExecutionPath::bailOut(checks);
             return;
+        }
+
+        if (tok->str() == "switch")
+        {
+            const Token *tok2 = tok->next()->link();
+            if (Token::simpleMatch(tok2, ") { case"))
+            {
+                // what variable ids should the if be counted for?
+                std::set<unsigned int> countif;
+
+                std::list<ExecutionPath *> newchecks;
+
+                for (tok2 = tok2->tokAt(2); tok2; tok2 = tok2->next())
+                {
+                    if (tok2->str() == "{")
+                        tok2 = tok2->link();
+                    else if (tok2->str() == "}")
+                        break;
+                    else if (tok2->str() == "case")
+                    {
+                        if (Token::Match(tok2, "case %num% : ; case"))
+                            continue;
+
+                        std::set<unsigned int> countif2;
+                        std::list<ExecutionPath *> c;
+                        if (!checks.empty())
+                        {
+                            std::list<ExecutionPath *>::const_iterator it;
+                            for (it = checks.begin(); it != checks.end(); ++it)
+                            {
+                                c.push_back((*it)->copy());
+                                if ((*it)->varId != 0)
+                                    countif2.insert((*it)->varId);
+                            }
+                        }
+                        checkExecutionPaths_(tok2, c);
+                        while (!c.empty())
+                        {
+                            if (c.back()->varId == 0)
+                            {
+                                c.pop_back();
+                                continue;
+                            }
+
+                            bool duplicate = false;
+                            std::list<ExecutionPath *>::const_iterator it;
+                            for (it = checks.begin(); it != checks.end(); ++it)
+                            {
+                                if (*(*it) == *c.back())
+                                {
+                                    duplicate = true;
+                                    countif2.erase((*it)->varId);
+                                    break;
+                                }
+                            }
+                            if (!duplicate)
+                                newchecks.push_back(c.back());
+                            c.pop_back();
+                        }
+
+                        // Add countif2 ids to countif.. countif.
+                        countif.insert(countif2.begin(), countif2.end());
+                    }
+
+                    // Add newchecks to checks..
+                    std::copy(newchecks.begin(), newchecks.end(), std::back_inserter(checks));
+
+                    // Increase numberOfIf
+                    std::list<ExecutionPath *>::iterator it;
+                    for (it = checks.begin(); it != checks.end(); ++it)
+                    {
+                        if (countif.find((*it)->varId) != countif.end())
+                            (*it)->numberOfIf++;
+                    }
+                }
+            }
         }
 
         // for/while/switch/do .. bail out
