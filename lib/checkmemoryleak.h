@@ -144,6 +144,9 @@ public:
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Token *tok) const;
+
+    /** Function allocates pointed-to argument (a la asprintf)? */
+    AllocType functionArgAlloc(const Token *tok, unsigned int parlevel0) const;
 };
 
 /// @}
@@ -229,6 +232,7 @@ public:
      * @param varid        variable id to check
      * @param alloctype    if memory is allocated, this indicates the type of allocation
      * @param dealloctype  if memory is deallocated, this indicates the type of deallocation
+     * @param allocpar     if function allocates varid parameter
      * @param sz           not used by call_func - see getcode
      * @return These are the possible return values:
      * - NULL : no significant code
@@ -240,7 +244,7 @@ public:
      * - "callfunc" : a function call with unknown side effects
      * - "&use"
      */
-    const char * call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, unsigned int sz);
+    const char * call_func(const Token *tok, std::list<const Token *> callstack, const unsigned int varid, AllocType &alloctype, AllocType &dealloctype, bool &allocpar, unsigned int sz);
 
     /**
      * Extract a new tokens list that is easier to parse than the "_tokenizer->tokens()", the

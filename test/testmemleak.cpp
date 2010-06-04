@@ -297,6 +297,7 @@ private:
         TEST_CASE(allocfunc2);
         TEST_CASE(allocfunc3);
         TEST_CASE(allocfunc4);
+        TEST_CASE(allocfunc5);
 
         TEST_CASE(throw1);
         TEST_CASE(throw2);
@@ -1718,6 +1719,60 @@ private:
               "   delete p;\n"
               "}\n");
         ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Mismatching allocation and deallocation: p\n"), errout.str());
+    }
+
+    void allocfunc5()
+    {
+        check("void foo(char **str)\n"
+              "{\n"
+              "   *str = malloc(20);\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *p;\n"
+              "   foo(&p);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:10]: (error) Memory leak: p\n"), errout.str());
+
+        check("void foo(char **str)\n"
+              "{\n"
+              "   *str = malloc(20);\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *p;\n"
+              "   foo(&p);\n"
+              "   delete p;\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:10]: (error) Mismatching allocation and deallocation: p\n"), errout.str());
+
+        check("void foo(char **q, char **str)\n"
+              "{\n"
+              "   *str = malloc(20);\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *p;\n"
+              "   char *q;\n"
+              "   foo(&q, &p);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), errout.str());
+
+        check("void foo(char **str)\n"
+              "{\n"
+              "   char *a = malloc(20)\n"
+              "   *str = a;\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *p;\n"
+              "   foo(&p);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), errout.str());
     }
 
 
