@@ -1528,13 +1528,13 @@ void CheckBufferOverrun::checkInsecureCmdLineArgs()
 
         // Jump to the opening curly brace
         tok = tok->next()->link();
-        if (!tok || !tok->next())
+        if (!Token::simpleMatch(tok, ") {"))
             continue;
         tok = tok->next();
 
         // Search within main() for possible buffer overruns involving argv
         int indentlevel = -1;
-        for (; tok && tok->next(); tok = tok->next())
+        for (; tok; tok = tok->next())
         {
             if (tok->str() == "{")
             {
