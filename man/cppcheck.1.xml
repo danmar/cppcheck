@@ -103,8 +103,10 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
     <cmdsynopsis>
       <command>&dhpackage;</command>
       <arg choice="opt"><option>--append [file]</option></arg>
+      <arg choice="opt"><option>-D[id]</option></arg>
       <arg choice="opt"><option>--enable=[id]</option></arg>
       <arg choice="opt"><option>--error-exitcode=[n]</option></arg>
+      <arg choice="opt"><option>--exitcode-suppressions [file]</option></arg>
       <arg choice="opt"><option>--force</option></arg>
       <arg choice="opt"><option>--help</option></arg>
       <arg choice="opt"><option>-I[dir]</option></arg>
@@ -142,47 +144,49 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         </listitem>
       </varlistentry>      
       <varlistentry>
+        <term><option>-D[id]</option></term>
+        <listitem>
+          <para>By default Cppcheck checks all configurations. Use -D to limit the checking. When -D is used the checking is limited to the given configuration.</para>
+        </listitem>
+      </varlistentry>      
+      <varlistentry>
         <term><option>--enable=[id]</option></term>
         <listitem>
           <para>Enable specific checks. The available ids are:
-        <glosslist>
-        <glossentry><glossterm>all</glossterm>
-        <glossdef>
-        <para>
-        Enable all checks.
-        </para>
-        </glossdef>
-        </glossentry>
-        <glossentry><glossterm>exceptNew</glossterm>
-        <glossdef>
-        <para>
-        Check exception safety when using new.
-        </para>
-        </glossdef>
-        </glossentry>
-        <glossentry><glossterm>exceptRealloc</glossterm>
-        <glossdef>
-        <para>
-        Check exception safety when reallocating.
-        </para>
-        </glossdef>
-        </glossentry>
-        <glossentry><glossterm>style</glossterm>
-        <glossdef>
-        <para>
-        Check coding style.
-        </para>
-        </glossdef>
-        </glossentry>
-        <glossentry><glossterm>unusedFunctions</glossterm>
-        <glossdef>
-        <para>
-        Check for unused functions.
-        </para>
-        </glossdef>
-        </glossentry>
-        </glosslist>          
-         Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunctions.</para>
+            <glosslist>
+              <glossentry>
+                <glossterm>all</glossterm>
+                <glossdef>
+                  <para>Enable all checks.</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>exceptNew</glossterm>
+                <glossdef>
+                  <para>Check exception safety when using new.</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>exceptRealloc</glossterm>
+                <glossdef>
+                  <para>Check exception safety when reallocating.</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>style</glossterm>
+                <glossdef>
+                  <para>Check coding style.</para>
+                </glossdef>
+              </glossentry>
+              <glossentry>
+                <glossterm>unusedFunctions</glossterm>
+                <glossdef>
+                  <para>Check for unused functions.</para>
+                </glossdef>
+              </glossentry>
+            </glosslist>          
+            Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunctions.
+          </para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -192,6 +196,18 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
           EXIT_FAILURE is returned if arguments are not valid or if no input files are
           provided. Note that your operating system can modify this value, e.g.
           256 can become 0.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--exitcode-suppressions [file]</option></term>
+        <listitem>
+          <para>Used when certain messages should be displayed but should not cause a non-zero exitcode.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--file-list=[file]</option></term>
+        <listitem>
+          <para>Specify the files to check in a text file. One filename per line.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -214,6 +230,13 @@ default.</para>
         <listitem>
           <para>Give include path. Give several -I parameters to give several paths. First given path is checked first. If paths are relative to source
 files, this is not needed.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>--inline-suppr</option></term>
+        <listitem>
+          <para>Enable inline suppressions. Use them by placing comments in the form: // cppcheck-suppress memleak
+          before the line to suppress.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
