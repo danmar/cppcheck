@@ -3451,7 +3451,7 @@ private:
                    "std::string m_strVal;\n"
                    "};\n"
                   );
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString' can be const\n", errout.str());
 
         checkConst("class A{\n"
                    "public:\n"
@@ -3462,7 +3462,7 @@ private:
                    "std::string m_strVal;\n"
                    "};\n"
                   );
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString1' can be const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString1' can be const\n", errout.str());
     }
 
     // increment/decrement => not const

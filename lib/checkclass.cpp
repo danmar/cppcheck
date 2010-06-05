@@ -1976,7 +1976,7 @@ bool CheckClass::checkConstFunc(const std::string &classname, const Var *varlist
         }
 
         // function call..
-        else if (tok1->str() != "return" && Token::Match(tok1, "%var% ("))
+        else if (tok1->str() != "return" && Token::Match(tok1, "%var% (") && tok1->str() != "c_str")
         {
             isconst = false;
             break;
