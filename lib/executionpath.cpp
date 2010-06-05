@@ -25,6 +25,9 @@
 #include <iostream>
 
 
+static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks);
+
+
 // default : bail out if the condition is has variable handling
 bool ExecutionPath::parseCondition(const Token &tok, std::list<ExecutionPath *> & checks)
 {
@@ -78,6 +81,61 @@ static void printchecks(const std::list<ExecutionPath *> &checks)
         (*it)->print();
 }
 #endif
+
+
+
+/**
+ * @brief Parse If/Switch body recursively.
+ * @param tok First token in body.
+ * @param checks The current checks
+ * @param newchecks new checks
+ * @param countif The countif set - count number of if for each execution path
+ */
+static void parseIfSwitchBody(const Token * const tok,
+                              const std::list<ExecutionPath *> &checks,
+                              std::list<ExecutionPath *> &newchecks,
+                              std::set<unsigned int> &countif)
+{
+    std::set<unsigned int> countif2;
+    std::list<ExecutionPath *> c;
+    if (!checks.empty())
+    {
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            c.push_back((*it)->copy());
+            if ((*it)->varId != 0)
+                countif2.insert((*it)->varId);
+        }
+    }
+    checkExecutionPaths_(tok, c);
+    while (!c.empty())
+    {
+        if (c.back()->varId == 0)
+        {
+            c.pop_back();
+            continue;
+        }
+
+        bool duplicate = false;
+        std::list<ExecutionPath *>::const_iterator it;
+        for (it = checks.begin(); it != checks.end(); ++it)
+        {
+            if (*(*it) == *c.back())
+            {
+                duplicate = true;
+                countif2.erase((*it)->varId);
+                break;
+            }
+        }
+        if (!duplicate)
+            newchecks.push_back(c.back());
+        c.pop_back();
+    }
+
+    // Add countif2 ids to countif.. countif.
+    countif.insert(countif2.begin(), countif2.end());
+}
 
 
 static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &checks)
@@ -138,62 +196,22 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
                         tok2 = tok2->link();
                     else if (tok2->str() == "}")
                         break;
-                    else if (tok2->str() == "case")
+                    else if (tok2->str() == "case" &&
+                             !Token::Match(tok2, "case %num% : ; case"))
                     {
-                        if (Token::Match(tok2, "case %num% : ; case"))
-                            continue;
-
-                        std::set<unsigned int> countif2;
-                        std::list<ExecutionPath *> c;
-                        if (!checks.empty())
-                        {
-                            std::list<ExecutionPath *>::const_iterator it;
-                            for (it = checks.begin(); it != checks.end(); ++it)
-                            {
-                                c.push_back((*it)->copy());
-                                if ((*it)->varId != 0)
-                                    countif2.insert((*it)->varId);
-                            }
-                        }
-                        checkExecutionPaths_(tok2, c);
-                        while (!c.empty())
-                        {
-                            if (c.back()->varId == 0)
-                            {
-                                c.pop_back();
-                                continue;
-                            }
-
-                            bool duplicate = false;
-                            std::list<ExecutionPath *>::const_iterator it;
-                            for (it = checks.begin(); it != checks.end(); ++it)
-                            {
-                                if (*(*it) == *c.back())
-                                {
-                                    duplicate = true;
-                                    countif2.erase((*it)->varId);
-                                    break;
-                                }
-                            }
-                            if (!duplicate)
-                                newchecks.push_back(c.back());
-                            c.pop_back();
-                        }
-
-                        // Add countif2 ids to countif.. countif.
-                        countif.insert(countif2.begin(), countif2.end());
+                        parseIfSwitchBody(tok2, checks, newchecks, countif);
                     }
+                }
 
-                    // Add newchecks to checks..
-                    std::copy(newchecks.begin(), newchecks.end(), std::back_inserter(checks));
+                // Add newchecks to checks..
+                std::copy(newchecks.begin(), newchecks.end(), std::back_inserter(checks));
 
-                    // Increase numberOfIf
-                    std::list<ExecutionPath *>::iterator it;
-                    for (it = checks.begin(); it != checks.end(); ++it)
-                    {
-                        if (countif.find((*it)->varId) != countif.end())
-                            (*it)->numberOfIf++;
-                    }
+                // Increase numberOfIf
+                std::list<ExecutionPath *>::iterator it;
+                for (it = checks.begin(); it != checks.end(); ++it)
+                {
+                    if (countif.find((*it)->varId) != countif.end())
+                        (*it)->numberOfIf++;
                 }
             }
         }
@@ -336,47 +354,7 @@ static void checkExecutionPaths_(const Token *tok, std::list<ExecutionPath *> &c
                 }
 
                 // Recursively check into the if ..
-                {
-                    std::set<unsigned int> countif2;
-                    std::list<ExecutionPath *> c;
-                    if (!checks.empty())
-                    {
-                        std::list<ExecutionPath *>::const_iterator it;
-                        for (it = checks.begin(); it != checks.end(); ++it)
-                        {
-                            c.push_back((*it)->copy());
-                            if ((*it)->varId != 0)
-                                countif2.insert((*it)->varId);
-                        }
-                    }
-                    checkExecutionPaths_(tok->next(), c);
-                    while (!c.empty())
-                    {
-                        if (c.back()->varId == 0)
-                        {
-                            c.pop_back();
-                            continue;
-                        }
-
-                        bool duplicate = false;
-                        std::list<ExecutionPath *>::const_iterator it;
-                        for (it = checks.begin(); it != checks.end(); ++it)
-                        {
-                            if (*(*it) == *c.back())
-                            {
-                                duplicate = true;
-                                countif2.erase((*it)->varId);
-                                break;
-                            }
-                        }
-                        if (!duplicate)
-                            newchecks.push_back(c.back());
-                        c.pop_back();
-                    }
-
-                    // Add countif2 ids to countif..
-                    countif.insert(countif2.begin(), countif2.end());
-                }
+                parseIfSwitchBody(tok->next(), checks, newchecks, countif);
 
                 // goto "}"
                 tok = tok->link();

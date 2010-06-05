@@ -1754,6 +1754,21 @@ private:
                        "    return i;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // No segmentation fault
+        checkUninitVar("void a() try\n"
+                       "{\n"
+                       "    {\n"
+                       "        while (1) {\n"
+                       "            switch (1) {\n"
+                       "                case 1: {\n"
+                       "                    int i;\n"
+                       "                }\n"
+                       "            }\n"
+                       "        }\n"
+                       "    } catch (...) {\n"
+                       "    }\n"
+                       "}\n");
     }
 
     // arrays..
