@@ -1544,21 +1544,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                     done = false;
                 }
 
-                // Two "if alloc ;" after one another.. perhaps only one of them can be executed each time
-                else if (!_settings->inconclusive && Token::Match(tok2, "[;{}] if alloc ; if alloc ;"))
-                {
-                    Token::eraseTokens(tok2, tok2->tokAt(4));
-                    done = false;
-                }
-
-                else if (Token::Match(tok2, "; if ; else assign|use ; assign|use") ||
-                         Token::Match(tok2, "; if assign|use ; else ; assign|use"))
-                {
-                    Token::eraseTokens(tok2, tok2->tokAt(4));
-                    done = false;
-                }
-
-
                 // Reduce "if return ; alloc ;" => "alloc ;"
                 else if (Token::Match(tok2, "[;{}] if return ; alloc|return ;"))
                 {
@@ -1618,16 +1603,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                     done = false;
                 }
 
-                // Reducing if..
-                else if (_settings->inconclusive)
-                {
-                    if (Token::Match(tok2, "[;{}] if { assign|dealloc|use ; return ; } !!else"))
-                    {
-                        Token::eraseTokens(tok2, tok2->tokAt(8));
-                        done = false;
-                    }
-                }
-
                 continue;
             }
 
@@ -1668,13 +1643,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
 
             // Reduce "; if(!var) exit ;" => ";"
             if (Token::Match(tok2, "; if(!var) exit ;"))
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(3));
-                done = false;
-            }
-
-            // Remove "catch ;"
-            if (Token::simpleMatch(tok2->next(), "catch ;"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
@@ -1739,14 +1707,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Reduce "if loop ; exit ;" => "; exit ;"
-            if (Token::Match(tok2, "if loop ; exit ;"))
-            {
-                tok2->deleteThis();
-                tok2->deleteThis();
-                done = false;
-            }
-
             // Reduce "alloc|dealloc|use ; if(var) exit ;"
             if (Token::Match(tok2, "alloc|dealloc|use ; if(var) exit ;"))
             {
@@ -1807,44 +1767,10 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Reduce "loop { assign|dealloc|use ; alloc ; if break ; }" to "assign|dealloc|use ; alloc ;"
-            if (Token::Match(tok2->next(), "loop { assign|dealloc|use ; alloc ; if break|continue ; }"))
-            {
-                // erase "loop {"
-                Token::eraseTokens(tok2, tok2->tokAt(3));
-                // erase "if break|continue ; }"
-                tok2 = tok2->tokAt(4);
-                Token::eraseTokens(tok2, tok2->tokAt(5));
-                done = false;
-            }
-
-            // Replace "loop { X ; break ; }" with "X ;"
-            if (Token::Match(tok2->next(), "loop { %var% ; break ; }"))
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(3));
-                Token::eraseTokens(tok2->tokAt(2), tok2->tokAt(6));
-                done = false;
-            }
-
             // Replace "do ; loop ;" with ";"
-            if (Token::Match(tok2->next(), "%any% ; loop ;"))
+            if (Token::simpleMatch(tok2, "; loop ;"))
             {
-                if (tok2->next()->str() == "do")
-                    tok2->deleteNext();
-                else
-                    tok2 = tok2->next();
                 Token::eraseTokens(tok2, tok2->tokAt(3));
-                done = false;
-            }
-
-            // Replace "do ; loop !var ;" with ";"
-            if (Token::Match(tok2->next(), "%any% ; loop !var ;"))
-            {
-                if (tok2->next()->str() == "do")
-                    tok2->deleteNext();
-                else
-                    tok2 = tok2->next();
-                Token::eraseTokens(tok2, tok2->tokAt(4));
                 done = false;
             }
 
@@ -1862,13 +1788,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Delete if block: "alloc; if return use ;"
-            if (Token::Match(tok2, "alloc ; if return use ; !!else"))
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(5));
-                done = false;
-            }
-
             // Reduce "[;{}] return use ; %var%" => "[;{}] return use ;"
             if (Token::Match(tok2, "[;{}] return use ; %var%"))
             {
@@ -1883,25 +1802,11 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
                 done = false;
             }
 
-            // Reduce "if(var) assign|dealloc|use ;" => "assign|dealloc|use ;"
-            if (Token::Match(tok2->next(), "if(var) assign|dealloc|use ; !!else"))
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(2));
-                done = false;
-            }
-
             // malloc - realloc => alloc ; dealloc ; alloc ;
             // Reduce "[;{}] alloc ; dealloc ; alloc ;" => "[;{}] alloc ;"
             if (Token::Match(tok2, "[;{}] alloc ; dealloc ; alloc ;"))
             {
                 Token::eraseTokens(tok2->next(), tok2->tokAt(6));
-                done = false;
-            }
-
-            // Delete second use in "use ; use ;"
-            while (Token::Match(tok2, "[;{}] use ; use ;"))
-            {
-                Token::eraseTokens(tok2, tok2->tokAt(3));
                 done = false;
             }
 
@@ -1916,14 +1821,6 @@ void CheckMemoryLeakInFunction::simplifycode(Token *tok)
             if (Token::Match(tok2, "[;{}] use ; return use ;"))
             {
                 Token::eraseTokens(tok2, tok2->tokAt(2));
-                done = false;
-            }
-
-            // Delete "callfunc ;" that is followed by "use|if|callfunc"
-            // If the function doesn't throw exception or exit the application, then the "callfunc" is not needed
-            if (Token::Match(tok2, "callfunc ; use|if|callfunc"))
-            {
-                tok2->deleteThis();
                 done = false;
             }
 
