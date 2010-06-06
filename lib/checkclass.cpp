@@ -238,6 +238,11 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             if (Assign && Token::Match(ftok, "%var% ("))
             {
                 initVar(varlist, ftok->strAt(0));
+
+                // assignment in the initializer..
+                // : var(value = x)
+                if (Token::Match(ftok->tokAt(2), "%var% ="))
+                    initVar(varlist, ftok->strAt(2));
             }
 
             Assign |= (ftok->str() == ":");
