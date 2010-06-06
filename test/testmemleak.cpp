@@ -427,7 +427,7 @@ private:
         ASSERT_EQUALS(";;alloc;", getcode("int *a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("int * const a = new int[10];", "a"));
         ASSERT_EQUALS(";;alloc;", getcode("const int * const a = new int[10];", "a"));
-        ASSERT_EQUALS(";;alloc;", getcode("char *a = g_strdup_printf(\"ab\");", "a"));
+        ASSERT_EQUALS(";;alloc;", getcode("char *a = g_strdup_printf(\"%i\", f());", "a"));
 
         // alloc; return use;
         ASSERT_EQUALS(";;alloc;returnuse;", getcode("int *a = new int[10]; return a;", "a"));

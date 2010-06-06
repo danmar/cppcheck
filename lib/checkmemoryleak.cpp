@@ -941,6 +941,12 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                     }
 
                     alloctype = alloc;
+
+                    if (Token::Match(tok, "%var% = %type% ("))
+                    {
+                        tok = tok->tokAt(3)->link();
+                        continue;
+                    }
                 }
 
                 // assignment..
