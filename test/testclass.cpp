@@ -3476,6 +3476,18 @@ private:
                    "};\n"
                   );
         ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetString1' can be const\n", errout.str());
+
+
+        checkConst("class A{\n"
+                   "public:\n"
+                   "A(){m_strVec.push_back("");}\n"
+                   "size_t strGetSize()\n"
+                   "{return m_strVec.size();}\n"
+                   "private:\n"
+                   "std::vector<std::string> m_strVec;\n"
+                   "};\n"
+                  );
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) The function 'A::strGetSize' can be const\n", errout.str());
     }
 
     // increment/decrement => not const
