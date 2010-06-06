@@ -102,6 +102,7 @@ private:
         TEST_CASE(array_index_26);
         TEST_CASE(array_index_27);
         TEST_CASE(array_index_28); // ticket #1418
+        TEST_CASE(array_index_29); // ticket #1734
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_calculation);
@@ -956,6 +957,20 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
         TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Array ip[-10] out of bounds\n", errout.str());
+    }
+
+    void array_index_29()
+    {
+        // ticket #1724
+        check("void f()\n"
+              "{\n"
+              "    int iBuf[10];"
+              "    int *i = &iBuf[9];"
+              "    int *ii = &i[-5];"
+              "    ii[10] = 0;"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (error) Array ii[10] out of bounds\n", errout.str());
     }
 
     void array_index_multidim()
