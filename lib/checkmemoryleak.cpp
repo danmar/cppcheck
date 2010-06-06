@@ -130,6 +130,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             "g_try_malloc0",
             "g_strdup",
             "g_strndup",
+            "g_strdup_printf",
             0
                                               };
     for (unsigned int i = 0; gmallocfunc[i]; i++)
