@@ -1041,6 +1041,13 @@ private:
                          "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Possible null pointer dereference: c\n", errout.str());
 
+        checkNullPointer("static void foo()\n"
+                         "{\n"
+                         "    int *p = 0;\n"
+                         "    if (3 > *p);\n"
+                         "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
+
         checkNullPointer("void f()\n"
                          "{\n"
                          "    if (x) {\n"

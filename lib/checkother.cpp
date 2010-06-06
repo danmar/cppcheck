@@ -2488,6 +2488,14 @@ private:
     /** parse condition. @sa ExecutionPath::parseCondition */
     bool parseCondition(const Token &tok, std::list<ExecutionPath *> &checks)
     {
+        for (const Token *tok2 = &tok; tok2; tok2 = tok2->next())
+        {
+            if (tok2->str() == "(" || tok2->str() == ")")
+                break;
+            if (Token::Match(tok2, "[<>=] * %var%"))
+                dereference(checks, tok2->tokAt(2));
+        }
+
         if (Token::Match(&tok, "!| %var% ("))
         {
             std::list<const Token *> var;
