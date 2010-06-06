@@ -86,6 +86,7 @@ private:
         TEST_CASE(localvaralias3); // ticket #1639
         TEST_CASE(localvaralias4); // ticket #1643
         TEST_CASE(localvaralias5); // ticket #1647
+        TEST_CASE(localvaralias6); // ticket #1729
         TEST_CASE(localvarasm);
 
         // Don't give false positives for variables in structs/unions
@@ -1686,6 +1687,38 @@ private:
                               "    return buf[0];\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvaralias6() // ticket 1729
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    if (a()) {\n"
+                              "        buf[0] = 1;\n"
+                              "        srcdata = buf;\n"
+                              "    } else {\n"
+                              "        srcdata = vdata;\n"
+                              "    }\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string(""), errout.str());
+
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buf[8];\n"
+                              "    char *srcdata;\n"
+                              "    char vdata[8];\n"
+                              "    if (a()) {\n"
+                              "        buf[0] = 1;\n"
+                              "        srcdata = buf;\n"
+                              "    } else {\n"
+                              "        srcdata = vdata;\n"
+                              "    }\n"
+                              "    b(srcdata);\n"
+                              "}");
+        TODO_ASSERT_EQUALS(std::string(""), errout.str());
     }
 
     void localvarasm()
