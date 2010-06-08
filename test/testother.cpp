@@ -69,6 +69,7 @@ private:
         TEST_CASE(nullpointer6);
         TEST_CASE(nullpointer7);
         TEST_CASE(nullpointer8);
+        TEST_CASE(nullpointer9);
 
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_alloc);     // data is allocated but not initialized
@@ -1149,6 +1150,16 @@ private:
                          "  strdup(x);\n"
                          "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
+    }
+
+    void nullpointer9() //#ticket 1778
+    {
+        checkNullPointer("void foo()\n"
+                         "{\n"
+                         "  std::string * x = 0;\n"
+                         "  *x = \"test\";\n"
+                         "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: x\n", errout.str());
     }
 
     void checkUninitVar(const char code[])
