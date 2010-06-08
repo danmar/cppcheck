@@ -1345,7 +1345,7 @@ void CheckOther::functionVariableUsage()
                 variables.use(tok->next()->varId());   // use = read + write
 
             // function parameter
-            else if (Token::Match(tok, "[(,] %var% [,)]"))
+            else if (Token::Match(tok, "[(,] %var% [,)]") && tok->previous()->str() != "*")
                 variables.use(tok->next()->varId());   // use = read + write
 
             else if (Token::Match(tok, " %var% ."))

@@ -81,6 +81,7 @@ private:
         TEST_CASE(localvar16); // ticket #1709
         TEST_CASE(localvar17); // ticket #1720
         TEST_CASE(localvar18); // ticket #1723
+        TEST_CASE(localvar19); // ticket #1776
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1171,6 +1172,17 @@ private:
                               "    throw pe;\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvar19() // ticket #1776
+    {
+        functionVariableUsage("void foo() {\n"
+                              "    int a[10];\n"
+                              "    int c;\n"
+                              "    c = *(a);\n"
+                              "}");
+        ASSERT_EQUALS(std::string("[test.cpp:2]: (style) Variable 'a' is not assigned a value\n"
+                                  "[test.cpp:3]: (style) Variable 'c' is assigned a value that is never used\n"), errout.str());
     }
 
     void localvaralias1()
