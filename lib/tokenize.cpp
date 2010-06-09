@@ -1687,6 +1687,13 @@ bool Tokenizer::tokenize(std::istream &code, const char FileName[], const std::s
             Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
         }
 
+        else if (Token::Match(tok->next(), "asm volatile (") &&
+                 tok->tokAt(3)->link() &&
+                 tok->tokAt(3)->link()->next())
+        {
+            Token::eraseTokens(tok, tok->tokAt(3)->link()->next());
+        }
+
         else if (Token::simpleMatch(tok->next(), "__asm"))
         {
             const Token *tok2 = tok->next();

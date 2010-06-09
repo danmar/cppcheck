@@ -418,6 +418,7 @@ private:
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm__ __volatile__ ( \"mov ax,bx\" );"));
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm _emit 12h ;"));
         ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";__asm mov a, b ;"));
+        ASSERT_EQUALS("; asm ( ) ;", tokenizeAndStringify(";asm volatile (\"fnstcw %0\" : \"= m\" (old_cw));"));
     }
 
 
