@@ -1428,7 +1428,18 @@ void Tokenizer::simplifyTypedef()
                         tok2 = tok2->next();
 
                         // skip over name
-                        tok2 = tok2->next();
+                        if (tok2->next()->str() != ")")
+                        {
+                            tok2 = tok2->next();
+
+                            // check for function and skip over args
+                            if (tok2->next()->str() == "(")
+                                tok2 = tok2->next()->link();
+                        }
+                        else
+                        {
+                            // syntax error
+                        }
 
                         tok2->insertToken(")");
                         Token::createMutualLinks(tok2->next(), tok3);

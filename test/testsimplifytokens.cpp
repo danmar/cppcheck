@@ -200,6 +200,7 @@ private:
         TEST_CASE(simplifyTypedef49); // ticket #1691
         TEST_CASE(simplifyTypedef50);
         TEST_CASE(simplifyTypedef51);
+        TEST_CASE(simplifyTypedef52); // ticket #1782
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4064,6 +4065,31 @@ private:
         const std::string expected("class A { public: int i ; } ; ; "
                                    "const char ( A :: * t1 ) = & A :: i ;");
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void simplifyTypedef52() // ticket #1782
+    {
+        {
+            const char code[] = "typedef char (* type1)[10];\n"
+                                "type1 foo() { }";
+
+            // The expected result..
+            const std::string expected("; "
+                                       "char ( * foo ( ) ) [ 10 ] { }");
+            ASSERT_EQUALS(expected, sizeof_(code));
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+
+        {
+            const char code[] = "typedef char (* type1)[10];\n"
+                                "LOCAL(type1) foo() { }";
+
+            // this is invalid C so just make sure it doesn't generate an internal error
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void simplifyTypedefFunction1()
