@@ -104,6 +104,7 @@ private:
         TEST_CASE(localvarFor);         // for ( ; var; )
         TEST_CASE(localvarShift);       // 1 >> var
         TEST_CASE(localvarCast);
+        TEST_CASE(localvarClass);
     }
 
     void structmember1()
@@ -1881,6 +1882,17 @@ private:
         ASSERT_EQUALS(std::string(""), errout.str());
     }
 
+    void localvarClass()
+    {
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    class B : public A {\n"
+                              "        int a;\n"
+                              "        int f() { return a; }\n"
+                              "    } b;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
 };
 
 REGISTER_TEST(TestUnusedVar)

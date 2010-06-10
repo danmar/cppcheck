@@ -946,7 +946,7 @@ void CheckOther::functionVariableUsage()
                     break;
             }
             else if (Token::Match(tok, "struct|union|class {") ||
-                     Token::Match(tok, "struct|union|class %type% {"))
+                     Token::Match(tok, "struct|union|class %type% {|:"))
             {
                 while (tok->str() != "{")
                     tok = tok->next();
