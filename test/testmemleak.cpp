@@ -2529,6 +2529,41 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        //#ticket 1401
+        check("int myfunc()\n"
+              "{\n"
+              "  int handle;\n"
+              "  \n"
+              "  handle = std::open(\"myfile\");\n"
+              "  if (handle < 0) return 1;\n"
+              "  \n"
+              "    while (some_condition()) \n"
+              "      if (some_other_condition())\n"
+              "      {\n"
+              "         close(handle);\n"
+              "         return 3;\n"
+              "      }\n"
+              "  close(handle);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        //#ticket 1401
+        check("int myfunc()\n"
+              "{\n"
+              "  int handle;\n"
+              "  \n"
+              "  handle = std::open(\"myfile\");\n"
+              "  if (handle < 0) return 1;\n"
+              "  \n"
+              "    while (some_condition()) \n"
+              "      if (some_other_condition())\n"
+              "      {\n"
+              "         return 3;\n"
+              "      }\n"
+              "  close(handle);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:11]: (error) Resource leak: handle\n", errout.str());
     }
 
     void fd_functions()
