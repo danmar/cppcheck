@@ -2849,6 +2849,7 @@ private:
         TEST_CASE(class13);
         TEST_CASE(class14);
         TEST_CASE(class15);
+        TEST_CASE(class16);
 
         TEST_CASE(staticvar);
 
@@ -3145,6 +3146,28 @@ private:
               "A::A()\n"
               "{ p = new int[10]; }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void class16() // ticket 1788
+    {
+        check("template <class T> class A\n"
+              "{\n"
+              "    private:\n"
+              "        int nn;\n"
+              "        T *v;\n"
+              "    public:\n"
+              "         A(int n): nn(n), v(new T[n]) {};\n"
+              "        ~A();\n"
+              "};\n"
+              "template <class T> A<T>::~A()\n"
+              "{\n"
+              "   delete[] (v);\n"
+              "}\n"
+              "void foo()\n"
+              "{\n"
+              "   A<double> v(1);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", errout.str());
     }
 
 
