@@ -3132,6 +3132,28 @@ private:
               "void A::init()\n"
               "{ p = new int[10]; }\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
+              "    void init();\n"
+              "};\n"
+              "\n"
+              "void A::init()\n"
+              "{ p = new int; }\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
+              "    void init();\n"
+              "};\n"
+              "\n"
+              "void A::init()\n"
+              "{ p = malloc(sizeof(int)*10); }\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class15()
@@ -3145,6 +3167,28 @@ private:
               "};\n"
               "A::A()\n"
               "{ p = new int[10]; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
+              "    A();\n"
+              "    ~A() { delete p; }\n"
+              "};\n"
+              "A::A()\n"
+              "{ p = new int; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class A\n"
+              "{\n"
+              "    int *p;\n"
+              "public:\n"
+              "    A();\n"
+              "    ~A() { free(p); }\n"
+              "};\n"
+              "A::A()\n"
+              "{ p = malloc(sizeof(int)*10); }");
         ASSERT_EQUALS("", errout.str());
     }
 
