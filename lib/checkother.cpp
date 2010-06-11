@@ -3734,5 +3734,5 @@ void CheckOther::sizeofsizeof()
 void CheckOther::sizeofsizeofError(const Token *tok)
 {
     reportError(tok, Severity::style,
-                "sizeofsizeof", "Suspicios code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent with 'sizeof(size_t)'.");
+                "sizeofsizeof", "Suspicious code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent to 'sizeof(size_t)'.");
 }
