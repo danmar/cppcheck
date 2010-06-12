@@ -103,6 +103,7 @@ private:
         TEST_CASE(template17);
         TEST_CASE(template18);
         TEST_CASE(template19);
+        TEST_CASE(template20);
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -1750,6 +1751,28 @@ private:
                                    " char p ; p = foo<char> ( ) ; "
                                    "} "
                                    "char & foo<char> ( ) { static char temp ; return temp ; }");
+        ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template20()
+    {
+        // Ticket #1788 - the destructor implementation is lost
+        const char code[] = "template <class T> class A\n"
+                            "{\n"
+                            "public:\n"
+                            "    ~A();\n"
+                            "};\n"
+                            "\n"
+                            "template <class T> A<T>::~A()\n"
+                            "{\n"
+                            "}\n"
+                            "\n"
+                            "A<int> a;\n";
+
+        // The expected result..
+        const std::string expected("; ; ; A<int> a ; "
+                                   "class A<int> { public: ~ A<int> ( ) ; } "
+                                   "A<int> :: ~ A<int> ( ) { }");
         ASSERT_EQUALS(expected, sizeof_(code));
     }
 

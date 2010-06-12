@@ -2356,7 +2356,7 @@ void Tokenizer::simplifyTemplates()
                         }
 
                         // member function implemented outside class definition
-                        else if (_indentlevel == 0 && _parlevel == 0 && Token::Match(tok3, (pattern + " :: %var% (").c_str()))
+                        else if (_indentlevel == 0 && _parlevel == 0 && Token::Match(tok3, (pattern + " :: ~| %var% (").c_str()))
                         {
                             addtoken(name2.c_str(), tok3->linenr(), tok3->fileIndex());
                             while (tok3->str() != "::")
