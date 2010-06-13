@@ -2850,6 +2850,7 @@ private:
         TEST_CASE(class14);
         TEST_CASE(class15);
         TEST_CASE(class16);
+        TEST_CASE(class17);
 
         TEST_CASE(staticvar);
 
@@ -3210,6 +3211,24 @@ private:
               "    A() { a = b = new int[10]; }\n"
               "    ~A() { delete [] a; }\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class17()
+    {
+        // Ticket #1557
+        check("class A {\n"
+              "private:\n"
+              "    char *pd;\n"
+              "public:\n"
+              "    void foo();\n"
+              "};\n"
+              "\n"
+              "void A::foo()\n"
+              "{\n"
+              "    A::pd = new char[12];\n"
+              "    delete [] A::pd;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
