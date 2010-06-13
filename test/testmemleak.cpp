@@ -2886,8 +2886,7 @@ private:
               "{\n"
               "    delete [] str2;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: Fred::str1\n", errout.str());
     }
 
 
@@ -2911,9 +2910,7 @@ private:
               "{\n"
               "    free(str1);\n"
               "}\n");
-
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:17]: (error) Mismatching allocation and deallocation: Fred::str1\n", errout.str());
     }
 
     void class3()
@@ -3060,8 +3057,7 @@ private:
               "    int * p;\n"
               "    A() { p = new int; }\n"
               "};\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class11()
@@ -3074,8 +3070,7 @@ private:
               "};\n"
               "A::A() : p(new int[10])\n"
               "{ }");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class12()
@@ -3098,8 +3093,7 @@ private:
               "\n"
               "void A::cleanup()\n"
               "{ delete [] p; }\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class13()
@@ -3136,8 +3130,7 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = new int[10]; }\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -3148,8 +3141,7 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = new int; }\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
 
         check("class A\n"
               "{\n"
@@ -3160,8 +3152,7 @@ private:
               "\n"
               "void A::init()\n"
               "{ p = malloc(sizeof(int)*10); }\n");
-        ASSERT_EQUALS("", errout.str());
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: A::p\n", errout.str());
     }
 
     void class15()
@@ -3331,8 +3322,7 @@ private:
               "A::~A() {\n"
               "    delete [] pkt_buffer;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
     }
 
     void func1()
