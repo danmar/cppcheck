@@ -339,68 +339,73 @@ void CheckClass::initializeVarList(const Token *tok1, const Token *ftok, Var *va
             if (ftok->str() == "if")
                 continue;
 
-            // No recursive calls!
-            if (std::find(callstack.begin(), callstack.end(), ftok->str()) == callstack.end())
+            // recursive call / calling overloaded function
+            // assume that all variables are initialized
+            if (std::find(callstack.begin(), callstack.end(), ftok->str()) != callstack.end())
             {
-                int i = 0;
-                const Token *ftok2 = _tokenizer->findClassFunction(tok1, classname, ftok->strAt(0), i, isStruct);
-                if (ftok2)
-                {
-                    callstack.push_back(ftok->str());
-                    initializeVarList(tok1, ftok2, varlist, classname, callstack, isStruct);
-                    callstack.pop_back();
-                }
-                else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
-                {
-                    // check if the function is part of this class..
-                    const Token *tok = Token::findmatch(_tokenizer->tokens(), (std::string("class ") + classname + " {").c_str());
-                    for (tok = tok ? tok->tokAt(3) : 0; tok; tok = tok->next())
-                    {
-                        if (tok->str() == "{")
-                        {
-                            tok = tok->link();
-                            if (!tok)
-                                break;
-                        }
-                        else if (tok->str() == "}")
-                        {
-                            break;
-                        }
-                        else if (tok->str() == ftok->str() || tok->str() == "friend")
-                        {
-                            tok = 0;
-                            break;
-                        }
-                    }
+                for (Var *var = varlist; var; var = var->next)
+                    var->init = true;
+                return;
+            }
 
-                    // bail out..
-                    if (!tok)
+            int i = 0;
+            const Token *ftok2 = _tokenizer->findClassFunction(tok1, classname, ftok->strAt(0), i, isStruct);
+            if (ftok2)
+            {
+                callstack.push_back(ftok->str());
+                initializeVarList(tok1, ftok2, varlist, classname, callstack, isStruct);
+                callstack.pop_back();
+            }
+            else  // there is a called member function, but it is not defined where we can find it, so we assume it initializes everything
+            {
+                // check if the function is part of this class..
+                const Token *tok = Token::findmatch(_tokenizer->tokens(), (std::string("class ") + classname + " {").c_str());
+                for (tok = tok ? tok->tokAt(3) : 0; tok; tok = tok->next())
+                {
+                    if (tok->str() == "{")
                     {
-                        for (Var *var = varlist; var; var = var->next)
-                            var->init = true;
+                        tok = tok->link();
+                        if (!tok)
+                            break;
+                    }
+                    else if (tok->str() == "}")
+                    {
                         break;
                     }
-
-                    // the function is external and it's neither friend nor inherited virtual function.
-                    // assume all variables that are passed to it are initialized..
-                    unsigned int indentlevel2 = 0;
-                    for (tok = ftok->tokAt(2); tok; tok = tok->next())
+                    else if (tok->str() == ftok->str() || tok->str() == "friend")
                     {
-                        if (tok->str() == "(")
-                            ++indentlevel2;
-                        else if (tok->str() == ")")
-                        {
-                            if (indentlevel2 == 0)
-                                break;
-                            --indentlevel2;
-                        }
-                        if (tok->isName())
-                        {
-                            initVar(varlist, tok->strAt(0));
-                        }
+                        tok = 0;
+                        break;
                     }
-                    continue;
                 }
+
+                // bail out..
+                if (!tok)
+                {
+                    for (Var *var = varlist; var; var = var->next)
+                        var->init = true;
+                    break;
+                }
+
+                // the function is external and it's neither friend nor inherited virtual function.
+                // assume all variables that are passed to it are initialized..
+                unsigned int indentlevel2 = 0;
+                for (tok = ftok->tokAt(2); tok; tok = tok->next())
+                {
+                    if (tok->str() == "(")
+                        ++indentlevel2;
+                    else if (tok->str() == ")")
+                    {
+                        if (indentlevel2 == 0)
+                            break;
+                        --indentlevel2;
+                    }
+                    if (tok->isName())
+                    {
+                        initVar(varlist, tok->strAt(0));
+                    }
+                }
+                continue;
             }
         }
 

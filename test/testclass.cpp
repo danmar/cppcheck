@@ -73,6 +73,7 @@ private:
         TEST_CASE(uninitFunction1);		// No FP when initialized in function
         TEST_CASE(uninitFunction2);		// No FP when initialized in function
         TEST_CASE(uninitSameClassName);	// No FP when two classes have the same name
+        TEST_CASE(uninitFunctionOverload);  // No FP when there are overloaded functions
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -2032,6 +2033,28 @@ private:
                        "    Foo() { }\n"
                        "};\n"
                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitFunctionOverload()
+    {
+        // Ticket #1783 - overloaded "init" functions
+        checkUninitVar("class A\n"
+                       "{\n"
+                       "private:\n"
+                       "    int i;\n"
+                       "\n"
+                       "public:\n"
+                       "    A()\n"
+                       "    {\n"
+                       "        init();\n"
+                       "	}\n"
+                       "\n"
+                       "    void init() { init(0); }\n"
+                       "\n"
+                       "    void init(int value)\n"
+                       "    { i = value; }\n"
+                       "};");
         ASSERT_EQUALS("", errout.str());
     }
 
