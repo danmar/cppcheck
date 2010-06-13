@@ -76,6 +76,8 @@ private:
         TEST_CASE(whileAddBraces);
         TEST_CASE(doWhileAddBraces);
 
+        TEST_CASE(forAddBraces);
+
         TEST_CASE(pointers_condition);
 
         TEST_CASE(simplifyKnownVariables1);
@@ -656,10 +658,8 @@ private:
 
     void whileAddBraces()
     {
-        {
-            const char code[] = ";while(a);";
-            ASSERT_EQUALS("; while ( a ) { ; }", tokenizeAndStringify(code, true));
-        }
+        const char code[] = ";while(a);";
+        ASSERT_EQUALS("; while ( a ) { ; }", tokenizeAndStringify(code, true));
     }
 
     void doWhileAddBraces()
@@ -721,6 +721,40 @@ private:
             ASSERT_EQUALS(result, tokenizeAndStringify(code, true));
         }
     }
+
+    void forAddBraces()
+    {
+        {
+            const char code[] = "void f() {\n"
+                                "     for(;;)\n"
+                                "         if (a) { }\n"
+                                "         else { }\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "for ( ; ; ) {\n"
+                                    "if ( a ) { }\n"
+                                    "else { } }\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void f() {\n"
+                                "     for(;;)\n"
+                                "         if (a) { }\n"
+                                "         else if (b) { }\n"
+                                "         else { }\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "for ( ; ; ) {\n"
+                                    "if ( a ) { }\n"
+                                    "else { if ( b ) { }\n"
+                                    "else { } } }\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+    }
+
 
     std::string simplifyKnownVariables(const char code[])
     {

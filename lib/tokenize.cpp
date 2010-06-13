@@ -3864,6 +3864,12 @@ void Tokenizer::simplifyIfAddBraces()
 {
     for (Token *tok = _tokens; tok; tok = tok ? tok->next() : NULL)
     {
+        if (tok->str() == "(")
+        {
+            tok = tok->link();
+            continue;
+        }
+
         if (tok->previous() && !Token::Match(tok->previous(), ";|{|}|else|)|:"))
             continue;
 
@@ -3920,42 +3926,30 @@ void Tokenizer::simplifyIfAddBraces()
         // * if (cond) for (;;) break;
         // * if (cond1) if (cond2) { }
         // * if (cond1) if (cond2) ; else ;
-        int parlevel = 0;
-        int indentlevel = 0;
         while ((tempToken = tempToken->next()) != NULL)
         {
             if (tempToken->str() == "{")
-                ++indentlevel;
-
-            else if (tempToken->str() == "}")
             {
-                --indentlevel;
-                if (indentlevel == 0 && parlevel == 0)
+                tempToken = tempToken->link();
+                if (tempToken->next()->isName() && tempToken->next()->str() != "else")
                     break;
-
-                else if (indentlevel < 0 && parlevel == 0)
-                {
-                    // insert closing brace before this
-                    tempToken = tempToken->previous();
-                    break;
-                }
+                continue;
             }
 
-            else if (tempToken->str() == "(")
-                ++parlevel;
-
-            else if (tempToken->str() == ")")
+            if (tempToken->str() == "(")
             {
-                if (parlevel == 0)
-                {
-                    tok->deleteThis();
-                    tempToken = 0;
-                    break;
-                }
-                --parlevel;
+                tempToken = tempToken->link();
+                continue;
             }
 
-            else if (indentlevel == 0 && parlevel == 0 && tempToken->str() == ";")
+            if (tempToken->str() == "}")
+            {
+                // insert closing brace before this token
+                tempToken = tempToken->previous();
+                break;
+            }
+
+            if (tempToken->str() == ";")
             {
                 if (!innerIf)
                     break;
