@@ -2910,10 +2910,9 @@ void Tokenizer::setVarId()
     // class members..
     for (Token *tok = _tokens; tok; tok = tok->next())
     {
-        if (Token::Match(tok, "class %var% {"))
+        if (Token::Match(tok, "class|struct %var% {|:"))
         {
             const std::string &classname(tok->next()->str());
-
 
             // What member variables are there in this class?
             std::map<std::string, unsigned int> varlist;

@@ -124,6 +124,7 @@ private:
         TEST_CASE(buffer_overrun_12);
         TEST_CASE(buffer_overrun_13);
         TEST_CASE(buffer_overrun_14);
+        TEST_CASE(buffer_overrun_15); // ticket #1787
 
         TEST_CASE(sprintf1);
         TEST_CASE(sprintf2);
@@ -1622,6 +1623,19 @@ private:
               "  return b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Buffer access out-of-bounds\n", errout.str());
+    }
+
+    void buffer_overrun_15() // ticket #1787
+    {
+        check("class A : public B {\n"
+              "    char val[12];\n"
+              "    void f(int i, int ii);\n"
+              "};\n"
+              "void A::f(int i, int ii)\n"
+              "{\n"
+              "    sprintf(val, \"drive_%d_partition_%d_size\", i, ii) ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Buffer access out-of-bounds\n", errout.str());
     }
 
     void sprintf1()

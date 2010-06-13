@@ -633,8 +633,11 @@ void CheckClass::privateFunctions()
     if (!_settings->_checkCodingStyle)
         return;
 
+    const char pattern_class[] = "class|struct %var% {|:";
+
     // Locate some class
-    for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), "class|struct %var% {"); tok1; tok1 = Token::findmatch(tok1->next(), "class|struct %var% {"))
+    for (const Token *tok1 = Token::findmatch(_tokenizer->tokens(), pattern_class);
+         tok1; tok1 = Token::findmatch(tok1->next(), pattern_class))
     {
         /** @todo check that the whole class implementation is seen */
         // until the todo above is fixed we only check classes that are

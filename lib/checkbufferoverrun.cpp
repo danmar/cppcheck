@@ -1119,14 +1119,18 @@ void CheckBufferOverrun::checkGlobalAndLocalVariable()
 
 void CheckBufferOverrun::checkStructVariable()
 {
-    const char declstruct[] = "struct|class %var% {";
+    const char declstruct[] = "struct|class %var% {|:";
     for (const Token *tok = Token::findmatch(_tokenizer->tokens(), declstruct);
          tok; tok = Token::findmatch(tok->next(), declstruct))
     {
         const std::string &structname = tok->next()->str();
+        const Token *tok2 = tok;
+
+        while (tok2->str() != "{")
+            tok2 = tok2->next();
 
         // Found a struct declaration. Search for arrays..
-        for (const Token *tok2 = tok->tokAt(2); tok2; tok2 = tok2->next())
+        for (; tok2; tok2 = tok2->next())
         {
             // skip inner scopes..
             if (tok2->next() && tok2->next()->str() == "{")
