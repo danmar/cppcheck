@@ -69,13 +69,21 @@ public:
      * @param tokens The tokens to analyse
      * @param result container where results are stored
      */
-    virtual void analyse(const Token * /*tokens*/, std::set<std::string> & /*result*/) const
+    virtual void analyse(const Token *tokens, std::set<std::string> &result) const
     {
+        // suppress compiler warnings
+        (void)tokens;
+        (void)result;
     }
 
-    /** Save analysis data - the caller ensures thread safety */
-    virtual void saveAnalysisData(const std::set<std::string> & /*data*/) const
+    /**
+     * Save analysis data - the caller ensures thread safety
+     * @param data The data where the results are saved
+     */
+    virtual void saveAnalysisData(const std::set<std::string> &data) const
     {
+        // suppress compiler warnings
+        (void)data;
     }
 
     /** run checks, the token list is not simplified */

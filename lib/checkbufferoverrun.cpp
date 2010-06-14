@@ -338,7 +338,7 @@ static bool for3(const Token * const tok,
 /**
  * Check is the counter variable increased elsewhere inside the loop or used
  * for anything else except reading
- * \param tok first token of for-body
+ * \param tok1 first token of for-body
  * \param varid counter variable id
  * \return bailout needed => true
  */
@@ -1737,20 +1737,20 @@ public:
     }
 
 private:
-    /** Copy this check */
+    /** @brief Copy this check. Called from the ExecutionPath baseclass. */
     ExecutionPath *copy()
     {
         return new ExecutionPathBufferOverrun(*this);
     }
 
-    /** is other execution path equal? */
+    /** @brief is other execution path equal? */
     bool is_equal(const ExecutionPath *e) const
     {
         const ExecutionPathBufferOverrun *c = static_cast<const ExecutionPathBufferOverrun *>(e);
         return (value == c->value);
     }
 
-    /** @brief buffer information */
+    /** @brief Buffer information */
     const std::map<unsigned int, CheckBufferOverrun::ArrayInfo> &arrayInfo;
 
     /** no implementation => compiler error if used by accident */
@@ -1766,9 +1766,15 @@ private:
         value = 0;
     }
 
+    /** @brief Variable value. */
     unsigned int value;
 
-    /** @brief Assign value to a variable */
+    /**
+     * @brief Assign value to a variable
+     * @param checks the execution paths
+     * @param varid the variable id
+     * @param value the assigned value
+     */
     static void assign_value(std::list<ExecutionPath *> &checks, unsigned int varid, const std::string &value)
     {
         if (varid == 0)
@@ -1783,7 +1789,13 @@ private:
         }
     }
 
-    /** @brief Found array usage.. */
+    /**
+     * @brief Found array usage, analyse the array usage
+     * @param tok token where usage occurs (only used when reporting the error)
+     * @param checks The execution paths
+     * @param varid1 variable id for the array
+     * @param varid2 variable id for the index
+     */
     static void array_index(const Token *tok, std::list<ExecutionPath *> &checks, unsigned int varid1, unsigned int varid2)
     {
         if (checks.empty() || varid1 == 0 || varid2 == 0)

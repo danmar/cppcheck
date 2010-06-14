@@ -91,7 +91,6 @@ public:
      * @brief Uninitialized variables: analyse functions to see how they work with uninitialized variables
      * @param tokens [in] the token list
      * @param func [out] names of functions that don't handle uninitialized variables well. the function names are added to the set. No clearing is made.
-     * @param showAll [in] enable --all checking
      */
     void analyse(const Token * tokens, std::set<std::string> &func) const;
 

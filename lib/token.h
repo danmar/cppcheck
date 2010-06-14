@@ -287,7 +287,7 @@ public:
 
     /**
      * Create link to given token
-     * @param link The token where this token should link
+     * @param linkToToken The token where this token should link
      * to.
      */
     void link(Token *linkToToken)

@@ -99,7 +99,6 @@ public:
     /**
      * Parse tokens at given location
      * @param tok token to parse
-     * @param foundError If an error is found this is set to true
      * @param checks The execution paths. All execution paths in the list are executed in the current scope.
      * @return the token before the "next" token.
      **/
