@@ -2936,7 +2936,7 @@ private:
                             !Token::simpleMatch(tok2->next(), "="))
                         {
                             bool foundError;
-                            if (tok2->next()->str() == "[")
+                            if (tok2->previous()->str() == "*" || tok2->next()->str() == "[")
                                 foundError = use_array_or_pointer_data(checks, tok2);
                             else
                                 foundError = use(checks, tok2);
@@ -3058,7 +3058,7 @@ private:
                 return tok.next()->link();
             }
 
-            if (Token::Match(&tok, "asm ( )"))
+            if (Token::simpleMatch(&tok, "asm ( )"))
             {
                 ExecutionPath::bailOut(checks);
                 return &tok;

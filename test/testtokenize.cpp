@@ -43,6 +43,9 @@ private:
         TEST_CASE(tokenize4);
         TEST_CASE(tokenize5);
 
+        // array access. replace "*(p+1)" => "p[1]"
+        TEST_CASE(tokenize6);
+
         // don't freak out when the syntax is wrong
         TEST_CASE(wrong_syntax);
 
@@ -325,6 +328,13 @@ private:
         // Tokenize values
         ASSERT_EQUALS("; + 1E3 ;", tokenizeAndStringify("; +1E3 ;"));
         ASSERT_EQUALS("; 1E-2 ;", tokenizeAndStringify("; 1E-2 ;"));
+    }
+
+    void tokenize6()
+    {
+        // "*(p+1)" => "p[1]"
+        ASSERT_EQUALS("; x = p [ 1 ] ;", tokenizeAndStringify("; x = * ( p + 1 ) ;", true));
+        ASSERT_EQUALS("; x = p [ n ] ;", tokenizeAndStringify("; x = * ( p + n ) ;", true));
     }
 
     void wrong_syntax()

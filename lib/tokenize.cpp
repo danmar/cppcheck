@@ -3577,7 +3577,8 @@ bool Tokenizer::simplifyTokenList()
         if (! next)
             break;
 
-        if (Token::Match(next, "* ( %var% + %num% )"))
+        if (Token::Match(next, "* ( %var% + %num% )") ||
+            Token::Match(next, "* ( %var% + %var% )"))
         {
             // var
             tok = tok->next();
