@@ -172,6 +172,7 @@ void Tokenizer::addtoken(const Token * tok, const unsigned int lineno, const uns
     _tokensBack->isUnsigned(tok->isUnsigned());
     _tokensBack->isSigned(tok->isSigned());
     _tokensBack->isLong(tok->isLong());
+    _tokensBack->isUnused(tok->isUnused());
 }
 //---------------------------------------------------------------------------
 
@@ -7678,6 +7679,16 @@ void Tokenizer::simplifyAttribute()
     {
         if (Token::simpleMatch(tok, "__attribute__ (") && tok->next()->link() && tok->next()->link()->next())
         {
+            if (Token::simpleMatch(tok->tokAt(2), "( unused )"))
+            {
+                // check if after variable name
+                if (Token::Match(tok->next()->link()->next(), ";|="))
+                {
+                    if (Token::Match(tok->previous(), "%type%"))
+                        tok->previous()->isUnused(true);
+                }
+            }
+
             Token::eraseTokens(tok, tok->next()->link()->next());
             tok->deleteThis();
         }

@@ -1378,6 +1378,9 @@ void CheckOther::functionVariableUsage()
             const Variables::VariableUsage &usage = it->second;
             const std::string &varname = usage._name->str();
 
+            if (usage._name->isUnused())
+                continue;
+
             if (usage.unused() && !usage._modified)
                 unusedVariableError(usage._name, varname);
 

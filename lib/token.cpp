@@ -35,6 +35,7 @@ Token::Token(Token **t) :
     _isUnsigned(false),
     _isSigned(false),
     _isLong(false),
+    _isUnused(false),
     _varId(0),
     _next(0),
     _previous(0),

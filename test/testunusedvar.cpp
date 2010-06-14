@@ -105,6 +105,7 @@ private:
         TEST_CASE(localvarShift);       // 1 >> var
         TEST_CASE(localvarCast);
         TEST_CASE(localvarClass);
+        TEST_CASE(localvarUnused);
     }
 
     void structmember1()
@@ -1890,6 +1891,21 @@ private:
                               "        int a;\n"
                               "        int f() { return a; }\n"
                               "    } b;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+    }
+
+    void localvarUnused()
+    {
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    bool test __attribute__((unused));\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    bool test __attribute__((unused)) = true;\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
     }

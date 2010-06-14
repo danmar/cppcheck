@@ -172,6 +172,14 @@ public:
     {
         _isLong = size;
     }
+    bool isUnused() const
+    {
+        return _isUnused;
+    }
+    void isUnused(bool used)
+    {
+        _isUnused = used;
+    }
     bool isStandardType() const;
     bool isIntegerType() const;
 
@@ -368,6 +376,7 @@ private:
     bool _isUnsigned;
     bool _isSigned;
     bool _isLong;
+    bool _isUnused;
     unsigned int _varId;
     Token *_next;
     Token *_previous;
