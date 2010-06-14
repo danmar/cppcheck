@@ -40,6 +40,11 @@ ThreadExecutor::~ThreadExecutor()
     //dtor
 }
 
+void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
+{
+    _fileContents[ path ] = content;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for __GNUC__ and __sun only ///////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,7 +160,18 @@ unsigned int ThreadExecutor::check()
         {
             CppCheck fileChecker(*this);
             fileChecker.settings(_settings);
-            fileChecker.addFile(_filenames[i]);
+
+            if (_fileContents.size() > 0 && _fileContents.find(_filenames[i]) != _fileContents.end())
+            {
+                // File content was given as a string
+                fileChecker.addFile(_filenames[i], _fileContents[ _filenames[i] ]);
+            }
+            else
+            {
+                // Read file from a file
+                fileChecker.addFile(_filenames[i]);
+            }
+
             unsigned int resultOfCheck = fileChecker.check();
             std::ostringstream oss;
             oss << resultOfCheck;

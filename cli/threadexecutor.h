@@ -38,12 +38,23 @@ public:
     virtual void reportOut(const std::string &outmsg);
     virtual void reportErr(const ErrorLogger::ErrorMessage &msg);
     virtual void reportStatus(unsigned int index, unsigned int max);
+    /**
+     * @brief Add content to a file, to be used in unit testing.
+     *
+     * @param path File name (used as a key to link with real file).
+     * @param content If the file would be a real file, this should be
+     * the content of the file.
+     */
+    void addFileContent(const std::string &path, const std::string &content);
 
 private:
     const std::vector<std::string> &_filenames;
     const Settings &_settings;
     ErrorLogger &_errorLogger;
     unsigned int _fileCount;
+
+    /** @brief Key is file name, and value is the content of the file */
+    std::map<std::string, std::string> _fileContents;
 
 #if (defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)
 private:

@@ -56,6 +56,7 @@ TESTOBJ =     test/testautovariables.o \
               test/testsimplifytokens.o \
               test/teststl.o \
               test/testsuite.o \
+              test/testthreadexecutor.o \
               test/testtoken.o \
               test/testtokenize.o \
               test/testunusedfunctions.o \
@@ -224,6 +225,9 @@ test/teststl.o: test/teststl.cpp lib/tokenize.h lib/classinfo.h lib/token.h lib/
 
 test/testsuite.o: test/testsuite.cpp test/testsuite.h lib/errorlogger.h lib/settings.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testsuite.o test/testsuite.cpp
+
+test/testthreadexecutor.o: test/testthreadexecutor.cpp lib/cppcheck.h lib/settings.h lib/errorlogger.h lib/checkunusedfunctions.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h test/testsuite.h
+	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testthreadexecutor.o test/testthreadexecutor.cpp
 
 test/testtoken.o: test/testtoken.cpp test/testsuite.h lib/errorlogger.h lib/settings.h lib/tokenize.h lib/classinfo.h lib/token.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o test/testtoken.o test/testtoken.cpp

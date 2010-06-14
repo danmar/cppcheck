@@ -137,6 +137,7 @@
 		<Unit filename="test/teststl.cpp" />
 		<Unit filename="test/testsuite.cpp" />
 		<Unit filename="test/testsuite.h" />
+		<Unit filename="test/testthreadexecutor.cpp" />
 		<Unit filename="test/testtoken.cpp" />
 		<Unit filename="test/testtokenize.cpp" />
 		<Unit filename="test/testunusedfunctions.cpp" />
