@@ -98,6 +98,8 @@ private:
         TEST_CASE(fflushOnInputStreamTest);
 
         TEST_CASE(sizeofsizeof);
+
+        TEST_CASE(emptyCatchBlock);
     }
 
     void check(const char code[])
@@ -116,6 +118,7 @@ private:
         errout.str("");
 
         checkOther.sizeofsizeof();
+        checkOther.checkEmptyCatchBlock();
 
         // Simplify token list..
         tokenizer.simplifyTokenList();
@@ -2630,6 +2633,70 @@ private:
               "    int i = sizeof sizeof char;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Suspicios code 'sizeof sizeof ..', most likely there should only be one sizeof. The current code is equivalent with 'sizeof(size_t)'.\n", errout.str());
+    }
+
+    void emptyCatchBlock()
+    {
+        check("void Open(String name)\n"
+              "{\n"
+              "  try\n"
+              "  {\n"
+              "    foo();\n"
+              "  }\n"
+              "  catch (FileNotFoundException e)\n"
+              "  {\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Empty catch block\n", errout.str());
+
+        check("void Open(String name)\n"
+              "{\n"
+              "  try\n"
+              "  {\n"
+              "    foo();\n"
+              "  }\n"
+              "  catch (char *errorMsg)\n"
+              "  {\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Empty catch block\n", errout.str());
+
+        check("void Open(String name)\n"
+              "{\n"
+              "  try\n"
+              "  {\n"
+              "    foo();\n"
+              "  }\n"
+              "  catch (const FileNotFoundException& e)\n"
+              "  {\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Empty catch block\n", errout.str());
+
+        check("void Open(String name)\n"
+              "{\n"
+              "  try\n"
+              "  {\n"
+              "    foo();\n"
+              "  }\n"
+              "  catch (...)\n"
+              "  {\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Empty catch block\n", errout.str());
+
+        check("void Open(String name)\n"
+              "{\n"
+              "  try\n"
+              "  {\n"
+              "    foo();\n"
+              "  }\n"
+              "  catch (const FileNotFoundException& e)\n"
+              "  {\n"
+              "    prinf(\"File not found\");\n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

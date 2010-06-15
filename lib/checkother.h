@@ -61,6 +61,7 @@ public:
         checkOther.checkStructMemberUsage();
         checkOther.strPlusChar();
         checkOther.sizeofsizeof();
+        checkOther.checkEmptyCatchBlock();
     }
 
     /** @brief Run checks against the simplified token list */
@@ -170,6 +171,9 @@ public:
     /** @brief %Check for using fflush() on an input stream*/
     void checkFflushOnInputStream();
 
+    /** @brief %Check for empty catch() blocks*/
+    void checkEmptyCatchBlock();
+
     /** @brief %Check for 'sizeof sizeof ..' */
     void sizeofsizeof();
     void sizeofsizeofError(const Token *tok);
@@ -200,6 +204,7 @@ public:
     void postIncrementError(const Token *tok, const std::string &var_name, const bool isIncrement);
     void emptyStringTestError(const Token *tok, const std::string &var_name, const bool isTestForEmpty);
     void fflushOnInputStreamError(const Token *tok, const std::string &varname);
+    void emptyCatchBlockError(const Token *tok);
 
     void getErrorMessages()
     {
@@ -228,6 +233,7 @@ public:
         conditionAlwaysTrueFalse(0, "true/false");
         strPlusChar(0);
         sizeofsizeofError(0);
+        emptyCatchBlockError(0);
 
         // optimisations
         postIncrementError(0, "varname", true);
@@ -262,6 +268,7 @@ public:
                "* variable scope can be limited\n"
                "* condition that is always true/false\n"
                "* unusal pointer arithmetic. For example: \"abc\" + 'd'\n"
+               "* empty catch() block\n"
 
                // optimisations
                "* optimisation: detect post increment/decrement\n"
