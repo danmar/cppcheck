@@ -5591,7 +5591,8 @@ bool Tokenizer::simplifyKnownVariables()
                             tok3->deleteNext();
                         }
                         incdec(value, op);
-                        tok2->tokAt(2)->str(value);
+                        if (!Token::simpleMatch(tok2->tokAt(-2), "for ("))
+                            tok2->tokAt(2)->str(value);
                         ret = true;
                     }
 

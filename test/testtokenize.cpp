@@ -108,6 +108,7 @@ private:
         TEST_CASE(simplifyKnownVariables23);
         TEST_CASE(simplifyKnownVariables24);
         TEST_CASE(simplifyKnownVariables25);
+        TEST_CASE(simplifyKnownVariables26);
 
         TEST_CASE(match1);
 
@@ -1294,6 +1295,25 @@ private:
                 "}",
                 simplifyKnownVariables(code));
         }
+    }
+
+    void simplifyKnownVariables26()
+    {
+        // This testcase is related to ticket #887
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    int i;\n"
+                            "    for (i=0;i<10;++i) { }\n"
+                            "    int k = i++;\n"
+                            "}\n";
+        ASSERT_EQUALS(
+            "void foo ( ) "
+            "{"
+            " int i ;"
+            " for ( i = 0 ; i < 10 ; ++ i ) { }"
+            " int k ; k = 10 ; "
+            "}",
+            simplifyKnownVariables(code));
     }
 
 
