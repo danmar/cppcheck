@@ -347,7 +347,7 @@ void CheckStl::pushback()
         }
     }
 
-    // Iterator becomes invalid after push_back or push_front..
+    // Iterator becomes invalid after reserve, push_back or push_front..
     for (const Token *tok = _tokenizer->tokens(); tok; tok = tok->next())
     {
         if (!Token::simpleMatch(tok, "vector <"))
@@ -422,7 +422,7 @@ void CheckStl::pushback()
                         pushbackTok = 0;
                         break;
                     }
-                    else if (Token::Match(tok3, "%varid% . push_front|push_back|insert (", varId))
+                    else if (Token::Match(tok3, "%varid% . push_front|push_back|insert|reserve (", varId))
                     {
                         pushbackTok = tok3->tokAt(2);
                     }
@@ -448,7 +448,7 @@ void CheckStl::pushback()
             }
 
             // push_back on vector..
-            if (vectorid > 0 && Token::Match(tok2, "%varid% . push_front|push_back|insert (", vectorid))
+            if (vectorid > 0 && Token::Match(tok2, "%varid% . push_front|push_back|insert|reserve (", vectorid))
             {
                 if (!invalidIterator.empty() && Token::Match(tok2->tokAt(2), "insert ( %varid% ,", iteratorid))
                 {

@@ -68,6 +68,7 @@ private:
         TEST_CASE(pushback7);
         TEST_CASE(pushback8);
         TEST_CASE(pushback9);
+        TEST_CASE(pushback10);
 
         TEST_CASE(insert1);
 
@@ -661,6 +662,29 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void pushback10()
+    {
+        check("void f(std::vector<int> &foo)\n"
+              "{\n"
+              "    std::vector<int>::const_iterator it = foo.begin();\n"
+              "    foo.reserve(100);\n"
+              "    *it = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) After reserve, the iterator 'it' may be invalid\n", errout.str());
+
+        // in loop
+        check("void f()\n"
+              "{\n"
+              "    std::vector<int> foo;\n"
+              "    foo.push_back(10);\n"
+              "    std::vector<int>::iterator it;\n"
+              "    for (it = foo.begin(); it != foo.end(); ++it)\n"
+              "    {\n"
+              "        foo.reserve(123);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) After reserve, the iterator 'it' may be invalid\n", errout.str());
+    }
 
 
     void insert1()
