@@ -6,7 +6,6 @@ HEADERS += $$PWD/check.h \
            $$PWD/checkclass.h \
            $$PWD/checkdangerousfunctions.h \
            $$PWD/checkexceptionsafety.h \
-           $$PWD/checkheaders.h \
            $$PWD/checkmemoryleak.h \
            $$PWD/checkother.h \
            $$PWD/checkstl.h \
@@ -28,7 +27,6 @@ SOURCES += $$PWD/checkautovariables.cpp \
            $$PWD/checkclass.cpp \
            $$PWD/checkdangerousfunctions.cpp \
            $$PWD/checkexceptionsafety.cpp \
-           $$PWD/checkheaders.cpp \
            $$PWD/checkmemoryleak.cpp \
            $$PWD/checkother.cpp \
            $$PWD/checkstl.cpp \

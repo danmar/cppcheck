@@ -15,7 +15,6 @@ LIBOBJ =     lib/checkautovariables.o \
               lib/checkclass.o \
               lib/checkdangerousfunctions.o \
               lib/checkexceptionsafety.o \
-              lib/checkheaders.o \
               lib/checkmemoryleak.o \
               lib/checkother.o \
               lib/checkstl.o \
@@ -108,9 +107,6 @@ lib/checkdangerousfunctions.o: lib/checkdangerousfunctions.cpp lib/checkdangerou
 
 lib/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/checkexceptionsafety.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkexceptionsafety.o lib/checkexceptionsafety.cpp
-
-lib/checkheaders.o: lib/checkheaders.cpp lib/checkheaders.h lib/tokenize.h lib/classinfo.h lib/token.h lib/errorlogger.h lib/settings.h lib/filelister.h
-	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkheaders.o lib/checkheaders.cpp
 
 lib/checkmemoryleak.o: lib/checkmemoryleak.cpp lib/checkmemoryleak.h lib/check.h lib/token.h lib/tokenize.h lib/classinfo.h lib/settings.h lib/errorlogger.h lib/mathlib.h lib/executionpath.h
 	$(CXX) $(CXXFLAGS) -Ilib -c -o lib/checkmemoryleak.o lib/checkmemoryleak.cpp
