@@ -2134,7 +2134,7 @@ void Tokenizer::simplifyTemplates()
         {
             if (tok->str() == ">")
             {
-                if (Token::Match(tok, "> class %var%"))
+                if (Token::Match(tok, "> class|struct %var%"))
                     classname = tok->strAt(2);
                 break;
             }
@@ -2213,7 +2213,7 @@ void Tokenizer::simplifyTemplates()
 
             // get the position of the template name
             unsigned int namepos = 0;
-            if (Token::Match(tok, "> class %type% {|:"))
+            if (Token::Match(tok, "> class|struct %type% {|:"))
                 namepos = 2;
             else if (Token::Match(tok, "> %type% *|&| %type% ("))
                 namepos = 2;

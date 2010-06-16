@@ -104,6 +104,7 @@ private:
         TEST_CASE(template18);
         TEST_CASE(template19);
         TEST_CASE(template20);
+        TEST_CASE(template21);
         TEST_CASE(template_unhandled);
         TEST_CASE(template_default_parameter);
         TEST_CASE(template_default_type);
@@ -1774,6 +1775,69 @@ private:
                                    "class A<int> { public: ~ A<int> ( ) ; } "
                                    "A<int> :: ~ A<int> ( ) { }");
         ASSERT_EQUALS(expected, sizeof_(code));
+    }
+
+    void template21()
+    {
+        {
+            const char code[] = "template <classname T> struct Fred { T a; };\n"
+                                "Fred<int> fred;";
+
+            const std::string expected("; ; "
+                                       "Fred<int> fred ; "
+                                       "struct Fred<int> { int a ; }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "template <classname T, int sz> struct Fred { T data[sz]; };\n"
+                                "Fred<float,4> fred;";
+
+            const std::string expected("; ; "
+                                       "Fred<float,4> fred ; "
+                                       "struct Fred<float,4> { float data [ 4 ] ; }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "template <classname T> struct Fred { Fred(); };\n"
+                                "Fred<float> fred;";
+
+            const std::string expected("; ; "
+                                       "Fred<float> fred ; "
+                                       "struct Fred<float> { Fred<float> ( ) ; }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "template <classname T> struct Fred { };\n"
+                                "template <classname T> Fred<T>::Fred() { }\n"
+                                "Fred<float> fred;";
+
+            const std::string expected("; ; "
+                                       "; "
+                                       "Fred<float> fred ; "
+                                       "struct Fred<float> { } "
+                                       "Fred<float> :: Fred<float> ( ) { }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
+
+        {
+            const char code[] = "template <classname T> struct Fred { };\n"
+                                "Fred<float> fred1;\n"
+                                "Fred<float> fred2;";
+
+            const std::string expected("; ;"
+                                       " Fred<float> fred1 ;"
+                                       " Fred<float> fred2 ;"
+                                       " struct Fred<float> { }");
+
+            ASSERT_EQUALS(expected, sizeof_(code));
+        }
     }
 
     void template_unhandled()
