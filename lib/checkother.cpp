@@ -3576,8 +3576,7 @@ void CheckOther::checkEmptyCatchBlock()
     {
         tok = tok->tokAt(2);
 
-        if (Token::Match(tok, "( const| %type% *|&| %var% ) { }") ||
-            Token::simpleMatch(tok, "( . . . ) { }"))
+        if (Token::simpleMatch(tok->link(), ") { }"))
         {
             emptyCatchBlockError(tok);
         }
