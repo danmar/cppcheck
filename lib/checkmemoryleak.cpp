@@ -2495,8 +2495,8 @@ void CheckMemoryLeakInClass::variable(const std::string &classname, const Token 
                     Dealloc = dealloc;
                 }
 
-                // Function call in destructor .. possible deallocation
-                else if (destructor && Token::Match(tok->previous(), "[{};] %var% ("))
+                // Function call .. possible deallocation
+                else if (Token::Match(tok->previous(), "[{};] %var% ("))
                 {
                     if (!std::bsearch(tok->str().c_str(), call_func_white_list,
                                       sizeof(call_func_white_list) / sizeof(call_func_white_list[0]),

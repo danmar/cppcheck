@@ -2851,6 +2851,7 @@ private:
         TEST_CASE(class15);
         TEST_CASE(class16);
         TEST_CASE(class17);
+        TEST_CASE(class18);
 
         TEST_CASE(staticvar);
 
@@ -3220,6 +3221,23 @@ private:
               "    A::pd = new char[12];\n"
               "    delete [] A::pd;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void class18()
+    {
+        // Ticket #853
+        check("class  A : public x\n"
+              "{\n"
+              "public:\n"
+              "  A()\n"
+              "  {\n"
+              "    a = new char[10];\n"
+              "    foo(a);\n"
+              "  }\n"
+              "private:\n"
+              "  char *a;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
