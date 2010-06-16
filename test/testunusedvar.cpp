@@ -1935,6 +1935,18 @@ private:
                               "    bool test __attribute__((unused)) = true;\n"
                               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    bool __attribute__((unused)) test;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
+
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    bool __attribute__((unused)) test = true;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 };
 

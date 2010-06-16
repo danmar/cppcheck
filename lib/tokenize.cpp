@@ -7688,6 +7688,10 @@ void Tokenizer::simplifyAttribute()
                     if (Token::Match(tok->previous(), "%type%"))
                         tok->previous()->isUnused(true);
                 }
+
+                // check if before variable name
+                else if (Token::Match(tok->next()->link()->next(), "%type%"))
+                    tok->next()->link()->next()->isUnused(true);
             }
 
             Token::eraseTokens(tok, tok->next()->link()->next());
