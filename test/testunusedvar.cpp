@@ -1605,6 +1605,33 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: a\n"
                       "[test.cpp:5]: (style) Variable 's' is assigned a value that is never used\n", errout.str());
+
+        functionVariableUsage("int a[10];\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    int b[10];\n"
+                              "    int c[10];\n"
+                              "    int *d;\n"
+                              "    d = b;\n"
+                              "    d = a;\n"
+                              "    d = c;\n"
+                              "    *d = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Unused variable: b\n"
+                                  "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n"), errout.str());
+
+        functionVariableUsage("int a[10];\n"
+                              "void foo()\n"
+                              "{\n"
+                              "    int b[10];\n"
+                              "    int c[10];\n"
+                              "    int *d;\n"
+                              "    d = b; *d = 0;\n"
+                              "    d = a; *d = 0;\n"
+                              "    d = c; *d = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS(std::string("[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used\n"
+                                  "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used\n"), errout.str());
     }
 
     void localvaralias2() // ticket 1637
