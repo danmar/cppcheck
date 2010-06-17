@@ -1789,6 +1789,25 @@ private:
               "   free(tmp);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
+
+        //#ticket 1789: getcode other function:
+        check("void foo(char **str)\n"
+              "{\n"
+              "    if (*str == NULL)\n"
+              "        *str = malloc(20)\n;"
+              "    else\n"
+              "        *str = realloc(*str, 20)\n;"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *tmp = malloc(10);\n"
+              "   foo(&tmp);\n"
+              "   foo(&tmp);\n"
+              "   free(tmp);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS(std::string(""), errout.str());
+
     }
 
 
