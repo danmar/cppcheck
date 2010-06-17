@@ -203,6 +203,7 @@ private:
         TEST_CASE(simplifyTypedef50);
         TEST_CASE(simplifyTypedef51);
         TEST_CASE(simplifyTypedef52); // ticket #1782
+        TEST_CASE(simplifyTypedef53); // ticket #1801
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -4174,6 +4175,17 @@ private:
                                 "LOCAL(type1) foo() { }";
 
             // this is invalid C so just make sure it doesn't generate an internal error
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("", errout.str());
+        }
+    }
+
+    void simplifyTypedef53() // ticket #1801
+    {
+        {
+            const char code[] = "typedef int ( * int ( * ) ( ) ) ( ) ;";
+
+            // this is invalid C so just make sure it doesn't crash
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
         }

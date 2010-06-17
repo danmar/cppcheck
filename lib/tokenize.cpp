@@ -1008,7 +1008,8 @@ void Tokenizer::simplifyTypedef()
         }
 
         // function returning pointer to function
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * %type% ("))
+        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * %type% (") &&
+                 Token::Match(tok->tokAt(offset + 3)->link(), ") ) ("))
         {
             functionRetFuncPtr = true;
 
