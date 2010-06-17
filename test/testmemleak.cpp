@@ -1785,6 +1785,7 @@ private:
               "{\n"
               "   char *tmp = malloc(10);\n"
               "   foo(&tmp);\n"
+              "   foo(&tmp);\n"
               "   free(tmp);\n"
               "}\n");
         ASSERT_EQUALS(std::string(""), errout.str());
