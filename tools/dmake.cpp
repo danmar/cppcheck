@@ -72,7 +72,7 @@ void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
     }
 }
 
-static void compilefiles(std::ostream &fout, const std::vector<std::string> &files)
+static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
 {
     for (unsigned int i = 0; i < files.size(); ++i)
     {
@@ -81,7 +81,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         getDeps(files[i], depfiles);
         for (unsigned int dep = 0; dep < depfiles.size(); ++dep)
             fout << " " << depfiles[dep];
-        fout << "\n\t$(CXX) $(CXXFLAGS) -Ilib -c -o " << objfile(files[i]) << " " << files[i] << "\n\n";
+        fout << "\n\t$(CXX) $(CXXFLAGS) " << args << " -c -o " << objfile(files[i]) << " " << files[i] << "\n\n";
     }
 }
 
@@ -191,8 +191,8 @@ int main(int argc, char **argv)
     fout << "cppcheck:\t$(LIBOBJ)\t$(CLIOBJ)\n";
     fout << "\t$(CXX) $(CXXFLAGS) -o cppcheck $(CLIOBJ) $(LIBOBJ) $(LDFLAGS)\n\n";
     fout << "all:\tcppcheck\ttestrunner\ttools\n\n";
-    fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\n";
-    fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) $(LDFLAGS)\n\n";
+    fout << "testrunner:\t$(TESTOBJ)\t$(LIBOBJ)\tcli/threadexecutor.o\n";
+    fout << "\t$(CXX) $(CXXFLAGS) -o testrunner $(TESTOBJ) $(LIBOBJ) cli/threadexecutor.o $(LDFLAGS)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
     fout << "clean:\n";
@@ -209,9 +209,9 @@ int main(int argc, char **argv)
 
     fout << "\n###### Build\n\n";
 
-    compilefiles(fout, libfiles);
-    compilefiles(fout, clifiles);
-    compilefiles(fout, testfiles);
+    compilefiles(fout, libfiles, "-Ilib");
+    compilefiles(fout, clifiles, "-Ilib");
+    compilefiles(fout, testfiles, "-Ilib -Icli");
 
     return 0;
 }

@@ -23,6 +23,7 @@
 
 #include "cppcheck.h"
 #include "testsuite.h"
+#include "threadexecutor.h"
 
 #include <algorithm>
 #include <map>
@@ -40,21 +41,53 @@ public:
 
 private:
 
-    void check(const std::string &data)
+    /**
+     * Execute check using n jobs for y files which are have
+     * identical data, given within data.
+     */
+    void check( int jobs, int files, const std::string &data)
     {
         errout.str("");
         output.str("");
+        if (!ThreadExecutor::isEnabled())
+        {
+            // Skip this check on systems which don't use this feature
+            return;
+        }
+
+        std::vector<std::string> filenames;
+        for( int i = 1; i <= files; ++i )
+        {
+            std::ostringstream oss;
+            oss << "file_" << i << ".cpp";
+            filenames.push_back(oss.str());
+        }
+
+        Settings settings;
+        settings._jobs = jobs;
+        ThreadExecutor executor(filenames, settings, *this);
+        for(unsigned int i = 0; i < filenames.size(); ++i)
+            executor.addFileContent(filenames[i], data );
+
+        ASSERT_EQUALS(files, executor.check());
     }
 
     void run()
     {
-        TEST_CASE(jobs);
+        // This is commented out, because it causes a deadlock
+        // TEST_CASE(deadlock_with_many_errors);
     }
 
-    void jobs()
+    void deadlock_with_many_errors()
     {
-        errout.str("");
-        output.str("");
+        std::ostringstream oss;
+        oss << "int main()\n"
+            << "{\n";
+        for( int i = 0; i < 500; i++ )
+            oss << "  {char *a = malloc(10);}\n";
+
+        oss << "}\n";
+        check( 2, 3, oss.str() );
     }
 };
 
