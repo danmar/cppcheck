@@ -146,7 +146,7 @@ public:
     AllocType functionReturnType(const Token *tok) const;
 
     /** Function allocates pointed-to argument (a la asprintf)? */
-    AllocType functionArgAlloc(const Token *tok, unsigned int parlevel0) const;
+    const char *functionArgAlloc(const Token *tok, unsigned int targetpar, AllocType &allocType) const;
 };
 
 /// @}

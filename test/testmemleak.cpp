@@ -1774,6 +1774,20 @@ private:
               "   foo(&p);\n"
               "}\n");
         TODO_ASSERT_EQUALS(std::string("[test.cpp:11]: (error) Memory leak: p\n"), errout.str());
+
+        check("void foo(char **str)\n"
+              "{\n"
+              "    free(*str);\n"
+              "    *str = malloc(20);\n"
+              "}\n"
+              "\n"
+              "void bar()\n"
+              "{\n"
+              "   char *tmp = malloc(10);\n"
+              "   foo(&tmp);\n"
+              "   free(tmp);\n"
+              "}\n");
+        ASSERT_EQUALS(std::string(""), errout.str());
     }
 
 

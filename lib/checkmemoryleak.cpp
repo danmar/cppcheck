@@ -461,22 +461,24 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Token *tok)
 }
 
 
-CheckMemoryLeak::AllocType CheckMemoryLeak::functionArgAlloc(const Token *tok, unsigned int targetpar) const
+const char *CheckMemoryLeak::functionArgAlloc(const Token *tok, unsigned int targetpar, AllocType &allocType) const
 {
     // Find the varid of targetpar, then locate the start of the function..
     unsigned int parlevel = 0;
     unsigned int par = 0;
     unsigned int varid = 0;
 
+    allocType = No;
+
     while (tok)
     {
         if (tok->str() == "{" || tok->str() == "}")
-            return No;
+            return "";
 
         if (tok->str() == "(")
         {
             if (parlevel != 0)
-                return No;
+                return "";
             ++parlevel;
             ++par;
         }
@@ -484,7 +486,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionArgAlloc(const Token *tok, u
         else if (tok->str() == ")")
         {
             if (parlevel != 1)
-                return No;
+                return "";
             break;
         }
 
@@ -502,19 +504,33 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionArgAlloc(const Token *tok, u
     }
 
     if (varid == 0)
-        return No;
+        return "";
 
     // Is this the start of a function?
     if (!Token::Match(tok, ") const| {"))
-        return No;
+        return "";
 
     while (tok->str() != "{")
         tok = tok->next();
 
     // Check if pointer is allocated.
-    AllocType allocType = No;
+    unsigned int indentlevel = 0;
+    int realloc = 0;
     while (0 != (tok = tok->next()))
     {
+        if (tok->str() == "{")
+            ++indentlevel;
+        else if (tok->str() == "}")
+        {
+            if (indentlevel <= 1)
+                break;
+            --indentlevel;
+        }
+        if (Token::Match(tok, "free ( * %varid% )", varid))
+        {
+            realloc = 1;
+            allocType = No;
+        }
         if (Token::Match(tok, "* %varid% =", varid))
         {
             allocType = getAllocationType(tok->tokAt(3), varid);
@@ -524,14 +540,16 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionArgAlloc(const Token *tok, u
             }
             if (allocType != No)
             {
-                return allocType;
+                if (realloc)
+                    return "realloc";
+                return "alloc";
             }
         }
         if (tok->str() == "return")
-            return allocType;
+            return "";
     }
 
-    return No;
+    return "";
 }
 
 
@@ -764,7 +782,8 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
             if (varid > 0 && Token::Match(tok, "[,()] & %varid% [,()]", varid))
             {
                 const Token *ftok = _tokenizer->getFunctionTokenByName(funcname.c_str());
-                AllocType a = functionArgAlloc(ftok, par);
+                AllocType a;
+                const char *ret = functionArgAlloc(ftok, par, a);
 
                 if (a != No)
                 {
@@ -773,7 +792,7 @@ const char * CheckMemoryLeakInFunction::call_func(const Token *tok, std::list<co
                     else if (alloctype != a)
                         alloctype = Many;
                     allocpar = true;
-                    return "alloc";
+                    return ret;
                 }
             }
         }
@@ -1325,18 +1344,18 @@ Token *CheckMemoryLeakInFunction::getcode(const Token *tok, std::list<const Toke
                 const char *str = call_func(tok, callstack, varid, alloctype, dealloctype, allocpar, sz);
                 if (str)
                 {
-                    if (varid == 0 || str != std::string("alloc"))
+                    if (allocpar)
+                    {
+                        addtoken(str);
+                        tok = tok->next()->link();
+                    }
+                    else if (varid == 0 || str != std::string("alloc"))
                     {
                         addtoken(str);
                     }
                     else if (Token::Match(tok->tokAt(-2), "%varid% =", varid))
                     {
                         addtoken(str);
-                    }
-                    else if (allocpar)
-                    {
-                        addtoken(str);
-                        tok = tok->next()->link();
                     }
                 }
                 else if (varid > 0 &&
