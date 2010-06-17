@@ -175,10 +175,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\checkheaders.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\checkmemoryleak.cpp"
 				>
 			</File>
@@ -262,10 +258,6 @@
 			</File>
 			<File
 				RelativePath=".\checkexceptionsafety.h"
-				>
-			</File>
-			<File
-				RelativePath=".\checkheaders.h"
 				>
 			</File>
 			<File

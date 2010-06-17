@@ -213,10 +213,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\lib\checkheaders.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\lib\checkmemoryleak.cpp"
 				>
 			</File>
@@ -312,10 +308,6 @@
 			</File>
 			<File
 				RelativePath="..\lib\checkexceptionsafety.h"
-				>
-			</File>
-			<File
-				RelativePath="..\lib\checkheaders.h"
 				>
 			</File>
 			<File

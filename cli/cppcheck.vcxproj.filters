@@ -38,9 +38,6 @@
     <ClCompile Include="..\lib\checkexceptionsafety.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\checkheaders.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\lib\checkmemoryleak.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -104,9 +101,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checkexceptionsafety.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\checkheaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\lib\checkmemoryleak.h">

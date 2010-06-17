@@ -90,7 +90,6 @@
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkdangerousfunctions.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
-    <ClCompile Include="checkheaders.cpp" />
     <ClCompile Include="checkmemoryleak.cpp" />
     <ClCompile Include="checkother.cpp" />
     <ClCompile Include="checkstl.cpp" />
@@ -113,7 +112,6 @@
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkdangerousfunctions.h" />
     <ClInclude Include="checkexceptionsafety.h" />
-    <ClInclude Include="checkheaders.h" />
     <ClInclude Include="checkmemoryleak.h" />
     <ClInclude Include="checkother.h" />
     <ClInclude Include="checkstl.h" />

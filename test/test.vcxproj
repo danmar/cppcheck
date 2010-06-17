@@ -125,7 +125,6 @@
     <ClCompile Include="..\lib\checkclass.cpp" />
     <ClCompile Include="..\lib\checkdangerousfunctions.cpp" />
     <ClCompile Include="..\lib\checkexceptionsafety.cpp" />
-    <ClCompile Include="..\lib\checkheaders.cpp" />
     <ClCompile Include="..\lib\checkmemoryleak.cpp" />
     <ClCompile Include="..\lib\checkother.cpp" />
     <ClCompile Include="..\lib\checkstl.cpp" />
@@ -173,7 +172,6 @@
     <ClInclude Include="..\lib\checkclass.h" />
     <ClInclude Include="..\lib\checkdangerousfunctions.h" />
     <ClInclude Include="..\lib\checkexceptionsafety.h" />
-    <ClInclude Include="..\lib\checkheaders.h" />
     <ClInclude Include="..\lib\checkmemoryleak.h" />
     <ClInclude Include="..\lib\checkother.h" />
     <ClInclude Include="..\lib\checkstl.h" />
