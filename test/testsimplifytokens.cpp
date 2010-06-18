@@ -4189,6 +4189,21 @@ private:
             checkSimplifyTypedef(code);
             ASSERT_EQUALS("", errout.str());
         }
+
+        {
+            const char code[] = "typedef int (*PPDMarkOption)(ppd_file_t *ppd, const char *keyword, const char *option);\n"
+                                "typedef int (*PPDMarkOption)(ppd_file_t *ppd, const char *keyword, const char *option);\n";
+
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Typedef 'PPDMarkOption' hides typedef with same name\n", errout.str());
+        }
+
+        {
+            const char code[] = "typedef int * A;\n"
+                                "typedef int * A;\n";
+            checkSimplifyTypedef(code);
+            ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Typedef 'A' hides typedef with same name\n", errout.str());
+        }
     }
 
     void simplifyTypedefFunction1()
