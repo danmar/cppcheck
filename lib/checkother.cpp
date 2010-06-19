@@ -2234,7 +2234,7 @@ void CheckOther::nullConstantDereference()
 
             else if (Token::simpleMatch(tok, "* 0"))
             {
-                if (Token::Match(tok->previous(), "[;{}=+-/(,]") ||
+                if (Token::Match(tok->previous(), "[<>;{}=+-*/(,]") ||
                     Token::Match(tok->previous(), "return|<<"))
                 {
                     nullPointerError(tok);

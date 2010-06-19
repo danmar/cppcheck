@@ -1050,7 +1050,7 @@ private:
                          "    int *p = 0;\n"
                          "    if (3 > *p);\n"
                          "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Possible null pointer dereference: p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference\n", errout.str());
 
         checkNullPointer("void f()\n"
                          "{\n"
