@@ -1540,24 +1540,33 @@ private:
 
     void preprocessor_doublesharp()
     {
-        const char filedata[] = "#define TEST(var,val) var = val\n"
-                                "TEST(foo,20);\n";
+        // simple testcase without ##
+        const char filedata1[] = "#define TEST(var,val) var = val\n"
+                                 "TEST(foo,20);\n";
+        ASSERT_EQUALS("\nfoo=20;\n", OurPreprocessor::expandMacros(filedata1));
 
-        // Compare results..
-        ASSERT_EQUALS("\nfoo=20;\n", OurPreprocessor::expandMacros(filedata));
-
+        // simple testcase with ##
         const char filedata2[] = "#define TEST(var,val) var##_##val = val\n"
                                  "TEST(foo,20);\n";
-
-        // Compare results..
         ASSERT_EQUALS("\nfoo_20=20;\n", OurPreprocessor::expandMacros(filedata2));
 
+        // concat macroname
         const char filedata3[] = "#define ABCD 123\n"
                                  "#define A(B) A##B\n"
                                  "A(BCD)\n";
-
-        // Compare results..
         ASSERT_EQUALS("\n\n123\n", OurPreprocessor::expandMacros(filedata3));
+
+        // Ticket #1802 - inner ## must be expanded before outer macro
+        const char filedata4[] = "#define A(B) A##B\n"
+                                 "#define a(B) A(B)\n"
+                                 "a(A(B))\n";
+        ASSERT_EQUALS("\n\nAAB\n", OurPreprocessor::expandMacros(filedata4));
+
+        // Ticket #1802 - inner ## must be expanded before outer macro
+        const char filedata5[] = "#define AB(A,B) A##B\n"
+                                 "#define ab(A,B) AB(A,B)\n"
+                                 "ab(a,AB(b,c))\n";
+        ASSERT_EQUALS("\n\nabc\n", OurPreprocessor::expandMacros(filedata5));
     }
 
 

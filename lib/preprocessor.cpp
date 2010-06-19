@@ -1476,7 +1476,7 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
  * @param endFound out: was the end paranthesis found?
  */
 static void getparams(const std::string &line,
-                      unsigned int &pos2,
+                      unsigned int &pos,
                       std::vector<std::string> &params,
                       unsigned int &numberOfNewlines,
                       bool &endFound)
@@ -1485,24 +1485,23 @@ static void getparams(const std::string &line,
     numberOfNewlines = 0;
     endFound = false;
 
-    if (line[pos2] == ' ')
-        pos2++;
+    if (line[pos] == ' ')
+        pos++;
 
-    if (line[pos2] != '(')
+    if (line[pos] != '(')
         return;
 
     // parantheses level
     int parlevel = 0;
 
-    // current parameter
+    // current parameter data
     std::string par;
 
-
     // scan for parameters..
-    for (; pos2 < line.length(); ++pos2)
+    for (; pos < line.length(); ++pos)
     {
         // increase paranthesis level
-        if (line[pos2] == '(')
+        if (line[pos] == '(')
         {
             ++parlevel;
             if (parlevel == 1)
@@ -1510,7 +1509,7 @@ static void getparams(const std::string &line,
         }
 
         // decrease paranthesis level
-        else if (line[pos2] == ')')
+        else if (line[pos] == ')')
         {
             --parlevel;
             if (parlevel <= 0)
@@ -1522,32 +1521,32 @@ static void getparams(const std::string &line,
         }
 
         // string
-        else if (line[pos2] == '\"' || line[pos2] == '\'')
+        else if (line[pos] == '\"' || line[pos] == '\'')
         {
-            const std::string::size_type p = pos2;
-            skipstring(line, pos2);
-            if (pos2 == line.length())
+            const std::string::size_type p = pos;
+            skipstring(line, pos);
+            if (pos == line.length())
                 break;
-            par += line.substr(p, pos2 + 1 - p);
+            par += line.substr(p, pos + 1 - p);
             continue;
         }
 
         // count newlines. the expanded macro must have the same number of newlines
-        else if (line[pos2] == '\n')
+        else if (line[pos] == '\n')
         {
             ++numberOfNewlines;
             continue;
         }
 
         // new parameter
-        if (parlevel == 1 && line[pos2] == ',')
+        if (parlevel == 1 && line[pos] == ',')
         {
             params.push_back(par);
             par = "";
         }
 
         // spaces are only added if needed
-        else if (line[pos2] == ' ')
+        else if (line[pos] == ' ')
         {
             // Add space only if it is needed
             if (par.size() && std::isalnum(par[par.length()-1]))
@@ -1559,7 +1558,7 @@ static void getparams(const std::string &line,
         // add character to current parameter
         else if (parlevel >= 1)
         {
-            par.append(1, line[pos2]);
+            par.append(1, line[pos]);
         }
     }
 }
@@ -1591,6 +1590,65 @@ private:
 
     /** disabled assignment operator */
     void operator=(const PreprocessorMacro &);
+
+    /** @brief expand inner macro */
+    std::vector<std::string> expandInnerMacros(const std::vector<std::string> &params1,
+            const std::map<std::string, PreprocessorMacro *> &macros) const
+    {
+        std::string innerMacroName;
+
+        // Is there an inner macro..
+        {
+            const Token *tok = Token::findmatch(tokens(), ")");
+            if (!Token::Match(tok, ") %var% ("))
+                return params1;
+            innerMacroName = tok->strAt(1);
+            tok = tok->tokAt(3);
+            unsigned int par = 0;
+            while (Token::Match(tok, "%var% ,|)"))
+            {
+                tok = tok->tokAt(2);
+                par++;
+            }
+            if (tok || par != params1.size())
+                return params1;
+        }
+
+        std::vector<std::string> params2(params1);
+
+        for (unsigned int ipar = 0; ipar < params1.size(); ++ipar)
+        {
+            const std::string s(innerMacroName + "(");
+            std::string param(params1[ipar]);
+            if (param.compare(0,s.length(),s)==0 && param[param.length()-1]==')')
+            {
+                std::vector<std::string> innerparams;
+                unsigned int pos = s.length() - 1;
+                unsigned int num = 0;
+                bool endFound = false;
+                getparams(param, pos, innerparams, num, endFound);
+                if (pos == param.length()-1 && num==0 && endFound && innerparams.size() == params1.size())
+                {
+                    // Is inner macro defined?
+                    std::map<std::string, PreprocessorMacro *>::const_iterator it = macros.find(innerMacroName);
+                    if (it != macros.end())
+                    {
+                        // expand the inner macro
+                        const PreprocessorMacro *innerMacro = it->second;
+
+                        std::string innercode;
+                        std::map<std::string,PreprocessorMacro *> innermacros = macros;
+                        innermacros.erase(innerMacroName);
+                        innerMacro->code(innerparams, innermacros, innercode);
+                        params2[ipar] = innercode;
+                    }
+                }
+            }
+        }
+
+        return params2;
+    }
+
 public:
     /**
      * @brief Constructor for PreprocessorMacro. This is the "setter"
@@ -1673,10 +1731,11 @@ public:
     /**
      * get expanded code for this macro
      * @param params2 macro parameters
+     * @param macros macro definitions (recursion)
      * @param macrocode output string
      * @return true if the expanding was successful
      */
-    bool code(const std::vector<std::string> &params2, std::string &macrocode) const
+    bool code(const std::vector<std::string> &params2, const std::map<std::string, PreprocessorMacro *> macros, std::string &macrocode) const
     {
         if (_nopar)
         {
@@ -1739,6 +1798,8 @@ public:
 
         else
         {
+            const std::vector<std::string> givenparams = expandInnerMacros(params2, macros);
+
             const Token *tok = tokens();
             while (tok && tok->str() != ")")
                 tok = tok->next();
@@ -1763,18 +1824,18 @@ public:
                             {
                                 if (_variadic &&
                                     (i == _params.size() - 1 ||
-                                     (params2.size() + 2 == _params.size() && i + 1 == _params.size() - 1)))
+                                     (givenparams.size() + 2 == _params.size() && i + 1 == _params.size() - 1)))
                                 {
                                     str = "";
-                                    for (unsigned int j = (unsigned int)_params.size() - 1; j < params2.size(); ++j)
+                                    for (unsigned int j = (unsigned int)_params.size() - 1; j < givenparams.size(); ++j)
                                     {
                                         if (optcomma || j > _params.size() - 1)
                                             str += ",";
                                         optcomma = false;
-                                        str += params2[j];
+                                        str += givenparams[j];
                                     }
                                 }
-                                else if (i >= params2.size())
+                                else if (i >= givenparams.size())
                                 {
                                     // Macro had more parameters than caller used.
                                     macrocode = "";
@@ -1782,7 +1843,7 @@ public:
                                 }
                                 else if (stringify)
                                 {
-                                    const std::string &s(params2[i]);
+                                    const std::string &s(givenparams[i]);
                                     std::ostringstream ostr;
                                     ostr << "\"";
                                     for (std::string::size_type j = 0; j < s.size(); ++j)
@@ -1794,7 +1855,7 @@ public:
                                     str = ostr.str() + "\"";
                                 }
                                 else
-                                    str = params2[i];
+                                    str = givenparams[i];
 
                                 break;
                             }
@@ -2088,7 +2149,7 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
 
                     // Create macro code..
                     std::string tempMacro;
-                    if (!macro->code(params, tempMacro))
+                    if (!macro->code(params, macros, tempMacro))
                     {
                         // Syntax error in code
                         writeError(filename,
