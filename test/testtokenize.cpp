@@ -110,6 +110,7 @@ private:
         TEST_CASE(simplifyKnownVariables25);
         TEST_CASE(simplifyKnownVariables26);
         TEST_CASE(simplifyKnownVariables27);
+        TEST_CASE(simplifyKnownVariables28);
 
         TEST_CASE(match1);
 
@@ -1335,6 +1336,27 @@ private:
             "}",
             simplifyKnownVariables(code));
     }
+
+    void simplifyKnownVariables28()
+    {
+        const char code[] = "void foo(int g)\n"
+                            "{\n"
+                            "  int i = 2;\n"
+                            "  if (g) {\n"
+                            "  }\n"
+                            "  if (i > 0) {\n"
+                            "  }\n"
+                            "}\n";
+        ASSERT_EQUALS(
+            "void foo ( int g ) "
+            "{"
+            " int i ; i = 2 ;"
+            " if ( g ) { }"
+            " if ( 0 < 2 ) { } "
+            "}",
+            simplifyKnownVariables(code));
+    }
+
 
     void match1()
     {

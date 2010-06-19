@@ -5490,11 +5490,6 @@ bool Tokenizer::simplifyKnownVariables()
                             bailOutFromLoop = tok3->link();
                         continue;
                     }
-                    else if (tok3->str() == "}" && tok3->link() && tok3->link()->previous()->str() == ")")
-                    {
-                        // Assignment was in the middle of possible loop, bail out.
-                        break;
-                    }
 
                     // Variable used in realloc (see Ticket #1649)
                     if (Token::Match(tok3, "%var% = realloc ( %var% ,") &&
