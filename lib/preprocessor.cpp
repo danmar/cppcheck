@@ -1449,6 +1449,121 @@ void Preprocessor::handleIncludes(std::string &code, const std::string &filePath
     }
 }
 
+/**
+ * Skip string in line. A string begins and ends with either a &quot; or a &apos;
+ * @param line the string
+ * @param pos in=start position of string, out=end position of string
+ */
+static void skipstring(const std::string &line, std::string::size_type &pos)
+{
+    const unsigned char ch = line[pos];
+
+    ++pos;
+    while (pos < line.size() && line[pos] != ch)
+    {
+        if (line[pos] == '\\')
+            ++pos;
+        ++pos;
+    }
+}
+
+/**
+ * @brief get parameters from code. For example 'foo(1,2)' => '1','2'
+ * @param line in: The code
+ * @param pos  in: Position to the '('. out: Position to the ')'
+ * @param params out: The extracted parameters
+ * @param numberOfNewlines out: number of newlines in the macro call
+ * @param endFound out: was the end paranthesis found?
+ */
+static void getparams(const std::string &line,
+                      unsigned int &pos2,
+                      std::vector<std::string> &params,
+                      unsigned int &numberOfNewlines,
+                      bool &endFound)
+{
+    params.clear();
+    numberOfNewlines = 0;
+    endFound = false;
+
+    if (line[pos2] == ' ')
+        pos2++;
+
+    if (line[pos2] != '(')
+        return;
+
+    // parantheses level
+    int parlevel = 0;
+
+    // current parameter
+    std::string par;
+
+
+    // scan for parameters..
+    for (; pos2 < line.length(); ++pos2)
+    {
+        // increase paranthesis level
+        if (line[pos2] == '(')
+        {
+            ++parlevel;
+            if (parlevel == 1)
+                continue;
+        }
+
+        // decrease paranthesis level
+        else if (line[pos2] == ')')
+        {
+            --parlevel;
+            if (parlevel <= 0)
+            {
+                endFound = true;
+                params.push_back(par);
+                break;
+            }
+        }
+
+        // string
+        else if (line[pos2] == '\"' || line[pos2] == '\'')
+        {
+            const std::string::size_type p = pos2;
+            skipstring(line, pos2);
+            if (pos2 == line.length())
+                break;
+            par += line.substr(p, pos2 + 1 - p);
+            continue;
+        }
+
+        // count newlines. the expanded macro must have the same number of newlines
+        else if (line[pos2] == '\n')
+        {
+            ++numberOfNewlines;
+            continue;
+        }
+
+        // new parameter
+        if (parlevel == 1 && line[pos2] == ',')
+        {
+            params.push_back(par);
+            par = "";
+        }
+
+        // spaces are only added if needed
+        else if (line[pos2] == ' ')
+        {
+            // Add space only if it is needed
+            if (par.size() && std::isalnum(par[par.length()-1]))
+            {
+                par += ' ';
+            }
+        }
+
+        // add character to current parameter
+        else if (parlevel >= 1)
+        {
+            par.append(1, line[pos2]);
+        }
+    }
+}
+
 /** @brief Class that the preprocessor uses when it expands macros. This class represents a preprocessor macro */
 class PreprocessorMacro
 {
@@ -1705,26 +1820,6 @@ public:
     }
 };
 
-
-/**
- * Skip string in line. A string begins and ends with either a &quot; or a &apos;
- * @param line the string
- * @param pos in=start position of string, out=end position of string
- */
-static void skipstring(const std::string &line, std::string::size_type &pos)
-{
-    const unsigned char ch = line[pos];
-
-    ++pos;
-    while (pos < line.size() && line[pos] != ch)
-    {
-        if (line[pos] == '\\')
-            ++pos;
-        ++pos;
-    }
-}
-
-
 /**
  * Get data from a input string. This is an extended version of std::getline.
  * The std::getline only get a single line at a time. It can therefore happen that it
@@ -1972,85 +2067,11 @@ std::string Preprocessor::expandMacros(const std::string &code, std::string file
                     // if the macro has parantheses, get parameters
                     if (macro->variadic() || macro->nopar() || macro->params().size())
                     {
-                        if (line[pos2] == ' ')
-                            pos2++;
-
-                        if (line[pos2] != '(')
-                            break;
-
-                        // parantheses level
-                        int parlevel = 0;
-
-                        // current parameter
-                        std::string par;
-
                         // is the end paranthesis found?
                         bool endFound = false;
 
-                        // scan for parameters..
-                        for (; pos2 < line.length(); ++pos2)
-                        {
-                            // increase paranthesis level
-                            if (line[pos2] == '(')
-                            {
-                                ++parlevel;
-                                if (parlevel == 1)
-                                    continue;
-                            }
+                        getparams(line,pos2,params,numberOfNewlines,endFound);
 
-                            // decrease paranthesis level
-                            else if (line[pos2] == ')')
-                            {
-                                --parlevel;
-                                if (parlevel <= 0)
-                                {
-                                    endFound = true;
-                                    params.push_back(par);
-                                    break;
-                                }
-                            }
-
-                            // string
-                            else if (line[pos2] == '\"' || line[pos2] == '\'')
-                            {
-                                const std::string::size_type p = pos2;
-                                skipstring(line, pos2);
-                                if (pos2 == line.length())
-                                    break;
-                                par += line.substr(p, pos2 + 1 - p);
-                                continue;
-                            }
-
-                            // count newlines. the expanded macro must have the same number of newlines
-                            else if (line[pos2] == '\n')
-                            {
-                                ++numberOfNewlines;
-                                continue;
-                            }
-
-                            // new parameter
-                            if (parlevel == 1 && line[pos2] == ',')
-                            {
-                                params.push_back(par);
-                                par = "";
-                            }
-
-                            // spaces are only added if needed
-                            else if (line[pos2] == ' ')
-                            {
-                                // Add space only if it is needed
-                                if (par.size() && std::isalnum(par[par.length()-1]))
-                                {
-                                    par += ' ';
-                                }
-                            }
-
-                            // add character to current parameter
-                            else if (parlevel >= 1)
-                            {
-                                par.append(1, line[pos2]);
-                            }
-                        }
 
                         // something went wrong so bail out
                         if (!endFound)
