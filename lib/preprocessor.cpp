@@ -1476,7 +1476,7 @@ static void skipstring(const std::string &line, std::string::size_type &pos)
  * @param endFound out: was the end paranthesis found?
  */
 static void getparams(const std::string &line,
-                      unsigned int &pos,
+                      size_t &pos,
                       std::vector<std::string> &params,
                       unsigned int &numberOfNewlines,
                       bool &endFound)
@@ -1623,7 +1623,7 @@ private:
             if (param.compare(0,s.length(),s)==0 && param[param.length()-1]==')')
             {
                 std::vector<std::string> innerparams;
-                unsigned int pos = s.length() - 1;
+                size_t pos = s.length() - 1;
                 unsigned int num = 0;
                 bool endFound = false;
                 getparams(param, pos, innerparams, num, endFound);
