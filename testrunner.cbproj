@@ -18,26 +18,26 @@
     <CfgParent>Base</CfgParent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Base)'!=''">
-    <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
     <OutputExt>exe</OutputExt>
-    <Defines>NO_STRICT</Defines>
+    <BCC_OptimizeForSpeed>true</BCC_OptimizeForSpeed>
     <DCC_CBuilderOutput>JPHNE</DCC_CBuilderOutput>
+    <Defines>NO_STRICT</Defines>
     <DynamicRTL>true</DynamicRTL>
+    <ILINK_ObjectSearchPath>C:\cppcheck;test;src;lib;test\tinyxml</ILINK_ObjectSearchPath>
     <UsePackages>true</UsePackages>
-    <ILINK_ObjectSearchPath>C:\cppcheck;test;src;lib</ILINK_ObjectSearchPath>
-    <ProjectType>CppConsoleApplication</ProjectType>
     <NoVCL>true</NoVCL>
+    <ProjectType>CppConsoleApplication</ProjectType>
     <FinalOutputDir>.</FinalOutputDir>
     <PackageImports>vclx.bpi;vcl.bpi;rtl.bpi;vclactnband.bpi</PackageImports>
     <BCC_wpar>false</BCC_wpar>
-    <IncludePath>$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;test;src;lib</IncludePath>
-    <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;test;src;lib</ILINK_LibraryPath>
+    <IncludePath>$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;test;src;lib;test\tinyxml</IncludePath>
+    <ILINK_LibraryPath>$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;test;src;lib;test\tinyxml</ILINK_LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Cfg_1)'!=''">
-    <DCC_Optimize>false</DCC_Optimize>
     <BCC_OptimizeForSpeed>false</BCC_OptimizeForSpeed>
-    <Defines>_DEBUG;_HAS_ITERATOR_DEBUGGING=1;$(Defines)</Defines>
+    <DCC_Optimize>false</DCC_Optimize>
     <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+    <Defines>_DEBUG;_HAS_ITERATOR_DEBUGGING=1;$(Defines)</Defines>
     <ILINK_FullDebugInfo>true</ILINK_FullDebugInfo>
     <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     <ILINK_DisableIncrementalLinking>true</ILINK_DisableIncrementalLinking>
@@ -48,8 +48,8 @@
     <IntermediateOutputDir>bcb_Debug</IntermediateOutputDir>
     <TASM_DisplaySourceLines>true</TASM_DisplaySourceLines>
     <BCC_StackFrames>true</BCC_StackFrames>
-    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <BCC_DisableOptimizations>true</BCC_DisableOptimizations>
+    <ILINK_LibraryPath>$(BDS)\lib\debug;$(ILINK_LibraryPath)</ILINK_LibraryPath>
     <TASM_Debugging>Full</TASM_Debugging>
     <BCC_SourceDebuggingOn>true</BCC_SourceDebuggingOn>
   </PropertyGroup>
@@ -64,6 +64,8 @@
     <Borland.ProjectType>CppConsoleApplication</Borland.ProjectType>
     <BorlandProject>
 <BorlandProject><CPlusPlusBuilder.Personality><VersionInfo><VersionInfo Name="IncludeVerInfo">False</VersionInfo><VersionInfo Name="AutoIncBuild">False</VersionInfo><VersionInfo Name="MajorVer">1</VersionInfo><VersionInfo Name="MinorVer">0</VersionInfo><VersionInfo Name="Release">0</VersionInfo><VersionInfo Name="Build">0</VersionInfo><VersionInfo Name="Debug">False</VersionInfo><VersionInfo Name="PreRelease">False</VersionInfo><VersionInfo Name="Special">False</VersionInfo><VersionInfo Name="Private">False</VersionInfo><VersionInfo Name="DLL">False</VersionInfo><VersionInfo Name="Locale">1053</VersionInfo><VersionInfo Name="CodePage">1252</VersionInfo></VersionInfo><VersionInfoKeys><VersionInfoKeys Name="CompanyName"></VersionInfoKeys><VersionInfoKeys Name="FileDescription"></VersionInfoKeys><VersionInfoKeys Name="FileVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="InternalName"></VersionInfoKeys><VersionInfoKeys Name="LegalCopyright"></VersionInfoKeys><VersionInfoKeys Name="LegalTrademarks"></VersionInfoKeys><VersionInfoKeys Name="OriginalFilename"></VersionInfoKeys><VersionInfoKeys Name="ProductName"></VersionInfoKeys><VersionInfoKeys Name="ProductVersion">1.0.0.0</VersionInfoKeys><VersionInfoKeys Name="Comments"></VersionInfoKeys></VersionInfoKeys><Debugging><Debugging Name="DebugSourceDirs"></Debugging></Debugging><Parameters><Parameters Name="RunParams"></Parameters><Parameters Name="Launcher"></Parameters><Parameters Name="UseLauncher">False</Parameters><Parameters Name="DebugCWD"></Parameters><Parameters Name="HostApplication"></Parameters><Parameters Name="RemoteHost"></Parameters><Parameters Name="RemotePath"></Parameters><Parameters Name="RemoteParams"></Parameters><Parameters Name="RemoteLauncher"></Parameters><Parameters Name="UseRemoteLauncher">False</Parameters><Parameters Name="RemoteCWD"></Parameters><Parameters Name="RemoteDebug">False</Parameters><Parameters Name="Debug Symbols Search Path"></Parameters><Parameters Name="LoadAllSymbols">True</Parameters><Parameters Name="LoadUnspecifiedSymbols">False</Parameters></Parameters><Excluded_Packages>
+      
+      
       <Excluded_Packages Name="C:\Documents and Settings\All Users\Documents\RAD Studio\5.0\BPL\A407_D110.bpl">TurboPower Async Professional 4.07 Designtime Package - VCL110</Excluded_Packages>
       <Excluded_Packages Name="C:\Documents and Settings\All Users\Documents\RAD Studio\5.0\BPL\DreamEdit_C6.bpl">Dream Editor Package</Excluded_Packages>
     </Excluded_Packages><Linker><Linker Name="LibPrefix"></Linker><Linker Name="LibSuffix"></Linker><Linker Name="LibVersion"></Linker></Linker><ProjectProperties><ProjectProperties Name="AutoShowDeps">False</ProjectProperties><ProjectProperties Name="ManagePaths">True</ProjectProperties><ProjectProperties Name="VerifyPackages">True</ProjectProperties></ProjectProperties><HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Count">2</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item0">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck;test;src;lib</HistoryLists_hlIncludePath><HistoryLists_hlIncludePath Name="Item1">$(BDS)\include;$(BDS)\include\dinkumware;$(BDS)\include\vcl;C:\cppcheck</HistoryLists_hlIncludePath></HistoryLists_hlIncludePath><HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Count">2</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item0">bcb_debug</HistoryLists_hlFinalOutputDir><HistoryLists_hlFinalOutputDir Name="Item1">.</HistoryLists_hlFinalOutputDir></HistoryLists_hlFinalOutputDir><HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Count">1</HistoryLists_hlILINK_LibraryPath><HistoryLists_hlILINK_LibraryPath Name="Item0">$(BDS)\lib\debug;$(BDS)\lib;$(BDS)\lib\obj;$(BDS)\lib\psdk;C:\cppcheck;test;src;lib</HistoryLists_hlILINK_LibraryPath></HistoryLists_hlILINK_LibraryPath><HistoryLists_hlDefines><HistoryLists_hlDefines Name="Count">1</HistoryLists_hlDefines><HistoryLists_hlDefines Name="Item0">_DEBUG;NO_STRICT;_HAS_ITERATOR_DEBUGGING=1</HistoryLists_hlDefines></HistoryLists_hlDefines><HistoryLists_hlIntermediateOutputDir><HistoryLists_hlIntermediateOutputDir Name="Count">1</HistoryLists_hlIntermediateOutputDir><HistoryLists_hlIntermediateOutputDir Name="Item0">bcb_Debug</HistoryLists_hlIntermediateOutputDir></HistoryLists_hlIntermediateOutputDir></CPlusPlusBuilder.Personality></BorlandProject></BorlandProject>
@@ -90,141 +92,149 @@
       <DependentOn>lib\checkexceptionsafety.h</DependentOn>
       <BuildOrder>4</BuildOrder>
     </CppCompile>
-    <CppCompile Include="lib\checkheaders.cpp">
-      <DependentOn>lib\checkheaders.h</DependentOn>
-      <BuildOrder>5</BuildOrder>
-    </CppCompile>
     <CppCompile Include="lib\checkmemoryleak.cpp">
       <DependentOn>lib\checkmemoryleak.h</DependentOn>
-      <BuildOrder>6</BuildOrder>
+      <BuildOrder>5</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkother.cpp">
       <DependentOn>lib\checkother.h</DependentOn>
-      <BuildOrder>7</BuildOrder>
+      <BuildOrder>6</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkstl.cpp">
       <DependentOn>lib\checkstl.h</DependentOn>
-      <BuildOrder>8</BuildOrder>
+      <BuildOrder>7</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\checkunusedfunctions.cpp">
       <DependentOn>lib\checkunusedfunctions.h</DependentOn>
-      <BuildOrder>9</BuildOrder>
+      <BuildOrder>8</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\cppcheck.cpp">
-      <BuildOrder>10</BuildOrder>
+      <BuildOrder>9</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\errorlogger.cpp">
       <DependentOn>lib\errorlogger.h</DependentOn>
-      <BuildOrder>11</BuildOrder>
+      <BuildOrder>10</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\executionpath.cpp">
       <DependentOn>lib\executionpath.h</DependentOn>
-      <BuildOrder>12</BuildOrder>
+      <BuildOrder>11</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\filelister.cpp">
       <DependentOn>lib\filelister.h</DependentOn>
-      <BuildOrder>13</BuildOrder>
+      <BuildOrder>12</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\filelister_unix.cpp">
-      <BuildOrder>14</BuildOrder>
+      <BuildOrder>13</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\filelister_win32.cpp">
-      <BuildOrder>15</BuildOrder>
+      <BuildOrder>14</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\mathlib.cpp">
       <DependentOn>lib\mathlib.h</DependentOn>
-      <BuildOrder>16</BuildOrder>
+      <BuildOrder>15</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\preprocessor.cpp">
       <DependentOn>lib\preprocessor.h</DependentOn>
-      <BuildOrder>17</BuildOrder>
+      <BuildOrder>16</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\settings.cpp">
-      <BuildOrder>18</BuildOrder>
+      <BuildOrder>17</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\token.cpp">
       <DependentOn>lib\token.h</DependentOn>
-      <BuildOrder>19</BuildOrder>
+      <BuildOrder>18</BuildOrder>
     </CppCompile>
     <CppCompile Include="lib\tokenize.cpp">
       <DependentOn>lib\tokenize.h</DependentOn>
-      <BuildOrder>20</BuildOrder>
+      <BuildOrder>19</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testautovariables.cpp">
-      <BuildOrder>22</BuildOrder>
+      <BuildOrder>21</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testbufferoverrun.cpp">
-      <BuildOrder>23</BuildOrder>
+      <BuildOrder>22</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testcharvar.cpp">
-      <BuildOrder>24</BuildOrder>
+      <BuildOrder>23</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testclass.cpp">
-      <BuildOrder>25</BuildOrder>
+      <BuildOrder>24</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testconstructors.cpp">
-      <BuildOrder>26</BuildOrder>
+      <BuildOrder>25</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testcppcheck.cpp">
-      <BuildOrder>27</BuildOrder>
+      <BuildOrder>26</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testdangerousfunctions.cpp">
-      <BuildOrder>28</BuildOrder>
+      <BuildOrder>27</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testdivision.cpp">
-      <BuildOrder>29</BuildOrder>
+      <BuildOrder>28</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testexceptionsafety.cpp">
-      <BuildOrder>30</BuildOrder>
+      <BuildOrder>29</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testfilelister.cpp">
-      <BuildOrder>31</BuildOrder>
+      <BuildOrder>30</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testincompletestatement.cpp">
-      <BuildOrder>32</BuildOrder>
+      <BuildOrder>31</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testmathlib.cpp">
-      <BuildOrder>33</BuildOrder>
+      <BuildOrder>32</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testmemleak.cpp">
-      <BuildOrder>34</BuildOrder>
+      <BuildOrder>33</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testother.cpp">
-      <BuildOrder>35</BuildOrder>
+      <BuildOrder>34</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testpreprocessor.cpp">
-      <BuildOrder>36</BuildOrder>
+      <BuildOrder>35</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testredundantif.cpp">
-      <BuildOrder>37</BuildOrder>
+      <BuildOrder>36</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testrunner.cpp">
-      <BuildOrder>38</BuildOrder>
+      <BuildOrder>37</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testsimplifytokens.cpp">
-      <BuildOrder>39</BuildOrder>
+      <BuildOrder>38</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\teststl.cpp">
-      <BuildOrder>40</BuildOrder>
+      <BuildOrder>39</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testsuite.cpp">
       <DependentOn>test\testsuite.h</DependentOn>
-      <BuildOrder>41</BuildOrder>
+      <BuildOrder>40</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testtoken.cpp">
-      <BuildOrder>42</BuildOrder>
+      <BuildOrder>41</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testtokenize.cpp">
-      <BuildOrder>43</BuildOrder>
+      <BuildOrder>42</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testunusedfunctions.cpp">
-      <BuildOrder>44</BuildOrder>
+      <BuildOrder>43</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testunusedprivfunc.cpp">
-      <BuildOrder>45</BuildOrder>
+      <BuildOrder>44</BuildOrder>
     </CppCompile>
     <CppCompile Include="test\testunusedvar.cpp">
-      <BuildOrder>21</BuildOrder>
+      <BuildOrder>20</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\tinyxml\tinystr.cpp">
+      <BuildOrder>45</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\tinyxml\tinyxml.cpp">
+      <BuildOrder>46</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\tinyxml\tinyxmlerror.cpp">
+      <BuildOrder>47</BuildOrder>
+    </CppCompile>
+    <CppCompile Include="test\tinyxml\tinyxmlparser.cpp">
+      <BuildOrder>48</BuildOrder>
     </CppCompile>
     <BuildConfiguration Include="Debug">
       <Key>Cfg_1</Key>
