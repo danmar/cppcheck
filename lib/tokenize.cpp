@@ -450,7 +450,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name)
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
-    if (tok && tok->next() && Token::Match(tok->next(), ";|,|[|=|)|>|(|{"))
+    if (tok && Token::Match(tok->next(), ";|,|[|=|)|>|(|{"))
     {
         const Token * end = tok->next();
 
@@ -761,10 +761,10 @@ void Tokenizer::simplifyTypedef()
             bool atEnd = false;
             while (!atEnd)
             {
-                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "::"))
+                if (Token::Match(tok->tokAt(offset), "::"))
                     typeEnd = tok->tokAt(offset++);
 
-                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%") &&
+                if (Token::Match(tok->tokAt(offset), "%type%") &&
                     tok->tokAt(offset + 1) && !Token::Match(tok->tokAt(offset + 1), "[|;|,|("))
                     typeEnd = tok->tokAt(offset++);
                 else if (Token::Match(tok->tokAt(offset), "const ("))
@@ -807,7 +807,7 @@ void Tokenizer::simplifyTypedef()
                     paren--;
             }
 
-            while (typeEnd && typeEnd->next() && Token::Match(typeEnd->next(), ":: %type%"))
+            while (typeEnd && Token::Match(typeEnd->next(), ":: %type%"))
                 typeEnd = typeEnd->tokAt(2);
 
             if (!typeEnd)
@@ -824,10 +824,10 @@ void Tokenizer::simplifyTypedef()
         }
 
         // check for pointers and references
-        while (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "*|&"))
+        while (Token::Match(tok->tokAt(offset), "*|&"))
             pointers.push_back(tok->tokAt(offset++)->str());
 
-        if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%"))
+        if (Token::Match(tok->tokAt(offset), "%type%"))
         {
             // found the type name
             typeName = tok->tokAt(offset++);
@@ -857,11 +857,11 @@ void Tokenizer::simplifyTypedef()
             }
 
             // check for end or another
-            if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
+            if (Token::Match(tok->tokAt(offset), ";|,"))
                 tok = tok->tokAt(offset);
 
             // or a function typedef
-            else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "("))
+            else if (Token::Match(tok->tokAt(offset), "("))
             {
                 function = true;
                 if (tok->tokAt(offset)->link()->next())
@@ -883,7 +883,7 @@ void Tokenizer::simplifyTypedef()
                 continue;
             }
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( *|&| const|volatile| const|volatile| %type% ) ("))
+        else if (Token::Match(tok->tokAt(offset), "( *|&| const|volatile| const|volatile| %type% ) ("))
         {
             functionPtr = tok->tokAt(offset + 1)->str() == "*";
             functionRef = tok->tokAt(offset + 1)->str() == "&";
@@ -927,7 +927,7 @@ void Tokenizer::simplifyTypedef()
                 tok = specEnd->next();
             }
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( ::| %var% :: *|&| const|volatile| const|volatile| %type% ) ("))
+        else if (Token::Match(tok->tokAt(offset), "( ::| %var% :: *|&| const|volatile| const|volatile| %type% ) ("))
         {
             namespaceStart = tok->tokAt(offset + 1);
             if (tok->tokAt(offset + 1)->str() == "::")
@@ -975,7 +975,7 @@ void Tokenizer::simplifyTypedef()
                 tok = specEnd->next();
             }
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %type% ("))
+        else if (Token::Match(tok->tokAt(offset), "( %type% ("))
         {
             function = true;
             if (tok->tokAt(offset)->link()->next())
@@ -993,7 +993,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         // pointer to function returning pointer to function
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * ( * %type% ) ("))
+        else if (Token::Match(tok->tokAt(offset), "( * ( * %type% ) ("))
         {
             functionPtrRetFuncPtr = true;
 
@@ -1008,7 +1008,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         // function returning pointer to function
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * %type% (") &&
+        else if (Token::Match(tok->tokAt(offset), "( * %type% (") &&
                  Token::Match(tok->tokAt(offset + 3)->link(), ") ) ("))
         {
             functionRetFuncPtr = true;
@@ -1022,7 +1022,7 @@ void Tokenizer::simplifyTypedef()
 
             tok = argFuncRetEnd->next();
         }
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( * ( %type% ) ("))
+        else if (Token::Match(tok->tokAt(offset), "( * ( %type% ) ("))
         {
             functionRetFuncPtr = true;
 
@@ -1037,7 +1037,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         // pointer/reference to array
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( *|& %type% ) ["))
+        else if (Token::Match(tok->tokAt(offset), "( *|& %type% ) ["))
         {
             ptrToArray = (tok->tokAt(offset + 1)->str() == "*");
             refToArray = (tok->tokAt(offset + 1)->str() == "&");
@@ -1048,7 +1048,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         // pointer to class member
-        else if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "( %type% :: * %type% ) ;"))
+        else if (Token::Match(tok->tokAt(offset), "( %type% :: * %type% ) ;"))
         {
             namespaceStart = tok->tokAt(offset + 1);
             namespaceEnd = tok->tokAt(offset + 2);
@@ -1513,10 +1513,10 @@ void Tokenizer::simplifyTypedef()
                 offset = 1;
                 pointers.clear();
 
-                while (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "*|&"))
+                while (Token::Match(tok->tokAt(offset), "*|&"))
                     pointers.push_back(tok->tokAt(offset++)->str());
 
-                if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), "%type%"))
+                if (Token::Match(tok->tokAt(offset), "%type%"))
                 {
                     typeName = tok->tokAt(offset++);
 
@@ -1543,7 +1543,7 @@ void Tokenizer::simplifyTypedef()
                         arrayEnd = tok->tokAt(offset++);
                     }
 
-                    if (tok->tokAt(offset) && Token::Match(tok->tokAt(offset), ";|,"))
+                    if (Token::Match(tok->tokAt(offset), ";|,"))
                         tok = tok->tokAt(offset);
                     else
                     {
@@ -6177,7 +6177,7 @@ bool Tokenizer::duplicateDefinition(Token ** tokPtr, const Token * name)
 {
     // check for an end of definition
     const Token * tok = *tokPtr;
-    if (tok && tok->next() && Token::Match(tok->next(), ";|,|[|=|)|>"))
+    if (tok && Token::Match(tok->next(), ";|,|[|=|)|>"))
     {
         const Token * end = tok->next();
 
