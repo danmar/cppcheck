@@ -76,6 +76,18 @@ private:
               "    char *x = mktemp(\"/tmp/zxcv\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Found 'mktemp'. You should use 'mkstemp' instead\n", errout.str());
+
+        check("char * f(const std::string& strVal)\n"
+              "{\n"
+              "    return(mktemp(strVal.c_str()));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Found 'mktemp'. You should use 'mkstemp' instead\n", errout.str());
+
+        check("char * f(const std::string& strVal)\n"
+              "{\n"
+              "    return mktemp(strVal.c_str()) ;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Found 'mktemp'. You should use 'mkstemp' instead\n", errout.str());
     }
 
     void testgets()
