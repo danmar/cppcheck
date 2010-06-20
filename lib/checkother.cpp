@@ -1039,50 +1039,30 @@ void CheckOther::functionVariableUsage()
 
             // pointer or reference of struct or union declaration with possible initialization
             // struct s * i; struct s * j = 0;
-            else if (Token::Match(tok, "[;{}] struct|union %type% *|& %var% ;|="))
+            else if (Token::Match(tok, "[;{}] const| struct|union %type% *|& %var% ;|="))
             {
                 Variables::VariableType type;
 
-                if (tok->tokAt(3)->str() == "*")
+                tok = tok->next();
+                if (tok->str() == "const")
+                    tok = tok->next();
+
+                if (tok->strAt(2) == "*")
                     type = Variables::pointer;
                 else
                     type = Variables::reference;
 
-                bool written = tok->tokAt(5)->str() == "=";
+                const bool written = tok->strAt(4) == "=";
 
-                variables.addVar(tok->tokAt(4), type, written);
+                variables.addVar(tok->tokAt(3), type, written);
 
                 int offset = 0;
 
                 // check for assignment
                 if (written)
-                    offset = doAssignment(variables, tok->tokAt(4), false, false, false);
+                    offset = doAssignment(variables, tok->tokAt(3), false, false, false);
 
-                tok = tok->tokAt(4 + offset);
-            }
-
-            // const pointer or reference of struct or union declaration with possible initialization
-            // const struct s * i; const struct s * j = 0;
-            else if (Token::Match(tok, "[;{}] const struct|union %type% *|& %var% ;|="))
-            {
-                Variables::VariableType type;
-
-                if (tok->tokAt(4)->str() == "*")
-                    type = Variables::pointer;
-                else
-                    type = Variables::reference;
-
-                bool written = tok->tokAt(6)->str() == "=";
-
-                variables.addVar(tok->tokAt(5), type, written);
-
-                int offset = 0;
-
-                // check for assignment
-                if (written)
-                    offset = doAssignment(variables, tok->tokAt(5), false, false, false);
-
-                tok = tok->tokAt(5 + offset);
+                tok = tok->tokAt(3 + offset);
             }
 
             // pointer or reference declaration with initialization using constructor
