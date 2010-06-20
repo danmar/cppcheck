@@ -1737,7 +1737,7 @@ public:
      */
     bool code(const std::vector<std::string> &params2, const std::map<std::string, PreprocessorMacro *> macros, std::string &macrocode) const
     {
-        if (_nopar)
+        if (_nopar || (_params.empty() && _variadic))
         {
             macrocode = _macro.substr(1 + _macro.find(")"));
             if (macrocode.empty())
@@ -1750,36 +1750,25 @@ public:
             // Remove ending newline
             if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
                 macrocode.erase(pos);
-        }
 
-        else if (_params.empty() && _variadic)
-        {
-            std::string s;
-            for (unsigned int i = 0; i < params2.size(); ++i)
-            {
-                if (i > 0)
-                    s += ",";
-                s += params2[i];
-            }
-
-            macrocode = _macro.substr(1 + _macro.find(")"));
-            if (macrocode.empty())
-                return true;
-
-            std::string::size_type pos = 0;
-            // Remove leading spaces
-            if ((pos = macrocode.find_first_not_of(" ")) > 0)
-                macrocode.erase(0, pos);
-            // Remove ending newline
-            if ((pos = macrocode.find_first_of("\r\n")) != std::string::npos)
-                macrocode.erase(pos);
             // Replace "__VA_ARGS__" with parameters
-            pos = 0;
-            while ((pos = macrocode.find("__VA_ARGS__", pos)) != std::string::npos)
+            if (!_nopar)
             {
-                macrocode.erase(pos, 11);
-                macrocode.insert(pos, s);
-                pos += s.length();
+                std::string s;
+                for (unsigned int i = 0; i < params2.size(); ++i)
+                {
+                    if (i > 0)
+                        s += ",";
+                    s += params2[i];
+                }
+
+                pos = 0;
+                while ((pos = macrocode.find("__VA_ARGS__", pos)) != std::string::npos)
+                {
+                    macrocode.erase(pos, 11);
+                    macrocode.insert(pos, s);
+                    pos += s.length();
+                }
             }
         }
 
