@@ -499,6 +499,7 @@ private:
         ASSERT_EQUALS(";;use;", getcode("char *s; s2 = s + 10;", "s"));
         ASSERT_EQUALS(";;use;", getcode("char *s; s2 = x + s;", "s"));
         ASSERT_EQUALS(";;use;if{;}", getcode("char *s; if (foo(s)) ;", "s"));
+        ASSERT_EQUALS(";;use;", getcode("char *s; map1[s] = 0;", "s"));
 
         // return..
         ASSERT_EQUALS(";;return;", getcode("char *s; return;", "s"));
