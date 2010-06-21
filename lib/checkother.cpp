@@ -983,7 +983,20 @@ void CheckOther::functionVariableUsage()
                 if (tok->tokAt(4)->varId() != 0)
                     variables.read(tok->tokAt(4)->varId());
 
-                tok = tok->tokAt(5);
+                // look at initializers
+                if (Token::Match(tok->tokAt(6), "= {"))
+                {
+                    tok = tok->tokAt(8);
+                    while (tok && tok->str() != "}")
+                    {
+                        if (Token::Match(tok, "%var%"))
+                            variables.read(tok->varId());
+                        tok = tok->next();
+                    }
+                    tok = tok->next();
+                }
+                else
+                    tok = tok->tokAt(5);
             }
 
             // pointer or reference declaration with possible initialization
@@ -1310,10 +1323,12 @@ void CheckOther::functionVariableUsage()
             // function parameter
             else if (Token::Match(tok, "[(,] %var% ["))
                 variables.use(tok->next()->varId());   // use = read + write
-
-            // function parameter
             else if (Token::Match(tok, "[(,] %var% [,)]") && tok->previous()->str() != "*")
                 variables.use(tok->next()->varId());   // use = read + write
+
+            // function
+            else if (Token::Match(tok, " %var% ("))
+                variables.read(tok->varId());
 
             else if (Token::Match(tok, " %var% ."))
                 variables.use(tok->varId());   // use = read + write

@@ -65,6 +65,7 @@ private:
         TEST_CASE(localvar17); // ticket #1720
         TEST_CASE(localvar18); // ticket #1723
         TEST_CASE(localvar19); // ticket #1776
+        TEST_CASE(localvar20); // ticket #1799
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -89,6 +90,7 @@ private:
         TEST_CASE(localvarCast);
         TEST_CASE(localvarClass);
         TEST_CASE(localvarUnused);
+        TEST_CASE(localvarFunction); // ticket #1799
     }
 
     void checkStructMemberUsage(const char code[])
@@ -1164,6 +1166,17 @@ private:
                       "[test.cpp:3]: (style) Variable 'c' is assigned a value that is never used\n", errout.str());
     }
 
+    void localvar20() // ticket #1799
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char c1 = 'c';\n"
+                              "    char c2[] = { c1 };\n"
+                              "    a(c2);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvaralias1()
     {
         functionVariableUsage("void foo()\n"
@@ -1919,6 +1932,18 @@ private:
                               "{\n"
                               "    bool __attribute__((unused)) test = true;\n"
                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarFunction()
+    {
+        functionVariableUsage("void check_dlsym(void*& h)\n"
+                              "{\n"
+                              "  typedef void (*function_type) (void);\n"
+                              "  function_type fn;\n"
+                              "  fn = reinterpret_cast<function_type>(dlsym(h, \"try_allocation\"));\n"
+                              "  fn();\n"
+                              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };
