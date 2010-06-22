@@ -66,6 +66,7 @@ private:
         TEST_CASE(localvar18); // ticket #1723
         TEST_CASE(localvar19); // ticket #1776
         TEST_CASE(localvar20); // ticket #1799
+        TEST_CASE(localvar21); // ticket #1807
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
         TEST_CASE(localvaralias3); // ticket #1639
@@ -1173,6 +1174,16 @@ private:
                               "    char c1 = 'c';\n"
                               "    char c2[] = { c1 };\n"
                               "    a(c2);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar21() // ticket #1807
+    {
+        functionVariableUsage("void foo()\n"
+                              "{\n"
+                              "    char buffer[1024];\n"
+                              "    bar((void *)buffer);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
